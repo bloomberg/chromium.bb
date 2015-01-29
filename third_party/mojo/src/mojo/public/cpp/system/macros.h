@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
-
-#include "mojo/public/c/system/macros.h"
-
 // Define a set of C++ specific macros.
 // Mojo C++ API users can assume that mojo/public/cpp/system/macros.h
 // includes mojo/public/c/system/macros.h.
+
+#ifndef MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+#define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+
+#include "mojo/public/c/system/macros.h"  // Symbols exposed.
 
 // A macro to disallow the copy constructor and operator= functions.
 // This should be used in the private: declarations for a class.

@@ -5,13 +5,8 @@
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.math"]
 module math;
 
-[Client=CalculatorUI]
 interface Calculator {
-  Clear@0();
-  Add@1(double value@0);
-  Multiply@2(double value@0);
-};
-
-interface CalculatorUI {
-  Output@0(double value@0);
+  Clear@0() => (double value@0);
+  Add@1(double value@0) => (double value@0);
+  Multiply@2(double value@0) => (double value@0);
 };

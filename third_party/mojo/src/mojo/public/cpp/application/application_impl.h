@@ -50,11 +50,10 @@ class ApplicationDelegate;
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public InterfaceImpl<Application> {
+class ApplicationImpl : public Application {
  public:
   ApplicationImpl(ApplicationDelegate* delegate,
-                  ScopedMessagePipeHandle shell_handle);
-  ApplicationImpl(ApplicationDelegate* delegate, MojoHandle shell_handle);
+                  InterfaceRequest<Application> request);
   ~ApplicationImpl() override;
 
   Shell* shell() const { return shell_.get(); }
@@ -74,32 +73,36 @@ class ApplicationImpl : public InterfaceImpl<Application> {
     ConnectToApplication(application_url)->ConnectToService(ptr);
   }
 
-  // Wait for the ShellPtr's Initialize message.
-  bool WaitForInitialize();
-
-  // Unbind the shell from this application and return its handle.
-  ScopedMessagePipeHandle UnbindShell();
-
   // Application implementation.
-  void Initialize(Array<String> args) override;
+  void Initialize(ShellPtr shell, Array<String> args) override;
+
+  // Block until the Application is initialized, if it is not already.
+  void WaitForInitialize();
+
+  // Unbinds the Shell and Application connections. Must be called after
+  // Initialize.
+  void UnbindConnections(InterfaceRequest<Application>* application_request,
+                         ShellPtr* shell);
 
   // Quits the main run loop for this application.
   static void Terminate();
 
+ protected:
+  // Application implementation.
+  void AcceptConnection(const String& requestor_url,
+                        InterfaceRequest<ServiceProvider> services,
+                        ServiceProviderPtr exposed_services) override;
+
  private:
   class ShellPtrWatcher;
 
-  void BindShell(ScopedMessagePipeHandle shell_handle);
   void ClearConnections();
+
   void OnShellError() {
     ClearConnections();
     Terminate();
   }
 
-  // Application implementation.
-  void AcceptConnection(const String& requestor_url,
-                        InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services) override;
   void RequestQuit() override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
@@ -108,6 +111,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   ServiceRegistryList incoming_service_registries_;
   ServiceRegistryList outgoing_service_registries_;
   ApplicationDelegate* delegate_;
+  Binding<Application> binding_;
   ShellPtr shell_;
   ShellPtrWatcher* shell_watch_;
   std::vector<std::string> args_;

@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file provides a C++ wrapping around the Mojo C API for message pipes,
+// replacing the prefix of "Mojo" with a "mojo" namespace, and using more
+// strongly-typed representations of |MojoHandle|s.
+//
+// Please see "mojo/public/c/system/message_pipe.h" for complete documentation
+// of the API.
+
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_MESSAGE_PIPE_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_MESSAGE_PIPE_H_
 
@@ -13,8 +20,8 @@
 
 namespace mojo {
 
-// MessagePipeHandle -----------------------------------------------------------
-
+// A strongly-typed representation of a |MojoHandle| to one end of a message
+// pipe.
 class MessagePipeHandle : public Handle {
  public:
   MessagePipeHandle() {}
@@ -30,6 +37,8 @@ typedef ScopedHandleBase<MessagePipeHandle> ScopedMessagePipeHandle;
 static_assert(sizeof(ScopedMessagePipeHandle) == sizeof(MessagePipeHandle),
               "Bad size for C++ ScopedMessagePipeHandle");
 
+// Creates a message pipe. See |MojoCreateMessagePipe()| for complete
+// documentation.
 inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
                                     ScopedMessagePipeHandle* message_pipe0,
                                     ScopedMessagePipeHandle* message_pipe1) {
@@ -46,9 +55,16 @@ inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
   return rv;
 }
 
-// These "raw" versions fully expose the underlying API, but don't help with
-// ownership of handles (especially when writing messages).
-// TODO(vtl): Write "baked" versions.
+// The following "...Raw" versions fully expose the underlying API, and don't
+// help with ownership of handles (especially when writing messages). It is
+// expected that in most cases these methods will be called through generated
+// bindings anyway.
+// TODO(vtl): Write friendlier versions of these functions (using scoped
+// handles and/or vectors) if there is a demonstrated need for them.
+
+// Writes to a message pipe.  If handles are attached, on success the handles
+// will no longer be valid (the receiver will receive equivalent, but logically
+// different, handles). See |MojoWriteMessage()| for complete documentation.
 inline MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
                                   const void* bytes,
                                   uint32_t num_bytes,
@@ -59,6 +75,8 @@ inline MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
       message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
 }
 
+// Reads from a message pipe. See |MojoReadMessage()| for complete
+// documentation.
 inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
                                  void* bytes,
                                  uint32_t* num_bytes,

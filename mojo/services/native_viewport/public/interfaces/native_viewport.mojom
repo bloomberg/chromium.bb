@@ -14,26 +14,26 @@ struct ViewportMetrics {
   float device_pixel_ratio = 1.0;
 };
 
-[Client=NativeViewportClient]
 interface NativeViewport {
   // TODO(sky): having a create function is awkward. Should there be a factory
   // to create the NativeViewport that takes the size?
-  Create(Size size) => (uint64 native_viewport_id);
+  Create(Size size) => (uint64 native_viewport_id, ViewportMetrics metrics);
+
   Show();
   Hide();
   Close();
   SetSize(Size size);
   SubmittedFrame(SurfaceId surface_id);
   SetEventDispatcher(NativeViewportEventDispatcher dispatcher);
+
+  // The initial viewport metrics will be sent in the reply to the Create
+  // method. Call RequestMetrics() to receive updates when the viewport metrics
+  // change. The reply will be sent when the viewport metrics are different from
+  // the values last sent, so to receive continuous updates call this method
+  // again after receiving the callback.
+  RequestMetrics() => (ViewportMetrics metrics);
 };
 
 interface NativeViewportEventDispatcher {
   OnEvent(Event event) => ();
-};
-
-interface NativeViewportClient {
-  // OnMetricsAvailable() is sent at least once after the callback from Create()
-  // is called.
-  OnMetricsChanged(ViewportMetrics metrics);
-  OnDestroyed();
 };

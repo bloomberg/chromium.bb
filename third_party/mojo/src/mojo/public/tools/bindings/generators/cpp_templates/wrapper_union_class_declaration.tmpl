@@ -1,7 +1,7 @@
 class {{union.name}} {
  public:
-  typedef internal::{{union.name}}_Data Data_;
-  typedef Data_::{{union.name}}_Tag Tag;
+  using Data_ = internal::{{union.name}}_Data;
+  using Tag = Data_::{{union.name}}_Tag;
 
   static {{union.name}}Ptr New();
 

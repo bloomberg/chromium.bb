@@ -4,15 +4,15 @@
 
 part of bindings;
 
-abstract class Interface extends core.MojoEventStreamListener {
+abstract class Stub extends core.MojoEventStreamListener {
   int _outstandingResponseFutures = 0;
   bool _isClosing = false;
 
-  Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+  Stub(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
 
-  Interface.fromHandle(core.MojoHandle handle) : super.fromHandle(handle);
+  Stub.fromHandle(core.MojoHandle handle) : super.fromHandle(handle);
 
-  Interface.unbound() : super.unbound();
+  Stub.unbound() : super.unbound();
 
   Future<Message> handleMessage(ServiceMessage message);
 
@@ -84,20 +84,5 @@ abstract class Interface extends core.MojoEventStreamListener {
   Message buildResponseWithId(Struct response, int name, int id, int flags) {
     var header = new MessageHeader.withRequestId(name, flags, id);
     return response.serializeWithHeader(header);
-  }
-
-  void sendMessage(Struct message, int name) {
-    var header = new MessageHeader(name);
-    var serviceMessage = message.serializeWithHeader(header);
-    endpoint.write(serviceMessage.buffer,
-                    serviceMessage.buffer.lengthInBytes,
-                    serviceMessage.handles);
-    if (!endpoint.status.isOk) {
-      throw "message pipe write failed: ${endpoint.status}";
-    }
-  }
-
-  Future sendMessageWithRequestId(Struct response, int name, int id) {
-    throw "The client interface should not expect a response";
   }
 }

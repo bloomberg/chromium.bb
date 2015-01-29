@@ -9,35 +9,53 @@
 
 namespace mojo {
 
-// Used in methods that return instances of remote objects.
+// Represents a request from a remote client for an implementation of Interface
+// over a specified message pipe. The implementor of the interface should
+// remove the message pipe by calling PassMessagePipe() and bind it to the
+// implementation. If this is not done, the InterfaceRequest will automatically
+// close the pipe on destruction. Can also represent the absence of a request
+// if the client did not provide a message pipe.
 template <typename Interface>
 class InterfaceRequest {
   MOJO_MOVE_ONLY_TYPE(InterfaceRequest)
  public:
+  // Constructs an empty InterfaceRequest, representing that the client is not
+  // requesting an implementation of Interface.
   InterfaceRequest() {}
-
   InterfaceRequest(decltype(nullptr)) {}
+
+  // Takes the message pipe from another InterfaceRequest.
   InterfaceRequest(InterfaceRequest&& other) { handle_ = other.handle_.Pass(); }
-  InterfaceRequest& operator=(decltype(nullptr)) {
-    handle_.reset();
-    return *this;
-  }
   InterfaceRequest& operator=(InterfaceRequest&& other) {
     handle_ = other.handle_.Pass();
     return *this;
   }
 
-  // Returns true if the request has yet to be completed.
-  bool is_pending() const { return handle_.is_valid(); }
+  // Assigning to nullptr resets the InterfaceRequest to an empty state,
+  // closing the message pipe currently bound to it (if any).
+  InterfaceRequest& operator=(decltype(nullptr)) {
+    handle_.reset();
+    return *this;
+  }
 
+  // Binds the request to a message pipe over which Interface is to be
+  // requested.  If the request is already bound to a message pipe, the current
+  // message pipe will be closed.
   void Bind(ScopedMessagePipeHandle handle) { handle_ = handle.Pass(); }
 
+  // Indicates whether the request currently contains a valid message pipe.
+  bool is_pending() const { return handle_.is_valid(); }
+
+  // Removes the message pipe from the request and returns it.
   ScopedMessagePipeHandle PassMessagePipe() { return handle_.Pass(); }
 
  private:
   ScopedMessagePipeHandle handle_;
 };
 
+// Makes an InterfaceRequest bound to the specified message pipe. If |handle|
+// is empty or invalid, the resulting InterfaceRequest will represent the
+// absence of a request.
 template <typename Interface>
 InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
   InterfaceRequest<Interface> request;
@@ -45,23 +63,48 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
   return request.Pass();
 }
 
-// Used to construct a request that synchronously binds an InterfacePtr<..>,
-// making it immediately usable upon return. The resulting request object may
-// then be later bound to an InterfaceImpl<..> via BindToRequest.
+// Creates a new message pipe over which Interface is to be served. Binds the
+// specified InterfacePtr to one end of the message pipe, and returns an
+// InterfaceRequest bound to the other. The InterfacePtr should be passed to
+// the client, and the InterfaceRequest should be passed to whatever will
+// provide the implementation. The implementation should typically be bound to
+// the InterfaceRequest using the Binding or StrongBinding classes. The client
+// may begin to issue calls even before an implementation has been bound, since
+// messages sent over the pipe will just queue up until they are consumed by
+// the implementation.
+//
+// Example #1: Requesting a remote implementation of an interface.
+// ===============================================================
 //
 // Given the following interface:
 //
-//   interface Foo {
-//     CreateBar(Bar& bar);
+//   interface Database {
+//     OpenTable(Table& table);
 //   }
 //
-// The caller of CreateBar would have code similar to the following:
+// The client would have code similar to the following:
 //
-//   InterfacePtr<Foo> foo = ...;
-//   InterfacePtr<Bar> bar;
-//   foo->CreateBar(GetProxy(&bar));
+//   DatabasePtr database = ...;  // Connect to database.
+//   TablePtr table;
+//   database->OpenTable(GetProxy(&table));
 //
-// Upon return from CreateBar, |bar| is ready to have methods called on it.
+// Upon return from GetProxy, |table| is ready to have methods called on it.
+//
+// Example #2: Registering a local implementation with a remote service.
+// =====================================================================
+//
+// Given the following interface
+//   interface Collector {
+//     RegisterSource(Source source);
+//   }
+//
+// The client would have code similar to the following:
+//
+//   CollectorPtr collector = ...;  // Connect to Collector.
+//   SourcePtr source;
+//   InterfaceRequest<Source> source_request = GetProxy(&source);
+//   collector->RegisterSource(source.Pass());
+//   CreateSource(source_request.Pass());  // Create implementation locally.
 //
 template <typename Interface>
 InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {

@@ -1,7 +1,7 @@
 
 class {{struct.name}} {
  public:
-  typedef internal::{{struct.name}}_Data Data_;
+  using Data_ = internal::{{struct.name}}_Data;
 
 {#--- Constants #}
 {%- for constant in struct.constants %}

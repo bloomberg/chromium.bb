@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_TEST_SUITE_H_
-#define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_TEST_SUITE_H_
+#ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_SUITE_H_
+#define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_SUITE_H_
 
 #include "base/test/test_suite.h"
 
@@ -23,4 +23,4 @@ class ViewManagerTestSuite : public base::TestSuite {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_TEST_SUITE_H_
+#endif  // MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_SUITE_H_

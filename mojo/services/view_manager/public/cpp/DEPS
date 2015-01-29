@@ -1,8 +1,14 @@
 include_rules = [
-  "!base",
   "+geometry/public",
   "+input_events/public",
   "+surfaces/public",
   "+view_manager/public",
   "+window_manager/public",
+
+  # TODO(blundell): Eliminate these dependencies. crbug.com/451403
+  "!base/basictypes.h",
+  "!base/bind.h",
+  "!base/compiler_specific.h",
+  "!base/memory/scoped_ptr.h",
+  "!base/observer_list.h",
 ]

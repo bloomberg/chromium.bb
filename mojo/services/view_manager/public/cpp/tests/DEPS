@@ -1,5 +1,16 @@
 include_rules = [
+  "+mojo/services/geometry/public",
+
+  # TODO(blundell): Determine whether to eliminate these dependencies or move
+  # the tests outside of view_manager's public code. crbug.com/451403
+  "!base/auto_reset.h",
+  "!base/bind.h",
+  "!base/i18n/icu_util.h",
+  "!base/logging.h",
+  "!base/strings/stringprintf.h",
+  "!base/test/launcher/unit_test_launcher.h",
+  "!base/test/test_suite.h",
   "!shell/application_manager",
   "!shell/shell_test_helper.h",
-  "+mojo/services/geometry/public",
+  "!ui/gfx/x/x11_connection.h",
 ]

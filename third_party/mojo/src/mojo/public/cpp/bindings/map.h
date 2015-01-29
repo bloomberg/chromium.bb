@@ -11,6 +11,15 @@
 
 namespace mojo {
 
+// A move-only map that can handle move-only values. Map has the following
+// characteristics:
+//   - The map itself can be null, and this is distinct from empty.
+//   - Keys must not be move-only.
+//   - The Key-type's "<" operator is used to sort the entries, and also is
+//     used to determine equality of the key values.
+//   - There can only be one entry per unique key.
+//   - Values of move-only types will be moved into the Map when they are added
+//     using the insert() method.
 template <typename Key, typename Value>
 class Map {
   MOJO_MOVE_ONLY_TYPE(Map)
@@ -39,6 +48,8 @@ class Map {
 
   Map() : is_null_(true) {}
 
+  // Constructs a non-null Map containing the specified |keys| mapped to the
+  // corresponding |values|.
   Map(mojo::Array<Key> keys, mojo::Array<Value> values) : is_null_(false) {
     MOJO_DCHECK(keys.size() == values.size());
     Traits::InitializeFrom(&map_, keys.Pass(), values.Pass());
@@ -52,16 +63,21 @@ class Map {
     return *this;
   }
 
+  // Copies the contents of some other type of map into a new Map using a
+  // TypeConverter. A TypeConverter for std::map to Map is defined below.
   template <typename U>
   static Map From(const U& other) {
     return TypeConverter<Map, U>::Convert(other);
   }
 
+  // Copies the contents of the Map into some other type of map. A TypeConverter
+  // for Map to std::map is defined below.
   template <typename U>
   U To() const {
     return TypeConverter<U, Map>::Convert(*this);
   }
 
+  // Destroys the contents of the Map and leaves it in the null state.
   void reset() {
     if (!map_.empty()) {
       Traits::Finalize(&map_);
@@ -72,40 +88,57 @@ class Map {
 
   bool is_null() const { return is_null_; }
 
+  // Indicates the number of keys in the map.
   size_t size() const { return map_.size(); }
 
-  // Used to mark an empty map as non-null for serialization purposes.
   void mark_non_null() { is_null_ = false; }
 
-  // Inserts a key-value pair into the map. Like std::map, this does not insert
-  // |value| if |key| is already a member of the map.
+  // Inserts a key-value pair into the map, moving the value by calling its
+  // Pass() method if it is a move-only type. Like std::map, this does not
+  // insert |value| if |key| is already a member of the map.
   void insert(KeyForwardType key, ValueForwardType value) {
     is_null_ = false;
     Traits::Insert(&map_, key, value);
   }
 
+  // Returns a reference to the value associated with the specified key,
+  // crashing the process if the key is not present in the map.
   ValueRefType at(KeyForwardType key) { return Traits::at(&map_, key); }
   ValueConstRefType at(KeyForwardType key) const {
     return Traits::at(&map_, key);
   }
 
+  // Returns a reference to the value associated with the specified key,
+  // creating a new entry if the key is not already present in the map. A
+  // newly-created value will be value-initialized (meaning that it will be
+  // initialized by the default constructor of the value type, if any, or else
+  // will be zero-initialized).
   ValueRefType operator[](KeyForwardType key) {
     is_null_ = false;
     return Traits::GetOrInsert(&map_, key);
   }
 
+  // Swaps the contents of this Map with another Map of the same type (including
+  // nullness).
   void Swap(Map<Key, Value>* other) {
     std::swap(is_null_, other->is_null_);
     map_.swap(other->map_);
   }
+
+  // Swaps the contents of this Map with an std::map containing keys and values
+  // of the same type. Since std::map cannot represent the null state, the
+  // std::map will be empty if Map is null. The Map will always be left in a
+  // non-null state.
   void Swap(std::map<Key, Value>* other) {
     is_null_ = false;
     map_.swap(*other);
   }
 
-  // This moves all values in the map to a set of parallel arrays. This action
-  // is destructive because we can have move-only objects as values; therefore
-  // we can't have copy semantics here.
+  // Removes all contents from the Map and places them into parallel key/value
+  // arrays. Each key will be copied from the source to the destination, and
+  // values will be copied unless their type is designated move-only, in which
+  // case they will be passed by calling their Pass() method. Either way, the
+  // Map will be left in a null state.
   void DecomposeMapTo(mojo::Array<Key>* keys, mojo::Array<Value>* values) {
     Traits::Decompose(&map_, keys, values);
     Traits::Finalize(&map_);
@@ -113,9 +146,11 @@ class Map {
     is_null_ = true;
   }
 
-  // Please note that calling this method will fail compilation if the value
-  // type cannot be cloned (which usually means that it is a Mojo handle type or
-  // a type contains Mojo handles).
+  // Returns a new Map that contains a copy of the contents of this map.  If the
+  // values are of a type that is designated move-only, they will be cloned
+  // using the Clone() method of the type. Please note that calling this method
+  // will fail compilation if the value type cannot be cloned (which usually
+  // means that it is a Mojo handle type or a type that contains Mojo handles).
   Map Clone() const {
     Map result;
     result.is_null_ = is_null_;
@@ -123,6 +158,13 @@ class Map {
     return result.Pass();
   }
 
+  // Indicates whether the contents of this map are equal to those of another
+  // Map (including nullness). Keys are compared by the != operator. Values are
+  // compared as follows:
+  //   - Map, Array, Struct, or StructPtr values are compared by their Equals()
+  //     method.
+  //   - ScopedHandleBase-derived types are compared by their handles.
+  //   - Values of other types are compared by their "==" operator.
   bool Equals(const Map& other) const {
     if (is_null() != other.is_null())
       return false;
@@ -141,6 +183,7 @@ class Map {
     return true;
   }
 
+  // A read-only iterator for Map.
   class ConstMapIterator {
    public:
     ConstMapIterator(
@@ -148,6 +191,7 @@ class Map {
                                 ValueStorageType>::const_iterator& it)
         : it_(it) {}
 
+    // Returns a const reference to the key and value.
     KeyConstRefType GetKey() { return Traits::GetKey(it_); }
     ValueConstRefType GetValue() { return Traits::GetValue(it_); }
 
@@ -166,10 +210,13 @@ class Map {
     typename std::map<KeyStorageType, ValueStorageType>::const_iterator it_;
   };
 
-  // Provide read-only iteration over map members.
+  // Provide read-only iteration over map members in a way similar to STL
+  // collections.
   ConstMapIterator begin() const { return ConstMapIterator(map_.begin()); }
   ConstMapIterator end() const { return ConstMapIterator(map_.end()); }
 
+  // Returns the iterator pointing to the entry for |key|, if present, or else
+  // returns end().
   ConstMapIterator find(KeyForwardType key) const {
     return ConstMapIterator(map_.find(key));
   }
@@ -178,6 +225,9 @@ class Map {
   typedef std::map<KeyStorageType, ValueStorageType> Map::*Testable;
 
  public:
+  // The Map may be used in boolean expressions to determine if it is non-null,
+  // but is not implicitly convertible to an actual bool value (which would be
+  // dangerous).
   operator Testable() const { return is_null_ ? 0 : &Map::map_; }
 
  private:
@@ -190,6 +240,8 @@ class Map {
   bool is_null_;
 };
 
+// Copies the contents of an std::map to a new Map, optionally changing the
+// types of the keys and values along the way using TypeConverter.
 template <typename MojoKey,
           typename MojoValue,
           typename STLKey,
@@ -207,6 +259,8 @@ struct TypeConverter<Map<MojoKey, MojoValue>, std::map<STLKey, STLValue>> {
   }
 };
 
+// Copies the contents of a Map to an std::map, optionally changing the types of
+// the keys and values along the way using TypeConverter.
 template <typename MojoKey,
           typename MojoValue,
           typename STLKey,

@@ -171,12 +171,12 @@ class Parser(object):
     p[0].Append(p[2])
 
   def p_struct_field(self, p):
-    """struct_field : typename NAME ordinal default SEMI"""
-    p[0] = ast.StructField(p[2], p[3], p[1], p[4])
+    """struct_field : attribute_section typename NAME ordinal default SEMI"""
+    p[0] = ast.StructField(p[3], p[1], p[4], p[2], p[5])
 
   def p_union(self, p):
-    """union : UNION NAME LBRACE union_body RBRACE SEMI"""
-    p[0] = ast.Union(p[2], p[4])
+    """union : attribute_section UNION NAME LBRACE union_body RBRACE SEMI"""
+    p[0] = ast.Union(p[3], p[1], p[5])
 
   def p_union_body_1(self, p):
     """union_body : """
@@ -188,8 +188,8 @@ class Parser(object):
     p[1].Append(p[2])
 
   def p_union_field(self, p):
-    """union_field : typename NAME ordinal SEMI"""
-    p[0] = ast.UnionField(p[2], p[3], p[1])
+    """union_field : attribute_section typename NAME ordinal SEMI"""
+    p[0] = ast.UnionField(p[3], p[1], p[4], p[2])
 
   def p_default_1(self, p):
     """default : """
@@ -224,8 +224,9 @@ class Parser(object):
     p[0] = p[3]
 
   def p_method(self, p):
-    """method : NAME ordinal LPAREN parameter_list RPAREN response SEMI"""
-    p[0] = ast.Method(p[1], p[2], p[4], p[6])
+    """method : attribute_section NAME ordinal LPAREN parameter_list RPAREN \
+                    response SEMI"""
+    p[0] = ast.Method(p[2], p[1], p[3], p[5], p[7])
 
   def p_parameter_list_1(self, p):
     """parameter_list : """
@@ -245,9 +246,9 @@ class Parser(object):
     p[0].Append(p[3])
 
   def p_parameter(self, p):
-    """parameter : typename NAME ordinal"""
-    p[0] = ast.Parameter(p[2], p[3], p[1],
-                         filename=self.filename, lineno=p.lineno(2))
+    """parameter : attribute_section typename NAME ordinal"""
+    p[0] = ast.Parameter(p[3], p[1], p[4], p[2],
+                         filename=self.filename, lineno=p.lineno(3))
 
   def p_typename(self, p):
     """typename : nonnullable_typename QSTN
@@ -322,9 +323,12 @@ class Parser(object):
     p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
 
   def p_enum(self, p):
-    """enum : ENUM NAME LBRACE nonempty_enum_value_list RBRACE SEMI
-            | ENUM NAME LBRACE nonempty_enum_value_list COMMA RBRACE SEMI"""
-    p[0] = ast.Enum(p[2], p[4], filename=self.filename, lineno=p.lineno(1))
+    """enum : attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
+                  RBRACE SEMI
+            | attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
+                  COMMA RBRACE SEMI"""
+    p[0] = ast.Enum(p[3], p[1], p[5], filename=self.filename,
+                    lineno=p.lineno(2))
 
   def p_nonempty_enum_value_list_1(self, p):
     """nonempty_enum_value_list : enum_value"""
@@ -336,11 +340,11 @@ class Parser(object):
     p[0].Append(p[3])
 
   def p_enum_value(self, p):
-    """enum_value : NAME
-                  | NAME EQUALS int
-                  | NAME EQUALS identifier_wrapped"""
-    p[0] = ast.EnumValue(p[1], p[3] if len(p) == 4 else None,
-                         filename=self.filename, lineno=p.lineno(1))
+    """enum_value : attribute_section NAME
+                  | attribute_section NAME EQUALS int
+                  | attribute_section NAME EQUALS identifier_wrapped"""
+    p[0] = ast.EnumValue(p[2], p[1], p[4] if len(p) == 5 else None,
+                         filename=self.filename, lineno=p.lineno(2))
 
   def p_const(self, p):
     """const : CONST typename NAME EQUALS constant SEMI"""

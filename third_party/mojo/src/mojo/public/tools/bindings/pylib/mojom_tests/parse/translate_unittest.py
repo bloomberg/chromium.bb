@@ -49,9 +49,9 @@ class TranslateTest(unittest.TestCase):
     tree = ast.Mojom(
         None,
         ast.ImportList(),
-        [ast.Union("SomeUnion", ast.UnionBody(
-          [ast.UnionField("a", None, "int32"),
-           ast.UnionField("b", None, "string")]))])
+        [ast.Union("SomeUnion", None, ast.UnionBody(
+          [ast.UnionField("a", None, None, "int32"),
+           ast.UnionField("b", None, None, "string")]))])
     expected = [{
       "name": "SomeUnion",
       "fields": [

@@ -35,6 +35,7 @@ mojo_edk_source_set("embedder") {
   mojo_edk_configs = [ "mojo/edk/system:system_config" ]
 
   public_deps = [
+    ":delegates",
     ":platform",
   ]
 
@@ -88,6 +89,27 @@ mojo_edk_source_set("platform") {
   if (is_android) {
     deps += [ "//third_party/ashmem" ]
   }
+}
+
+mojo_edk_source_set("delegates") {
+  # This isn't really a standalone target; it must be linked into the
+  # mojo_system_impl component.
+  visibility = [ ":embedder" ]
+
+  mojo_edk_visibility = [ "mojo/edk/system" ]
+
+  sources = [
+    "master_process_delegate.h",
+    "slave_process_delegate.h",
+  ]
+
+  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+
+  mojo_edk_configs = [ "mojo/edk/system:system_config" ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 mojo_edk_source_set("embedder_unittests") {

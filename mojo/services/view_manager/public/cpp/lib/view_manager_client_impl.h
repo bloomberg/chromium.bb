@@ -103,6 +103,8 @@ class ViewManagerClientImpl : public ViewManager,
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
                            RectPtr new_bounds) override;
+  void OnViewViewportMetricsChanged(ViewportMetricsPtr old_metrics,
+                                    ViewportMetricsPtr new_metrics) override;
   void OnViewHierarchyChanged(Id view_id,
                               Id new_parent_id,
                               Id old_parent_id,

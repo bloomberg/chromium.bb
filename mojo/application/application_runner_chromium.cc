@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 
 namespace mojo {
 
@@ -37,14 +37,13 @@ void ApplicationRunnerChromium::set_message_loop_type(
   message_loop_type_ = type;
 }
 
-MojoResult ApplicationRunnerChromium::Run(MojoHandle shell_handle) {
+MojoResult ApplicationRunnerChromium::Run(
+    MojoHandle application_request_handle) {
   DCHECK(!has_run_);
   has_run_ = true;
 
   base::CommandLine::Init(0, NULL);
-#if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
-#endif
 
 #ifndef NDEBUG
   base::debug::EnableInProcessStackDumping();
@@ -58,7 +57,8 @@ MojoResult ApplicationRunnerChromium::Run(MojoHandle shell_handle) {
       loop.reset(new base::MessageLoop(message_loop_type_));
 
     ApplicationImpl impl(delegate_.get(),
-                         MakeScopedHandle(MessagePipeHandle(shell_handle)));
+                         MakeRequest<Application>(MakeScopedHandle(
+                             MessagePipeHandle(application_request_handle))));
     loop->Run();
   }
   delegate_.reset();

@@ -40,16 +40,16 @@ extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
 {#--- Interface Forward Declarations -#}
 {%  for interface in interfaces %}
 class {{interface.name}};
-typedef mojo::InterfacePtr<{{interface.name}}> {{interface.name}}Ptr;
+using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
 {%  endfor %}
 
 {#--- Struct Forward Declarations -#}
 {%  for struct in structs %}
 class {{struct.name}};
 {%    if struct|should_inline %}
-typedef mojo::InlinedStructPtr<{{struct.name}}> {{struct.name}}Ptr;
+using {{struct.name}}Ptr = mojo::InlinedStructPtr<{{struct.name}}>;
 {%    else %}
-typedef mojo::StructPtr<{{struct.name}}> {{struct.name}}Ptr;
+using {{struct.name}}Ptr = mojo::StructPtr<{{struct.name}}>;
 {%    endif %}
 {%  endfor %}
 

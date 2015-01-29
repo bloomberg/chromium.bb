@@ -6,9 +6,9 @@
 #include "mojo/public/cpp/application/application_test_base.h"
 #include "mojo/public/cpp/environment/environment.h"
 
-MojoResult MojoMain(MojoHandle shell_handle) {
+MojoResult MojoMain(MojoHandle handle) {
   // An Environment instance is needed to construct run loops.
   mojo::Environment environment;
 
-  return mojo::test::RunAllTests(shell_handle);
+  return mojo::test::RunAllTests(handle);
 }

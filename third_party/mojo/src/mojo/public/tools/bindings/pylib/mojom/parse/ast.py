@@ -136,28 +136,34 @@ class Const(Definition):
 class Enum(Definition):
   """Represents an enum definition."""
 
-  def __init__(self, name, enum_value_list, **kwargs):
+  def __init__(self, name, attribute_list, enum_value_list, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert isinstance(enum_value_list, EnumValueList)
     super(Enum, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.enum_value_list = enum_value_list
 
   def __eq__(self, other):
     return super(Enum, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.enum_value_list == other.enum_value_list
 
 
 class EnumValue(Definition):
   """Represents a definition of an enum value."""
 
-  def __init__(self, name, value, **kwargs):
+  def __init__(self, name, attribute_list, value, **kwargs):
     # The optional value is either an int (which is current a string) or a
     # "wrapped identifier".
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert value is None or isinstance(value, (str, tuple))
     super(EnumValue, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.value = value
 
   def __eq__(self, other):
     return super(EnumValue, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.value == other.value
 
 
@@ -206,19 +212,22 @@ class Interface(Definition):
 class Method(Definition):
   """Represents a method definition."""
 
-  def __init__(self, name, ordinal, parameter_list, response_parameter_list,
-               **kwargs):
+  def __init__(self, name, attribute_list, ordinal, parameter_list,
+               response_parameter_list, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(parameter_list, ParameterList)
     assert response_parameter_list is None or \
            isinstance(response_parameter_list, ParameterList)
     super(Method, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.parameter_list = parameter_list
     self.response_parameter_list = response_parameter_list
 
   def __eq__(self, other):
     return super(Method, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.ordinal == other.ordinal and \
            self.parameter_list == other.parameter_list and \
            self.response_parameter_list == other.response_parameter_list
@@ -287,18 +296,21 @@ class Ordinal(NodeBase):
 class Parameter(NodeBase):
   """Represents a method request or response parameter."""
 
-  def __init__(self, name, ordinal, typename, **kwargs):
+  def __init__(self, name, attribute_list, ordinal, typename, **kwargs):
     assert isinstance(name, str)
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
     super(Parameter, self).__init__(**kwargs)
     self.name = name
+    self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename
 
   def __eq__(self, other):
     return super(Parameter, self).__eq__(other) and \
            self.name == other.name and \
+           self.attribute_list == other.attribute_list and \
            self.ordinal == other.ordinal and \
            self.typename == other.typename
 
@@ -328,20 +340,24 @@ class Struct(Definition):
 class StructField(Definition):
   """Represents a struct field definition."""
 
-  def __init__(self, name, ordinal, typename, default_value, **kwargs):
+  def __init__(self, name, attribute_list, ordinal, typename, default_value,
+               **kwargs):
     assert isinstance(name, str)
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
     # The optional default value is currently either a value as a string or a
     # "wrapped identifier".
     assert default_value is None or isinstance(default_value, (str, tuple))
     super(StructField, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename
     self.default_value = default_value
 
   def __eq__(self, other):
     return super(StructField, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.ordinal == other.ordinal and \
            self.typename == other.typename and \
            self.default_value == other.default_value
@@ -357,28 +373,34 @@ class StructBody(NodeListBase):
 class Union(Definition):
   """Represents a union definition."""
 
-  def __init__(self, name, body, **kwargs):
+  def __init__(self, name, attribute_list, body, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert isinstance(body, UnionBody)
     super(Union, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.body = body
 
   def __eq__(self, other):
     return super(Union, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.body == other.body
 
 
 class UnionField(Definition):
 
-  def __init__(self, name, ordinal, typename, **kwargs):
+  def __init__(self, name, attribute_list, ordinal, typename, **kwargs):
     assert isinstance(name, str)
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
     super(UnionField, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename
 
   def __eq__(self, other):
     return super(UnionField, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.ordinal == other.ordinal and \
            self.typename == other.typename
 

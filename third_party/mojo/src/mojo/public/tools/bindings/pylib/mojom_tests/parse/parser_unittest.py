@@ -146,8 +146,8 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a', None, 'int32', None),
-                 ast.StructField('b', None, 'double', None)]))])
+                [ast.StructField('a', None, None, 'int32', None),
+                 ast.StructField('b', None, None, 'double', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testSimpleStructWithoutModule(self):
@@ -166,8 +166,8 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a', None, 'int32', None),
-                 ast.StructField('b', None, 'double', None)]))])
+                [ast.StructField('a', None, None, 'int32', None),
+                 ast.StructField('b', None, None, 'double', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidStructDefinitions(self):
@@ -189,10 +189,12 @@ class ParserTest(unittest.TestCase):
             None,
             ast.StructBody(
                 [ast.Enum('MyEnum',
-                          ast.EnumValueList(ast.EnumValue('VALUE', None))),
+                          None,
+                          ast.EnumValueList(
+                              ast.EnumValue('VALUE', None, None))),
                  ast.Const('kMyConst', 'double', '1.23'),
-                 ast.StructField('a', None, 'int32', None),
-                 ast.StructField('b', None, 'SomeOtherStruct', None)]))])
+                 ast.StructField('a', None, None, 'int32', None),
+                 ast.StructField('b', None, None, 'SomeOtherStruct', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidStructDefinitions(self):
@@ -344,18 +346,20 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Enum(
             'MyEnum1',
-            ast.EnumValueList([ast.EnumValue('VALUE1', None),
-                               ast.EnumValue('VALUE2', None)])),
+            None,
+            ast.EnumValueList([ast.EnumValue('VALUE1', None, None),
+                               ast.EnumValue('VALUE2', None, None)])),
          ast.Enum(
             'MyEnum2',
-            ast.EnumValueList([ast.EnumValue('VALUE1', '-1'),
-                               ast.EnumValue('VALUE2', '0'),
-                               ast.EnumValue('VALUE3', '+987'),
-                               ast.EnumValue('VALUE4', '0xAF12'),
-                               ast.EnumValue('VALUE5', '-0x09bcd'),
-                               ast.EnumValue('VALUE6', ('IDENTIFIER',
+            None,
+            ast.EnumValueList([ast.EnumValue('VALUE1', None, '-1'),
+                               ast.EnumValue('VALUE2', None, '0'),
+                               ast.EnumValue('VALUE3', None, '+987'),
+                               ast.EnumValue('VALUE4', None, '0xAF12'),
+                               ast.EnumValue('VALUE5', None, '-0x09bcd'),
+                               ast.EnumValue('VALUE6', None, ('IDENTIFIER',
                                                         'VALUE5')),
-                               ast.EnumValue('VALUE7', None)]))])
+                               ast.EnumValue('VALUE7', None, None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidEnumInitializers(self):
@@ -406,7 +410,7 @@ class ParserTest(unittest.TestCase):
             'MyStruct', None,
             ast.StructBody(
                 [ast.Const('kNumber', 'int8', '-1'),
-                 ast.StructField('number', ast.Ordinal(0), 'int8',
+                 ast.StructField('number', None, ast.Ordinal(0), 'int8',
                                  ('IDENTIFIER', 'kNumber'))]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
@@ -452,14 +456,14 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a0', ast.Ordinal(0), 'int32', None),
-                 ast.StructField('a1', ast.Ordinal(1), 'int32', None),
-                 ast.StructField('a2', ast.Ordinal(2), 'int32', None),
-                 ast.StructField('a9', ast.Ordinal(9), 'int32', None),
-                 ast.StructField('a10', ast.Ordinal(10), 'int32', None),
-                 ast.StructField('a11', ast.Ordinal(11), 'int32', None),
-                 ast.StructField('a29', ast.Ordinal(29), 'int32', None),
-                 ast.StructField('a1234567890', ast.Ordinal(1234567890),
+                [ast.StructField('a0', None, ast.Ordinal(0), 'int32', None),
+                 ast.StructField('a1', None, ast.Ordinal(1), 'int32', None),
+                 ast.StructField('a2', None, ast.Ordinal(2), 'int32', None),
+                 ast.StructField('a9', None, ast.Ordinal(9), 'int32', None),
+                 ast.StructField('a10', None, ast.Ordinal(10), 'int32', None),
+                 ast.StructField('a11', None, ast.Ordinal(11), 'int32', None),
+                 ast.StructField('a29', None, ast.Ordinal(29), 'int32', None),
+                 ast.StructField('a1234567890', None, ast.Ordinal(1234567890),
                                  'int32', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
@@ -542,7 +546,7 @@ class ParserTest(unittest.TestCase):
         [ast.Struct(
             'MyStruct',
             None,
-            ast.StructBody(ast.StructField('a', None, 'int32', None)))])
+            ast.StructBody(ast.StructField('a', None, None, 'int32', None)))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidHandleTypes(self):
@@ -566,11 +570,14 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a', None, 'handle', None),
-                 ast.StructField('b', None, 'handle<data_pipe_consumer>', None),
-                 ast.StructField('c', None, 'handle<data_pipe_producer>', None),
-                 ast.StructField('d', None, 'handle<message_pipe>', None),
-                 ast.StructField('e', None, 'handle<shared_buffer>', None)]))])
+                [ast.StructField('a', None, None, 'handle', None),
+                 ast.StructField('b', None, None, 'handle<data_pipe_consumer>',
+                                 None),
+                 ast.StructField('c', None, None, 'handle<data_pipe_producer>',
+                                 None),
+                 ast.StructField('d', None, None, 'handle<message_pipe>', None),
+                 ast.StructField('e', None, None, 'handle<shared_buffer>',
+                                 None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidHandleType(self):
@@ -625,29 +632,29 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a0', None, 'int16', '0'),
-                 ast.StructField('a1', None, 'uint16', '0x0'),
-                 ast.StructField('a2', None, 'uint16', '0x00'),
-                 ast.StructField('a3', None, 'uint16', '0x01'),
-                 ast.StructField('a4', None, 'uint16', '0xcd'),
-                 ast.StructField('a5' , None, 'int32', '12345'),
-                 ast.StructField('a6', None, 'int64', '-12345'),
-                 ast.StructField('a7', None, 'int64', '+12345'),
-                 ast.StructField('a8', None, 'uint32', '0x12cd3'),
-                 ast.StructField('a9', None, 'uint32', '-0x12cD3'),
-                 ast.StructField('a10', None, 'uint32', '+0x12CD3'),
-                 ast.StructField('a11', None, 'bool', 'true'),
-                 ast.StructField('a12', None, 'bool', 'false'),
-                 ast.StructField('a13', None, 'float', '1.2345'),
-                 ast.StructField('a14', None, 'float', '-1.2345'),
-                 ast.StructField('a15', None, 'float', '+1.2345'),
-                 ast.StructField('a16', None, 'float', '123.'),
-                 ast.StructField('a17', None, 'float', '.123'),
-                 ast.StructField('a18', None, 'double', '1.23E10'),
-                 ast.StructField('a19', None, 'double', '1.E-10'),
-                 ast.StructField('a20', None, 'double', '.5E+10'),
-                 ast.StructField('a21', None, 'double', '-1.23E10'),
-                 ast.StructField('a22', None, 'double', '+.123E10')]))])
+                [ast.StructField('a0', None, None, 'int16', '0'),
+                 ast.StructField('a1', None, None, 'uint16', '0x0'),
+                 ast.StructField('a2', None, None, 'uint16', '0x00'),
+                 ast.StructField('a3', None, None, 'uint16', '0x01'),
+                 ast.StructField('a4', None, None, 'uint16', '0xcd'),
+                 ast.StructField('a5' , None, None, 'int32', '12345'),
+                 ast.StructField('a6', None, None, 'int64', '-12345'),
+                 ast.StructField('a7', None, None, 'int64', '+12345'),
+                 ast.StructField('a8', None, None, 'uint32', '0x12cd3'),
+                 ast.StructField('a9', None, None, 'uint32', '-0x12cD3'),
+                 ast.StructField('a10', None, None, 'uint32', '+0x12CD3'),
+                 ast.StructField('a11', None, None, 'bool', 'true'),
+                 ast.StructField('a12', None, None, 'bool', 'false'),
+                 ast.StructField('a13', None, None, 'float', '1.2345'),
+                 ast.StructField('a14', None, None, 'float', '-1.2345'),
+                 ast.StructField('a15', None, None, 'float', '+1.2345'),
+                 ast.StructField('a16', None, None, 'float', '123.'),
+                 ast.StructField('a17', None, None, 'float', '.123'),
+                 ast.StructField('a18', None, None, 'double', '1.23E10'),
+                 ast.StructField('a19', None, None, 'double', '1.E-10'),
+                 ast.StructField('a20', None, None, 'double', '.5E+10'),
+                 ast.StructField('a21', None, None, 'double', '-1.23E10'),
+                 ast.StructField('a22', None, None, 'double', '+.123E10')]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidFixedSizeArray(self):
@@ -668,12 +675,12 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('normal_array', None, 'int32[]', None),
-                 ast.StructField('fixed_size_array_one_entry', None, 'int32[1]',
-                                 None),
-                 ast.StructField('fixed_size_array_ten_entries', None,
+                [ast.StructField('normal_array', None, None, 'int32[]', None),
+                 ast.StructField('fixed_size_array_one_entry', None, None,
+                                 'int32[1]', None),
+                 ast.StructField('fixed_size_array_ten_entries', None, None,
                                  'int32[10]', None),
-                 ast.StructField('nested_arrays', None,
+                 ast.StructField('nested_arrays', None, None,
                                  'int32[1][][2]', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
@@ -688,7 +695,8 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                ast.StructField('nested_array', None, 'int32[][]', None)))])
+                ast.StructField('nested_array', None, None, 'int32[][]',
+                                None)))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidFixedArraySize(self):
@@ -738,7 +746,7 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('data', None, 'uint8{string}', None)]))])
+                [ast.StructField('data', None, None, 'uint8{string}', None)]))])
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
 
     source2 = "interface MyInterface { MyMethod(map<string, uint8> a); };"
@@ -752,8 +760,9 @@ class ParserTest(unittest.TestCase):
                 ast.Method(
                     'MyMethod',
                     None,
+                    None,
                     ast.ParameterList(
-                      ast.Parameter('a', None, 'uint8{string}')),
+                        ast.Parameter('a', None, None, 'uint8{string}')),
                     None)))])
     self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
 
@@ -765,7 +774,8 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('data', None, 'uint8[]{string}', None)]))])
+                [ast.StructField('data', None, None, 'uint8[]{string}',
+                                 None)]))])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testValidMethod(self):
@@ -782,7 +792,8 @@ class ParserTest(unittest.TestCase):
                 ast.Method(
                     'MyMethod',
                     None,
-                    ast.ParameterList(ast.Parameter('a', None, 'int32')),
+                    None,
+                    ast.ParameterList(ast.Parameter('a', None, None, 'int32')),
                     None)))])
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
 
@@ -801,14 +812,16 @@ class ParserTest(unittest.TestCase):
             ast.InterfaceBody(
                 [ast.Method(
                     'MyMethod1',
+                    None,
                     ast.Ordinal(0),
-                    ast.ParameterList([ast.Parameter('a', ast.Ordinal(0),
+                    ast.ParameterList([ast.Parameter('a', None, ast.Ordinal(0),
                                                      'int32'),
-                                       ast.Parameter('b', ast.Ordinal(1),
+                                       ast.Parameter('b', None, ast.Ordinal(1),
                                                      'int64')]),
                     None),
                   ast.Method(
                     'MyMethod2',
+                    None,
                     ast.Ordinal(1),
                     ast.ParameterList(),
                     ast.ParameterList())]))])
@@ -829,9 +842,11 @@ class ParserTest(unittest.TestCase):
                 ast.Method(
                     'MyMethod',
                     None,
-                    ast.ParameterList(ast.Parameter('a', None, 'string')),
-                    ast.ParameterList([ast.Parameter('a', None, 'int32'),
-                                       ast.Parameter('b', None, 'bool')]))))])
+                    None,
+                    ast.ParameterList(ast.Parameter('a', None, None, 'string')),
+                    ast.ParameterList([ast.Parameter('a', None, None, 'int32'),
+                                       ast.Parameter('b', None, None,
+                                                     'bool')]))))])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testInvalidMethods(self):
@@ -879,13 +894,17 @@ class ParserTest(unittest.TestCase):
             None,
             ast.InterfaceBody(
                 [ast.Enum('MyEnum',
-                          ast.EnumValueList(ast.EnumValue('VALUE', None))),
+                          None,
+                          ast.EnumValueList(
+                              ast.EnumValue('VALUE', None, None))),
                  ast.Const('kMyConst', 'int32', '123'),
                  ast.Method(
                     'MyMethod',
                     None,
-                    ast.ParameterList(ast.Parameter('x', None, 'int32')),
-                    ast.ParameterList(ast.Parameter('y', None, 'MyEnum')))]))])
+                    None,
+                    ast.ParameterList(ast.Parameter('x', None, None, 'int32')),
+                    ast.ParameterList(ast.Parameter('y', None, None,
+                                                    'MyEnum')))]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidInterfaceDefinitions(self):
@@ -966,6 +985,67 @@ class ParserTest(unittest.TestCase):
                                ast.Attribute("MyAttribute2", 5)]),
             ast.StructBody())])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
+
+    # Various places that attribute list is allowed.
+    source4 = """\
+        [Attr0=0] module my_module;
+
+        [Attr1=1] struct MyStruct {
+          [Attr2=2] int32 a;
+        };
+        [Attr3=3] union MyUnion {
+          [Attr4=4] int32 a;
+        };
+        [Attr5=5] enum MyEnum {
+          [Attr6=6] a
+        };
+        [Attr7=7] interface MyInterface {
+          [Attr8=8] MyMethod([Attr9=9] int32 a) => ([Attr10=10] bool b);
+        };
+        """
+    expected4 = ast.Mojom(
+        ast.Module(('IDENTIFIER', 'my_module'),
+                   ast.AttributeList([ast.Attribute("Attr0", 0)])),
+        ast.ImportList(),
+        [ast.Struct(
+             'MyStruct',
+             ast.AttributeList(ast.Attribute("Attr1", 1)),
+             ast.StructBody(
+                 ast.StructField(
+                     'a', ast.AttributeList([ast.Attribute("Attr2", 2)]),
+                     None, 'int32', None))),
+         ast.Union(
+             'MyUnion',
+             ast.AttributeList(ast.Attribute("Attr3", 3)),
+             ast.UnionBody(
+                 ast.UnionField(
+                     'a', ast.AttributeList([ast.Attribute("Attr4", 4)]), None,
+                     'int32'))),
+         ast.Enum(
+             'MyEnum',
+             ast.AttributeList(ast.Attribute("Attr5", 5)),
+             ast.EnumValueList(
+                 ast.EnumValue(
+                     'VALUE', ast.AttributeList([ast.Attribute("Attr6", 6)]),
+                     None))),
+         ast.Interface(
+            'MyInterface',
+            ast.AttributeList(ast.Attribute("Attr7", 7)),
+            ast.InterfaceBody(
+                ast.Method(
+                    'MyMethod',
+                    ast.AttributeList(ast.Attribute("Attr8", 8)),
+                    None,
+                    ast.ParameterList(
+                        ast.Parameter(
+                            'a', ast.AttributeList([ast.Attribute("Attr9", 9)]),
+                            None, 'int32')),
+                    ast.ParameterList(
+                        ast.Parameter(
+                            'b',
+                            ast.AttributeList([ast.Attribute("Attr10", 10)]),
+                            None, 'bool')))))])
+    self.assertEquals(parser.Parse(source4, "my_file.mojom"), expected4)
 
     # TODO(vtl): Boolean attributes don't work yet. (In fact, we just |eval()|
     # literal (non-name) values, which is extremely dubious.)
@@ -1100,22 +1180,23 @@ class ParserTest(unittest.TestCase):
             'MyStruct',
             None,
             ast.StructBody(
-                [ast.StructField('a', None, 'int32?', None),
-                 ast.StructField('b', None, 'string?', None),
-                 ast.StructField('c', None, 'int32[]?', None),
-                 ast.StructField('d', None, 'string?[]?', None),
-                 ast.StructField('e', None, 'int32[]?[]?', None),
-                 ast.StructField('f', None, 'int32[1]?', None),
-                 ast.StructField('g', None, 'string?[1]?', None),
-                 ast.StructField('h', None, 'some_struct?', None),
-                 ast.StructField('i', None, 'handle?', None),
-                 ast.StructField('j', None, 'handle<data_pipe_consumer>?',
+                [ast.StructField('a', None, None,'int32?', None),
+                 ast.StructField('b', None, None,'string?', None),
+                 ast.StructField('c', None, None,'int32[]?', None),
+                 ast.StructField('d', None, None,'string?[]?', None),
+                 ast.StructField('e', None, None,'int32[]?[]?', None),
+                 ast.StructField('f', None, None,'int32[1]?', None),
+                 ast.StructField('g', None, None,'string?[1]?', None),
+                 ast.StructField('h', None, None,'some_struct?', None),
+                 ast.StructField('i', None, None,'handle?', None),
+                 ast.StructField('j', None, None,'handle<data_pipe_consumer>?',
                                  None),
-                 ast.StructField('k', None, 'handle<data_pipe_producer>?',
+                 ast.StructField('k', None, None,'handle<data_pipe_producer>?',
                                  None),
-                 ast.StructField('l', None, 'handle<message_pipe>?', None),
-                 ast.StructField('m', None, 'handle<shared_buffer>?', None),
-                 ast.StructField('n', None, 'some_interface&?', None)]))])
+                 ast.StructField('l', None, None,'handle<message_pipe>?', None),
+                 ast.StructField('m', None, None,'handle<shared_buffer>?',
+                                 None),
+                 ast.StructField('n', None, None,'some_interface&?', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidNullableTypes(self):
@@ -1168,9 +1249,10 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Union(
           'MyUnion',
+          None,
           ast.UnionBody([
-            ast.UnionField('a', None, 'int32'),
-            ast.UnionField('b', None, 'double')
+            ast.UnionField('a', None, None, 'int32'),
+            ast.UnionField('b', None, None, 'double')
             ]))])
     actual = parser.Parse(source, "my_file.mojom")
     self.assertEquals(actual, expected)
@@ -1190,9 +1272,10 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Union(
           'MyUnion',
+          None,
           ast.UnionBody([
-            ast.UnionField('a', ast.Ordinal(10), 'int32'),
-            ast.UnionField('b', ast.Ordinal(30), 'double')
+            ast.UnionField('a', None, ast.Ordinal(10), 'int32'),
+            ast.UnionField('b', None, ast.Ordinal(30), 'double')
             ]))])
     actual = parser.Parse(source, "my_file.mojom")
     self.assertEquals(actual, expected)
@@ -1211,8 +1294,9 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Union(
           'MyUnion',
+          None,
           ast.UnionBody([
-            ast.UnionField('s', None, 'SomeStruct')
+            ast.UnionField('s', None, None, 'SomeStruct')
             ]))])
     actual = parser.Parse(source, "my_file.mojom")
     self.assertEquals(actual, expected)
@@ -1231,8 +1315,9 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Union(
           'MyUnion',
+          None,
           ast.UnionBody([
-            ast.UnionField('a', None, 'int32[]')
+            ast.UnionField('a', None, None, 'int32[]')
             ]))])
     actual = parser.Parse(source, "my_file.mojom")
     self.assertEquals(actual, expected)
@@ -1251,8 +1336,9 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [ast.Union(
           'MyUnion',
+          None,
           ast.UnionBody([
-            ast.UnionField('m', None, 'string{int32}')
+            ast.UnionField('m', None, None, 'string{int32}')
             ]))])
     actual = parser.Parse(source, "my_file.mojom")
     self.assertEquals(actual, expected)

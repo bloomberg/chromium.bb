@@ -5,6 +5,7 @@
 module mojo;
 
 import "mojo/public/interfaces/application/service_provider.mojom";
+import "mojo/public/interfaces/application/shell.mojom";
 
 // This is the primary interface implemented by every Mojo application. It
 // allows the application to receive its startup arguments from the shell, and
@@ -13,7 +14,7 @@ interface Application {
   // Initializes the application with the specified arguments. This method is
   // guaranteed to be called before any other method is called, and will only be
   // called once.
-  Initialize(array<string>? args);
+  Initialize(Shell shell, array<string>? args);
 
   // Called when another application (identified by |requestor_url|) attempts to
   // open a connection to this application.

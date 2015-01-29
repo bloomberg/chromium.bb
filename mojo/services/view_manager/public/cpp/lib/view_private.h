@@ -39,8 +39,9 @@ class ViewPrivate {
     view_->properties_ = data;
   }
 
-  void set_viewport_metrics(ViewportMetricsPtr viewport_metrics) {
-    view_->viewport_metrics_ = viewport_metrics.Pass();
+  void LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                               const ViewportMetrics& new_metrics) {
+    view_->LocalSetViewportMetrics(new_metrics, new_metrics);
   }
 
   void LocalDestroy() {

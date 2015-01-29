@@ -16,7 +16,7 @@ class MojoEventStream extends Stream<int> {
   // events.
   SendPort _sendPort;
 
-  // The receive port on which we listen and receive events from the handle 
+  // The receive port on which we listen and receive events from the handle
   // watcher.
   ReceivePort _receivePort;
 
@@ -118,8 +118,11 @@ class MojoEventStream extends Stream<int> {
   String toString() => "$_handle";
 }
 
+abstract class Listener {
+  StreamSubscription<List<int>> listen();
+}
 
-class MojoEventStreamListener {
+class MojoEventStreamListener implements Listener {
   MojoMessagePipeEndpoint _endpoint;
   MojoEventStream _eventStream;
   bool _isOpen = false;
@@ -155,7 +158,7 @@ class MojoEventStreamListener {
     _isOpen = false;
   }
 
-  StreamSubscription<int> listen() {
+  StreamSubscription<List<int>> listen() {
     _isOpen = true;
     return _eventStream.listen((List<int> event) {
       var signalsWatched = new MojoHandleSignals(event[0]);

@@ -4,19 +4,19 @@
 
 part of bindings;
 
-abstract class Client extends core.MojoEventStreamListener {
+abstract class Proxy extends core.MojoEventStreamListener {
   Map<int, Completer> _completerMap;
   int _nextId = 0;
 
-  Client(core.MojoMessagePipeEndpoint endpoint) :
+  Proxy(core.MojoMessagePipeEndpoint endpoint) :
       _completerMap = {},
       super(endpoint);
 
-  Client.fromHandle(core.MojoHandle handle) :
+  Proxy.fromHandle(core.MojoHandle handle) :
       _completerMap = {},
       super.fromHandle(handle);
 
-  Client.unbound() :
+  Proxy.unbound() :
       _completerMap = {},
       super.unbound();
 
@@ -37,7 +37,7 @@ abstract class Client extends core.MojoEventStreamListener {
   }
 
   void handleWrite() {
-    throw 'Unexpected write signal in client.';
+    throw 'Unexpected write signal in proxy.';
   }
 
   void sendMessage(Struct message, int name) {

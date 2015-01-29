@@ -45,6 +45,8 @@ namespace mojo {
 //   };
 template <typename Interface>
 class StrongBinding : public ErrorHandler {
+  MOJO_MOVE_ONLY_TYPE(StrongBinding)
+
  public:
   explicit StrongBinding(Interface* impl) : binding_(impl) {
     binding_.set_error_handler(this);

@@ -27,34 +27,59 @@ class ErrorObserver : public ErrorHandler {
   bool encountered_error_;
 };
 
+template <typename Method, typename Class>
+class RunnableImpl {
+ public:
+  RunnableImpl(Method method, Class instance)
+      : method_(method), instance_(instance) {}
+  template <typename... Args>
+  void Run(Args... args) const {
+    (instance_->*method_)(args...);
+  }
+
+ private:
+  Method method_;
+  Class instance_;
+};
+
+template <typename Method, typename Class>
+RunnableImpl<Method, Class> MakeRunnable(Method method, Class object) {
+  return RunnableImpl<Method, Class>(method, object);
+}
+
+typedef mojo::Callback<void(double)> CalcCallback;
+
 class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
   ~MathCalculatorImpl() override {}
 
   MathCalculatorImpl() : total_(0.0) {}
 
-  void Clear() override { client()->Output(total_); }
-
-  void Add(double value) override {
-    total_ += value;
-    client()->Output(total_);
+  void Clear(const CalcCallback& callback) override {
+    total_ = 0.0;
+    callback.Run(total_);
   }
 
-  void Multiply(double value) override {
+  void Add(double value, const CalcCallback& callback) override {
+    total_ += value;
+    callback.Run(total_);
+  }
+
+  void Multiply(double value, const CalcCallback& callback) override {
     total_ *= value;
-    client()->Output(total_);
+    callback.Run(total_);
   }
 
  private:
   double total_;
 };
 
-class MathCalculatorUIImpl : public math::CalculatorUI {
+class MathCalculatorUI {
  public:
-  explicit MathCalculatorUIImpl(math::CalculatorPtr calculator)
-      : calculator_(calculator.Pass()), output_(0.0) {
-    calculator_.set_client(this);
-  }
+  explicit MathCalculatorUI(math::CalculatorPtr calculator)
+      : calculator_(calculator.Pass()),
+        output_(0.0),
+        callback_(MakeRunnable(&MathCalculatorUI::Output, this)) {}
 
   bool WaitForIncomingMethodCall() {
     return calculator_.WaitForIncomingMethodCall();
@@ -62,51 +87,52 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
 
   bool encountered_error() const { return calculator_.encountered_error(); }
 
-  void Add(double value) { calculator_->Add(value); }
+  void Add(double value) { calculator_->Add(value, callback_); }
 
-  void Subtract(double value) { calculator_->Add(-value); }
+  void Subtract(double value) { calculator_->Add(-value, callback_); }
 
-  void Multiply(double value) { calculator_->Multiply(value); }
+  void Multiply(double value) { calculator_->Multiply(value, callback_); }
 
-  void Divide(double value) { calculator_->Multiply(1.0 / value); }
+  void Divide(double value) { calculator_->Multiply(1.0 / value, callback_); }
 
   double GetOutput() const { return output_; }
 
  private:
-  // math::CalculatorUI implementation:
-  void Output(double value) override { output_ = value; }
+  void Output(double output) { output_ = output; }
 
   math::CalculatorPtr calculator_;
   double output_;
+  Callback<void(double)> callback_;
 };
 
-class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
+class SelfDestructingMathCalculatorUI {
  public:
-  explicit SelfDestructingMathCalculatorUIImpl(math::CalculatorPtr calculator)
+  explicit SelfDestructingMathCalculatorUI(math::CalculatorPtr calculator)
       : calculator_(calculator.Pass()), nesting_level_(0) {
     ++num_instances_;
-    calculator_.set_client(this);
   }
 
   void BeginTest(bool nested) {
     nesting_level_ = nested ? 2 : 1;
-    calculator_->Add(1.0);
+    calculator_->Add(
+        1.0, MakeRunnable(&SelfDestructingMathCalculatorUI::Output, this));
   }
 
   static int num_instances() { return num_instances_; }
 
- private:
-  ~SelfDestructingMathCalculatorUIImpl() override { --num_instances_; }
-
-  void Output(double value) override {
+  void Output(double value) {
     if (--nesting_level_ > 0) {
       // Add some more and wait for re-entrant call to Output!
-      calculator_->Add(1.0);
+      calculator_->Add(
+          1.0, MakeRunnable(&SelfDestructingMathCalculatorUI::Output, this));
       RunLoop::current()->RunUntilIdle();
     } else {
       delete this;
     }
   }
+
+ private:
+  ~SelfDestructingMathCalculatorUI() { --num_instances_; }
 
   math::CalculatorPtr calculator_;
   int nesting_level_;
@@ -114,7 +140,7 @@ class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
 };
 
 // static
-int SelfDestructingMathCalculatorUIImpl::num_instances_ = 0;
+int SelfDestructingMathCalculatorUI::num_instances_ = 0;
 
 class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
  public:
@@ -157,7 +183,7 @@ TEST_F(InterfacePtrTest, EndToEnd) {
   BindToProxy(new MathCalculatorImpl(), &calc);
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUIImpl calculator_ui(calc.Pass());
+  MathCalculatorUI calculator_ui(calc.Pass());
 
   calculator_ui.Add(2.0);
   calculator_ui.Multiply(5.0);
@@ -172,7 +198,7 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   MathCalculatorImpl* impl = BindToProxy(new MathCalculatorImpl(), &calc);
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUIImpl calculator_ui(calc.Pass());
+  MathCalculatorUI calculator_ui(calc.Pass());
 
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
 
@@ -230,7 +256,7 @@ TEST_F(InterfacePtrTest, EncounteredError) {
   math::CalculatorPtr proxy;
   MathCalculatorImpl* server = BindToProxy(new MathCalculatorImpl(), &proxy);
 
-  MathCalculatorUIImpl calculator_ui(proxy.Pass());
+  MathCalculatorUI calculator_ui(proxy.Pass());
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -259,7 +285,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   ErrorObserver error_observer;
   proxy.set_error_handler(&error_observer);
 
-  MathCalculatorUIImpl calculator_ui(proxy.Pass());
+  MathCalculatorUI calculator_ui(proxy.Pass());
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -297,30 +323,30 @@ TEST_F(InterfacePtrTest, DestroyInterfacePtrOnClientMethod) {
   math::CalculatorPtr proxy;
   BindToProxy(new MathCalculatorImpl(), &proxy);
 
-  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
-  SelfDestructingMathCalculatorUIImpl* impl =
-      new SelfDestructingMathCalculatorUIImpl(proxy.Pass());
+  SelfDestructingMathCalculatorUI* impl =
+      new SelfDestructingMathCalculatorUI(proxy.Pass());
   impl->BeginTest(false);
 
   PumpMessages();
 
-  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
 
 TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnClientMethod) {
   math::CalculatorPtr proxy;
   BindToProxy(new MathCalculatorImpl(), &proxy);
 
-  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
-  SelfDestructingMathCalculatorUIImpl* impl =
-      new SelfDestructingMathCalculatorUIImpl(proxy.Pass());
+  SelfDestructingMathCalculatorUI* impl =
+      new SelfDestructingMathCalculatorUI(proxy.Pass());
   impl->BeginTest(true);
 
   PumpMessages();
 
-  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
 
 TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
@@ -348,16 +374,16 @@ class StrongMathCalculatorImpl : public math::Calculator, public ErrorHandler {
   ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
 
   // math::Calculator implementation.
-  void Clear() override { binding_.client()->Output(total_); }
+  void Clear(const CalcCallback& callback) override { callback.Run(total_); }
 
-  void Add(double value) override {
+  void Add(double value, const CalcCallback& callback) override {
     total_ += value;
-    binding_.client()->Output(total_);
+    callback.Run(total_);
   }
 
-  void Multiply(double value) override {
+  void Multiply(double value, const CalcCallback& callback) override {
     total_ *= value;
-    binding_.client()->Output(total_);
+    callback.Run(total_);
   }
 
   // ErrorHandler implementation.
@@ -387,7 +413,7 @@ TEST(StrongConnectorTest, Math) {
   {
     // Suppose this is instantiated in a process that has the other end of the
     // message pipe.
-    MathCalculatorUIImpl calculator_ui(calc.Pass());
+    MathCalculatorUI calculator_ui(calc.Pass());
 
     calculator_ui.Add(2.0);
     calculator_ui.Multiply(5.0);
@@ -419,16 +445,16 @@ class WeakMathCalculatorImpl : public math::Calculator, public ErrorHandler {
   }
   ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
 
-  void Clear() override { binding_.client()->Output(total_); }
+  void Clear(const CalcCallback& callback) override { callback.Run(total_); }
 
-  void Add(double value) override {
+  void Add(double value, const CalcCallback& callback) override {
     total_ += value;
-    binding_.client()->Output(total_);
+    callback.Run(total_);
   }
 
-  void Multiply(double value) override {
+  void Multiply(double value, const CalcCallback& callback) override {
     total_ *= value;
-    binding_.client()->Output(total_);
+    callback.Run(total_);
   }
 
   // ErrorHandler implementation.
@@ -457,7 +483,7 @@ TEST(WeakConnectorTest, Math) {
   {
     // Suppose this is instantiated in a process that has the other end of the
     // message pipe.
-    MathCalculatorUIImpl calculator_ui(calc.Pass());
+    MathCalculatorUI calculator_ui(calc.Pass());
 
     calculator_ui.Add(2.0);
     calculator_ui.Multiply(5.0);

@@ -36,7 +36,8 @@ View* AddViewToViewManager(ViewManagerClientImpl* client,
   private_view.set_id(view_data->view_id);
   private_view.set_visible(view_data->visible);
   private_view.set_drawn(view_data->drawn);
-  private_view.set_viewport_metrics(view_data->viewport_metrics.Pass());
+  private_view.LocalSetViewportMetrics(ViewportMetrics(),
+                                       *view_data->viewport_metrics);
   private_view.set_properties(
       view_data->properties.To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddView(view);
@@ -294,6 +295,26 @@ void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,
                                                 RectPtr new_bounds) {
   View* view = GetViewById(view_id);
   ViewPrivate(view).LocalSetBounds(*old_bounds, *new_bounds);
+}
+
+namespace {
+
+void SetViewportMetricsOnDecendants(View* root,
+                                    const ViewportMetrics& old_metrics,
+                                    const ViewportMetrics& new_metrics) {
+  ViewPrivate(root).LocalSetViewportMetrics(old_metrics, new_metrics);
+  const View::Children& children = root->children();
+  for (size_t i = 0; i < children.size(); ++i)
+    SetViewportMetricsOnDecendants(children[i], old_metrics, new_metrics);
+}
+}
+
+void ViewManagerClientImpl::OnViewViewportMetricsChanged(
+    ViewportMetricsPtr old_metrics,
+    ViewportMetricsPtr new_metrics) {
+  View* view = GetRoot();
+  if (view)
+    SetViewportMetricsOnDecendants(view, *old_metrics, *new_metrics);
 }
 
 void ViewManagerClientImpl::OnViewHierarchyChanged(

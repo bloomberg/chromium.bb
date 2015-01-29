@@ -50,6 +50,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const Type kTypeChannel = 1;
   // Messages that are consumed by the |RawChannel| (implementation).
   static const Type kTypeRawChannel = 2;
+  // |ConnectionManager| implementations also use |RawChannel|s.
+  // Messages sent to a |MasterConnectionManager|.
+  static const Type kTypeConnectionManager = 3;
+  // Messages sent by a |MasterConnectionManager| (all responses).
+  static const Type kTypeConnectionManagerAck = 4;
 
   typedef uint16_t Subtype;
   // Subtypes for type |kTypeEndpoint|:
@@ -58,9 +63,18 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveEndpoint = 1;
   static const Subtype kSubtypeChannelRemoveEndpointAck = 2;
-
   // Subtypes for type |kTypeRawChannel|:
   static const Subtype kSubtypeRawChannelPosixExtraPlatformHandles = 0;
+  // Subtypes for type |kTypeConnectionManager| (the message data is always a
+  // buffer containing the connection ID):
+  static const Subtype kSubtypeConnectionManagerAllowConnect = 0;
+  static const Subtype kSubtypeConnectionManagerCancelConnect = 1;
+  static const Subtype kSubtypeConnectionManagerConnect = 2;
+  // Subtypes for type |kTypeConnectionManagerAck| (failure acks never have any
+  // message contents; success acks for "connect" always have a
+  // |ProcessIdentifier| as data and *may* have a platform handle attached):
+  static const Subtype kSubtypeConnectionManagerAckFailure = 0;
+  static const Subtype kSubtypeConnectionManagerAckSuccess = 1;
 
   // Messages (the header and data) must always be aligned to a multiple of this
   // quantity (which must be a power of 2).

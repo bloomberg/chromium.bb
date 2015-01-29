@@ -5,6 +5,7 @@
 #include "view_manager/public/cpp/view.h"
 
 #include <set>
+#include <string>
 
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "view_manager/public/cpp/lib/view_manager_client_impl.h"
@@ -247,6 +248,18 @@ void View::SetSharedProperty(const std::string& name,
     properties_.erase(it);
   }
 
+  // TODO: add test coverage of this (450303).
+  if (manager_) {
+    Array<uint8_t> transport_value;
+    if (value) {
+      transport_value.resize(value->size());
+      if (value->size())
+        memcpy(&transport_value.front(), &(value->front()), value->size());
+    }
+    static_cast<ViewManagerClientImpl*>(manager_)->SetProperty(
+        id_, name, transport_value.Pass());
+  }
+
   FOR_EACH_OBSERVER(
       ViewObserver, observers_,
       OnViewSharedPropertyChanged(this, name, old_value_ptr, value));
@@ -369,10 +382,20 @@ void View::Embed(const String& url,
 ////////////////////////////////////////////////////////////////////////////////
 // View, protected:
 
+namespace {
+
+ViewportMetricsPtr CreateEmptyViewportMetrics() {
+  ViewportMetricsPtr metrics = ViewportMetrics::New();
+  metrics->size = Size::New();
+  return metrics;
+}
+}
+
 View::View()
     : manager_(NULL),
       id_(static_cast<Id>(-1)),
       parent_(NULL),
+      viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(true),
       drawn_(false) {
 }
@@ -412,6 +435,7 @@ View::View(ViewManager* manager, Id id)
     : manager_(manager),
       id_(id),
       parent_(nullptr),
+      viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
       drawn_(false) {
 }
@@ -474,6 +498,15 @@ void View::LocalSetBounds(const Rect& old_bounds,
   DCHECK(old_bounds.height == bounds_.height);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;
+}
+
+void View::LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                                   const ViewportMetrics& new_metrics) {
+  // TODO(eseidel): We could check old_metrics against viewport_metrics_.
+  viewport_metrics_ = new_metrics.Clone();
+  FOR_EACH_OBSERVER(
+      ViewObserver, observers_,
+      OnViewViewportMetricsChanged(this, old_metrics, new_metrics));
 }
 
 void View::LocalSetDrawn(bool value) {

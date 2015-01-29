@@ -39,6 +39,7 @@ component("system") {
     "channel_manager.h",
     "configuration.cc",
     "configuration.h",
+    "connection_manager.h",
     "core.cc",
     "core.h",
     "data_pipe.cc",
@@ -62,6 +63,8 @@ component("system") {
     "local_message_pipe_endpoint.h",
     "mapping_table.cc",
     "mapping_table.h",
+    "master_connection_manager.cc",
+    "master_connection_manager.h",
     "memory.cc",
     "memory.h",
     "message_in_transit.cc",
@@ -87,6 +90,8 @@ component("system") {
     "shared_buffer_dispatcher.h",
     "simple_dispatcher.cc",
     "simple_dispatcher.h",
+    "slave_connection_manager.cc",
+    "slave_connection_manager.h",
     "transport_data.cc",
     "transport_data.h",
     "unique_identifier.cc",
@@ -104,6 +109,7 @@ component("system") {
 
   public_deps = [
     "../embedder",
+    "../embedder:delegates",
     "../embedder:platform",
     "../../public/c/system",
   ]
@@ -139,6 +145,7 @@ test("mojo_system_unittests") {
     "channel_endpoint_id_unittest.cc",
     "channel_manager_unittest.cc",
     "channel_unittest.cc",
+    "connection_manager_unittest.cc",
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",

@@ -60,11 +60,13 @@ struct IsMoveOnlyType {
       sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };
 
+// Returns a reference to |t| when T is not a move-only type.
 template <typename T>
 typename EnableIf<!IsMoveOnlyType<T>::value, T>::type& Forward(T& t) {
   return t;
 }
 
+// Returns the result of t.Pass() when T is a move-only type.
 template <typename T>
 typename EnableIf<IsMoveOnlyType<T>::value, T>::type Forward(T& t) {
   return t.Pass();

@@ -10,9 +10,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
 import org.chromium.content_shell.ShellMojoTestUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.bindings.test.mojom.math.Calculator;
-import org.chromium.mojo.bindings.test.mojom.math.CalculatorUi;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.Pair;
@@ -33,10 +33,33 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     private final Core mCore = CoreImpl.getInstance();
     private long mNativeTestEnvironment;
 
+    static class CalcConnectionErrorHandler implements ConnectionErrorHandler {
+
+        MojoException mLastMojoException;
+
+        @Override
+        public void onConnectionError(MojoException e) {
+            mLastMojoException = e;
+        }
+    }
+
+    static class CalcCallback implements Calculator.AddResponse, Calculator.MultiplyResponse {
+
+        double mResult = 0.0;
+
+        @Override
+        public void call(Double result) {
+            mResult = result;
+        }
+
+        public double getResult() {
+            return mResult;
+        }
+    }
+
     static class CalculatorImpl implements Calculator {
 
         double mResult = 0.0;
-        CalculatorUi mClient;
 
         @Override
         public void close() {}
@@ -45,26 +68,21 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         public void onConnectionError(MojoException e) {}
 
         @Override
-        public void clear() {
+        public void clear(ClearResponse callback) {
             mResult = 0.0;
-            mClient.output(mResult);
+            callback.call(mResult);
         }
 
         @Override
-        public void add(double value) {
+        public void add(double value, AddResponse callback) {
             mResult += value;
-            mClient.output(mResult);
+            callback.call(mResult);
         }
 
         @Override
-        public void multiply(double value) {
+        public void multiply(double value, MultiplyResponse callback) {
             mResult *= value;
-            mClient.output(mResult);
-        }
-
-        @Override
-        public void setClient(CalculatorUi client) {
-            mClient = client;
+            callback.call(mResult);
         }
     }
 
@@ -76,24 +94,6 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         }
     }
 
-    static class CalculatorUiImpl implements CalculatorUi {
-
-        double mOutput = 0.0;
-        MojoException mLastMojoException;
-
-        @Override
-        public void close() {}
-
-        @Override
-        public void onConnectionError(MojoException e) {
-            mLastMojoException = e;
-        }
-
-        @Override
-        public void output(double value) {
-            mOutput = value;
-        }
-    }
 
     @Override
     protected void setUp() throws Exception {
@@ -126,22 +126,25 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         // Add the Calculator service.
         serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
 
-        // Create an instance of CalculatorUi and request a Calculator service for it.
-        CalculatorUiImpl calculatorUi = new CalculatorUiImpl();
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
-                Calculator.MANAGER.getInterfaceRequest(mCore, calculatorUi);
+                Calculator.MANAGER.getInterfaceRequest(mCore);
+
         mCloseablesToClose.add(requestPair.first);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 
         // Perform a few operations on the Calculator.
         Calculator.Proxy calculator = requestPair.first;
-        calculator.add(21);
-        calculator.multiply(2);
+        CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
+        calculator.setErrorHandler(errorHandler);
+        CalcCallback callback = new CalcCallback();
 
-        // Spin the message loop and verify the results.
-        assertEquals(0.0, calculatorUi.mOutput);
+        calculator.add(21, callback);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
-        assertEquals(42.0, calculatorUi.mOutput);
+        assertEquals(21.0, callback.getResult());
+
+        calculator.multiply(2, callback);
+        ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
+        assertEquals(42.0, callback.getResult());
     }
 
     /**
@@ -155,39 +158,46 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         ServiceRegistry serviceRegistryB = registryPair.second;
 
         // Request the Calculator service before it is added.
-        CalculatorUiImpl calculatorUi = new CalculatorUiImpl();
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
-                Calculator.MANAGER.getInterfaceRequest(mCore, calculatorUi);
-        mCloseablesToClose.add(requestPair.first);
+                Calculator.MANAGER.getInterfaceRequest(mCore);
+        Calculator.Proxy calculator = requestPair.first;
+        CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
+        calculator.setErrorHandler(errorHandler);
+        mCloseablesToClose.add(calculator);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that an error occured.
-        assertNull(calculatorUi.mLastMojoException);
+        assertNull(errorHandler.mLastMojoException);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
-        assertNotNull(calculatorUi.mLastMojoException);
+        assertNotNull(errorHandler.mLastMojoException);
 
         // Add the Calculator service and request it again.
-        calculatorUi.mLastMojoException = null;
+        errorHandler.mLastMojoException = null;
         serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
-        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore, calculatorUi);
-        mCloseablesToClose.add(requestPair.first);
+        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore);
+        calculator = requestPair.first;
+        errorHandler = new CalcConnectionErrorHandler();
+        mCloseablesToClose.add(calculator);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that no error occured.
-        assertNull(calculatorUi.mLastMojoException);
+        assertNull(errorHandler.mLastMojoException);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
-        assertNull(calculatorUi.mLastMojoException);
+        assertNull(errorHandler.mLastMojoException);
 
         // Remove the Calculator service and request it again.
-        calculatorUi.mLastMojoException = null;
+        errorHandler.mLastMojoException = null;
         serviceRegistryA.removeService(Calculator.MANAGER);
-        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore, calculatorUi);
-        mCloseablesToClose.add(requestPair.first);
+        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore);
+        calculator = requestPair.first;
+        errorHandler = new CalcConnectionErrorHandler();
+        calculator.setErrorHandler(errorHandler);
+        mCloseablesToClose.add(calculator);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that an error occured.
-        assertNull(calculatorUi.mLastMojoException);
+        assertNull(errorHandler.mLastMojoException);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
-        assertNotNull(calculatorUi.mLastMojoException);
+        assertNotNull(errorHandler.mLastMojoException);
     }
 }

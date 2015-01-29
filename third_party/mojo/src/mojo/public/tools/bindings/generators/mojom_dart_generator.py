@@ -253,13 +253,13 @@ def AppendDecodeParams(initial_params, kind, bit):
     else:
       params.append(GetDartTrueFalse(mojom.IsNullableKind(kind)))
   if mojom.IsInterfaceKind(kind):
-    params.append('%sClient.newFromEndpoint' % GetDartType(kind))
+    params.append('%sProxy.newFromEndpoint' % GetDartType(kind))
   if mojom.IsArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    params.append('%sClient.newFromEndpoint' % GetDartType(kind.kind))
+    params.append('%sProxy.newFromEndpoint' % GetDartType(kind.kind))
   if mojom.IsInterfaceRequestKind(kind):
-    params.append('%sInterface.newFromEndpoint' % GetDartType(kind.kind))
+    params.append('%sStub.newFromEndpoint' % GetDartType(kind.kind))
   if mojom.IsArrayKind(kind) and mojom.IsInterfaceRequestKind(kind.kind):
-    params.append('%sInterface.newFromEndpoint' % GetDartType(kind.kind.kind))
+    params.append('%sStub.newFromEndpoint' % GetDartType(kind.kind.kind))
   if mojom.IsArrayKind(kind):
     params.append(GetArrayExpectedLength(kind))
   return params
@@ -381,7 +381,6 @@ class Generator(generator.Generator):
     'interface_response_name': GetInterfaceResponseName,
     'response_struct_from_method': GetResponseStructFromMethod,
     'struct_from_method': GetStructFromMethod,
-    'upper_camel_case': UpperCamelCase,
     'struct_size': lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
   }
 
@@ -420,7 +419,7 @@ class Generator(generator.Generator):
         unique_name = simple_name + str(counter)
 
       used_names.add(unique_name)
-      each_import["unique_name"] = unique_name
+      each_import["unique_name"] = unique_name + '_mojom'
       counter += 1
     return self.module.imports
 

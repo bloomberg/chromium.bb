@@ -165,6 +165,13 @@ class Binding : public ErrorHandler {
     internal_router_->CloseMessagePipe();
   }
 
+  // Unbinds the underlying pipe from this binding and returns it so it can be
+  // used in another context, such as on another thread or with a different
+  // implementation.
+  InterfaceRequest<Interface> Unbind() {
+    return MakeRequest<Interface>(internal_router_->PassMessagePipe());
+  }
+
   // Sets an error handler that will be called if a connection error occurs on
   // the bound message pipe.
   void set_error_handler(ErrorHandler* error_handler) {

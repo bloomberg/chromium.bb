@@ -1,11 +1,10 @@
 include_rules = [
   "+mojo/services/window_manager/public",
-]
 
-specific_include_rules = {
-  "view_manager_test_suite.cc": [
-    "!mojo/services/native_viewport/native_viewport.h",
-    "!ui/gfx",
-    "!ui/gl",
-  ],
-}
+  # TODO(blundell): Eliminate these dependencies. crbug.com/451403
+  "!base/callback.h",
+  "!base/memory/scoped_vector.h",
+  "!base/memory/weak_ptr.h",
+  "!base/message_loop/message_loop.h",
+  "!base/stl_util.h",
+]

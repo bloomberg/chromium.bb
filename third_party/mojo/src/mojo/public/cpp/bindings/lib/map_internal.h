@@ -16,6 +16,7 @@ namespace internal {
 template <typename Key, typename Value, bool kValueIsMoveOnlyType>
 struct MapTraits {};
 
+// Defines traits of a map for which Value is not a move-only type.
 template <typename Key, typename Value>
 struct MapTraits<Key, Value, false> {
   // Map keys can't be move only types.
@@ -105,6 +106,7 @@ struct MapTraits<Key, Value, false> {
   }
 };
 
+// Defines traits of a map for which Value is a move-only type.
 template <typename Key, typename Value>
 struct MapTraits<Key, Value, true> {
   // Map keys can't be move only types.

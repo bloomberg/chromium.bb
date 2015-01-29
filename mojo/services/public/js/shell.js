@@ -8,8 +8,8 @@ define("mojo/services/public/js/shell", [
   "mojo/public/js/connection",
   "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
-  "mojo/services/public/js/service_provider",
-], function(bindings, core, connection, shellMojom, spMojom, sp) {
+  "mojo/services/public/js/service_provider","console",
+], function(bindings, core, connection, shellMojom, spMojom, sp, console) {
 
   const ProxyBindings = bindings.ProxyBindings;
   const StubBindings = bindings.StubBindings;
@@ -18,13 +18,8 @@ define("mojo/services/public/js/shell", [
   const ShellInterface = shellMojom.Shell;
 
   class Shell {
-    constructor(shellHandle, app) {
-      this.shellHandle = shellHandle;
-      this.proxy = connection.bindProxyHandle(
-          shellHandle, ShellInterface.client, ShellInterface);
-
-      ProxyBindings(this.proxy).setLocalDelegate(app);
-      // TODO: call this serviceProviders_
+    constructor(shellProxy) {
+      this.shellProxy = shellProxy;
       this.applications_ = new Map();
     }
 
@@ -33,11 +28,12 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      this.proxy.connectToApplication(url, function(services) {
-        application = new ServiceProvider(services);
-      }, function() {
-        return application;
-      });
+      var application = new ServiceProvider();
+      this.shellProxy.connectToApplication(url,
+          function(services) {
+            application.proxy = services;
+          },
+          application);
       this.applications_.set(url, application);
       return application;
     }
@@ -50,8 +46,8 @@ define("mojo/services/public/js/shell", [
       this.applications_.forEach(function(application, url) {
         application.close();
       });
+      ProxyBindings(this.shellProxy).close();
       this.applications_.clear();
-      core.close(this.shellHandle);
     }
   }
 

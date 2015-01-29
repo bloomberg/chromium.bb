@@ -18,10 +18,12 @@ define("mojo/services/public/js/service_provider", [
   }
 
   class ServiceProvider {
-    constructor(service) {
-      this.proxy = service;
+    constructor(servicesRequest, exposedServicesProxy) {
+      this.proxy = exposedServicesProxy;
       this.providers_ = new Map(); // serviceName => see provideService() below
       this.pendingRequests_ = new Map(); // serviceName => serviceHandle
+      if (servicesRequest)
+        StubBindings(servicesRequest).delegate = this;
     }
 
     // Incoming requests
@@ -34,11 +36,10 @@ define("mojo/services/public/js/service_provider", [
         this.pendingRequests_.set(serviceName, serviceHandle);
         return;
       }
-      var proxy = connection.bindProxyHandle(
-          serviceHandle, provider.service, provider.service.client);
-      if (ProxyBindings(proxy).local)
-        ProxyBindings(proxy).setLocalDelegate(new provider.factory(proxy));
-      provider.connections.push(ProxyBindings(proxy).connection);
+
+      var stub = connection.bindHandleToStub(serviceHandle, provider.service);
+      StubBindings(stub).delegate = new provider.factory();
+      provider.connections.push(StubBindings(stub).connection);
     }
 
     provideService(service, factory) {
@@ -66,12 +67,11 @@ define("mojo/services/public/js/service_provider", [
       if (!clientImpl && interfaceObject.client)
         throw new Error("Client implementation must be provided");
 
-      var remoteProxy;
-      var clientFactory = function(x) {remoteProxy = x; return clientImpl;};
-      var messagePipeHandle = connection.bindProxyClient(
-          clientFactory, interfaceObject.client, interfaceObject);
-      this.proxy.connectToService(interfaceObject.name, messagePipeHandle);
-      return remoteProxy;
+      var serviceProxy;
+      var serviceHandle = connection.bindProxy(
+          function(sp) {serviceProxy = sp;}, interfaceObject);
+      this.proxy.connectToService(interfaceObject.name, serviceHandle);
+      return serviceProxy;
     };
 
     close() {

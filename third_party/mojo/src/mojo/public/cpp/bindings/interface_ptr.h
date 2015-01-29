@@ -15,56 +15,56 @@
 namespace mojo {
 class ErrorHandler;
 
-// InterfacePtr represents a proxy to a remote instance of an interface.
+// A pointer to a local proxy of a remote Interface implementation. Uses a
+// message pipe to communicate with the remote implementation, and automatically
+// closes the pipe and deletes the proxy on destruction. The pointer must be
+// bound to a message pipe before the interface methods can be called.
+//
+// Can also route incoming calls to a local implementation of the
+// Interface::Client interface. To enable this, call the set_client() method.
+// Calls to the client interface will originate from the same thread that owns
+// this InterfacePtr.
+//
+// This class is thread hostile, as is the local proxy it manages. All calls to
+// this class or the proxy should be from the same thread that created it. If
+// you need to move the proxy to a different thread, extract the message pipe
+// using PassMessagePipe(), pass it to a different thread, and create a new
+// InterfacePtr from that thread.
 template <typename Interface>
 class InterfacePtr {
   MOJO_MOVE_ONLY_TYPE(InterfacePtr)
  public:
+  // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
   InterfacePtr(decltype(nullptr)) {}
 
+  // Takes over the binding of another InterfacePtr.
   InterfacePtr(InterfacePtr&& other) {
     internal_state_.Swap(&other.internal_state_);
   }
+
+  // Takes over the binding of another InterfacePtr, and closes any message pipe
+  // already bound to this pointer.
   InterfacePtr& operator=(InterfacePtr&& other) {
     reset();
     internal_state_.Swap(&other.internal_state_);
     return *this;
   }
 
+  // Assigning nullptr to this class causes it to close the currently bound
+  // message pipe (if any) and returns the pointer to the unbound state.
   InterfacePtr& operator=(decltype(nullptr)) {
     reset();
     return *this;
   }
 
+  // Closes the bound message pipe (if any) on destruction.
   ~InterfacePtr() {}
 
-  Interface* get() const { return internal_state_.instance(); }
-  Interface* operator->() const { return get(); }
-  Interface& operator*() const { return *get(); }
-
-  void reset() {
-    State doomed;
-    internal_state_.Swap(&doomed);
-  }
-
-  // Blocks the current thread for the first incoming method call, i.e., either
-  // a call to a client method or a callback method. Returns |true| if a method
-  // has been called, |false| in case of error. It must only be called on a
-  // bound object.
-  bool WaitForIncomingMethodCall() {
-    return internal_state_.WaitForIncomingMethodCall();
-  }
-
-  // This method configures the InterfacePtr<..> to be a proxy to a remote
-  // object on the other end of the given pipe.
-  //
-  // The proxy is bound to the current thread, which means its methods may
-  // only be called on the current thread.
-  //
-  // To move a bound InterfacePtr<..> to another thread, call PassMessagePipe().
-  // Then create a new InterfacePtr<..> on another thread, and bind the new
-  // InterfacePtr<..> to the message pipe on that thread.
+  // Binds the InterfacePtr to a message pipe that is connected to a remote
+  // implementation of Interface. The |waiter| is used for receiving
+  // notifications when there is data to read from the message pipe. For most
+  // callers, the default |waiter| will be sufficient.
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
@@ -72,27 +72,55 @@ class InterfacePtr {
     internal_state_.Bind(handle.Pass(), waiter);
   }
 
-  // The client interface may only be set after this InterfacePtr<..> is bound.
+  // Returns a raw pointer to the local proxy. Caller does not take ownership.
+  // Note that the local proxy is thread hostile, as stated above.
+  Interface* get() const { return internal_state_.instance(); }
+
+  // Functions like a pointer to Interface. Must already be bound.
+  Interface* operator->() const { return get(); }
+  Interface& operator*() const { return *get(); }
+
+  // Closes the bound message pipe (if any) and returns the pointer to the
+  // unbound state.
+  void reset() {
+    State doomed;
+    internal_state_.Swap(&doomed);
+  }
+
+  // Blocks the current thread until the next incoming call to a client method
+  // or callback arrives, or until an error occurs. Returns |true| if a call
+  // arrived, or |false| in case of error.
+  //
+  // This method may only be called after the InterfacePtr has been bound to a
+  // message pipe.
+  bool WaitForIncomingMethodCall() {
+    return internal_state_.WaitForIncomingMethodCall();
+  }
+
+  // Enables routing of incoming method calls to a local implementation of the
+  // Interface::Client interface. Calls to |client| will come from the thread
+  // that owns this InterfacePtr.
   void set_client(typename Interface::Client* client) {
     internal_state_.set_client(client);
   }
 
-  // This method may be called to query if the underlying pipe has encountered
-  // an error. If true, this means method calls made on this interface will be
-  // dropped (and may have already been dropped) on the floor.
+  // Indicates whether the message pipe has encountered an error. If true,
+  // method calls made on this interface will be dropped (and may already have
+  // been dropped).
   bool encountered_error() const { return internal_state_.encountered_error(); }
 
-  // This method may be called to register an ErrorHandler to observe a
-  // connection error on the underlying pipe. It must only be called on a bound
-  // object.
-  // The callback runs asynchronously from the current message loop.
+  // Registers a handler to receive error notifications. The handler will be
+  // called from the thread that owns this InterfacePtr.
+  //
+  // This method may only be called after the InterfacePtr has been bound to a
+  // message pipe.
   void set_error_handler(ErrorHandler* error_handler) {
     internal_state_.set_error_handler(error_handler);
   }
 
-  // Returns the underlying message pipe handle (if any) and resets the
-  // InterfacePtr<..> to its uninitialized state. This method is helpful if you
-  // need to move a proxy to another thread. See related notes for Bind.
+  // Unbinds the InterfacePtr and return the previously bound message pipe (if
+  // any). This method may be used to move the proxy to a different thread (see
+  // class comments for details).
   ScopedMessagePipeHandle PassMessagePipe() {
     State state;
     internal_state_.Swap(&state);
@@ -120,11 +148,9 @@ class InterfacePtr {
   mutable State internal_state_;
 };
 
-// Takes a handle to the proxy end-point of a pipe. On the other end is
-// presumed to be an interface implementation of type |Interface|. Returns a
-// generated proxy to that interface, which may be used on the current thread.
-// It is valid to call set_client on the returned InterfacePtr<..> to set an
-// instance of Interface::Client.
+// If the specified message pipe handle is valid, returns an InterfacePtr bound
+// to it. Otherwise, returns an unbound InterfacePtr. The specified |waiter|
+// will be used as in the InterfacePtr::Bind() method.
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     ScopedMessagePipeHandle handle,

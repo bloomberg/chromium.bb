@@ -61,23 +61,8 @@ namespace mojo {
 // |ScopedHandleBase<SharedBufferHandle>|) as an "out" parameter.
 //
 // An exception are some of the |...Raw()| functions. E.g., |CloseRaw()| takes a
-// |Handle|, leaving the user to discard the handle.
+// |Handle|, leaving the user to discard the wrapper.
 //
-// More significantly, |WriteMessageRaw()| exposes the full API complexity of
-// |MojoWriteMessage()| (but doesn't require any extra overhead). It takes a raw
-// array of |Handle|s as input, and takes ownership of them (i.e., invalidates
-// them) on *success* (but not on failure). There are a number of reasons for
-// this. First, C++03 |std::vector|s cannot contain the move-only
-// |Scoped...Handle|s. Second, |std::vector|s impose extra overhead
-// (necessitating heap-allocation of the buffer). Third, |std::vector|s wouldn't
-// provide the desired level of flexibility/safety: a vector of handles would
-// have to be all of the same type (probably |Handle|/|ScopedHandle|). Fourth,
-// it's expected to not be used directly, but instead be used by generated
-// bindings.
-//
-// Other |...Raw()| functions expose similar rough edges, e.g., dealing with raw
-// pointers (and lengths) instead of taking |std::vector|s or similar.
-
 // ScopedHandleBase ------------------------------------------------------------
 
 // Scoper for the actual handle types defined further below. It's move-only,

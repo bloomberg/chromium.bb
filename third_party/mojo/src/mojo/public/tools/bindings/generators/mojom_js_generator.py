@@ -223,29 +223,29 @@ def JavaScriptValidateHandleParams(packed_field):
   return "%s, %s" % (field_offset, nullable)
 
 
-
-
 def JavaScriptProxyMethodParameterValue(parameter):
   name = parameter.name;
   if (IsInterfaceParameter(parameter)):
    type = JavaScriptType(parameter.kind)
-   return "core.isHandle(%s) ? %s : connection.bindProxyClient" \
-       "(%s, %s, %s.client)" % (name, name, name, type, type)
+   return "core.isHandle(%s) ? %s : connection.bindImpl" \
+       "(%s, %s)" % (name, name, name, type)
   if (IsInterfaceRequestParameter(parameter)):
    type = JavaScriptType(parameter.kind.kind)
-   return "core.isHandle(%s) ? %s : connection.bindProxyClient" \
-       "(%s, %s.client, %s)" % (name, name, name, type, type)
+   return "core.isHandle(%s) ? %s : connection.bindProxy" \
+       "(%s, %s)" % (name, name, name, type)
   return name;
+
 
 def JavaScriptStubMethodParameterValue(parameter):
   name = parameter.name;
   if (IsInterfaceParameter(parameter)):
    type = JavaScriptType(parameter.kind)
-   return "connection.bindProxyHandle(%s, %s.client, %s)" % (name, type, type)
+   return "connection.bindHandleToProxy(%s, %s)" % (name, type)
   if (IsInterfaceRequestParameter(parameter)):
    type = JavaScriptType(parameter.kind.kind)
-   return "connection.bindProxyHandle(%s, %s, %s.client)" % (name, type, type)
+   return "connection.bindHandleToStub(%s, %s)" % (name, type)
   return name;
+
 
 def TranslateConstants(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):

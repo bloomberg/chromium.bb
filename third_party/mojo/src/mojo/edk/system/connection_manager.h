@@ -1,0 +1,105 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_EDK_SYSTEM_CONNECTION_MANAGER_H_
+#define MOJO_EDK_SYSTEM_CONNECTION_MANAGER_H_
+
+#include "base/macros.h"
+#include "mojo/edk/system/unique_identifier.h"
+
+namespace mojo {
+
+namespace embedder {
+class ScopedPlatformHandle;
+}  // namespace embedder
+
+namespace system {
+
+// (Temporary, unique) identifiers for connections, used as they are being
+// brought up:
+typedef UniqueIdentifier ConnectionIdentifier;
+
+// Identifiers for processes (note that these are not OS process IDs):
+typedef uint64_t ProcessIdentifier;
+const ProcessIdentifier kInvalidProcessIdentifier = 0;
+
+// |ConnectionManager| is an interface for the system that allows "connections"
+// (i.e., native "pipes") to be established between different processes.
+//
+// The starting point for establishing such a connection is that the two
+// processes (not necessarily distinct) are provided with a common
+// |ConnectionIdentifier|, and also some (probably indirect, temporary) way of
+// communicating.
+//
+// (The usual case for this are processes A, B, C, with connections A <-> B <->
+// C, with the goal being to establish a direct connection A <-> C. Process B
+// generates a |ConnectionIdentifier| that it transmits to A and C, and serves
+// as an intermediary until A and C are directly connected.)
+//
+// To establish such a connection, each process calls |AllowConnect()| with the
+// common |ConnectionIdentifier|. Each process then informs the other process
+// that it has done so. Once a process knows that both processes have called
+// |AllowConnect()|, it proceeds to call |Connect()|.
+//
+// On success, if the two processes are in fact distinct, |Connect()| provides a
+// native (platform) handle for a "pipe" that connects/will connect the two
+// processes. (If they are in fact the same process, success will simply yield
+// no valid handle, to indicate this case.)
+//
+// Additionally, on success |Connect()| also provides a unique identifier for
+// the peer process. In this way, processes may recognize when they already have
+// a direct connection and reuse that, disposing of the new one provided by
+// |Connect()|. (TODO(vtl): This is somewhat wasteful, but removes the need to
+// handle various race conditions, and for the "master" process -- see below --
+// to track connection teardowns.)
+//
+// Implementation notes: We implement this using a "star topology", with a
+// single trusted "master" (broker) process and an arbitrary number of untrusted
+// "slave" (client) processes. The former is implemented by
+// |MasterConnectionManager| (master_connection_manager.*) and the latter by
+// |SlaveConnectionManager| (slave_connection_manager.*). Each slave is
+// connected to the master by a special dedicated |RawChannel|, on which it does
+// synchronous IPC (note, however, that the master should never block on any
+// slave).
+class ConnectionManager {
+ public:
+  // All of these methods return true on success or false on failure. Failure is
+  // obviously fatal for the establishment of a particular connection, but
+  // should not be treated as fatal to the process. Failure may, e.g., be caused
+  // by a misbehaving (malicious) untrusted peer process.
+
+  // TODO(vtl): Add a "get my own process identifier" method?
+
+  // Allows a process who makes the identical call (with equal |connection_id|)
+  // to connect to the calling process. (On success, there will be a "pending
+  // connection" for the given |connection_id| for the calling process.)
+  virtual bool AllowConnect(const ConnectionIdentifier& connection_id) = 0;
+
+  // Cancels a pending connection for the calling process. (Note that this may
+  // fail even if |AllowConnect()| succeeded; regardless, |Connect()| should not
+  // be called.)
+  virtual bool CancelConnect(const ConnectionIdentifier& connection_id) = 0;
+
+  // Connects a pending connection; to be called only after both parties have
+  // called |AllowConnect()|. On success, |peer_process_identifier| is set to an
+  // unique identifier for the peer process, and if the peer process is not the
+  // same as the calling process then |*platform_handle| is set to a suitable
+  // native handle connecting the two parties (if the two parties are the same
+  // process, then |*platform_handle| is reset to be invalid).
+  virtual bool Connect(const ConnectionIdentifier& connection_id,
+                       ProcessIdentifier* peer_process_identifier,
+                       embedder::ScopedPlatformHandle* platform_handle) = 0;
+
+ protected:
+  ConnectionManager() {}
+  virtual ~ConnectionManager() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
+};
+
+}  // namespace system
+}  // namespace mojo
+
+#endif  // MOJO_EDK_SYSTEM_CONNECTION_MANAGER_H_

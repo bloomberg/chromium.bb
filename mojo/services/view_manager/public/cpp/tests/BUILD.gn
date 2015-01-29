@@ -7,23 +7,27 @@ import("//testing/test.gni")
 
 test("mojo_view_manager_lib_unittests") {
   sources = [
-    "view_unittest.cc",
+    "view_manager_test_suite.cc",
+    "view_manager_test_suite.h",
     "view_manager_unittest.cc",
+    "view_manager_unittests.cc",
+    "view_unittest.cc",
   ]
 
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/converters/geometry",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/application",
     "//mojo/services/geometry/public/cpp",
     "//mojo/services/geometry/public/interfaces",
     "//mojo/services/view_manager/public/cpp",
-    "//mojo/services/view_manager/public/cpp/lib:run_unittests",
     "//mojo/services/view_manager/public/interfaces",
     "//shell/application_manager",
     "//shell:test_support",
     "//testing/gtest",
   ]
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
 }

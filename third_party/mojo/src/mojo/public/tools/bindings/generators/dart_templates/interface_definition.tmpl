@@ -2,58 +2,61 @@
 const int k{{interface|name}}_{{method|name}}_name = {{method.ordinal}};
 {%- endfor %}
 
-abstract class {{interface|name}}Calls {
-  void sendMessage(bindings.Struct message, int name);
-  Future sendMessageWithRequestId(bindings.Struct message, int name, int id);
+abstract class {{interface|name}} implements core.Listener {
+  static const String name = '{{namespace|replace(".","::")}}::{{interface|name}}';
+  {{interface|name}}Stub stub;
+
+  {{interface|name}}(core.MojoMessagePipeEndpoint endpoint) :
+      stub = new {{interface|name}}Stub(endpoint);
+
+  {{interface|name}}.fromHandle(core.MojoHandle handle) :
+      stub = new {{interface|name}}Stub.fromHandle(handle);
+
+  {{interface|name}}.fromStub(this.stub);
+
+  {{interface|name}}.unbound() :
+      stub = new {{interface|name}}Stub.unbound();
+
+  void close() => stub.close();
+
+  StreamSubscription<int> listen() => stub.listen();
+
+  {{interface|name}} get delegate => stub.delegate;
+  set delegate({{interface|name}} d) {
+    stub.delegate = d;
+  }
 
 {%- for method in interface.methods %}
 {%- if method.response_parameters == None %}
-  void call{{method|name|upper_camel_case}}(
-{%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
-{%- endfor -%}
-{%- set request_struct = method|struct_from_method %}
-  ) {
-    var params = new {{request_struct|name}}();
-{%- for parameter in method.parameters %}
-    params.{{parameter|name}} = {{parameter|name}};
-{%- endfor %}
-    sendMessage(params, k{{interface|name}}_{{method|name}}_name);
-  }
-{% else %}
+  void {{method|name}}(
+    {%- for parameter in method.parameters -%}
+      {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
+    {%- endfor -%}
+    );
+{%- else %}
 {%- set response_struct = method|response_struct_from_method %}
-  Future<{{response_struct|name}}> call{{method|name|upper_camel_case}}(
-{%- for parameter in method.parameters -%}
+  Future<{{response_struct|name}}> {{method|name}}(
+  {%- for parameter in method.parameters -%}
     {{parameter.kind|dart_type}} {{parameter|name}},
-{%- endfor -%}
-{%- set request_struct = method|struct_from_method %}
-    [int requestId = -1]
-  ) {
-    var params = new {{request_struct|name}}();
-{%- for parameter in method.parameters %}
-    params.{{parameter|name}} = {{parameter|name}};
-{%- endfor %}
-    return sendMessageWithRequestId(
-        params,
-        k{{interface|name}}_{{method|name}}_name,
-        requestId,
-        bindings.MessageHeader.kMessageExpectsResponse);
-  }
+  {%- endfor -%}
+    [Function responseFactory = null]);
 {%- endif %}
 {%- endfor %}
 }
 
-class {{interface|name}}Client extends bindings.Client with {{interface|name}}Calls {
-  {{interface|name}}Client(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+class {{interface|name}}Proxy extends bindings.Proxy implements {{interface|name}} {
+  {{interface|name}}Proxy(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
 
-  {{interface|name}}Client.fromHandle(core.MojoHandle handle) :
+  {{interface|name}}Proxy.fromHandle(core.MojoHandle handle) :
       super.fromHandle(handle);
 
-  {{interface|name}}Client.unbound() : super.unbound();
+  {{interface|name}}Proxy.unbound() : super.unbound();
 
-  static {{interface|name}}Client newFromEndpoint(
+  String get name => {{interface|name}}.name;
+
+  static {{interface|name}}Proxy newFromEndpoint(
       core.MojoMessagePipeEndpoint endpoint) =>
-      new {{interface|name}}Client(endpoint);
+      new {{interface|name}}Proxy(endpoint);
 
   void handleResponse(bindings.ServiceMessage message) {
     switch (message.header.type) {
@@ -77,45 +80,61 @@ class {{interface|name}}Client extends bindings.Client with {{interface|name}}Ca
         break;
     }
   }
-}
 
-{#--- TODO(zra): Remove Interface suffix from the name of this class.
-      This is tricky because some mojom files have interfaces named both
-      X and XClient. This leads to an XClient for the Client of X, and an
-      XClient for the Interface of XClient, which conflict with eachother. #}
-class {{interface|name}}Interface extends bindings.Interface
-{% if interface.client != None -%}
-with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Calls
-{% endif -%} {
-  {{interface|name}}Interface _delegate = null;
-
-  {{interface|name}}Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
-
-  {{interface|name}}Interface.fromHandle(core.MojoHandle handle) :
-      super.fromHandle(handle);
-
-  {{interface|name}}Interface.unbound() : super.unbound();
-
-  static {{interface|name}}Interface newFromEndpoint(
-      core.MojoMessagePipeEndpoint endpoint) =>
-      new {{interface|name}}Interface(endpoint);
-
-  static const String name = '{{namespace|replace(".","::")}}::{{interface|name}}';
-
-{% for method in interface.methods %}
+{%- for method in interface.methods %}
 {%- if method.response_parameters == None %}
   void {{method|name}}(
-  {%- for parameter in method.parameters -%}
+{%- for parameter in method.parameters -%}
     {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
-  {%- endfor -%}
+{%- endfor -%}
+{%- set request_struct = method|struct_from_method -%}
   ) {
-    assert(_delegate != null);
-    _delegate.{{method|name}}(
-      {%- for parameter in method.parameters -%}
-        {{parameter|name}}{% if not loop.last %}, {% endif %}
-      {%- endfor %});
+    var params = new {{request_struct|name}}();
+{%- for parameter in method.parameters %}
+    params.{{parameter|name}} = {{parameter|name}};
+{%- endfor %}
+    sendMessage(params, k{{interface|name}}_{{method|name}}_name);
   }
-{%- else %}
+{% else %}
+{%- set response_struct = method|response_struct_from_method %}
+{%- set request_struct = method|struct_from_method %}
+  Future<{{response_struct|name}}> {{method|name}}(
+{%- for parameter in method.parameters -%}
+    {{parameter.kind|dart_type}} {{parameter|name}},
+{%- endfor -%}
+    [Function responseFactory = null]) {
+    var params = new {{request_struct|name}}();
+{%- for parameter in method.parameters %}
+    params.{{parameter|name}} = {{parameter|name}};
+{%- endfor %}
+    return sendMessageWithRequestId(
+        params,
+        k{{interface|name}}_{{method|name}}_name,
+        -1,
+        bindings.MessageHeader.kMessageExpectsResponse);
+  }
+{%- endif %}
+{%- endfor %}
+}
+
+class {{interface|name}}Stub extends bindings.Stub {
+  {{interface|name}} _delegate = null;
+
+  {{interface|name}}Stub(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+
+  {{interface|name}}Stub.fromHandle(core.MojoHandle handle) :
+      super.fromHandle(handle);
+
+  {{interface|name}}Stub.unbound() : super.unbound();
+
+  static {{interface|name}}Stub newFromEndpoint(
+      core.MojoMessagePipeEndpoint endpoint) =>
+      new {{interface|name}}Stub(endpoint);
+
+  static const String name = {{interface|name}}.name;
+
+{% for method in interface.methods %}
+{%- if method.response_parameters != None %}
 {%- set response_struct = method|response_struct_from_method %}
   {{response_struct|name}} _{{response_struct|name}}Factory(
     {%- for param in method.response_parameters -%}
@@ -128,23 +147,11 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
     {%- endfor %}
     return result;
   }
-
-  Future<{{response_struct|name}}> {{method|name}}(
-  {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_type}} {{parameter|name}},
-  {%- endfor -%}
-    Function responseFactory) {
-    assert(_delegate != null);
-    return _delegate.{{method|name}}(
-      {%- for parameter in method.parameters -%}
-        {{parameter|name}},
-      {%- endfor %}
-      responseFactory);
-  }
 {%- endif %}
 {%- endfor %}
 
   Future<bindings.Message> handleMessage(bindings.ServiceMessage message) {
+    assert(_delegate != null);
     switch (message.header.type) {
 {%- for method in interface.methods %}
 {%- set request_struct = method|struct_from_method %}
@@ -152,14 +159,14 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
         var params = {{request_struct|name}}.deserialize(
             message.payload);
 {%- if method.response_parameters == None %}
-        {{method|name}}(
+        _delegate.{{method|name}}(
           {%- for parameter in method.parameters -%}
               params.{{parameter|name}}{% if not loop.last %}, {% endif %}
           {%- endfor -%}
         );
 {%- else %}
 {%- set response_struct = method|response_struct_from_method %}
-        return {{method|name}}(
+        return _delegate.{{method|name}}(
           {%- for parameter in method.parameters -%}
               params.{{parameter|name}},
           {%- endfor -%}
@@ -182,8 +189,8 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
     return null;
   }
 
-  {{interface|name}}Interface get delegate => _delegate;
-      set delegate({{interface|name}}Interface d) {
+  {{interface|name}} get delegate => _delegate;
+      set delegate({{interface|name}} d) {
     assert(_delegate == null);
     _delegate = d;
   }

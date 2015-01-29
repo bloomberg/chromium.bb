@@ -4,7 +4,8 @@
 
 define("mojo/public/js/bindings", [
   "mojo/public/js/router",
-], function(router) {
+  "mojo/public/js/core",
+], function(router, core) {
 
   var Router = router.Router;
 
@@ -17,10 +18,12 @@ define("mojo/public/js/bindings", [
     this.receiver = receiver;
   }
 
+  // TODO(hansmuller): remove then after 'Client=' has been removed from Mojom.
   ProxyProperties.prototype.getLocalDelegate = function() {
     return this.local && StubBindings(this.local).delegate;
   }
 
+  // TODO(hansmuller): remove then after 'Client=' has been removed from Mojom.
   ProxyProperties.prototype.setLocalDelegate = function(impl) {
     if (this.local)
       StubBindings(this.local).delegate = impl;
@@ -28,10 +31,29 @@ define("mojo/public/js/bindings", [
       throw new Error("no stub object");
   }
 
+  function connectionHandle(connection) {
+    return connection &&
+        connection.router &&
+        connection.router.connector_ &&
+        connection.router.connector_.handle_;
+  }
+
+  ProxyProperties.prototype.close = function() {
+    var handle = connectionHandle(this.connection);
+    if (handle)
+      core.close(handle);
+  }
+
   // Public stub class properties that are managed at runtime by the JS
   // bindings. See StubBindings below.
   function StubProperties(delegate) {
     this.delegate = delegate;
+  }
+
+  StubProperties.prototype.close = function() {
+    var handle = connectionHandle(this.connection);
+    if (handle)
+      core.close(handle);
   }
 
   // The base class for generated proxy classes.
@@ -47,6 +69,9 @@ define("mojo/public/js/bindings", [
   function StubBase(delegate) {
     this[kStubProperties] = new StubProperties(delegate);
   }
+
+  // TODO(hansmuller): remove everything except the connection property doc
+  // after 'Client=' has been removed from Mojom.
 
   // Provides access to properties added to a proxy object without risking
   // Mojo interface name collisions. Unless otherwise specified, the initial
@@ -70,6 +95,9 @@ define("mojo/public/js/bindings", [
   function ProxyBindings(proxy) {
     return (proxy instanceof ProxyBase) ? proxy[kProxyProperties] : proxy;
   }
+
+  // TODO(hansmuller): remove the remote doc after 'Client=' has been
+  // removed from Mojom.
 
   // Provides access to properties added to a stub object without risking
   // Mojo interface name collisions. Unless otherwise specified, the initial

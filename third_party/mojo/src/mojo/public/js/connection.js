@@ -73,6 +73,7 @@ define("mojo/public/js/connection", [
 
   TestConnection.prototype = Object.create(Connection.prototype);
 
+  // TODO(hansmuller): remove when Shell.mojom loses its client.
   function createOpenConnection(
       messagePipeHandle, client, localInterface, remoteInterface) {
     var stubClass = (localInterface && localInterface.stubClass) || EmptyStub;
@@ -95,6 +96,7 @@ define("mojo/public/js/connection", [
     return connection;
   }
 
+  // TODO(hansmuller): remove when Shell.mojom loses its client.
   // Return a message pipe handle.
   function bindProxyClient(clientImpl, localInterface, remoteInterface) {
     var messagePipe = core.createMessagePipe();
@@ -106,6 +108,7 @@ define("mojo/public/js/connection", [
     return messagePipe.handle1;
   }
 
+  // TODO(hansmuller): remove when Shell.mojom loses its client.
   // Return a proxy.
   function bindProxyHandle(proxyHandle, localInterface, remoteInterface) {
     if (!core.isHandle(proxyHandle))
@@ -116,10 +119,84 @@ define("mojo/public/js/connection", [
     return connection.remote;
   }
 
+  // Return a handle for a message pipe that's connected to a proxy
+  // for remoteInterface. Used by generated code for outgoing interface&
+  // (request) parameters: the caller is given the generated proxy via
+  // |proxyCallback(proxy)| and the generated code sends the handle
+  // returned by this function.
+  function bindProxy(proxyCallback, remoteInterface) {
+    var messagePipe = core.createMessagePipe();
+    if (messagePipe.result != core.RESULT_OK)
+      throw new Error("createMessagePipe failed " + messagePipe.result);
+
+    var proxy = new remoteInterface.proxyClass;
+    var router = new Router(messagePipe.handle0);
+    var connection = new BaseConnection(undefined, proxy, router);
+    ProxyBindings(proxy).connection = connection;
+    if (proxyCallback)
+      proxyCallback(proxy);
+
+    return messagePipe.handle1;
+  }
+
+  // Return a handle for a message pipe that's connected to a stub for
+  // localInterface. The stub delegates to impl. Used by generated code for
+  // outgoing interface parameters: the caller specifies impl, and the generated
+  // code sends the handle returned by this function.
+  function bindImpl(impl, localInterface) {
+    var messagePipe = core.createMessagePipe();
+    if (messagePipe.result != core.RESULT_OK)
+      throw new Error("createMessagePipe failed " + messagePipe.result);
+
+    var stub = new localInterface.stubClass;
+    var router = new Router(messagePipe.handle0);
+    var connection = new BaseConnection(stub, undefined, router);
+    StubBindings(stub).connection = connection;
+    if (impl)
+      StubBindings(stub).delegate = impl;
+
+    return messagePipe.handle1;
+  }
+
+  // Return a remoteInterface proxy for handle. Used by generated code
+  // for converting incoming interface parameters to proxies.
+  function bindHandleToProxy(handle, remoteInterface) {
+    if (!core.isHandle(handle))
+      throw new Error("Not a handle " + handle);
+
+    var proxy = new remoteInterface.proxyClass;
+    var router = new Router(handle);
+    var connection = new BaseConnection(undefined, proxy, router);
+    ProxyBindings(proxy).connection = connection;
+    return proxy;
+  }
+
+  // Return a localInterface stub for handle. Used by generated code
+  // for converting incoming interface& request parameters to localInterface
+  // stubs. The caller can specify the stub's implementation of localInterface
+  // like this: StubBindings(stub).delegate = myStubImpl.
+  function bindHandleToStub(handle, localInterface) {
+    if (!core.isHandle(handle))
+      throw new Error("Not a handle " + handle);
+
+    var stub = new localInterface.stubClass;
+    var router = new Router(handle);
+    var connection = new BaseConnection(stub, undefined, router);
+    StubBindings(stub).connection = connection;
+    return stub;
+  }
+
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
+
+  // TODO(hansmuller): remove these when Shell.mojom loses its client.
   exports.bindProxyHandle = bindProxyHandle;
   exports.bindProxyClient = bindProxyClient;
+
+  exports.bindProxy = bindProxy;
+  exports.bindImpl = bindImpl;
+  exports.bindHandleToProxy = bindHandleToProxy;
+  exports.bindHandleToStub = bindHandleToStub;
   return exports;
 });

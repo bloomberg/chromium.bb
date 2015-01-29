@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/interfaces/application/application.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -22,7 +23,7 @@ const Array<String>& Args();
 
 // Run all application tests. This must be called after the environment is
 // initialized, to support construction of a default run loop.
-MojoResult RunAllTests(MojoHandle shell_handle);
+MojoResult RunAllTests(MojoHandle application_request_handle);
 
 // A GTEST base class for application testing executed in mojo_shell.
 class ApplicationTestBase : public testing::Test {
@@ -35,10 +36,6 @@ class ApplicationTestBase : public testing::Test {
 
   // Get the ApplicationDelegate for the application to be tested.
   virtual ApplicationDelegate* GetApplicationDelegate();
-
-  // A testing::Test::SetUp helper to override the application command
-  // line arguments.
-  void SetUpWithArgs(const Array<String>& args);
 
   // testing::Test:
   void SetUp() override;

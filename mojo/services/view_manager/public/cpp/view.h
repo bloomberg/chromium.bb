@@ -153,6 +153,8 @@ class View {
   // Returns true if the order actually changed.
   bool LocalReorder(View* relative, OrderDirection direction);
   void LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds);
+  void LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                               const ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
 
   // Methods implementing visibility change notifications. See ViewObserver

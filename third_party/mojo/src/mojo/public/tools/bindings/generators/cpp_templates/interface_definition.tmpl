@@ -104,12 +104,12 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
     : public mojo::MessageReceiver {
  public:
   {{class_name}}_{{method.name}}_ForwardToCallback(
-      const {{interface_macros.declare_callback(method)}}& callback)
+      const {{class_name}}::{{method.name}}Callback& callback)
       : callback_(callback) {
   }
   virtual bool Accept(mojo::Message* message) override;
  private:
-  {{interface_macros.declare_callback(method)}} callback_;
+  {{class_name}}::{{method.name}}Callback callback_;
   MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
 };
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
@@ -175,7 +175,7 @@ void {{proxy_name}}::{{method.name}}(
 {%-     set params_description =
             "%s.%s response"|format(interface.name, method.name) %}
 class {{class_name}}_{{method.name}}_ProxyToResponder
-    : public {{interface_macros.declare_callback(method)}}::Runnable {
+    : public {{class_name}}::{{method.name}}Callback::Runnable {
  public:
   virtual ~{{class_name}}_{{method.name}}_ProxyToResponder() {
     delete responder_;
@@ -257,10 +257,10 @@ bool {{class_name}}Stub::AcceptWithResponder(
               message->mutable_payload());
 
       params->DecodePointersAndHandles(message->mutable_handles());
-      {{interface_macros.declare_callback(method)}}::Runnable* runnable =
+      {{class_name}}::{{method.name}}Callback::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
-      {{interface_macros.declare_callback(method)}} callback(runnable);
+      {{class_name}}::{{method.name}}Callback callback(runnable);
       {{alloc_params(method.parameters)|indent(6)}}
       // A null |sink_| typically means there is a missing call to
       // InterfacePtr::set_client().

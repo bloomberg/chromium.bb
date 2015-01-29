@@ -8,6 +8,7 @@ namespace mojo {
 
 ViewPrivate::ViewPrivate(View* view)
     : view_(view) {
+  CHECK(view);
 }
 
 ViewPrivate::~ViewPrivate() {

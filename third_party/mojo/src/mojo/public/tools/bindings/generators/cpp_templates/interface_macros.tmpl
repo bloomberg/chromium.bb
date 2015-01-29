@@ -17,7 +17,7 @@ mojo::Callback<void(
 {%- macro declare_request_params(prefix, method) -%}
 {{declare_params(prefix, method.parameters)}}
 {%-   if method.response_parameters != None -%}
-{%- if method.parameters %}, {% endif %}
-const {{declare_callback(method)}}& callback
+{%- if method.parameters %}, {% endif -%}
+const {{method.name}}Callback& callback
 {%-   endif -%}
 {%- endmacro -%}

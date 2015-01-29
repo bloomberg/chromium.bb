@@ -10,6 +10,6 @@ import org.chromium.mojo.system.MojoException;
  * A {@link ConnectionErrorHandler} is notified of an error happening while using the bindings over
  * message pipes.
  */
-interface ConnectionErrorHandler {
+public interface ConnectionErrorHandler {
     public void onConnectionError(MojoException e);
 }

@@ -7,7 +7,7 @@ import argparse
 import sys
 import re
 
-IMPORT_TEMPLATE = '<import src="/%s.sky" as="%s" />'
+IMPORT_TEMPLATE = '<import src="/gen/%s.sky" as="%s" />'
 PREAMBLE_TEMPLATE = '<script>'
 POSTAMBLE_TEMPLATE = '  module.exports = exports;\n</script>'
 

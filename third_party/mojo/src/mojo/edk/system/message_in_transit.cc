@@ -20,6 +20,11 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeChannel;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeRawChannel;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeConnectionManager;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeConnectionManagerAck;
+
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
@@ -30,6 +35,17 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelRemoveEndpointAck;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeConnectionManagerAllowConnect;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeConnectionManagerCancelConnect;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeConnectionManagerConnect;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeConnectionManagerAckFailure;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeConnectionManagerAckSuccess;
+
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 struct MessageInTransit::PrivateStructForCompileAsserts {

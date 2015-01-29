@@ -23,6 +23,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 #if !defined(COMPONENT_BUILD)
 #include "base/i18n/icu_util.h"
@@ -59,23 +60,23 @@ class HTMLViewer;
 
 class HTMLViewerApplication : public mojo::Application {
  public:
-  HTMLViewerApplication(ShellPtr shell,
+  HTMLViewerApplication(InterfaceRequest<Application> request,
                         URLResponsePtr response,
                         scoped_refptr<base::MessageLoopProxy> compositor_thread,
                         WebMediaPlayerFactory* web_media_player_factory)
       : url_(response->url),
-        shell_(shell.Pass()),
+        binding_(this, request.Pass()),
         initial_response_(response.Pass()),
         compositor_thread_(compositor_thread),
-        web_media_player_factory_(web_media_player_factory) {
-    shell_.set_client(this);
+        web_media_player_factory_(web_media_player_factory) {}
+
+  void Initialize(ShellPtr shell, Array<String> args) override {
     ServiceProviderPtr service_provider;
+    shell_ = shell.Pass();
     shell_->ConnectToApplication("mojo:network_service",
                                  GetProxy(&service_provider), nullptr);
     ConnectToService(service_provider.get(), &network_service_);
   }
-
-  void Initialize(Array<String> args) override {}
 
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
@@ -113,6 +114,7 @@ class HTMLViewerApplication : public mojo::Application {
   }
 
   String url_;
+  mojo::StrongBinding<mojo::Application> binding_;
   ShellPtr shell_;
   mojo::NetworkServicePtr network_service_;
   URLResponsePtr initial_response_;
@@ -130,8 +132,11 @@ class ContentHandlerImpl : public mojo::InterfaceImpl<ContentHandler> {
 
  private:
   // Overridden from ContentHandler:
-  void StartApplication(ShellPtr shell, URLResponsePtr response) override {
-    new HTMLViewerApplication(shell.Pass(), response.Pass(), compositor_thread_,
+  void StartApplication(InterfaceRequest<mojo::Application> request,
+                        URLResponsePtr response) override {
+    new HTMLViewerApplication(request.Pass(),
+                              response.Pass(),
+                              compositor_thread_,
                               web_media_player_factory_);
   }
 

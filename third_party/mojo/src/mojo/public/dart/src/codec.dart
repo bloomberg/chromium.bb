@@ -56,7 +56,7 @@ class Encoder {
 
   Encoder._fromBuffer(_EncoderBuffer buffer) :
       _buffer = buffer,
-      _base = buffer.extent; 
+      _base = buffer.extent;
 
   Encoder getEncoderAtOffset(DataHeader dataHeader) {
     var result = new Encoder._fromBuffer(_buffer);
@@ -154,7 +154,7 @@ class Encoder {
       core.MojoSharedBuffer value, int offset, bool nullable) =>
       encodeHandle(value != null ? value.handle : null, offset, nullable);
 
-  void encodeInterface(Interface interface, int offset, bool nullable) {
+  void encodeInterface(Stub interface, int offset, bool nullable) {
     if (interface == null) {
       encodeInvalideHandle(offset, nullable);
       return;
@@ -164,7 +164,7 @@ class Encoder {
     encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
   }
 
-  void encodeInterfaceRequest(Client client, int offset, bool nullable) {
+  void encodeInterfaceRequest(Proxy client, int offset, bool nullable) {
     if (client == null) {
       encodeInvalideHandle(offset, nullable);
       return;
@@ -371,7 +371,7 @@ class Encoder {
           value, offset, nullability, expectedLength);
 
   void encodeInterfaceRequestArray(
-      List<Client> value,
+      List<Proxy> value,
       int offset,
       int nullability,
       int expectedLength) =>
@@ -380,7 +380,7 @@ class Encoder {
           value, offset, nullability, expectedLength);
 
   void encodeInterfaceArray(
-      List<Interface> value,
+      List<Stub> value,
       int offset,
       int nullability,
       int expectedLength) =>
@@ -507,13 +507,13 @@ class Decoder {
   core.MojoSharedBuffer decodeSharedBufferHandle(int offset, bool nullable) =>
       new core.MojoSharedBuffer(decodeHandle(offset, nullable));
 
-  Client decodeServiceInterface(
+  Proxy decodeServiceInterface(
       int offset, bool nullable, Function clientFactory) {
     var endpoint = decodeMessagePipeHandle(offset, nullable);
     return endpoint.handle.isValid ? clientFactory(endpoint) : null;
   }
 
-  Interface decodeInterfaceRequest(
+  Stub decodeInterfaceRequest(
       int offset, bool nullable, Function interfaceFactory) {
     var endpoint = decodeMessagePipeHandle(offset, nullable);
     return endpoint.handle.isValid ? interfaceFactory(endpoint) : null;
@@ -699,7 +699,7 @@ class Decoder {
       _handleArrayDecodeHelper((d, o, n) => d.decodeSharedBufferHandle(o, n),
                                offset, nullability, expectedLength);
 
-  List<Interface> decodeInterfaceRequestArray(
+  List<Stub> decodeInterfaceRequestArray(
       int offset,
       int nullability,
       int expectedLength,
@@ -708,7 +708,7 @@ class Decoder {
           (d, o, n) => d.decodeInterfaceRequest(o, n, interfaceFactory),
           offset, nullability, expectedLength);
 
-  List<Client> decodeServiceInterfaceArray(
+  List<Proxy> decodeServiceInterfaceArray(
       int offset,
       int nullability,
       int expectedLength,

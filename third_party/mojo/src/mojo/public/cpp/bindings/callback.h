@@ -14,27 +14,35 @@ namespace mojo {
 template <typename Sig>
 class Callback;
 
+// Represents a callback with any number of parameters and no return value. The
+// callback is executed by calling its Run() method. The callback may be "null",
+// meaning it does nothing.
 template <typename... Args>
 class Callback<void(Args...)> {
  public:
+  // An interface that may be implemented to define the Run() method.
   struct Runnable {
     virtual ~Runnable() {}
     virtual void Run(
+        // ForwardType ensures String is passed as a const reference.
         typename internal::Callback_ParamTraits<Args>::ForwardType...)
         const = 0;
   };
 
+  // Constructs a "null" callback that does nothing.
   Callback() {}
 
-  // The Callback assumes ownership of |runnable|.
+  // Constructs a callback that will run |runnable|. The callback takes
+  // ownership of |runnable|.
   explicit Callback(Runnable* runnable) : sink_(runnable) {}
 
-  // Any class that is copy-constructable and has a compatible Run method may
-  // be adapted to a Callback using this constructor.
+  // As above, but can take an object that isn't derived from Runnable, so long
+  // as it has a Run() method.
   template <typename Sink>
   Callback(const Sink& sink)
       : sink_(new Adapter<Sink>(sink)) {}
 
+  // Executes the callback function, invoking Pass() on move-only types.
   void Run(typename internal::Callback_ParamTraits<Args>::ForwardType... args)
       const {
     if (sink_.get())
@@ -43,9 +51,12 @@ class Callback<void(Args...)> {
 
   bool is_null() const { return !sink_.get(); }
 
+  // Resets the callback to the "null" state.
   void reset() { sink_.reset(); }
 
  private:
+  // Adapts a class that has a Run() method but is not derived from Runnable to
+  // be callable by Callback.
   template <typename Sink>
   struct Adapter : public Runnable {
     explicit Adapter(const Sink& sink) : sink(sink) {}
@@ -60,6 +71,7 @@ class Callback<void(Args...)> {
   internal::SharedPtr<Runnable> sink_;
 };
 
+// A specialization of Callback which takes no parameters.
 typedef Callback<void()> Closure;
 
 }  // namespace mojo
