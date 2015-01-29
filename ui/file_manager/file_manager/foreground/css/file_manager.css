@@ -644,7 +644,8 @@ html[dir='rtl'] .breadcrumbs .separator {
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
   overflow-y: auto;
-  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
+  /* padding-bottom will be overridden by JS for preview panel. */
+  padding: 7px 7px 0 7px;
   width: 100%;
 }
 
@@ -686,23 +687,42 @@ body[type='full-page'] .detail-name .detail-icon {
 /* Styles specific for the grid view. */
 
 .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 21px;
-  border: 3px solid transparent;  /* Selection will make the border visible. */
-  margin-top: 20px;
+  -webkit-margin-start: 12px;
+  background-color: rgb(245, 245, 245);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+  height: 180px;
+  margin-top: 8px;
+  overflow: hidden;
   position: relative;
+  width: 180px;
 }
 
 .thumbnail-grid .thumbnail-frame {
-  background-color: rgb(245, 245, 245);
-  height: 120px;
-  overflow: hidden;
-  position: relative;
-  width: 160px;
+  height: 100%;
+  width: 100%;
 }
 
-.thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
-.thumbnail-grid .thumbnail-item.accepts .thumbnail-frame {
-  border-color: white;
+.thumbnail-grid .thumbnail-item[selected],
+.thumbnail-grid .thumbnail-item.accepts {
+  background-color: rgb(221, 242, 253);
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.3);
+}
+
+.thumbnail-grid .thumbnail-frame .checkmark {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/thumbnail_checked.png) 1x,
+      url(../images/files/ui/2x/thumbnail_checked.png) 2x);
+  height: 34px;
+  left: 9px;
+  opacity: 0;
+  position: absolute;
+  top: 9px;
+  transition: opacity 220ms ease;
+  width: 34px;
+}
+
+.thumbnail-grid .thumbnail-item[selected] .thumbnail-frame .checkmark {
+  opacity: 1;
 }
 
 .thumbnail-grid .img-container {
@@ -763,31 +783,25 @@ body[type='full-page'] .detail-name .detail-icon {
 
 #list-container list > li[selected],
 #list-container list > li:active,
-#list-container grid > li[selected],
-#list-container grid > li:active,
 #default-actions-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
 
 #list-container list:focus > li[selected],
-#list-container grid:focus > li[selected],
 #default-actions-list:focus > li[selected] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-#list-container list > li.accepts[selected],
-#list-container grid > li.accepts[selected] {
+#list-container list > li.accepts[selected] {
   background-color: rgb(215, 215, 215);
 }
 
-#list-container list:focus > li.accepts[selected],
-#list-container grid:focus > li.accepts[selected] {
+#list-container list:focus > li.accepts[selected] {
   background-color: rgb(48, 125, 254);
 }
 
-#list-container list > li.accepts,
-#list-container grid > li.accepts {
+#list-container list > li.accepts {
   background-color: #f1f1f1;
 }
 

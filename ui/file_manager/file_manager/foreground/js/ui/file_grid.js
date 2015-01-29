@@ -105,7 +105,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
                                   this.metadataCache_,
                                   this.volumeManager_,
                                   this.historyLoader_,
-                                  ThumbnailLoader.FillMode.AUTO,
+                                  ThumbnailLoader.FillMode.FILL,
                                   FileGrid.ThumbnailQuality.LOW,
                                   /* animation */ false);
   }
@@ -181,11 +181,15 @@ FileGrid.decorateThumbnail = function(
         metadataCache,
         volumeManager,
         historyLoader,
-        ThumbnailLoader.FillMode.AUTO,
+        ThumbnailLoader.FillMode.FILL,
         FileGrid.ThumbnailQuality.LOW,
         /* animation */ !previousBox);
   }
   frame.appendChild(box);
+
+  var checkmark = li.ownerDocument.createElement('div');
+  checkmark.className = 'checkmark';
+  frame.appendChild(checkmark);
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
