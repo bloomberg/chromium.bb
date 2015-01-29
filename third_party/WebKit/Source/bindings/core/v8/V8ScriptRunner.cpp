@@ -37,6 +37,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/Platform.h"
 #include "third_party/snappy/src/snappy.h"
 #include "wtf/CurrentTime.h"
 
@@ -51,6 +52,30 @@ namespace blink {
 namespace {
 
 const int kMaxRecursionDepth = 22;
+
+class V8CompileHistogram {
+public:
+    enum Cacheability { Cacheable, Noncacheable };
+    explicit V8CompileHistogram(Cacheability);
+    ~V8CompileHistogram();
+
+private:
+    Cacheability m_cacheability;
+    double m_timeStamp;
+};
+
+V8CompileHistogram::V8CompileHistogram(V8CompileHistogram::Cacheability cacheability)
+    : m_cacheability(cacheability)
+    , m_timeStamp(WTF::currentTime())
+{
+}
+
+V8CompileHistogram::~V8CompileHistogram()
+{
+    int64_t elapsedMicroSeconds = static_cast<int64_t>((WTF::currentTime() - m_timeStamp) * 1000000);
+    const char* name = (m_cacheability == Cacheable) ? "V8.CompileCacheableMicroSeconds" : "V8.CompileNoncacheableMicroSeconds";
+    blink::Platform::current()->histogramCustomCounts(name, elapsedMicroSeconds, 0, 1000000, 50);
+}
 
 // In order to make sure all pending messages to be processed in
 // v8::Function::Call, we don't call handleMaxRecursionDepthExceeded
@@ -75,8 +100,9 @@ v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
 }
 
 // Compile a script without any caching or compile options.
-v8::Local<v8::Script> compileWithoutOptions(v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::Local<v8::Script> compileWithoutOptions(V8CompileHistogram::Cacheability cacheability, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
+    V8CompileHistogram histogramScope(cacheability);
     v8::ScriptCompiler::Source source(code, origin);
     return v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
 }
@@ -84,6 +110,7 @@ v8::Local<v8::Script> compileWithoutOptions(v8::Isolate* isolate, v8::Handle<v8:
 // Compile a script, and consume a V8 cache that was generated previously.
 v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
+    V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
     CachedMetadata* cachedMetadata = resource->cachedMetadata(tag);
     const char* data = cachedMetadata->data();
     int length = cachedMetadata->size();
@@ -99,7 +126,8 @@ v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned 
     }
     v8::Local<v8::Script> script;
     if (invalidCache) {
-        script = compileWithoutOptions(isolate, code, origin);
+        v8::ScriptCompiler::Source source(code, origin);
+        script = v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
     } else {
         v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
             reinterpret_cast<const uint8_t*>(data), length, v8::ScriptCompiler::CachedData::BufferNotOwned);
@@ -115,6 +143,7 @@ v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned 
 // Compile a script, and produce a V8 cache for future use.
 v8::Local<v8::Script> compileAndProduceCache(ScriptResource* resource, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, Resource::MetadataCacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
+    V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
     v8::ScriptCompiler::Source source(code, origin);
     v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
     const v8::ScriptCompiler::CachedData* cachedData = source.GetCachedData();
@@ -169,7 +198,7 @@ unsigned cacheTag(CacheTagKind kind, Resource* resource)
 // Store a timestamp to the cache as hint.
 void setCacheTimeStamp(ScriptResource* resource)
 {
-    double now = currentTime();
+    double now = WTF::currentTime();
     unsigned tag = cacheTag(CacheTagTimeStamp, resource);
     resource->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), Resource::SendToPlatform);
 }
@@ -186,13 +215,14 @@ bool isResourceHotForCaching(ScriptResource* resource)
     const int size = sizeof(timeStamp);
     ASSERT(cachedMetadata->size() == size);
     memcpy(&timeStamp, cachedMetadata->data(), size);
-    return (currentTime() - timeStamp) < kCacheWithinSeconds;
+    return (WTF::currentTime() - timeStamp) < kCacheWithinSeconds;
 }
 
 // Final compile call for a streamed compilation. Most decisions have already
 // been made, but we need to write back data into the cache.
 v8::Local<v8::Script> postStreamCompile(ScriptResource* resource, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
+    V8CompileHistogram histogramScope(V8CompileHistogram::Noncacheable);
     v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
 
     // Whether to produce the cached data or not is decided when the
@@ -239,10 +269,14 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
 
     if (cacheOptions == V8CacheOptionsNone
         || !resource
-        || !resource->url().protocolIsInHTTPFamily()
-        || code->Length() < minimalCodeLength) {
-        // Never generate or use the cache in these circumstances.
-        return bind(compileWithoutOptions);
+        || !resource->url().protocolIsInHTTPFamily()) {
+        // Caching is not available in this case.
+        return bind(compileWithoutOptions, V8CompileHistogram::Noncacheable);
+    }
+
+    if (code->Length() < minimalCodeLength) {
+        // Do not cache for small scripts, though caching is available.
+        return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
     }
 
     // The cacheOptions will guide our strategy:
@@ -301,7 +335,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
             return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, false);
         if (!isResourceHotForCaching(resource)) {
             setCacheTimeStamp(resource);
-            return bind(compileWithoutOptions);
+            return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
         return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, false, Resource::SendToPlatform);
         break;
@@ -311,14 +345,14 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
         // Shouldn't happen, as this is handled above.
         // Case is here so that compiler can check all cases are handles.
         ASSERT_NOT_REACHED();
-        return bind(compileWithoutOptions);
+        return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         break;
     }
 
     // All switch branches should return and we should never get here.
     // But some compilers aren't sure, hence this default.
     ASSERT_NOT_REACHED();
-    return bind(compileWithoutOptions);
+    return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
 }
 
 // Select a compile function for a streaming compile.
