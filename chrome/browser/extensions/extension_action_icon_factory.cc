@@ -41,16 +41,12 @@ void ExtensionActionIconFactory::OnExtensionIconImageDestroyed(
 }
 
 gfx::Image ExtensionActionIconFactory::GetIcon(int tab_id) {
-  return gfx::Image(GetBaseIconFromAction(tab_id));
-}
-
-gfx::ImageSkia ExtensionActionIconFactory::GetBaseIconFromAction(int tab_id) {
-  gfx::ImageSkia icon = action_->GetExplicitlySetIcon(tab_id);
-  if (!icon.isNull())
+  gfx::Image icon = action_->GetExplicitlySetIcon(tab_id);
+  if (!icon.IsEmpty())
     return icon;
 
   icon = action_->GetDeclarativeIcon(tab_id);
-  if (!icon.isNull())
+  if (!icon.IsEmpty())
     return icon;
 
   return action_->GetDefaultIconImage();

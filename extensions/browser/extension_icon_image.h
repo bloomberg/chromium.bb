@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_icon_set.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace content {
@@ -75,6 +76,7 @@ class IconImage : public content::NotificationObserver {
             Observer* observer);
   ~IconImage() override;
 
+  gfx::Image image() const { return image_; }
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
 
   void AddObserver(Observer* observer);
@@ -110,6 +112,10 @@ class IconImage : public content::NotificationObserver {
   // The icon with whose representation |image_skia_| should be updated if
   // its own representation load fails.
   gfx::ImageSkia default_icon_;
+
+  // The image wrapper around |image_skia_|.
+  // Note: this is reset each time a new representation is loaded.
+  gfx::Image image_;
 
   content::NotificationRegistrar registrar_;
 

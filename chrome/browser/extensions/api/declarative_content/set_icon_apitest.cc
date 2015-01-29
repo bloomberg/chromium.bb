@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 
 namespace extensions {
 namespace {
@@ -84,13 +84,13 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
   const int tab_id = ExtensionTabUtil::GetTabId(tab);
 
   // There should be no declarative icon until we navigate to a matched page.
-  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
   NavigateInRenderer(tab, GURL("http://test1/"));
-  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 
   // Navigating to an unmatched page should reset the icon.
   NavigateInRenderer(tab, GURL("http://test2/"));
-  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 }
 }  // namespace
 }  // namespace extensions

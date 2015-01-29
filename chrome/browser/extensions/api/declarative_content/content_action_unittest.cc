@@ -23,7 +23,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
 namespace extensions {
@@ -206,11 +207,11 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   };
 
   // The declarative icon shouldn't exist unless the content action is applied.
-  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
   result->Apply(extension->id(), base::Time(), &apply_info);
-  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
   result->Revert(extension->id(), base::Time(), &apply_info);
-  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 }
 
 TEST_F(RequestContentScriptTest, MissingScripts) {

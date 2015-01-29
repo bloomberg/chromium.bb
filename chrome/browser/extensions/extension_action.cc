@@ -132,7 +132,7 @@ GURL ExtensionAction::GetPopupUrl(int tab_id) const {
 }
 
 void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
-  SetValue(&icon_, tab_id, image.AsImageSkia());
+  SetValue(&icon_, tab_id, image);
 }
 
 bool ExtensionAction::ParseIconFromCanvasDictionary(
@@ -164,7 +164,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
   return true;
 }
 
-gfx::ImageSkia ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
+gfx::Image ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
   return GetValue(&icon_, tab_id);
 }
 
@@ -211,13 +211,12 @@ void ExtensionAction::UndoDeclarativeSetIcon(int tab_id,
   }
 }
 
-const gfx::ImageSkia ExtensionAction::GetDeclarativeIcon(int tab_id) const {
+const gfx::Image ExtensionAction::GetDeclarativeIcon(int tab_id) const {
   if (declarative_icon_.find(tab_id) != declarative_icon_.end() &&
       !declarative_icon_.find(tab_id)->second.rbegin()->second.empty()) {
-    return declarative_icon_.find(tab_id)->second.rbegin()
-        ->second.back().AsImageSkia();
+    return declarative_icon_.find(tab_id)->second.rbegin()->second.back();
   }
-  return gfx::ImageSkia();
+  return gfx::Image();
 }
 
 void ExtensionAction::ClearAllValuesForTab(int tab_id) {
@@ -280,11 +279,10 @@ extensions::IconImage* ExtensionAction::LoadDefaultIconImage(
   return default_icon_image_.get();
 }
 
-gfx::ImageSkia ExtensionAction::GetDefaultIconImage() const {
+gfx::Image ExtensionAction::GetDefaultIconImage() const {
   // If we have a default icon, it should be loaded before trying to use it.
   DCHECK(!default_icon_image_ == !default_icon_);
-  return default_icon_image_ ? default_icon_image_->image_skia() :
-      *GetDefaultIcon().ToImageSkia();
+  return default_icon_image_ ? default_icon_image_->image() : GetDefaultIcon();
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {
@@ -338,8 +336,7 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
       extensions::IconsInfo::GetIcons(&extension);
   // Look for any other icons.
   std::string largest_icon = extension_icons.Get(
-      extension_misc::EXTENSION_ICON_GIGANTOR,
-      ExtensionIconSet::MATCH_SMALLER);
+      extension_misc::EXTENSION_ICON_GIGANTOR, ExtensionIconSet::MATCH_SMALLER);
 
   if (!largest_icon.empty()) {
     // We found an icon to use, so create an icon set if one doesn't exist.
@@ -349,11 +346,11 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
     // Replace any missing extension action icons with the largest icon
     // retrieved from |extension|'s manifest so long as the largest icon is
     // larger than the current key.
-    for (int i = extension_misc::kNumExtensionActionIconSizes - 1;
-         i >= 0; --i) {
+    for (int i = extension_misc::kNumExtensionActionIconSizes - 1; i >= 0;
+         --i) {
       int size = extension_misc::kExtensionActionIconSizes[i].size;
-      if (default_icon_->Get(size, ExtensionIconSet::MATCH_BIGGER).empty()
-          && largest_icon_size > size) {
+      if (default_icon_->Get(size, ExtensionIconSet::MATCH_BIGGER).empty() &&
+          largest_icon_size > size) {
         default_icon_->Add(size, largest_icon);
         break;
       }
@@ -364,9 +361,9 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
 // Determines which icon would be returned by |GetIcon|, and returns its width.
 int ExtensionAction::GetIconWidth(int tab_id) const {
   // If icon has been set, return its width.
-  gfx::ImageSkia icon = GetValue(&icon_, tab_id);
-  if (!icon.isNull())
-    return icon.width();
+  gfx::Image icon = GetValue(&icon_, tab_id);
+  if (!icon.IsEmpty())
+    return icon.Width();
   // If there is a default icon, the icon width will be set depending on our
   // action type.
   if (default_icon_)

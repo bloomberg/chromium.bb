@@ -53,10 +53,6 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   gfx::Image GetIcon(int tab_id);
 
  private:
-  // Gets the icon that should be returned by |GetIcon| (without the attention
-  // and animation transformations).
-  gfx::ImageSkia GetBaseIconFromAction(int tab_id);
-
   const extensions::Extension* extension_;
   const ExtensionAction* action_;
   Observer* observer_;

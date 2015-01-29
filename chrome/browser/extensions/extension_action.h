@@ -104,7 +104,7 @@ class ExtensionAction {
                                             gfx::ImageSkia* icon);
 
   // Gets the icon that has been set using |SetIcon| for the tab.
-  gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
+  gfx::Image GetExplicitlySetIcon(int tab_id) const;
 
   // Sets the icon for a tab, in a way that can't be read by the extension's
   // javascript.  Multiple icons can be set at the same time; some icon with the
@@ -152,7 +152,7 @@ class ExtensionAction {
   // by an appearance set directly on the tab.
   void DeclarativeShow(int tab_id);
   void UndoDeclarativeShow(int tab_id);
-  const gfx::ImageSkia GetDeclarativeIcon(int tab_id) const;
+  const gfx::Image GetDeclarativeIcon(int tab_id) const;
 
   // Get the badge visibility for a tab, or the default badge visibility
   // if none was set.
@@ -195,7 +195,7 @@ class ExtensionAction {
 
   // Returns the image to use as the default icon for the action. Can only be
   // called after LoadDefaultIconImage().
-  gfx::ImageSkia GetDefaultIconImage() const;
+  gfx::Image GetDefaultIconImage() const;
 
   // Determine whether or not the ExtensionAction has a value set for the given
   // |tab_id| for each property.
@@ -263,7 +263,7 @@ class ExtensionAction {
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).
   std::map<int, GURL> popup_url_;
   std::map<int, std::string> title_;
-  std::map<int, gfx::ImageSkia> icon_;
+  std::map<int, gfx::Image> icon_;
   std::map<int, std::string> badge_text_;
   std::map<int, SkColor> badge_background_color_;
   std::map<int, SkColor> badge_text_color_;

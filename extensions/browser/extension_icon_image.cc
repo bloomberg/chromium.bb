@@ -145,6 +145,7 @@ IconImage::IconImage(
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   source_ = new Source(this, resource_size);
   image_skia_ = gfx::ImageSkia(source_, resource_size);
+  image_ = gfx::Image(image_skia_);
 
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_REMOVED,
@@ -225,6 +226,12 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   // Remove old representation if there is one.
   image_skia_.RemoveRepresentation(scale);
   image_skia_.AddRepresentation(rep);
+
+  // Update the image to use the updated image skia.
+  // It's a shame we have to do this because it means that all the other
+  // representations stored on |image_| will be deleted, but unfortunately
+  // there's no way to combine the storage of two images.
+  image_ = gfx::Image(image_skia_);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnExtensionIconImageChanged(this));
 }

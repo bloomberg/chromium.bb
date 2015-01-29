@@ -190,7 +190,7 @@ TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
   ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
-  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
+  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
   gfx::ImageSkia favicon = GetFavicon();
 
@@ -216,14 +216,14 @@ TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
   ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
-  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
+  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
   gfx::Image set_icon = LoadIcon("browser_action/no_icon/icon.png");
   ASSERT_FALSE(set_icon.IsEmpty());
 
   browser_action->SetIcon(0, set_icon);
 
-  ASSERT_FALSE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
+  ASSERT_FALSE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
   ExtensionActionIconFactory icon_factory(
       profile(), extension.get(), browser_action, this);
@@ -254,7 +254,7 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
-  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
+  ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
   gfx::Image default_icon =
       EnsureImageSize(LoadIcon("browser_action/no_icon/icon.png"), 19);
