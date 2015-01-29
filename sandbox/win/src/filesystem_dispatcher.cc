@@ -145,7 +145,7 @@ bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
   const wchar_t* filename = name->c_str();
 
   uint32 broker = TRUE;
-  uint32 create_disposition = 0;
+  uint32 create_disposition = FILE_OPEN;
   CountedParameterSet<OpenFile> params;
   params[OpenFile::NAME] = ParamPickerMake(filename);
   params[OpenFile::ACCESS] = ParamPickerMake(desired_access);
