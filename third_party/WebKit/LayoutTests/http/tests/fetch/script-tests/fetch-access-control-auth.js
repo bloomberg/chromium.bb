@@ -65,6 +65,10 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=same-origin',
    [fetchRejected]],
 
+  // CORS check tests
+  // Spec: https://fetch.spec.whatwg.org/#concept-cors-check
+
+  // If origin is null or failure, return failure.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include',
@@ -72,20 +76,43 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin',
    [fetchRejected]],
 
+  // If credentials mode is not include,
+  // success if ACAOrigin is * or request's origin, or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=http://www.example.com',
+   [fetchRejected]],
 
+  // If credentials mode is include,
+  // success if ACAOrigin is request's origin and ACACredentials=true,
+  // or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://www.example.com',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&ACACredentials=true',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
    [fetchResolved, hasBody, typeCors], [authCheck2]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://www.example.com&ACACredentials=true',
+   [fetchRejected]],
 
+  // Test that Access-Control-Allow-Credentials is case-sensitive.
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=True',
+   [fetchRejected]],
+
+  // If credentials mode is not include,
+  // success if ACAOrigin is * or request's origin, or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=http://www.example.com',
+   [fetchRejected]],
 
   // Credential check with CORS preflight.
 
