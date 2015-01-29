@@ -39,7 +39,6 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
@@ -70,7 +69,7 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-class HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient, public blink::WebThread::TaskObserver {
+class HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
@@ -161,9 +160,7 @@ public:
     virtual void didFinalizeFrame() override;
     virtual void restoreCanvasMatrixClipStack() override;
 
-    // Implementation of WebThread::TaskObserver methods
-    virtual void willProcessTask() override;
-    virtual void didProcessTask() override;
+    void doDeferredPaintInvalidation();
 
     virtual void trace(Visitor*) override;
 
@@ -185,8 +182,6 @@ private:
     void createImageBuffer();
     void createImageBufferInternal();
     bool shouldUseDisplayList(const IntSize& deviceSize);
-
-    void resetDirtyRect();
 
     void setSurfaceSize(const IntSize&);
 

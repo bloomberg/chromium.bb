@@ -81,6 +81,18 @@ void RenderHTMLCanvas::canvasSizeChanged()
         setNeedsLayout();
 }
 
+PaintInvalidationReason RenderHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
+{
+    PaintInvalidationReason reason = RenderBox::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    HTMLCanvasElement* element = toHTMLCanvasElement(node());
+    if (element->isDirty()) {
+        element->doDeferredPaintInvalidation();
+        if (reason < PaintInvalidationRectangle)
+            reason = PaintInvalidationRectangle;
+    }
+    return reason;
+}
+
 CompositingReasons RenderHTMLCanvas::additionalCompositingReasons() const
 {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(node());

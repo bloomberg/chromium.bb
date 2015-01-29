@@ -120,7 +120,6 @@ DEFINE_NODE_FACTORY(HTMLCanvasElement)
 
 HTMLCanvasElement::~HTMLCanvasElement()
 {
-    resetDirtyRect();
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
 #if !ENABLE(OILPAN)
     for (CanvasObserver* canvasObserver : m_observers)
@@ -263,8 +262,8 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
         return;
     m_imageBufferIsClear = false;
     clearCopiedImage();
-    if (m_dirtyRect.isEmpty())
-        blink::Platform::current()->currentThread()->addTaskObserver(this);
+    if (renderer())
+        renderer()->setMayNeedPaintInvalidation(true);
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw();
@@ -287,7 +286,6 @@ void HTMLCanvasElement::didFinalizeFrame()
         ro->invalidatePaintRectangle(enclosingIntRect(mappedDirtyRect));
     }
     notifyObserversCanvasChanged(m_dirtyRect);
-    blink::Platform::current()->currentThread()->removeTaskObserver(this);
     m_dirtyRect = FloatRect();
 }
 
@@ -297,17 +295,8 @@ void HTMLCanvasElement::restoreCanvasMatrixClipStack()
         toCanvasRenderingContext2D(m_context.get())->restoreCanvasMatrixClipStack();
 }
 
-void HTMLCanvasElement::resetDirtyRect()
+void HTMLCanvasElement::doDeferredPaintInvalidation()
 {
-    if (m_dirtyRect.isEmpty())
-        return;
-    blink::Platform::current()->currentThread()->removeTaskObserver(this);
-    m_dirtyRect = FloatRect();
-}
-
-void HTMLCanvasElement::didProcessTask()
-{
-    // This method gets invoked if didDraw was called earlier in the current task.
     ASSERT(!m_dirtyRect.isEmpty());
     if (is3D()) {
         didFinalizeFrame();
@@ -318,10 +307,6 @@ void HTMLCanvasElement::didProcessTask()
     ASSERT(m_dirtyRect.isEmpty());
 }
 
-void HTMLCanvasElement::willProcessTask()
-{
-    ASSERT_NOT_REACHED();
-}
 
 void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
 {
@@ -334,7 +319,7 @@ void HTMLCanvasElement::reset()
     if (m_ignoreReset)
         return;
 
-    resetDirtyRect();
+    m_dirtyRect = FloatRect();
 
     bool ok;
     bool hadImageBuffer = hasImageBuffer();
@@ -768,7 +753,7 @@ void HTMLCanvasElement::discardImageBuffer()
 {
     m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
     m_imageBuffer.clear();
-    resetDirtyRect();
+    m_dirtyRect = FloatRect();
     updateExternallyAllocatedMemory();
 }
 
