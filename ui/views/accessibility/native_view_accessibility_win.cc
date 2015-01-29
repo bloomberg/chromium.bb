@@ -790,6 +790,12 @@ STDMETHODIMP NativeViewAccessibilityWin::accSelect(
 
 STDMETHODIMP NativeViewAccessibilityWin::get_accHelp(
     VARIANT var_id, BSTR* help) {
+  if (!IsValidId(var_id) || !help)
+    return E_INVALIDARG;
+
+  if (!view_)
+    return E_FAIL;
+
   base::string16 temp = base::UTF8ToUTF16(view_->GetClassName());
   *help = SysAllocString(temp.c_str());
   return S_OK;
@@ -1183,6 +1189,12 @@ STDMETHODIMP NativeViewAccessibilityWin::QueryService(
 
 STDMETHODIMP NativeViewAccessibilityWin::GetPatternProvider(
     PATTERNID id, IUnknown** provider) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!provider)
+    return E_INVALIDARG;
+
   DVLOG(1) << "In Function: "
            << __FUNCTION__
            << " for pattern id: "
@@ -1204,6 +1216,12 @@ STDMETHODIMP NativeViewAccessibilityWin::GetPatternProvider(
 
 STDMETHODIMP NativeViewAccessibilityWin::GetPropertyValue(PROPERTYID id,
                                                           VARIANT* ret) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!ret)
+    return E_INVALIDARG;
+
   DVLOG(1) << "In Function: "
            << __FUNCTION__
            << " for property id: "
