@@ -45,7 +45,7 @@
 
 #include <sys/mman.h>
 
-#if defined(ANDROID)
+#if defined(ANDROID) && !defined(__LP64__)
 #include <errno.h> /* for EINVAL */
 
 extern void *__mmap2(void *, size_t, int, int, int, size_t);
