@@ -493,11 +493,13 @@ def HostTools(host, options):
     else:
       return file
 
-  werror = []
+  # TODO(jfb): gold's build currently generates the following error on Windows:
+  #            too many arguments for format.
+  binutils_do_werror = not TripleIsWindows(host)
   extra_gold_deps = []
   if host == 'le32-nacl':
     # TODO(bradnelson): Fix warnings so this can go away.
-    werror = ['--enable-werror=no']
+    binutils_do_werror = False
     extra_gold_deps = [H('llvm')]
 
   # Binutils still has some warnings when building with clang
@@ -525,15 +527,17 @@ def HostTools(host, options):
                   ConfigureHostArchFlags(
                     host, warning_flags, options,
                     options.binutils_pnacl_extra_configure) +
-                  ['--target=arm-nacl',
-                  '--program-prefix=le32-nacl-',
-                  '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,' +
-                  'mipsel-nacl',
-                  '--enable-shared=no',
+                  [
                   '--enable-gold=default',
                   '--enable-plugins',
-                  '--without-gas',
-                  '--with-sysroot=/le32-nacl'] + werror),
+                  '--enable-shared=no',
+                  '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,mipsel-nacl',
+                  '--enable-werror=' + ('yes' if binutils_do_werror else 'no'),
+                  '--program-prefix=le32-nacl-',
+                  '--target=arm-nacl',
+                  '--with-sysroot=/le32-nacl',
+                  '--without-gas'
+                  ]),
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
@@ -574,6 +578,10 @@ def HostTools(host, options):
       },
   }
 
+  # TODO(jfb) Windows currently uses MinGW's GCC 4.8.1 which generates warnings
+  #           on upstream LLVM code. Turn on -Werror once these are fixed.
+  llvm_do_werror = not TripleIsWindows(host)
+
   llvm_cmake = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
@@ -582,18 +590,20 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'cmake', '-G', 'Ninja'] +
                   CmakeHostArchFlags(host, options) +
-                  ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                  [
+                  '-DBUILD_SHARED_LIBS=ON',
+                  '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
-                  '-DLLVM_ENABLE_LIBCXX=OFF',
-                  '-DBUILD_SHARED_LIBS=ON',
-                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
-                  '-DLLVM_ENABLE_ASSERTIONS=ON',
-                  '-DLLVM_ENABLE_ZLIB=OFF',
-                  '-DLLVM_BUILD_TESTS=ON',
                   '-DLLVM_APPEND_VC_REV=ON',
                   '-DLLVM_BINUTILS_INCDIR=%(abs_binutils_pnacl_src)s/include',
+                  '-DLLVM_BUILD_TESTS=ON',
+                  '-DLLVM_ENABLE_ASSERTIONS=ON',
+                  '-DLLVM_ENABLE_LIBCXX=OFF',
+                  '-LLVM_ENABLE_WERROR=' + ('ON' if llvm_do_werror else 'OFF'),
+                  '-DLLVM_ENABLE_ZLIB=OFF',
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
+                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '%(llvm_src)s']),
               command.Command(['ninja', '-v']),
               command.Command(['ninja', 'install']),
@@ -620,16 +630,19 @@ def HostTools(host, options):
                   '%(llvm_src)s/configure'] +
                   ConfigureHostArchFlags(host, [], options) +
                   LLVMConfigureAssertionsFlags(options) +
-                  ['--prefix=/',
-                   '--disable-zlib',
-                   '--disable-terminfo',
-                   '--disable-jit',
+                  [
                    '--disable-bindings', # ocaml is currently the only binding.
-                   '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
-                   '--enable-targets=x86,arm,mips',
-                   '--program-prefix=',
+                   '--disable-jit',
+                   '--disable-terminfo',
+                   '--disable-zlib',
                    '--enable-optimized',
-                   '--with-clang-srcdir=%(abs_clang_src)s'] + shared)] +
+                   '--enable-targets=x86,arm,mips',
+                   '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
+                   '--prefix=/',
+                   '--program-prefix=',
+                   '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
+                   '--with-clang-srcdir=%(abs_clang_src)s'
+                  ] + shared)] +
               CopyHostLibcxxForLLVMBuild(
                   host,
                   os.path.join('Release+Asserts', 'lib'),
