@@ -7,14 +7,13 @@
 #include <set>
 
 #include "base/strings/string_util.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace content {
 
-const char kHttpScheme[] = "http";
-const char kHttpsScheme[] = "https";
-const char kDevToolsScheme[] = "chrome-devtools";
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
@@ -112,8 +111,9 @@ bool AppCacheNamespace::IsMatch(const GURL& url) const {
 }
 
 bool IsSchemeSupportedForAppCache(const GURL& url) {
-  bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme) ||
-      url.SchemeIs(kDevToolsScheme);
+  bool supported = url.SchemeIs(url::kHttpScheme) ||
+                   url.SchemeIs(url::kHttpsScheme) ||
+                   url.SchemeIs(kChromeDevToolsScheme);
 
 #ifndef NDEBUG
   // TODO(michaeln): It would be really nice if this could optionally work for

@@ -163,11 +163,6 @@ class CONTENT_EXPORT AppCacheBackend {
 };
 
 // Useful string constants.
-// Note: These are also defined elsewhere in the chrome code base in
-// url_contants.h .cc, however the content library can not have
-// any dependencies on the chrome library, so we can't use them in here.
-CONTENT_EXPORT extern const char kHttpScheme[];
-CONTENT_EXPORT extern const char kHttpsScheme[];
 CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];
 
