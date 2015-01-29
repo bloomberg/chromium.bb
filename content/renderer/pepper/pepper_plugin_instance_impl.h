@@ -719,10 +719,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool layer_is_hardware_;
 
   // Plugin URL.
-  GURL plugin_url_;
+  const GURL plugin_url_;
 
   // Used to track Flash-specific metrics.
-  bool is_flash_plugin_;
+  const bool is_flash_plugin_;
 
   // Set to true the first time the plugin is clicked. Used to collect metrics.
   bool has_been_clicked_;
@@ -923,6 +923,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   int64 last_input_number_;
 
   bool is_tracking_latency_;
+
+  bool initialized_;
 
   // We use a weak ptr factory for scheduling DidChangeView events so that we
   // can tell whether updates are pending and consolidate them. When there's

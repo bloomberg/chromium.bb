@@ -522,6 +522,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       is_deleted_(false),
       last_input_number_(0),
       is_tracking_latency_(false),
+      initialized_(false),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -845,6 +846,7 @@ bool PepperPluginInstanceImpl::Initialize(
     if (message_channel_)
       message_channel_->Start();
   }
+  initialized_ = success;
   return success;
 }
 
@@ -3276,7 +3278,7 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
 }
 
 void PepperPluginInstanceImpl::RecordFlashJavaScriptUse() {
-  if (!javascript_used_ && is_flash_plugin_) {
+  if (initialized_ && !javascript_used_ && is_flash_plugin_) {
     javascript_used_ = true;
     RenderThread::Get()->RecordAction(
         base::UserMetricsAction("Flash.JavaScriptUsed"));
