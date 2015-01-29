@@ -449,9 +449,8 @@
             }],
             ['OS=="win"', {
               'dependencies': [
-                 # Dependencies of browser_watcher, windows only.
-                 'components.gyp:browser_watcher',
-                 'components.gyp:browser_watcher_client',
+                'components.gyp:browser_watcher',
+                'components.gyp:browser_watcher_client',
               ]
             }],
             ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
@@ -477,59 +476,27 @@
                 'power/origin_power_map_unittest.cc',
               ],
               'dependencies': [
-                # Dependencies of autofill
+                '../skia/skia.gyp:skia',
                 'components.gyp:autofill_content_browser',
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
-
-                # Dependencies of dns_prefetch
                 'components.gyp:dns_prefetch_renderer',
-
-                # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',
-
-                # Dependencies of error_page
                 'components.gyp:error_page_renderer',
-
-                # Dependencies of history
                 'components.gyp:history_content_browser',
-
-                # Dependencies of
-                # intercept_navigation_resource_throttle_unittest.cc
-                '../skia/skia.gyp:skia',
-                'components.gyp:navigation_interception',
-
-                # Dependencies of keyed_service
                 'components.gyp:keyed_service_content',
-
-                # Dependencies of password_manager
+                'components.gyp:navigation_interception',
                 'components.gyp:password_manager_content_browser',
                 'components.gyp:password_manager_content_common',
-
-                # Dependencies of precache/content
-                'components.gyp:precache_content',
-
-                # Dependencies of power
                 'components.gyp:power',
-
-                # Dependencies of sessions
+                'components.gyp:precache_content',
                 'components.gyp:sessions_content',
-
-                # Dependencies of storage monitor
                 'components.gyp:storage_monitor',
                 'components.gyp:storage_monitor_test_support',
-
-                # Dependencies of url_matcher.
                 'components.gyp:url_matcher',
-
-                # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',
                 'components.gyp:visitedlink_renderer',
-
-                # Dependencies of web_cache
                 'components.gyp:web_cache_browser',
-
-                # Dependencies of web_modal
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
               ],
