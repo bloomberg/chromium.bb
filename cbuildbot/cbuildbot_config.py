@@ -2785,8 +2785,8 @@ _AddGroupConfig('ivybridge', 'stout', (
 # optimized our builders more.
 # slippy itself is deprecated in favor of the below boards, so we don't bother
 # building it.
-_AddGroupConfig('slippy', 'peppy', (
-    'falco',
+# TODO(dnj): Re-add peppy canary once builders are allocated.
+_AddGroupConfig('slippy', 'falco', (
     'leon',
     'wolf',
 ), (
