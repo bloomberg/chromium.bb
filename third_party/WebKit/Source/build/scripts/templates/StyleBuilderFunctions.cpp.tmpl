@@ -329,12 +329,15 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_inherit_function(property_id)}}
 {
-    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
-    CounterDirectiveMap& parentMap = state.parentStyle()->accessCounterDirectives();
+    const CounterDirectiveMap* parentMap = state.parentStyle()->counterDirectives();
+    if (!parentMap || parentMap->isEmpty())
+        return;
 
-    typedef CounterDirectiveMap::iterator Iterator;
-    Iterator end = parentMap.end();
-    for (Iterator it = parentMap.begin(); it != end; ++it) {
+    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
+
+    typedef CounterDirectiveMap::const_iterator Iterator;
+    Iterator end = parentMap->end();
+    for (Iterator it = parentMap->begin(); it != end; ++it) {
         CounterDirectives& directives = map.add(it->key, CounterDirectives()).storedValue->value;
         directives.inherit{{action}}(it->value);
     }

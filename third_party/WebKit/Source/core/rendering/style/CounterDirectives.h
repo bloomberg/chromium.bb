@@ -58,7 +58,7 @@ public:
         m_resetValue = 0;
         m_isResetSet = false;
     }
-    void inheritReset(CounterDirectives& parent)
+    void inheritReset(const CounterDirectives& parent)
     {
         m_resetValue = parent.m_resetValue;
         m_isResetSet = parent.m_isResetSet;
@@ -76,7 +76,7 @@ public:
         m_incrementValue = 0;
         m_isIncrementSet = false;
     }
-    void inheritIncrement(CounterDirectives& parent)
+    void inheritIncrement(const CounterDirectives& parent)
     {
         m_incrementValue = parent.m_incrementValue;
         m_isIncrementSet = parent.m_isIncrementSet;
