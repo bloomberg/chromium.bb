@@ -249,7 +249,8 @@ EH_ENVIRONMENTS_TO_TRY = []
 
 base_eh_env = env.Clone()
 
-supports_cxx11 = env.Bit('bitcode') or env.Bit('build_arm')
+supports_cxx11 = (env.Bit('bitcode') or env.Bit('build_arm') or
+                  env.Bit('nacl_clang'))
 base_eh_env.Append(CPPDEFINES=[['SUPPORTS_CXX11', str(int(supports_cxx11))]])
 if supports_cxx11:
   # This flag is necessary for testing std::rethrow_exception(), at
@@ -497,7 +498,8 @@ if env.Bit('nacl_glibc'):
                          ['toolchain_tests', 'small_tests'],
                          'run_byteswap64_test')
 
-if env.Bit('nacl_glibc') or not env.Bit('bitcode'):
+if ((env.Bit('nacl_glibc') or not env.Bit('bitcode'))
+    and not env.Bit('built_elsewhere')):
   def AddAlignedCodeTest(name, object_file):
     node = env.CommandTest(name + '.out',
                            ['${PYTHON}', env.File('aligned_code.py'),

@@ -3484,6 +3484,7 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
+nacl_irt_env.ClearBits('nacl_clang')
 # The choice of toolchain used to build the IRT does not depend on the toolchain
 # used to build user/test code. The PNaCl toolchain is used on x86, except on
 # Windows (because pnacl-clang doesn't run on Windows XP. If we stop supporting

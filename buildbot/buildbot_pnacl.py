@@ -86,22 +86,21 @@ def RunSconsTests(status, context):
     SCons(context, parallel=False, mode=irt_mode,
           args=flags_run + ['large_tests_irt'])
 
-  if arch != 'arm':
-    # Run some nacl_clang tests. Eventually we will have bots that just run
-    # buildbot_standard with nacl_clang and this can be split out.
-    context['pnacl'] = False
-    context['nacl_clang'] = True
-    if not context['skip_build']:
-      with Step('build_nacl_clang ' + arch, status, halt_on_fail=False):
-        SCons(context, parallel=True, args=flags_build)
-    with Step('smoke_tests_nacl_clang ' + arch, status, halt_on_fail=False):
-      SCons(context, parallel=True,
-            args=flags_run + ['small_tests', 'medium_tests'])
-    with Step('large_tests_nacl_clang ' + arch, status, halt_on_fail=False):
-      SCons(context, parallel=False,
-            args=flags_run + ['large_tests'])
-    context['pnacl'] = True
-    context['nacl_clang'] = False
+  # Run some nacl_clang tests. Eventually we will have bots that just run
+  # buildbot_standard with nacl_clang and this can be split out.
+  context['pnacl'] = False
+  context['nacl_clang'] = True
+  if not context['skip_build']:
+    with Step('build_nacl_clang ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=True, args=flags_build)
+  with Step('smoke_tests_nacl_clang ' + arch, status, halt_on_fail=False):
+    SCons(context, parallel=True,
+          args=flags_run + ['small_tests', 'medium_tests'])
+  with Step('large_tests_nacl_clang ' + arch, status, halt_on_fail=False):
+    SCons(context, parallel=False,
+          args=flags_run + ['large_tests'])
+  context['pnacl'] = True
+  context['nacl_clang'] = False
 
   # Test sandboxed translation
   # TODO(dschuff): The standalone sandboxed translator driver does not have

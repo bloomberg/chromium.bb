@@ -113,7 +113,9 @@ def AddGdbTest(name, is_broken=False, is_thread_test=False):
 AddGdbTest('complete')
 AddGdbTest('detach')
 AddGdbTest('disconnect')
-AddGdbTest('invalid_memory')
+# https://code.google.com/p/nativeclient/issues/detail?id=4059
+AddGdbTest('invalid_memory',
+           is_broken = (env.Bit('nacl_clang') and not env.UsingEmulator()))
 AddGdbTest('kill')
 AddGdbTest('remote_get')
 
@@ -121,13 +123,17 @@ AddGdbTest('remote_get')
 # cache not being flushable.
 AddGdbTest('stepi_after_break', is_broken=env.UsingEmulator())
 
+using_clang = env.Bit('bitcode') or env.Bit('nacl_clang')
+
 # This fails on ARM+PNaCl. The set_global_var function appears to be
 # getting the wrong argument value (68K vs 1), so the value of
 # global_var doesn't match the expected value.
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
+# This test also fails with arm-nacl-clang:
+# https://code.google.com/p/nativeclient/issues/detail?id=4059
 AddGdbTest('print_symbol',
-           is_broken=((env.Bit('bitcode') and env.Bit('build_arm'))
+           is_broken=((using_clang and env.Bit('build_arm'))
                       or env.UsingEmulator()))
 
 # This fails on ARM+PNaCl because it gets an
@@ -136,9 +142,13 @@ AddGdbTest('print_symbol',
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
 AddGdbTest('stack_trace',
-           is_broken=env.Bit('bitcode') and env.Bit('build_arm'))
+           is_broken=using_clang and env.Bit('build_arm'))
 
-AddGdbTest('step_from_func_start', is_broken=env.UsingEmulator())
+# This fails on ARM+nacl-clang
+# https://code.google.com/p/nativeclient/issues/detail?id=4059
+AddGdbTest('step_from_func_start',
+           is_broken=(env.UsingEmulator() or
+                      (env.Bit('nacl_clang') and env.Bit('build_arm'))))
 
 # This fails on MIPS, since GDB for MIPS executes inferior calls on stack
 # (call dummy location in MIPS GDB is set as ON_STACK method). Since the stack
@@ -149,8 +159,10 @@ AddGdbTest('call_from_gdb', is_broken=env.Bit('build_mips32'))
 # local_var before it has been initialised.
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
+# This test also fails with arm-nacl-clang:
+# https://code.google.com/p/nativeclient/issues/detail?id=4059
 AddGdbTest('change_variable',
-           is_broken=((env.Bit('bitcode') and env.Bit('build_arm')) or
+           is_broken=((using_clang and env.Bit('build_arm')) or
                       env.Bit('build_mips32') or
                       env.UsingEmulator()))
 

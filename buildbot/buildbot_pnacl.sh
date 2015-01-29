@@ -63,11 +63,14 @@ NAME_ARM_TRY_DOWNLOAD() {
   echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
 }
 
-
+# Remove unneeded intermediate object files from the output to reduce the size
+# of the tarball we copy between builders. The exception for the /lib directory
+# is because nacl-clang needs crt{1,i,n}.o
 prune-scons-out() {
   find scons-out/ \
-    \( -name '*.o' -o -name '*.bc' -o -name 'test_results' \) \
-    -print0 | xargs -0 rm -rf
+    \( ! -path '*/lib/*' -a -name '*.o' -o -name '*.bc' -o \
+    -name 'test_results' \) \
+    -print0 | xargs -t -0 rm -rf
 }
 
 # Tar up the executables which are shipped to the arm HW bots

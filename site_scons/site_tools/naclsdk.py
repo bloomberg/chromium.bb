@@ -55,7 +55,8 @@ def _StubOutEnvToolsForBuiltElsewhere(env):
   assert(env.Bit('built_elsewhere'))
   env.Replace(CC='true', CXX='true', LINK='true', AR='true',
               RANLIB='true', AS='true', ASPP='true', LD='true',
-              STRIP='true', PNACLOPT='true', PNACLFINALIZE='true')
+              STRIP='true', OBJDUMP='true', PNACLOPT='true',
+              PNACLFINALIZE='true')
 
 
 def _SetEnvForNativeSdk(env, sdk_path):
@@ -679,7 +680,10 @@ def generate(env):
   if env.Bit('bitcode'):
     _SetEnvForPnacl(env, root)
   elif env.Bit('built_elsewhere'):
+    def FakeInstall(dest, source, env):
+      print 'Not installing', dest
     _StubOutEnvToolsForBuiltElsewhere(env)
+    env.Replace(INSTALL=FakeInstall)
   else:
     _SetEnvForNativeSdk(env, root)
 
