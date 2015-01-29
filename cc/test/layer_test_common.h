@@ -107,7 +107,7 @@ class LayerTestCommon {
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);
     void AppendQuadsForPassWithOcclusion(LayerImpl* layer_impl,
-                                         const RenderPassId& id,
+                                         RenderPass* given_render_pass,
                                          const gfx::Rect& occluded);
     void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
                                          const gfx::Rect& occluded);

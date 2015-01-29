@@ -66,8 +66,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
  private:
   void ClearChildId();
 
-  void AppendRainbowDebugBorder(RenderPass* render_pass,
-                                AppendQuadsData* append_quads_data);
+  void AppendRainbowDebugBorder(RenderPass* render_pass);
 
   void SetRenderPasses(RenderPassList* render_passes_in_draw_order);
   void ClearRenderPasses();
@@ -79,7 +78,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   void AppendRenderPassQuads(RenderPass* render_pass,
                              const Occlusion& occlusion_in_content_space,
-                             AppendQuadsData* append_quads_data,
                              const RenderPass* delegated_render_pass,
                              const gfx::Size& frame_size) const;
 

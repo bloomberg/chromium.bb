@@ -257,13 +257,13 @@ void DelegatedRendererLayerImpl::AppendQuads(
     RenderPass* render_pass,
     const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
-  AppendRainbowDebugBorder(render_pass, append_quads_data);
+  AppendRainbowDebugBorder(render_pass);
 
   // This list will be empty after a lost context until a new frame arrives.
   if (render_passes_in_draw_order_.empty())
     return;
 
-  RenderPassId target_render_pass_id = append_quads_data->render_pass_id;
+  RenderPassId target_render_pass_id = render_pass->id;
 
   const RenderPass* root_delegated_render_pass =
       render_passes_in_draw_order_.back();
@@ -283,7 +283,6 @@ void DelegatedRendererLayerImpl::AppendQuads(
 
     AppendRenderPassQuads(render_pass,
                           occlusion_in_content_space,
-                          append_quads_data,
                           root_delegated_render_pass,
                           frame_size);
   } else {
@@ -295,15 +294,13 @@ void DelegatedRendererLayerImpl::AppendQuads(
         render_passes_in_draw_order_[render_pass_index];
     AppendRenderPassQuads(render_pass,
                           occlusion_in_content_space,
-                          append_quads_data,
                           delegated_render_pass,
                           frame_size);
   }
 }
 
 void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
-    RenderPass* render_pass,
-    AppendQuadsData* append_quads_data) {
+    RenderPass* render_pass) {
   if (!ShowDebugBorders())
     return;
 
@@ -385,7 +382,6 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
 void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     RenderPass* render_pass,
     const Occlusion& occlusion_in_content_space,
-    AppendQuadsData* append_quads_data,
     const RenderPass* delegated_render_pass,
     const gfx::Size& frame_size) const {
   const SharedQuadState* delegated_shared_quad_state = nullptr;
@@ -467,8 +463,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       // The frame may have a RenderPassDrawQuad that points to a RenderPass not
       // part of the frame. Just ignore these quads.
       if (present) {
-        DCHECK(output_contributing_render_pass_id !=
-               append_quads_data->render_pass_id);
+        DCHECK(output_contributing_render_pass_id != render_pass->id);
 
         RenderPassDrawQuad* output_quad =
             render_pass->CopyFromAndAppendRenderPassDrawQuad(

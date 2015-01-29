@@ -26,7 +26,8 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
   ResourceProvider::ResourceIdSet Resources() const;
 
   void SetFrameDataForRenderPasses(float device_scale_factor,
-                                   RenderPassList* pass_list);
+                                   const RenderPassList& pass_list);
+
  protected:
   FakeDelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 };

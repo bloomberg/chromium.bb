@@ -752,7 +752,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
     occlusion_tracker.EnterLayer(it);
 
-    AppendQuadsData append_quads_data(target_render_pass_id);
+    AppendQuadsData append_quads_data;
 
     if (it.represents_target_render_surface()) {
       if (it->HasCopyRequest()) {
@@ -789,7 +789,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
             RenderPass* render_pass =
                 frame->render_passes_by_id[contributing_render_pass_id];
 
-            AppendQuadsData append_quads_data(render_pass->id);
             AppendQuadsForLayer(render_pass,
                                 *it,
                                 occlusion_tracker,

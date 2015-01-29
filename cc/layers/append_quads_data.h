@@ -15,15 +15,7 @@ struct AppendQuadsData {
       : num_incomplete_tiles(0),
         num_missing_tiles(0),
         visible_content_area(0),
-        approximated_visible_content_area(0),
-        render_pass_id(0, 0) {}
-
-  explicit AppendQuadsData(RenderPassId render_pass_id)
-      : num_incomplete_tiles(0),
-        num_missing_tiles(0),
-        visible_content_area(0),
-        approximated_visible_content_area(0),
-        render_pass_id(render_pass_id) {}
+        approximated_visible_content_area(0) {}
 
   // Set by the layer appending quads.
   int64 num_incomplete_tiles;
@@ -33,8 +25,6 @@ struct AppendQuadsData {
   int64 visible_content_area;
   // Set by the layer appending quads.
   int64 approximated_visible_content_area;
-  // Given to the layer appending quads.
-  const RenderPassId render_pass_id;
 };
 
 }  // namespace cc
