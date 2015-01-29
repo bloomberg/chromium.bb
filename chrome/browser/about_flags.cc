@@ -2089,11 +2089,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalBypassProxy)
   },
   {
-    "disable-roboto-font-ui",
-    IDS_FLAGS_DISABLE_ROBOTO_FONT_UI_NAME,
-    IDS_FLAGS_DISABLE_ROBOTO_FONT_UI_DESCRIPTION,
+    "enable-roboto-font-ui",
+    IDS_FLAGS_ENABLE_ROBOTO_FONT_UI_NAME,
+    IDS_FLAGS_ENABLE_ROBOTO_FONT_UI_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableRobotoFontUI)
+    SINGLE_VALUE_TYPE(switches::kEnableRobotoFontUI)
   },
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)

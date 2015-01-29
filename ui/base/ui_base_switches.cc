@@ -52,9 +52,9 @@ const char kLang[] = "lang";
 const char kViewerConnect[] = "connect-to-metro-viewer";
 
 #if defined(OS_CHROMEOS)
-// Disables Roboto as UI font (instead of Noto Sans) experiment in both
+// Enables Roboto as UI font (instead of Noto Sans) experiment in both
 // native and web UI.
-const char kDisableRobotoFontUI[] = "disable-roboto-font-ui";
+const char kEnableRobotoFontUI[] = "enable-roboto-font-ui";
 #endif
 
 }  // namespace switches
