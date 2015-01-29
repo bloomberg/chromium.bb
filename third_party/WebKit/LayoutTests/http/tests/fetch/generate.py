@@ -8,6 +8,13 @@
 - serviceworker/X.html
 from templates in script-tests/TEMPLATE*.html.
 
+The following tokens in the template files are replaced:
+- TESTNAME -> X
+- INITSCRIPT -> <script src="../resources/X-init.js"></script>
+  and X-init.js is executed on window before X.js is started,
+  when X-init.js exists.
+  Otherwise, replaced with an empty string.
+
 Run
 $ python generate.py
 at this (/LayoutTests/http/tests/fetch/) directory, and
@@ -43,6 +50,15 @@ def main():
             with open(template_path, 'r') as template_file:
                 template_data = template_file.read()
                 output_data = re.sub(r'TESTNAME', testname, template_data)
+                if os.path.exists(os.path.join(top_path,
+                                               'resources',
+                                               testname + '-init.js')):
+                    output_data = re.sub(r'INITSCRIPT',
+                                         '<script src = "../resources/' +
+                                         testname + '-init.js"></script>',
+                                         output_data)
+                else:
+                    output_data = re.sub(r'INITSCRIPT\n*', '', output_data)
 
             output_path = os.path.join(top_path, context, basename)
             with open(output_path, 'w') as output_file:
