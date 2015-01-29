@@ -948,9 +948,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return parseTextDecoration(propId, important);
 
     case CSSPropertyTextUnderlinePosition:
-        // auto | under | inherit
+        // auto | [ under || [ left | right ] ], but we only support auto | under for now
         ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-        return parseTextUnderlinePosition(important);
+        validPrimitive = (id == CSSValueAuto || id == CSSValueUnder);
+        break;
 
     case CSSPropertyZoom:          // normal | reset | document | <number> | <percentage> | inherit
         if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
@@ -1475,7 +1476,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return parseShorthand(propId, webkitTextEmphasisShorthand(), important);
 
     case CSSPropertyWebkitTextEmphasisStyle:
-        return parseTextEmphasisStyle(important);
+        parsedValue = parseTextEmphasisStyle();
+        break;
 
     case CSSPropertyWebkitTextOrientation:
         // FIXME: For now just support sideways, sideways-right, upright and vertical-right.
@@ -1487,13 +1489,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNone)
             validPrimitive = true;
         else
-            return parseLineBoxContain(important);
+            parsedValue = parseLineBoxContain();
         break;
     case CSSPropertyWebkitFontFeatureSettings:
         if (id == CSSValueNormal)
             validPrimitive = true;
         else
-            return parseFontFeatureSettings(important);
+            parsedValue = parseFontFeatureSettings();
         break;
 
     case CSSPropertyFontVariantLigatures:
@@ -7569,79 +7571,51 @@ bool CSSPropertyParser::parseTextDecoration(CSSPropertyID propId, bool important
     return false;
 }
 
-bool CSSPropertyParser::parseTextUnderlinePosition(bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
 {
-    // The text-underline-position property has syntax "auto | [ under || [ left | right ] ]".
-    // However, values 'left' and 'right' are not implemented yet, so we will parse syntax
-    // "auto | under" for now.
-    CSSParserValue* value = m_valueList->current();
-    switch (value->id) {
-    case CSSValueAuto:
-    case CSSValueUnder:
-        if (m_valueList->next())
-            return false;
-        addProperty(CSSPropertyTextUnderlinePosition, cssValuePool().createIdentifierValue(value->id), important);
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool CSSPropertyParser::parseTextEmphasisStyle(bool important)
-{
-    unsigned valueListSize = m_valueList->size();
-
     RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = nullptr;
     RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = nullptr;
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         if (value->unit == CSSPrimitiveValue::CSS_STRING) {
-            if (fill || shape || (valueListSize != 1 && !inShorthand()))
-                return false;
-            addProperty(CSSPropertyWebkitTextEmphasisStyle, createPrimitiveStringValue(value), important);
+            if (fill || shape)
+                return nullptr;
             m_valueList->next();
-            return true;
+            return createPrimitiveStringValue(value);
         }
 
         if (value->id == CSSValueNone) {
-            if (fill || shape || (valueListSize != 1 && !inShorthand()))
-                return false;
-            addProperty(CSSPropertyWebkitTextEmphasisStyle, cssValuePool().createIdentifierValue(CSSValueNone), important);
+            if (fill || shape)
+                return nullptr;
             m_valueList->next();
-            return true;
+            return cssValuePool().createIdentifierValue(CSSValueNone);
         }
 
         if (value->id == CSSValueOpen || value->id == CSSValueFilled) {
             if (fill)
-                return false;
+                return nullptr;
             fill = cssValuePool().createIdentifierValue(value->id);
         } else if (value->id == CSSValueDot || value->id == CSSValueCircle || value->id == CSSValueDoubleCircle || value->id == CSSValueTriangle || value->id == CSSValueSesame) {
             if (shape)
-                return false;
+                return nullptr;
             shape = cssValuePool().createIdentifierValue(value->id);
-        } else if (!inShorthand())
-            return false;
-        else
+        } else {
             break;
+        }
     }
 
     if (fill && shape) {
         RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
         parsedValues->append(fill.release());
         parsedValues->append(shape.release());
-        addProperty(CSSPropertyWebkitTextEmphasisStyle, parsedValues.release(), important);
-        return true;
+        return parsedValues.release();
     }
-    if (fill) {
-        addProperty(CSSPropertyWebkitTextEmphasisStyle, fill.release(), important);
-        return true;
-    }
-    if (shape) {
-        addProperty(CSSPropertyWebkitTextEmphasisStyle, shape.release(), important);
-        return true;
-    }
+    if (fill)
+        return fill.release();
+    if (shape)
+        return shape.release();
 
-    return false;
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
@@ -7683,7 +7657,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
     return list.release();
 }
 
-bool CSSPropertyParser::parseLineBoxContain(bool important)
+PassRefPtrWillBeRawPtr<CSSLineBoxContainValue> CSSPropertyParser::parseLineBoxContain()
 {
     LineBoxContain lineBoxContain = LineBoxContainNone;
 
@@ -7702,18 +7676,15 @@ bool CSSPropertyParser::parseLineBoxContain(bool important)
         } else if (value->id == CSSValueInlineBox) {
             flag = LineBoxContainInlineBox;
         } else {
-            return false;
+            return nullptr;
         }
         if (lineBoxContain & flag)
-            return false;
+            return nullptr;
         lineBoxContain |= flag;
     }
 
-    if (!lineBoxContain)
-        return false;
-
-    addProperty(CSSPropertyWebkitLineBoxContain, CSSLineBoxContainValue::create(lineBoxContain), important);
-    return true;
+    ASSERT(lineBoxContain);
+    return CSSLineBoxContainValue::create(lineBoxContain);
 }
 
 bool CSSPropertyParser::parseFontFeatureTag(CSSValueList* settings)
@@ -7753,26 +7724,18 @@ bool CSSPropertyParser::parseFontFeatureTag(CSSValueList* settings)
     return true;
 }
 
-bool CSSPropertyParser::parseFontFeatureSettings(bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFontFeatureSettings()
 {
-    if (m_valueList->size() == 1 && m_valueList->current()->id == CSSValueNormal) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> normalValue = cssValuePool().createIdentifierValue(CSSValueNormal);
-        m_valueList->next();
-        addProperty(CSSPropertyWebkitFontFeatureSettings, normalValue.release(), important);
-        return true;
-    }
-
     RefPtrWillBeRawPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
     while (true) {
         if (!m_valueList->current() || !parseFontFeatureTag(settings.get()))
-            return false;
+            return nullptr;
         if (!m_valueList->current())
             break;
         if (!consumeComma(m_valueList))
-            return false;
+            return nullptr;
     }
-    addProperty(CSSPropertyWebkitFontFeatureSettings, settings.release(), important);
-    return true;
+    return settings.release();
 }
 
 bool CSSPropertyParser::parseFontVariantLigatures(bool important)

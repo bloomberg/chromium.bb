@@ -48,6 +48,7 @@ class CSSValueList;
 class CSSBasicShape;
 class CSSBasicShapeInset;
 class CSSGridLineNamesValue;
+class CSSLineBoxContainValue;
 class StylePropertyShorthand;
 
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
@@ -254,22 +255,21 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseMotionPath();
     PassRefPtrWillBeRawPtr<CSSValue> parseMotionRotation();
 
-    bool parseTextEmphasisStyle(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseTextEmphasisStyle();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
     PassRefPtrWillBeRawPtr<CSSValue> parseScrollBlocksOn();
 
     void addTextDecorationProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
     bool parseTextDecoration(CSSPropertyID propId, bool important);
-    bool parseTextUnderlinePosition(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextIndent();
 
-    bool parseLineBoxContain(bool important);
+    PassRefPtrWillBeRawPtr<CSSLineBoxContainValue> parseLineBoxContain();
     bool parseCalculation(CSSParserValue*, ValueRange);
 
     bool parseFontFeatureTag(CSSValueList*);
-    bool parseFontFeatureSettings(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseFontFeatureSettings();
 
     bool parseFontVariantLigatures(bool important);
 
