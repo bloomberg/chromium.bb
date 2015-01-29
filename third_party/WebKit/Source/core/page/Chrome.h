@@ -37,7 +37,6 @@ class ColorChooserClient;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class FileChooser;
-class FloatRect;
 class LocalFrame;
 class HTMLInputElement;
 class HitTestResult;
@@ -73,10 +72,10 @@ public:
 
     void setCursor(const Cursor&);
 
-    void setWindowRect(const FloatRect&) const;
-    FloatRect windowRect() const;
+    void setWindowRect(const IntRect&) const;
+    IntRect windowRect() const;
 
-    FloatRect pageRect() const;
+    IntRect pageRect() const;
 
     void focus() const;
 

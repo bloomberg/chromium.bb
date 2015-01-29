@@ -36,7 +36,6 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/PlatformScreen.h"
-#include "platform/geometry/FloatRect.h"
 
 namespace blink {
 

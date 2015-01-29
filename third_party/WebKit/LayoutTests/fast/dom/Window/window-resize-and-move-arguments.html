@@ -17,7 +17,7 @@
 
     function reset()
     {
-        window.moveTo(0, 0);
+        window.moveTo(screen.availLeft + 100, screen.availTop + 100);
         window.resizeTo(300, 200);
         resetWidth = window.outerWidth;
         resetHeight = window.outerHeight;
@@ -87,14 +87,14 @@
 
     debug("Testing - moveTo with 0 arguments");
     window.moveTo();
-    shouldBe('window.screenX', 'screen.availLeft');
-    shouldBe('window.screenY', 'screen.availTop');
+    shouldBe('window.screenX', 'resetX');
+    shouldBe('window.screenY', 'resetY');
     reset();
 
     debug("Testing - moveTo with 1 argument");
     window.moveTo(x);
     shouldBe('window.screenX', 'Math.max(x, screen.availLeft)');
-    shouldBe('window.screenY', 'screen.availTop');
+    shouldBe('window.screenY', 'resetY');
     reset();
 
     debug("Testing - moveTo with more than 2 arguments");

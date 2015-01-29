@@ -34,17 +34,17 @@
 
 namespace blink {
 
-class FloatRect;
+class IntRect;
 
 struct WindowFeatures {
     WindowFeatures()
-        : x(0.0f)
+        : x(0)
         , xSet(false)
-        , y(0.0f)
+        , y(0)
         , ySet(false)
-        , width(0.0f)
+        , width(0)
         , widthSet(false)
-        , height(0.0f)
+        , height(0)
         , heightSet(false)
         , menuBarVisible(true)
         , statusBarVisible(true)
@@ -57,15 +57,15 @@ struct WindowFeatures {
     {
     }
     explicit WindowFeatures(const String& windowFeaturesString);
-    WindowFeatures(const String& dialogFeaturesString, const FloatRect& screenAvailableRect);
+    WindowFeatures(const String& dialogFeaturesString, const IntRect& screenAvailableRect);
 
-    float x;
+    int x;
     bool xSet;
-    float y;
+    int y;
     bool ySet;
-    float width;
+    int width;
     bool widthSet;
-    float height;
+    int height;
     bool heightSet;
 
     bool menuBarVisible;
@@ -84,7 +84,7 @@ private:
     using DialogFeaturesMap = HashMap<String, String>;
     static void parseDialogFeatures(const String&, HashMap<String, String>&);
     static bool boolFeature(const DialogFeaturesMap&, const char* key, bool defaultValue = false);
-    static float floatFeature(const DialogFeaturesMap&, const char* key, float min, float max, float defaultValue);
+    static int intFeature(const DialogFeaturesMap&, const char* key, int min, int max, int defaultValue);
     void setWindowFeature(const String& keyString, const String& valueString);
 };
 

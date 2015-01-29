@@ -70,9 +70,9 @@ public:
 
     // ChromeClient methods:
     virtual void chromeDestroyed() override;
-    virtual void setWindowRect(const FloatRect&) override;
-    virtual FloatRect windowRect() override;
-    virtual FloatRect pageRect() override;
+    virtual void setWindowRect(const IntRect&) override;
+    virtual IntRect windowRect() override;
+    virtual IntRect pageRect() override;
     virtual void focus() override;
     virtual bool canTakeFocus(WebFocusType) override;
     virtual void takeFocus(WebFocusType) override;

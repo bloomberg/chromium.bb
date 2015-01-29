@@ -39,7 +39,7 @@
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
 #include "platform/DragImage.h"
-#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
@@ -70,10 +70,10 @@ public:
     virtual void chromeDestroyed() override { }
 
     virtual void* webView() const override { return 0; }
-    virtual void setWindowRect(const FloatRect&) override { }
-    virtual FloatRect windowRect() override { return FloatRect(); }
+    virtual void setWindowRect(const IntRect&) override { }
+    virtual IntRect windowRect() override { return IntRect(); }
 
-    virtual FloatRect pageRect() override { return FloatRect(); }
+    virtual IntRect pageRect() override { return IntRect(); }
 
     virtual void focus() override { }
 

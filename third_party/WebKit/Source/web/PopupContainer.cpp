@@ -112,7 +112,7 @@ void PopupContainer::trace(Visitor* visitor)
     Widget::trace(visitor);
 }
 
-IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
+IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const IntRect& windowRect, const IntRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
 {
     ASSERT(listBox);
     if (windowRect.x() >= screen.x() && windowRect.maxX() <= screen.maxX() && (widgetRectInScreen.x() < screen.x() || widgetRectInScreen.maxX() > screen.maxX())) {
@@ -121,9 +121,8 @@ IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectI
         IntRect inverseWidgetRectInScreen = widgetRectInScreen;
         inverseWidgetRectInScreen.setX(inverseWidgetRectInScreen.x() + (isRTL ? -rtlOffset : rtlOffset));
         inverseWidgetRectInScreen.setY(inverseWidgetRectInScreen.y() + (isRTL ? -verticalOffset : verticalOffset));
-        IntRect enclosingScreen = enclosingIntRect(screen);
-        unsigned originalCutoff = std::max(enclosingScreen.x() - widgetRectInScreen.x(), 0) + std::max(widgetRectInScreen.maxX() - enclosingScreen.maxX(), 0);
-        unsigned inverseCutoff = std::max(enclosingScreen.x() - inverseWidgetRectInScreen.x(), 0) + std::max(inverseWidgetRectInScreen.maxX() - enclosingScreen.maxX(), 0);
+        unsigned originalCutoff = std::max(screen.x() - widgetRectInScreen.x(), 0) + std::max(widgetRectInScreen.maxX() - screen.maxX(), 0);
+        unsigned inverseCutoff = std::max(screen.x() - inverseWidgetRectInScreen.x(), 0) + std::max(inverseWidgetRectInScreen.maxX() - screen.maxX(), 0);
 
         // Accept the inverse popup alignment if the trimmed content gets
         // shorter than that in the original alignment case.
@@ -198,7 +197,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     IntRect widgetRectInScreen;
     // If the popup would extend past the bottom of the screen, open upwards
     // instead.
-    FloatRect screen = screenAvailableRect(m_frameView.get());
+    IntRect screen = screenAvailableRect(m_frameView.get());
     // Use popupInitialCoordinate.x() + rightOffset because RTL position
     // needs to be considered.
     float pageScaleFactor = m_frameView->frame().page()->pageScaleFactor();
@@ -209,7 +208,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     // If we have multiple screens and the browser rect is in one screen, we
     // have to clip the window width to the screen width.
     // When clipping, we also need to set a maximum width for the list box.
-    FloatRect windowRect = chromeClient().windowRect();
+    IntRect windowRect = chromeClient().windowRect();
 
     bool needToResizeView = false;
     widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, verticalOffset, transformOffset, m_listBox.get(), needToResizeView);

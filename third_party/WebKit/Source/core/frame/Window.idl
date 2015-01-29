@@ -101,10 +101,10 @@
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo([Default=Undefined] optional ScrollToOptions scrollToOptions);
     void scroll(double x, double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scroll([Default=Undefined] optional ScrollToOptions scrollOptions);
-    void moveBy([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.
-    void moveTo([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.
-    void resizeBy([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.
-    void resizeTo([Default=Undefined] optional float width, [Default=Undefined] optional float height); // FIXME: this should take longs not floats.
+    void moveBy(optional long x = 0, optional long y = 0);
+    void moveTo(optional long x, optional long y); // FIXME: Arguments should not be optional, or should have defaults.
+    void resizeBy(optional long x = 0, optional long y = 0);
+    void resizeTo(optional long width, optional long height); // FIXME: Arguments should not be optional, or should have defaults.
 
     [DoNotCheckSecurity] readonly attribute boolean closed;
 

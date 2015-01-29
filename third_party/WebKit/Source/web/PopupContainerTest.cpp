@@ -76,17 +76,17 @@ static IntRect calculatePositionWithTransformAndRTL(const IntRect& initialRect, 
 {
     const bool isRTL = true;
     const int targetControlHeight = 20;
-    const FloatRect screenRect(0, 0, screenMaxX, screenMaxY);
-    const FloatRect windowRect(0, 0, 512, 512);
+    const IntRect screenRect(0, 0, screenMaxX, screenMaxY);
+    const IntRect windowRect(0, 0, 512, 512);
     int rtlOffset = targetControlWidth - initialRect.width();
     bool needToResizeView = false;
     return PopupContainer::layoutAndCalculateWidgetRectInternal(initialRect, targetControlHeight, windowRect, screenRect, !isRTL, rtlOffset, verticalOffset, transformOffset, content, needToResizeView);
 }
 
-static IntRect calculatePosition(const IntRect& initialRect, PopupContent* content, FloatRect windowRect = FloatRect(0, 0, 512, 512), bool isRTL = true)
+static IntRect calculatePosition(const IntRect& initialRect, PopupContent* content, IntRect windowRect = IntRect(0, 0, 512, 512), bool isRTL = true)
 {
     const int targetControlHeight = 20;
-    const FloatRect screenRect(0, 0, screenMaxX, screenMaxY);
+    const IntRect screenRect(0, 0, screenMaxX, screenMaxY);
     int rtlOffset = (targetControlWidth - initialRect.width()) * (isRTL ? 1 : -1);
     bool needToResizeView = false;
     return PopupContainer::layoutAndCalculateWidgetRectInternal(initialRect, targetControlHeight, windowRect, screenRect, !isRTL, rtlOffset, 0, IntSize(), content, needToResizeView);
@@ -170,7 +170,7 @@ TEST(PopupContainerTest, PopupPosition)
         // There is not enough room to the right, so open the popup menu to the left.
         IntRect initialRect(screenMaxX - targetControlWidth - 6, 100, targetControlWidth * 2, 100);
         MockPopupContent content(initialRect.size());
-        IntRect resultRect = calculatePosition(initialRect, &content, FloatRect(0, 0, screenMaxX, screenMaxY), false);
+        IntRect resultRect = calculatePosition(initialRect, &content, IntRect(0, 0, screenMaxX, screenMaxY), false);
         EXPECT_EQ(IntRect(758, 100, 260, 100), resultRect);
     }
 

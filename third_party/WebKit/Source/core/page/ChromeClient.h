@@ -48,7 +48,6 @@ class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
 class FileChooser;
-class FloatRect;
 class Frame;
 class GraphicsContext;
 class GraphicsLayer;
@@ -74,10 +73,10 @@ class ChromeClient {
 public:
     virtual void chromeDestroyed() = 0;
 
-    virtual void setWindowRect(const FloatRect&) = 0;
-    virtual FloatRect windowRect() = 0;
+    virtual void setWindowRect(const IntRect&) = 0;
+    virtual IntRect windowRect() = 0;
 
-    virtual FloatRect pageRect() = 0;
+    virtual IntRect pageRect() = 0;
 
     virtual void focus() = 0;
 
@@ -214,7 +213,7 @@ public:
     virtual bool requestPointerLock() { return false; }
     virtual void requestPointerUnlock() { }
 
-    virtual FloatSize minimumWindowSize() const { return FloatSize(100, 100); }
+    virtual IntSize minimumWindowSize() const { return IntSize(100, 100); }
 
     virtual bool isChromeClientImpl() const { return false; }
 

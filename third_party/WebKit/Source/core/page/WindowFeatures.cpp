@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/page/WindowFeatures.h"
 
-#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringHash.h"
@@ -165,7 +165,7 @@ void WindowFeatures::setWindowFeature(const String& keyString, const String& val
         additionalFeatures.append(keyString);
 }
 
-WindowFeatures::WindowFeatures(const String& dialogFeaturesString, const FloatRect& screenAvailableRect)
+WindowFeatures::WindowFeatures(const String& dialogFeaturesString, const IntRect& screenAvailableRect)
     : widthSet(true)
     , heightSet(true)
     , menuBarVisible(false)
@@ -187,12 +187,12 @@ WindowFeatures::WindowFeatures(const String& dialogFeaturesString, const FloatRe
     // - help: boolFeature(features, "help", true), makes help icon appear in dialog (what does it do on Windows?)
     // - unadorned: trusted && boolFeature(features, "unadorned");
 
-    width = floatFeature(features, "dialogwidth", 100, screenAvailableRect.width(), 620); // default here came from frame size of dialog in MacIE
-    height = floatFeature(features, "dialogheight", 100, screenAvailableRect.height(), 450); // default here came from frame size of dialog in MacIE
+    width = intFeature(features, "dialogwidth", 100, screenAvailableRect.width(), 620); // default here came from frame size of dialog in MacIE
+    height = intFeature(features, "dialogheight", 100, screenAvailableRect.height(), 450); // default here came from frame size of dialog in MacIE
 
-    x = floatFeature(features, "dialogleft", screenAvailableRect.x(), screenAvailableRect.maxX() - width, -1);
+    x = intFeature(features, "dialogleft", screenAvailableRect.x(), screenAvailableRect.maxX() - width, -1);
     xSet = x > 0;
-    y = floatFeature(features, "dialogtop", screenAvailableRect.y(), screenAvailableRect.maxY() - height, -1);
+    y = intFeature(features, "dialogtop", screenAvailableRect.y(), screenAvailableRect.maxY() - height, -1);
     ySet = y > 0;
 
     if (boolFeature(features, "center", true)) {
@@ -220,23 +220,20 @@ bool WindowFeatures::boolFeature(const DialogFeaturesMap& features, const char* 
     return value.isNull() || value == "1" || value == "yes" || value == "on";
 }
 
-float WindowFeatures::floatFeature(const DialogFeaturesMap& features, const char* key, float min, float max, float defaultValue)
+int WindowFeatures::intFeature(const DialogFeaturesMap& features, const char* key, int min, int max, int defaultValue)
 {
     DialogFeaturesMap::const_iterator it = features.find(key);
     if (it == features.end())
         return defaultValue;
-    // FIXME: The toDouble function does not offer a way to tell "0q" from string with no digits in it: Both
-    // return the number 0 and false for ok. But "0q" should yield the minimum rather than the default.
     bool ok;
-    double parsedNumber = it->value.toDouble(&ok);
-    if ((!parsedNumber && !ok) || std::isnan(parsedNumber))
+    int parsedNumber = it->value.toInt(&ok);
+    if (!ok)
         return defaultValue;
     if (parsedNumber < min || max <= min)
         return min;
     if (parsedNumber > max)
         return max;
-    // FIXME: Seems strange to cast a double to int and then convert back to a float. Why is this a good idea?
-    return static_cast<int>(parsedNumber);
+    return parsedNumber;
 }
 
 void WindowFeatures::parseDialogFeatures(const String& string, DialogFeaturesMap& map)

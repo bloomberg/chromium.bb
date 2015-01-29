@@ -58,7 +58,6 @@
 #include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/exported/WrappedResourceRequest.h"
-#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -145,13 +144,13 @@ void ChromeClientImpl::chromeDestroyed()
     // Our lifetime is bound to the WebViewImpl.
 }
 
-void ChromeClientImpl::setWindowRect(const FloatRect& r)
+void ChromeClientImpl::setWindowRect(const IntRect& r)
 {
     if (m_webView->client())
-        m_webView->client()->setWindowRect(IntRect(r));
+        m_webView->client()->setWindowRect(r);
 }
 
-FloatRect ChromeClientImpl::windowRect()
+IntRect ChromeClientImpl::windowRect()
 {
     WebRect rect;
     if (m_webView->client())
@@ -163,10 +162,10 @@ FloatRect ChromeClientImpl::windowRect()
         rect.width = m_webView->size().width;
         rect.height = m_webView->size().height;
     }
-    return FloatRect(rect);
+    return IntRect(rect);
 }
 
-FloatRect ChromeClientImpl::pageRect()
+IntRect ChromeClientImpl::pageRect()
 {
     // We hide the details of the window's border thickness from the web page by
     // simple re-using the window position here.  So, from the point-of-view of

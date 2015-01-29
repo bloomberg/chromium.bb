@@ -26,7 +26,7 @@
 #ifndef PlatformScreen_h
 #define PlatformScreen_h
 
-#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "public/platform/WebScreenOrientationType.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
@@ -39,8 +39,8 @@ PLATFORM_EXPORT int screenDepth(Widget*);
 PLATFORM_EXPORT int screenDepthPerComponent(Widget*);
 PLATFORM_EXPORT bool screenIsMonochrome(Widget*);
 
-PLATFORM_EXPORT FloatRect screenRect(Widget*);
-PLATFORM_EXPORT FloatRect screenAvailableRect(Widget*);
+PLATFORM_EXPORT IntRect screenRect(Widget*);
+PLATFORM_EXPORT IntRect screenAvailableRect(Widget*);
 
 PLATFORM_EXPORT uint16_t screenOrientationAngle(Widget*);
 PLATFORM_EXPORT WebScreenOrientationType screenOrientationType(Widget*);

@@ -72,19 +72,19 @@ bool screenIsMonochrome(Widget* widget)
     return hostWindow->screenInfo().isMonochrome;
 }
 
-FloatRect screenRect(Widget* widget)
+IntRect screenRect(Widget* widget)
 {
     HostWindow* hostWindow = toHostWindow(widget);
     if (!hostWindow)
-        return FloatRect();
+        return IntRect();
     return IntRect(hostWindow->screenInfo().rect);
 }
 
-FloatRect screenAvailableRect(Widget* widget)
+IntRect screenAvailableRect(Widget* widget)
 {
     HostWindow* hostWindow = toHostWindow(widget);
     if (!hostWindow)
-        return FloatRect();
+        return IntRect();
     return IntRect(hostWindow->screenInfo().availableRect);
 }
 

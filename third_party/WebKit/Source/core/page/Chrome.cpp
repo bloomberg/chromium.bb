@@ -38,7 +38,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "platform/FileChooser.h"
 #include "platform/Logging.h"
-#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/network/DNS.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/PassRefPtr.h"
@@ -84,17 +84,17 @@ void Chrome::contentsSizeChanged(LocalFrame* frame, const IntSize& size) const
     m_client->contentsSizeChanged(frame, size);
 }
 
-void Chrome::setWindowRect(const FloatRect& rect) const
+void Chrome::setWindowRect(const IntRect& rect) const
 {
     m_client->setWindowRect(rect);
 }
 
-FloatRect Chrome::windowRect() const
+IntRect Chrome::windowRect() const
 {
     return m_client->windowRect();
 }
 
-FloatRect Chrome::pageRect() const
+IntRect Chrome::pageRect() const
 {
     return m_client->pageRect();
 }

@@ -56,7 +56,7 @@ WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameVi
     if (LayoutTestSupport::isRunningLayoutTest())
         return WebScreenOrientationPortraitPrimary;
 
-    FloatRect rect = screenRect(view);
+    IntRect rect = screenRect(view);
     uint16_t rotation = screenOrientationAngle(view);
     bool isTallDisplay = rotation % 180 ? rect.height() < rect.width() : rect.height() > rect.width();
     switch (rotation) {

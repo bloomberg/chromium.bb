@@ -80,14 +80,14 @@ private:
         m_popup->closePopup();
     }
 
-    virtual FloatRect windowRect() override
+    virtual IntRect windowRect() override
     {
-        return FloatRect(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y, m_popup->m_windowRectInScreen.width, m_popup->m_windowRectInScreen.height);
+        return IntRect(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y, m_popup->m_windowRectInScreen.width, m_popup->m_windowRectInScreen.height);
     }
 
-    virtual void setWindowRect(const FloatRect& rect) override
+    virtual void setWindowRect(const IntRect& rect) override
     {
-        m_popup->m_windowRectInScreen = IntRect(rect);
+        m_popup->m_windowRectInScreen = rect;
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
     }
 
@@ -136,9 +136,9 @@ private:
         return m_popup->m_webView;
     }
 
-    virtual FloatSize minimumWindowSize() const override
+    virtual IntSize minimumWindowSize() const override
     {
-        return FloatSize(0, 0);
+        return IntSize(0, 0);
     }
 
     virtual void setCursor(const Cursor& cursor) override
