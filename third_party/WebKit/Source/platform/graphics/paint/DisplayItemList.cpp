@@ -57,7 +57,9 @@ PaintList::iterator DisplayItemList::findNextMatchingCachedItem(PaintList::itera
 
     for (PaintList::iterator it = begin; it != end; ++it) {
         DisplayItem& existing = **it;
-        if (existing.idsEqual(displayItem))
+        if (existing.isDrawing()
+            && existing.client() == displayItem.client()
+            && existing.type() == DisplayItem::cachedTypeToDrawingType(displayItem.type()))
             return it;
     }
 

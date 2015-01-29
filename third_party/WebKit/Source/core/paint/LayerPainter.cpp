@@ -609,40 +609,17 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
 {
     OwnPtr<LayerClipRecorder> clipRecorder;
     if (clipState != HasClipped && paintingInfo.clipToDirtyRect && needsToClip(paintingInfo, clipRect)) {
-        LayerClipRecorder::BorderRadiusClippingRule clippingRule = LayerClipRecorder::IncludeSelfForBorderRadius;
-        DisplayItem::Type clipType = DisplayItem::ClipLayerFragmentFloat;
+        DisplayItem::Type clipType = DisplayItem::paintPhaseToClipLayerFragmentType(phase);
+        LayerClipRecorder::BorderRadiusClippingRule clippingRule;
         switch (phase) {
-        case PaintPhaseFloat:
-            break;
-        case PaintPhaseForeground:
-            clipType = DisplayItem::ClipLayerFragmentForeground;
-            break;
-        case PaintPhaseChildOutlines:
-            clipType = DisplayItem::ClipLayerFragmentChildOutline;
-            break;
-        case PaintPhaseSelection:
-            clipType = DisplayItem::ClipLayerFragmentSelection;
-            break;
-        case PaintPhaseChildBlockBackgrounds:
-            clipType = DisplayItem::ClipLayerFragmentChildBlockBackgrounds;
-            break;
-        case PaintPhaseBlockBackground:
-            clipType = DisplayItem::ClipLayerBackground;
-            clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius; // Background painting will handle clipping to self.
-            break;
+        case PaintPhaseBlockBackground: // Background painting will handle clipping to self.
         case PaintPhaseSelfOutline:
-            clipType = DisplayItem::ClipLayerFragmentOutline;
+        case PaintPhaseMask: // Mask painting will handle clipping to self.
             clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius;
             break;
-        case PaintPhaseMask:
-            clipType = DisplayItem::ClipLayerFragmentMask;
-            clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius; // Mask painting will handle clipping to self.
-            break;
-        case PaintPhaseClippingMask:
-            clipType = DisplayItem::ClipLayerFragmentClippingMask;
-            break;
         default:
-            ASSERT_NOT_REACHED();
+            clippingRule = LayerClipRecorder::IncludeSelfForBorderRadius;
+            break;
         }
 
         clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));

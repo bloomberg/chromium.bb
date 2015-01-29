@@ -44,6 +44,7 @@ private:
 
     GraphicsContext* m_graphicsContext;
     const RenderLayerModelObject* m_renderer;
+    DisplayItem::Type m_clipType;
 };
 
 } // namespace blink

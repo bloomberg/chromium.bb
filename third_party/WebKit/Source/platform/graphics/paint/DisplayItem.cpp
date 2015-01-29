@@ -9,79 +9,103 @@ namespace blink {
 
 #ifndef NDEBUG
 
-WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
+static WTF::String paintPhaseAsDebugString(int paintPhase)
 {
+    // Must be kept in sync with PaintPhase.
+    switch (paintPhase) {
+    case 0: return "PaintPhaseBlockBackground";
+    case 1: return "PaintPhaseChildBlockBackground";
+    case 2: return "PaintPhaseChildBlockBackgrounds";
+    case 3: return "PaintPhaseFloat";
+    case 4: return "PaintPhaseForeground";
+    case 5: return "PaintPhaseOutline";
+    case 6: return "PaintPhaseChildOutlines";
+    case 7: return "PaintPhaseSelfOutline";
+    case 8: return "PaintPhaseSelection";
+    case 9: return "PaintPhaseCollapsedTableBorders";
+    case 10: return "PaintPhaseTextClip";
+    case 11: return "PaintPhaseMask";
+    case 12: return "PaintPhaseClippingMask";
+    case 13: return "PaintPhaseCaret";
+    default:
+        ASSERT_NOT_REACHED();
+        return "Unknown";
+    }
+}
+
+#define PAINT_PHASE_BASED_DEBUG_STRINGS(Category) \
+    if (type >= DisplayItem::Category##PaintPhaseFirst && type <= DisplayItem::Category##PaintPhaseLast) \
+        return #Category + paintPhaseAsDebugString(type - DisplayItem::Category##PaintPhaseFirst);
+
+static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
+{
+    PAINT_PHASE_BASED_DEBUG_STRINGS(Drawing);
+
     switch (type) {
-    case DisplayItem::DrawingPaintPhaseBlockBackground: return "DrawingPaintPhaseBlockBackground";
-    case DisplayItem::DrawingPaintPhaseChildBlockBackground: return "DrawingPaintPhaseChildBlockBackground";
-    case DisplayItem::DrawingPaintPhaseChildBlockBackgrounds: return "DrawingPaintPhaseChildBlockBackgrounds";
-    case DisplayItem::DrawingPaintPhaseFloat: return "DrawingPaintPhaseFloat";
-    case DisplayItem::DrawingPaintPhaseForeground: return "DrawingPaintPhaseForeground";
-    case DisplayItem::DrawingPaintPhaseOutline: return "DrawingPaintPhaseOutline";
-    case DisplayItem::DrawingPaintPhaseChildOutlines: return "DrawingPaintPhaseChildOutlines";
-    case DisplayItem::DrawingPaintPhaseSelfOutline: return "DrawingPaintPhaseSelfOutline";
-    case DisplayItem::DrawingPaintPhaseSelection: return "DrawingPaintPhaseSelection";
-    case DisplayItem::DrawingPaintPhaseCollapsedTableBorders: return "DrawingPaintPhaseCollapsedTableBorders";
-    case DisplayItem::DrawingPaintPhaseTextClip: return "DrawingPaintPhaseTextClip";
-    case DisplayItem::DrawingPaintPhaseMask: return "DrawingPaintPhaseMask";
-    case DisplayItem::DrawingPaintPhaseClippingMask: return "DrawingPaintPhaseClippingMask";
-    case DrawingPaintPhaseCaret: return "DrawingPaintPhaseCaret";
+    case DisplayItem::ColumnRules: return "ColumnRules";
+    case DisplayItem::DragImage: return "DragImage";
+    case DisplayItem::LinkHighlight: return "LinkHighlight";
+    case DisplayItem::PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
+    case DisplayItem::Resizer: return "Resizer";
+    case DisplayItem::Scrollbar: return "Scrollbar";
+    case DisplayItem::ScrollbarCorner: return "ScrollbarCorner";
+    case DisplayItem::ScrollbarTickMark: return "ScrollbarTickMark";
+    case DisplayItem::VideoBitmap: return "VideoBitmap";
+    case DisplayItem::ViewBackground: return "ViewBackground";
+    default:
+        ASSERT_NOT_REACHED();
+        return "Unknown";
+    }
+}
+
+static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
+{
+    PAINT_PHASE_BASED_DEBUG_STRINGS(ClipBox);
+    PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
+
+    switch (type) {
     case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
     case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
-    case DisplayItem::ClipLayerParent: return "ClipLayerParent";
     case DisplayItem::ClipLayerFilter: return "ClipLayerFilter";
     case DisplayItem::ClipLayerForeground: return "ClipLayerForeground";
-    case DisplayItem::ClipLayerFragmentFloat: return "ClipLayerFragmentFloat";
-    case DisplayItem::ClipLayerFragmentForeground: return "ClipLayerFragmentForeground";
-    case DisplayItem::ClipLayerFragmentChildOutline: return "ClipLayerFragmentChildOutline";
-    case DisplayItem::ClipLayerFragmentOutline: return "ClipLayerFragmentOutline";
-    case DisplayItem::ClipLayerFragmentMask: return "ClipLayerFragmentMask";
-    case DisplayItem::ClipLayerFragmentClippingMask: return "ClipLayerFragmentClippingMask";
-    case DisplayItem::ClipLayerFragmentParent: return "ClipLayerFragmentParent";
-    case DisplayItem::ClipLayerFragmentSelection: return "ClipLayerFragmentSelection";
-    case DisplayItem::ClipLayerFragmentChildBlockBackgrounds: return "ClipLayerFragmentChildBlockBackgrounds";
-    case DisplayItem::EndClip: return "EndClip";
-    case DisplayItem::BeginFilter: return "BeginFilter";
-    case DisplayItem::EndFilter: return "EndFilter";
+    case DisplayItem::ClipNodeImage: return "ClipNodeImage";
+    case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
+    case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
+    case DisplayItem::ClipSelectionImage: return "ClipSelectionImage";
+    case DisplayItem::PageWidgetDelegateClip: return "PageWidgetDelegateClip";
     case DisplayItem::TransparencyClip: return "TransparencyClip";
-    case DisplayItem::BeginCompositing: return "BeginCompositing";
-    case DisplayItem::EndCompositing: return "EndCompositing";
-    case ClipBoxChildBlockBackgrounds: return "ClipBoxChildBlockBackgrounds";
-    case ClipBoxFloat: return "ClipBoxFloat";
-    case ClipBoxForeground: return "ClipBoxForeground";
-    case ClipBoxChildOutlines: return "ClipBoxChildOutlines";
-    case ClipBoxSelection: return "ClipBoxSelection";
-    case ClipBoxCollapsedTableBorders: return "ClipBoxCollapsedTableBorders";
-    case ClipBoxTextClip: return "ClipBoxTextClip";
-    case ClipBoxClippingMask: return "ClipBoxClippingMask";
+    default:
+        ASSERT_NOT_REACHED();
+        return "Unknown";
+    }
+}
+
+WTF::String DisplayItem::typeAsDebugString(Type type)
+{
+    if (isDrawingType(type))
+        return drawingTypeAsDebugString(type);
+    if (isCachedType(type))
+        return "Cached" + drawingTypeAsDebugString(cachedTypeToDrawingType(type));
+    if (isClipType(type))
+        return clipTypeAsDebugString(type);
+    if (isEndClipType(type))
+        return "End" + clipTypeAsDebugString(endClipTypeToClipType(type));
+    PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);
+
+    switch (type) {
+    case BeginFilter: return "BeginFilter";
+    case EndFilter: return "EndFilter";
+    case BeginCompositing: return "BeginCompositing";
+    case EndCompositing: return "EndCompositing";
     case BeginTransform: return "BeginTransform";
     case EndTransform: return "EndTransform";
-    case ScrollbarCorner: return "ScrollbarCorner";
-    case Scrollbar: return "Scrollbar";
-    case ScrollbarTickMark: return "ScrollbarTickMark";
-    case Resizer: return "Resizer";
-    case ColumnRules: return "ColumnRules";
-    case ClipNodeImage: return "ClipNodeImage";
-    case ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
-    case ClipFrameScrollbars: return "ClipFrameScrollbars";
-    case ClipSelectionImage: return "ClipSelectionImage";
-    case FloatClipForeground: return "FloatClipForeground";
-    case FloatClipSelection: return "FloatClipSelection";
-    case FloatClipSelfOutline: return "FloatClipSelfOutline";
-    case EndFloatClip: return "EndFloatClip";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
-    case VideoBitmap: return "VideoBitmap";
-    case ImageBitmap: return "ImageBitmap";
-    case DragImage: return "DragImage";
-    case LinkHighlight: return "LinkHighlight";
-    case PageWidgetDelegateClip: return "PageWidgetDelegateClip";
-    case PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
-    case ViewBackground: return "ViewBackground";
     case SVGFilter: return "SVGFilter";
+    default:
+        ASSERT_NOT_REACHED();
+        return "Unknown";
     }
-    ASSERT_NOT_REACHED();
-    return "Unknown";
 }
 
 WTF::String DisplayItem::asDebugString() const

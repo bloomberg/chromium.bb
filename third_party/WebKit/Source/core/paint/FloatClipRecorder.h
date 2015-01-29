@@ -7,19 +7,19 @@
 
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
 class FloatClipRecorder {
 public:
-    FloatClipRecorder(GraphicsContext&, DisplayItemClient, const PaintPhase&, const FloatRect&);
+    FloatClipRecorder(GraphicsContext&, DisplayItemClient, PaintPhase, const FloatRect&);
     ~FloatClipRecorder();
 
 private:
-    static DisplayItem::Type paintPhaseToFloatClipType(PaintPhase);
-
     GraphicsContext& m_context;
     DisplayItemClient m_client;
+    DisplayItem::Type m_clipType;
 };
 
 } // namespace blink

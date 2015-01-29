@@ -55,7 +55,7 @@ DrawingRecorder::~DrawingRecorder()
         RefPtr<const SkPicture> picture = m_context->endRecording();
         ASSERT(!picture || !picture->approximateOpCount());
 #endif
-        displayItem = CachedDisplayItem::create(m_displayItemClient, m_displayItemType);
+        displayItem = CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType));
     } else {
         RefPtr<const SkPicture> picture = m_context->endRecording();
         if (!picture || !picture->approximateOpCount())

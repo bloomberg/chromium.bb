@@ -104,8 +104,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(renderView(), DisplayItem::ClipLayerForeground),
-        TestDisplayItem(renderView(), DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(renderView(), DisplayItem::EndClip));
+        TestDisplayItem(renderView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(renderView(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 }
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
@@ -121,9 +121,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseChildBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseChildBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
@@ -131,8 +131,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
@@ -149,9 +149,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(unaffected, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(unaffected, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
@@ -160,9 +160,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(unaffected, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(unaffected, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 }
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
@@ -178,8 +178,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
     rootDisplayItemList().invalidate(third->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -188,9 +188,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 }
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
@@ -213,15 +213,15 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -236,27 +236,27 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     // The following is only applicable when we support incremental paint.
 #if 0
     rootDisplayItemList().invalidate(second->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 6,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 #endif
 }
 
@@ -272,24 +272,24 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
 // This test is only applicable when we support incremental paint.
@@ -304,8 +304,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
     rootDisplayItemList().invalidate(second->displayItemClient());
@@ -315,18 +315,18 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
 // This test is only applicable when we support incremental paint.
@@ -341,24 +341,24 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastNoOverlap)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(second->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
 // This test is only applicable when we support incremental paint.
@@ -373,8 +373,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
     rootDisplayItemList().invalidate(second->displayItemClient());
@@ -384,10 +384,10 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
     rootDisplayItemList().invalidate(first->displayItemClient());
     rootDisplayItemList().invalidate(second->displayItemClient());
@@ -395,8 +395,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
@@ -416,9 +416,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
         TestDisplayItem(firstRenderer, DisplayItem::ClipLayerForeground),
-        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(firstRenderer, DisplayItem::EndClip));
+        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(firstRenderer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 
     rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -426,8 +426,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
     rootDisplayItemList().invalidate(secondRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -439,10 +439,10 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
+        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(secondRenderer, DisplayItem::ClipLayerForeground),
-        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(secondRenderer, DisplayItem::EndClip));
+        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondRenderer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 }
 
 TEST_F(ViewDisplayListTest, CachedDisplayItems)
@@ -459,8 +459,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
     DisplayItem* firstDisplayItem = rootDisplayItemList().paintList()[0].get();
@@ -475,8 +475,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
+        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
     // The first display item should be updated.
     EXPECT_NE(firstDisplayItem, rootDisplayItemList().paintList()[0].get());
     // The second display item should be cached.
@@ -506,8 +506,8 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(textRenderer, DisplayItem::DrawingPaintPhaseForeground));
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(textRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div->focus();
     document().view()->updateLayoutAndStyleForPainting();
@@ -515,9 +515,9 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
-        TestDisplayItem(textRenderer, DisplayItem::DrawingPaintPhaseForeground),
-        TestDisplayItem(divRenderer, DisplayItem::DrawingPaintPhaseCaret));
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(textRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseCaret)));
 }
 
 } // anonymous namespace

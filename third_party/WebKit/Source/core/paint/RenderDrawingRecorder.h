@@ -17,7 +17,7 @@ class RenderObject;
 
 class RenderDrawingRecorder {
 public:
-    explicit RenderDrawingRecorder(GraphicsContext*, const RenderObject&, PaintPhase, const FloatRect&);
+    RenderDrawingRecorder(GraphicsContext*, const RenderObject&, PaintPhase, const FloatRect&);
 
     ~RenderDrawingRecorder();
 

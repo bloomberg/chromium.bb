@@ -15,6 +15,7 @@ namespace blink {
 ClipRecorder::ClipRecorder(DisplayItemClient client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
     : m_client(client)
     , m_context(context)
+    , m_type(type)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());
@@ -27,11 +28,12 @@ ClipRecorder::ClipRecorder(DisplayItemClient client, GraphicsContext* context, D
 
 ClipRecorder::~ClipRecorder()
 {
+    DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_type);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());
-        m_context->displayItemList()->add(EndClipDisplayItem::create(m_client));
+        m_context->displayItemList()->add(EndClipDisplayItem::create(m_client, endType));
     } else {
-        EndClipDisplayItem endClipDisplayItem(m_client);
+        EndClipDisplayItem endClipDisplayItem(m_client, endType);
         endClipDisplayItem.replay(m_context);
     }
 }

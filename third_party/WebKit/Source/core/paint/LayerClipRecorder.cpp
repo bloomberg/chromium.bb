@@ -21,6 +21,7 @@ LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, Gra
     const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext)
     , m_renderer(renderer)
+    , m_clipType(clipType)
 {
     ASSERT(renderer);
 
@@ -78,7 +79,8 @@ void LayerClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const 
 LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(m_renderer->displayItemClient());
+        DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
+        OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(m_renderer->displayItemClient(), endType);
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(endClip.release());
     } else {

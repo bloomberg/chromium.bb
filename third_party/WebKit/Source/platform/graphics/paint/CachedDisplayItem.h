@@ -21,10 +21,12 @@ public:
         return adoptPtr(new CachedDisplayItem(client, type));
     }
 
-    virtual bool isCached() const { return true; }
-
 private:
-    CachedDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
+    CachedDisplayItem(DisplayItemClient client, Type type)
+        : DisplayItem(client, type)
+    {
+        ASSERT(isCachedType(type));
+    }
 
     // CachedDisplayItem is never replayed or appended to WebDisplayItemList.
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }

@@ -21,23 +21,22 @@ namespace blink {
 class PLATFORM_EXPORT BeginFilterDisplayItem : public DisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
+    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
     {
-        return adoptPtr(new BeginFilterDisplayItem(client, type, imageFilter, bounds));
+        return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds));
     }
 
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
+    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
     {
-        return adoptPtr(new BeginFilterDisplayItem(client, type, imageFilter, bounds, filterOperations));
+        return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds, filterOperations));
     }
-
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-    BeginFilterDisplayItem(DisplayItemClient, Type, PassRefPtr<ImageFilter>, const LayoutRect& bounds);
-    BeginFilterDisplayItem(DisplayItemClient, Type, PassRefPtr<ImageFilter>, const LayoutRect& bounds, const FilterOperations&);
+    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds);
+    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds, const FilterOperations&);
 
 #ifndef NDEBUG
     virtual const char* name() const override { return "BeginFilter"; }

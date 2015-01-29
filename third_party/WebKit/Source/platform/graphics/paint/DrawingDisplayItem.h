@@ -27,7 +27,11 @@ public:
 
 protected:
     DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
-        : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
+        : DisplayItem(client, type), m_picture(picture)
+    {
+        ASSERT(m_picture);
+        ASSERT(isDrawingType(type));
+    }
 
 private:
 #ifndef NDEBUG

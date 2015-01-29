@@ -6,6 +6,7 @@
 #define RoundedInnerRectClipper_h
 
 #include "core/rendering/PaintPhase.h"
+#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
@@ -28,6 +29,7 @@ private:
     RenderObject& m_renderer;
     const PaintInfo& m_paintInfo;
     bool m_useDisplayItemList;
+    DisplayItem::Type m_clipType;
 };
 
 } // namespace blink

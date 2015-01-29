@@ -59,12 +59,12 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // FIXME: verify whether this FilterOperations object and the ImageFilter object constructed above represent the same effect.
         FilterOperations filterOperations(renderLayer.computeFilterOperations(m_renderer->style()));
-        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), DisplayItem::BeginFilter, imageFilter, rootRelativeBounds, filterOperations);
+        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), imageFilter, rootRelativeBounds, filterOperations);
 
         ASSERT(context->displayItemList());
         context->displayItemList()->add(filterDisplayItem.release());
     } else {
-        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), DisplayItem::BeginFilter, imageFilter, rootRelativeBounds);
+        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), imageFilter, rootRelativeBounds);
 
         filterDisplayItem->replay(context);
     }

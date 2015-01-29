@@ -24,7 +24,10 @@ public:
 
     FloatClipDisplayItem(DisplayItemClient client, Type type, const FloatRect& clipRect)
         : DisplayItem(client, type)
-        , m_clipRect(clipRect) { }
+        , m_clipRect(clipRect)
+    {
+        ASSERT(isFloatClipType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -40,13 +43,16 @@ private:
 class PLATFORM_EXPORT EndFloatClipDisplayItem : public DisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client, Type type)
     {
-        return adoptPtr(new EndFloatClipDisplayItem(client));
+        return adoptPtr(new EndFloatClipDisplayItem(client, type));
     }
 
-    EndFloatClipDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndFloatClip) { }
+    EndFloatClipDisplayItem(DisplayItemClient client, Type type)
+        : DisplayItem(client, type)
+    {
+        ASSERT(isEndFloatClipType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;

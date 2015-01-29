@@ -25,75 +25,91 @@ typedef DisplayItemClientInternalVoid* DisplayItemClient;
 
 class PLATFORM_EXPORT DisplayItem {
 public:
+    enum {
+        // Must be kept in sync with core/rendering/PaintPhase.h.
+        PaintPhaseMax = 13,
+    };
+
+    // A display item type uniquely identifies a display item of a client.
+    // Some display item types can be categorized using the following directives:
+    // - In enum Type:
+    //   - enum value <Category>First;
+    //   - enum values of the category, first of which should equal <Category>First;
+    //     (for ease of maintenance, the values should be in alphabetic order)
+    //   - enum value <Category>Last which should be equal to the last of the enum values of the category
+    // - DEFINE_CATEGORY_METHODS(<Category>) to define is<Category>Type(Type) and is<Category>() methods.
+    //
+    // A category or subset of a category can contain types each of which corresponds to a PaintPhase:
+    // - In enum Type:
+    //   - enum value <Category>[<Subset>]PaintPhaseFirst;
+    //   - enum value <Category>[<Subset>]PaintPhaseLast = <Category>[<Subset>]PaintPhaseFirst + PaintPhaseMax;
+    // - DEFINE_PAINT_PHASE_CONVERSION_METHOD(<Category>[<Subset>]) to define
+    //   paintPhaseTo<Category>[<Subset>]Type(PaintPhase) method.
+    //
+    // A category can be derived from another category, containing types each of which corresponds to a
+    // value of the latter category:
+    // - In enum Type:
+    //   - enum value <Category>First;
+    //   - enum value <Category>Last = <Category>First + <BaseCategory>Last - <BaseCategory>First;
+    // - DEFINE_CONVERSION_METHODS(<Category>, <category>, <BaseCategory>, <baseCategory>) to define methods to
+    //   convert types between the categories;
     enum Type {
-        // DisplayItem types must be kept in sync with PaintPhase.
-        DrawingPaintPhaseBlockBackground = 0,
-        DrawingPaintPhaseChildBlockBackground = 1,
-        DrawingPaintPhaseChildBlockBackgrounds = 2,
-        DrawingPaintPhaseFloat = 3,
-        DrawingPaintPhaseForeground = 4,
-        DrawingPaintPhaseOutline = 5,
-        DrawingPaintPhaseChildOutlines = 6,
-        DrawingPaintPhaseSelfOutline = 7,
-        DrawingPaintPhaseSelection = 8,
-        DrawingPaintPhaseCollapsedTableBorders = 9,
-        DrawingPaintPhaseTextClip = 10,
-        DrawingPaintPhaseMask = 11,
-        DrawingPaintPhaseClippingMask = 12,
-        DrawingPaintPhaseCaret = 13,
-        ClipLayerOverflowControls,
-        ClipLayerBackground,
-        ClipLayerParent,
-        ClipLayerFilter,
-        ClipLayerForeground,
-        ClipLayerFragmentFloat,
-        ClipLayerFragmentForeground,
-        ClipLayerFragmentChildOutline,
-        ClipLayerFragmentOutline,
-        ClipLayerFragmentMask,
-        ClipLayerFragmentClippingMask,
-        ClipLayerFragmentParent,
-        ClipLayerFragmentSelection,
-        ClipLayerFragmentChildBlockBackgrounds,
-        EndClip,
-        BeginFilter,
-        EndFilter,
-        TransparencyClip,
-        BeginCompositing,
-        EndCompositing,
-        ClipBoxChildBlockBackgrounds,
-        ClipBoxFloat,
-        ClipBoxForeground,
-        ClipBoxChildOutlines,
-        ClipBoxSelection,
-        ClipBoxCollapsedTableBorders,
-        ClipBoxTextClip,
-        ClipBoxClippingMask,
-        BeginTransform,
-        EndTransform,
-        ScrollbarCorner,
-        Scrollbar,
-        ScrollbarTickMark,
-        Resizer,
+        DrawingFirst,
+        DrawingPaintPhaseFirst = DrawingFirst,
+        DrawingPaintPhaseLast = DrawingFirst + PaintPhaseMax,
         ColumnRules,
-        ClipNodeImage,
-        ClipFrameToVisibleContentRect,
-        ClipFrameScrollbars,
-        ClipSelectionImage,
-        FloatClipForeground,
-        FloatClipSelection,
-        FloatClipSelfOutline,
-        EndFloatClip,
-        BeginClipPath,
-        EndClipPath,
-        VideoBitmap,
-        ImageBitmap,
         DragImage,
         LinkHighlight,
-        PageWidgetDelegateClip,
         PageWidgetDelegateBackgroundFallback,
+        Resizer,
+        SVGFilter,
+        Scrollbar,
+        ScrollbarCorner,
+        ScrollbarTickMark,
+        VideoBitmap,
         ViewBackground,
-        SVGFilter
+        DrawingLast = ViewBackground,
+
+        CachedFirst,
+        CachedLast = CachedFirst + DrawingLast - DrawingFirst,
+
+        ClipFirst,
+        ClipBoxPaintPhaseFirst = ClipFirst,
+        ClipBoxPaintPhaseLast = ClipBoxPaintPhaseFirst + PaintPhaseMax,
+        ClipLayerFragmentPaintPhaseFirst,
+        ClipLayerFragmentPaintPhaseLast = ClipLayerFragmentPaintPhaseFirst + PaintPhaseMax,
+        ClipFrameToVisibleContentRect,
+        ClipFrameScrollbars,
+        ClipLayerBackground,
+        ClipLayerFilter,
+        ClipLayerForeground,
+        ClipLayerParent,
+        ClipLayerOverflowControls,
+        ClipNodeImage,
+        ClipSelectionImage,
+        PageWidgetDelegateClip,
+        TransparencyClip,
+        ClipLast = TransparencyClip,
+
+        EndClipFirst,
+        EndClipLast = EndClipFirst + ClipLast - ClipFirst,
+
+        FloatClipFirst,
+        FloatClipPaintPhaseFirst = FloatClipFirst,
+        FloatClipPaintPhaseLast = FloatClipFirst + PaintPhaseMax,
+        FloatClipLast = FloatClipPaintPhaseLast,
+
+        EndFloatClipFirst,
+        EndFloatClipLast = EndFloatClipFirst + FloatClipLast - FloatClipFirst,
+
+        BeginFilter,
+        EndFilter,
+        BeginCompositing,
+        EndCompositing,
+        BeginTransform,
+        EndTransform,
+        BeginClipPath,
+        EndClipPath,
     };
 
     // Create a dummy display item which just holds the id but has no display operation.
@@ -110,6 +126,35 @@ public:
 
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
 
+    // See comments of enum Type for usage of the following macros.
+#define DEFINE_CATEGORY_METHODS(Category) \
+    static bool is##Category##Type(Type type) { return type >= Category##First && type <= Category##Last; } \
+    bool is##Category() const { return is##Category##Type(type()); }
+
+#define DEFINE_CONVERSION_METHODS(Category1, category1, Category2, category2) \
+    static Type category1##TypeTo##Category2##Type(Type type) { ASSERT(is##Category1##Type(type)); return static_cast<Type>(type - Category1##First + Category2##First); } \
+    static Type category2##TypeTo##Category1##Type(Type type) { ASSERT(is##Category2##Type(type)); return static_cast<Type>(type - Category2##First + Category1##First); }
+
+#define DEFINE_PAIRED_CATEGORY_METHODS(Category, category) \
+    DEFINE_CATEGORY_METHODS(Category) \
+    DEFINE_CATEGORY_METHODS(End##Category) \
+    DEFINE_CONVERSION_METHODS(Category, category, End##Category, end##Category)
+
+#define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category) \
+    static Type paintPhaseTo##Category##Type(int paintPhase) { return static_cast<Type>(paintPhase + Category##PaintPhaseFirst); }
+
+    DEFINE_CATEGORY_METHODS(Drawing)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(Drawing)
+    DEFINE_CATEGORY_METHODS(Cached)
+    DEFINE_CONVERSION_METHODS(Drawing, drawing, Cached, cached)
+
+    DEFINE_PAIRED_CATEGORY_METHODS(Clip, clip)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipLayerFragment)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipBox)
+
+    DEFINE_PAIRED_CATEGORY_METHODS(FloatClip, floatClip)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(FloatClip)
+
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
 
@@ -120,8 +165,6 @@ public:
     virtual const char* name() const { return "Dummy"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
-
-    virtual bool isCached() const { return false; }
 
 protected:
     DisplayItem(DisplayItemClient client, Type type)

@@ -13,49 +13,30 @@
 
 namespace blink {
 
-FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, DisplayItemClient client, const PaintPhase& paintPhase, const FloatRect& clipRect)
+FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, DisplayItemClient client, PaintPhase paintPhase, const FloatRect& clipRect)
     : m_context(context)
     , m_client(client)
+    , m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase))
 {
-    DisplayItem::Type type = paintPhaseToFloatClipType(paintPhase);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(FloatClipDisplayItem::create(m_client, type, clipRect));
+        m_context.displayItemList()->add(FloatClipDisplayItem::create(m_client, m_clipType, clipRect));
     } else {
-        FloatClipDisplayItem clipDisplayItem(m_client, type, clipRect);
+        FloatClipDisplayItem clipDisplayItem(m_client, m_clipType, clipRect);
         clipDisplayItem.replay(&m_context);
     }
 }
 
 FloatClipRecorder::~FloatClipRecorder()
 {
+    DisplayItem::Type endType = DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(EndFloatClipDisplayItem::create(m_client));
+        m_context.displayItemList()->add(EndFloatClipDisplayItem::create(m_client, endType));
     } else {
-        EndFloatClipDisplayItem endClipDisplayItem(m_client);
+        EndFloatClipDisplayItem endClipDisplayItem(m_client, endType);
         endClipDisplayItem.replay(&m_context);
     }
-}
-
-DisplayItem::Type FloatClipRecorder::paintPhaseToFloatClipType(PaintPhase paintPhase)
-{
-    switch (paintPhase) {
-    case PaintPhaseForeground:
-        return DisplayItem::FloatClipForeground;
-        break;
-    case PaintPhaseSelection:
-        return DisplayItem::FloatClipSelection;
-        break;
-    case PaintPhaseSelfOutline:
-        return DisplayItem::FloatClipSelfOutline;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    // This should never happen.
-    return DisplayItem::FloatClipForeground;
 }
 
 } // namespace blink

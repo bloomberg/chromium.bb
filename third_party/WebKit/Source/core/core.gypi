@@ -1702,7 +1702,6 @@
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',
             'rendering/OrderIterator.h',
-            'rendering/PaintInfo.cpp',
             'rendering/PaintInfo.h',
             'rendering/PaintInvalidationState.cpp',
             'rendering/PaintInvalidationState.h',

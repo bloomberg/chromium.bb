@@ -81,7 +81,7 @@ struct PaintInfo {
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }
 
-    DisplayItem::Type displayItemTypeForClipping() const;
+    DisplayItem::Type displayItemTypeForClipping() const { return DisplayItem::paintPhaseToClipBoxType(phase); }
 
     const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }
 

@@ -2111,6 +2111,8 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // RenderLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
         // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software
         // from clipping ancestors (see CompositedLayerMapping::localClipRectForSquashedLayer()).
+        // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
+        // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         {
             OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(displayItemClient(), DisplayItem::ClipLayerOverflowControls, dirtyRect);
@@ -2123,7 +2125,7 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         }
         LayerPainter(*paintInfo.renderLayer).paintLayer(context, paintingInfo, paintLayerFlags);
         {
-            OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(displayItemClient());
+            OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(displayItemClient(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 context->displayItemList()->add(endClipDisplayItem.release());

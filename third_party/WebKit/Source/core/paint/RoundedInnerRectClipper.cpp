@@ -16,9 +16,9 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(RenderObject& renderer, const P
     : m_renderer(renderer)
     , m_paintInfo(paintInfo)
     , m_useDisplayItemList(RuntimeEnabledFeatures::slimmingPaintEnabled() && behavior == ApplyToDisplayListIfEnabled)
+    , m_clipType(m_useDisplayItemList ? m_paintInfo.displayItemTypeForClipping() : DisplayItem::ClipBoxPaintPhaseFirst)
 {
-    DisplayItem::Type clipType = m_useDisplayItemList ? m_paintInfo.displayItemTypeForClipping() : DisplayItem::ClipBoxForeground;
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(renderer.displayItemClient(), clipType, LayoutRect::infiniteIntRect());
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(renderer.displayItemClient(), m_clipType, LayoutRect::infiniteIntRect());
 
     if (clipRect.isRenderable()) {
         clipDisplayItem->roundedRectClips().append(clipRect);
@@ -59,13 +59,14 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(RenderObject& renderer, const P
 
 RoundedInnerRectClipper::~RoundedInnerRectClipper()
 {
-    OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_renderer.displayItemClient());
-
+    DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (m_useDisplayItemList) {
         ASSERT(m_paintInfo.context->displayItemList());
+        OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_renderer.displayItemClient(), endType);
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
-        endClipDisplayItem->replay(m_paintInfo.context);
+        EndClipDisplayItem endClipDisplayItem(m_renderer.displayItemClient(), endType);
+        endClipDisplayItem.replay(m_paintInfo.context);
     }
 }
 

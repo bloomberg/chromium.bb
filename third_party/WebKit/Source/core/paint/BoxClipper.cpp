@@ -20,6 +20,7 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
     , m_accumulatedOffset(accumulatedOffset)
     , m_paintInfo(paintInfo)
     , m_box(box)
+    , m_clipType(DisplayItem::ClipBoxPaintPhaseFirst)
 {
     if (m_paintInfo.phase == PaintPhaseBlockBackground || m_paintInfo.phase == PaintPhaseSelfOutline || m_paintInfo.phase == PaintPhaseMask)
         return;
@@ -51,11 +52,10 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
             return;
     }
 
-    DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        clipType = m_paintInfo.displayItemTypeForClipping();
+        m_clipType = m_paintInfo.displayItemTypeForClipping();
 
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box.displayItemClient(), clipType, pixelSnappedIntRect(clipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box.displayItemClient(), m_clipType, pixelSnappedIntRect(clipRect));
     if (hasBorderRadius)
         clipDisplayItem->roundedRectClips().append(clipRoundedRect);
 
@@ -75,13 +75,14 @@ BoxClipper::~BoxClipper()
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
 
-    OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_box.displayItemClient());
-
+    DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_box.displayItemClient(), endType);
         ASSERT(m_paintInfo.context->displayItemList());
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
-        endClipDisplayItem->replay(m_paintInfo.context);
+        EndClipDisplayItem endClipDisplayItem(m_box.displayItemClient(), endType);
+        endClipDisplayItem.replay(m_paintInfo.context);
     }
 }
 

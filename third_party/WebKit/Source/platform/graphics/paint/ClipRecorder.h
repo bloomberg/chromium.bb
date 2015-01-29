@@ -21,6 +21,7 @@ public:
 private:
     DisplayItemClient m_client;
     GraphicsContext* m_context;
+    DisplayItem::Type m_type;
 };
 
 } // namespace blink

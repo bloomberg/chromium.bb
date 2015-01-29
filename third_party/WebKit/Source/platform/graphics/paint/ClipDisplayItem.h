@@ -26,7 +26,10 @@ public:
     ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
         : DisplayItem(client, type)
         , m_clipRect(clipRect)
-        , m_operation(operation) { }
+        , m_operation(operation)
+    {
+        ASSERT(isClipType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -46,13 +49,16 @@ private:
 class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client, Type type)
     {
-        return adoptPtr(new EndClipDisplayItem(client));
+        return adoptPtr(new EndClipDisplayItem(client, type));
     }
 
-    EndClipDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndClip) { }
+    EndClipDisplayItem(DisplayItemClient client, Type type)
+        : DisplayItem(client, type)
+    {
+        isEndClipType(type);
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
