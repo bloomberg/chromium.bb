@@ -545,6 +545,7 @@ source_set("browser") {
     ]
 
     deps += [
+      "//components/onc",
       "//components/storage_monitor",
       "//crypto:platform",
       "//device/bluetooth",
@@ -579,10 +580,7 @@ source_set("browser") {
 
     if (is_desktop_linux) {
       configs += [ "//build/config/linux:dbus" ]
-      deps += [
-        "//dbus",
-        "//components/onc",
-      ]
+      deps += [ "//dbus" ]
       sources += [
         "api/networking_private/networking_private_event_router_nonchromeos.cc",
         "api/networking_private/networking_private_linux.cc",
