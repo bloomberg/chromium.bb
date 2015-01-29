@@ -86,8 +86,8 @@ class DeviceStatusCollector {
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
 
-  // The total number of CPU samples cached internally.
-  static const unsigned int kMaxCPUSamples = 10;
+  // The total number of hardware resource usage samples cached internally.
+  static const unsigned int kMaxResourceUsageSamples = 10;
 
  protected:
   // Check whether the user has been idle for a certain period of time.
@@ -99,8 +99,8 @@ class DeviceStatusCollector {
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(ui::IdleState state);
 
-  // Samples the current CPU usage and updates our cache of samples.
-  void SampleCPUUsage();
+  // Samples the current CPU and RAM usage and updates our cache of samples.
+  void SampleResourceUsage();
 
   // Returns the percentage of total CPU that each process uses. Virtual so it
   // can be mocked.
@@ -195,9 +195,18 @@ class DeviceStatusCollector {
   // Cached disk volume information.
   std::vector<enterprise_management::VolumeInfo> volume_info_;
 
-  // Cached percentage-of-CPU-used data (contains multiple samples taken
+  struct ResourceUsage {
+    // Sample of percentage-of-CPU-used across all processes (0-100)
+    int cpu_usage_percent;
+
+    // Amount of free RAM (measures raw memory used by processes, not internal
+    // memory waiting to be reclaimed by GC).
+    int64 bytes_of_ram_free;
+  };
+
+  // Samples of resource usage (contains multiple samples taken
   // periodically every kHardwareStatusSampleIntervalSeconds).
-  std::deque<int> cpu_usage_percent_;
+  std::deque<ResourceUsage> resource_usage_;
 
   // Callback invoked to fetch information about the mounted disk volumes.
   VolumeInfoFetcher volume_info_fetcher_;

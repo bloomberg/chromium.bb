@@ -125,9 +125,14 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
     mock_cpu_usage_ = usage;
 
-    // Refresh our samples.
-    for (int i = 0; i < static_cast<int>(kMaxCPUSamples); ++i)
-      SampleCPUUsage();
+    RefreshSampleResourceUsage();
+  }
+
+  void RefreshSampleResourceUsage() {
+    // Refresh our samples. Sample more than kMaxHardwareSamples times to
+    // make sure that the code correctly caps the number of cached samples.
+    for (int i = 0; i < static_cast<int>(kMaxResourceUsageSamples + 1); ++i)
+      SampleResourceUsage();
   }
 
  protected:
@@ -790,8 +795,10 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
 }
 
 TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
+  status_collector_->RefreshSampleResourceUsage();
   GetStatus();
-  EXPECT_TRUE(status_.has_system_ram_free());
+  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples),
+            status_.system_ram_free().size());
   EXPECT_TRUE(status_.has_system_ram_total());
   // No good way to inject specific test values for available system RAM, so
   // just make sure it's > 0.
@@ -803,7 +810,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   const int full_cpu_usage = 100;
   status_collector_->set_mock_cpu_usage(full_cpu_usage, 2);
   GetStatus();
-  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxCPUSamples),
+  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples),
             status_.cpu_utilization_pct().size());
   for (const auto utilization : status_.cpu_utilization_pct())
     EXPECT_EQ(full_cpu_usage, utilization);
@@ -812,7 +819,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   const int idle_cpu_usage = 0;
   status_collector_->set_mock_cpu_usage(idle_cpu_usage, 2);
   GetStatus();
-  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxCPUSamples),
+  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples),
             status_.cpu_utilization_pct().size());
   for (const auto utilization : status_.cpu_utilization_pct())
     EXPECT_EQ(idle_cpu_usage, utilization);

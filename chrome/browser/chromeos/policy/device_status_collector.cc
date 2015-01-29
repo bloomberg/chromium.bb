@@ -353,7 +353,7 @@ void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
 
 void DeviceStatusCollector::ClearCachedHardwareStatus() {
   volume_info_.clear();
-  cpu_usage_percent_.clear();
+  resource_usage_.clear();
 }
 
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
@@ -402,22 +402,26 @@ void DeviceStatusCollector::SampleHardwareStatus() {
       base::Bind(&DeviceStatusCollector::ReceiveVolumeInfo,
                  weak_factory_.GetWeakPtr()));
 
-  SampleCPUUsage();
+  SampleResourceUsage();
 }
 
-void DeviceStatusCollector::SampleCPUUsage() {
+void DeviceStatusCollector::SampleResourceUsage() {
   // Walk the process list and measure CPU utilization.
   double total_usage = 0;
   std::vector<double> per_process_usage = GetPerProcessCPUUsage();
   for (double cpu_usage : per_process_usage) {
     total_usage += cpu_usage;
   }
-  cpu_usage_percent_.push_back(total_usage);
+
+  ResourceUsage usage = { total_usage,
+                          base::SysInfo::AmountOfAvailablePhysicalMemory() };
+
+  resource_usage_.push_back(usage);
 
   // If our cache of samples is full, throw out old samples to make room for new
   // sample.
-  if (cpu_usage_percent_.size() > kMaxCPUSamples)
-    cpu_usage_percent_.pop_front();
+  if (resource_usage_.size() > kMaxResourceUsageSamples)
+    resource_usage_.pop_front();
 }
 
 std::vector<double> DeviceStatusCollector::GetPerProcessCPUUsage() {
@@ -654,12 +658,12 @@ void DeviceStatusCollector::GetHardwareStatus(
     *status->add_volume_info() = info;
   }
 
-  status->set_system_ram_free(base::SysInfo::AmountOfAvailablePhysicalMemory());
   status->set_system_ram_total(base::SysInfo::AmountOfPhysicalMemory());
-
+  status->clear_system_ram_free();
   status->clear_cpu_utilization_pct();
-  for (const int cpu_usage : cpu_usage_percent_) {
-    status->add_cpu_utilization_pct(cpu_usage);
+  for (const ResourceUsage& usage : resource_usage_) {
+    status->add_cpu_utilization_pct(usage.cpu_usage_percent);
+    status->add_system_ram_free(usage.bytes_of_ram_free);
   }
 }
 

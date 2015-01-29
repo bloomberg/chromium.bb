@@ -662,14 +662,17 @@ message DeviceStatusReportRequest {
   // List of visible/configured networks
   repeated NetworkState network_state = 11;
 
-  // Samples of CPU utilization (0-100), sampled once every 60 seconds.
+  // Samples of CPU utilization (0-100), sampled once every 120 seconds.
   repeated int32 cpu_utilization_pct = 12;
 
   // Free RAM (unreliable due to GC).
-  optional int64 system_ram_free = 13;
+  optional int64 deprecated_system_ram_free = 13 [deprecated = true];
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
+
+  // Samples of free RAM [in bytes] (unreliable due to GC).
+  repeated int64 system_ram_free = 15;
 }
 
 // Provides status information for an installed app/extension.
