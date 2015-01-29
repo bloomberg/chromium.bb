@@ -1,6 +1,8 @@
 This test checks how text editor updates autocompletion dictionary in a response to user input.
 
 
+Running: openJavaScriptEditor
+
 Running: testCompletionsShowUpOnKeyPress
 ========= Text in editor =========
 name1 name2 name3 name4
@@ -50,7 +52,9 @@ Running: testDeleteOneDogAndOneCat
 [bird, dog, mouse]
 =============
 
-Running: testCSSMimeType
+Running: openCSSEditor
+
+Running: testCSSAutocompletion
 ========= Text in editor =========
 |.my-class { -webkit-border: 1px solid black; }
 ======= Words in dictionary =======
