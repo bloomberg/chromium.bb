@@ -857,6 +857,13 @@ class CONTENT_EXPORT RenderViewImpl
   // See documentation in RenderView.
   int32 page_id_;
 
+  // Indicates the ID of the last page that we sent a FrameNavigate to the
+  // browser for. This is used to determine if the most recent transition
+  // generated a history entry (less than page_id_), or not (equal to or
+  // greater than). Note that this will be greater than page_id_ if the user
+  // goes back.
+  int32 last_page_id_sent_to_browser_;
+
   // The next available page ID to use for this RenderView.  These IDs are
   // specific to a given RenderView and the frames within it.
   int32 next_page_id_;
