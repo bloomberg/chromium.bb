@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
-#include "ui/events/event_handler.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -187,14 +186,6 @@ class MenuControllerTest : public ViewsTestBase {
     controller_->exit_type_ = MenuController::EXIT_ALL;
     DispatchEvent();
   }
-
-  void DispatchTouch(int evtype, int id) {
-    ui::ScopedXI2Event touch_event;
-    std::vector<ui::Valuator> valuators;
-    touch_event.InitTouchEvent(1, evtype, id, gfx::Point(10, 10), valuators);
-    event_source_.Dispatch(touch_event);
-    DispatchEvent();
-  }
 #endif
 
   void DispatchEvent() {
@@ -274,65 +265,5 @@ TEST_F(MenuControllerTest, EventTargeter) {
   }
 }
 #endif
-
-#if defined(USE_X11)
-
-class TestEventHandler : public ui::EventHandler {
- public:
-  TestEventHandler() : outstanding_touches_(0) {}
-
-  void OnTouchEvent(ui::TouchEvent* event) override {
-    switch(event->type()) {
-      case ui::ET_TOUCH_PRESSED:
-        outstanding_touches_++;
-        break;
-      case ui::ET_TOUCH_RELEASED:
-      case ui::ET_TOUCH_CANCELLED:
-        outstanding_touches_--;
-        break;
-      default:
-        break;
-    }
-  }
-
-  int outstanding_touches() const { return outstanding_touches_; }
-
- private:
-  int outstanding_touches_;
-};
-
-// Tests that touch event ids are released correctly. See
-// crbug.com/439051 for details. When the ids aren't managed
-// correctly, we get stuck down touches.
-TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
-  scoped_ptr<Widget> owner(CreateOwnerWidget());
-  TestEventHandler test_event_handler;
-  owner->GetNativeWindow()->GetRootWindow()->AddPreTargetHandler(
-      &test_event_handler);
-
-  std::vector<unsigned int> devices;
-  devices.push_back(1);
-  ui::SetUpTouchDevicesForTest(devices);
-
-  DispatchTouch(XI_TouchBegin, 0);
-  DispatchTouch(XI_TouchBegin, 1);
-  DispatchTouch(XI_TouchEnd, 0);
-
-  message_loop()->PostTask(FROM_HERE,
-                           base::Bind(&MenuControllerTest::DispatchTouch,
-                                      base::Unretained(this), XI_TouchEnd, 1));
-
-  message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::DispatchEscapeAndExpect,
-                 base::Unretained(this), MenuController::EXIT_OUTERMOST));
-
-  RunMenu(owner.get());
-  EXPECT_EQ(0, test_event_handler.outstanding_touches());
-
-  owner->GetNativeWindow()->GetRootWindow()->RemovePreTargetHandler(
-      &test_event_handler);
-}
-#endif // defined(USE_X11)
 
 }  // namespace views

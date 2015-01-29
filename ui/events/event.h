@@ -212,7 +212,7 @@ class EVENTS_EXPORT Event {
   void StopPropagation();
   bool stopped_propagation() const { return !!(result_ & ER_CONSUMED); }
 
-  // Marks the event as having been handled. A handled event does not reach the
+
   // next event phase. For example, if an event is handled during the pre-target
   // phase, then the event is dispatched to all pre-target handlers, but not to
   // the target or post-target handlers.
@@ -225,6 +225,9 @@ class EVENTS_EXPORT Event {
   Event(const base::NativeEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
   void SetType(EventType type);
+  void set_delete_native_event(bool delete_native_event) {
+    delete_native_event_ = delete_native_event;
+  }
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
 
   void set_time_stamp(const base::TimeDelta& time_stamp) {
@@ -492,7 +495,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
         radius_y_(model.radius_y_),
         rotation_angle_(model.rotation_angle_),
         force_(model.force_),
-        should_remove_native_touch_id_mapping_(false) {}
+        may_cause_scrolling_(model.may_cause_scrolling_) {}
 
   TouchEvent(EventType type,
              const gfx::PointF& location,
@@ -529,12 +532,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   void set_radius_x(const float r) { radius_x_ = r; }
   void set_radius_y(const float r) { radius_y_ = r; }
 
-  void set_should_remove_native_touch_id_mapping(
-      bool should_remove_native_touch_id_mapping) {
-    should_remove_native_touch_id_mapping_ =
-        should_remove_native_touch_id_mapping;
-  }
-
   // Overridden from LocatedEvent.
   void UpdateForRootTransform(
       const gfx::Transform& inverted_root_transform) override;
@@ -547,7 +544,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
  private:
   // Adjusts rotation_angle_ to within the acceptable range.
-  void FixRotationAngle();
+  void fixRotationAngle();
 
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
@@ -573,12 +570,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // touchmove that exceeds the platform slop region, or a touchend that
   // causes a fling). Defaults to false.
   bool may_cause_scrolling_;
-
-  // True if this event should remove the mapping between the native
-  // event id and the touch_id_. This should only be the case for
-  // release and cancel events where the associated touch press event
-  // created a mapping between the native id and the touch_id_.
-  bool should_remove_native_touch_id_mapping_;
 };
 
 // An interface that individual platforms can use to store additional data on
