@@ -9,6 +9,9 @@ function log(str) {
     console.appendChild(li);
 }
 
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
 var div = document.getElementById("div");
 var sel = window.getSelection();
 sel.collapse(div, 0);
@@ -34,4 +37,11 @@ for (var i = 0; i < innerText.length; i++) {
 
 div.contentEditable = "false";
 // When we turn content editability off, we'll see Hello and World on the same line if editing is using all nbsps.
+
+// Ensure we push a final frame to avoid flake.
+if (window.testRunner) {
+    window.requestAnimationFrame(function() {
+        testRunner.notifyDone();
+    });
+}
 </script>
