@@ -229,13 +229,14 @@ static DOMWindowSet& windowsWithBeforeUnloadEventListeners()
 static void addUnloadEventListener(LocalDOMWindow* domWindow)
 {
     DOMWindowSet& set = windowsWithUnloadEventListeners();
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         disableSuddenTermination();
-    set.add(domWindow);
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            1, FrameLoaderClient::UnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                true, FrameLoaderClient::UnloadHandler);
+        }
     }
+    set.add(domWindow);
 }
 
 static void removeUnloadEventListener(LocalDOMWindow* domWindow)
@@ -245,11 +246,12 @@ static void removeUnloadEventListener(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.remove(it);
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         enableSuddenTermination();
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            -1, FrameLoaderClient::UnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                false, FrameLoaderClient::UnloadHandler);
+        }
     }
 }
 
@@ -259,26 +261,27 @@ static void removeAllUnloadEventListeners(LocalDOMWindow* domWindow)
     DOMWindowSet::iterator it = set.find(domWindow);
     if (it == set.end())
         return;
-    int numHandlers = set.count(domWindow);
     set.removeAll(it);
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         enableSuddenTermination();
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            -numHandlers, FrameLoaderClient::UnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                false, FrameLoaderClient::UnloadHandler);
+        }
     }
 }
 
 static void addBeforeUnloadEventListener(LocalDOMWindow* domWindow)
 {
     DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         disableSuddenTermination();
-    set.add(domWindow);
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            1, FrameLoaderClient::BeforeUnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                true, FrameLoaderClient::BeforeUnloadHandler);
+        }
     }
+    set.add(domWindow);
 }
 
 static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow)
@@ -288,11 +291,12 @@ static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.remove(it);
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         enableSuddenTermination();
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            -1, FrameLoaderClient::BeforeUnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                false, FrameLoaderClient::BeforeUnloadHandler);
+        }
     }
 }
 
@@ -302,13 +306,13 @@ static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow)
     DOMWindowSet::iterator it = set.find(domWindow);
     if (it == set.end())
         return;
-    int numHandlers = set.count(domWindow);
     set.removeAll(it);
-    if (set.isEmpty())
+    if (set.isEmpty()) {
         enableSuddenTermination();
-    if (domWindow->frame()) {
-        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-            -numHandlers, FrameLoaderClient::BeforeUnloadHandler);
+        if (domWindow->frame()) {
+            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+                false, FrameLoaderClient::BeforeUnloadHandler);
+        }
     }
 }
 

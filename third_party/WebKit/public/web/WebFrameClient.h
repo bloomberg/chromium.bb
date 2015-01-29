@@ -617,15 +617,14 @@ public:
 
     // Sudden termination --------------------------------------------------
 
-    // Called when an element preventing the sudden termination of the frame is
-    // added or removed. |variation| is the number of elements added, removed if
-    // it is negative. |type| is the type of element (BeforeUnload handler,
-    // Unload handler).
+    // Called when elements preventing the sudden termination of the frame
+    // become present or stop being present. |type| is the type of element
+    // (BeforeUnload handler, Unload handler).
     enum SuddenTerminationDisablerType {
         BeforeUnloadHandler,
         UnloadHandler,
     };
-    virtual void suddenTerminationDisablerChanged(int variation, SuddenTerminationDisablerType) { }
+    virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) { }
 
 protected:
     virtual ~WebFrameClient() { }
