@@ -21,7 +21,7 @@ class TestSwarm(unittest.TestCase):
     # A user should be able to trigger a swarm job and return results.
     cmd = [
       sys.executable,
-      '4_swarming_trigger_collect.py',
+      '3_swarming_trigger_collect.py',
       '--isolate-server', ISOLATE_SERVER,
       '--swarming', SWARMING_SERVER,
     ]
