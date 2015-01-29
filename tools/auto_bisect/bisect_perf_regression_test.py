@@ -152,10 +152,12 @@ def _GenericDryRun(options, print_results=False):
   Returns:
     The results dictionary as returned by the bisect Run method.
   """
+  _AbortIfThereAreStagedChanges()
   # Disable rmtree to avoid deleting local trees.
   old_rmtree = shutil.rmtree
+  shutil.rmtree = lambda path, on_error: None
+  # git reset HEAD may be run during the dry run, which removes staged changes.
   try:
-    shutil.rmtree = lambda path, onerror: None
     bisect_instance = _GetBisectPerformanceMetricsInstance(options)
     results = bisect_instance.Run(
         bisect_instance.opts.command, bisect_instance.opts.bad_revision,
@@ -167,6 +169,21 @@ def _GenericDryRun(options, print_results=False):
     return results
   finally:
     shutil.rmtree = old_rmtree
+
+
+def _AbortIfThereAreStagedChanges():
+  """Exits the test prematurely if there are staged changes."""
+  # The output of "git status --short" will be an empty string if there are
+  # no staged changes in the current branch. Untracked files are ignored
+  # because when running the presubmit on the trybot there are sometimes
+  # untracked changes to the run-perf-test.cfg and bisect.cfg files.
+  status_output = bisect_utils.CheckRunGit(
+      ['status', '--short', '--untracked-files=no'])
+  if status_output:
+    print 'There are un-committed changes in the current branch.'
+    print 'Aborting the tests to avoid destroying local changes. Changes:'
+    print status_output
+    sys.exit(1)
 
 
 class BisectPerfRegressionTest(unittest.TestCase):
