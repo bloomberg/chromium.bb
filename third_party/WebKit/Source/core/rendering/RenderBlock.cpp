@@ -450,11 +450,25 @@ RenderBlock* RenderBlock::continuationBefore(RenderObject* beforeChild)
 void RenderBlock::addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild)
 {
     RenderBlock* flow = continuationBefore(beforeChild);
-    ASSERT(!beforeChild || beforeChild->parent()->isAnonymousColumnSpanBlock() || beforeChild->parent()->isRenderBlock());
     RenderBoxModelObject* beforeChildParent = 0;
-    if (beforeChild)
+    if (beforeChild) {
         beforeChildParent = toRenderBoxModelObject(beforeChild->parent());
-    else {
+        // Don't attempt to insert into something that isn't a RenderBlockFlow (block
+        // container). While the DOM nodes of |beforeChild| and |newChild| are siblings, there may
+        // be anonymous table wrapper objects around |beforeChild| on the layout side. Therefore,
+        // find the nearest RenderBlockFlow. If it turns out that the new renderer doesn't belong
+        // inside the anonymous table, this will make sure that it's really put on the outside. If
+        // it turns out that it does belong inside it, the normal child insertion machinery will
+        // make sure it ends up there, and at the right place too. We cannot just guess that it's
+        // going to be right under the parent of |beforeChild|.
+        while (beforeChildParent && !beforeChildParent->isRenderBlockFlow()) {
+            ASSERT(!beforeChildParent->virtualContinuation());
+            ASSERT(beforeChildParent->isAnonymous());
+            RELEASE_ASSERT(beforeChildParent != this);
+            beforeChildParent = toRenderBoxModelObject(beforeChildParent->parent());
+        }
+        ASSERT(beforeChildParent);
+    } else {
         RenderBoxModelObject* cont = flow->continuation();
         if (cont)
             beforeChildParent = cont;

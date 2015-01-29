@@ -207,6 +207,16 @@ void LayoutTable::addChild(RenderObject* child, RenderObject* beforeChild)
     section->addChild(child);
 }
 
+void LayoutTable::addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild)
+{
+    // We need to bypass the RenderBlock implementation and instead do a normal addChild() (or we
+    // won't get there at all), so that any missing anonymous table part renderers are
+    // inserted. Otherwise we might end up with an insane render tree with inlines or blocks as
+    // direct children of a table, which will break assumptions made all over the code, which may
+    // lead to crashers and security issues.
+    addChild(newChild, beforeChild);
+}
+
 void LayoutTable::addCaption(const LayoutTableCaption* caption)
 {
     ASSERT(m_captions.find(caption) == kNotFound);

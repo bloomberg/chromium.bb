@@ -123,6 +123,7 @@ public:
     void recalcBordersInRowDirection();
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
+    virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild = 0) override;
 
     struct ColumnStruct {
         explicit ColumnStruct(unsigned initialSpan = 1)
