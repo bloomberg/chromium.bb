@@ -161,6 +161,10 @@
       ]
     }
   ],
+  "extensionview": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "externally_connectable.all_urls": {
     "channel": "stable",
     "extension_types": [

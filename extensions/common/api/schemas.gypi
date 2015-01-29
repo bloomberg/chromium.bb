@@ -24,6 +24,7 @@
       'events.json',
       'extensions_manifest_types.json',
       'extension_options_internal.idl',
+      'extension_view_internal.json',
       'extension_types.json',
       'guest_view_internal.json',
       'management.json',

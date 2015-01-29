@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
+#include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
@@ -743,6 +744,7 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
 void GuestViewBase::RegisterGuestViewTypes() {
   AppViewGuest::Register();
   ExtensionOptionsGuest::Register();
+  ExtensionViewGuest::Register();
   MimeHandlerViewGuest::Register();
   SurfaceWorkerGuest::Register();
   WebViewGuest::Register();

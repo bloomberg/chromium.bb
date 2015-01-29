@@ -47144,6 +47144,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="951" label="FILESYSTEMPROVIDER_GET"/>
   <int value="952" label="FILEMANAGERPRIVATE_SEARCHFILESBYHASHES"/>
   <int value="953" label="EASYUNLOCKPRIVATE_SHOWERRORBUBBLE"/>
+  <int value="954" label="EXTENSIONVIEWINTERNAL_NAVIGATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

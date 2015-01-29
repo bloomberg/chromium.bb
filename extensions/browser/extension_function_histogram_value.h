@@ -1012,6 +1012,7 @@ enum HistogramValue {
   FILESYSTEMPROVIDER_GET,
   FILEMANAGERPRIVATE_SEARCHFILESBYHASHES,
   EASYUNLOCKPRIVATE_SHOWERRORBUBBLE,
+  EXTENSIONVIEWINTERNAL_NAVIGATE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

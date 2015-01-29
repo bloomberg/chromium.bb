@@ -334,6 +334,11 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("surfaceWorker");
   }
 
+  if (context->GetAvailability("extensionViewInternal").is_available()) {
+    module_system->Require("extensionView");
+    module_system->Require("extensionViewAttributes");
+  }
+
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
   if (context->GetAvailability("webViewInternal").is_available()) {
@@ -551,6 +556,13 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
   resources.push_back(std::make_pair("guestViewContainer",
                                      IDR_GUEST_VIEW_CONTAINER_JS));
+  resources.push_back(std::make_pair("extensionView", IDR_EXTENSION_VIEW_JS));
+  resources.push_back(std::make_pair("extensionViewAttributes",
+                                     IDR_EXTENSION_VIEW_ATTRIBUTES_JS));
+  resources.push_back(std::make_pair("extensionViewConstants",
+                                     IDR_EXTENSION_VIEW_CONSTANTS_JS));
+  resources.push_back(std::make_pair(
+      "extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
   resources.push_back(std::make_pair("surfaceWorker", IDR_SURFACE_VIEW_JS));
   resources.push_back(std::make_pair("webViewActionRequests",
@@ -1096,6 +1108,9 @@ void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::addEmbedderCustomElementName("extensionoptions");
   blink::WebCustomElement::addEmbedderCustomElementName(
       "extensionoptionsbrowserplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("extensionview");
+  blink::WebCustomElement::addEmbedderCustomElementName(
+      "extensionviewbrowserplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
   blink::WebCustomElement::addEmbedderCustomElementName("webviewbrowserplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("surfaceview");

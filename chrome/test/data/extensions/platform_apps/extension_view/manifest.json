@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: <extensionview>",
+  "version": "1",
+  "permissions": [
+    "extensionview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
