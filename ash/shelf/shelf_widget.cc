@@ -36,7 +36,6 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -214,11 +213,7 @@ void DimmerView::DimmerEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_DRAGGED)
     return;
-
-  gfx::Point screen_point(event->location());
-  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                             &screen_point);
-  bool inside = owner_->GetBoundsInScreen().Contains(screen_point);
+  bool inside = owner_->GetBoundsInScreen().Contains(event->root_location());
   if (mouse_inside_ || touch_inside_ != inside || touch_inside_)
     owner_->SetHovered(inside || touch_inside_);
   mouse_inside_ = inside;
@@ -227,12 +222,8 @@ void DimmerView::DimmerEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 void DimmerView::DimmerEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   bool touch_inside = false;
   if (event->type() != ui::ET_TOUCH_RELEASED &&
-      event->type() != ui::ET_TOUCH_CANCELLED) {
-    gfx::Point screen_point(event->location());
-    ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                               &screen_point);
-    touch_inside = owner_->GetBoundsInScreen().Contains(screen_point);
-  }
+      event->type() != ui::ET_TOUCH_CANCELLED)
+    touch_inside = owner_->GetBoundsInScreen().Contains(event->root_location());
 
   if (mouse_inside_ || touch_inside_ != mouse_inside_ || touch_inside)
     owner_->SetHovered(mouse_inside_ || touch_inside);

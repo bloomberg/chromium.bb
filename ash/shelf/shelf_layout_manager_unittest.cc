@@ -1111,7 +1111,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
 }
 
 // Basic assertions around the dimming of the shelf.
-TEST_F(ShelfLayoutManagerTest, DimmingBehavior) {
+TEST_F(ShelfLayoutManagerTest, TestDimmingBehavior) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -1184,63 +1184,8 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehavior) {
   EXPECT_EQ(-1, shelf->shelf_widget()->GetDimmingAlphaForTest());
 }
 
-// Test that dimming works correctly with multiple displays.
-TEST_F(ShelfLayoutManagerTest, DimmingBehaviorDualDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  // Create two displays.
-  Shell* shell = Shell::GetInstance();
-  UpdateDisplay("0+0-200x200,+200+0-100x100");
-  EXPECT_EQ(2U, shell->display_manager()->GetNumDisplays());
-
-  DisplayController* display_controller = shell->display_controller();
-  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
-  EXPECT_EQ(root_windows.size(), 2U);
-
-  std::vector<ShelfWidget*> shelf_widgets;
-  for (auto& root_window : root_windows) {
-    ShelfLayoutManager* shelf =
-        GetRootWindowController(root_window)->GetShelfLayoutManager();
-    shelf_widgets.push_back(shelf->shelf_widget());
-
-    // For disabling the dimming animation to work, the animation must be
-    // disabled prior to creating the dimmer.
-    shelf_widgets.back()->DisableDimmingAnimationsForTest();
-
-    // Create a maximized window to create the dimmer.
-    views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-    params.context = root_window;
-    params.bounds = root_window->GetBoundsInScreen();
-    params.show_state = ui::SHOW_STATE_MAXIMIZED;
-    widget->Init(params);
-    widget->Show();
-  }
-
-  ui::test::EventGenerator& generator(GetEventGenerator());
-
-  generator.MoveMouseTo(root_windows[0]->GetBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(
-      shelf_widgets[0]->GetWindowBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(
-      shelf_widgets[1]->GetWindowBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_EQ(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(root_windows[1]->GetBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-}
-
 // Assertions around the dimming of the shelf in conjunction with menus.
-TEST_F(ShelfLayoutManagerTest, DimmingBehaviorWithMenus) {
+TEST_F(ShelfLayoutManagerTest, TestDimmingBehaviorWithMenus) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
