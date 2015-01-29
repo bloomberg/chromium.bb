@@ -288,6 +288,14 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
             ||!strcmp(tag->key, "audiocodecid")
             ||!strcmp(tag->key, "duration")
             ||!strcmp(tag->key, "onMetaData")
+            ||!strcmp(tag->key, "datasize")
+            ||!strcmp(tag->key, "lasttimestamp")
+            ||!strcmp(tag->key, "totalframes")
+            ||!strcmp(tag->key, "hasAudio")
+            ||!strcmp(tag->key, "hasVideo")
+            ||!strcmp(tag->key, "hasCuePoints")
+            ||!strcmp(tag->key, "hasMetadata")
+            ||!strcmp(tag->key, "hasKeyframes")
         ){
             av_log(s, AV_LOG_DEBUG, "Ignoring metadata for %s\n", tag->key);
             continue;
@@ -376,6 +384,14 @@ static int flv_write_header(AVFormatContext *s)
         case AVMEDIA_TYPE_DATA:
             if (enc->codec_id != AV_CODEC_ID_TEXT && enc->codec_id != AV_CODEC_ID_NONE) {
                 av_log(s, AV_LOG_ERROR, "Data codec '%s' for stream %d is not compatible with FLV\n",
+                       avcodec_get_name(enc->codec_id), i);
+                return AVERROR_INVALIDDATA;
+            }
+            flv->data_enc = enc;
+            break;
+        case AVMEDIA_TYPE_SUBTITLE:
+            if (enc->codec_id != AV_CODEC_ID_TEXT) {
+                av_log(s, AV_LOG_ERROR, "Subtitle codec '%s' for stream %d is not compatible with FLV\n",
                        avcodec_get_name(enc->codec_id), i);
                 return AVERROR_INVALIDDATA;
             }
@@ -537,6 +553,7 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
 
         avio_w8(pb, FLV_TAG_TYPE_AUDIO);
         break;
+    case AVMEDIA_TYPE_SUBTITLE:
     case AVMEDIA_TYPE_DATA:
         avio_w8(pb, FLV_TAG_TYPE_META);
         break;
@@ -580,7 +597,8 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
     avio_w8(pb, (ts >> 24) & 0x7F); // timestamps are 32 bits _signed_
     avio_wb24(pb, flv->reserved);
 
-    if (enc->codec_type == AVMEDIA_TYPE_DATA) {
+    if (enc->codec_type == AVMEDIA_TYPE_DATA ||
+        enc->codec_type == AVMEDIA_TYPE_SUBTITLE ) {
         int data_size;
         int64_t metadata_size_pos = avio_tell(pb);
         if (enc->codec_id == AV_CODEC_ID_TEXT) {

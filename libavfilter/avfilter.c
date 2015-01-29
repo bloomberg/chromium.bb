@@ -37,6 +37,9 @@
 #include "formats.h"
 #include "internal.h"
 
+#include "libavutil/ffversion.h"
+const char av_filter_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+
 static int ff_filter_frame_framed(AVFilterLink *link, AVFrame *frame);
 
 void ff_tlog_ref(void *ctx, AVFrame *ref, int end)
@@ -1160,7 +1163,8 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
 
     /* Consistency checks */
     if (link->type == AVMEDIA_TYPE_VIDEO) {
-        if (strcmp(link->dst->filter->name, "scale")) {
+        if (strcmp(link->dst->filter->name, "scale") &&
+            strcmp(link->dst->filter->name, "idet")) {
             av_assert1(frame->format                 == link->format);
             av_assert1(frame->width               == link->w);
             av_assert1(frame->height               == link->h);

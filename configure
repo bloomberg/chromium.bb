@@ -84,7 +84,7 @@ Standard options:
   --datadir=DIR            install data files in DIR [PREFIX/share/ffmpeg]
   --docdir=DIR             install documentation in DIR [PREFIX/share/doc/ffmpeg]
   --libdir=DIR             install libs in DIR [PREFIX/lib]
-  --shlibdir=DIR           install shared libs in DIR [PREFIX/lib]
+  --shlibdir=DIR           install shared libs in DIR [LIBDIR]
   --incdir=DIR             install includes in DIR [PREFIX/include]
   --mandir=DIR             install man page in DIR [PREFIX/share/man]
   --enable-rpath           use rpath to allow installing libraries in paths
@@ -194,25 +194,27 @@ Individual component options:
 External library support:
   --enable-avisynth        enable reading of AviSynth script files [no]
   --disable-bzlib          disable bzlib [autodetect]
-  --enable-fontconfig      enable fontconfig
-  --enable-frei0r          enable frei0r video filtering
-  --enable-gnutls          enable gnutls [no]
+  --enable-fontconfig      enable fontconfig, useful for drawtext filter [no]
+  --enable-frei0r          enable frei0r video filtering [no]
+  --enable-gnutls          enable gnutls, needed for https support
+                           if openssl is not used [no]
   --disable-iconv          disable iconv [autodetect]
-  --enable-ladspa          enable LADSPA audio filtering
+  --enable-ladspa          enable LADSPA audio filtering [no]
   --enable-libaacplus      enable AAC+ encoding via libaacplus [no]
-  --enable-libass          enable libass subtitles rendering [no]
+  --enable-libass          enable libass subtitles rendering,
+                           needed for subtitles and ass filter [no]
   --enable-libbluray       enable BluRay reading using libbluray [no]
   --enable-libbs2b         enable bs2b DSP library [no]
-  --enable-libcaca         enable textual display using libcaca
+  --enable-libcaca         enable textual display using libcaca [no]
   --enable-libcelt         enable CELT decoding via libcelt [no]
-  --enable-libcdio         enable audio CD grabbing with libcdio
+  --enable-libcdio         enable audio CD grabbing with libcdio [no]
   --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
                            and libraw1394 [no]
   --enable-libfaac         enable AAC encoding via libfaac [no]
   --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
   --enable-libflite        enable flite (voice synthesis) support via libflite [no]
-  --enable-libfreetype     enable libfreetype [no]
-  --enable-libfribidi      enable libfribidi [no]
+  --enable-libfreetype     enable libfreetype, needed for drawtext filter [no]
+  --enable-libfribidi      enable libfribidi, improves drawtext filter [no]
   --enable-libgme          enable Game Music Emu via libgme [no]
   --enable-libgsm          enable GSM de/encoding via libgsm [no]
   --enable-libiec61883     enable iec61883 via libiec61883 [no]
@@ -224,6 +226,7 @@ External library support:
   --enable-libopencore-amrnb enable AMR-NB de/encoding via libopencore-amrnb [no]
   --enable-libopencore-amrwb enable AMR-WB decoding via libopencore-amrwb [no]
   --enable-libopencv       enable video filtering via libopencv [no]
+  --enable-libopenh264     enable H.264 encoding via OpenH264 [no]
   --enable-libopenjpeg     enable JPEG 2000 de/encoding via OpenJPEG [no]
   --enable-libopus         enable Opus de/encoding via libopus [no]
   --enable-libpulse        enable Pulseaudio input via libpulse [no]
@@ -261,10 +264,12 @@ External library support:
   --enable-libzvbi         enable teletext support via libzvbi [no]
   --disable-lzma           disable lzma [autodetect]
   --enable-decklink        enable Blackmagick DeckLink I/O support [no]
+  --enable-nvenc           enable NVIDIA NVENC support [no]
   --enable-openal          enable OpenAL 1.1 capture support [no]
   --enable-opencl          enable OpenCL code
   --enable-opengl          enable OpenGL rendering [no]
-  --enable-openssl         enable openssl [no]
+  --enable-openssl         enable openssl, needed for https support
+                           if gnutls is not used [no]
   --disable-sdl            disable sdl [autodetect]
   --enable-x11grab         enable X11 grabbing (legacy) [no]
   --disable-xlib           disable xlib [autodetect]
@@ -1203,11 +1208,15 @@ require_cpp(){
     check_lib_cpp "$headers" "$classes" "$@" || die "ERROR: $name not found"
 }
 
-require_pkg_config(){
+use_pkg_config(){
     pkg="$1"
-    check_pkg_config "$@" || die "ERROR: $pkg not found"
+    check_pkg_config "$@" || return 1
     add_cflags    $(get_safe ${pkg}_cflags)
     add_extralibs $(get_safe ${pkg}_libs)
+}
+
+require_pkg_config(){
+    use_pkg_config "$@" || die "ERROR: $pkg not found using pkg-config$pkg_config_fail_message"
 }
 
 require_libfreetype(){
@@ -1359,6 +1368,7 @@ EXTERNAL_LIBRARY_LIST="
     libopencore_amrnb
     libopencore_amrwb
     libopencv
+    libopenh264
     libopenjpeg
     libopus
     libpulse
@@ -1393,6 +1403,7 @@ EXTERNAL_LIBRARY_LIST="
     libzmq
     libzvbi
     lzma
+    nvenc
     openal
     opencl
     opengl
@@ -1631,7 +1642,6 @@ HEADERS_LIST="
     asm_types_h
     cdio_paranoia_h
     cdio_paranoia_paranoia_h
-    CL_cl_h
     dev_bktr_ioctl_bt848_h
     dev_bktr_ioctl_meteor_h
     dev_ic_bt8xx_h
@@ -1732,7 +1742,6 @@ SYSTEM_FUNCS="
     lzo1x_999_compress
     mach_absolute_time
     MapViewOfFile
-    MoveFileExA
     memalign
     mkstemp
     mmap
@@ -1779,6 +1788,7 @@ TOOLCHAIN_FEATURES="
 
 TYPES_LIST="
     CONDITION_VARIABLE_Ptr
+    DXVA_PicParams_HEVC
     socklen_t
     struct_addrinfo
     struct_group_source_req
@@ -1822,6 +1832,7 @@ HAVE_LIST="
     perl
     pod2man
     sdl
+    section_data_rel_ro
     texi2html
     threads
     vdpau_x11
@@ -2283,6 +2294,8 @@ h264_vdpau_decoder_deps="vdpau"
 h264_vdpau_decoder_select="h264_decoder"
 h264_vdpau_hwaccel_deps="vdpau"
 h264_vdpau_hwaccel_select="h264_decoder"
+hevc_dxva2_hwaccel_deps="dxva2 DXVA_PicParams_HEVC"
+hevc_dxva2_hwaccel_select="hevc_decoder"
 mpeg_vdpau_decoder_deps="vdpau"
 mpeg_vdpau_decoder_select="mpeg2video_decoder"
 mpeg_xvmc_hwaccel_deps="xvmc"
@@ -2354,6 +2367,7 @@ libopencore_amrnb_decoder_deps="libopencore_amrnb"
 libopencore_amrnb_encoder_deps="libopencore_amrnb"
 libopencore_amrnb_encoder_select="audio_frame_queue"
 libopencore_amrwb_decoder_deps="libopencore_amrwb"
+libopenh264_encoder_deps="libopenh264"
 libopenjpeg_decoder_deps="libopenjpeg"
 libopenjpeg_encoder_deps="libopenjpeg"
 libopus_decoder_deps="libopus"
@@ -2384,12 +2398,14 @@ libwavpack_encoder_deps="libwavpack"
 libwebp_encoder_deps="libwebp"
 libx264_encoder_deps="libx264"
 libx264rgb_encoder_deps="libx264"
+libx264rgb_encoder_select="libx264_encoder"
 libx265_encoder_deps="libx265"
 libxavs_encoder_deps="libxavs"
 libxvid_encoder_deps="libxvid"
 libutvideo_decoder_deps="libutvideo"
 libutvideo_encoder_deps="libutvideo"
 libzvbi_teletext_decoder_deps="libzvbi"
+nvenc_encoder_deps="nvenc"
 
 # demuxers / muxers
 ac3_demuxer_select="ac3_parser"
@@ -2426,7 +2442,7 @@ matroska_muxer_select="riffenc"
 mmf_muxer_select="riffenc"
 mov_demuxer_select="riffdec"
 mov_demuxer_suggest="zlib"
-mov_muxer_select="riffenc rtpenc_chain ac3_parser"
+mov_muxer_select="riffenc rtpenc_chain"
 mp3_demuxer_select="mpegaudio_parser"
 mp4_muxer_select="mov_muxer"
 mpegts_muxer_select="adts_muxer latm_muxer"
@@ -2474,7 +2490,7 @@ decklink_outdev_extralibs="-lstdc++"
 decklink_indev_deps="decklink pthreads"
 decklink_indev_extralibs="-lstdc++"
 dshow_indev_deps="IBaseFilter"
-dshow_indev_extralibs="-lpsapi -lole32 -lstrmiids -luuid"
+dshow_indev_extralibs="-lpsapi -lole32 -lstrmiids -luuid -loleaut32"
 dv1394_indev_deps="dv1394"
 dv1394_indev_select="dv_demuxer"
 fbdev_indev_deps="linux_fb_h"
@@ -2568,9 +2584,11 @@ delogo_filter_deps="gpl"
 deshake_filter_select="pixelutils"
 drawtext_filter_deps="libfreetype"
 ebur128_filter_deps="gpl"
+eq_filter_deps="gpl"
 flite_filter_deps="libflite"
 frei0r_filter_deps="frei0r dlopen"
 frei0r_src_filter_deps="frei0r dlopen"
+fspp_filter_deps="gpl"
 geq_filter_deps="gpl"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
@@ -2585,6 +2603,7 @@ mpdecimate_filter_select="pixelutils"
 mptestsrc_filter_deps="gpl"
 negate_filter_deps="lut_filter"
 perspective_filter_deps="gpl"
+pp7_filter_deps="gpl"
 ocv_filter_deps="libopencv"
 owdenoise_filter_deps="gpl"
 pan_filter_deps="swresample"
@@ -2610,6 +2629,7 @@ vidstabtransform_filter_deps="libvidstab"
 pixfmts_super2xsai_test_deps="super2xsai_filter"
 tinterlace_merge_test_deps="tinterlace_filter"
 tinterlace_pad_test_deps="tinterlace_filter"
+uspp_filter_deps="gpl avcodec"
 zmq_filter_deps="libzmq"
 zoompan_filter_deps="swscale"
 
@@ -2672,7 +2692,6 @@ docdir_default='${prefix}/share/doc/ffmpeg'
 incdir_default='${prefix}/include'
 libdir_default='${prefix}/lib'
 mandir_default='${prefix}/share/man'
-shlibdir_default="$libdir_default"
 
 # toolchain
 ar_default="ar"
@@ -2686,7 +2705,11 @@ ln_s="ln -s -f"
 nm_default="nm -g"
 objformat="elf"
 pkg_config_default=pkg-config
-ranlib_default="ranlib"
+if ranlib 2>&1 | grep -q "\-D "; then
+    ranlib_default="ranlib -D"
+else
+    ranlib_default="ranlib"
+fi
 strip_default="strip"
 yasmexe_default="yasm"
 windres_default="windres"
@@ -3066,9 +3089,13 @@ set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
 enabled cross_compile || host_cc_default=$cc
 set_default host_cc
 
+pkg_config_fail_message=""
 if ! $pkg_config --version >/dev/null 2>&1; then
     warn "$pkg_config not found, library detection may fail."
     pkg_config=false
+elif is_in -static $cc $LDFLAGS && ! is_in --static $pkg_config $pkg_config_flags; then
+    pkg_config_fail_message="
+Note: When building a static binary, add --pkg-config-flags=\"--static\"."
 fi
 
 if test $doxygen != $doxygen_default && \
@@ -3202,6 +3229,7 @@ msvc_common_flags(){
             -lavifil32)           echo vfw32.lib ;;
             -lavicap32)           echo vfw32.lib user32.lib ;;
             -l*)                  echo ${flag#-l}.lib ;;
+            -L*)                  echo -libpath:${flag#-L} ;;
             *)                    echo $flag ;;
         esac
     done
@@ -3578,6 +3606,9 @@ elif $ar 2>&1 | grep -q 'Texas Instruments'; then
     ar_o='$@'
 elif $ar 2>&1 | grep -q 'Usage: ar.*-X.*any'; then
     arflags='-Xany -r -c'
+    ar_o='$@'
+elif $ar 2>&1 | grep -q "\[D\] "; then
+    arflags="rcD"
     ar_o='$@'
 else
     arflags="rc"
@@ -3978,6 +4009,7 @@ case $target_os in
         ;;
     android)
         disable symver
+        enable section_data_rel_ro
         SLIB_INSTALL_NAME='$(SLIBNAME)'
         SLIB_INSTALL_LINKS=
         # soname not set on purpose
@@ -4126,6 +4158,7 @@ case $target_os in
         ;;
     linux)
         enable dv1394
+        enable section_data_rel_ro
         ;;
     irix*)
         target_os=irix
@@ -4306,6 +4339,9 @@ echo "config:$arch:$subarch:$cpu:$target_os:$(esc $cc_ident):$(esc $FFMPEG_CONFI
 
 check_cpp_condition stdlib.h "defined(__PIC__) || defined(__pic__) || defined(PIC)" && enable_weak pic
 
+set_default libdir
+: ${shlibdir_default:="$libdir"}
+
 set_default $PATHS_LIST
 set_default nm
 
@@ -4342,6 +4378,7 @@ die_license_disabled gpl x11grab
 
 die_license_disabled nonfree libaacplus
 die_license_disabled nonfree libfaac
+die_license_disabled nonfree nvenc
 enabled gpl && die_license_disabled_gpl nonfree libfdk_aac
 enabled gpl && die_license_disabled_gpl nonfree openssl
 
@@ -4405,7 +4442,7 @@ unsigned int endian = 'B' << 24 | 'I' << 16 | 'G' << 8 | 'E';
 EOF
 od -t x1 $TMPO | grep -q '42 *49 *47 *45' && enable bigendian
 
-if  [ "$cpu" = "power7" ] || [ "$cpu" = "power8" ] ;then
+if  [ "$cpu" = "power7" ] || [ "$cpu" = "power8" ] || enabled ppc64; then
     if ! enabled bigendian && enabled altivec ;then
         enable vsx
     fi
@@ -4651,6 +4688,7 @@ fi
 frei0r_filter_extralibs='$ldl'
 frei0r_src_filter_extralibs='$ldl'
 ladspa_filter_extralibs='$ldl'
+nvenc_encoder_extralibs='$ldl'
 
 if ! disabled network; then
     check_func getaddrinfo $network_extralibs
@@ -4738,7 +4776,6 @@ check_func_headers windows.h GetProcessAffinityMask
 check_func_headers windows.h GetProcessTimes
 check_func_headers windows.h GetSystemTimeAsFileTime
 check_func_headers windows.h MapViewOfFile
-check_func_headers windows.h MoveFileExA
 check_func_headers windows.h PeekNamedPipe
 check_func_headers windows.h SetConsoleTextAttribute
 check_func_headers windows.h Sleep
@@ -4748,7 +4785,6 @@ check_func_headers glob.h glob
 enabled xlib &&
     check_func_headers "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv -lX11 -lXext
 
-check_header cl/cl.h
 check_header direct.h
 check_header dlfcn.h
 check_header dxva.h
@@ -4779,6 +4815,8 @@ check_lib2 "windows.h wincrypt.h" CryptGenRandom -ladvapi32
 check_lib2 "windows.h psapi.h" GetProcessMemoryInfo -lpsapi
 
 check_struct "sys/time.h sys/resource.h" "struct rusage" ru_maxrss
+
+check_type "windows.h dxva.h" "DXVA_PicParams_HEVC"
 
 if ! disabled w32threads && ! enabled pthreads; then
     check_func_headers "windows.h process.h" _beginthreadex &&
@@ -4865,6 +4903,7 @@ enabled libnut            && require libnut libnut.h nut_demuxer_init -lnut
 enabled libopencore_amrnb && require libopencore_amrnb opencore-amrnb/interf_dec.h Decoder_Interface_init -lopencore-amrnb
 enabled libopencore_amrwb && require libopencore_amrwb opencore-amrwb/dec_if.h D_IF_init -lopencore-amrwb
 enabled libopencv         && require_pkg_config opencv opencv/cxcore.h cvCreateImageHeader
+enabled libopenh264       && require_pkg_config openh264 wels/codec_api.h WelsGetCodecVersion
 enabled libopenjpeg       && { check_lib openjpeg.h opj_version -lopenmj2 -DOPJ_STATIC ||
                                check_lib openjpeg-1.5/openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC ||
                                check_lib openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC ||
@@ -4875,9 +4914,8 @@ enabled libquvi           && require_pkg_config libquvi quvi/quvi.h quvi_init
 enabled librtmp           && require_pkg_config librtmp librtmp/rtmp.h RTMP_Socket
 enabled libschroedinger   && require_pkg_config schroedinger-1.0 schroedinger/schro.h schro_init
 enabled libshine          && require_pkg_config shine shine/layer3.h shine_encode_buffer
-enabled libsmbclient      && { { check_pkg_config smbclient libsmbclient.h smbc_init &&
-                                 require_pkg_config smbclient libsmbclient.h smbc_init; } ||
-                                 require smbclient libsmbclient.h smbc_init -lsmbclient; }
+enabled libsmbclient      && { use_pkg_config smbclient libsmbclient.h smbc_init ||
+                               require smbclient libsmbclient.h smbc_init -lsmbclient; }
 enabled libsoxr           && require libsoxr soxr.h soxr_create -lsoxr
 enabled libssh            && require_pkg_config libssh libssh/sftp.h sftp_init
 enabled libspeex          && require_pkg_config speex speex/speex.h speex_decoder_init -lspeex
@@ -4903,8 +4941,7 @@ enabled libvpx            && {
     enabled libvpx_vp9_encoder && { check_lib2 "vpx/vpx_encoder.h vpx/vp8cx.h" "vpx_codec_vp9_cx VP9E_SET_AQ_MODE" -lvpx || disable libvpx_vp9_encoder; } }
 enabled libwavpack        && require libwavpack wavpack/wavpack.h WavpackOpenFileOutput  -lwavpack
 enabled libwebp           && require_pkg_config "libwebp >= 0.2.0" webp/encode.h WebPGetEncoderVersion
-enabled libx264           && { { check_pkg_config x264 "stdint.h x264.h" x264_encoder_encode &&
-                                 require_pkg_config x264 "stdint.h x264.h" x264_encoder_encode; } ||
+enabled libx264           && { use_pkg_config x264 "stdint.h x264.h" x264_encoder_encode ||
                                { require libx264 x264.h x264_encoder_encode -lx264 &&
                                  warn "using libx264 without pkg-config"; } } &&
                              { check_cpp_condition x264.h "X264_BUILD >= 118" ||
@@ -4916,6 +4953,8 @@ enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs
 enabled libxvid           && require libxvid xvid.h xvid_global -lxvidcore
 enabled libzmq            && require_pkg_config libzmq zmq.h zmq_ctx_new
 enabled libzvbi           && require libzvbi libzvbi.h vbi_decoder_new -lzvbi
+enabled nvenc             && { check_header nvEncodeAPI.h || die "ERROR: nvEncodeAPI.h not found."; } &&
+                             { [ $target_os != cygwin ] || die "ERROR: NVENC is not supported on Cygwin currently."; }
 enabled openal            && { { for al_libs in "${OPENAL_LIBS}" "-lopenal" "-lOpenAL32"; do
                                check_lib 'AL/al.h' alGetError "${al_libs}" && break; done } ||
                                die "ERROR: openal not found"; } &&
@@ -5037,8 +5076,8 @@ enabled xlib &&
     check_lib X11/Xlib.h XOpenDisplay -lX11 || disable xlib
 
 if ! disabled libxcb; then
-    check_pkg_config xcb xcb/xcb.h xcb_connect || {
-        enabled libxcb && die "ERROR: libxcb not found";
+    check_pkg_config "xcb >= 1.4" xcb/xcb.h xcb_connect || {
+        enabled libxcb && die "ERROR: libxcb >= 1.4 not found";
     } && disable x11grab && enable libxcb
 
 if enabled libxcb; then
@@ -5395,6 +5434,7 @@ enabled scale_filter    && prepend avfilter_deps "swscale"
 enabled showspectrum_filter && prepend avfilter_deps "avcodec"
 enabled smartblur_filter    && prepend avfilter_deps "swscale"
 enabled subtitles_filter    && prepend avfilter_deps "avformat avcodec"
+enabled uspp_filter         && prepend avfilter_deps "avcodec"
 
 enabled lavfi_indev         && prepend avdevice_deps "avfilter"
 
@@ -5672,7 +5712,7 @@ cat > $TMPH <<EOF
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "$(c_escape $FFMPEG_CONFIGURATION)"
 #define FFMPEG_LICENSE "$(c_escape $license)"
-#define CONFIG_THIS_YEAR 2014
+#define CONFIG_THIS_YEAR 2015
 #define FFMPEG_DATADIR "$(eval c_escape $datadir)"
 #define AVCONV_DATADIR "$(eval c_escape $datadir)"
 #define CC_IDENT "$(c_escape ${cc_ident:-Unknown compiler})"
@@ -5700,6 +5740,7 @@ enabled getenv || echo "#define getenv(x) NULL" >> $TMPH
 
 
 mkdir -p doc
+mkdir -p tests
 echo "@c auto-generated by configure" > doc/config.texi
 
 print_config ARCH_   "$config_files" $ARCH_LIST

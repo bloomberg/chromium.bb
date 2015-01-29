@@ -173,6 +173,7 @@ OBJS-$(CONFIG_BRENDER_PIX_DECODER)     += brenderpix.o
 OBJS-$(CONFIG_C93_DECODER)             += c93.o
 OBJS-$(CONFIG_CAVS_DECODER)            += cavs.o cavsdec.o cavsdsp.o \
                                           cavsdata.o mpeg12data.o
+OBJS-$(CONFIG_CCAPTION_DECODER)        += ccaption_dec.o
 OBJS-$(CONFIG_CDGRAPHICS_DECODER)      += cdgraphics.o
 OBJS-$(CONFIG_CDXL_DECODER)            += cdxl.o
 OBJS-$(CONFIG_CINEPAK_DECODER)         += cinepak.o
@@ -347,6 +348,7 @@ OBJS-$(CONFIG_MXPEG_DECODER)           += mxpegdec.o
 OBJS-$(CONFIG_NELLYMOSER_DECODER)      += nellymoserdec.o nellymoser.o
 OBJS-$(CONFIG_NELLYMOSER_ENCODER)      += nellymoserenc.o nellymoser.o
 OBJS-$(CONFIG_NUV_DECODER)             += nuv.o rtjpeg.o
+OBJS-$(CONFIG_NVENC_ENCODER)           += nvenc.o
 OBJS-$(CONFIG_ON2AVC_DECODER)          += on2avc.o on2avcdata.o
 OBJS-$(CONFIG_OPUS_DECODER)            += opusdec.o opus.o opus_celt.o \
                                           opus_imdct.o opus_silk.o     \
@@ -657,22 +659,23 @@ OBJS-$(CONFIG_VAAPI)                      += vaapi.o
 OBJS-$(CONFIG_VDA)                        += vda.o
 OBJS-$(CONFIG_VDPAU)                      += vdpau.o
 
-OBJS-$(CONFIG_H263_VAAPI_HWACCEL)         += vaapi_mpeg4.o vaapi_mpeg.o
+OBJS-$(CONFIG_H263_VAAPI_HWACCEL)         += vaapi_mpeg4.o
 OBJS-$(CONFIG_H263_VDPAU_HWACCEL)         += vdpau_mpeg4.o
 OBJS-$(CONFIG_H264_DXVA2_HWACCEL)         += dxva2_h264.o
 OBJS-$(CONFIG_H264_VAAPI_HWACCEL)         += vaapi_h264.o
 OBJS-$(CONFIG_H264_VDA_HWACCEL)           += vda_h264.o
 OBJS-$(CONFIG_H264_VDPAU_HWACCEL)         += vdpau_h264.o
+OBJS-$(CONFIG_HEVC_DXVA2_HWACCEL)         += dxva2_hevc.o
 OBJS-$(CONFIG_MPEG1_VDPAU_HWACCEL)        += vdpau_mpeg12.o
 OBJS-$(CONFIG_MPEG1_XVMC_HWACCEL)         += mpegvideo_xvmc.o
 OBJS-$(CONFIG_MPEG2_DXVA2_HWACCEL)        += dxva2_mpeg2.o
-OBJS-$(CONFIG_MPEG2_VAAPI_HWACCEL)        += vaapi_mpeg2.o vaapi_mpeg.o
+OBJS-$(CONFIG_MPEG2_VAAPI_HWACCEL)        += vaapi_mpeg2.o
 OBJS-$(CONFIG_MPEG2_VDPAU_HWACCEL)        += vdpau_mpeg12.o
 OBJS-$(CONFIG_MPEG2_XVMC_HWACCEL)         += mpegvideo_xvmc.o
-OBJS-$(CONFIG_MPEG4_VAAPI_HWACCEL)        += vaapi_mpeg4.o vaapi_mpeg.o
+OBJS-$(CONFIG_MPEG4_VAAPI_HWACCEL)        += vaapi_mpeg4.o
 OBJS-$(CONFIG_MPEG4_VDPAU_HWACCEL)        += vdpau_mpeg4.o
 OBJS-$(CONFIG_VC1_DXVA2_HWACCEL)          += dxva2_vc1.o
-OBJS-$(CONFIG_VC1_VAAPI_HWACCEL)          += vaapi_vc1.o vaapi_mpeg.o
+OBJS-$(CONFIG_VC1_VAAPI_HWACCEL)          += vaapi_vc1.o
 OBJS-$(CONFIG_VC1_VDPAU_HWACCEL)          += vdpau_vc1.o
 
 # libavformat dependencies
@@ -733,6 +736,7 @@ OBJS-$(CONFIG_LIBMP3LAME_ENCODER)         += libmp3lame.o mpegaudiodecheader.o
 OBJS-$(CONFIG_LIBOPENCORE_AMRNB_DECODER)  += libopencore-amr.o
 OBJS-$(CONFIG_LIBOPENCORE_AMRNB_ENCODER)  += libopencore-amr.o
 OBJS-$(CONFIG_LIBOPENCORE_AMRWB_DECODER)  += libopencore-amr.o
+OBJS-$(CONFIG_LIBOPENH264_ENCODER)        += libopenh264enc.o
 OBJS-$(CONFIG_LIBOPENJPEG_DECODER)        += libopenjpegdec.o
 OBJS-$(CONFIG_LIBOPENJPEG_ENCODER)        += libopenjpegenc.o
 OBJS-$(CONFIG_LIBOPUS_DECODER)            += libopusdec.o libopus.o     \
@@ -847,6 +851,7 @@ SKIPHEADERS                            += %_tablegen.h                  \
                                           libutvideo.h                  \
                                           old_codec_ids.h               \
                                           tableprint.h                  \
+                                          tableprint_vlc.h              \
                                           $(ARCH)/vp56_arith.h          \
 
 SKIPHEADERS-$(CONFIG_DXVA2)            += dxva2.h dxva2_internal.h
@@ -858,6 +863,8 @@ SKIPHEADERS-$(CONFIG_VDA)              += vda.h vda_internal.h
 SKIPHEADERS-$(CONFIG_VDPAU)            += vdpau.h vdpau_internal.h
 
 TESTPROGS = imgconvert                                                  \
+            options                                                     \
+
 
 TESTPROGS-$(CONFIG_CABAC)                 += cabac
 TESTPROGS-$(CONFIG_FFT)                   += fft fft-fixed fft-fixed32

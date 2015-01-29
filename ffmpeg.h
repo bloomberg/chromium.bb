@@ -206,6 +206,8 @@ typedef struct OptionsContext {
     int        nb_apad;
     SpecifierOpt *discard;
     int        nb_discard;
+    SpecifierOpt *disposition;
+    int        nb_disposition;
 } OptionsContext;
 
 typedef struct InputFilter {
@@ -430,6 +432,7 @@ typedef struct OutputStream {
     const char *attachment_filename;
     int copy_initial_nonkeyframes;
     int copy_prior_start;
+    char *disposition;
 
     int keep_pix_fmt;
 
@@ -470,6 +473,7 @@ extern FilterGraph **filtergraphs;
 extern int        nb_filtergraphs;
 
 extern char *vstats_filename;
+extern char *sdp_filename;
 
 extern float audio_drift_threshold;
 extern float dts_delta_threshold;

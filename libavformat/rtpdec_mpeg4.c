@@ -95,16 +95,16 @@ static PayloadContext *new_context(void)
 
 static void free_context(PayloadContext *data)
 {
-    av_free(data->au_headers);
-    av_free(data->mode);
-    av_free(data);
+    av_freep(&data->au_headers);
+    av_freep(&data->mode);
+    av_freep(&data);
 }
 
 static int parse_fmtp_config(AVCodecContext *codec, char *value)
 {
     /* decode the hexa encoded parameter */
     int len = ff_hex_to_data(NULL, value);
-    av_free(codec->extradata);
+    av_freep(&codec->extradata);
     if (ff_alloc_extradata(codec, len))
         return AVERROR(ENOMEM);
     ff_hex_to_data(codec->extradata, value);

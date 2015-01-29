@@ -239,6 +239,15 @@ enum AVPixelFormat {
     AV_PIX_FMT_YA16BE,       ///< 16bit gray, 16bit alpha (big-endian)
     AV_PIX_FMT_YA16LE,       ///< 16bit gray, 16bit alpha (little-endian)
 
+    /**
+     * duplicated pixel formats for compatibility with libav.
+     * FFmpeg supports these formats since May 3 2013 (commit e6d4e687558d08187e7a415a7725e4b1a416f782)
+     * Libav added them Jan 14 2015 with incompatible values (commit 0e6c7dfa650e8b0497bfa7a06394b7a462ddc33a)
+     */
+    AV_PIX_FMT_GBRAP_LIBAV,        ///< planar GBRA 4:4:4:4 32bpp
+    AV_PIX_FMT_GBRAP16BE_LIBAV,    ///< planar GBRA 4:4:4:4 64bpp, big-endian
+    AV_PIX_FMT_GBRAP16LE_LIBAV,    ///< planar GBRA 4:4:4:4 64bpp, little-endian
+
 
 #ifndef AV_PIX_FMT_ABI_GIT_MASTER
     AV_PIX_FMT_RGBA64BE=0x123,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
@@ -304,6 +313,9 @@ enum AVPixelFormat {
 #define AV_PIX_FMT_RGBA64LE AV_PIX_FMT_RGBA64LE_LIBAV
 #define AV_PIX_FMT_BGRA64BE AV_PIX_FMT_BGRA64BE_LIBAV
 #define AV_PIX_FMT_BGRA64LE AV_PIX_FMT_BGRA64LE_LIBAV
+#define AV_PIX_FMT_GBRAP     AV_PIX_FMT_GBRAP_LIBAV
+#define AV_PIX_FMT_GBRAP16BE AV_PIX_FMT_GBRAP16BE_LIBAV
+#define AV_PIX_FMT_GBRAP16LE AV_PIX_FMT_GBRAP16LE_LIBAV
 #endif
 
 

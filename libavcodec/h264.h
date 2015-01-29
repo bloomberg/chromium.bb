@@ -37,7 +37,6 @@
 #include "h264pred.h"
 #include "h264qpel.h"
 #include "internal.h" // for avpriv_find_start_code()
-#include "me_cmp.h"
 #include "mpegutils.h"
 #include "parser.h"
 #include "qpeldsp.h"
@@ -66,7 +65,7 @@
  * The maximum number of slices supported by the decoder.
  * must be a power of 2
  */
-#define MAX_SLICES 16
+#define MAX_SLICES 32
 
 #ifdef ALLOW_INTERLACE
 #define MB_MBAFF(h)    (h)->mb_mbaff
@@ -338,19 +337,19 @@ typedef struct H264Picture {
  * H264Context
  */
 typedef struct H264Context {
+    AVClass *av_class;
     AVCodecContext *avctx;
-    MECmpContext mecc;
     VideoDSPContext vdsp;
     H264DSPContext h264dsp;
     H264ChromaContext h264chroma;
     H264QpelContext h264qpel;
-    ParseContext parse_context;
     GetBitContext gb;
     ERContext er;
 
     H264Picture *DPB;
     H264Picture *cur_pic_ptr;
     H264Picture cur_pic;
+    H264Picture last_pic_for_ec;
 
     int pixel_shift;    ///< 0 for 8-bit H264, 1 for high-bit-depth H264
     int chroma_qp[2];   // QPc
@@ -364,7 +363,6 @@ typedef struct H264Context {
 
     int qscale;
     int droppable;
-    int data_partitioning;
     int coded_picture_number;
     int low_delay;
 
@@ -564,7 +562,6 @@ typedef struct H264Context {
      */
     int is_avc;           ///< this flag is != 0 if codec is avc1
     int nal_length_size;  ///< Number of bytes used for nal length (1, 2 or 4)
-    int got_first;        ///< this flag is != 0 if we've parsed a frame
 
     int bit_depth_luma;         ///< luma bit depth from sps to detect changes
     int chroma_format_idc;      ///< chroma format from sps to detect changes
@@ -737,6 +734,8 @@ typedef struct H264Context {
     int frame_recovered;    ///< Initial frame has been completely recovered
 
     int has_recovery_point;
+
+    int missing_fields;
 
     int luma_weight_flag[2];    ///< 7.4.3.2 luma_weight_lX_flag
     int chroma_weight_flag[2];  ///< 7.4.3.2 chroma_weight_lX_flag

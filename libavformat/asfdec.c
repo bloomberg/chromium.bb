@@ -423,7 +423,7 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
 
     st->codec->codec_type = type;
     if (type == AVMEDIA_TYPE_AUDIO) {
-        int ret = ff_get_wav_header(pb, st->codec, type_specific_size);
+        int ret = ff_get_wav_header(pb, st->codec, type_specific_size, 0);
         if (ret < 0)
             return ret;
         if (is_dvr_ms_audio) {
@@ -791,12 +791,17 @@ static int asf_read_header(AVFormatContext *s)
             if (!s->keylen) {
                 if (!ff_guidcmp(&g, &ff_asf_content_encryption)) {
                     unsigned int len;
+                    int ret;
                     AVPacket pkt;
                     av_log(s, AV_LOG_WARNING,
                            "DRM protected stream detected, decoding will likely fail!\n");
                     len= avio_rl32(pb);
                     av_log(s, AV_LOG_DEBUG, "Secret data:\n");
-                    av_get_packet(pb, &pkt, len); av_hex_dump_log(s, AV_LOG_DEBUG, pkt.data, pkt.size); av_free_packet(&pkt);
+
+                    if ((ret = av_get_packet(pb, &pkt, len)) < 0)
+                        return ret;
+                    av_hex_dump_log(s, AV_LOG_DEBUG, pkt.data, pkt.size);
+                    av_free_packet(&pkt);
                     len= avio_rl32(pb);
                     get_tag(s, "ASF_Protection_Type", -1, len, 32);
                     len= avio_rl32(pb);

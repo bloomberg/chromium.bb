@@ -1418,13 +1418,17 @@ static void matroska_execute_seekhead(MatroskaDemuxContext *matroska)
     EbmlList *seekhead_list = &matroska->seekhead;
     int64_t before_pos = avio_tell(matroska->ctx->pb);
     int i;
+    int nb_elem;
 
     // we should not do any seeking in the streaming case
     if (!matroska->ctx->pb->seekable ||
         (matroska->ctx->flags & AVFMT_FLAG_IGNIDX))
         return;
 
-    for (i = 0; i < seekhead_list->nb_elem; i++) {
+    // do not read entries that are added while parsing seekhead entries
+    nb_elem = seekhead_list->nb_elem;
+
+    for (i = 0; i < nb_elem; i++) {
         MatroskaSeekhead *seekhead = seekhead_list->elem;
         if (seekhead[i].pos <= before_pos)
             continue;
@@ -1440,6 +1444,9 @@ static void matroska_execute_seekhead(MatroskaDemuxContext *matroska)
             matroska->cues_parsing_deferred = -1;
             break;
         }
+    }
+    if (nb_elem != seekhead_list->nb_elem) {
+        avpriv_request_sample(matroska->ctx, "recursive SeekHead elements");
     }
 }
 
@@ -1712,7 +1719,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
             ffio_init_context(&b, track->codec_priv.data,
                               track->codec_priv.size,
                               0, NULL, NULL, NULL, NULL);
-            ret = ff_get_wav_header(&b, st->codec, track->codec_priv.size);
+            ret = ff_get_wav_header(&b, st->codec, track->codec_priv.size, 0);
             if (ret < 0)
                 return ret;
             codec_id         = st->codec->codec_id;
@@ -2515,6 +2522,8 @@ static int matroska_parse_webvtt(MatroskaDemuxContext *matroska,
         return AVERROR_INVALIDDATA;
 
     pkt = av_mallocz(sizeof(*pkt));
+    if (!pkt)
+        return AVERROR(ENOMEM);
     err = av_new_packet(pkt, text_len);
     if (err < 0) {
         av_free(pkt);
@@ -2600,6 +2609,8 @@ static int matroska_parse_frame(MatroskaDemuxContext *matroska,
         offset = 8;
 
     pkt = av_mallocz(sizeof(AVPacket));
+    if (!pkt)
+        return AVERROR(ENOMEM);
     /* XXX: prevent data copy... */
     if (av_new_packet(pkt, pkt_size + offset) < 0) {
         av_free(pkt);
@@ -3321,7 +3332,7 @@ static int webm_dash_manifest_cues(AVFormatContext *s)
 
     // store cue point timestamps as a comma separated list for checking subsegment alignment in
     // the muxer. assumes that each timestamp cannot be more than 20 characters long.
-    buf = av_malloc(s->streams[0]->nb_index_entries * 20 * sizeof(char));
+    buf = av_malloc_array(s->streams[0]->nb_index_entries, 20 * sizeof(char));
     if (!buf) return -1;
     strcpy(buf, "");
     for (i = 0; i < s->streams[0]->nb_index_entries; i++) {

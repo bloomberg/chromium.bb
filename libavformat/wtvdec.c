@@ -204,8 +204,8 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
     wf->sector_bits = length & (1ULL<<63) ? WTV_SECTOR_BITS : WTV_BIGSECTOR_BITS;
 
     if (!wf->nb_sectors) {
-        av_free(wf->sectors);
-        av_free(wf);
+        av_freep(&wf->sectors);
+        av_freep(&wf);
         return NULL;
     }
 
@@ -224,25 +224,25 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
     /* seek to initial sector */
     wf->position = 0;
     if (seek_by_sector(s->pb, wf->sectors[0], 0) < 0) {
-        av_free(wf->sectors);
-        av_free(wf);
+        av_freep(&wf->sectors);
+        av_freep(&wf);
         return NULL;
     }
 
     wf->pb_filesystem = s->pb;
     buffer = av_malloc(1 << wf->sector_bits);
     if (!buffer) {
-        av_free(wf->sectors);
-        av_free(wf);
+        av_freep(&wf->sectors);
+        av_freep(&wf);
         return NULL;
     }
 
     pb = avio_alloc_context(buffer, 1 << wf->sector_bits, 0, wf,
                            wtvfile_read_packet, NULL, wtvfile_seek);
     if (!pb) {
-        av_free(buffer);
-        av_free(wf->sectors);
-        av_free(wf);
+        av_freep(&buffer);
+        av_freep(&wf->sectors);
+        av_freep(&wf);
     }
     return pb;
 }
@@ -304,7 +304,7 @@ static AVIOContext * wtvfile_open2(AVFormatContext *s, const uint8_t *buf, int b
 static void wtvfile_close(AVIOContext *pb)
 {
     WtvFile *wf = pb->opaque;
-    av_free(wf->sectors);
+    av_freep(&wf->sectors);
     av_freep(&pb->opaque);
     av_freep(&pb->buffer);
     av_free(pb);
@@ -670,7 +670,7 @@ static AVStream * parse_media_type(AVFormatContext *s, AVStream *st, int sid,
         if (!st)
             return NULL;
         if (!ff_guidcmp(formattype, ff_format_waveformatex)) {
-            int ret = ff_get_wav_header(pb, st->codec, size);
+            int ret = ff_get_wav_header(pb, st->codec, size, 0);
             if (ret < 0)
                 return NULL;
         } else {

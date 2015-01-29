@@ -204,8 +204,6 @@ static const FormatEntry format_entries[AV_PIX_FMT_NB] = {
     [AV_PIX_FMT_GBRP14BE]    = { 1, 1 },
     [AV_PIX_FMT_GBRP16LE]    = { 1, 0 },
     [AV_PIX_FMT_GBRP16BE]    = { 1, 0 },
-    [AV_PIX_FMT_XYZ12BE]     = { 1, 1, 1 },
-    [AV_PIX_FMT_XYZ12LE]     = { 1, 1, 1 },
     [AV_PIX_FMT_GBRAP]       = { 1, 1 },
     [AV_PIX_FMT_GBRAP16LE]   = { 1, 0 },
     [AV_PIX_FMT_GBRAP16BE]   = { 1, 0 },
@@ -221,6 +219,8 @@ static const FormatEntry format_entries[AV_PIX_FMT_NB] = {
     [AV_PIX_FMT_BAYER_GBRG16BE] = { 1, 0 },
     [AV_PIX_FMT_BAYER_GRBG16LE] = { 1, 0 },
     [AV_PIX_FMT_BAYER_GRBG16BE] = { 1, 0 },
+    [AV_PIX_FMT_XYZ12BE]     = { 1, 1, 1 },
+    [AV_PIX_FMT_XYZ12LE]     = { 1, 1, 1 },
 };
 
 int sws_isSupportedInput(enum AVPixelFormat pix_fmt)
@@ -1960,6 +1960,8 @@ struct SwsContext *sws_getCachedContext(struct SwsContext *context, int srcW,
 {
     static const double default_param[2] = { SWS_PARAM_DEFAULT,
                                              SWS_PARAM_DEFAULT };
+    int64_t src_h_chr_pos = -513, dst_h_chr_pos = -513,
+            src_v_chr_pos = -513, dst_v_chr_pos = -513;
 
     if (!param)
         param = default_param;
@@ -1974,6 +1976,11 @@ struct SwsContext *sws_getCachedContext(struct SwsContext *context, int srcW,
          context->flags     != flags     ||
          context->param[0]  != param[0]  ||
          context->param[1]  != param[1])) {
+
+        av_opt_get_int(context, "src_h_chr_pos", 0, &src_h_chr_pos);
+        av_opt_get_int(context, "src_v_chr_pos", 0, &src_v_chr_pos);
+        av_opt_get_int(context, "dst_h_chr_pos", 0, &dst_h_chr_pos);
+        av_opt_get_int(context, "dst_v_chr_pos", 0, &dst_v_chr_pos);
         sws_freeContext(context);
         context = NULL;
     }
@@ -1990,6 +1997,12 @@ struct SwsContext *sws_getCachedContext(struct SwsContext *context, int srcW,
         context->flags     = flags;
         context->param[0]  = param[0];
         context->param[1]  = param[1];
+
+        av_opt_set_int(context, "src_h_chr_pos", src_h_chr_pos, 0);
+        av_opt_set_int(context, "src_v_chr_pos", src_v_chr_pos, 0);
+        av_opt_set_int(context, "dst_h_chr_pos", dst_h_chr_pos, 0);
+        av_opt_set_int(context, "dst_v_chr_pos", dst_v_chr_pos, 0);
+
         if (sws_init_context(context, srcFilter, dstFilter) < 0) {
             sws_freeContext(context);
             return NULL;

@@ -168,6 +168,7 @@ static void build_frame_code(AVFormatContext *s)
         int start2 = start + (end - start) * stream_id       / s->nb_streams;
         int end2   = start + (end - start) * (stream_id + 1) / s->nb_streams;
         AVCodecContext *codec = s->streams[stream_id]->codec;
+        const AVCodecDescriptor *desc = avcodec_descriptor_get(codec->codec_id);
         int is_audio          = codec->codec_type == AVMEDIA_TYPE_AUDIO;
         int intra_only        = /*codec->intra_only || */ is_audio;
         int pred_count;
@@ -419,6 +420,7 @@ static int write_streamheader(AVFormatContext *avctx, AVIOContext *bc,
 {
     NUTContext *nut       = avctx->priv_data;
     AVCodecContext *codec = st->codec;
+    const AVCodecDescriptor *desc = avcodec_descriptor_get(codec->codec_id);
 
     ff_put_v(bc, i);
     switch (codec->codec_type) {
@@ -524,7 +526,10 @@ static int write_streaminfo(NUTContext *nut, AVIOContext *bc, int stream_id) {
     }
     if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
         uint8_t buf[256];
-        snprintf(buf, sizeof(buf), "%d/%d", st->codec->time_base.den, st->codec->time_base.num);
+        if (st->r_frame_rate.num>0 && st->r_frame_rate.den>0)
+            snprintf(buf, sizeof(buf), "%d/%d", st->r_frame_rate.num, st->r_frame_rate.den);
+        else
+            snprintf(buf, sizeof(buf), "%d/%d", st->codec->time_base.den, st->codec->time_base.num);
         count += add_info(dyn_bc, "r_frame_rate", buf);
     }
     dyn_size = avio_close_dyn_buf(dyn_bc, &dyn_buf);

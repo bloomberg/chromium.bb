@@ -177,6 +177,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', '1', 'v', ' ') },
     { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', '1', 'v', '1') }, /* Apple MPEG-1 Camcorder */
     { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', 'p', 'e', 'g') }, /* MPEG */
+    { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', 'p', '1', 'v') }, /* CoreMedia CMVideoCodecType */
     { AV_CODEC_ID_MPEG2VIDEO, MKTAG('m', '2', 'v', '1') }, /* Apple MPEG-2 Camcorder */
     { AV_CODEC_ID_MPEG2VIDEO, MKTAG('h', 'd', 'v', '1') }, /* MPEG2 HDV 720p30 */
     { AV_CODEC_ID_MPEG2VIDEO, MKTAG('h', 'd', 'v', '2') }, /* MPEG2 HDV 1080i60 */
@@ -250,6 +251,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_PRORES, MKTAG('a', 'p', 'c', 's') }, /* Apple ProRes 422 LT */
     { AV_CODEC_ID_PRORES, MKTAG('a', 'p', 'c', 'o') }, /* Apple ProRes 422 Proxy */
     { AV_CODEC_ID_PRORES, MKTAG('a', 'p', '4', 'h') }, /* Apple ProRes 4444 */
+    { AV_CODEC_ID_PRORES, MKTAG('a', 'p', '4', 'x') }, /* Apple ProRes 4444 XQ */
     { AV_CODEC_ID_FLIC,   MKTAG('f', 'l', 'i', 'c') },
 
     { AV_CODEC_ID_AIC, MKTAG('i', 'c', 'o', 'd') },

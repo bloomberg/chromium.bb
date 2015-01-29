@@ -156,6 +156,7 @@ Codecs:
   celp_filters.*                        Vitor Sessak
   cinepak.c                             Roberto Togni
   cinepakenc.c                          Rl / Aetey G.T. AB
+  ccaption_dec.c                        Anshul Maheshwari
   cljr                                  Alex Beregszaszi
   cllc.c                                Derek Buitenhuis
   cook.c, cookdata.h                    Benjamin Larsson
@@ -226,6 +227,7 @@ Codecs:
   msvideo1.c                            Mike Melanson
   nellymoserdec.c                       Benjamin Larsson
   nuv.c                                 Reimar Doeffinger
+  nvenc.c                               Timo Rothenpieler
   paf.*                                 Paul B Mahol
   pcx.c                                 Ivo van Poorten
   pgssubdec.c                           Reimar Doeffinger
@@ -537,6 +539,7 @@ x86                                     Michael Niedermayer
 Releases
 ========
 
+2.5                                     Michael Niedermayer
 2.4                                     Michael Niedermayer
 2.2                                     Michael Niedermayer
 1.2                                     Michael Niedermayer

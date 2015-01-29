@@ -2,6 +2,24 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- nvenc encoder
+- 10bit spp filter
+- colorlevels filter
+- RIFX format for *.wav files
+- RTP/mpegts muxer
+- non continuous cache protocol support
+- tblend filter
+- cropdetect support for non 8bpp, absolute (if limit >= 1) and relative (if limit < 1.0) threshold
+- Camellia symmetric block cipher
+- OpenH264 encoder wrapper
+- VOC seeking support
+- Closed caption Decoder
+- fspp, uspp, pp7 MPlayer postprocessing filters ported to native filters
+- showpalette filter
+- Twofish symmetric block cipher
+
+
+version 2.5:
 - HEVC/H.265 RTP payload format (draft v6) packetizer
 - SUP/PGS subtitle demuxer
 - ffprobe -show_pixel_formats option
@@ -17,6 +35,7 @@ version <next>:
 - WebP muxer with animated WebP support
 - zygoaudio decoding support
 - APNG demuxer
+- postproc visualization support
 
 
 version 2.4:
@@ -26,7 +45,7 @@ version 2.4:
 - ICY metadata are now requested by default with the HTTP protocol
 - support for using metadata in stream specifiers in fftools
 - LZMA compression support in TIFF decoder
-- support for H.261 RTP payload format (RFC 4587)
+- H.261 RTP payload format (RFC 4587) depacketizer and experimental packetizer
 - HEVC/H.265 RTP payload format (draft v6) depacketizer
 - added codecview filter to visualize information exported by some codecs
 - Matroska 3D support thorugh side data

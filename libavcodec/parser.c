@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "libavutil/avassert.h"
 #include "libavutil/atomic.h"
 #include "libavutil/mem.h"
 
@@ -93,14 +94,16 @@ err_out:
     return NULL;
 }
 
-void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove)
+void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove, int fuzzy)
 {
     int i;
 
-    s->dts    =
-    s->pts    = AV_NOPTS_VALUE;
-    s->pos    = -1;
-    s->offset = 0;
+    if (!fuzzy) {
+        s->dts    =
+        s->pts    = AV_NOPTS_VALUE;
+        s->pos    = -1;
+        s->offset = 0;
+    }
     for (i = 0; i < AV_PARSER_PTS_NB; i++) {
         if (s->cur_offset + off >= s->cur_frame_offset[i] &&
             (s->frame_offset < s->cur_frame_offset[i] ||
@@ -108,10 +111,12 @@ void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove)
             // check disabled since MPEG-TS does not send complete PES packets
             /*s->next_frame_offset + off <*/  s->cur_frame_end[i]){
 
-            s->dts    = s->cur_frame_dts[i];
-            s->pts    = s->cur_frame_pts[i];
-            s->pos    = s->cur_frame_pos[i];
-            s->offset = s->next_frame_offset - s->cur_frame_offset[i];
+            if (!fuzzy || s->cur_frame_dts[i] != AV_NOPTS_VALUE) {
+                s->dts    = s->cur_frame_dts[i];
+                s->pts    = s->cur_frame_pts[i];
+                s->pos    = s->cur_frame_pos[i];
+                s->offset = s->next_frame_offset - s->cur_frame_offset[i];
+            }
             if (remove)
                 s->cur_frame_offset[i] = INT64_MAX;
             if (s->cur_offset + off < s->cur_frame_end[i])
@@ -154,11 +159,12 @@ int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
         s->last_pts        = s->pts;
         s->last_dts        = s->dts;
         s->last_pos        = s->pos;
-        ff_fetch_timestamp(s, 0, 0);
+        ff_fetch_timestamp(s, 0, 0, 0);
     }
     /* WARNING: the returned index can be negative */
     index = s->parser->parser_parse(s, avctx, (const uint8_t **) poutbuf,
                                     poutbuf_size, buf, buf_size);
+    av_assert0(index > -0x20000000); // The API does not allow returning AVERROR codes
     /* update the file pointer */
     if (*poutbuf_size) {
         /* fill the data for the current frame */
@@ -196,6 +202,8 @@ int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
 
             *poutbuf_size = size;
             *poutbuf      = av_malloc(size + FF_INPUT_BUFFER_PADDING_SIZE);
+            if (!*poutbuf)
+                return AVERROR(ENOMEM);
 
             memcpy(*poutbuf, avctx->extradata, avctx->extradata_size);
             memcpy(*poutbuf + avctx->extradata_size, buf,
