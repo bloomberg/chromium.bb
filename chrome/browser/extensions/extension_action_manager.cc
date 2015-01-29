@@ -12,7 +12,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 
 namespace extensions {
 
@@ -85,41 +84,6 @@ void ExtensionActionManager::OnExtensionUnloaded(
 
 namespace {
 
-// Loads resources missing from |action| (i.e. title, icons) from the "icons"
-// key of |extension|'s manifest.
-void PopulateMissingValues(const Extension& extension,
-                           ExtensionAction* action) {
-  // If the title is missing from |action|, set it to |extension|'s name.
-  if (action->GetTitle(ExtensionAction::kDefaultTabId).empty())
-    action->SetTitle(ExtensionAction::kDefaultTabId, extension.name());
-
-  scoped_ptr<ExtensionIconSet> default_icon(new ExtensionIconSet());
-  if (action->default_icon())
-    *default_icon = *action->default_icon();
-
-  const ExtensionIconSet& extension_icons = IconsInfo::GetIcons(&extension);
-  std::string largest_icon = extension_icons.Get(
-      extension_misc::EXTENSION_ICON_GIGANTOR,
-      ExtensionIconSet::MATCH_SMALLER);
-
-  if (!largest_icon.empty()) {
-    int largest_icon_size = extension_icons.GetIconSizeFromPath(largest_icon);
-    // Replace any missing extension action icons with the largest icon
-    // retrieved from |extension|'s manifest so long as the largest icon is
-    // larger than the current key.
-    for (int i = extension_misc::kNumExtensionActionIconSizes - 1;
-         i >= 0; --i) {
-      int size = extension_misc::kExtensionActionIconSizes[i].size;
-      if (default_icon->Get(size, ExtensionIconSet::MATCH_BIGGER).empty()
-          && largest_icon_size > size) {
-        default_icon->Add(size, largest_icon);
-        break;
-      }
-    }
-    action->set_default_icon(default_icon.Pass());
-  }
-}
-
 // Returns map[extension_id] if that entry exists. Otherwise, if
 // action_info!=NULL, creates an ExtensionAction from it, fills in the map, and
 // returns that.  Otherwise (action_info==NULL), returns NULL.
@@ -145,9 +109,8 @@ ExtensionAction* GetOrCreateOrNull(
   }
 
   linked_ptr<ExtensionAction> action(new ExtensionAction(
-      extension.id(), action_type, *action_info));
+      extension, action_type, *action_info));
   (*map)[extension.id()] = action;
-  PopulateMissingValues(extension, action.get());
   return action.get();
 }
 
@@ -181,8 +144,7 @@ scoped_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
   // with a blank ActionInfo.
   // Populate any missing values from |extension|'s manifest.
   scoped_ptr<ExtensionAction> new_action(new ExtensionAction(
-      extension.id(), type, info ? *info : ActionInfo()));
-  PopulateMissingValues(extension, new_action.get());
+      extension, type, info ? *info : ActionInfo()));
   return new_action.Pass();
 }
 

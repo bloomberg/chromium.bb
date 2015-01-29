@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_ICON_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "extensions/browser/extension_icon_image.h"
 
 class ExtensionAction;
@@ -33,12 +34,13 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   // Observer should outlive this.
   ExtensionActionIconFactory(Profile* profile,
                              const extensions::Extension* extension,
-                             const ExtensionAction* action,
+                             ExtensionAction* action,
                              Observer* observer);
   ~ExtensionActionIconFactory() override;
 
   // extensions::IconImage override.
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
+  void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
 
   // Gets the extension action icon for the tab.
   // If there is an icon set using |SetIcon|, that icon is returned.
@@ -58,8 +60,9 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   const extensions::Extension* extension_;
   const ExtensionAction* action_;
   Observer* observer_;
-  // Underlying icon image for the default icon.
-  scoped_ptr<extensions::IconImage> default_icon_;
+
+  ScopedObserver<extensions::IconImage, extensions::IconImage::Observer>
+      icon_image_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactory);
 };

@@ -30,7 +30,7 @@ class ExtensionIndicatorIcon : public StatusIconObserver,
                                public ExtensionActionIconFactory::Observer {
  public:
   static ExtensionIndicatorIcon* Create(const Extension* extension,
-                                        const ExtensionAction* action,
+                                        ExtensionAction* action,
                                         Profile* profile,
                                         StatusTray* status_tray);
   ~ExtensionIndicatorIcon() override;
@@ -43,7 +43,7 @@ class ExtensionIndicatorIcon : public StatusIconObserver,
 
  private:
   ExtensionIndicatorIcon(const Extension* extension,
-                         const ExtensionAction* action,
+                         ExtensionAction* action,
                          Profile* profile,
                          StatusTray* status_tray);
 
@@ -56,7 +56,7 @@ class ExtensionIndicatorIcon : public StatusIconObserver,
 
 ExtensionIndicatorIcon* ExtensionIndicatorIcon::Create(
     const Extension* extension,
-    const ExtensionAction* action,
+    ExtensionAction* action,
     Profile* profile,
     StatusTray* status_tray) {
   scoped_ptr<ExtensionIndicatorIcon> extension_icon(
@@ -96,7 +96,7 @@ void ExtensionIndicatorIcon::OnIconUpdated() {
 }
 
 ExtensionIndicatorIcon::ExtensionIndicatorIcon(const Extension* extension,
-                                               const ExtensionAction* action,
+                                               ExtensionAction* action,
                                                Profile* profile,
                                                StatusTray* status_tray)
     : extension_(extension),
@@ -176,7 +176,7 @@ bool SystemIndicatorManager::SendClickEventToExtensionForTest(
 
 void SystemIndicatorManager::CreateOrUpdateIndicator(
     const Extension* extension,
-    const ExtensionAction* extension_action) {
+    ExtensionAction* extension_action) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SystemIndicatorMap::iterator it = system_indicators_.find(extension->id());
   if (it != system_indicators_.end()) {

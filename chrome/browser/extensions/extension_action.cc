@@ -7,12 +7,13 @@
 #include <algorithm>
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/common/badge_util.h"
 #include "chrome/common/icon_with_badge_image_source.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ipc/ipc_message.h"
@@ -35,6 +36,29 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Returns the default icon image for extensions.
+gfx::Image GetDefaultIcon() {
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_EXTENSIONS_FAVICON);
+}
+
+// Given the extension action type, returns the size the extension action icon
+// should have. The icon should be square, so only one dimension is
+// returned.
+int GetIconSizeForType(extensions::ActionInfo::Type type) {
+  switch (type) {
+    case extensions::ActionInfo::TYPE_BROWSER:
+    case extensions::ActionInfo::TYPE_PAGE:
+    case extensions::ActionInfo::TYPE_SYSTEM_INDICATOR:
+      // TODO(dewittj) Report the actual icon size of the system
+      // indicator.
+      return extension_misc::EXTENSION_ICON_ACTION;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
 
 class GetAttentionImageSource : public gfx::ImageSkiaSource {
  public:
@@ -76,59 +100,18 @@ const int ExtensionAction::kDefaultTabId = -1;
 const int ExtensionAction::kPageActionIconMaxSize =
     extension_misc::EXTENSION_ICON_ACTION;
 
-ExtensionAction::ExtensionAction(const std::string& extension_id,
+ExtensionAction::ExtensionAction(const extensions::Extension& extension,
                                  extensions::ActionInfo::Type action_type,
                                  const extensions::ActionInfo& manifest_data)
-    : extension_id_(extension_id), action_type_(action_type) {
+    : extension_id_(extension.id()), action_type_(action_type) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   SetIsVisible(kDefaultTabId,
                action_type == extensions::ActionInfo::TYPE_BROWSER);
-  SetTitle(kDefaultTabId, manifest_data.default_title);
-  SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
-  if (!manifest_data.default_icon.empty()) {
-    set_default_icon(make_scoped_ptr(new ExtensionIconSet(
-        manifest_data.default_icon)));
-  }
-  set_id(manifest_data.id);
+  Populate(extension, manifest_data);
 }
 
 ExtensionAction::~ExtensionAction() {
-}
-
-scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
-  scoped_ptr<ExtensionAction> copy(
-      new ExtensionAction(extension_id_, action_type_,
-                          extensions::ActionInfo()));
-  copy->popup_url_ = popup_url_;
-  copy->title_ = title_;
-  copy->icon_ = icon_;
-  copy->badge_text_ = badge_text_;
-  copy->badge_background_color_ = badge_background_color_;
-  copy->badge_text_color_ = badge_text_color_;
-  copy->is_visible_ = is_visible_;
-  copy->id_ = id_;
-
-  if (default_icon_)
-    copy->default_icon_.reset(new ExtensionIconSet(*default_icon_));
-
-  return copy.Pass();
-}
-
-// static
-int ExtensionAction::GetIconSizeForType(
-    extensions::ActionInfo::Type type) {
-  switch (type) {
-    case extensions::ActionInfo::TYPE_BROWSER:
-    case extensions::ActionInfo::TYPE_PAGE:
-    case extensions::ActionInfo::TYPE_SYSTEM_INDICATOR:
-      // TODO(dewittj) Report the actual icon size of the system
-      // indicator.
-      return extension_misc::EXTENSION_ICON_ACTION;
-    default:
-      NOTREACHED();
-      return 0;
-  }
 }
 
 void ExtensionAction::SetPopupUrl(int tab_id, const GURL& url) {
@@ -282,6 +265,28 @@ gfx::ImageSkia ExtensionAction::GetIconWithBadge(
      icon.size());
 }
 
+extensions::IconImage* ExtensionAction::LoadDefaultIconImage(
+    const extensions::Extension& extension,
+    content::BrowserContext* browser_context) {
+  if (default_icon_ && !default_icon_image_) {
+    default_icon_image_.reset(new extensions::IconImage(
+        browser_context,
+        &extension,
+        *default_icon(),
+        GetIconSizeForType(action_type_),
+        *GetDefaultIcon().ToImageSkia(),
+        nullptr));
+  }
+  return default_icon_image_.get();
+}
+
+gfx::ImageSkia ExtensionAction::GetDefaultIconImage() const {
+  // If we have a default icon, it should be loaded before trying to use it.
+  DCHECK(!default_icon_image_ == !default_icon_);
+  return default_icon_image_ ? default_icon_image_->image_skia() :
+      *GetDefaultIcon().ToImageSkia();
+}
+
 bool ExtensionAction::HasPopupUrl(int tab_id) const {
   return HasValue(popup_url_, tab_id);
 }
@@ -310,6 +315,52 @@ bool ExtensionAction::HasIcon(int tab_id) const {
   return HasValue(icon_, tab_id);
 }
 
+void ExtensionAction::SetDefaultIconForTest(
+    scoped_ptr<ExtensionIconSet> default_icon) {
+  default_icon_ = default_icon.Pass();
+}
+
+void ExtensionAction::Populate(const extensions::Extension& extension,
+                               const extensions::ActionInfo& manifest_data) {
+  // If the manifest doesn't specify a title, set it to |extension|'s name.
+  const std::string& title =
+      !manifest_data.default_title.empty() ? manifest_data.default_title :
+      extension.name();
+  SetTitle(kDefaultTabId, title);
+  SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
+  set_id(manifest_data.id);
+
+  // Initialize the specified icon set.
+  if (!manifest_data.default_icon.empty())
+    default_icon_.reset(new ExtensionIconSet(manifest_data.default_icon));
+
+  const ExtensionIconSet& extension_icons =
+      extensions::IconsInfo::GetIcons(&extension);
+  // Look for any other icons.
+  std::string largest_icon = extension_icons.Get(
+      extension_misc::EXTENSION_ICON_GIGANTOR,
+      ExtensionIconSet::MATCH_SMALLER);
+
+  if (!largest_icon.empty()) {
+    // We found an icon to use, so create an icon set if one doesn't exist.
+    if (!default_icon_)
+      default_icon_.reset(new ExtensionIconSet());
+    int largest_icon_size = extension_icons.GetIconSizeFromPath(largest_icon);
+    // Replace any missing extension action icons with the largest icon
+    // retrieved from |extension|'s manifest so long as the largest icon is
+    // larger than the current key.
+    for (int i = extension_misc::kNumExtensionActionIconSizes - 1;
+         i >= 0; --i) {
+      int size = extension_misc::kExtensionActionIconSizes[i].size;
+      if (default_icon_->Get(size, ExtensionIconSet::MATCH_BIGGER).empty()
+          && largest_icon_size > size) {
+        default_icon_->Add(size, largest_icon);
+        break;
+      }
+    }
+  }
+}
+
 // Determines which icon would be returned by |GetIcon|, and returns its width.
 int ExtensionAction::GetIconWidth(int tab_id) const {
   // If icon has been set, return its width.
@@ -324,5 +375,5 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
   // If no icon has been set and there is no default icon, we need favicon
   // width.
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON).ToImageSkia()->width();
+          IDR_EXTENSIONS_FAVICON).Width();
 }

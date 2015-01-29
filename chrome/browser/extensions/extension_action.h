@@ -9,21 +9,21 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "extensions/common/extension_icon_set.h"
 #include "third_party/skia/include/core/SkColor.h"
-// TODO(robertphillips): change this to "class SkBaseDevice;"
-#include "third_party/skia/include/core/SkDevice.h"
-#include "ui/gfx/animation/linear_animation.h"
 
 class GURL;
-class SkBitmap;
+
+namespace content {
+class BrowserContext;
+}
+
+namespace extensions {
+class Extension;
+class IconImage;
+}
 
 namespace gfx {
 class Canvas;
@@ -53,19 +53,10 @@ class ExtensionAction {
   // Max size (both dimensions) for page actions.
   static const int kPageActionIconMaxSize;
 
-  ExtensionAction(const std::string& extension_id,
+  ExtensionAction(const extensions::Extension& extension,
                   extensions::ActionInfo::Type action_type,
                   const extensions::ActionInfo& manifest_data);
   ~ExtensionAction();
-
-  // Gets a copy of this, ownership passed to caller.
-  // It doesn't make sense to copy of an ExtensionAction except in tests.
-  scoped_ptr<ExtensionAction> CopyForTest() const;
-
-  // Given the extension action type, returns the size the extension action icon
-  // should have. The icon should be square, so only one dimension is
-  // returned.
-  static int GetIconSizeForType(extensions::ActionInfo::Type type);
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
@@ -120,12 +111,6 @@ class ExtensionAction {
   // highest priority will be used.
   void DeclarativeSetIcon(int tab_id, int priority, const gfx::Image& icon);
   void UndoDeclarativeSetIcon(int tab_id, int priority, const gfx::Image& icon);
-
-  // Non-tab-specific icon path. This is used to support the default_icon key of
-  // page and browser actions.
-  void set_default_icon(scoped_ptr<ExtensionIconSet> icon_set) {
-     default_icon_ = icon_set.Pass();
-  }
 
   const ExtensionIconSet* default_icon() const {
     return default_icon_.get();
@@ -202,6 +187,16 @@ class ExtensionAction {
                                   int tab_id,
                                   const gfx::Size& spacing) const;
 
+  // Lazily loads and returns the default icon image, if one exists for the
+  // action.
+  extensions::IconImage* LoadDefaultIconImage(
+      const extensions::Extension& extension,
+      content::BrowserContext* browser_context);
+
+  // Returns the image to use as the default icon for the action. Can only be
+  // called after LoadDefaultIconImage().
+  gfx::ImageSkia GetDefaultIconImage() const;
+
   // Determine whether or not the ExtensionAction has a value set for the given
   // |tab_id| for each property.
   bool HasPopupUrl(int tab_id) const;
@@ -212,7 +207,14 @@ class ExtensionAction {
   bool HasIsVisible(int tab_id) const;
   bool HasIcon(int tab_id) const;
 
+  void SetDefaultIconForTest(scoped_ptr<ExtensionIconSet> default_icon);
+
  private:
+  // Populates the action from the |extension| and |manifest_data|, filling in
+  // any missing values (like title or icons) as possible.
+  void Populate(const extensions::Extension& extension,
+                const extensions::ActionInfo& manifest_data);
+
   // Returns width of the current icon for tab_id.
   // TODO(tbarzic): The icon selection is done in ExtensionActionIconFactory.
   // We should probably move this there too.
@@ -284,7 +286,11 @@ class ExtensionAction {
 
   // ExtensionIconSet containing paths to bitmaps from which default icon's
   // image representations will be selected.
-  scoped_ptr<const ExtensionIconSet> default_icon_;
+  scoped_ptr<ExtensionIconSet> default_icon_;
+
+  // The default icon image, if |default_icon_| exists.
+  // Lazily initialized via LoadDefaultIconImage().
+  scoped_ptr<extensions::IconImage> default_icon_image_;
 
   // The id for the ExtensionAction, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.

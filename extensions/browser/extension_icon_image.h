@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_icon_set.h"
@@ -33,12 +34,11 @@ namespace extensions {
 
 // A class that provides an ImageSkia for UI code to use. It handles extension
 // icon resource loading, screen scale factor change etc. UI code that uses
-// extension icon should host this class and be its observer. ExtensionIconImage
-// should be outlived by the observer. In painting code, UI code paints with the
-// ImageSkia provided by this class. If required extension icon resource is not
-// already present, this class tries to load it and calls its observer interface
-// when the image get updated. Until the resource is loaded, the UI code will be
-// provided with blank, transparent image.
+// extension icon should host this class. In painting code, UI code paints with
+// the ImageSkia provided by this class. If the required extension icon resource
+// is not already present, this class tries to load it and calls its observer
+// interface when the image get updated. Until the resource is loaded, the UI
+// code will be provided with a blank, transparent image.
 // If the requested resource doesn't exist or can't be loaded and a default
 // icon was supplied in the constructor, icon image will be updated with the
 // default icon's resource.
@@ -55,6 +55,10 @@ class IconImage : public content::NotificationObserver {
     // Invoked when a new image rep for an additional scale factor
     // is loaded and added to |image|.
     virtual void OnExtensionIconImageChanged(IconImage* image) = 0;
+
+    // Called when this object is deleted. Objects should observe this if there
+    // is a question about the lifetime of the icon image vs observer.
+    virtual void OnExtensionIconImageDestroyed(IconImage* image) {}
 
    protected:
     virtual ~Observer() {}
@@ -73,6 +77,9 @@ class IconImage : public content::NotificationObserver {
 
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   class Source;
 
@@ -81,7 +88,7 @@ class IconImage : public content::NotificationObserver {
   // method.
   // If representation loading is asynchronous, an empty image
   // representation is returned. When the representation gets loaded the
-  // observer's |OnExtensionIconImageLoaded| will be called.
+  // observers' OnExtensionIconImageLoaded() will be called.
   gfx::ImageSkiaRep LoadImageForScaleFactor(ui::ScaleFactor scale_factor);
 
   void OnImageLoaded(float scale_factor, const gfx::Image& image);
@@ -96,7 +103,7 @@ class IconImage : public content::NotificationObserver {
   const ExtensionIconSet& icon_set_;
   const int resource_size_in_dip_;
 
-  Observer* observer_;
+  ObserverList<Observer> observers_;
 
   Source* source_;  // Owned by ImageSkia storage.
   gfx::ImageSkia image_skia_;

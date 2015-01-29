@@ -61,7 +61,7 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   // the indicator if necessary.
   void CreateOrUpdateIndicator(
       const Extension* extension,
-      const ExtensionAction* extension_action);
+      ExtensionAction* extension_action);
 
   // Causes the indicator for the given extension to be hidden.
   void RemoveIndicator(const std::string &extension_id);

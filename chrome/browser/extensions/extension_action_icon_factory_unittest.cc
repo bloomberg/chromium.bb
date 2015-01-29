@@ -263,7 +263,7 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   scoped_ptr<ExtensionIconSet> default_icon_set(new ExtensionIconSet());
   default_icon_set->Add(19, "icon.png");
 
-  browser_action->set_default_icon(default_icon_set.Pass());
+  browser_action->SetDefaultIconForTest(default_icon_set.Pass());
   ASSERT_TRUE(browser_action->default_icon());
 
   ExtensionActionIconFactory icon_factory(

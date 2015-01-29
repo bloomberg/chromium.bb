@@ -134,13 +134,14 @@ IconImage::IconImage(
       extension_(extension),
       icon_set_(icon_set),
       resource_size_in_dip_(resource_size_in_dip),
-      observer_(observer),
       source_(NULL),
       default_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
           default_icon,
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(resource_size_in_dip, resource_size_in_dip))),
       weak_ptr_factory_(this) {
+  if (observer)
+    AddObserver(observer);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   source_ = new Source(this, resource_size);
   image_skia_ = gfx::ImageSkia(source_, resource_size);
@@ -150,7 +151,16 @@ IconImage::IconImage(
                  content::NotificationService::AllSources());
 }
 
+void IconImage::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void IconImage::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 IconImage::~IconImage() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionIconImageDestroyed(this));
   source_->ResetHost();
 }
 
@@ -216,8 +226,7 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   image_skia_.RemoveRepresentation(scale);
   image_skia_.AddRepresentation(rep);
 
-  if (observer_)
-    observer_->OnExtensionIconImageChanged(this);
+  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionIconImageChanged(this));
 }
 
 void IconImage::Observe(int type,
