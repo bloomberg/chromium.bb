@@ -119,9 +119,9 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
 void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
     CSSParserImpl parser(context, string, styleSheet);
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules = parser.consumeRuleList(parser.m_tokens, TopLevelRuleList);
-    for (const auto& rule : rules)
+    parser.consumeRuleList(parser.m_tokens, TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         styleSheet->parserAppendRule(rule);
+    });
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
@@ -140,10 +140,9 @@ bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range)
     return result;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType)
+template<typename T>
+void CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType, const T callback)
 {
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> result;
-
     AllowedRulesType allowedRules;
     switch (ruleListType) {
     case TopLevelRuleList:
@@ -167,7 +166,7 @@ WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleLi
             break;
         case AtKeywordToken:
             if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules))
-                result.append(rule);
+                callback(rule);
             break;
         case CDOToken:
         case CDCToken:
@@ -178,12 +177,10 @@ WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleLi
             // fallthrough
         default:
             if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeQualifiedRule(range, allowedRules))
-                result.append(rule);
+                callback(rule);
             break;
         }
     }
-
-    return result;
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType& allowedRules)
@@ -309,7 +306,10 @@ void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
 
 PassRefPtrWillBeRawPtr<StyleRuleMedia> CSSParserImpl::consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules = consumeRuleList(block, RegularRuleList);
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules;
+    consumeRuleList(block, RegularRuleList, [&rules](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+        rules.append(rule);
+    });
     return StyleRuleMedia::create(MediaQueryParser::parseMediaQuerySet(prelude), rules);
 }
 
@@ -319,7 +319,10 @@ PassRefPtrWillBeRawPtr<StyleRuleSupports> CSSParserImpl::consumeSupportsRule(CSS
     if (supported == CSSSupportsParser::Invalid)
         return nullptr; // Parse error, invalid @supports condition
     // FIXME: Serialize the condition text for the CSSOM
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules = consumeRuleList(block, RegularRuleList);
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules;
+    consumeRuleList(block, RegularRuleList, [&rules](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+        rules.append(rule);
+    });
     return StyleRuleSupports::create(String(""), supported, rules);
 }
 
@@ -384,14 +387,13 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
         return nullptr; // Parse error; expected ident token in @keyframes header
     }
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& keyframeRules = consumeRuleList(block, KeyframesRuleList);
-
-    RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
-    for (const auto& keyframe : keyframeRules)
-        rule->parserAppendKeyframe(toStyleRuleKeyframe(keyframe.get()));
-    rule->setName(name);
-    rule->setVendorPrefixed(webkitPrefixed);
-    return rule.release();
+    RefPtrWillBeRawPtr<StyleRuleKeyframes> keyframeRule = StyleRuleKeyframes::create();
+    consumeRuleList(block, KeyframesRuleList, [keyframeRule](PassRefPtrWillBeRawPtr<StyleRuleBase> keyframe) {
+        keyframeRule->parserAppendKeyframe(toStyleRuleKeyframe(keyframe.get()));
+    });
+    keyframeRule->setName(name);
+    keyframeRule->setVendorPrefixed(webkitPrefixed);
+    return keyframeRule.release();
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)

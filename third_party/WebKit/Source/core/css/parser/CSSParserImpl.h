@@ -65,7 +65,8 @@ private:
         KeyframesRuleList
     };
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> consumeRuleList(CSSParserTokenRange, RuleListType);
+    template<typename T>
+    void consumeRuleList(CSSParserTokenRange, RuleListType, T callback);
 
     // These two functions update the range they're given and allowed rules
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType&);
