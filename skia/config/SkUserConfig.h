@@ -270,10 +270,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #    define SK_DYNAMIC_ANNOTATIONS_ENABLED 1
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_BLOB_BOUNDS
-#   define SK_SUPPORT_LEGACY_BLOB_BOUNDS
-#endif
-
 // ===== End Chrome-specific definitions =====
 
 #endif
