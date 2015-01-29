@@ -142,9 +142,20 @@ public:
 
     // Applies viewport related properties during a commit from the compositor
     // thread.
+    // FIXME: Remove this version once CC side switches to use WebFloatSize version.
+    // crbug.com/414283.
     virtual void applyViewportDeltas(
         const WebSize& pinchViewportDelta,
         const WebSize& mainFrameDelta,
+        const WebFloatSize& elasticOverscrollDelta,
+        float scaleFactor,
+        float topControlsDelta) { }
+
+    // Applies viewport related properties during a commit from the compositor
+    // thread.
+    virtual void applyViewportDeltas(
+        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,
         float topControlsDelta) { }

@@ -4354,6 +4354,21 @@ void WebViewImpl::applyViewportDeltas(
     float pageScaleDelta,
     float topControlsDelta)
 {
+    applyViewportDeltas(
+        WebFloatSize(pinchViewportDelta.width, pinchViewportDelta.height),
+        WebFloatSize(outerViewportDelta.width, outerViewportDelta.height),
+        elasticOverscrollDelta,
+        pageScaleDelta,
+        topControlsDelta);
+}
+
+void WebViewImpl::applyViewportDeltas(
+    const WebFloatSize& pinchViewportDelta,
+    const WebFloatSize& outerViewportDelta,
+    const WebFloatSize& elasticOverscrollDelta,
+    float pageScaleDelta,
+    float topControlsDelta)
+{
     ASSERT(pinchVirtualViewportEnabled());
 
     if (!mainFrameImpl())
@@ -4381,7 +4396,7 @@ void WebViewImpl::applyViewportDeltas(
         outerViewport = frameView;
 
     DoublePoint outerViewportOffset = outerViewport->scrollPositionDouble() +
-        IntSize(outerViewportDelta.width, outerViewportDelta.height);
+        DoubleSize(outerViewportDelta.width, outerViewportDelta.height);
 
     if (rootLayerScrolls)
         updateRootLayerScrollPosition(outerViewportOffset);

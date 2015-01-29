@@ -94,6 +94,12 @@ public:
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
         float topControlsDelta) override;
+    void applyViewportDeltas(
+        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& mainFrameDelta,
+        const WebFloatSize& elasticOverscrollDelta,
+        float pageScaleDelta,
+        float topControlsDelta) override;
     void mouseCaptureLost() override;
     void setFocus(bool enable) override;
     bool setComposition(
@@ -207,4 +213,3 @@ private:
 } // namespace blink
 
 #endif
-
