@@ -20,6 +20,7 @@ namespace blink {
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState)
     , m_requestSysex(false)
+    , m_hasBeenDisposed(false)
 {
 #if ENABLE(OILPAN)
     // A prefinalizer has already been registered (as a LifecycleObserver);
@@ -43,13 +44,26 @@ MIDIAccessInitializer::~MIDIAccessInitializer()
 #endif
 }
 
+void MIDIAccessInitializer::contextDestroyed()
+{
+    dispose();
+}
+
 void MIDIAccessInitializer::dispose()
 {
+    if (m_hasBeenDisposed)
+        return;
+
+    if (!executionContext())
+        return;
+
     // It is safe to cancel a request which is already finished or cancelled.
     Document* document = toDocument(executionContext());
     ASSERT(document);
     if (MIDIController* controller = MIDIController::from(document->frame()))
         controller->cancelSysexPermissionRequest(this);
+
+    m_hasBeenDisposed = true;
 
 #if ENABLE(OILPAN)
     // Delegate to LifecycleObserver's prefinalizer.

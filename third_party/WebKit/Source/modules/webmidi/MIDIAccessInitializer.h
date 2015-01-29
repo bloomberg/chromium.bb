@@ -66,9 +66,12 @@ private:
     ScriptPromise start();
     void dispose();
 
+    virtual void contextDestroyed() override;
+
     OwnPtr<MIDIAccessor> m_accessor;
     Vector<PortDescriptor> m_portDescriptors;
     bool m_requestSysex;
+    bool m_hasBeenDisposed;
 };
 
 } // namespace blink
