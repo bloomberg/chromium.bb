@@ -1340,6 +1340,7 @@ _x86_internal_release_boards = frozenset([
   'auron_paine',
   'auron_yuna',
   'bayleybay',
+  'banjo',
   'beltino',
   'bobcat',
   'butterfly',
@@ -2838,6 +2839,7 @@ _AddGroupConfig('rambi-c', 'squawks', (
 
 _AddGroupConfig('rambi-d', 'cranky', (
     'parry',
+    'banjo',
     ),
     important=False,
 )
@@ -2958,6 +2960,7 @@ _depthcharge_full_internal = full.derive(
 
 _firmware_boards = frozenset([
   'auron',
+  'banjo',
   'bayleybay',
   'beltino',
   'butterfly',
@@ -3002,6 +3005,7 @@ _firmware_boards = frozenset([
 
 _x86_depthcharge_firmware_boards = frozenset([
   'auron',
+  'banjo',
   'bayleybay',
   'candy',
   'clapper',

@@ -3162,6 +3162,614 @@
         ],
         "vm_tests": []
     },
+    "banjo-chrome-pfq": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "banjo-chromium-pfq": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "banjo-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "banjo"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "banjo-depthcharge-firmware": {
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "banjo"
+        ],
+        "build_tests": false,
+        "build_type": "canary",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Firmware Canary",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "factory_toolkit": false,
+        "hwqual": true,
+        "images": [],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-depthcharge-firmware",
+        "overlays": "both",
+        "packages": [
+            "virtual/chromeos-firmware"
+        ],
+        "push_image": true,
+        "sync_chrome": false,
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "-cros-debug",
+            "-highdpi",
+            "chrome_internal",
+            "depthcharge"
+        ],
+        "vm_tests": []
+    },
+    "banjo-depthcharge-full-firmware": {
+        "archive_build_debug": true,
+        "boards": [
+            "banjo"
+        ],
+        "build_tests": false,
+        "build_type": "full",
+        "chroot_replace": true,
+        "description": "Firmware Informational",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "factory_toolkit": false,
+        "git_sync": true,
+        "images": [],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "banjo-depthcharge-full-firmware",
+        "overlays": "both",
+        "packages": [
+            "virtual/chromeos-firmware"
+        ],
+        "sync_chrome": false,
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal",
+            "depthcharge"
+        ],
+        "vm_tests": []
+    },
+    "banjo-firmware": {
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "banjo"
+        ],
+        "build_tests": false,
+        "build_type": "canary",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Firmware Canary",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "factory_toolkit": false,
+        "hwqual": true,
+        "images": [],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-firmware",
+        "overlays": "both",
+        "packages": [
+            "virtual/chromeos-firmware"
+        ],
+        "push_image": true,
+        "sync_chrome": false,
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "-cros-debug",
+            "-highdpi",
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "banjo-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "banjo-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "banjo-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "banjo"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "banjo-paladin": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "banjo-payloads": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "payloads",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "banjo-pre-cq": {
+        "archive": false,
+        "boards": [
+            "banjo"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "banjo-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "-highdpi",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "banjo-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "banjo"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "banjo-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "-highdpi",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "banjo"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "banjo-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "-highdpi",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "banjo-release-afdo"
+    },
+    "banjo-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "-highdpi",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "banjo-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "banjo-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "-highdpi",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "banjo-tot-chrome-pfq-informational": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "banjo-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "banjo-tot-chromium-pfq-informational": {
+        "boards": [
+            "banjo"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "banjo-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "bayleybay-chrome-pfq": {
         "boards": [
             "bayleybay"
@@ -36773,9 +37381,39 @@
                 ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "banjo"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "banjo-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: cranky, parry)",
+        "description": "Full Builds; Group config (boards: cranky, parry, banjo)",
         "name": "rambi-d-full-group"
     },
     "rambi-d-release-group": {
@@ -36884,9 +37522,61 @@
                 ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "banjo"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "banjo-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "unittests": null,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "-highdpi",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: cranky, parry)",
+        "description": "Release Builds (canary) (internal); Group config (boards: cranky, parry, banjo)",
         "name": "rambi-d-release-group"
     },
     "rambi-depthcharge-firmware": {
