@@ -548,6 +548,9 @@ public:
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
 
+    // Returns the scrollable area for the frame.
+    ScrollableArea* scrollableArea();
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);

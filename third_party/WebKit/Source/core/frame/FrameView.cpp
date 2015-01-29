@@ -4034,4 +4034,14 @@ void FrameView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll
         updateScrollbars(scrollOffsetDouble());
 }
 
+ScrollableArea* FrameView::scrollableArea()
+{
+    Settings* settings = frame().settings();
+    if (!settings || !settings->rootLayerScrolls())
+        return this;
+
+    RenderView* renderView = this->renderView();
+    return renderView ? renderView->scrollableArea() : nullptr;
+}
+
 } // namespace blink

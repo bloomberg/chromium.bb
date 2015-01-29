@@ -684,10 +684,9 @@ GraphicsLayer* RenderLayerCompositor::frameScrollLayer() const
 
 GraphicsLayer* RenderLayerCompositor::scrollLayer() const
 {
-    Settings* settings = m_renderView.document().settings();
-    return settings && settings->rootLayerScrolls() ?
-        rootRenderLayer()->scrollableArea()->layerForScrolling() :
-        frameScrollLayer();
+    if (ScrollableArea* scrollableArea = m_renderView.frameView()->scrollableArea())
+        return scrollableArea->layerForScrolling();
+    return nullptr;
 }
 
 GraphicsLayer* RenderLayerCompositor::containerLayer() const

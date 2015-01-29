@@ -542,7 +542,6 @@ private:
     IntSize contentsSize() const;
 
     void updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
-    void updateRootLayerScrollPosition(const DoublePoint& scrollPosition);
 
     void performResize();
 

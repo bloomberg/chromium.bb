@@ -4322,29 +4322,14 @@ void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPositio
     if (!frameView)
         return;
 
-    if (frameView->scrollPositionDouble() == scrollPosition)
+    ScrollableArea* scrollableArea = frameView->scrollableArea();
+    if (scrollableArea->scrollPositionDouble() == scrollPosition)
         return;
 
     bool oldProgrammaticScroll = frameView->inProgrammaticScroll();
     frameView->setInProgrammaticScroll(programmaticScroll);
-    frameView->notifyScrollPositionChanged(scrollPosition);
-    frameView->setInProgrammaticScroll(oldProgrammaticScroll);
-}
-
-void WebViewImpl::updateRootLayerScrollPosition(const DoublePoint& scrollPosition)
-{
-    if (!page()->mainFrame()->isLocalFrame())
-        return;
-
-    // FIXME(305811): Refactor for OOPI.
-    FrameView* frameView = page()->deprecatedLocalMainFrame()->view();
-    if (!frameView)
-        return;
-
-    ScrollableArea* scrollableArea = frameView->renderView()->layer()->scrollableArea();
-    if (scrollableArea->scrollPositionDouble() == scrollPosition)
-        return;
     scrollableArea->notifyScrollPositionChanged(scrollPosition);
+    frameView->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
 void WebViewImpl::applyViewportDeltas(
@@ -4388,20 +4373,8 @@ void WebViewImpl::applyViewportDeltas(
 
     frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
 
-    bool rootLayerScrolls = page()->settings().rootLayerScrolls();
-    ScrollableArea* outerViewport;
-    if (rootLayerScrolls)
-        outerViewport = frameView->renderView()->layer()->scrollableArea();
-    else
-        outerViewport = frameView;
-
-    DoublePoint outerViewportOffset = outerViewport->scrollPositionDouble() +
-        DoubleSize(outerViewportDelta.width, outerViewportDelta.height);
-
-    if (rootLayerScrolls)
-        updateRootLayerScrollPosition(outerViewportOffset);
-    else
-        updateMainFrameScrollPosition(outerViewportOffset, false);
+    updateMainFrameScrollPosition(frameView->scrollableArea()->scrollPositionDouble() +
+        DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
 }
 
 void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
