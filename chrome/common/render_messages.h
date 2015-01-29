@@ -574,10 +574,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 // a secure page by a security policy.  The page may appear incomplete.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 
-// Sent when the renderer was prevented from running insecure content in
-// a secure origin by a security policy.  The page may appear incomplete.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
-
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
 

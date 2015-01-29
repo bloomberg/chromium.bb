@@ -76,7 +76,6 @@ class InfoBarService : public infobars::InfoBarManager,
 
   // Message handlers.
   void OnDidBlockDisplayingInsecureContent();
-  void OnDidBlockRunningInsecureContent();
 
   // See description in set_ignore_next_reload().
   bool ignore_next_reload_;

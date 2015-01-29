@@ -19,36 +19,29 @@
 
 
 // static
-void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                            InfoBarType type) {
+void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service) {
+  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
+                            DISPLAY_INFOBAR_SHOWN, NUM_EVENTS);
+
   scoped_ptr<infobars::InfoBar> new_infobar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new InsecureContentInfoBarDelegate(type))));
+          new InsecureContentInfoBarDelegate())));
 
-  // Only supsersede an existing insecure content infobar if we are upgrading
-  // from DISPLAY to RUN.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
     InsecureContentInfoBarDelegate* delegate =
         old_infobar->delegate()->AsInsecureContentInfoBarDelegate();
-    if (delegate != NULL) {
-      if ((type == RUN) && (delegate->type_ == DISPLAY))
-        return;
+    if (delegate != nullptr) {
       infobar_service->ReplaceInfoBar(old_infobar, new_infobar.Pass());
-      break;
+      return;
     }
   }
-  if (new_infobar.get())
-    infobar_service->AddInfoBar(new_infobar.Pass());
 
-  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
-      (type == DISPLAY) ? DISPLAY_INFOBAR_SHOWN : RUN_INFOBAR_SHOWN,
-      NUM_EVENTS);
+  infobar_service->AddInfoBar(new_infobar.Pass());
 }
 
-InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate(InfoBarType type)
-    : ConfirmInfoBarDelegate(),
-      type_(type) {
+InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate()
+    : ConfirmInfoBarDelegate() {
 }
 
 InsecureContentInfoBarDelegate::~InsecureContentInfoBarDelegate() {
@@ -56,8 +49,7 @@ InsecureContentInfoBarDelegate::~InsecureContentInfoBarDelegate() {
 
 void InsecureContentInfoBarDelegate::InfoBarDismissed() {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
-      (type_ == DISPLAY) ? DISPLAY_INFOBAR_DISMISSED : RUN_INFOBAR_DISMISSED,
-      NUM_EVENTS);
+                            DISPLAY_INFOBAR_DISMISSED, NUM_EVENTS);
   ConfirmInfoBarDelegate::InfoBarDismissed();
 }
 
@@ -80,8 +72,7 @@ base::string16 InsecureContentInfoBarDelegate::GetButtonLabel(
 // means stay secure, so do nothing but count the event and dismiss.
 bool InsecureContentInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
-      (type_ == DISPLAY) ? DISPLAY_USER_DID_NOT_LOAD : RUN_USER_DID_NOT_LOAD,
-      NUM_EVENTS);
+                            DISPLAY_USER_DID_NOT_LOAD, NUM_EVENTS);
   return true;
 }
 
@@ -89,16 +80,13 @@ bool InsecureContentInfoBarDelegate::Accept() {
 // means become insecure, so do the work of reloading the page.
 bool InsecureContentInfoBarDelegate::Cancel() {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
-      (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
-      NUM_EVENTS);
+                            DISPLAY_USER_OVERRIDE, NUM_EVENTS);
 
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  web_contents->SendToAllFrames((type_ == DISPLAY) ?
-      static_cast<IPC::Message*>(
-          new ChromeViewMsg_SetAllowDisplayingInsecureContent(MSG_ROUTING_NONE,
-                                                              true)) :
-      new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));
+  web_contents->SendToAllFrames(
+      new ChromeViewMsg_SetAllowDisplayingInsecureContent(
+          MSG_ROUTING_NONE, true));
   web_contents->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
       web_contents->GetMainFrame()->GetRoutingID()));
   return true;

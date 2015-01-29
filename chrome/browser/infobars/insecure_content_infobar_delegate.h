@@ -13,16 +13,9 @@ class InfoBarService;
 // display or run insecure content.
 class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  enum InfoBarType {
-    DISPLAY,  // Shown when "inactive" content (e.g. images) has been blocked.
-    RUN,      // Shown when "active" content (e.g. script) has been blocked.
-  };
-
-  // Depending on the |type| requested and whether an insecure content infobar
-  // is already present in |infobar_service|, may do nothing; otherwise, creates
-  // an insecure content infobar and delegate and either adds the infobar to
-  // |infobar_service| or replaces the existing infobar.
-  static void Create(InfoBarService* infobar_service, InfoBarType type);
+  // Creates an insecure content infobar and delegate and adds the infobar to
+  // |infobar_service|, replacing any existing insecure content infobar.
+  static void Create(InfoBarService* infobar_service);
 
  private:
   enum HistogramEvents {
@@ -30,14 +23,10 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
     DISPLAY_USER_OVERRIDE,      // User clicked allow anyway button.
     DISPLAY_USER_DID_NOT_LOAD,  // User clicked the don't load button.
     DISPLAY_INFOBAR_DISMISSED,  // User clicked close button.
-    RUN_INFOBAR_SHOWN,
-    RUN_USER_OVERRIDE,
-    RUN_USER_DID_NOT_LOAD,
-    RUN_INFOBAR_DISMISSED,
     NUM_EVENTS
   };
 
-  explicit InsecureContentInfoBarDelegate(InfoBarType type);
+  InsecureContentInfoBarDelegate();
   ~InsecureContentInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
@@ -50,9 +39,7 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetLinkText() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
-  InfoBarType type_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InsecureContentInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(InsecureContentInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_INFOBARS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
