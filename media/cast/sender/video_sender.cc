@@ -80,9 +80,12 @@ VideoSender::VideoSender(
   if (!video_config.use_external_encoder &&
       video_config.codec == CODEC_VIDEO_H264) {
     video_encoder_.reset(new H264VideoToolboxEncoder(
-        cast_environment, video_config,
+        cast_environment,
+        video_config,
+        gfx::Size(video_config.width, video_config.height),
         base::Bind(&VideoSender::OnEncoderInitialized,
-                   weak_factory_.GetWeakPtr(), initialization_cb)));
+                   weak_factory_.GetWeakPtr(),
+                   initialization_cb)));
   }
 #endif  // defined(OS_MACOSX)
 #if !defined(OS_IOS)

@@ -24,6 +24,9 @@
 
 namespace {
 
+const int kVideoWidth = 1280;
+const int kVideoHeight = 720;
+
 class MediaTestSuite : public base::TestSuite {
  public:
   MediaTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
@@ -201,7 +204,9 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
         message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
         message_loop_.message_loop_proxy());
     encoder_.reset(new H264VideoToolboxEncoder(
-        cast_environment_, video_sender_config_,
+        cast_environment_,
+        video_sender_config_,
+        gfx::Size(kVideoWidth, kVideoHeight),
         base::Bind(&SaveInitializationStatus, &cast_initialization_status_)));
     message_loop_.RunUntilIdle();
     EXPECT_EQ(STATUS_VIDEO_INITIALIZED, cast_initialization_status_);
@@ -222,7 +227,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     // Reusable test data.
     video_sender_config_ = GetDefaultVideoSenderConfig();
     video_sender_config_.codec = CODEC_VIDEO_H264;
-    gfx::Size size(video_sender_config_.width, video_sender_config_.height);
+    const gfx::Size size(kVideoWidth, kVideoHeight);
     frame_ = media::VideoFrame::CreateFrame(
         VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(frame_.get(), 123);

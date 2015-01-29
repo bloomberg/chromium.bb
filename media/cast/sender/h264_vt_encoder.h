@@ -22,9 +22,11 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   typedef VideoToolboxGlue::VTEncodeInfoFlags VTEncodeInfoFlags;
 
  public:
-  H264VideoToolboxEncoder(scoped_refptr<CastEnvironment> cast_environment,
-                          const VideoSenderConfig& video_config,
-                          const CastInitializationCallback& initialization_cb);
+  H264VideoToolboxEncoder(
+      const scoped_refptr<CastEnvironment>& cast_environment,
+      const VideoSenderConfig& video_config,
+      const gfx::Size& frame_size,
+      const CastInitializationCallback& initialization_cb);
   ~H264VideoToolboxEncoder() override;
 
   // media::cast::VideoEncoder implementation
@@ -40,7 +42,8 @@ class H264VideoToolboxEncoder : public VideoEncoder {
 
  private:
   // Initialize the compression session.
-  bool Initialize(const VideoSenderConfig& video_config);
+  bool Initialize(const VideoSenderConfig& video_config,
+                  const gfx::Size& frame_size);
 
   // Configure the compression session.
   void ConfigureSession(const VideoSenderConfig& video_config);

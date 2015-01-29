@@ -224,26 +224,32 @@ class VideoFrameFactoryCVPixelBufferPoolImpl : public VideoFrameFactory {
 }  // namespace
 
 H264VideoToolboxEncoder::H264VideoToolboxEncoder(
-    scoped_refptr<CastEnvironment> cast_environment,
+    const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
+    const gfx::Size& frame_size,
     const CastInitializationCallback& initialization_cb)
     : cast_environment_(cast_environment),
+
       videotoolbox_glue_(VideoToolboxGlue::Get()),
       frame_id_(kStartFrameId),
       encode_next_frame_as_keyframe_(false) {
-  DCHECK(!initialization_cb.is_null());
+  DCHECK(!frame_size.IsEmpty());
+
   CastInitializationStatus initialization_status;
   if (videotoolbox_glue_) {
-    initialization_status = (Initialize(video_config))
+    initialization_status = (Initialize(video_config, frame_size))
                                 ? STATUS_VIDEO_INITIALIZED
                                 : STATUS_INVALID_VIDEO_CONFIGURATION;
   } else {
     LOG(ERROR) << " VideoToolbox is not available";
     initialization_status = STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED;
   }
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(initialization_cb, initialization_status));
+  if (!initialization_cb.is_null()) {
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(initialization_cb, initialization_status));
+  }
 }
 
 H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
@@ -251,7 +257,8 @@ H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
 }
 
 bool H264VideoToolboxEncoder::Initialize(
-    const VideoSenderConfig& video_config) {
+    const VideoSenderConfig& video_config,
+    const gfx::Size& frame_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!compression_session_);
 
@@ -286,7 +293,7 @@ bool H264VideoToolboxEncoder::Initialize(
 
   VTCompressionSessionRef session;
   OSStatus status = videotoolbox_glue_->VTCompressionSessionCreate(
-      kCFAllocatorDefault, video_config.width, video_config.height,
+      kCFAllocatorDefault, frame_size.width(), frame_size.height(),
       CoreMediaGlue::kCMVideoCodecType_H264, encoder_spec, buffer_attributes,
       nullptr /* compressedDataAllocator */,
       &H264VideoToolboxEncoder::CompressionCallback,
@@ -359,7 +366,8 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!reference_time.is_null());
+  DCHECK(!video_frame->visible_rect().IsEmpty());
+  DCHECK(!frame_encoded_callback.is_null());
 
   if (!compression_session_) {
     DLOG(ERROR) << " compression session is null";
