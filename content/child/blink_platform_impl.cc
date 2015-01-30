@@ -603,14 +603,20 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
+    double timestamp,
     int num_args,
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     unsigned char flags) {
-  base::debug::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, category_group_enabled, name, id,
-      num_args, arg_names, arg_types, arg_values, NULL, flags);
+  base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
+      static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
+  base::debug::TraceEventHandle handle =
+      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+          phase, category_group_enabled, name, id,
+          base::PlatformThread::CurrentId(),
+          timestamp_tt,
+          num_args, arg_names, arg_types, arg_values, NULL, flags);
   blink::Platform::TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;
@@ -621,6 +627,7 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
+    double timestamp,
     int num_args,
     const char** arg_names,
     const unsigned char* arg_types,
@@ -638,11 +645,15 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
       }
     }
   }
+  base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
+      static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
   base::debug::TraceEventHandle handle =
-      TRACE_EVENT_API_ADD_TRACE_EVENT(phase,
+      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase,
                                       category_group_enabled,
                                       name,
                                       id,
+                                      base::PlatformThread::CurrentId(),
+                                      timestamp_tt,
                                       num_args,
                                       arg_names,
                                       arg_types,
@@ -652,6 +663,38 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   blink::Platform::TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;
+}
+
+blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    unsigned char flags) {
+  return addTraceEvent(phase, category_group_enabled, name, id,
+                       monotonicallyIncreasingTime(),
+                       num_args, arg_names, arg_types, arg_values, flags);
+}
+
+blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    const blink::WebConvertableToTraceFormat* convertable_values,
+    unsigned char flags) {
+  return addTraceEvent(phase, category_group_enabled, name, id,
+                       monotonicallyIncreasingTime(),
+                       num_args, arg_names, arg_types, arg_values,
+                       convertable_values, flags);
 }
 
 void BlinkPlatformImpl::updateTraceEventDuration(
