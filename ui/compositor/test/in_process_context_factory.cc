@@ -69,6 +69,17 @@ InProcessContextFactory::InProcessContextFactory(bool context_factory_for_test)
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
+
+#if defined(OS_CHROMEOS)
+  bool use_thread = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUIDisableThreadedCompositing);
+#else
+  bool use_thread = false;
+#endif
+  if (use_thread) {
+    compositor_thread_.reset(new base::Thread("Browser Compositor"));
+    compositor_thread_->Start();
+  }
 }
 
 InProcessContextFactory::~InProcessContextFactory() {}
