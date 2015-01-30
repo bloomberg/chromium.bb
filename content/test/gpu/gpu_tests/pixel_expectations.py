@@ -11,10 +11,4 @@ class PixelExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    # TODO(jmadill): Remove failing expectations
-    # after rebaseline.
-    self.Fail('Pixel.CSS3DBlueBox', bug=450673)
-    self.Fail('Pixel.WebGLGreenTriangle', bug=450673)
-
     pass
