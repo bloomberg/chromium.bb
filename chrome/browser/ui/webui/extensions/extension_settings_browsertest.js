@@ -74,22 +74,22 @@ AsyncExtensionSettingsWebUITest.prototype = {
 };
 
 TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
-  var devControl = $('dev-controls');
+  var devControls = $('dev-controls');
 
   // Make sure developer controls are hidden before checkbox is clicked.
-  assertTrue(devControl.hidden);
+  assertEquals(0, devControls.offsetHeight);
   $('toggle-dev-on').click();
 
   document.addEventListener('webkitTransitionEnd', function f(e) {
-    if (e.target == devControl) {
+    if (e.target == devControls) {
       // Make sure developer controls are not hidden after checkbox is clicked.
-      assertFalse(devControl.hidden);
+      assertGT(devControls.offsetHeight, 0);
 
       document.removeEventListener(f, 'webkitTransitionEnd');
       testDone();
     }
   });
-  ensureTransitionEndEvent(devControl, 4000);
+  ensureTransitionEndEvent(devControls, 4000);
 });
 
 /**

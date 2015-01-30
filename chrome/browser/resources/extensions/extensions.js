@@ -137,14 +137,19 @@ cr.define('extensions', function() {
 
       var extensionLoader = extensions.ExtensionLoader.getInstance();
 
-      $('toggle-dev-on').addEventListener('change',
-          this.handleToggleDevMode_.bind(this));
-      $('dev-controls').addEventListener('webkitTransitionEnd',
-          this.handleDevControlsTransitionEnd_.bind(this));
+      $('toggle-dev-on').addEventListener('change', function(e) {
+        this.updateDevControlsVisibility_(true);
+        chrome.send('extensionSettingsToggleDeveloperMode',
+                    [$('toggle-dev-on').checked]);
+      }.bind(this));
+
+      window.addEventListener('resize', function() {
+        this.updateDevControlsVisibility_(false);
+      }.bind(this));
 
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click', function(e) {
-          extensionLoader.loadUnpacked();
+        extensionLoader.loadUnpacked();
       });
       $('pack-extension').addEventListener('click',
           this.handlePackExtension_.bind(this));
@@ -155,8 +160,11 @@ cr.define('extensions', function() {
       $('apps-developer-tools-promo').querySelector('.close-button').
           addEventListener('click', function(e) {
         this.displayPromo_ = false;
-        this.updatePromoVisibility_();
+        this.updateDevControlsVisibility_(true);
         chrome.send('extensionSettingsDismissADTPromo');
+
+        if (cr.ui.FocusOutlineManager.forDocument(document).visible)
+          $('update-extensions-now').focus();
       }.bind(this));
 
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
@@ -208,26 +216,6 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Updates the Chrome Apps and Extensions Developer Tools promotion's
-     * visibility.
-     * @private
-     */
-    updatePromoVisibility_: function() {
-      var extensionSettings = $('extension-settings');
-      var visible = extensionSettings.classList.contains('dev-mode') &&
-                    this.displayPromo_;
-
-      var adtPromo = $('apps-developer-tools-promo');
-      var controls = adtPromo.querySelectorAll('a, button');
-      Array.prototype.forEach.call(controls, function(control) {
-        control[visible ? 'removeAttribute' : 'setAttribute']('tabindex', '-1');
-      });
-
-      adtPromo.setAttribute('aria-hidden', !visible);
-      extensionSettings.classList.toggle('adt-promo', visible);
-    },
-
-    /**
      * Handles the Pack Extension button.
      * @param {Event} e Change event.
      * @private
@@ -267,34 +255,37 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Handles the Toggle Dev Mode button.
-     * @param {Event} e Change event.
+     * Updates the visibility of the developer controls based on whether the
+     * [x] Developer mode checkbox is checked. Also called if a user dismisses
+     * the apps developer tools promo.
+     * @param {boolean} animated Whether to animate any updates.
      * @private
      */
-    handleToggleDevMode_: function(e) {
-      if ($('toggle-dev-on').checked) {
-        $('dev-controls').hidden = false;
-        window.setTimeout(function() {
-          $('extension-settings').classList.add('dev-mode');
-        }, 0);
-      } else {
-        $('extension-settings').classList.remove('dev-mode');
-      }
-      window.setTimeout(this.updatePromoVisibility_.bind(this), 0);
+    updateDevControlsVisibility_: function(animated) {
+      var showDevControls = $('toggle-dev-on').checked;
+      $('extension-settings').classList.toggle('dev-mode', showDevControls);
 
-      chrome.send('extensionSettingsToggleDeveloperMode');
-    },
+      var devControls = $('dev-controls');
+      devControls.classList.toggle('animated', animated);
 
-    /**
-     * Called when a transition has ended for #dev-controls.
-     * @param {Event} e webkitTransitionEnd event.
-     * @private
-     */
-    handleDevControlsTransitionEnd_: function(e) {
-      if (e.propertyName == 'height' &&
-          !$('extension-settings').classList.contains('dev-mode')) {
-        $('dev-controls').hidden = true;
-      }
+      var buttons = devControls.querySelector('.button-container');
+      var adtPromo = $('apps-developer-tools-promo');
+      [
+        {root: buttons, focusable: showDevControls},
+        {root: adtPromo, focusable: showDevControls && this.displayPromo_},
+      ].forEach(function(entry) {
+        var controls = entry.root.querySelectorAll('a, button');
+        Array.prototype.forEach.call(controls, function(control) {
+          control.tabIndex = entry.focusable ? 0 : -1;
+        });
+        entry.root.setAttribute('aria-hidden', !entry.focusable);
+      });
+
+      window.requestAnimationFrame(function() {
+        devControls.style.height = !showDevControls ? '' :
+            (this.displayPromo_ ? adtPromo.offsetHeight : 0) +
+            buttons.offsetHeight + 'px';
+      }.bind(this));
     },
   };
 
@@ -329,36 +320,19 @@ cr.define('extensions', function() {
       });
     }
 
+    var supervised = extensionsData.profileIsSupervised;
+
     var pageDiv = $('extension-settings');
-    var marginTop = 0;
-    if (extensionsData.profileIsSupervised) {
-      pageDiv.classList.add('profile-is-supervised');
-    } else {
-      pageDiv.classList.remove('profile-is-supervised');
-    }
-    if (extensionsData.profileIsSupervised) {
-      pageDiv.classList.add('showing-banner');
-      $('toggle-dev-on').disabled = true;
-      marginTop += 45;
-    } else {
-      pageDiv.classList.remove('showing-banner');
-      $('toggle-dev-on').disabled = false;
-    }
+    pageDiv.classList.toggle('profile-is-supervised', supervised);
+    pageDiv.classList.toggle('showing-banner', supervised);
 
-    pageDiv.style.marginTop = marginTop + 'px';
+    var devControlsCheckbox = $('toggle-dev-on');
+    devControlsCheckbox.checked = extensionsData.developerMode;
+    devControlsCheckbox.disabled = supervised;
 
-    if (extensionsData.developerMode) {
-      pageDiv.classList.add('dev-mode');
-      $('toggle-dev-on').checked = true;
-      $('dev-controls').hidden = false;
-    } else {
-      pageDiv.classList.remove('dev-mode');
-      $('toggle-dev-on').checked = false;
-    }
-
-    ExtensionSettings.getInstance().displayPromo_ =
-        extensionsData.promoteAppsDevTools;
-    ExtensionSettings.getInstance().updatePromoVisibility_();
+    var instance = ExtensionSettings.getInstance();
+    instance.displayPromo_ = extensionsData.promoteAppsDevTools;
+    instance.updateDevControlsVisibility_(false);
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
 

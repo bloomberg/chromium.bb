@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 html.loading * {
-  -webkit-transition-duration: 0 !important;
+  transition-duration: 0 !important;
 }
 
 html:not(.focus-outline-visible)
@@ -16,26 +16,33 @@ html:not(.focus-outline-visible)
   overflow-y: hidden;
 }
 
+#extension-settings.showing-banner {
+  margin-top: 45px;
+}
+
 /* Developer mode */
 
 #dev-controls {
   -webkit-margin-end: 20px;
-  -webkit-transition: padding 100ms, height 100ms, opacity 100ms;
-  border-bottom: 1px solid #eee;
   height: 0;
-  opacity: 0;
   overflow: hidden;
 }
 
-#dev-controls .buttons-container {
-  -webkit-padding-end: 3px;
-  -webkit-padding-start: 4px;
+#dev-controls.animated {
+  transition: height 150ms;
 }
 
-#dev-controls .buttons-container {
-  display: -webkit-box;
-  height: 32px;  /* height + padding-top matches #dev-controls height. */
-  padding-top: 13px;
+.dev-mode #dev-controls {
+  border-bottom: 1px solid #eee;
+}
+
+#dev-controls > * {
+  padding: 8px 3px;
+}
+
+#dev-controls .button-container {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 #dev-controls button {
@@ -43,21 +50,18 @@ html:not(.focus-outline-visible)
 }
 
 #apps-developer-tools-promo {
-  -webkit-padding-end: 3px;
   align-items: center;
   border-top: 1px solid #eee;
   display: flex;
   font-size: 13px;
-  margin-top: 7px;  /* This matches #dev-controls padding-bottom. */
-  padding-top: 5px;
 }
 
 #apps-developer-tools-promo img {
+  -webkit-margin-end: 5px;
+  -webkit-margin-start: -5px;
   content: url(apps_developer_tools_promo_48.png);
-}
-
-#apps-developer-tools-promo-text {
-  -webkit-margin-start: 5px;
+  margin-bottom: -5px;
+  margin-top: -5px;
 }
 
 #apps-developer-tools-promo-close-wrapper {
@@ -82,19 +86,8 @@ html:not(.focus-outline-visible)
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
 
-#extension-settings.dev-mode #dev-controls {
-  -webkit-transition-duration: 250ms;
-  height: 45px;
-  opacity: 1;
-  padding-bottom: 7px;
-}
-
-#extension-settings.dev-mode.adt-promo #dev-controls {
-  height: 105px;  /* Allow more height for the Apps Developer Tools promo. */
-}
-
 #dev-controls-spacer {
-  -webkit-box-flex: 1;
+  flex: 1;
 }
 
 #dev-toggle {
@@ -121,10 +114,6 @@ html:not(.focus-outline-visible)
   color: rgba(128, 128, 128, 1);
   flex-shrink: 0;
   text-align: right;
-}
-
-#extension-settings:not(.dev-mode) .developer-extras {
-  display: none;
 }
 
 .developer-extras > div,
@@ -317,11 +306,11 @@ html[dir='rtl'] .extension-list-item {
 
 .error-collection-control {
   -webkit-margin-start: 5px;
-  display: none;
 }
 
-#extension-settings.dev-mode .error-collection-control {
-  display: initial;
+#extension-settings:not(.dev-mode) .developer-extras,
+#extension-settings:not(.dev-mode) .error-collection-control {
+  display: none;
 }
 
 #font-measuring-div {
@@ -367,12 +356,12 @@ html[dir=rtl] .extension-commands-config {
 /* Trash */
 
 #extension-settings .trash {
-  -webkit-transition: opacity 200ms;
   height: 22px;
   opacity: 0.8;
   position: relative;
   right: 0;
   top: 6px;
+  transition: opacity 200ms;
 }
 
 html[dir='rtl'] #extension-settings .trash {

@@ -990,10 +990,10 @@ void ExtensionSettingsHandler::HandleToggleDeveloperMode(
   if (profile->IsSupervised())
     return;
 
-  bool developer_mode =
-      !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  bool developer_mode_on;
+  CHECK(args->GetBoolean(0, &developer_mode_on));
   profile->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode,
-                                  developer_mode);
+                                  developer_mode_on);
 }
 
 void ExtensionSettingsHandler::HandleInspectMessage(

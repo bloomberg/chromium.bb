@@ -68,7 +68,8 @@
 </div>
 
 <div class="page" id="extension-settings">
-  <header id="page-header"><h1 i18n-content="extensionSettings"></h1>
+  <header id="page-header">
+    <h1 i18n-content="extensionSettings"></h1>
     <div id="header-controls" class="header-extras">
       <div id="dev-toggle" class="checkbox">
         <label>
@@ -84,8 +85,8 @@
       </div>
     </div>
   </header>
-  <div id="dev-controls" hidden>
-    <div class="buttons-container">
+  <div id="dev-controls">
+    <div class="button-container">
       <button id="load-unpacked"
           i18n-content="extensionSettingsLoadUnpackedButton"></button>
       <button id="pack-extension"
@@ -98,6 +99,8 @@
       <button id="update-extensions-now"
           i18n-content="extensionSettingsUpdateButton"></button>
     </div>
+    <!-- NOTE: the code that shows/hides #dev-controls assumes the ADT promo is
+         directly underneath .button-container. -->
     <div id="apps-developer-tools-promo">
       <img alt=""></img>
       <span id="apps-developer-tools-promo-text"
