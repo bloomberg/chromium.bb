@@ -480,11 +480,6 @@ inline void BreakingContext::handleReplaced()
     m_renderTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }
 
-inline bool iteratorIsBeyondEndOfRenderCombineText(const InlineIterator& iter, RenderCombineText* renderer)
-{
-    return iter.object() == renderer && iter.offset() >= renderer->textLength();
-}
-
 inline void nextCharacter(UChar& currentCharacter, UChar& lastCharacter, UChar& secondToLastCharacter)
 {
     secondToLastCharacter = lastCharacter;
@@ -540,17 +535,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     if (m_autoWrap && !RenderStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.object());
-    }
-
-    if (renderText->style()->hasTextCombine() && m_current.object()->isCombineText() && !toRenderCombineText(m_current.object())->isCombined()) {
-        RenderCombineText* combineRenderer = toRenderCombineText(m_current.object());
-        combineRenderer->combineText();
-        // The length of the renderer's text may have changed. Increment stale iterator positions
-        if (iteratorIsBeyondEndOfRenderCombineText(m_lineBreak, combineRenderer)) {
-            ASSERT(iteratorIsBeyondEndOfRenderCombineText(m_resolver.position(), combineRenderer));
-            m_lineBreak.increment();
-            m_resolver.position().increment(&m_resolver);
-        }
     }
 
     RenderStyle* style = renderText->style(m_lineInfo.isFirstLine());

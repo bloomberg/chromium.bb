@@ -55,7 +55,14 @@ void TextPainter::paint(int startOffset, int endOffset, int length, const Style&
 {
     GraphicsContextStateSaver stateSaver(*m_graphicsContext, false);
     updateGraphicsContext(textStyle, stateSaver);
-    paintInternal<PaintText>(startOffset, endOffset, length, cachedTextBlob);
+    if (m_combinedText && m_combinedText->isTransformNeeded()) {
+        m_graphicsContext->save();
+        m_combinedText->transform(*m_graphicsContext, m_textBounds);
+        paintInternal<PaintText>(startOffset, endOffset, length, cachedTextBlob);
+        m_graphicsContext->restore();
+    } else {
+        paintInternal<PaintText>(startOffset, endOffset, length, cachedTextBlob);
+    }
 
     if (!m_emphasisMark.isEmpty()) {
         if (textStyle.emphasisMarkColor != textStyle.fillColor)

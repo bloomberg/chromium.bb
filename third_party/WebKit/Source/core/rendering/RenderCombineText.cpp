@@ -22,16 +22,18 @@
 #include "core/rendering/RenderCombineText.h"
 
 #include "core/rendering/TextRunConstructor.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
 const float textCombineMargin = 1.1f; // Allow em + 10% margin
 
 RenderCombineText::RenderCombineText(Node* node, PassRefPtr<StringImpl> string)
-     : RenderText(node, string)
-     , m_combinedTextWidth(0)
-     , m_isCombined(false)
-     , m_needsFontUpdate(false)
+    : RenderText(node, string)
+    , m_combinedTextWidth(0)
+    , m_scaleX(1.0f)
+    , m_isCombined(false)
+    , m_needsFontUpdate(false)
 {
 }
 
@@ -40,19 +42,15 @@ void RenderCombineText::styleDidChange(StyleDifference diff, const RenderStyle* 
     setStyleInternal(RenderStyle::clone(style()));
     RenderText::styleDidChange(diff, oldStyle);
 
-    if (m_isCombined) {
-        RenderText::setTextInternal(originalText()); // This RenderCombineText has been combined once. Restore the original text for the next combineText().
-        m_isCombined = false;
-    }
-
-    m_needsFontUpdate = true;
+    updateIsCombinedAndText();
 }
 
 void RenderCombineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     RenderText::setTextInternal(text);
 
-    m_needsFontUpdate = true;
+    m_isCombined = false; // flag that text() holds the text to render
+    updateIsCombinedAndText();
 }
 
 float RenderCombineText::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
@@ -71,13 +69,26 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
 
 void RenderCombineText::adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const
 {
-    if (m_isCombined)
-        textOrigin.move(boxRect.height() / 2 - ceilf(m_combinedTextWidth) / 2, style()->font().fontDescription().computedPixelSize());
+    ASSERT(!m_needsFontUpdate);
+    if (!m_isCombined)
+        return;
+    float renderingWidth = m_combinedTextWidth / m_scaleX;
+    textOrigin.move(boxRect.height() / 2 - renderingWidth / 2, style()->font().fontDescription().computedPixelSize());
+}
+
+void RenderCombineText::transform(GraphicsContext& context, const FloatRect& boxRect) const
+{
+    ASSERT(!m_needsFontUpdate);
+    ASSERT(isTransformNeeded());
+    auto centerX = boxRect.x() + boxRect.width() / 2;
+    AffineTransform transform(m_scaleX, 0, 0, 1, centerX * (1 - m_scaleX), 0);
+    context.concatCTM(transform);
 }
 
 void RenderCombineText::getStringToRender(int start, StringView& string, int& length) const
 {
     ASSERT(start >= 0);
+    ASSERT(!m_needsFontUpdate);
     if (m_isCombined) {
         string = StringView(m_renderingText.impl());
         length = string.length();
@@ -87,36 +98,54 @@ void RenderCombineText::getStringToRender(int start, StringView& string, int& le
     string = text().createView(start, length);
 }
 
-void RenderCombineText::combineText()
+void RenderCombineText::updateIsCombinedAndText()
+{
+    // CSS3 spec says text-combine works only in vertical writing mode.
+    bool shouldCombine = !style()->isHorizontalWritingMode()
+        // Nothing to combine.
+        && !(m_isCombined ? m_renderingText.isEmpty() : hasEmptyText());
+    if (shouldCombine == m_isCombined)
+        return;
+
+    m_isCombined = shouldCombine;
+
+    if (!shouldCombine) {
+        RenderText::setTextInternal(m_renderingText.impl());
+        m_renderingText.releaseImpl();
+        return;
+    }
+    DEFINE_STATIC_LOCAL(String, objectReplacementCharacterString, (&objectReplacementCharacter, 1));
+    m_renderingText = text();
+    RenderText::setTextInternal(objectReplacementCharacterString.impl());
+    m_needsFontUpdate = true;
+}
+
+void RenderCombineText::updateFont()
 {
     if (!m_needsFontUpdate)
         return;
 
-    m_isCombined = false;
     m_needsFontUpdate = false;
 
-    // CSS3 spec says text-combine works only in vertical writing mode.
-    if (style()->isHorizontalWritingMode())
+    if (!m_isCombined)
         return;
 
-    // Nothing to combine.
-    if (hasEmptyText())
-        return;
-
-    TextRun run = constructTextRun(this, originalFont(), this, style(), style()->direction());
+    TextRun run = constructTextRun(this, originalFont(), m_renderingText, style(), style()->direction());
     FontDescription description = originalFont().fontDescription();
-    float emWidth = description.computedSize() * textCombineMargin;
-    bool shouldUpdateFont = false;
+    float emWidth = description.computedSize();
+    if (!(style()->textDecorationsInEffect() & (TextDecorationUnderline | TextDecorationOverline)))
+        emWidth *= textCombineMargin;
 
     description.setOrientation(Horizontal); // We are going to draw combined text horizontally.
     m_combinedTextWidth = originalFont().width(run);
-    m_isCombined = m_combinedTextWidth <= emWidth;
 
     FontSelector* fontSelector = style()->font().fontSelector();
 
-    if (m_isCombined)
-        shouldUpdateFont = style()->setFontDescription(description); // Need to change font orientation to horizontal.
-    else {
+    bool shouldUpdateFont = style()->setFontDescription(description); // Need to change font orientation to horizontal.
+
+    if (m_combinedTextWidth <= emWidth) {
+        m_scaleX = 1.0f;
+    } else {
         // Need to try compressed glyphs.
         static const FontWidthVariant widthVariants[] = { HalfWidth, ThirdWidth, QuarterWidth };
         for (size_t i = 0 ; i < WTF_ARRAY_LENGTH(widthVariants) ; ++i) {
@@ -126,26 +155,25 @@ void RenderCombineText::combineText()
             float runWidth = compressedFont.width(run);
             if (runWidth <= emWidth) {
                 m_combinedTextWidth = runWidth;
-                m_isCombined = true;
 
                 // Replace my font with the new one.
                 shouldUpdateFont = style()->setFontDescription(description);
                 break;
             }
         }
-    }
 
-    if (!m_isCombined)
-        shouldUpdateFont = style()->setFontDescription(originalFont().fontDescription());
+        // If width > ~1em, shrink to fit within ~1em, otherwise render without scaling (no expansion)
+        // http://dev.w3.org/csswg/css-writing-modes-3/#text-combine-compression
+        if (m_combinedTextWidth > emWidth) {
+            m_scaleX = emWidth / m_combinedTextWidth;
+            m_combinedTextWidth = emWidth;
+        } else {
+            m_scaleX = 1.0f;
+        }
+    }
 
     if (shouldUpdateFont)
         style()->font().update(fontSelector);
-
-    if (m_isCombined) {
-        DEFINE_STATIC_LOCAL(String, objectReplacementCharacterString, (&objectReplacementCharacter, 1));
-        m_renderingText = text();
-        RenderText::setTextInternal(objectReplacementCharacterString.impl());
-    }
 }
 
 } // namespace blink
