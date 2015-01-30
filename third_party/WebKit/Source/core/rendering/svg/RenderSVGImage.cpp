@@ -77,6 +77,15 @@ FloatSize RenderSVGImage::computeImageViewportSize(ImageResource& cachedImage) c
     return intrinsicRatio;
 }
 
+static bool containerSizeIsSetForRenderer(ImageResource& cachedImage, const RenderObject* renderer)
+{
+    const Image* image = cachedImage.image();
+    // If a container size has been specified for this renderer, then
+    // imageForRenderer() will return the SVGImageForContainer while image()
+    // will return the underlying SVGImage.
+    return !image->isSVGImage() || image != cachedImage.imageForRenderer(renderer);
+}
+
 bool RenderSVGImage::updateImageViewport()
 {
     SVGImageElement* image = toSVGImageElement(element());
@@ -90,7 +99,8 @@ bool RenderSVGImage::updateImageViewport()
     ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->usesImageContainerSize()) {
         FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
-        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(style()->effectiveZoom())) {
+        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(style()->effectiveZoom())
+            || !containerSizeIsSetForRenderer(*cachedImage, this)) {
             m_imageResource->setContainerSizeForRenderer(roundedIntSize(imageViewportSize));
             updatedViewport = true;
         }
