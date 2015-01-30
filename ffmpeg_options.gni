@@ -29,7 +29,8 @@ declare_args() {
 assert(ffmpeg_branding == "Chromium" ||
        ffmpeg_branding == "Chrome" ||
        ffmpeg_branding == "ChromiumOS" ||
-       ffmpeg_branding == "ChromeOS")
+       ffmpeg_branding == "ChromeOS" ||
+       ffmpeg_branding == "Ensemble")
 
 if (cpu_arch == "x86") {
   ffmpeg_arch = "ia32"

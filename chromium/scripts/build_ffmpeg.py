@@ -26,6 +26,7 @@ BRANDINGS = [
   'ChromeOS',
   'Chromium',
   'ChromiumOS',
+  'Ensemble',
 ]
 
 
@@ -69,11 +70,14 @@ Platform specific build notes:
       - Add these packages at install time: diffutils, yasm, make, python.
       - Copy chromium/scripts/cygwin-wrapper to /usr/local/bin
 
+    Ensemble will only be built for x64, ARM & mipsel.
+
 Resulting binaries will be placed in:
   build.TARGET_ARCH.TARGET_OS/Chromium/out/
   build.TARGET_ARCH.TARGET_OS/Chrome/out/
   build.TARGET_ARCH.TARGET_OS/ChromiumOS/out/
-  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/"""
+  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/
+  build.TARGET_ARCH.TARGET_OS/Ensemble/out/"""
 
 
 def PrintAndCheckCall(argv, *args, **kwargs):
@@ -431,6 +435,13 @@ def main(argv):
       '--enable-parser=flac',
   ])
 
+  # Ensemble specific configuration.
+  configure_flags['Ensemble'].extend([
+      '--enable-decoder=alac,flac',
+      '--enable-demuxer=flac',
+      '--enable-parser=flac',
+  ])
+
   # Google ChromeOS specific configuration.
   # We want to make sure to play everything Android generates and plays.
   # http://developer.android.com/guide/appendix/media-formats.html
@@ -476,6 +487,13 @@ def main(argv):
                     configure_flags['Chromium'] +
                     configure_flags['ChromiumOS'] +
                     configure_args)
+    # Ensemble should be only build on a restricted set of platforms.
+    if target_arch in ['x64', 'arm', 'mipsel']:
+      do_build_ffmpeg('Ensemble',
+                      configure_flags['Common'] +
+                      configure_flags['Chrome'] +
+                      configure_flags['Ensemble'] +
+                      configure_args)
 
     # ChromeOS enables MPEG4 which requires error resilience :(
     chrome_os_flags = (configure_flags['Common'] +
