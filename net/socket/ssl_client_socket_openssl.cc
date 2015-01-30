@@ -192,6 +192,10 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), CertVerifyCallback, NULL);
     SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, NULL);
     SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
+    // This stops |SSL_shutdown| from generating the close_notify message, which
+    // is currently not sent on the network.
+    // TODO(haavardm): Remove setting quiet shutdown once 118366 is fixed.
+    SSL_CTX_set_quiet_shutdown(ssl_ctx_.get(), 1);
     // TODO(kristianm): Only select this if ssl_config_.next_proto is not empty.
     // It would be better if the callback were not a global setting,
     // but that is an OpenSSL issue.
