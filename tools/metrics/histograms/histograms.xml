@@ -10817,6 +10817,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.CharactersBetweenBackspaces">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    Counts the length of text typed by the virtual keyboard between each
+    backspace. This metric provides a rough approximation of an error rate for
+    the virtual keyboard.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.Duration" units="seconds">
   <owner>shuchen@chromium.org</owner>
   <summary>How long the virtual keyboard was visible.</summary>
@@ -10850,6 +10859,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of times the virtual keyboard was tapped while the virtual
     keyboard was alive. Recorded when the virtual keyboard is closed.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.VirtualKeyboard.WordsPerMinute">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    The number of words typed per minute. Recorded when the virtual keyboard is
+    closed.
   </summary>
 </histogram>
 
