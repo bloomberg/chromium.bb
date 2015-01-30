@@ -481,7 +481,7 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
   EXPECT_FALSE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
-                                                   NPN_SPDY_3, 1);
+                                                   NPN_SPDY_3, 1.0);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
@@ -541,7 +541,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
   http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
-                                                   NPN_SPDY_3, 1);
+                                                   NPN_SPDY_3, 1.0);
   http_server_props_manager_->SetSupportsQuic(spdy_server_mail, true, "foo");
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -603,7 +603,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-// crbug.com/444956: Add 200 alternate_protocol servers followed by
+// https://crbug.com/444956: Add 200 alternate_protocol servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
 TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   ExpectCacheUpdate();
@@ -650,18 +650,17 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   for (int i = 0; i < 200; ++i) {
     std::string server = StringPrintf("www.google.com:%d", i);
     ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
-        net::HostPortPair::FromString(server)));
-    net::AlternateProtocolInfo port_alternate_protocol =
+        HostPortPair::FromString(server)));
+    AlternateProtocolInfo port_alternate_protocol =
         http_server_props_manager_->GetAlternateProtocol(
-            net::HostPortPair::FromString(server));
+            HostPortPair::FromString(server));
     EXPECT_EQ(i, port_alternate_protocol.port);
-    EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
+    EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol.protocol);
   }
 
   // Verify SupportsQuic.
-  net::SupportsQuic supports_quic1 =
-      http_server_props_manager_->GetSupportsQuic(
-          net::HostPortPair::FromString("mail.google.com:80"));
+  SupportsQuic supports_quic1 = http_server_props_manager_->GetSupportsQuic(
+      HostPortPair::FromString("mail.google.com:80"));
   EXPECT_TRUE(supports_quic1.used_quic);
   EXPECT_EQ("bar", supports_quic1.address);
 }

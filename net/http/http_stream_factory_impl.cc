@@ -228,7 +228,7 @@ AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   } else {
     DCHECK_EQ(QUIC, alternate.protocol);
     if (!session_->params().enable_quic)
-        return kNoAlternateProtocol;
+      return kNoAlternateProtocol;
 
     // TODO(rch):  Figure out how to make QUIC iteract with PAC
     // scripts.  By not re-writing the URL, we will query the PAC script

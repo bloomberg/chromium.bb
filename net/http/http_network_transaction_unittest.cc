@@ -7616,7 +7616,7 @@ scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
       session->http_server_properties();
   http_server_properties->SetAlternateProtocol(
       HostPortPair("host.with.alternate", 80), 443,
-      AlternateProtocolFromNextProto(next_proto), 1);
+      AlternateProtocolFromNextProto(next_proto), 1.0);
 
   return session;
 }
@@ -8564,7 +8564,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(request.url),
       666 /* port is ignored by MockConnect anyway */,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      AlternateProtocolFromNextProto(GetParam()), 1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8625,8 +8625,8 @@ TEST_P(HttpNetworkTransactionTest,
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
-      kUnrestrictedAlternatePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+      1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8676,8 +8676,8 @@ TEST_P(HttpNetworkTransactionTest,
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
-      kUnrestrictedAlternatePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+      1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8724,8 +8724,8 @@ TEST_P(HttpNetworkTransactionTest,
   const int kRestrictedAlternatePort = 80;
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
-      kRestrictedAlternatePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      kRestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+      1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8773,8 +8773,8 @@ TEST_P(HttpNetworkTransactionTest,
   const int kRestrictedAlternatePort = 80;
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(unrestricted_port_request.url),
-      kRestrictedAlternatePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      kRestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+      1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8821,8 +8821,8 @@ TEST_P(HttpNetworkTransactionTest,
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(unrestricted_port_request.url),
-      kUnrestrictedAlternatePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+      1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8863,9 +8863,8 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
       session->http_server_properties();
   const int kUnsafePort = 7;
   http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(request.url),
-      kUnsafePort,
-      AlternateProtocolFromNextProto(GetParam()), 1);
+      HostPortPair::FromURL(request.url), kUnsafePort,
+      AlternateProtocolFromNextProto(GetParam()), 1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));

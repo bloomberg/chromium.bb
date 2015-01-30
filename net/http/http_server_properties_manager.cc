@@ -146,14 +146,13 @@ void HttpServerPropertiesManager::SetSupportsSpdy(const HostPortPair& server,
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
-bool HttpServerPropertiesManager::RequiresHTTP11(
-    const net::HostPortPair& server) {
+bool HttpServerPropertiesManager::RequiresHTTP11(const HostPortPair& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->RequiresHTTP11(server);
 }
 
 void HttpServerPropertiesManager::SetHTTP11Required(
-    const net::HostPortPair& server) {
+    const HostPortPair& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
 
   http_server_properties_impl_->SetHTTP11Required(server);

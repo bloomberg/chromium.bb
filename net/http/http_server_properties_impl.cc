@@ -341,8 +341,7 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   RemoveCanonicalHost(server);
 
   // If this is the only entry in the list, schedule an expiration task.
-  // Otherwse it will be rescheduled automatically when the pending
-  // task runs.
+  // Otherwise it will be rescheduled automatically when the pending task runs.
   if (broken_alternate_protocol_list_.size() == 1) {
     ScheduleBrokenAlternateProtocolMappingsExpiration();
   }

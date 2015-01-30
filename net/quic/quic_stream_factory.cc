@@ -1186,7 +1186,7 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
 
   if (http_server_properties_) {
     if (quic_supported_servers_at_startup_.empty()) {
-      for (const std::pair<const net::HostPortPair, net::AlternateProtocolInfo>&
+      for (const std::pair<const HostPortPair, AlternateProtocolInfo>&
                key_value : http_server_properties_->alternate_protocol_map()) {
         if (key_value.second.protocol == QUIC) {
           quic_supported_servers_at_startup_.insert(key_value.first);
