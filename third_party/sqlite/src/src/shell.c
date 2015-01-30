@@ -2664,11 +2664,13 @@ int main(int argc, char **argv){
   int rc = 0;
 
   /* Begin evanm patch. */
+#if !defined(__APPLE__)
   extern int sqlite_shell_init_icu();
   if( !sqlite_shell_init_icu() ){
     fprintf(stderr, "%s: warning: couldn't find icudt38.dll; "
                     "queries against ICU FTS tables will fail.\n", argv[0]);
   }
+#endif /* !defined(__APPLE__) */
   /* End evanm patch. */
 
   Argv0 = argv[0];

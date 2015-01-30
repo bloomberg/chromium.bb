@@ -1,0 +1,48 @@
+From 2049b591163feaa885b482132ea2c769f5ff5a8d Mon Sep 17 00:00:00 2001
+From: Evangelos Foutras <evangelos@foutrelis.com>
+Date: Tue, 12 Jun 2012 18:13:09 +0000
+Subject: [PATCH 13/23] [fts3][backport] Fix out-of-scope reference.
+
+A pointer to a stack variable was being used after the variable's scope had
+ended.
+
+Upstream commit http://www.sqlite.org/src/info/f9c4a7c8f4
+
+BUG=122525
+
+Original review URL: https://chromiumcodereview.appspot.com/10387026
+---
+ third_party/sqlite/src/ext/fts3/fts3_write.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/fts3/fts3_write.c b/third_party/sqlite/src/ext/fts3/fts3_write.c
+index 1e71874..3636c7d 100644
+--- a/third_party/sqlite/src/ext/fts3/fts3_write.c
++++ b/third_party/sqlite/src/ext/fts3/fts3_write.c
+@@ -1238,13 +1238,13 @@ int sqlite3Fts3SegReaderPending(
+   Fts3SegReader **ppReader        /* OUT: SegReader for pending-terms */
+ ){
+   Fts3SegReader *pReader = 0;     /* Fts3SegReader object to return */
++  Fts3HashElem *pE;               /* Iterator variable */
+   Fts3HashElem **aElem = 0;       /* Array of term hash entries to scan */
+   int nElem = 0;                  /* Size of array at aElem */
+   int rc = SQLITE_OK;             /* Return Code */
+ 
+   if( isPrefix ){
+     int nAlloc = 0;               /* Size of allocated array at aElem */
+-    Fts3HashElem *pE = 0;         /* Iterator variable */
+ 
+     for(pE=fts3HashFirst(&p->pendingTerms); pE; pE=fts3HashNext(pE)){
+       char *zKey = (char *)fts3HashKey(pE);
+@@ -1276,7 +1276,7 @@ int sqlite3Fts3SegReaderPending(
+     }
+ 
+   }else{
+-    Fts3HashElem *pE = fts3HashFindElem(&p->pendingTerms, zTerm, nTerm);
++    pE = fts3HashFindElem(&p->pendingTerms, zTerm, nTerm);
+     if( pE ){
+       aElem = &pE;
+       nElem = 1;
+-- 
+2.2.1
+

@@ -1996,6 +1996,14 @@ static int openDatabase(
   }
 #endif
 
+#ifdef DEFAULT_ENABLE_RECOVER
+  /* Initialize recover virtual table for testing. */
+  extern int recoverVtableInit(sqlite3 *db);
+  if( !db->mallocFailed && rc==SQLITE_OK ){
+    rc = recoverVtableInit(db);
+  }
+#endif
+
 #ifdef SQLITE_ENABLE_ICU
   if( !db->mallocFailed && rc==SQLITE_OK ){
     rc = sqlite3IcuInit(db);

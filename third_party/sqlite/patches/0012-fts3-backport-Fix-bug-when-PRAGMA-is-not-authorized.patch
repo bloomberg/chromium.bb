@@ -1,0 +1,36 @@
+From a865aa662a71764bdb72ab4340b536e4c42011ee Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Thu, 23 Jun 2011 04:17:45 +0000
+Subject: [PATCH 12/23] [fts3][backport] Fix bug when PRAGMA is not authorized.
+
+WebDatabase uses an authorizer to prevent inappropriate access.  fts3.c
+uses 'PRAGMA page_size' to tune the query optimizer, but PRAGMA is on
+the disallowed list.  This patch adds a default return value for
+SQLITE_AUTH failures.
+
+BUG=85522
+
+Original review URL: http://codereview.chromium.org/7230021
+
+This is upstreamed at: http://www.sqlite.org/src/info/ba39382ef5
+---
+ third_party/sqlite/src/ext/fts3/fts3.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
+index 7accb11..da55f2a 100644
+--- a/third_party/sqlite/src/ext/fts3/fts3.c
++++ b/third_party/sqlite/src/ext/fts3/fts3.c
+@@ -630,6 +630,9 @@ static void fts3DatabasePageSize(int *pRc, Fts3Table *p){
+         sqlite3_step(pStmt);
+         p->nPgsz = sqlite3_column_int(pStmt, 0);
+         rc = sqlite3_finalize(pStmt);
++      }else if( rc==SQLITE_AUTH ){
++        p->nPgsz = 1024;
++        rc = SQLITE_OK;
+       }
+     }
+     assert( p->nPgsz>0 || rc!=SQLITE_OK );
+-- 
+2.2.1
+

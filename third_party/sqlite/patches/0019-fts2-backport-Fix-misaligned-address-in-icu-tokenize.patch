@@ -1,0 +1,48 @@
+From 8c946ad53bf15c5972d9a68f3c77b385693e8637 Mon Sep 17 00:00:00 2001
+From: Xianzhu <wangxianzhu@chromium.org>
+Date: Thu, 18 Oct 2012 00:49:33 +0000
+Subject: [PATCH 19/23] [fts2][backport] Fix misaligned address in icu
+ tokenizer.
+
+Fix the problem that an int* pointer is assigned with a value calculated
+from a UChar* pointer and an offset. If the offset is odd, the int* pointer
+will not be 4-byte aligned which causes SIGBUS on some CPUs.
+
+Please see #9 and #10 in crbug.com/151673 for details.
+
+BUG=151673
+
+Original review URL: https://chromiumcodereview.appspot.com/11183042
+
+This is upstreamed at: http://sqlite.org/src/info/aaa2d9b0db
+---
+ third_party/sqlite/src/ext/fts2/fts2_icu.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/fts2/fts2_icu.c b/third_party/sqlite/src/ext/fts2/fts2_icu.c
+index 6b9687e..a8b8359 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2_icu.c
++++ b/third_party/sqlite/src/ext/fts2/fts2_icu.c
+@@ -118,15 +118,15 @@ static int icuOpen(
+   nChar = nInput+1;
+   pCsr = (IcuCursor *)sqlite3_malloc(
+       sizeof(IcuCursor) +                /* IcuCursor */
+-      nChar * sizeof(UChar) +            /* IcuCursor.aChar[] */
+-      (nChar+1) * sizeof(int)            /* IcuCursor.aOffset[] */
++      (nChar+1) * sizeof(int) +          /* IcuCursor.aOffset[] */
++      nChar * sizeof(UChar)              /* IcuCursor.aChar[] */
+   );
+   if( !pCsr ){
+     return SQLITE_NOMEM;
+   }
+   memset(pCsr, 0, sizeof(IcuCursor));
+-  pCsr->aChar = (UChar *)&pCsr[1];
+-  pCsr->aOffset = (int *)&pCsr->aChar[nChar];
++  pCsr->aOffset = (int *)&pCsr[1];
++  pCsr->aChar = (UChar *)&pCsr->aOffset[nChar+1];
+ 
+   pCsr->aOffset[iOut] = iInput;
+   U8_NEXT(zInput, iInput, nInput, c); 
+-- 
+2.2.1
+

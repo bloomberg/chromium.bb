@@ -5,194 +5,244 @@ Included In Release: Yes
 Security Critical: Yes
 License: Public domain
 
-Instructions for importing a new release of SQLite from sqlite.org.
+1) Managing differences between SQLite core and Chromium's version.
+2) Making changes to Chromium SQLite.
+3) Import new release of SQLite.
+4) Running SQLite's test suite within the Chromium checkout.
 
-Note: our current base version is 3.7.6.3.
+---
 
-First, you need to be on Linux.
+1) Managing differences between SQLite core and Chromium's version.
 
-# Determine the versions of the release you want and the release we currently
-# have. (See the VERSION file to determine which release we currently have.)
-# You may wish to consult http://www.sqlite.org/changes.html to find out what
-# changes have been made in each release.
-# Note - this is just an example. Always refer to the version above for our
-# real current version.
-# Set some variables to remember the versions, e.g.:
-BASE=3.7.6.3
-LATEST=3.7.6.4
+Chromium maintains some differences WRT SQLite, for reasons beyond this
+document's remit.  Some differences are bugs we have found and fixed (and
+hopefully upstreamed), some are fixes we've backported from a later version of
+SQLite, and some our local changes unlikely to ever be upstreamed.  New versions
+of SQLite are imported every year or two, at which point the changes need to be
+reviewed for continued applicability, and sometimes adjusted to reflect upstream
+code changes.
 
-# Get to the src/third_party directory in your Chromium client:
-cd src/third_party
+To this end, the repository contains a reference copy of the SQLite source code
+as of the last import, plus a series of patches which can be applied to
+re-create the current trunk code.  These patches are generated and processed by
+git, with the intention of re-creating a changelist series so that importers can
+use their regular revision-control knowledge to manage import merges.
 
-# Download the .tar.gz files for the releases:
-# (If the URL changes you might need to find the new one.)
-# TODO(shess): Rewrite this to track the new naming format.  Meanwhile,
-# manually navigate to www.sqlite.org and find downloads, use "legacy" version.
-wget http://www.sqlite.org/sqlite-$BASE.tar.gz
-wget http://www.sqlite.org/sqlite-$LATEST.tar.gz
+---
 
-# Extract the vanilla current and desired versions:
-tar xzf sqlite-$BASE.tar.gz
-tar xzf sqlite-$LATEST.tar.gz
+2) Making changes to Chromium SQLite.
 
-# Use kdiff3 to merge the changes:
-kdiff3 -m sqlite-$BASE sqlite-$LATEST sqlite
+third_party/sqlite/src is the patched source from SQLite.  This is used to
+generate the amalgamation, a concatenation of all of the files into a giant
+sqlite3.c.  To prototype, edit in src/, then call
+  ./google_generate_amalgamation.sh
+to regenerate sqlite3.c.  The code in src/ is much easier to edit, and the
+SQLite test framework can easily be run.  During development it may be
+convenient to modify sqlite.gyp (or BUILD.gn) based on src/main.mk to just pull
+in the src/ files rather than sqlite3.c.
 
-# Resolve any conflicts.  Figure out if we've got everything we should
-# have (see below), or if we can omit any changes we no longer need.
+Once your patch is complete, squash it down into a reasonable CL, then
+re-generate the patches.  This is a truncated version of the import flow.  The
+following is written like a shell script to allow copy/paste to a shell, ignore
+comments and change the obvious lines.  These instructions should work on Linux
+or OSX.  They may assume a modern version of git (I'm using 2.2.1).
 
-# Change to the sqlite directory:
-cd sqlite
+# Everything based in sqlite subdir.
+cd third_party/sqlite
 
-# Run the google_generate_amalgamation.sh script:
+BASE=3070603
+
+#### Create a reference branch.
+git checkout -b sqlite_${BASE} master
+git rm -rf src
+cp -a sqlite-src-${BASE} src
+# -f includes ignored files, of which there are a couple.
+git add -f src/
+git commit -m "Reset to sqlite-src-${BASE}"
+# This branch is unlikely to build.
+
+#### Create a reference branch with patches applied.
+git checkout -b sqlite_${BASE}_patched master
+git rebase sqlite_${BASE}
+git am --keep-non-patch patches/*.patch
+git diff master
+# This branch should be identical to master, unless someone forgot to export
+# their changes into a patch.  If so, do that as a separate CL and start over.
+
+#### Cherry-pick your change.
+git cherry-pick <your change>
+# This branch should be identical to your development branch, except
+# amalgamation.
+
+# Rebuild the patch set.
+git rm patches/*
+git format-patch --output-directory=patches sqlite_${BASE}..HEAD
+git add patches/*.patch
+git commit -m "Rebuild patches for sqlite_${VERSION}"
+
+# Re-generate the amalgamation.
 ./google_generate_amalgamation.sh
+git commit -m 'google_generate_amalgamation.sh' amalgamation/
+# At this point everything should build and work.
+
+# Do a squash upload.  This should add your single patch to patches/, and apply
+# the changes your patch represents to src/ and amalgamation/.  Other patches
+# will have hash changes.  A sensible check-in comment would be something like
+# the patch's checkin comment, plus "regenerate amalgamation and generate patch
+# file."
+# TODO(shess): Should hash changes be checked in, or backed out?
 
 # Find a sucker.  Send review.
-# TODO(shess) Describe an appropriate comment style.  Seems like it
-# should at least include the SQLite version number.
+
+---
+
+3) Import new release of SQLite.
+
+Importing a new SQLite involves merging our local changes with SQLite's changes.
+Like any other merge, this may involve dropping some CLs while modifying others.
+The basic idea below is to generate git branches to work with:
+  sqlite_${BASE} - current version without patches
+  sqlite_${BASE}_patched - current version with patches applied via git CLs
+  sqlite_${VERSION} - new version without patches
+  sqlite_${VERSION}_patched - new version with patches applied via git CLs
+At this point, squashing sqlite_${VERSION}_patched to master gives exactly a CL
+suitable for committing.
+
+# Everything based in sqlite subdir.
+cd third_party/sqlite
+
+BASE=3070603
+VERSION=3080704
+
+#### Create current-SQLite reference branch.
+git checkout -b sqlite_${BASE} master
+rm -rf src
+cp -a sqlite-src-${BASE} src
+# -f includes ignored files, of which there are a couple.
+git add -f src/
+git commit -m "Reset to sqlite-src-${BASE}"
+# This branch is unlikely to build.
+
+#### Convert patches into CLs.
+git checkout -b sqlite_${BASE}_patched master
+git rebase sqlite_${BASE}
+git am patches/*.patch
+git diff master
+# This branch should be identical to master.
+
+#### Create new-SQLite reference branch.
+git checkout -b sqlite_${VERSION} master
+git rebase sqlite_${BASE}
+# SQLite's download page is at <http://www.sqlite.org/download.html>.  Scroll to
+# "Legacy Source Code Distribution Formats", and grab sqlite-src-<VERSION>.zip.
+# Unzip it and pull it into the repo.
+wget http://www.sqlite.org/2014/sqlite-src-${VERSION}.zip
+unzip sqlite-src-${VERSION}.zip
+rm sqlite-src-${VERSION}.zip
+# -f includes ignored files, of which there are a couple.
+git add -f sqlite-src-${VERSION}/
+git commit -m "Begin import of sqlite-src-${VERSION}" sqlite-src-${VERSION}
+rm -rf src
+cp -a sqlite-src-${VERSION} src
+# -f includes ignored files, of which there are a couple.
+git add -f src/
+git commit -m "Update src to sqlite-src-${VERSION}" src/
+# This branch is unlikely to build.
+
+#### Create a branch for merging the CLs to the new SQLite.
+git checkout -b sqlite_${VERSION}_patched master
+git rebase sqlite_${VERSION}
+
+# Replay the  patches onto this branch.   There will be merge  conflicts to fix.
+# My approach is  generally to just accept them prefering  the patch's change in
+# case of conflicts, and then resolve the conflicts as a second pass.
+git rebase --onto zsqlite_${VERSION}_patched zsqlite_${BASE} zsqlite_${BASE}_patched
+# Once everything is resolved, re-generate the amalgamation.
+./google_generate_amalgamation.sh
+git commit -a -m "google_generate_amalgamation.sh"
+
+# The goal is to have a set of reasonably-independent CLs which can be
+# understood separately, so that future importers can sensibly determine how to
+# handle conflicts.  So use git-rebase and slipstream fixups back into their
+# original CL until things are relatively clean.
+
+# Rebuild the patch set.
+git rm patches/*
+# This assumes that HEAD is still the google_generate_amalgamation.sh checkin.
+git format-patch --output-directory=patches sqlite_${VERSION}..HEAD^
+git add patches/*.patch
+git commit -m "Rebuild patches for sqlite_${VERSION}"
+
+# Drop the old version of SQLite.
+git rm -r sqlite_${BASE}
+git commit -m 'Remove sqlite_${BASE}' -- sqlite_${BASE}
+
+# Do a squash upload.  Edit the commit message appropriately to reflect anything
+# from <http://www.sqlite.org/changes.html> which might be deemed important.
+# Don't enumerate all of the patch messages, those are assumed, but do reference
+# any material changes made.
+# TODO(shess) Describe an appropriate comment style.  Seems like it should at
+# least include the SQLite version number.  Meanwhile, look in the logs for past
+# commits to model things on.
+
+Find a sucker.  Send review.
+
+TODO(shess): It is basically impossible to trybot the entire change, it takes
+forever to upload and sqlite3.c breaks things because it's too large.  I have a
+nasty Perl script to break up sqlite3.c into pieces which are then included by a
+single .c file, but there must be a better way.  Perhaps just have sqlite.gyp
+include all the .c files directly?
+
+Note that things can be broken down differently, if you prefer.  For instance,
+adding the new version of the SQLite distro and removing the old one can be
+distinct CLs.
 
 --------------------------------------------
 
-For reference, all of our local patches are also kept as .patch files in the
-sqlite directory. Here is a list of the patches, in the order they should be
-applied to a vanilla SQLite (of the version we currently have) to get, in
-principle, exactly what is checked in:
+4) Running SQLite's test suite within the Chromium checkout.
 
-misc.patch
-safe-tolower.patch
-fts2.patch
-fts3.patch
-fts3_85522.patch
-icu-regexp.patch
-icu-shell.patch
-attach-integer.patch
-webdb.patch
-test.patch
-mac_time_machine.patch
-system-sqlite.patch
-sqlite-3.7.6.3-fix-out-of-scope-memory-reference.patch
-misalignment.patch
-memcmp.patch
-separate_cache_pool.patch
-recover.patch
+Prerequisites: The test suite requires tcl-dev and libicu-dev.  Install those on
+Ubuntu like:
+  sudo apt-get install tcl8.5-dev libicu-dev
+On OSX, I use Homebrew:
+  sudo port install tcl
+TODO(shess): OSX works fine with either tcl8.5 or tcl8.6, but on Ubuntu 14.04.1
+with tcl8.6, I see crashes in some of the WAL tests.  Revisit using tcl8.6 on
+next import of SQLite.
+TODO(shess): That Homebrew command has installed tcl8.6 for a few years, so the
+above may require some adaptation of the build files.
 
-So, e.g. you could do this to apply all our patches to vanilla SQLite:
-
-cd sqlite-$LATEST
-patch -p0 < ../sqlite/misc.patch
-patch -p0 < ../sqlite/fts2.patch
-patch -p0 < ../sqlite/fts3.patch
-patch -p0 < ../sqlite/fts3_85522.patch
-patch -p0 < ../sqlite/icu-shell.patch
-patch -p0 < ../sqlite/webdb.patch
-patch -p0 < ../sqlite/test.patch
-patch -p0 < ../sqlite/mac_time_machine.patch
-patch -p0 < ../sqlite/system-sqlite.patch
-patch -p0 < ../sqlite/sqlite-3.7.6.3-fix-out-of-scope-memory-reference.patch
-patch -p0 < ../sqlite/misalignment.patch
-patch -p0 < ../sqlite/memcmp.patch
-patch -p0 < ../sqlite/separate_cache_pool.patch
-patch -p0 < ../sqlite/recover.patch
-
-This will only be the case if all changes we make also update the corresponding
-patch files. Therefore please remember to do that whenever you make a change!
-
-Descriptions of the changes we've made can be found at the bottom of this file.
-
---------------------------------------------
-
-How to run the SQLite tests for the Chromium version of SQLite on Linux.
-
-Prerequisties: On my corp Ubuntu 8.04 workstation, I needed to install the
-following packages:
-sudo apt-get install tcl8.4-dev libicu-dev
-
-cd src/third_party/sqlite/src
+cd third_party/sqlite/src
 mkdir build
 cd build
-make -f ../Makefile.linux-gcc testfixture
+make -f ../Makefile.linux-gcc testfixture sqlite3
+# NOTE(shess): 64-bit builds under 3.7.6.3 show various warnings.  AFAICT they
+# don't impact test operation.  Later versions are better so I'm not fixing it.
 make -f ../Makefile.linux-gcc test > /tmp/test.log
-egrep -v 'Ok$' /tmp/test.log
-# For an ideal test run, you would see:
-# 0 errors out of 57887 tests
-# However, the current situation on my corp Linux Ubuntu 8.04 machine, with
-# test run on a locally mounted directory, is the failure of:
-# "rollback-2.3", "tkt3457-1.4"
-# I do not know why, but it is not related to our fts2.c changes -- I backed
-# them out to check.
+egrep 'errors out of' /tmp/test.log 
+# Show broken tests:
+egrep 'Failures on these tests:' /tmp/test.log
+# Broken tests will also show lines ending in "..." instead of "... Ok".
 
-Chris Evans <cevans@google.com>, Oct 1, 2009
+In version Right now on OSX, I see no failures:
+  0 errors out of 77849 tests
 
---------------------------------------------
+In version 3.7.6.3 on Ubuntu 14.04 I see some failures:
+ 83 errors out of 78604 tests
+ - precision in formatting numbers in enc4.test.
+ - case sensitivity in nan.test.
+ - oserror-1.1.[1-3] fail because there are too many fds available.  Fixed with
+   "ulimit -n 1024".
 
-As of May 07, 2010, these are our changes from sqlite_vendor:
+--
 
- - A fix for a crash passing an integer expression to ATTACH / DETACH. See
- attach-integer.patch
- - A fix for a crash mis-calling the REGEXP() function of the ICU extension.
- See icu-regexp.patch
- - A large number of fts2 robustness fixes against corrupt data in its metadata
-   tables.
- - fts2.c disables fts2_tokenizer().
- - fts3.c disables fts3_tokenizer().
- - Tweak to SQLITE_EXTENSION_INIT* in sqlite3ext.h.
-   - That implied a change in src/test_autoext.c for testing.
- - Added fts.test in tests, modified quick.test.
- - Modifications to Makefile.linux-gcc and main.mk for compiling
-   SQLite tests.
- - Compile warning (cast to void* for sqlite3_free) fixed in func.c.
- - Avoid using tolower() in fts code which causes problem in some locales, see:
-   safe-tolower.patch
-   http://crbug.com/15261
-   http://www.sqlite.org/src/tktview/991789d9f3136a0460dc83a33e815c1aa9757c26
- - Check that the third argument to memset() is nonzero in expr.c to avoid
-   a linker warning when the compiler can optimize it to a constant zero
-   (e.g. see http://www.sqlite.org/cvstrac/tktview?tn=3765,39)
+NOTE(shess): On Ubuntu it is possible to run the tests in a tmpfs something
+like:
 
-Changes from Chrome:
- - I marked all changes I made with "evanm", so you can find them with
-   "grep evanm *".
- - Most files include sqlite3ext.h with SQLITE_CORE #defined, but two don't:
-   fts2_tokenizer.c and icu.c.  Without this #define, the calls in
-   fts2_tokenizer.c try to go through some pointer to the sqlite API instead
-   of calling the functions directly (to work as a loadable module), but then
-   crash (because the other files never initialize that loadable module
-   support).  As a hack I #defined it in these files, but it'd be nice to
-   figure out what really ought to happen here (perhaps this file is new and
-   hasn't been tested to verify it works right).  Update: Seems this is an
-   issue we get because we're using fts2 instead of fts3.
- - shell_icu_win.c and shell_icu_linux.c are Chrome-specific files used to load
-   our ICU data.  shell.c has been modifed to call into these files.
- - fts2_icu.c and fts3_icu.c have a critical bug. U8_NEXT is used over
-   a UTF-16 string. It's rep$ by U16_NEXT (jungshik)
- - Added a new function chromium_sqlite3_initialize_win_sqlite3_file()
-   at the end of os_win.c. It allows the Windows-specific Chromium VFS
-   to reuse most of the win32 SQLite VFS.
- - Added a new function
-   chromium_sqlite3_initialize_unix_sqlite3_file() and made
-   fillInUnixFile() non-static in os_unix.c. It allows the
-   Linux-specific Chromium VFS to reuse most of the unix SQLite VFS.
- - Exposed three functions that deal with unused file descriptors in
-   os_unix.c, to allow Chromium's Posix VFS implementation in
-   WebKit/WebCore/platform/sql/chromium/SQLiteFileSystemChromiumPosix.cpp
-   to correctly implement the "unused file descriptors" logic in the
-   xDlOpen() method. The new functions are
-   chromium_sqlite3_get_reusable_file_handle(),
-   chromium_sqlite3_update_reusable_file_handle() and
-   chromium_sqlite3_destroy_reusable_file_handle(). Also, added the
-   chromium_sqlite3_fill_in_unix_sqlite3_file() function that calls
-   fillInUnixFile(), which will be made static again as soon as a
-   WebKit patch using the new function lands.
- - From mac_time_machine.patch:
-   When __APPLE__ and when creating a -journal file with any unix-type vfs,
-   determine if the database for which the journal is being created has been
-   excluded from being backed up using Apple's Time Machine and if so then also
-   exclude the journal. These changes were made in pager.c with includes of
-   Apple interfaces being made in sqliteInt.h. In order to eliminate a symbol
-   conflict with an Apple library after amalgamation it was also necessary to
-   rename fts3_porter.c's 'cType' to 'vOrCType'.
- - fts3_85522.patch allows fts3 to work if PRAGMA is not authorized.
- - src/recover.c file implements a virtual table which can read
-   through corruption.
- - Enable the macro 'SQLITE_TEMP_STORE=3' for Android.
- - memcmp.patch backports ASAN-related fixes from SQLite trunk.
+TMPFS=/dev/shm/sqlite_build
+BUILD=$PWD
+mkdir $TMPFS
+(cd $TMPFS ; $BUILD/testfixture $BUILD/../test/veryquick.test >/tmp/test.log)
+
+This is faster, but it is plausible that different things are being tested than
+real-world use.

@@ -62,19 +62,19 @@ LIBOBJ+= alter.o analyze.o attach.o auth.o \
          mutex.o mutex_noop.o mutex_os2.o mutex_unix.o mutex_w32.o \
          notify.o opcodes.o os.o os_os2.o os_unix.o os_win.o \
          pager.o parse.o pcache.o pcache1.o pragma.o prepare.o printf.o \
-         random.o resolve.o rowset.o rtree.o select.o status.o \
+         random.o recover.o resolve.o rowset.o rtree.o select.o status.o \
          table.o tokenize.o trigger.o \
          update.o util.o vacuum.o \
          vdbe.o vdbeapi.o vdbeaux.o vdbeblob.o vdbemem.o vdbetrace.o \
          wal.o walker.o where.o utf.o vtab.o
 
 
-LIBOBJ += fts2.o \
-	  fts2_hash.o \
-	  fts2_icu.o \
-	  fts2_porter.o \
-          fts2_tokenizer.o \
-	  fts2_tokenizer1.o
+LIBOBJ+= fts2.o \
+         fts2_hash.o \
+         fts2_icu.o \
+         fts2_porter.o \
+         fts2_tokenizer.o \
+         fts2_tokenizer1.o
 
 # All of the source code files.
 #
@@ -138,6 +138,7 @@ SRC = \
   $(TOP)/src/prepare.c \
   $(TOP)/src/printf.c \
   $(TOP)/src/random.c \
+  $(TOP)/src/recover.c \
   $(TOP)/src/resolve.c \
   $(TOP)/src/rowset.c \
   $(TOP)/src/select.c \
@@ -267,17 +268,6 @@ TESTSRC = \
   $(TOP)/src/test_wholenumber.c \
   $(TOP)/src/test_wsd.c
 
-TESTSRC += \
-  $(TOP)/ext/fts2/fts2.c \
-  $(TOP)/ext/fts2/fts2.h \
-  $(TOP)/ext/fts2/fts2_hash.c \
-  $(TOP)/ext/fts2/fts2_hash.h \
-  $(TOP)/ext/fts2/fts2_icu.c \
-  $(TOP)/ext/fts2/fts2_porter.c \
-  $(TOP)/ext/fts2/fts2_tokenizer.h \
-  $(TOP)/ext/fts2/fts2_tokenizer.c \
-  $(TOP)/ext/fts2/fts2_tokenizer1.c
-
 #TESTSRC += $(TOP)/ext/fts2/fts2_tokenizer.c
 #TESTSRC += $(TOP)/ext/fts3/fts3_tokenizer.c
 
@@ -301,6 +291,7 @@ TESTSRC2 = \
   $(TOP)/src/prepare.c \
   $(TOP)/src/printf.c \
   $(TOP)/src/random.c \
+  $(TOP)/src/recover.c \
   $(TOP)/src/pcache.c \
   $(TOP)/src/pcache1.c \
   $(TOP)/src/select.c \
@@ -319,6 +310,17 @@ TESTSRC2 = \
   $(TOP)/ext/fts3/fts3_tokenizer.c \
   $(TOP)/ext/fts3/fts3_write.c \
   $(TOP)/ext/async/sqlite3async.c
+
+TESTSRC2 += \
+  $(TOP)/ext/fts2/fts2.c \
+  $(TOP)/ext/fts2/fts2.h \
+  $(TOP)/ext/fts2/fts2_hash.c \
+  $(TOP)/ext/fts2/fts2_hash.h \
+  $(TOP)/ext/fts2/fts2_icu.c \
+  $(TOP)/ext/fts2/fts2_porter.c \
+  $(TOP)/ext/fts2/fts2_tokenizer.h \
+  $(TOP)/ext/fts2/fts2_tokenizer.c \
+  $(TOP)/ext/fts2/fts2_tokenizer1.c
 
 # Header files used by all library source files.
 #
@@ -374,7 +376,7 @@ libsqlite3.a:	$(LIBOBJ)
 sqlite3$(EXE):	$(TOP)/src/shell.c libsqlite3.a sqlite3.h
 	$(TCCX) $(READLINE_FLAGS) -o sqlite3$(EXE)                  \
 		$(TOP)/src/shell.c $(SHELL_ICU)                     \
-		libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB) -ldl
+		libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB)
 
 # This target creates a directory named "tsrc" and fills it with
 # copies of all of the C source code and header files needed to
@@ -530,7 +532,8 @@ TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE
 testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
 		$(TESTSRC) $(TESTSRC2) $(TOP)/src/tclsqlite.c                \
-		-o testfixture$(EXE) $(LIBTCL) $(THREADLIB) libsqlite3.a
+		$(LIBTCL) $(THREADLIB) libsqlite3.a $(TLIBS)
+	mv a.out testfixture$(EXE)
 
 amalgamation-testfixture$(EXE): sqlite3.c $(TESTSRC) $(TOP)/src/tclsqlite.c
 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
@@ -562,9 +565,6 @@ threadtest3$(EXE): sqlite3.o $(TOP)/test/threadtest3.c $(TOP)/test/tt3_checkpoin
 
 threadtest: threadtest3$(EXE)
 	./threadtest3$(EXE)
-
-fts2test:	testfixture$(EXE) sqlite3$(EXE)
-	./testfixture$(EXE) $(TOP)/test/fts2.test
 
 sqlite3_analyzer$(EXE):	$(TOP)/src/tclsqlite.c sqlite3.c $(TESTSRC) \
 			$(TOP)/tool/spaceanal.tcl

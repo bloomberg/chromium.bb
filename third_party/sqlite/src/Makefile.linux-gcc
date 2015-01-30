@@ -32,19 +32,23 @@ USLEEP = -DHAVE_USLEEP=1
 #    multi-threaded program, then define the following macro
 #    appropriately:
 #
-#THREADSAFE = -DTHREADSAFE=1
 THREADSAFE = -DTHREADSAFE=1
+#THREADSAFE = -DTHREADSAFE=0
 
 #### Specify any extra linker options needed to make the library
 #    thread safe
 #
-#THREADLIB = -lpthread
 THREADLIB = -lpthread
+#THREADLIB = 
 
 #### Specify any extra libraries needed to access required functions.
 #
 #TLIBS = -lrt    # fdatasync on Solaris 8
-TLIBS = 
+ifeq ($(shell uname -s),Darwin)
+TLIBS = -framework CoreServices
+else
+TLIBS = -ldl
+endif
 
 #### Leave SQLITE_DEBUG undefined for maximum speed.  Use SQLITE_DEBUG=1
 #    to check for memory leaks.  Use SQLITE_DEBUG=2 to print a log of all
@@ -57,10 +61,11 @@ TLIBS =
 #OPTS = -DSQLITE_DEBUG=2
 #OPTS = -DSQLITE_DEBUG=1
 #OPTS = 
+OPTS = -DNDEBUG=1
+#OPTS += -DHAVE_FDATASYNC=1
 
-# These flags match those for SQLITE_CFLAGS in config.mk.  
+# These flags match those for SQLITE_CFLAGS in config.mk.
 
-OPTS += -DNDEBUG
 OPTS += -DSQLITE_CORE
 OPTS += -DSQLITE_ENABLE_FTS2 -DSQLITE_ENABLE_BROKEN_FTS2
 OPTS += -DSQLITE_DEFAULT_FILE_PERMISSIONS=0600
@@ -75,10 +80,19 @@ OPTS += -DSQLITE_MEMDEBUG=1
 #  -DSQLITE_OMIT_VACUUM=1 \
 #  -DSQLITE_TRANSACTION_DEFAULT_IMMEDIATE=1 \
 
-SHELL_ICU = $(TOP)/src/shell_icu_linux.c -licuuc
-
 # TODO(shess) I can't see why I need this setting.
 OPTS += -DOS_UNIX=1
+
+# The recover virtual table is not generally enabled.  Enable it for testing
+# purposes.
+OPTS += -DDEFAULT_ENABLE_RECOVER=1
+
+# Support for loading Chromium ICU data in sqlite3.
+ifeq ($(shell uname -s),Darwin)
+SHELL_ICU =
+else
+SHELL_ICU = $(TOP)/src/shell_icu_linux.c -licuuc
+endif
 
 #### The suffix to add to executable files.  ".exe" for windows.
 #    Nothing for unix.
@@ -90,7 +104,7 @@ EXE =
 #    will run on the target platform.  This is usually the same
 #    as BCC, unless you are cross-compiling.
 #
-TCC = gcc -O6
+TCC = gcc -Os
 #TCC = gcc -g -O0 -Wall
 #TCC = gcc -g -O0 -Wall -fprofile-arcs -ftest-coverage
 #TCC = /opt/mingw/bin/i386-mingw32-gcc -O6

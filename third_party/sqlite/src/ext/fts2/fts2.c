@@ -324,7 +324,7 @@
 #include "fts2_hash.h"
 #include "fts2_tokenizer.h"
 #include "sqlite3.h"
-#ifndef SQLITE_CORE 
+#ifndef SQLITE_CORE
 # include "sqlite3ext.h"
   SQLITE_EXTENSION_INIT1
 #endif
@@ -3765,7 +3765,7 @@ static int tokenizeSegment(
       continue;
     }
     iEndLast = iEnd;
-    
+
     queryAdd(pQuery, pToken, nToken);
     if( !inPhrase && iBegin>0 && pSegment[iBegin-1]=='-' ){
       pQuery->pTerms[pQuery->nTerms-1].isNot = 1;
@@ -5552,7 +5552,7 @@ static int leavesReadersMerge(fulltext_vtab *v,
     if( rc!=SQLITE_OK ) break;
   }
   if( rc!=SQLITE_OK ){
-    while( i-->0 ){ 
+    while( i-->0 ){
       dlrDestroy(&dlReaders[i]);
     }
     return rc;
@@ -6901,7 +6901,7 @@ static void createDoclistResult(sqlite3_context *pContext,
   assert( pData!=NULL && nData>0 );
 
   rc = dlrInit(&dlReader, DL_DEFAULT, pData, nData);
-  if( rc!=SQLITE_OK ) return rc;
+  if( rc!=SQLITE_OK ) return;
   dataBufferInit(&dump, 0);
   for( ; rc==SQLITE_OK && !dlrAtEnd(&dlReader); rc = dlrStep(&dlReader) ){
     char buf[256];
@@ -6952,7 +6952,7 @@ static void createDoclistResult(sqlite3_context *pContext,
   dlrDestroy(&dlReader);
   if( rc!=SQLITE_OK ){
     dataBufferDestroy(&dump);
-    return rc;
+    return;
   }
 
   assert( dump.nData>0 );
@@ -6965,7 +6965,6 @@ static void createDoclistResult(sqlite3_context *pContext,
   sqlite3_result_text(pContext, dump.pData, dump.nData, sqlite3_free);
   dump.pData = NULL;
   dump.nData = dump.nCapacity = 0;
-  return SQLITE_OK;
 }
 
 /* Implements dump_doclist() for use in inspecting the fts2 index from

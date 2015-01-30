@@ -1,0 +1,49 @@
+From 22030cd2e05e746a169066c37b28c580b0a57284 Mon Sep 17 00:00:00 2001
+From: rmcilroy <rmcilroy@chromium.org>
+Date: Thu, 20 Jun 2013 22:50:12 +0000
+Subject: [PATCH 04/23] Use seperate page-cache pools for each sqlite
+ connection.
+
+Due to multiple different subsystems using sqlite, the shared global page
+cache policy does not suite our use-cases on Chrome very well.  This CL
+enables a compile time flag to be set to disable shared cache pools.
+
+BUG=243769
+
+Original review URL: https://chromiumcodereview.appspot.com/17413004
+---
+ third_party/sqlite/src/src/pcache1.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/pcache1.c b/third_party/sqlite/src/src/pcache1.c
+index ad44395..e4d0705 100644
+--- a/third_party/sqlite/src/src/pcache1.c
++++ b/third_party/sqlite/src/src/pcache1.c
+@@ -549,10 +549,12 @@ static sqlite3_pcache *pcache1Create(int szPage, int bPurgeable){
+   int sz;               /* Bytes of memory required to allocate the new cache */
+ 
+   /*
+-  ** The seperateCache variable is true if each PCache has its own private
++  ** The separateCache variable is true if each PCache has its own private
+   ** PGroup.  In other words, separateCache is true for mode (1) where no
+   ** mutexing is required.
+   **
++  **   *  Always use separate caches (mode-1) if SQLITE_SEPARATE_CACHE_POOLS
++  **
+   **   *  Always use a unified cache (mode-2) if ENABLE_MEMORY_MANAGEMENT
+   **
+   **   *  Always use a unified cache in single-threaded applications
+@@ -560,7 +562,9 @@ static sqlite3_pcache *pcache1Create(int szPage, int bPurgeable){
+   **   *  Otherwise (if multi-threaded and ENABLE_MEMORY_MANAGEMENT is off)
+   **      use separate caches (mode-1)
+   */
+-#if defined(SQLITE_ENABLE_MEMORY_MANAGEMENT) || SQLITE_THREADSAFE==0
++#ifdef SQLITE_SEPARATE_CACHE_POOLS
++  const int separateCache = 1;
++#elif defined(SQLITE_ENABLE_MEMORY_MANAGEMENT) || SQLITE_THREADSAFE==0
+   const int separateCache = 0;
+ #else
+   int separateCache = sqlite3GlobalConfig.bCoreMutex>0;
+-- 
+2.2.1
+
