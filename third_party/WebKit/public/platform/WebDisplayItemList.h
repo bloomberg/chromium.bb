@@ -9,10 +9,12 @@
 #include "WebFloatPoint.h"
 #include "WebFloatRect.h"
 #include "WebRect.h"
+#include "WebSize.h"
 #include "WebVector.h"
 
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 
 class SkImageFilter;
 class SkMatrix44;
@@ -45,6 +47,17 @@ public:
     // This grabs a ref on the passed-in filter.
     virtual void appendFilterItem(SkImageFilter*, const WebFloatRect& bounds) = 0;
     virtual void appendEndFilterItem() = 0;
+
+    // Scroll containers are identified by an opaque pointer.
+    // FIXME: Make these pure virtual once the embedder implements them.
+    using ScrollContainerId = void*;
+    virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId)
+    {
+        SkMatrix44 matrix;
+        matrix.setTranslate(-scrollOffset.width, -scrollOffset.height, 0);
+        appendTransformItem(matrix);
+    }
+    virtual void appendEndScrollItem() { appendEndTransformItem(); }
 };
 
 } // namespace blink

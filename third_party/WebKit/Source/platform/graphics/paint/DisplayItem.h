@@ -102,6 +102,13 @@ public:
         EndFloatClipFirst,
         EndFloatClipLast = EndFloatClipFirst + FloatClipLast - FloatClipFirst,
 
+        ScrollFirst,
+        ScrollPaintPhaseFirst = ScrollFirst,
+        ScrollPaintPhaseLast = ScrollPaintPhaseFirst + PaintPhaseMax,
+        ScrollLast = ScrollPaintPhaseLast,
+        EndScrollFirst,
+        EndScrollLast,
+
         BeginFilter,
         EndFilter,
         BeginCompositing,
@@ -110,6 +117,8 @@ public:
         EndTransform,
         BeginClipPath,
         EndClipPath,
+        BeginScroll,
+        EndScroll
     };
 
     // Create a dummy display item which just holds the id but has no display operation.
@@ -154,6 +163,9 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(FloatClip, floatClip)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(FloatClip)
+
+    DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);

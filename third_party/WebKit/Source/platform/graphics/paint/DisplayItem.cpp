@@ -101,6 +101,8 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndTransform: return "EndTransform";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
+    case BeginScroll: return "BeginScroll";
+    case EndScroll: return "EndScroll";
     case SVGFilter: return "SVGFilter";
     default:
         ASSERT_NOT_REACHED();

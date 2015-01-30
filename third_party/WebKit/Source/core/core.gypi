@@ -1636,6 +1636,8 @@
             'paint/ScrollableAreaPainter.h',
             'paint/ScrollbarPainter.cpp',
             'paint/ScrollbarPainter.h',
+            'paint/ScrollRecorder.cpp',
+            'paint/ScrollRecorder.h',
             'paint/TableCellPainter.cpp',
             'paint/TableCellPainter.h',
             'paint/TablePainter.cpp',

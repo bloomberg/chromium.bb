@@ -16,6 +16,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -158,10 +159,13 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     PaintPhase paintPhase = paintInfo.phase;
 
-    // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
     LayoutPoint scrolledOffset = paintOffset;
-    if (m_renderBlock.hasOverflowClip())
-        scrolledOffset.move(-m_renderBlock.scrolledContentOffset());
+    if (!RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()) {
+        // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
+        // With compositor layerization, a scroll display item is used instead.
+        if (m_renderBlock.hasOverflowClip())
+            scrolledOffset.move(-m_renderBlock.scrolledContentOffset());
+    }
 
     LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
@@ -169,14 +173,10 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         bounds.moveBy(scrolledOffset);
     }
 
-    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {
-        if (m_renderBlock.hasBoxDecorationBackground())
-            m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
-        if (m_renderBlock.hasColumns() && !paintInfo.paintRootBackgroundOnly()) {
-            DrawingRecorder drawingRecorder(paintInfo.context, m_renderBlock.displayItemClient(), DisplayItem::ColumnRules, bounds);
-            paintColumnRules(paintInfo, scrolledOffset);
-        }
-    }
+    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
+        && m_renderBlock.style()->visibility() == VISIBLE
+        && m_renderBlock.hasBoxDecorationBackground())
+        m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_renderBlock.style()->visibility() == VISIBLE) {
         RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, paintPhase, bounds);
@@ -192,27 +192,48 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         return;
     }
 
-    // We're done. We don't bother painting any children.
-    if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
-        return;
+    {
+        OwnPtr<ScrollRecorder> scrollRecorder;
+        if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()
+            && m_renderBlock.hasOverflowClip()
+            && m_renderBlock.layer()->scrollsOverflow()) {
+            scrollRecorder = adoptPtr(new ScrollRecorder(
+                paintInfo.context,
+                m_renderBlock.displayItemClient(),
+                paintPhase,
+                m_renderBlock.scrolledContentOffset()));
+        }
 
-    if (paintPhase != PaintPhaseSelfOutline) {
-        if (m_renderBlock.hasColumns())
-            paintColumnContents(paintInfo, scrolledOffset);
-        else
-            paintContents(paintInfo, scrolledOffset);
-    }
+        if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
+            && m_renderBlock.style()->visibility() == VISIBLE
+            && m_renderBlock.hasColumns()
+            && !paintInfo.paintRootBackgroundOnly()) {
+            DrawingRecorder drawingRecorder(paintInfo.context, m_renderBlock.displayItemClient(), DisplayItem::ColumnRules, bounds);
+            paintColumnRules(paintInfo, scrolledOffset);
+        }
 
-    // FIXME: Make this work with multi column layouts. For now don't fill gaps.
-    bool isPrinting = m_renderBlock.document().printing();
-    if (!isPrinting && !m_renderBlock.hasColumns())
-        m_renderBlock.paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
+        // We're done. We don't bother painting any children.
+        if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
+            return;
 
-    if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
-        if (m_renderBlock.hasColumns())
-            paintColumnContents(paintInfo, scrolledOffset, true);
-        else
-            m_renderBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
+        if (paintPhase != PaintPhaseSelfOutline) {
+            if (m_renderBlock.hasColumns())
+                paintColumnContents(paintInfo, scrolledOffset);
+            else
+                paintContents(paintInfo, scrolledOffset);
+        }
+
+        // FIXME: Make this work with multi column layouts. For now don't fill gaps.
+        bool isPrinting = m_renderBlock.document().printing();
+        if (!isPrinting && !m_renderBlock.hasColumns())
+            m_renderBlock.paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
+
+        if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
+            if (m_renderBlock.hasColumns())
+                paintColumnContents(paintInfo, scrolledOffset, true);
+            else
+                m_renderBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
+        }
     }
 
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_renderBlock.style()->hasOutline() && m_renderBlock.style()->visibility() == VISIBLE) {
