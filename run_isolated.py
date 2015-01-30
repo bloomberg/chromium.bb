@@ -253,6 +253,8 @@ def main(args):
   data_group.add_option(
       '-s', '--isolated',
       help='Hash of the .isolated to grab from the isolate server')
+  data_group.add_option(
+      '-H', dest='isolated', help=optparse.SUPPRESS_HELP)
   isolateserver.add_isolate_server_options(data_group)
   parser.add_option_group(data_group)
 
