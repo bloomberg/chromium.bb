@@ -50,17 +50,18 @@ static gfx::Vector2dF GetEffectiveScrollDelta(LayerType* layer) {
   // Due to Blink's limitation, it only counter-scrolls the position-fixed
   // layer using the integer part of Layer's scroll offset.
   // CC scrolls the layer using the full scroll offset, so we have to
-  // add the fractional part of the scroll offset to the effective scroll
-  // delta which is used to counter-scroll the position-fixed layer.
+  // add the ScrollCompensationAdjustment (fractional part of the scroll
+  // offset) to the effective scroll delta which is used to counter-scroll
+  // the position-fixed layer.
   gfx::Vector2dF scroll_delta =
-      layer->ScrollDelta() + layer->MainScrollOffsetFractionalPart();
+      layer->ScrollDelta() + layer->ScrollCompensationAdjustment();
   // The scroll parent's scroll delta is the amount we've scrolled on the
   // compositor thread since the commit for this layer tree's source frame.
   // we last reported to the main thread. I.e., it's the discrepancy between
   // a scroll parent's scroll delta and offset, so we must add it here.
   if (layer->scroll_parent())
     scroll_delta += layer->scroll_parent()->ScrollDelta() +
-                    layer->scroll_parent()->MainScrollOffsetFractionalPart();
+        layer->ScrollCompensationAdjustment();
   return scroll_delta;
 }
 

@@ -7820,7 +7820,7 @@ TEST_F(LayerTreeHostCommonTest,
                                gfx::PointF(3.0f, 4.0f), gfx::Size(50, 50), true,
                                false, false);
   scroll_layer->SetScrollOffsetAndDelta(scroll_offset, scroll_delta);
-  scroll_layer->SetMainScrollOffsetFractionalPart(main_scroll_fractional_part);
+  scroll_layer->SetScrollCompensationAdjustment(main_scroll_fractional_part);
 
   scroller->AddChild(fixed.Pass());
   container->AddChild(scroller.Pass());
