@@ -1759,3 +1759,6 @@ crbug.com/453241 http/tests/fetch/workers/fetch-access-control-auth.html [ Slow 
 crbug.com/453241 http/tests/fetch/workers/fetch-access-control-cors.html [ Slow ]
 crbug.com/453241 http/tests/fetch/workers/fetch-access-control.html [ Slow ]
 crbug.com/453241 http/tests/fetch/workers/fetch-access-control-redirect.html [ Slow ]
+
+crbug.com/453781 fast/hidpi/image-srcset-simple-2x.html [ Pass Failure ]
+
