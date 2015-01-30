@@ -113,11 +113,18 @@ class TestMirroringController
 
 class DisplayConfiguratorTest : public testing::Test {
  public:
+  enum CallbackResult {
+    CALLBACK_FAILURE,
+    CALLBACK_SUCCESS,
+    CALLBACK_NOT_CALLED,
+  };
+
   DisplayConfiguratorTest()
       : small_mode_(gfx::Size(1366, 768), false, 60.0f),
         big_mode_(gfx::Size(2560, 1600), false, 60.0f),
         observer_(&configurator_),
-        test_api_(&configurator_) {}
+        test_api_(&configurator_),
+        callback_result_(CALLBACK_NOT_CALLED) {}
   ~DisplayConfiguratorTest() override {}
 
   void SetUp() override {
@@ -151,6 +158,10 @@ class DisplayConfiguratorTest : public testing::Test {
     o->set_display_id(456);
 
     UpdateOutputs(2, false);
+  }
+
+  void OnConfiguredCallback(bool status) {
+    callback_result_ = (status ? CALLBACK_SUCCESS : CALLBACK_FAILURE);
   }
 
   // Predefined modes that can be used by outputs.
@@ -192,6 +203,12 @@ class DisplayConfiguratorTest : public testing::Test {
               log_->GetActionsAndClear());
   }
 
+  CallbackResult PopCallbackResult() {
+    CallbackResult result = callback_result_;
+    callback_result_ = CALLBACK_NOT_CALLED;
+    return result;
+  }
+
   base::MessageLoop message_loop_;
   TestStateController state_controller_;
   TestMirroringController mirroring_controller_;
@@ -202,6 +219,8 @@ class DisplayConfiguratorTest : public testing::Test {
   DisplayConfigurator::TestApi test_api_;
 
   TestDisplaySnapshot outputs_[2];
+
+  CallbackResult callback_result_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorTest);
@@ -429,7 +448,10 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      DisplayConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -447,8 +469,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   // When all displays are turned off, the framebuffer should switch back
   // to the mirrored size.
   observer_.Reset();
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(kGrab,
                   GetFramebufferAction(
@@ -464,8 +490,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
 
   // Turn all displays on and check that mirroring is still used.
   observer_.Reset();
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -515,7 +545,10 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      DisplayConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -534,8 +567,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   // When all displays are turned off, the framebuffer should switch back
   // to the extended + software mirroring.
   observer_.Reset();
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -559,8 +596,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
 
   // Turn all displays on and check that mirroring is still used.
   observer_.Reset();
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -606,8 +647,12 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
 
   // Now turn the display off before suspending and check that the
   // configurator turns it back on and syncs with the server.
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -656,8 +701,12 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
           NULL),
       log_->GetActionsAndClear());
 
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(kGrab,
                   GetFramebufferAction(
@@ -698,11 +747,19 @@ TEST_F(DisplayConfiguratorTest, Headless) {
 
   // Not much should happen when the display power state is changed while
   // no displays are connected.
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(JoinActions(kGrab, kForceDPMS, kUngrab, NULL),
             log_->GetActionsAndClear());
 
@@ -1071,7 +1128,10 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   // Turn off the internal display, simulating docked mode.
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      DisplayConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(0, observer_.num_failures());
   log_->GetActionsAndClear();
@@ -1079,8 +1139,12 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   // Make all subsequent configuration requests fail and try to turn the
   // internal display back on.
   native_display_delegate_->set_max_configurable_pixels(1);
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_FAILURE, PopCallbackResult());
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(1, observer_.num_failures());
   log_->GetActionsAndClear();
@@ -1112,7 +1176,10 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   // Turn off the internal display, simulating docked mode.
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      DisplayConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(0, observer_.num_failures());
   EXPECT_EQ(
@@ -1133,8 +1200,12 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   configurator_.ResumeDisplays();
 
   // Before the task runs, exit docked mode.
-  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                DisplayConfigurator::kSetDisplayPowerNoFlags);
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(2, observer_.num_changes());
   EXPECT_EQ(0, observer_.num_failures());
   EXPECT_EQ(

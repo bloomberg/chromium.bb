@@ -32,6 +32,9 @@ const int kConfigureDelayMs = 500;
 // such that we read an up to date state.
 const int kResumeDelayMs = 500;
 
+void DoNothing(bool status) {
+}
+
 }  // namespace
 
 
@@ -460,6 +463,9 @@ DisplayConfigurator::DisplayConfigurator()
 DisplayConfigurator::~DisplayConfigurator() {
   if (native_display_delegate_)
     native_display_delegate_->RemoveObserver(this);
+
+  CallAndClearInProgressCallbacks(false);
+  CallAndClearQueuedCallbacks(false);
 }
 
 void DisplayConfigurator::SetDelegateForTesting(
@@ -759,21 +765,27 @@ void DisplayConfigurator::PrepareForExit() {
 
 void DisplayConfigurator::SetDisplayPower(
     chromeos::DisplayPowerState power_state,
-    int flags) {
-  if (!configure_display_ || display_externally_controlled_)
+    int flags,
+    const ConfigurationCallback& callback) {
+  if (!configure_display_ || display_externally_controlled_) {
+    callback.Run(false);
     return;
+  }
 
   VLOG(1) << "SetDisplayPower: power_state="
           << DisplayPowerStateToString(power_state) << " flags=" << flags
           << ", configure timer="
           << (configure_timer_.IsRunning() ? "Running" : "Stopped");
   if (power_state == requested_power_state_ &&
-      !(flags & kSetDisplayPowerForceProbe))
+      !(flags & kSetDisplayPowerForceProbe)) {
+    callback.Run(true);
     return;
+  }
 
   requested_power_state_ = power_state;
   requested_power_state_change_ = true;
   requested_power_flags_ = flags;
+  queued_configuration_callbacks_.push_back(callback);
 
   RunPendingConfiguration();
 }
@@ -836,7 +848,8 @@ void DisplayConfigurator::SuspendDisplays() {
   // into the "on" state, which greatly reduces resume times.
   if (requested_power_state_ == chromeos::DISPLAY_POWER_ALL_OFF) {
     SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                    kSetDisplayPowerOnlyIfSingleInternalDisplay);
+                    kSetDisplayPowerOnlyIfSingleInternalDisplay,
+                    base::Bind(&DoNothing));
 
     // We need to make sure that the monitor configuration we just did actually
     // completes before we return, because otherwise the X message could be
@@ -870,6 +883,7 @@ void DisplayConfigurator::RunPendingConfiguration() {
   if (!ShouldRunConfigurationTask()) {
     LOG(ERROR) << "Called RunPendingConfiguration without any changes"
                   " requested";
+    CallAndClearQueuedCallbacks(true);
     return;
   }
 
@@ -885,6 +899,9 @@ void DisplayConfigurator::RunPendingConfiguration() {
   requested_power_flags_ = kSetDisplayPowerNoFlags;
   requested_power_state_change_ = false;
   requested_display_state_ = MULTIPLE_DISPLAY_STATE_INVALID;
+
+  DCHECK(in_progress_configuration_callbacks_.empty());
+  in_progress_configuration_callbacks_.swap(queued_configuration_callbacks_);
 
   configuration_task_->Run();
 }
@@ -914,12 +931,18 @@ void DisplayConfigurator::OnConfigured(
 
   configuration_task_.reset();
   NotifyObservers(success, new_display_state);
+  CallAndClearInProgressCallbacks(success);
 
   if (success && !configure_timer_.IsRunning() &&
       ShouldRunConfigurationTask()) {
     configure_timer_.Start(FROM_HERE,
                            base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
                            this, &DisplayConfigurator::RunPendingConfiguration);
+  } else {
+    // If a new configuration task isn't scheduled respond to all queued
+    // callbacks (for example if requested state is current state).
+    if (!configure_timer_.IsRunning())
+      CallAndClearQueuedCallbacks(success);
   }
 }
 
@@ -939,10 +962,25 @@ bool DisplayConfigurator::ShouldRunConfigurationTask() const {
   return false;
 }
 
+void DisplayConfigurator::CallAndClearInProgressCallbacks(bool success) {
+  for (const auto& callback : in_progress_configuration_callbacks_)
+    callback.Run(success);
+
+  in_progress_configuration_callbacks_.clear();
+}
+
+void DisplayConfigurator::CallAndClearQueuedCallbacks(bool success) {
+  for (const auto& callback : queued_configuration_callbacks_)
+    callback.Run(success);
+
+  queued_configuration_callbacks_.clear();
+}
+
 void DisplayConfigurator::RestoreRequestedPowerStateAfterResume() {
   // Force probing to ensure that we pick up any changes that were made while
   // the system was suspended.
-  SetDisplayPower(requested_power_state_, kSetDisplayPowerForceProbe);
+  SetDisplayPower(requested_power_state_, kSetDisplayPowerForceProbe,
+                  base::Bind(&DoNothing));
 }
 
 void DisplayConfigurator::NotifyObservers(

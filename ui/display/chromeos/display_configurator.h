@@ -40,6 +40,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   typedef uint64_t ContentProtectionClientId;
   static const ContentProtectionClientId kInvalidClientId = 0;
 
+  typedef base::Callback<void(bool)> ConfigurationCallback;
+
   struct DisplayState {
     DisplayState();
 
@@ -222,9 +224,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
-  // |flags| contains bitwise-or-ed kSetDisplayPower* values. Returns true if
-  // the system successfully enters (or was already in) |power_state|.
-  void SetDisplayPower(chromeos::DisplayPowerState power_state, int flags);
+  // |flags| contains bitwise-or-ed kSetDisplayPower* values. After the
+  // configuration finishes |callback| is called with the status of the
+  // operation.
+  void SetDisplayPower(chromeos::DisplayPowerState power_state,
+                       int flags,
+                       const ConfigurationCallback& callback);
 
   // Force switching the display mode to |new_state|. Returns false if
   // switching failed (possibly because |new_state| is invalid for the
@@ -334,6 +339,13 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // otherwise.
   bool ShouldRunConfigurationTask() const;
 
+  // Helper functions which will call the callbacks in
+  // |in_progress_configuration_callbacks_| and
+  // |queued_configuration_callbacks_| and clear the lists after. |success| is
+  // the configuration status used when calling the callbacks.
+  void CallAndClearInProgressCallbacks(bool success);
+  void CallAndClearQueuedCallbacks(bool success);
+
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<NativeDisplayDelegate> native_display_delegate_;
@@ -366,6 +378,15 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Bitwise-or value of the |kSetDisplayPower*| flags defined above.
   int requested_power_flags_;
+
+  // List of callbacks from callers waiting for the display configuration to
+  // start/finish. Note these callbacks belong to the pending request, not a
+  // request currently active.
+  std::vector<ConfigurationCallback> queued_configuration_callbacks_;
+
+  // List of callbacks belonging to the currently running display configuration
+  // task.
+  std::vector<ConfigurationCallback> in_progress_configuration_callbacks_;
 
   // True if the caller wants to force the display configuration process.
   bool force_configure_;

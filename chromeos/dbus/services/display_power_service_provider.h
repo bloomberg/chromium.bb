@@ -31,10 +31,14 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
  public:
   class Delegate {
    public:
+    typedef base::Callback<void(bool)> ResponseCallback;
+
     virtual ~Delegate() {}
 
-    // Sets the display power state.
-    virtual void SetDisplayPower(DisplayPowerState power_state) = 0;
+    // Sets the display power state. After the display power is set, |callback|
+    // is called with the operation status.
+    virtual void SetDisplayPower(DisplayPowerState power_state,
+                                 const ResponseCallback& callback) = 0;
 
     // Dims or undims the screen.
     virtual void SetDimming(bool dimmed) = 0;

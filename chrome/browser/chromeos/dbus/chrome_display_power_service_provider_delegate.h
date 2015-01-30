@@ -17,7 +17,8 @@ class ChromeDisplayPowerServiceProviderDelegate
   ~ChromeDisplayPowerServiceProviderDelegate() override;
 
   // DisplayPowerServiceProvider::Delegate overrides:
-  void SetDisplayPower(DisplayPowerState power_state) override;
+  void SetDisplayPower(DisplayPowerState power_state,
+                       const ResponseCallback& callback) override;
   void SetDimming(bool dimmed) override;
 
  private:

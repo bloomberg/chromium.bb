@@ -10,6 +10,17 @@
 
 namespace chromeos {
 
+namespace {
+
+void RunConfigurationCallback(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender,
+    bool status) {
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+}  // namespace
+
 DisplayPowerServiceProvider::DisplayPowerServiceProvider(
     scoped_ptr<Delegate> delegate)
     : delegate_(delegate.Pass()),
@@ -50,14 +61,15 @@ void DisplayPowerServiceProvider::SetDisplayPower(
     dbus::ExportedObject::ResponseSender response_sender) {
   dbus::MessageReader reader(method_call);
   int int_state = 0;
+  Delegate::ResponseCallback callback =
+      base::Bind(&RunConfigurationCallback, method_call, response_sender);
   if (reader.PopInt32(&int_state)) {
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
-    delegate_->SetDisplayPower(state);
+    delegate_->SetDisplayPower(state, callback);
   } else {
     LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
+    callback.Run(false);
   }
-
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void DisplayPowerServiceProvider::SetDisplaySoftwareDimming(

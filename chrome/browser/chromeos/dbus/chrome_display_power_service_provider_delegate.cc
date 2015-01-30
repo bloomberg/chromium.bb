@@ -19,7 +19,8 @@ ChromeDisplayPowerServiceProviderDelegate::
 }
 
 void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
-    DisplayPowerState power_state) {
+    DisplayPowerState power_state,
+    const ResponseCallback& callback) {
   // Turning displays off when the device becomes idle or on just before
   // we suspend may trigger a mouse move, which would then be incorrectly
   // reported as user activity.  Let the UserActivityDetector
@@ -27,7 +28,7 @@ void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
   ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
 
   ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(
-      power_state, ui::DisplayConfigurator::kSetDisplayPowerNoFlags);
+      power_state, ui::DisplayConfigurator::kSetDisplayPowerNoFlags, callback);
 }
 
 void ChromeDisplayPowerServiceProviderDelegate::SetDimming(bool dimmed) {
