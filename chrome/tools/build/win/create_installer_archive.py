@@ -42,6 +42,9 @@ TEMP_ARCHIVE_DIR = "temp_installer_archive"
 VERSION_FILE = "VERSION"
 
 
+g_archive_inputs = []
+
+
 def BuildVersion(build_dir):
   """Returns the full build version string constructed from information in
   VERSION_FILE.  Any segment not found in that file will default to '0'.
@@ -121,6 +124,7 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
     for src_path in src_paths:
       dst_path = os.path.join(dst_dir, os.path.basename(src_path))
       if not os.path.exists(dst_path):
+        g_archive_inputs.append(src_path)
         shutil.copy(src_path, dst_dir)
 
 def GenerateDiffPatch(options, orig_file, new_file, patch_file):
@@ -194,6 +198,44 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   lzma_exec = GetLZMAExec(options.build_dir)
   archive_file = os.path.join(options.output_dir,
                               options.output_name + ARCHIVE_SUFFIX)
+  if options.depfile:
+    # If a depfile was requested, do the glob of the staging dir and generate
+    # a list of dependencies in .d format. We list the files that were copied
+    # into the staging dir, not the files that are actually in the staging dir
+    # because the ones in the staging dir will never be edited, and we want
+    # to have the build be triggered when the thing-that-was-copied-there
+    # changes.
+
+    def path_fixup(path):
+      """Fixes path for depfile format: backslash to forward slash, and
+      backslash escaping for spaces."""
+      return path.replace('\\', '/').replace(' ', '\\ ')
+
+    # Gather the list of files in the staging dir that will be zipped up. We
+    # only gather this list to make sure that g_archive_inputs is complete (i.e.
+    # that there's not file copies that got missed).
+    staging_contents = []
+    for root, dirs, files in os.walk(os.path.join(staging_dir, CHROME_DIR)):
+      for filename in files:
+        staging_contents.append(path_fixup(os.path.join(root, filename)))
+
+    # Make sure there's an archive_input for each staging dir file.
+    for staging_file in staging_contents:
+      for archive_input in g_archive_inputs:
+        archive_rel = path_fixup(archive_input)
+        if (os.path.basename(staging_file).lower() ==
+            os.path.basename(archive_rel).lower()):
+          break
+      else:
+        raise Exception('Did not find an archive input file for "%s"' %
+                        staging_file)
+
+    # Finally, write the depfile referencing the inputs.
+    with open(options.depfile, 'wb') as f:
+      f.write(path_fixup(os.path.relpath(archive_file, options.build_dir)) +
+              ': \\\n')
+      f.write('  ' + ' \\\n  '.join(path_fixup(x) for x in g_archive_inputs))
+
   cmd = [lzma_exec,
          'a',
          '-t7z',
@@ -350,6 +392,7 @@ def CopyIfChanged(src, target_dir):
   copy over it. See http://crbug.com/305877 for details."""
   assert os.path.isdir(target_dir)
   dest = os.path.join(target_dir, os.path.basename(src))
+  g_archive_inputs.append(src)
   if os.path.exists(dest):
     # We assume the files are OK to buffer fully into memory since we know
     # they're only 1-2M.
@@ -451,6 +494,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
     setup_component_dlls = glob.glob(os.path.join(build_dir,
                                                   setup_component_dll_glob))
     for setup_component_dll in setup_component_dlls:
+      g_archive_inputs.append(setup_component_dll)
       shutil.copy(setup_component_dll, installer_dir)
 
   # Stage all the component DLLs found in |build_dir| to the |version_dir| (for
@@ -471,6 +515,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
     if component_dll_name.startswith('remoting_'):
       continue
     component_dll_filenames.append(component_dll_name)
+    g_archive_inputs.append(component_dll)
     shutil.copy(component_dll, version_dir)
 
   # Augment {version}.manifest to include all component DLLs as part of the
@@ -574,6 +619,9 @@ def _ParseOptions():
       help='Whether this archive is packaging a component build. This will '
            'also turn off compression of chrome.7z into chrome.packed.7z and '
            'helpfully delete any old chrome.packed.7z in |output_dir|.')
+  parser.add_option('--depfile',
+      help='Generate a depfile with the given name listing the implicit inputs '
+           'to the archive process that can be used with a build system.')
   parser.add_option('--target_arch', default='x86',
       help='Specify the target architecture for installer - this is used '
            'to determine which CRT runtime files to pull and package '

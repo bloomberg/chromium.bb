@@ -166,9 +166,10 @@
               'process_outputs_as_sources': 1,
               'message': 'Generating version information'
             },
+          ],
+          'actions': [
             {
-              'rule_name': 'installer_archive',
-              'extension': 'release',
+              'action_name': 'installer_archive',
               'variables': {
                 'create_installer_archive_py_path':
                   '../tools/build/win/create_installer_archive.py',
@@ -192,7 +193,7 @@
                     'component_build_flag': '',
                   },
                   'outputs': [
-                    '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
+                    '<(PRODUCT_DIR)/chrome.packed.7z',
                   ],
                 }],
                 ['disable_nacl==1', {
@@ -239,22 +240,24 @@
                 '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
                 '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
                 '<(PRODUCT_DIR)/locales/en-US.pak',
+                'mini_installer/chrome.release',
               ],
               'outputs': [
                 # Also note that chrome.packed.7z is defined as an output in a
                 # conditional above.
-                'xxx2.out',
-                '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).7z',
+                '<(PRODUCT_DIR)/chrome.7z',
                 '<(PRODUCT_DIR)/setup.ex_',
                 '<(INTERMEDIATE_DIR)/packed_files.rc',
               ],
+              'depfile': '<(INTERMEDIATE_DIR)/installer_archive.d',
               'action': [
                 'python',
                 '<(create_installer_archive_py_path)',
                 '--build_dir', '<(PRODUCT_DIR)',
                 '--staging_dir', '<(INTERMEDIATE_DIR)',
-                '--input_file', '<(RULE_INPUT_PATH)',
+                '--input_file', 'mini_installer/chrome.release',
                 '--resource_file_path', '<(INTERMEDIATE_DIR)/packed_files.rc',
+                '--depfile', '<(INTERMEDIATE_DIR)/installer_archive.d',
                 '<(enable_hidpi_flag)',
                 '<(component_build_flag)',
                 '<(target_arch_flag)',
