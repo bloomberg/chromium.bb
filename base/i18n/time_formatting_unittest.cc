@@ -58,12 +58,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));
   string16 clock24h(ASCIIToUTF16("15:42"));
-#if U_ICU_VERSION_MAJOR_NUM >= 50
   string16 clock12h_pm(ASCIIToUTF16("3:42 pm"));
-#else
-  // TODO(phajdan.jr): Clean up after bundled ICU gets updated to 50.
-  string16 clock12h_pm(ASCIIToUTF16("3:42 PM"));
-#endif
   string16 clock12h(ASCIIToUTF16("3:42"));
 
   // The default is 24h clock.
@@ -132,23 +127,11 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
   EXPECT_EQ(ASCIIToUTF16("Apr 30, 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("4/30/11"), TimeFormatShortDateNumeric(time));
 
-#if U_ICU_VERSION_MAJOR_NUM >= 50
   EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM"),
             TimeFormatShortDateAndTime(time));
-#else
-  // TODO(phajdan.jr): Clean up after bundled ICU gets updated to 50.
-  EXPECT_EQ(ASCIIToUTF16("4/30/11 3:42:07 PM"),
-            TimeFormatShortDateAndTime(time));
-#endif
 
-#if U_ICU_VERSION_MAJOR_NUM >= 50
   EXPECT_EQ(ASCIIToUTF16("Saturday, April 30, 2011 at 3:42:07 PM"),
             TimeFormatFriendlyDateAndTime(time));
-#else
-  // TODO(phajdan.jr): Clean up after bundled ICU gets updated to 50.
-  EXPECT_EQ(ASCIIToUTF16("Saturday, April 30, 2011 3:42:07 PM"),
-            TimeFormatFriendlyDateAndTime(time));
-#endif
 
   EXPECT_EQ(ASCIIToUTF16("Saturday, April 30, 2011"),
             TimeFormatFriendlyDate(time));
