@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -247,15 +248,14 @@ void CloseInputDevice(const base::FilePath& path,
 }  // namespace
 
 InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
-    DeviceEventDispatcherEvdev* dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> dispatch_runner,
+    scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
     CursorDelegateEvdev* cursor)
-    : ui_task_runner_(dispatch_runner),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       cursor_(cursor),
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
-      dispatcher_(dispatcher),
+      dispatcher_(dispatcher.Pass()),
       weak_ptr_factory_(this) {
 }
 
@@ -269,7 +269,7 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
   params->id = id;
   params->path = path;
   params->cursor = cursor_;
-  params->dispatcher = dispatcher_;
+  params->dispatcher = dispatcher_.get();
 
 #if defined(USE_EVDEV_GESTURES)
   params->gesture_property_provider = gesture_property_provider_.get();
@@ -282,7 +282,7 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
   // Dispatch task to open from the worker pool, since open may block.
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&OpenInputDevice, base::Passed(&params),
-                                        ui_task_runner_, reply_callback),
+                                        task_runner_, reply_callback),
                              true /* task_is_slow */);
 }
 
@@ -295,7 +295,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
   const base::FilePath& path = converter->path();
 
   TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // If we have an existing device, detach it. We don't want two
   // devices with the same name open at the same time.
@@ -311,7 +311,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
 
 void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   TRACE_EVENT1("ozone", "DetachInputDevice", "path", path.value());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // Remove device from map.
   scoped_ptr<EventConverterEvdev> converter(converters_[path]);

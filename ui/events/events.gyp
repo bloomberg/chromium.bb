@@ -354,6 +354,7 @@
           'sources': [
             'ozone/chromeos/cursor_controller_unittest.cc',
             'ozone/evdev/event_converter_evdev_impl_unittest.cc',
+            'ozone/evdev/event_converter_test_util.cc',
             'ozone/evdev/input_injector_evdev_unittest.cc',
             'ozone/evdev/tablet_event_converter_evdev_unittest.cc',
             'ozone/evdev/touch_event_converter_evdev_unittest.cc',

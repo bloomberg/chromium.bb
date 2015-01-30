@@ -38,10 +38,8 @@ enum class DomCode;
 #endif
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev
-    : public DeviceEventObserver,
-      public PlatformEventSource,
-      public DeviceEventDispatcherEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
+                                                    public PlatformEventSource {
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager,
@@ -58,21 +56,21 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev
 
   InputController* input_controller() { return &input_controller_; }
 
-  // DeviceEventDispatchEvdev:
-  void DispatchKeyEvent(const KeyEventParams& params) override;
-  void DispatchMouseMoveEvent(const MouseMoveEventParams& params) override;
-  void DispatchMouseButtonEvent(const MouseButtonEventParams& params) override;
-  void DispatchMouseWheelEvent(const MouseWheelEventParams& params) override;
-  void DispatchScrollEvent(const ScrollEventParams& params) override;
-  void DispatchTouchEvent(const TouchEventParams& params) override;
+  // User input events.
+  void DispatchKeyEvent(const KeyEventParams& params);
+  void DispatchMouseMoveEvent(const MouseMoveEventParams& params);
+  void DispatchMouseButtonEvent(const MouseButtonEventParams& params);
+  void DispatchMouseWheelEvent(const MouseWheelEventParams& params);
+  void DispatchScrollEvent(const ScrollEventParams& params);
+  void DispatchTouchEvent(const TouchEventParams& params);
+
+  // Device lifecycle events.
   void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override;
+      const std::vector<KeyboardDevice>& devices);
   void DispatchTouchscreenDevicesUpdated(
-      const std::vector<TouchscreenDevice>& devices) override;
-  void DispatchMouseDevicesUpdated(
-      const std::vector<InputDevice>& devices) override;
-  void DispatchTouchpadDevicesUpdated(
-      const std::vector<InputDevice>& devices) override;
+      const std::vector<TouchscreenDevice>& devices);
+  void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices);
+  void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices);
 
  protected:
   // DeviceEventObserver overrides:

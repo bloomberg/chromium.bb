@@ -21,6 +21,90 @@
 
 namespace ui {
 
+namespace {
+
+// Thread safe dispatcher proxy for EventFactoryEvdev.
+class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
+ public:
+  ProxyDeviceEventDispatcher(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner,
+      base::WeakPtr<EventFactoryEvdev> event_factory_evdev)
+      : ui_thread_runner_(ui_thread_runner),
+        event_factory_evdev_(event_factory_evdev) {}
+  ~ProxyDeviceEventDispatcher() override {}
+
+  // DeviceEventDispatcher:
+  void DispatchKeyEvent(const KeyEventParams& params) override {
+    ui_thread_runner_->PostTask(FROM_HERE,
+                                base::Bind(&EventFactoryEvdev::DispatchKeyEvent,
+                                           event_factory_evdev_, params));
+  }
+
+  void DispatchMouseMoveEvent(const MouseMoveEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
+                              event_factory_evdev_, params));
+  }
+
+  void DispatchMouseButtonEvent(const MouseButtonEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseButtonEvent,
+                              event_factory_evdev_, params));
+  }
+
+  void DispatchMouseWheelEvent(const MouseWheelEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseWheelEvent,
+                              event_factory_evdev_, params));
+  }
+
+  void DispatchScrollEvent(const ScrollEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchScrollEvent,
+                              event_factory_evdev_, params));
+  }
+
+  void DispatchTouchEvent(const TouchEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchTouchEvent,
+                              event_factory_evdev_, params));
+  }
+
+  void DispatchKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventFactoryEvdev::DispatchKeyboardDevicesUpdated,
+                   event_factory_evdev_, devices));
+  }
+  void DispatchTouchscreenDevicesUpdated(
+      const std::vector<TouchscreenDevice>& devices) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventFactoryEvdev::DispatchTouchscreenDevicesUpdated,
+                   event_factory_evdev_, devices));
+  }
+  void DispatchMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseDevicesUpdated,
+                              event_factory_evdev_, devices));
+  }
+  void DispatchTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventFactoryEvdev::DispatchTouchpadDevicesUpdated,
+                   event_factory_evdev_, devices));
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;
+  base::WeakPtr<EventFactoryEvdev> event_factory_evdev_;
+};
+
+}  // namespace
+
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                      DeviceManager* device_manager,
                                      KeyboardLayoutEngine* keyboard_layout)
@@ -43,8 +127,12 @@ void EventFactoryEvdev::Init() {
   DCHECK(!initialized_);
 
   // Set up device factory.
-  input_device_factory_.reset(new InputDeviceFactoryEvdev(
-      this, base::ThreadTaskRunnerHandle::Get(), cursor_));
+  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher(
+      new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
+                                          weak_ptr_factory_.GetWeakPtr()));
+  input_device_factory_.reset(
+      new InputDeviceFactoryEvdev(dispatcher.Pass(), cursor_));
+
   // TODO(spang): This settings interface is really broken. crbug.com/450899
   input_controller_.SetInputDeviceFactory(input_device_factory_.get());
 

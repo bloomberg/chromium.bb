@@ -36,10 +36,8 @@ typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
 // Manager for event device objects. All device I/O starts here.
 class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
  public:
-  InputDeviceFactoryEvdev(
-      DeviceEventDispatcherEvdev* dispatcher,
-      scoped_refptr<base::SingleThreadTaskRunner> dispatch_runner,
-      CursorDelegateEvdev* cursor);
+  InputDeviceFactoryEvdev(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+                          CursorDelegateEvdev* cursor);
   ~InputDeviceFactoryEvdev();
 
   // Open & start reading a newly plugged-in input device.
@@ -95,8 +93,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
 
-  // Task runner for event dispatch.
-  scoped_refptr<base::TaskRunner> ui_task_runner_;
+  // Task runner for our thread.
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
@@ -107,7 +105,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 #endif
 
   // Dispatcher for events.
-  DeviceEventDispatcherEvdev* dispatcher_;
+  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_;

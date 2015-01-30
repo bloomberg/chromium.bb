@@ -14,6 +14,7 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
+#include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -72,35 +73,6 @@ class MockCursorEvdev : public CursorDelegateEvdev {
   DISALLOW_COPY_AND_ASSIGN(MockCursorEvdev);
 };
 
-class MockDeviceManager : public ui::DeviceManager {
- public:
-  MockDeviceManager() {}
-  ~MockDeviceManager() override {}
-
-  // DeviceManager:
-  void ScanDevices(DeviceEventObserver* observer) override {}
-  void AddObserver(DeviceEventObserver* observer) override {}
-  void RemoveObserver(DeviceEventObserver* observer) override {}
-};
-
-class TestEventFactoryEvdev : public EventFactoryEvdev {
- public:
-  TestEventFactoryEvdev(CursorDelegateEvdev* cursor,
-                        DeviceManager* device_manager,
-                        KeyboardLayoutEngine* keyboard_layout_engine,
-                        const EventDispatchCallback& callback)
-      : EventFactoryEvdev(cursor, device_manager, keyboard_layout_engine),
-        callback_(callback) {}
-  ~TestEventFactoryEvdev() override {}
-
- private:
-  void PostUiEvent(scoped_ptr<Event> event) override {
-    callback_.Run(event.Pass());
-  }
-
-  EventDispatchCallback callback_;
-};
-
 }  // namespace ui
 
 // Test fixture.
@@ -118,16 +90,19 @@ class EventConverterEvdevImplTest : public testing::Test {
     events_out_ = evdev_io[1];
 
     cursor_.reset(new ui::MockCursorEvdev());
-    device_manager_.reset(new ui::MockDeviceManager());
-    event_factory_.reset(new ui::TestEventFactoryEvdev(
+
+    device_manager_ = ui::CreateDeviceManagerForTest();
+    event_factory_ = ui::CreateEventFactoryEvdevForTest(
         cursor_.get(), device_manager_.get(),
         ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
-                   base::Unretained(this))));
-
+                   base::Unretained(this)));
+    dispatcher_ =
+        ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
     device_.reset(new ui::MockEventConverterEvdevImpl(events_in_, cursor_.get(),
-                                                      event_factory_.get()));
+                                                      dispatcher_.get()));
   }
+
   void TearDown() override {
     device_.reset();
     cursor_.reset();
@@ -162,6 +137,7 @@ class EventConverterEvdevImplTest : public testing::Test {
   scoped_ptr<ui::MockCursorEvdev> cursor_;
   scoped_ptr<ui::DeviceManager> device_manager_;
   scoped_ptr<ui::EventFactoryEvdev> event_factory_;
+  scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
   scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
 
   ScopedVector<ui::Event> dispatched_events_;

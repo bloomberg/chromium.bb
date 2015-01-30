@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/device/device_manager.h"
+#include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -133,35 +134,6 @@ void MockTabletEventConverterEvdev::ConfigureReadMock(struct input_event* queue,
       << "write() failed, errno: " << errno;
 }
 
-class MockDeviceManager : public ui::DeviceManager {
- public:
-  MockDeviceManager() {}
-  ~MockDeviceManager() override {}
-
-  // DeviceManager:
-  void ScanDevices(DeviceEventObserver* observer) override {}
-  void AddObserver(DeviceEventObserver* observer) override {}
-  void RemoveObserver(DeviceEventObserver* observer) override {}
-};
-
-class TestEventFactoryEvdev : public EventFactoryEvdev {
- public:
-  TestEventFactoryEvdev(CursorDelegateEvdev* cursor,
-                        DeviceManager* device_manager,
-                        KeyboardLayoutEngine* keyboard_layout_engine,
-                        const EventDispatchCallback& callback)
-      : EventFactoryEvdev(cursor, device_manager, keyboard_layout_engine),
-        callback_(callback) {}
-  ~TestEventFactoryEvdev() override {}
-
- private:
-  void PostUiEvent(scoped_ptr<Event> event) override {
-    callback_.Run(event.Pass());
-  }
-
-  EventDispatchCallback callback_;
-};
-
 }  // namespace ui
 
 // Test fixture.
@@ -179,15 +151,17 @@ class TabletEventConverterEvdevTest : public testing::Test {
     events_out_ = evdev_io[1];
 
     cursor_.reset(new ui::MockTabletCursorEvdev());
-    device_manager_.reset(new ui::MockDeviceManager);
-    event_factory_.reset(new ui::TestEventFactoryEvdev(
+    device_manager_ = ui::CreateDeviceManagerForTest();
+    event_factory_ = ui::CreateEventFactoryEvdevForTest(
         cursor_.get(), device_manager_.get(),
         ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
         base::Bind(&TabletEventConverterEvdevTest::DispatchEventForTest,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
+    dispatcher_ =
+        ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
     device_.reset(new ui::MockTabletEventConverterEvdev(
         events_in_, base::FilePath(kTestDevicePath), cursor_.get(),
-        event_factory_.get()));
+        dispatcher_.get()));
   }
 
   void TearDown() override {
@@ -214,6 +188,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
   scoped_ptr<ui::MockTabletCursorEvdev> cursor_;
   scoped_ptr<ui::DeviceManager> device_manager_;
   scoped_ptr<ui::EventFactoryEvdev> event_factory_;
+  scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
   scoped_ptr<ui::MockTabletEventConverterEvdev> device_;
 
   ScopedVector<ui::Event> dispatched_events_;
