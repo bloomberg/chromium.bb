@@ -12,9 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "mojo/cc/output_surface_mojo.h"
-#include "mojo/services/gpu/public/interfaces/gpu.mojom.h"
-#include "mojo/services/surfaces/public/interfaces/surfaces_service.mojom.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
+#include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
+#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces_service.mojom.h"
 
 namespace base {
 class MessageLoopProxy;

@@ -32,9 +32,9 @@ source_set("converters") {
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
-    "//mojo/services/geometry/public/interfaces",
     "//skia",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
   ]
 }
 

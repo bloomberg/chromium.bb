@@ -1,0 +1,7 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This variable should point to the parent directory of the Mojo SDK.
+mojo_sdk_root = "//third_party/mojo/src"
+network_service_root = "//mojo/services"

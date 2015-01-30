@@ -1,0 +1,14 @@
+Name: MojoServices
+Short Name: mojo-services
+URL: https://github.com/domokit/mojo
+Version: Unknown
+Security Critical: Yes
+License: Chromium
+License Android Compatible: yes
+
+Description:
+This codebase contains the client-facing interfaces of services developed in
+the Mojo repository.
+
+Local Modifications:
+None.

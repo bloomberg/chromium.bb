@@ -10,7 +10,6 @@
 #include "base/threading/thread.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/application/application_runner_chromium.h"
-#include "mojo/services/content_handler/public/interfaces/content_handler.mojom.h"
 #include "mojo/services/html_viewer/html_document.h"
 #include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
@@ -24,6 +23,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 
 #if !defined(COMPONENT_BUILD)
 #include "base/i18n/icu_util.h"

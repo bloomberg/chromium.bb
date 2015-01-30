@@ -19,8 +19,8 @@ component("input_events") {
     "//ui/gfx/geometry",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
-    "//mojo/services/input_events/public/interfaces",
-    "//mojo/services/geometry/public/interfaces",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo_services/src/input_events/public/interfaces",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
   ]
 }

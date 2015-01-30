@@ -13,8 +13,8 @@
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/cc/output_surface_mojo.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/services/view_manager/public/cpp/view.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
 
 namespace html_viewer {
 

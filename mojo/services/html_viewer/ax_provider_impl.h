@@ -5,8 +5,8 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 
-#include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
 namespace blink {
 class WebAXObject;
