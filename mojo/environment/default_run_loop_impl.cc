@@ -11,12 +11,16 @@ namespace mojo {
 namespace internal {
 
 void InstantiateDefaultRunLoopImpl() {
+  CHECK(!base::MessageLoop::current());
   // Not leaked: accessible from |base::MessageLoop::current()|.
-  new base::MessageLoop();
+  base::MessageLoop* message_loop = new base::MessageLoop();
+  CHECK_EQ(message_loop, base::MessageLoop::current());
 }
 
 void DestroyDefaultRunLoopImpl() {
+  CHECK(base::MessageLoop::current());
   delete base::MessageLoop::current();
+  CHECK(!base::MessageLoop::current());
 }
 
 }  // namespace internal

@@ -95,10 +95,13 @@
       'type': 'static_library',
       'dependencies': [
         'mojo_environment_chromium_impl',
+        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         'environment/environment.cc',
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
+        "../third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h",
+        "../third_party/mojo/src/mojo/public/cpp/environment/lib/async_waiter.cc",
         "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
         "../third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
       ],
