@@ -1,0 +1,7 @@
+# This file contains a list of Mojo gtest unit tests.
+# This must be a valid python dictionary.
+[
+  {
+    "test": "mojo:network_service_apptests",
+  },
+]
