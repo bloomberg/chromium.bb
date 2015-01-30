@@ -355,7 +355,6 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
 }
 
 TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
-  base::FilePath test_data_directory;
   base::FilePath test_file =
       GetTestDataDir().AppendASCII("bookmarks/model_without_sync.json");
   ASSERT_TRUE(base::PathExists(test_file));
@@ -442,7 +441,6 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
 // Verifies that we can still decode the old codec format after changing the
 // way meta info is stored.
 TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
-  base::FilePath test_data_directory;
   base::FilePath test_file =
       GetTestDataDir().AppendASCII("bookmarks/meta_info_as_string.json");
   ASSERT_TRUE(base::PathExists(test_file));
