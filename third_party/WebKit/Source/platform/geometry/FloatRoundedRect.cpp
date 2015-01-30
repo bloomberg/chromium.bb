@@ -125,6 +125,15 @@ void FloatRoundedRect::Radii::expand(float topWidth, float bottomWidth, float le
     }
 }
 
+#ifndef NDEBUG
+void FloatRoundedRect::Radii::show()
+{
+    fprintf(stderr, "topLeft=[%f,%f], topRight=[%f,%f], bottomLeft=[%f,%f], bottomRight=[%f,%f]\n",
+        topLeft().width(), topLeft().height(), topRight().width(), topRight().height(),
+        bottomLeft().width(), bottomLeft().height(), bottomRight().width(), bottomRight().height());
+}
+#endif
+
 static inline float cornerRectIntercept(float y, const FloatRect& cornerRect)
 {
     ASSERT(cornerRect.height() > 0);
@@ -289,5 +298,14 @@ void FloatRoundedRect::adjustRadii()
     m_radii.scale(widthRatio < heightRatio ? widthRatio : heightRatio);
 }
 
+#ifndef NDEBUG
+void FloatRoundedRect::show()
+{
+    fprintf(stderr, "FloatRoundedRect:\n rect: ");
+    m_rect.show();
+    fprintf(stderr, " radii: ");
+    m_radii.show();
+}
+#endif
 
 } // namespace blink
