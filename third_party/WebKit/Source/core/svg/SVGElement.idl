@@ -21,12 +21,12 @@
  */
 
 interface SVGElement : Element {
-    [Reflect] attribute DOMString xmlbase;
+    [Reflect, MeasureAs=SVGElementXmlbase] attribute DOMString xmlbase;
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;
 
-    [Reflect] attribute DOMString xmllang;
-    [Reflect] attribute DOMString xmlspace;
+    [Reflect, MeasureAs=SVGElementXmllang] attribute DOMString xmllang;
+    [Reflect, MeasureAs=SVGElementXmlspace] attribute DOMString xmlspace;
 
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
 

@@ -620,6 +620,9 @@ public:
         AudioBufferSourceBufferOnce = 678,
         WhiteSpacePreFromXMLSpace = 679,
         WhiteSpaceNowrapFromXMLSpace = 680,
+        SVGElementXmlbase = 681,
+        SVGElementXmllang = 682,
+        SVGElementXmlspace = 683,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
