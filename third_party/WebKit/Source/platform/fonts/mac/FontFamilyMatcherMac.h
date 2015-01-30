@@ -24,13 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <platform/PlatformExport.h>
-#import <AppKit/NSFontManager.h>
+#ifndef FontFamilyMatcherMac_h
+#define FontFamilyMatcherMac_h
 
-// This interface exists so that third party products (like Silk) can patch in to an Obj-C method to manipulate WebKit's font caching/substitution.
-PLATFORM_EXPORT @interface WebFontCache : NSObject
-+ (NSFont *)fontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits weight:(int)desiredWeight size:(float)size;
+#include <AppKit/NSFontManager.h>
 
-// This older version of the interface is relied upon by some clients. WebCore doesn't use it.
-+ (NSFont *)fontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits size:(float)size;
-@end
+namespace blink {
+
+NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits,
+    int desiredWeight, float size);
+
+}
+
+#endif // FontFamilyMatcherMac_h

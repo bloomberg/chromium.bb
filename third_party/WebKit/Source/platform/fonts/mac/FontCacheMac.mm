@@ -37,7 +37,7 @@
 #import "platform/fonts/FontFaceCreationParams.h"
 #import "platform/fonts/FontPlatformData.h"
 #import "platform/fonts/SimpleFontData.h"
-#import "platform/mac/WebFontCache.h"
+#import "platform/fonts/mac/FontFamilyMatcherMac.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 
@@ -204,7 +204,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     NSInteger weight = toAppKitFontWeight(fontDescription.weight());
     float size = fontSize;
 
-    NSFont *nsFont = [WebFontCache fontWithFamily:creationParams.family() traits:traits weight:weight size:size];
+    NSFont *nsFont = MatchNSFontFamily(creationParams.family(),traits, weight, size);
     if (!nsFont)
         return 0;
 

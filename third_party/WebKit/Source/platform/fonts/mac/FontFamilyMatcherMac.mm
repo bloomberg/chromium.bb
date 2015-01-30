@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
  *
@@ -28,7 +28,7 @@
  */
 
 #import "config.h"
-#import "platform/mac/WebFontCache.h"
+#import "platform/fonts/mac/FontFamilyMatcherMac.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -36,66 +36,17 @@
 #import <wtf/HashSet.h>
 #import <wtf/text/AtomicStringHash.h>
 
-#define SYNTHESIZED_FONT_TRAITS (NSBoldFontMask | NSItalicFontMask)
+namespace blink {
 
-#define IMPORTANT_FONT_TRAITS (0 \
-    | NSCompressedFontMask \
-    | NSCondensedFontMask \
-    | NSExpandedFontMask \
-    | NSItalicFontMask \
-    | NSNarrowFontMask \
-    | NSPosterFontMask \
-    | NSSmallCapsFontMask \
-)
+const NSFontTraitMask SYNTHESIZED_FONT_TRAITS = (NSBoldFontMask | NSItalicFontMask);
 
-// A set of font families that have been auto-activated via +[NSFont
-// fontWithName:size:].
-static HashSet<AtomicString>* autoActivatedFontFamilyCache = nullptr;
-
-// The maximum size allowed for |autoActivatedFontFamilyCache|.
-static const unsigned maxFontFamilyCacheSize = 128;
-
-#ifndef NDEBUG
-// The thread on which |autoActivatedFontFamilyCache| was first accessed.
-static ThreadIdentifier fontFamilyCacheThreadId = 0;
-#endif
-
-// Whether |family| has been auto-activated.
-static bool hasAutoActivatedFontFamily(const AtomicString& family) {
-#ifndef NDEBUG
-    // Check that the cache is always accessed from the same thread.
-    if (!fontFamilyCacheThreadId)
-        fontFamilyCacheThreadId = currentThread();
-    ASSERT(currentThread() == fontFamilyCacheThreadId);
-#endif
-
-    if (!autoActivatedFontFamilyCache)
-        autoActivatedFontFamilyCache = new HashSet<AtomicString>;
-
-    return autoActivatedFontFamilyCache->contains(family);
-}
-
-// Updates |autoActivatedFontFamilyCache| with the information that |family|
-// has been auto-activated.
-static void didAutoActivateFontFamily(const AtomicString& family) {
-#ifndef NDEBUG
-    // Check that the cache is always accessed from the same thread.
-    if (!fontFamilyCacheThreadId)
-        fontFamilyCacheThreadId = currentThread();
-    ASSERT(currentThread() == fontFamilyCacheThreadId);
-#endif
-
-    if (!autoActivatedFontFamilyCache)
-        autoActivatedFontFamilyCache = new HashSet<AtomicString>;
-
-    ASSERT(autoActivatedFontFamilyCache->size() <= maxFontFamilyCacheSize);
-    if (autoActivatedFontFamilyCache->size() == maxFontFamilyCacheSize) {
-        autoActivatedFontFamilyCache->remove(
-            autoActivatedFontFamilyCache->begin());
-    }
-
-    autoActivatedFontFamilyCache->add(family);
-}
+const NSFontTraitMask IMPORTANT_FONT_TRAITS = (NSCompressedFontMask
+    | NSCondensedFontMask
+    | NSExpandedFontMask
+    | NSItalicFontMask
+    | NSNarrowFontMask
+    | NSPosterFontMask
+    | NSSmallCapsFontMask );
 
 static BOOL acceptableChoice(NSFontTraitMask desiredTraits, NSFontTraitMask candidateTraits)
 {
@@ -147,12 +98,10 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     return candidateWeightDeltaMagnitude < chosenWeightDeltaMagnitude;
 }
 
-@implementation WebFontCache
-
 // Family name is somewhat of a misnomer here.  We first attempt to find an exact match
 // comparing the desiredFamily to the PostScript name of the installed fonts.  If that fails
 // we then do a search based on the family names of the installed fonts.
-+ (NSFont *)internalFontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits weight:(int)desiredWeight size:(float)size
+NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, int desiredWeight, float size)
 {
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
 
@@ -264,29 +213,4 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     return font;
 }
 
-+ (NSFont *)fontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits weight:(int)desiredWeight size:(float)size
-{
-    NSFont *font = [self internalFontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
-    if (font)
-        return font;
-
-    AtomicString family(desiredFamily);
-    if (hasAutoActivatedFontFamily(family))
-        return nil;
-
-    // Auto-activate the font before looking for it a second time. Ignore the
-    // result because we want to use our own algorithm to actually find the
-    // font.
-    [NSFont fontWithName:desiredFamily size:size];
-    didAutoActivateFontFamily(family);
-
-    return [self internalFontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
-}
-
-+ (NSFont *)fontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits size:(float)size
-{
-    int desiredWeight = (desiredTraits & NSBoldFontMask) ? 9 : 5;
-    return [self fontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
-}
-
-@end
+} // namespace blink
