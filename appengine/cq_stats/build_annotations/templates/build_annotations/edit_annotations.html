@@ -1,0 +1,113 @@
+<html>
+<head>
+{% load build_annotations_filters %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'build_annotations/base.css' %}"/>
+<script type="text/javascript" src="{% static 'build_annotations/base.js' %}"></script>
+</head>
+
+<body>
+<div>
+  <a href="{% url 'build_annotations:builds_list' %}">Builds List</a>
+</div>
+<h1>Annotate build {{ build_row.id }}</h1>
+
+<table class="build_details">
+  <tr>
+    <th class="build_details">Build Number</th>
+    <td class="build_details">{{ build_row.build_number }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Status</th>
+    <td class="build_details">{{ build_row.status }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Summary</th>
+    <td class="build_details">{{ build_row.summary|linebreaksbr }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Start Time</th>
+    <td class="build_details">{{ build_row.start_time }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Runtime</th>
+    <td class="build_details">{{ build_row.run_time }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Weekday</th>
+    <td class="build_details">{{ build_row.weekday }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">ChromeOS Version</th>
+    <td class="build_details">{{ build_row.chromeos_version }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Chrome Version</th>
+    <td class="build_details">{{ build_row.chrome_version }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">Failed Stages</th>
+    <td class="build_details">{{ build_row.failed_stages }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">CLs Picked Up</th>
+    <td class="build_details">{{ build_row.picked_up_count }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">CLs Submitted</th>
+    <td class="build_details">{{ build_row.submitted_count }}</td>
+  </tr>
+  <tr>
+    <th class="build_details">CLs Kicked Out</th>
+    <td class="build_details">{{ build_row.kicked_out_count }}</td>
+  </tr>
+</table>
+<form action="{% url 'build_annotations:edit_annotations' build_row.id %}"
+      method="post">
+  {% csrf_token %}
+  {{ annotations_formset.management_form }}
+  <table class="annotations_list">
+    <tr>
+    {% for form in annotations_formset %}
+      {% if forloop.first %}
+        <tr>
+          <th class="annotations_list">Failure Category</th>
+          <th class="annotations_list">Failure Message</th>
+          <th class="annotations_list">Blame URL</th>
+          <th class="annotations_list">Notes</th>
+          <th class="annotations_list">Update</th>
+        </tr>
+      {% endif %}
+      {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+      {% endfor %}
+
+      {% if not forloop.last %}
+        <tr id="annotation_{{ forloop.counter }}_noedit">
+          <td>{{ form.failure_category.value|default_if_none:""|striptags|crosurlize|linebreaks }}</td>
+          <td>{{ form.failure_message.value|default_if_none:""|striptags|crosurlize|linebreaks }}</td>
+          <td>{{ form.blame_url.value|default_if_none:""|striptags|crosurlize|linebreaks }}</td>
+          <td>{{ form.notes.value|default_if_none:""|striptags|crosurlize|linebreaks }}</td>
+          <td><a href="javascript:void(0)" onclick="editAnnotation('{{ forloop.counter }}')">edit</a>
+        </tr>
+      {% endif %}
+
+      {% if not forloop.last %}
+        <tr id="annotation_{{ forloop.counter }}_edit" class="hidden">
+      {% else %}
+        <tr id="annotation_{{ forloop.counter }}_edit">
+      {% endif %}
+            <td class="annotations_list">{{ form.failure_category }}<br><div class="errorlist">{{ form.failure_category.errors }}</div></td>
+            <td class="annotations_list">{{ form.failure_message }}<br><div class="errorlist">{{ form.failure_message.errors }}</div></td>
+            <td class="annotations_list">{{ form.blame_url }}<br><div class="errorlist">{{ form.blame_url.errors }}</div></td>
+            <td class="annotations_list">{{ form.notes }}<br><div class="errorlist">{{ form.notes.errors }}</div></td>
+            <td class="annotations_list"><label>Mark for deletion: </label>{{ form.DELETE }}</td>
+            <td class="annotations_list">{{ form. }}<br><div class="errorlist">{{ form..errors }}</div></td>
+        </tr>
+    {% endfor %}
+  </table>
+  <input type="submit" value="Save Changes"/>
+</form>
+
+</body>
+</html>

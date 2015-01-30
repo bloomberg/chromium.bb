@@ -1,0 +1,30 @@
+# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+This project contains the cros-cq-stats-sheet app.
+
+WARNING: A word about using django: In general, don't.
+We're still discussing whether django is a good choice for future apps. It's not
+the standard template engine used by other infra apps. Before you start writing
+a new app for infra, email chromeos-infra-discuss@.
+
+Local development
+=================
+- Some settings are required for local development on the app. The CloudSQL SDK
+  must be setup correctly. This is taken care of by ../activate. Always use the
+  shell created by sourcing that script to launch the app locally (and to use
+  tools provided by the SDK).
+- You need to update cq_stats/developer_settings.py to match your setup.
+- You need to collect static files from the app directory to 'serving'
+  directory. To do that:
+    $ cd chromite/appengine
+    $ source activate cq_stats
+    $ python cq_stats/manage.py collectstatic
+
+Push-to-prod
+============
+- You need to update the SECRET_KEY in cq_stats/settings.py
+  You can find the key in valentine under
+      Description: cros-build-stats-annotator django
+      Purpose: django_secret_key

@@ -1,0 +1,57 @@
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'build_annotations/base.css' %}"/>
+<script type="text/javascript" src="{% static 'build_annotations/base.js' %}"></script>
+</head>
+
+<body>
+<h1>Builds List</h1>
+<form action="{% url 'build_annotations:builds_list' %}" method="post">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th><label>{{ search_form.latest_build_id.label }}</label></th>
+      <td>{{ search_form.latest_build_id }}</td>
+      <td>
+        <button type="button" onclick="populateLatest()">Get latest</button>
+        <input type="hidden" id="latest_build_id_cached" value="{{ latest_build_id_cached }}"/>
+      </td>
+      <td class="error_message">{{ search_form.latest_build_id.errors }}</td>
+    </tr>
+    <tr>
+      <th><label>{{ search_form.num_builds.label }}</label></th>
+      <td>{{ search_form.num_builds }}</td>
+      <td class="error_message">{{ search_form.num_builds.errors }}</td>
+    </tr>
+  </table>
+  <input type="submit" value="Update List"/>
+</form>
+
+<table class="build_list">
+  <tr>
+    <th class="build_list">Build ID</th>
+    <th class="build_list">Build Number</th>
+    <th class="build_list">Status</th>
+    <th class="build_list">Summary</th>
+    <th class="build_list">Start Time</th>
+    <th class="build_list">Runtime</th>
+    <th class="build_list">Weekday?</th>
+    <th class="build_list">Annotation Summary</th>
+  </tr>
+{% for build_row in builds_list %}
+  <tr>
+    <td class="build_list"><a href="{% url 'build_annotations:edit_annotations' build_row.id %}">{{ build_row.id }}</a></td>
+    <td class="build_list">{{ build_row.build_number }}</td>
+    <td class="build_list">{{ build_row.status|truncatechars:20 }}</td>
+    <td class="build_list">{{ build_row.summary|truncatechars:50|cut:'\n\r' }}</td>
+    <td class="build_list">{{ build_row.start_time|date }}</td>
+    <td class="build_list">{{ build_row.run_time|time }}</td>
+    <td class="build_list">{{ build_row.weekday|yesno }}</td>
+    <td class="build_list">{{ build_row.annotation_summary|truncatechars:150 }}</td>
+  </tr>
+{% endfor %}
+</table>
+
+</body>
+</html>
