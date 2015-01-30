@@ -138,7 +138,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
       legacy_(render_frame->GetRenderView(), this),
-      page_click_tracker_(render_frame->GetRenderView(), this),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
@@ -148,6 +147,10 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_popup_possibly_visible_(false),
       weak_ptr_factory_(this) {
   render_frame->GetWebFrame()->setAutofillClient(this);
+
+  // This owns itself, and will delete itself when |render_frame| is destructed
+  // (same as AutofillAgent).
+  new PageClickTracker(render_frame, this);
 }
 
 AutofillAgent::~AutofillAgent() {}

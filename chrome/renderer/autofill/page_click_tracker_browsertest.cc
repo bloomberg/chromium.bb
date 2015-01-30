@@ -50,7 +50,8 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
 
     // RenderView creates PageClickTracker but it doesn't keep it around.
     // Rather than make it do so for the test, we create a new object.
-    page_click_tracker_.reset(new PageClickTracker(view_, &test_listener_));
+    page_click_tracker_.reset(new PageClickTracker(view_->GetMainRenderFrame(),
+                                                   &test_listener_));
 
     // Must be set before loading HTML.
     view_->GetWebView()->setDefaultPageScaleLimits(1, 4);

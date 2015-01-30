@@ -293,6 +293,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderView* GetRenderView() override;
   int GetRoutingID() override;
   blink::WebLocalFrame* GetWebFrame() override;
+  blink::WebElement GetFocusedElement() const override;
   WebPreferences& GetWebkitPreferences() override;
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
@@ -570,10 +571,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Builds and sends DidCommitProvisionalLoad to the host.
   void SendDidCommitProvisionalLoad(blink::WebFrame* frame);
-
-  // Gets the focused element. If no such element exists then the element will
-  // be NULL.
-  blink::WebElement GetFocusedElement();
 
   // IPC message handlers ------------------------------------------------------
   //

@@ -2440,19 +2440,6 @@ blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-blink::WebElement RenderViewImpl::GetFocusedElement() const {
-  if (!webview())
-    return WebElement();
-  WebFrame* focused_frame = webview()->focusedFrame();
-  if (focused_frame) {
-    WebDocument doc = focused_frame->document();
-    if (!doc.isNull())
-      return doc.focusedElement();
-  }
-
-  return WebElement();
-}
-
 bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   if (node.isNull())
     return false;
@@ -2479,13 +2466,6 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   }
 
   return false;
-}
-
-bool RenderViewImpl::NodeContainsPoint(const WebNode& node,
-                                       const gfx::Point& point) const {
-  blink::WebHitTestResult hit_test =
-      webview()->hitTestResultAt(WebPoint(point.x(), point.y()));
-  return node.containsIncludingShadowDOM(hit_test.node());
 }
 
 bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
@@ -2518,6 +2498,19 @@ void RenderViewImpl::SyncNavigationState() {
   if (!webview())
     return;
   SendUpdateState(history_controller_->GetCurrentEntry());
+}
+
+blink::WebElement RenderViewImpl::GetFocusedElement() const {
+  if (!webview())
+    return WebElement();
+  WebFrame* focused_frame = webview()->focusedFrame();
+  if (focused_frame) {
+    WebDocument doc = focused_frame->document();
+    if (!doc.isNull())
+      return doc.focusedElement();
+  }
+
+  return WebElement();
 }
 
 blink::WebPlugin* RenderViewImpl::GetWebPluginForFind() {

@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
-#include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -220,9 +219,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Passes through RenderViewObserver methods to |this|.
   LegacyAutofillAgent legacy_;
-
-  // Tracks clicks on the RenderViewHost, informs |this|.
-  PageClickTracker page_click_tracker_;
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

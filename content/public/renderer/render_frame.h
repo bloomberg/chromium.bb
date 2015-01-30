@@ -16,6 +16,7 @@
 class GURL;
 
 namespace blink {
+class WebElement;
 class WebFrame;
 class WebLocalFrame;
 class WebNode;
@@ -61,6 +62,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the associated WebFrame.
   virtual blink::WebLocalFrame* GetWebFrame() = 0;
+
+  // Gets the focused element. If no such element exists then
+  // the element will be Null.
+  virtual blink::WebElement GetFocusedElement() const = 0;
 
    // Gets WebKit related preferences associated with this frame.
   virtual WebPreferences& GetWebkitPreferences() = 0;

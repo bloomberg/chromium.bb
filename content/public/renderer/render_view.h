@@ -73,17 +73,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;
 
-  // Gets the focused element. If no such element exists then
-  // the element will be Null.
-  virtual blink::WebElement GetFocusedElement() const = 0;
-
   // Returns true if the parameter node is a textfield, text area, a content
   // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
-
-  // Returns true if a hit test for |point| returns a descendant of |node|.
-  virtual bool NodeContainsPoint(const blink::WebNode& node,
-                                 const gfx::Point& point) const = 0;
 
   // Returns true if we should display scrollbars for the given view size and
   // false if the scrollbars should be hidden.

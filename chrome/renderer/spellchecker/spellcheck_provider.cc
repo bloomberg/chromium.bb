@@ -13,6 +13,7 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
@@ -20,6 +21,7 @@
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
+using blink::WebElement;
 using blink::WebFrame;
 using blink::WebString;
 using blink::WebTextCheckingCompletion;
@@ -109,17 +111,13 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if defined(OS_MACOSX)
-  bool enabled = false;
-  blink::WebElement element = render_view()->GetFocusedElement();
-  if (!element.isNull())
-    enabled = render_view()->IsEditableNode(element);
+  WebFrame* frame = render_view()->GetWebView()->focusedFrame();
+  WebElement element = frame->document().isNull() ? WebElement() :
+      frame->document().focusedElement();
+  bool enabled = !element.isNull() && render_view()->IsEditableNode(element);
 
-  bool checked = false;
-  if (enabled && render_view()->GetWebView()) {
-    WebFrame* frame = render_view()->GetWebView()->focusedFrame();
-    if (frame->isContinuousSpellCheckingEnabled())
-      checked = true;
-  }
+  bool checked = enabled && render_view()->GetWebView() &&
+      frame->isContinuousSpellCheckingEnabled();
 
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
 #endif  // OS_MACOSX
