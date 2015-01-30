@@ -4515,7 +4515,7 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 	    shsurf->state.maximized)
 		return;
 
-	surface_move(shsurf, (struct weston_seat *) seat, 0);
+	surface_move(shsurf, seat, 0);
 }
 
 static void
@@ -4585,7 +4585,7 @@ touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 	    shsurf->state.maximized)
 		return;
 
-	surface_touch_move(shsurf, (struct weston_seat *) seat);
+	surface_touch_move(shsurf, seat);
 }
 
 static void
@@ -4630,7 +4630,7 @@ resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *d
 	else
 		edges |= WL_SHELL_SURFACE_RESIZE_BOTTOM;
 
-	surface_resize(shsurf, (struct weston_seat *) seat, edges);
+	surface_resize(shsurf, seat, edges);
 }
 
 static void
@@ -4666,8 +4666,7 @@ static void
 do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 	wl_fixed_t value)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
 	struct weston_output *output;
 	float increment;
 
@@ -5946,7 +5945,7 @@ switcher_destroy(struct switcher *switcher)
 
 	if (switcher->current)
 		activate(switcher->shell, switcher->current,
-			 (struct weston_seat *) keyboard->seat, true);
+			 keyboard->seat, true);
 	wl_list_remove(&switcher->listener.link);
 	weston_keyboard_end_grab(keyboard);
 	if (keyboard->input_method_resource)
@@ -5984,7 +5983,7 @@ switcher_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
 		  uint32_t mods_locked, uint32_t group)
 {
 	struct switcher *switcher = container_of(grab, struct switcher, grab);
-	struct weston_seat *seat = (struct weston_seat *) grab->keyboard->seat;
+	struct weston_seat *seat = grab->keyboard->seat;
 
 	if ((seat->modifier_state & switcher->shell->binding_modifier) == 0)
 		switcher_destroy(switcher);
@@ -6180,7 +6179,7 @@ debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 	if (!grab)
 		return;
 
-	grab->seat = (struct weston_seat *) seat;
+	grab->seat = seat;
 	grab->key[0] = key;
 	grab->grab.interface = &debug_binding_keyboard_grab;
 	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
