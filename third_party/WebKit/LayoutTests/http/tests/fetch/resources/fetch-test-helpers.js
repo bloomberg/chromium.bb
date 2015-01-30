@@ -31,6 +31,10 @@ var SIMPLE_HEADERS =
   [['Accept', '*'], ['Accept-Language', 'ru'], ['Content-Language', 'ru'],
    ['Content-Type', 'application/x-www-form-urlencoded'],
    ['Content-Type', 'multipart/form-data'],
+   // MIME types are case-insensitive.
+   ['Content-Type', 'multiPart/foRm-data'],
+   // MIME-type parameters are ignored when determining simple headers.
+   ['Content-Type', 'multiPart/foRm-data;charset=utf-8'],
    ['Content-Type', 'text/plain']];
 var NON_SIMPLE_HEADERS =
   [['X-Fetch-Test', 'test'],
