@@ -692,12 +692,9 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_client->didHandleGestureEvent(event, eventCancelled);
         return eventSwallowed;
     case WebInputEvent::GestureScrollBegin:
-    case WebInputEvent::GesturePinchBegin:
         m_client->cancelScheduledContentIntents();
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
-    case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::GesturePinchUpdate:
     case WebInputEvent::GestureFlingStart:
         // Scrolling-related gesture events invoke EventHandler recursively for each frame down
         // the chain, doing a single-frame hit-test per frame. This matches handleWheelEvent.
@@ -706,6 +703,13 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(platformEvent);
         m_client->didHandleGestureEvent(event, eventCancelled);
         return eventSwallowed;
+    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GesturePinchUpdate:
+        // Gesture pinch events are aborted in PageWidgetDelegate::handleInputEvent and should
+        // not reach here.
+        ASSERT_NOT_REACHED();
+        return false;
     default:
         break;
     }
@@ -822,6 +826,48 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     }
     m_client->didHandleGestureEvent(event, eventCancelled);
     return eventSwallowed;
+}
+
+bool WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(const WebGestureEvent& pinchEvent)
+{
+    ASSERT(pinchEvent.type == WebInputEvent::GesturePinchUpdate);
+
+    // Touchscreen pinch events should not reach Blink.
+    ASSERT(pinchEvent.sourceDevice == WebGestureDeviceTouchpad);
+
+    // For pinch gesture events, match typical trackpad behavior on Windows by sending fake
+    // wheel events with the ctrl modifier set when we see trackpad pinch gestures.  Ideally
+    // we'd someday get a platform 'pinch' event and send that instead.
+    WebMouseWheelEvent wheelEvent;
+    wheelEvent.type = WebInputEvent::MouseWheel;
+    wheelEvent.timeStampSeconds = pinchEvent.timeStampSeconds;
+    wheelEvent.windowX = wheelEvent.x = pinchEvent.x;
+    wheelEvent.windowY = wheelEvent.y = pinchEvent.y;
+    wheelEvent.globalX = pinchEvent.globalX;
+    wheelEvent.globalY = pinchEvent.globalY;
+    wheelEvent.modifiers =
+        pinchEvent.modifiers | WebInputEvent::ControlKey;
+    wheelEvent.deltaX = 0;
+
+    // The function to convert scales to deltaY values is designed to be
+    // compatible with websites existing use of wheel events, and with existing
+    // Windows trackpad behavior.  In particular, we want:
+    //  - deltas should accumulate via addition: f(s1*s2)==f(s1)+f(s2)
+    //  - deltas should invert via negation: f(1/s) == -f(s)
+    //  - zoom in should be positive: f(s) > 0 iff s > 1
+    //  - magnitude roughly matches wheels: f(2) > 25 && f(2) < 100
+    //  - a formula that's relatively easy to use from JavaScript
+    // Note that 'wheel' event deltaY values have their sign inverted.  So to
+    // convert a wheel deltaY back to a scale use Math.exp(-deltaY/100).
+    ASSERT(pinchEvent.data.pinchUpdate.scale > 0);
+    wheelEvent.deltaY = 100.0f * log(pinchEvent.data.pinchUpdate.scale);
+    wheelEvent.hasPreciseScrollingDeltas = true;
+    wheelEvent.wheelTicksX = 0;
+    wheelEvent.wheelTicksY =
+        pinchEvent.data.pinchUpdate.scale > 1 ? 1 : -1;
+    wheelEvent.canScroll = false;
+
+    return handleInputEvent(wheelEvent);
 }
 
 void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters& parameters)
@@ -2093,7 +2139,16 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     }
 
     // FIXME: This should take in the intended frame, not the local frame root.
-    return PageWidgetDelegate::handleInputEvent(*this, inputEvent, localFrameRootTemporary()->frame());
+    if (PageWidgetDelegate::handleInputEvent(*this, inputEvent, localFrameRootTemporary()->frame()))
+        return true;
+
+    // Unhandled touchpad gesture pinch events synthesize mouse wheel events.
+    if (inputEvent.type == WebInputEvent::GesturePinchUpdate) {
+        if (handleSyntheticWheelFromTouchpadPinchEvent(static_cast<const WebGestureEvent&>(inputEvent)))
+            return true;
+    }
+
+    return false;
 }
 
 void WebViewImpl::setCursorVisibilityState(bool isVisible)

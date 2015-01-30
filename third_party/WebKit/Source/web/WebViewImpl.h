@@ -611,6 +611,8 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) override;
     virtual bool handleCharEvent(const WebKeyboardEvent&) override;
 
+    bool handleSyntheticWheelFromTouchpadPinchEvent(const WebGestureEvent&);
+
     InputMethodContext* inputMethodContext();
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
