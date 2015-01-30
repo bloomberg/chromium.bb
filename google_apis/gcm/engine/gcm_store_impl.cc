@@ -170,6 +170,9 @@ class GCMStoreImpl::Backend
                             const UpdateCallback& callback);
   void SetLastTokenFetchTime(const base::Time& time,
                              const UpdateCallback& callback);
+  void SetValue(const std::string& key,
+                const std::string& value,
+                const UpdateCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
@@ -647,6 +650,28 @@ void GCMStoreImpl::Backend::SetLastTokenFetchTime(
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
 }
 
+void GCMStoreImpl::Backend::SetValue(const std::string& key,
+                                     const std::string& value,
+                                     const UpdateCallback& callback) {
+  DVLOG(1) << "Injecting a value to GCM Store for testing. Key: "
+           << key << ", Value: " << value;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  const leveldb::Status s =
+      db_->Put(write_options, MakeSlice(key), MakeSlice(value));
+
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB had problems injecting a value: " << s.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
+}
+
 bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
                                                   uint64* security_token) {
   leveldb::ReadOptions read_options;
@@ -773,8 +798,10 @@ bool GCMStoreImpl::Backend::LoadLastCheckinInfo(
                                MakeSlice(kLastCheckinTimeKey),
                                &result);
   int64 time_internal = 0LL;
-  if (s.ok() && !base::StringToInt64(result, &time_internal))
+  if (s.ok() && !base::StringToInt64(result, &time_internal)) {
     LOG(ERROR) << "Failed to restore last checkin time. Using default = 0.";
+    time_internal = 0LL;
+  }
 
   // In case we cannot read last checkin time, we default it to 0, as we don't
   // want that situation to cause the whole load to fail.
@@ -852,8 +879,11 @@ bool GCMStoreImpl::Backend::LoadLastTokenFetchTime(
   leveldb::Status s =
       db_->Get(read_options, MakeSlice(kLastTokenFetchTimeKey), &result);
   int64 time_internal = 0LL;
-  if (s.ok() && !base::StringToInt64(result, &time_internal))
-    LOG(ERROR) << "Failed to restore last checkin time. Using default = 0.";
+  if (s.ok() && !base::StringToInt64(result, &time_internal)) {
+    LOG(ERROR) <<
+        "Failed to restore last token fetching time. Using default = 0.";
+    time_internal = 0LL;
+  }
 
   // In case we cannot read last token fetching time, we default it to 0.
   *last_token_fetch_time = base::Time::FromInternalValue(time_internal);
@@ -1087,6 +1117,18 @@ void GCMStoreImpl::SetLastTokenFetchTime(const base::Time& time,
       base::Bind(&GCMStoreImpl::Backend::SetLastTokenFetchTime,
                  backend_,
                  time,
+                 callback));
+}
+
+void GCMStoreImpl::SetValueForTesting(const std::string& key,
+                                      const std::string& value,
+                                      const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::SetValue,
+                 backend_,
+                 key,
+                 value,
                  callback));
 }
 

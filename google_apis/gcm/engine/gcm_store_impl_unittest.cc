@@ -45,7 +45,7 @@ class GCMStoreImplTest : public testing::Test {
   GCMStoreImplTest();
   ~GCMStoreImplTest() override;
 
-  scoped_ptr<GCMStore> BuildGCMStore();
+  scoped_ptr<GCMStoreImpl> BuildGCMStore();
 
   std::string GetNextPersistentId();
 
@@ -72,8 +72,8 @@ GCMStoreImplTest::GCMStoreImplTest()
 
 GCMStoreImplTest::~GCMStoreImplTest() {}
 
-scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
-  return scoped_ptr<GCMStore>(new GCMStoreImpl(
+scoped_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
+  return scoped_ptr<GCMStoreImpl>(new GCMStoreImpl(
       temp_directory_.path(),
       message_loop_.message_loop_proxy(),
       make_scoped_ptr<Encryptor>(new FakeEncryptor)));
@@ -137,7 +137,7 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
 }
 
 TEST_F(GCMStoreImplTest, LastCheckinInfo) {
-  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
   scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
@@ -160,6 +160,19 @@ TEST_F(GCMStoreImplTest, LastCheckinInfo) {
   PumpLoop();
   ASSERT_EQ(last_checkin_time, load_result->last_checkin_time);
   ASSERT_EQ(accounts, load_result->last_checkin_accounts);
+
+  // Negative cases, where the value read is gibberish.
+  gcm_store->SetValueForTesting(
+      "last_checkin_time",
+      "gibberish",
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+  EXPECT_EQ(base::Time(), load_result->last_checkin_time);
 }
 
 TEST_F(GCMStoreImplTest, GServicesSettings_ProtocolV2) {
@@ -644,7 +657,7 @@ TEST_F(GCMStoreImplTest, ReloadAfterClose) {
 }
 
 TEST_F(GCMStoreImplTest, LastTokenFetchTime) {
-  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
   scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
@@ -662,6 +675,19 @@ TEST_F(GCMStoreImplTest, LastTokenFetchTime) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
   EXPECT_EQ(last_token_fetch_time, load_result->last_token_fetch_time);
+
+  // Negative cases, where the value read is gibberish.
+  gcm_store->SetValueForTesting(
+      "last_token_fetch_time",
+      "gibberish",
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+  EXPECT_EQ(base::Time(), load_result->last_token_fetch_time);
 }
 
 }  // namespace

@@ -95,6 +95,11 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   void SetLastTokenFetchTime(const base::Time& time,
                              const UpdateCallback& callback) override;
 
+  // Injects a value to database. Only to be used for testing.
+  void SetValueForTesting(const std::string& key,
+                          const std::string& value,
+                          const UpdateCallback& callback);
+
  private:
   typedef std::map<std::string, int> AppIdToMessageCountMap;
 
