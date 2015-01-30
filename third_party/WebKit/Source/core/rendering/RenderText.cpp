@@ -44,6 +44,7 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRunIterator.h"
@@ -1886,6 +1887,13 @@ void RenderText::momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacter
 PassRefPtr<AbstractInlineTextBox> RenderText::firstAbstractInlineTextBox()
 {
     return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
+}
+
+void RenderText::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+{
+    RenderObject::invalidateDisplayItemClients(displayItemList);
+    for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
+        displayItemList->invalidate(box->displayItemClient());
 }
 
 } // namespace blink

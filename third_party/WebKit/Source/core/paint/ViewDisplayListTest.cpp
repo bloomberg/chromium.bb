@@ -7,6 +7,8 @@
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -51,6 +53,7 @@ private:
 class TestDisplayItem : public DisplayItem {
 public:
     TestDisplayItem(const RenderObject* renderer, Type type) : DisplayItem(renderer->displayItemClient(), type) { }
+    TestDisplayItem(DisplayItemClient displayItemClient, Type type) : DisplayItem(displayItemClient, type) { }
 
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
@@ -497,7 +500,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     RenderObject* htmlRenderer = document().documentElement()->renderer();
     Element* div = toElement(document().body()->firstChild());
     RenderObject* divRenderer = document().body()->firstChild()->renderer();
-    RenderObject* textRenderer = div->firstChild()->renderer();
+    InlineTextBox* textInlineBox = toRenderText(div->firstChild()->renderer())->firstTextBox();
 
     SkCanvas canvas(800, 600);
     GraphicsContext context(&canvas, &rootDisplayItemList());
@@ -507,7 +510,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(textRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div->focus();
     document().view()->updateLayoutAndStyleForPainting();
@@ -516,7 +519,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(textRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseCaret)));
 }
 

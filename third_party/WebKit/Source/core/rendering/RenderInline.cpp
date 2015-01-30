@@ -42,6 +42,7 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -1454,6 +1455,13 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     region.bounds.setY(absPos.y() + region.bounds.y());
 
     regions.append(region);
+}
+
+void RenderInline::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+{
+    RenderBoxModelObject::invalidateDisplayItemClients(displayItemList);
+    for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
+        displayItemList->invalidate(box->displayItemClient());
 }
 
 } // namespace blink

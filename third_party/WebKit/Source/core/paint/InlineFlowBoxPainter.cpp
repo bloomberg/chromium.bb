@@ -6,7 +6,6 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/paint/BoxPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -14,6 +13,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -61,7 +61,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             }
         }
     } else if (paintInfo.phase == PaintPhaseMask) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(overflowRect));
+        DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(overflowRect));
         if (!recorder.canUseCachedDrawing())
             paintMask(paintInfo, paintOffset);
         return;
@@ -213,7 +213,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(paintRect));
+    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())
         return;
 

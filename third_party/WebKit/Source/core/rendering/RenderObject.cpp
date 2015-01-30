@@ -1116,13 +1116,13 @@ LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObje
 
 void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList()->invalidate(displayItemClient());
-    }
-
     if (r.isEmpty())
         return;
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        if (RenderLayer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            invalidateDisplayItemClients(container->graphicsLayerBacking()->displayItemList());
+    }
 
     RELEASE_ASSERT(isRooted());
 
@@ -1143,6 +1143,11 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
         ASSERT(paintInvalidationContainer->isPaintInvalidationContainer());
         paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
     }
+}
+
+void RenderObject::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+{
+    displayItemList->invalidate(displayItemClient());
 }
 
 LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const

@@ -54,6 +54,7 @@ namespace blink {
 
 class AffineTransform;
 class Cursor;
+class DisplayItemList;
 class Document;
 class HitTestLocation;
 class HitTestResult;
@@ -1181,6 +1182,11 @@ protected:
 
     virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState);
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
+
+    // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
+    // owned by this object, including the object itself, RenderText/RenderInline line boxes, scrollbars, etc.,
+    // not including children which will be invalidated normally during invalidateTreeIfNeeded().
+    virtual void invalidateDisplayItemClients(DisplayItemList*) const;
 
 private:
     void setLayoutDidGetCalledSinceLastFrame()

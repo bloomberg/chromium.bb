@@ -105,6 +105,8 @@ protected:
 
     virtual void computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const override;
 
+    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
+
 private:
     virtual RenderObjectChildList* virtualChildren() override final { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
