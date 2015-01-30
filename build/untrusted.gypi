@@ -239,6 +239,7 @@
                  'action_name': 'build newlib x86-64 nexe',
                  'variables': {
                    'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
@@ -264,7 +265,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) -L>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -280,6 +283,7 @@
                  'action_name': 'build newlib x86-64 nlib',
                  'variables': {
                    'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
@@ -305,7 +309,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -321,6 +327,7 @@
                  'action_name': 'build IRT x86-64 nexe',
                  'variables': {
                    'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
@@ -350,7 +357,9 @@
                    '--source-list=^(source_list_newlib64)',
                    '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                    '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -366,6 +375,7 @@
                  'action_name': 'build irt x86-64 nlib',
                  'variables': {
                    'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
@@ -391,7 +401,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=--target=x86_64-unknown-nacl -stdlib=libstdc++ -B>(tc_lib_dir_irt64) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -407,6 +419,7 @@
                  'action_name': 'build newlib x86-32 nexe',
                  'variables': {
                    'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
@@ -432,7 +445,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) -L>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -448,6 +463,7 @@
                  'action_name': 'build newlib x86-32 nlib',
                  'variables': {
                    'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
@@ -473,7 +489,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -489,6 +507,7 @@
                  'action_name': 'build IRT x86-32 nexe',
                  'variables': {
                    'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
@@ -519,7 +538,10 @@
                    '--source-list=^(source_list_newlib32)',
                    '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                    '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
+                   '--source-list=^(source_list_newlib32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -535,6 +557,7 @@
                  'action_name': 'build IRT x86-32 nlib',
                  'variables': {
                    'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
@@ -560,7 +583,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=--target=i686-unknown-nacl -stdlib=libstdc++ -B>(tc_lib_dir_irt32) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -583,6 +608,7 @@
                 'variables': {
                   'source_list_newlib32_nonsfi%': '^|(<(tool_name)-x86-32-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                   'stdlibs': ['-lc++', '-lm', '-lnacl', '-lc', '-lpnaclmm'],
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib32_nonsfi)',
@@ -617,7 +643,9 @@
                   # automatically linked.
                   '--link_flags=--target=i686-unknown-nacl -arch x86-32-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper32) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
                   '--source-list=^(source_list_newlib32_nonsfi)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -635,6 +663,7 @@
                 'action_name': 'build nonsfi_helper x86-32 nlib',
                 'variables': {
                   'source_list_newlib32_nonsfi%': '^|(<(tool_name)-x86-32-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib32_nonsfi)',
@@ -660,7 +689,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_nonsfi_helper32) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib32_nonsfi)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -682,6 +713,7 @@
                 'action_name': 'build newlib arm nexe',
                 'variables': {
                   'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
@@ -707,7 +739,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) -L>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -723,6 +757,7 @@
                 'action_name': 'build newlib arm nlib',
                  'variables': {
                    'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
@@ -748,7 +783,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -763,6 +800,7 @@
                 'action_name': 'build bionic arm nlib',
                  'variables': {
                    'source_list_bionic_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_bionic_arm)',
@@ -788,7 +826,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_bionic_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_bionic_arm)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -804,6 +844,7 @@
                 'action_name': 'build IRT arm nexe',
                 'variables': {
                   'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
@@ -833,7 +874,9 @@
                   '--source-list=^(source_list_newlib_arm)',
                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                   '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -849,6 +892,7 @@
                 'action_name': 'build IRT arm nlib',
                 'variables': {
                   'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
@@ -874,7 +918,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) ^(gcc_irt_link_flags) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -891,6 +937,7 @@
                 'variables': {
                   'source_list_newlib_arm_nonsfi%': '^|(<(tool_name)-arm-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                   'stdlibs': ['-lc++', '-lm', '-lnacl', '-lc', '-lpnaclmm'],
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm_nonsfi)',
@@ -925,7 +972,9 @@
                   # automatically linked.
                   '--link_flags=--target=armv7-unknown-nacl-gnueabihf -arch arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper_arm) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
                   '--source-list=^(source_list_newlib_arm_nonsfi)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -941,6 +990,7 @@
                 'action_name': 'build nonsfi_helper arm nlib',
                 'variables': {
                   'source_list_newlib_arm_nonsfi%': '^|(<(tool_name)-arm-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm_nonsfi)',
@@ -966,7 +1016,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_nonsfi_helper_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm_nonsfi)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -988,6 +1040,7 @@
                 'action_name': 'build newlib mips nexe',
                 'variables': {
                   'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
@@ -1013,7 +1066,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-arch mips -B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -1029,6 +1084,7 @@
                 'action_name': 'build newlib mips nlib',
                 'variables': {
                   'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
@@ -1054,7 +1110,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -1070,6 +1128,7 @@
                 'action_name': 'build IRT mips nexe',
                 'variables': {
                   'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
@@ -1099,7 +1158,9 @@
                   '--source-list=^(source_list_newlib_mips)',
                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                   '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -1115,6 +1176,7 @@
                 'action_name': 'build IRT mips nlib',
                 'variables': {
                   'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
@@ -1140,7 +1202,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-stdlib=libstdc++ -B>(tc_lib_dir_irt_mips) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -1162,6 +1226,7 @@
                  'action_name': 'build glibc x86-64 nexe',
                  'variables': {
                    'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
@@ -1187,7 +1252,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1203,6 +1270,7 @@
                  'action_name': 'build glibc x86-32 nexe',
                  'variables': {
                    'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
@@ -1228,7 +1296,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1244,6 +1314,7 @@
                  'action_name': 'build glibc x86-64 nlib',
                  'variables': {
                    'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
@@ -1269,7 +1340,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1285,6 +1358,7 @@
                  'action_name': 'build glibc x86-32 nlib',
                  'variables': {
                    'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
@@ -1310,7 +1384,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1326,6 +1402,7 @@
                  'action_name': 'build glibc x86-64 nso',
                  'variables': {
                    'source_list_glibc64%': '^|(<(tool_name)-x86-64-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
@@ -1351,7 +1428,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1367,6 +1446,7 @@
                  'action_name': 'build glibc x86-32 nso',
                  'variables': {
                    'source_list_glibc32%': '^|(<(tool_name)-x86-32-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
@@ -1392,7 +1472,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_glibc32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }],
@@ -1477,6 +1559,7 @@
              'action_name': 'build newlib pexe',
              'variables': {
                'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+               'out_depfile': '<(tool_name)_>(_target_name).d'
              },
              'msvs_cygwin_shell': 0,
              'description': 'building >(out_pnacl_newlib)',
@@ -1504,7 +1587,9 @@
                '--defines=^(defines) >(_defines)',
                '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
                '--source-list=^(source_list_pnacl_newlib)',
+               '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
              ],
+             'depfile': '>(out_depfile)',
            }],
          'target_conditions': [
            [ 'enable_x86_32!=0 and translate_pexe_with_build!=0', {
@@ -1642,6 +1727,7 @@
              'action_name': 'build newlib plib',
              'variables': {
                'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+               'out_depfile': '<(tool_name)_>(_target_name).d'
              },
              'msvs_cygwin_shell': 0,
              'description': 'building >(out_pnacl_newlib)',
@@ -1669,7 +1755,9 @@
                '--defines=^(defines) >(_defines)',
                '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                '--source-list=^(source_list_pnacl_newlib)',
+               '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
              ],
+             'depfile': '>(out_depfile)',
            },
          ],
        }], # end pnacl actions for bitcode libraries
@@ -1690,6 +1778,7 @@
                 'action_name': 'build newlib arm nlib (via pnacl)',
                 'variables': {
                   'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_pnacl_newlib_arm)',
@@ -1715,7 +1804,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_pnacl_newlib_arm)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
@@ -1737,6 +1828,7 @@
                  'action_name': 'build newlib x86-64 nlib (via pnacl)',
                  'variables': {
                    'source_list_pnacl_newlib_x86_64%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_pnacl_newlib_x86_64)',
@@ -1762,7 +1854,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_pnacl_newlib_x86_64)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }], # end x64
@@ -1779,6 +1873,7 @@
                  'action_name': 'build newlib x86-32 nlib (via pnacl)',
                  'variables': {
                    'source_list_pnacl_newlib_x86_32%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'out_depfile': '<(tool_name)_>(_target_name).d'
                  },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_pnacl_newlib_x86_32)',
@@ -1804,7 +1899,9 @@
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_pnacl_newlib_x86_32)',
+                   '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                  ],
+                 'depfile': '>(out_depfile)',
                },
              ],
            }], # end ia32
@@ -1825,6 +1922,7 @@
                 'action_name': 'build newlib mips nlib (via pnacl)',
                 'variables': {
                   'source_list_pnacl_newlib_mips%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'out_depfile': '<(tool_name)_>(_target_name).d'
                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_pnacl_newlib_mips)',
@@ -1850,7 +1948,9 @@
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_pnacl_newlib_mips)',
+                  '--depfile-out=<(PRODUCT_DIR)/>(out_depfile)',
                 ],
+                'depfile': '>(out_depfile)',
               },
             ],
           }],
