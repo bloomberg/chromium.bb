@@ -4,6 +4,7 @@
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -11,9 +12,11 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
-using device::BluetoothDevice;
 
 namespace content {
+
+const uint32 kUnspecifiedDeviceClass =
+    0x1F00;  // bluetooth.org/en-us/specification/assigned-numbers/baseband
 
 scoped_refptr<BluetoothDispatcherHost> BluetoothDispatcherHost::Create() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -75,9 +78,21 @@ void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
         Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                                  BluetoothError::NOT_FOUND));
       } else {
-        BluetoothDevice* device = *devices.begin();
+        device::BluetoothDevice* device = *devices.begin();
+        content::BluetoothDevice device_ipc(
+            device->GetAddress(),         // instance_id
+            device->GetName(),            // name
+            device->GetBluetoothClass(),  // device_class
+            device->GetVendorIDSource(),  // vendor_id_source
+            device->GetVendorID(),        // vendor_id
+            device->GetProductID(),       // product_id
+            device->GetDeviceID(),        // product_version
+            device->IsPaired(),           // paired
+            device->IsConnected(),        // connected
+            content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
+                device->GetUUIDs()));  // uuids
         Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
-                                                   device->GetAddress()));
+                                                   device_ipc));
       }
       return;
     }
@@ -87,8 +102,22 @@ void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
       return;
     }
     case MockData::RESOLVE: {
+      std::vector<std::string> uuids;
+      uuids.push_back("00001800-0000-1000-8000-00805f9b34fb");
+      uuids.push_back("00001801-0000-1000-8000-00805f9b34fb");
+      content::BluetoothDevice device_ipc(
+          "Empty Mock Device instanceID",                // instance_id
+          base::UTF8ToUTF16("Empty Mock Device name"),   // name
+          kUnspecifiedDeviceClass,                       // device_class
+          device::BluetoothDevice::VENDOR_ID_BLUETOOTH,  // vendor_id_source
+          0xFFFF,                                        // vendor_id
+          1,                                             // product_id
+          2,                                             // product_version
+          true,                                          // paired
+          false,                                         // connected
+          uuids);                                        // uuids
       Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
-                                                 "Empty Mock deviceId"));
+                                                 device_ipc));
       return;
     }
   }

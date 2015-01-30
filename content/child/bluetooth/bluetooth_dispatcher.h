@@ -8,6 +8,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_task_runner.h"
+#include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_error.h"
 #include "third_party/WebKit/public/platform/WebBluetooth.h"
 
@@ -56,7 +57,7 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDeviceSuccess(int thread_id,
                               int request_id,
-                              const std::string& device_instance_id);
+                              const BluetoothDevice& device);
   void OnRequestDeviceError(int thread_id,
                             int request_id,
                             BluetoothError error_type);

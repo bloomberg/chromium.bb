@@ -47,7 +47,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   enum VendorIDSource {
     VENDOR_ID_UNKNOWN,
     VENDOR_ID_BLUETOOTH,
-    VENDOR_ID_USB
+    VENDOR_ID_USB,
+    VENDOR_ID_MAX_VALUE = VENDOR_ID_USB
   };
 
   // Possible values that may be returned by GetDeviceType(), representing

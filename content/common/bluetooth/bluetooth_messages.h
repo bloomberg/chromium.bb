@@ -79,9 +79,27 @@
 // """
 
 #include "ipc/ipc_message_macros.h"
+#include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_error.h"
 
 #define IPC_MESSAGE_START BluetoothMsgStart
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    device::BluetoothDevice::VendorIDSource,
+    device::BluetoothDevice::VendorIDSource::VENDOR_ID_MAX_VALUE)
+
+IPC_STRUCT_TRAITS_BEGIN(content::BluetoothDevice)
+IPC_STRUCT_TRAITS_MEMBER(instance_id)
+IPC_STRUCT_TRAITS_MEMBER(name)
+IPC_STRUCT_TRAITS_MEMBER(device_class)
+IPC_STRUCT_TRAITS_MEMBER(vendor_id_source)
+IPC_STRUCT_TRAITS_MEMBER(vendor_id)
+IPC_STRUCT_TRAITS_MEMBER(product_id)
+IPC_STRUCT_TRAITS_MEMBER(product_version)
+IPC_STRUCT_TRAITS_MEMBER(paired)
+IPC_STRUCT_TRAITS_MEMBER(connected)
+IPC_STRUCT_TRAITS_MEMBER(uuids)
+IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::BluetoothError,
                           content::BluetoothError::ENUM_MAX_VALUE)
@@ -92,7 +110,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::BluetoothError,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceSuccess,
                      int /* thread_id */,
                      int /* request_id */,
-                     std::string /* device_instance_id */)
+                     content::BluetoothDevice /* device */)
 
 // Informs the renderer that the device request |request_id| failed.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
