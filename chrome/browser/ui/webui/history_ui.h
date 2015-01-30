@@ -13,10 +13,11 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/history/web_history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/history/core/browser/web_history_service.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/layout.h"
 
 class HistoryService;
 class ProfileSyncService;

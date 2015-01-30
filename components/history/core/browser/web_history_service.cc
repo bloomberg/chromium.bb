@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/web_history_service.h"
+#include "components/history/core/browser/web_history_service.h"
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -12,9 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -25,6 +22,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -69,29 +67,28 @@ class RequestImpl : public WebHistoryService::Request,
  private:
   friend class history::WebHistoryService;
 
-  RequestImpl(Profile* profile,
-              const GURL& url,
-              const WebHistoryService::CompletionCallback& callback)
+  RequestImpl(
+      OAuth2TokenService* token_service,
+      SigninManagerBase* signin_manager,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      const GURL& url,
+      const WebHistoryService::CompletionCallback& callback)
       : OAuth2TokenService::Consumer("web_history"),
-        profile_(profile),
+        token_service_(token_service),
+        signin_manager_(signin_manager),
         url_(url),
         response_code_(0),
         auth_retry_count_(0),
         callback_(callback),
-        is_pending_(false) {
-  }
+        is_pending_(false) {}
 
   // Tells the request to do its thang.
   void Start() override {
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(kHistoryOAuthScope);
 
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile_);
-    token_request_ = token_service->StartRequest(
-        signin_manager->GetAuthenticatedAccountId(), oauth_scopes, this);
+    token_request_ = token_service_->StartRequest(
+        signin_manager_->GetAuthenticatedAccountId(), oauth_scopes, this);
     is_pending_ = true;
   }
 
@@ -109,12 +106,8 @@ class RequestImpl : public WebHistoryService::Request,
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(kHistoryOAuthScope);
-      ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      SigninManagerBase* signin_manager =
-          SigninManagerFactory::GetForProfile(profile_);
-      token_service->InvalidateToken(
-          signin_manager->GetAuthenticatedAccountId(),
+      token_service_->InvalidateToken(
+          signin_manager_->GetAuthenticatedAccountId(),
           oauth_scopes,
           access_token_);
 
@@ -163,7 +156,7 @@ class RequestImpl : public WebHistoryService::Request,
         net::URLFetcher::GET : net::URLFetcher::POST;
     net::URLFetcher* fetcher = net::URLFetcher::Create(
         url_, request_type, this);
-    fetcher->SetRequestContext(profile_->GetRequestContext());
+    fetcher->SetRequestContext(request_context_.get());
     fetcher->SetMaxRetriesOn5xx(kMaxRetries);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -179,7 +172,9 @@ class RequestImpl : public WebHistoryService::Request,
     post_data_ = post_data;
   }
 
-  Profile* profile_;
+  OAuth2TokenService* token_service_;
+  SigninManagerBase* signin_manager_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The URL of the API endpoint.
   GURL url_;
@@ -285,8 +280,13 @@ WebHistoryService::Request::Request() {
 WebHistoryService::Request::~Request() {
 }
 
-WebHistoryService::WebHistoryService(Profile* profile)
-    : profile_(profile),
+WebHistoryService::WebHistoryService(
+    OAuth2TokenService* token_service,
+    SigninManagerBase* signin_manager,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    : token_service_(token_service),
+      signin_manager_(signin_manager),
+      request_context_(request_context),
       weak_ptr_factory_(this) {
 }
 
@@ -298,7 +298,8 @@ WebHistoryService::~WebHistoryService() {
 WebHistoryService::Request* WebHistoryService::CreateRequest(
     const GURL& url,
     const CompletionCallback& callback) {
-  return new RequestImpl(profile_, url, callback);
+  return new RequestImpl(token_service_, signin_manager_, request_context_, url,
+                         callback);
 }
 
 // static
@@ -336,23 +337,21 @@ void WebHistoryService::ExpireHistory(
   scoped_ptr<base::ListValue> deletions(new base::ListValue);
   base::Time now = base::Time::Now();
 
-  for (std::vector<ExpireHistoryArgs>::const_iterator it = expire_list.begin();
-       it != expire_list.end(); ++it) {
+  for (const auto& expire : expire_list) {
     // Convert the times to server timestamps.
-    std::string min_timestamp = ServerTimeString(it->begin_time);
+    std::string min_timestamp = ServerTimeString(expire.begin_time);
     // TODO(dubroy): Use sane time (crbug.com/146090) here when it's available.
-    base::Time end_time = it->end_time;
+    base::Time end_time = expire.end_time;
     if (end_time.is_null() || end_time > now)
       end_time = now;
     std::string max_timestamp = ServerTimeString(end_time);
 
-    for (std::set<GURL>::const_iterator url_iterator = it->urls.begin();
-         url_iterator != it->urls.end(); ++url_iterator) {
+    for (const auto& url : expire.urls) {
       deletions->Append(
-          CreateDeletion(min_timestamp, max_timestamp, *url_iterator));
+          CreateDeletion(min_timestamp, max_timestamp, url));
     }
     // If no URLs were specified, delete everything in the time range.
-    if (it->urls.empty())
+    if (expire.urls.empty())
       deletions->Append(CreateDeletion(min_timestamp, max_timestamp, GURL()));
   }
   delete_request.Set("del", deletions.release());

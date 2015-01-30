@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
@@ -24,6 +25,7 @@
         'history_core_browser_proto',
         'keyed_service_core',
         'query_parser',
+        'signin_core_browser',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -87,6 +89,8 @@
         'history/core/browser/visit_tracker.h',
         'history/core/browser/visitsegment_database.cc',
         'history/core/browser/visitsegment_database.h',
+        'history/core/browser/web_history_service.cc',
+        'history/core/browser/web_history_service.h',
       ],
       'conditions': [
         ['OS=="android"', {
