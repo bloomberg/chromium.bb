@@ -671,14 +671,6 @@ void Scheduler::DrawAndSwapIfPossible() {
   state_machine_.DidDrawIfPossibleCompleted(result);
 }
 
-void Scheduler::SetDeferCommits(bool defer_commits) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits",
-                "defer_commits",
-                defer_commits);
-  state_machine_.SetDeferCommits(defer_commits);
-  ProcessScheduledActions();
-}
-
 void Scheduler::ProcessScheduledActions() {
   // We do not allow ProcessScheduledActions to be recursive.
   // The top-level call will iteratively execute the next action for us anyway.

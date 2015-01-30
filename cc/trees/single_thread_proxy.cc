@@ -45,6 +45,7 @@ SingleThreadProxy::SingleThreadProxy(
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
       defer_commits_(false),
+      commit_was_deferred_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
       output_surface_creation_requested_(false),
@@ -312,7 +313,10 @@ void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
     TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
 
   defer_commits_ = defer_commits;
-  scheduler_on_impl_thread_->SetDeferCommits(defer_commits);
+  if (!defer_commits_ && commit_was_deferred_) {
+    commit_was_deferred_ = false;
+    BeginMainFrame();
+  }
 }
 
 bool SingleThreadProxy::CommitRequested() const {
@@ -676,10 +680,9 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame() {
 
 void SingleThreadProxy::BeginMainFrame() {
   if (defer_commits_) {
-    TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
-                         TRACE_EVENT_SCOPE_THREAD);
-    BeginMainFrameAbortedOnImplThread(
-        CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+    DCHECK(!commit_was_deferred_);
+    commit_was_deferred_ = true;
+    layer_tree_host_->DidDeferCommit();
     return;
   }
 

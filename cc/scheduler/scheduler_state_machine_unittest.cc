@@ -1813,28 +1813,5 @@ TEST(SchedulerStateMachineTest, TestForwardBeginFramesToChildren) {
   EXPECT_TRUE(state.BeginFrameNeeded());
 }
 
-TEST(SchedulerStateMachineTest, TestDeferCommit) {
-  SchedulerSettings settings;
-  StateMachine state(settings);
-  SET_UP_STATE(state)
-
-  state.SetDeferCommits(true);
-
-  state.SetNeedsCommit();
-  EXPECT_TRUE(state.BeginFrameNeeded());
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.SetDeferCommits(false);
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-}
-
 }  // namespace
 }  // namespace cc

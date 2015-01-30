@@ -79,6 +79,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     RendererCapabilities renderer_capabilities_main_thread_copy;
 
+    scoped_ptr<BeginMainFrameAndCommitState> pending_deferred_commit;
     base::WeakPtrFactory<ThreadProxy> weak_factory;
   };
 
@@ -282,7 +283,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
   void SetDebugStateOnImplThread(const LayerTreeDebugState& debug_state);
-  void SetDeferCommitsOnImplThread(bool defer_commits) const;
 
   LayerTreeHost* layer_tree_host();
   const LayerTreeHost* layer_tree_host() const;

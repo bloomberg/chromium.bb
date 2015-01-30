@@ -48,8 +48,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
       impl_latency_takes_priority_on_battery_(false),
-      children_need_begin_frames_(false),
-      defer_commits_(false) {
+      children_need_begin_frames_(false) {
 }
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
@@ -239,7 +238,6 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
   state->SetBoolean("impl_latency_takes_priority_on_battery",
                     impl_latency_takes_priority_on_battery_);
   state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
-  state->SetBoolean("defer_commits", defer_commits_);
   state->EndDictionary();
 }
 
@@ -414,10 +412,6 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
 
   // We can not perform commits if we are not visible.
   if (!visible_)
-    return false;
-
-  // Do not make a new commits when it is deferred.
-  if (defer_commits_)
     return false;
 
   return true;
@@ -775,10 +769,6 @@ void SchedulerStateMachine::SetChildrenNeedBeginFrames(
   children_need_begin_frames_ = children_need_begin_frames;
 }
 
-void SchedulerStateMachine::SetDeferCommits(bool defer_commits) {
-  defer_commits_ = defer_commits;
-}
-
 // These are the cases where we definitely (or almost definitely) have a
 // new frame to animate and/or draw and can draw.
 bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
@@ -1062,7 +1052,6 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   switch (reason) {
     case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
-    case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
       commit_state_ = COMMIT_STATE_IDLE;
       SetNeedsCommit();
       return;

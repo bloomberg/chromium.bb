@@ -1770,7 +1770,12 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     deferred_ = true;
 
     // Defer commits before the BeginFrame arrives, causing it to be delayed.
-    PostSetDeferCommitsToMainThread(true);
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                       DeferCommitsOnMainThread,
+                   base::Unretained(this),
+                   true));
     // Meanwhile, lose the context while we are in defer commits.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -1783,7 +1788,16 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     LoseContext();
 
     // After losing the context, stop deferring commits.
-    PostSetDeferCommitsToMainThread(false);
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                       DeferCommitsOnMainThread,
+                   base::Unretained(this),
+                   false));
+  }
+
+  void DeferCommitsOnMainThread(bool defer_commits) {
+    layer_tree_host()->SetDeferCommits(defer_commits);
   }
 
   void WillBeginMainFrame() override {

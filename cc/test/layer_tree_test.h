@@ -84,13 +84,13 @@ class TestHooks : public AnimationDelegate {
   virtual void DidCommit() {}
   virtual void DidCommitAndDrawFrame() {}
   virtual void DidCompleteSwapBuffers() {}
+  virtual void DidDeferCommit() {}
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
   virtual void ScheduleComposite() {}
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}
 
   // Hooks for SchedulerClient.
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args) {}
   virtual void ScheduledActionWillSendBeginMainFrame() {}
   virtual void ScheduledActionSendBeginMainFrame() {}
   virtual void ScheduledActionDrawAndSwapIfPossible() {}
@@ -137,7 +137,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostAddAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddInstantAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddLongAnimationToMainThread(Layer* layer_to_receive_animation);
-  void PostSetDeferCommitsToMainThread(bool defer_commits);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
   void PostSetNeedsRedrawToMainThread();
@@ -163,7 +162,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   virtual void DispatchAddAnimation(Layer* layer_to_receive_animation,
                                     double animation_duration);
-  void DispatchSetDeferCommits(bool defer_commits);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();
   void DispatchSetNeedsRedraw();

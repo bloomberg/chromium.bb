@@ -2029,33 +2029,22 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousInvalidate);
 class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
  public:
   LayerTreeHostTestDeferCommits()
-      : num_will_begin_impl_frame_(0),
-        num_send_begin_main_frame_(0) {}
+      : num_commits_deferred_(0), num_complete_commits_(0) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillBeginImplFrame(const BeginFrameArgs& args) override {
-    num_will_begin_impl_frame_++;
-    switch (num_will_begin_impl_frame_) {
-      case 1:
-        break;
-      case 2:
-        PostSetNeedsCommitToMainThread();
-        break;
-      case 3:
-        PostSetDeferCommitsToMainThread(false);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  void DidDeferCommit() override {
+    num_commits_deferred_++;
+    layer_tree_host()->SetDeferCommits(false);
   }
 
-  void ScheduledActionSendBeginMainFrame() override {
-    num_send_begin_main_frame_++;
-    switch (num_send_begin_main_frame_) {
+  void DidCommit() override {
+    num_complete_commits_++;
+    switch (num_complete_commits_) {
       case 1:
-        PostSetDeferCommitsToMainThread(true);
+        EXPECT_EQ(0, num_commits_deferred_);
+        layer_tree_host()->SetDeferCommits(true);
+        PostSetNeedsCommitToMainThread();
         break;
       case 2:
         EndTest();
@@ -2067,13 +2056,13 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void AfterTest() override {
-    EXPECT_GE(3, num_will_begin_impl_frame_);
-    EXPECT_EQ(2, num_send_begin_main_frame_);
+    EXPECT_EQ(1, num_commits_deferred_);
+    EXPECT_EQ(2, num_complete_commits_);
   }
 
  private:
-  int num_will_begin_impl_frame_;
-  int num_send_begin_main_frame_;
+  int num_commits_deferred_;
+  int num_complete_commits_;
 };
 
 #if !defined(OS_WIN)
@@ -4812,24 +4801,22 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromise);
 
-class LayerTreeHostTestBreakSwapPromiseForVisibility
+class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void SetVisibleFalseAndQueueSwapPromise() {
+  void DidCommit() override {
+    layer_tree_host()->SetDeferCommits(true);
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  void DidDeferCommit() override {
     layer_tree_host()->SetVisible(false);
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
-  }
-
-  void ScheduledActionWillSendBeginMainFrame() override {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestBreakSwapPromiseForVisibility
-                       ::SetVisibleFalseAndQueueSwapPromise,
-            base::Unretained(this)));
+    layer_tree_host()->SetDeferCommits(false);
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -4850,33 +4837,27 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   TestSwapPromiseResult swap_promise_result_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit);
 
-class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
+class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
+    : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestBreakSwapPromiseForContext()
-      : output_surface_lost_triggered_(false) {
-  }
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void LoseOutputSurfaceAndQueueSwapPromise() {
+  void DidCommit() override {
+    if (TestEnded())
+      return;
+    layer_tree_host()->SetDeferCommits(true);
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  void DidDeferCommit() override {
     layer_tree_host()->DidLoseOutputSurface();
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
-  }
-
-  void ScheduledActionWillSendBeginMainFrame() override {
-    if (output_surface_lost_triggered_)
-      return;
-    output_surface_lost_triggered_ = true;
-
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestBreakSwapPromiseForContext
-                       ::LoseOutputSurfaceAndQueueSwapPromise,
-                   base::Unretained(this)));
+    layer_tree_host()->SetDeferCommits(false);
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -4896,12 +4877,11 @@ class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
     }
   }
 
-  bool output_surface_lost_triggered_;
   TestSwapPromiseResult swap_promise_result_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestBreakSwapPromiseForContext);
+    LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
