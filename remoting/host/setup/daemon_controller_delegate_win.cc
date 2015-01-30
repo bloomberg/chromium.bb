@@ -131,6 +131,27 @@ void InvokeCompletionCallback(
   done.Run(HResultToAsyncResult(hr));
 }
 
+HWND GetTopLevelWindow(HWND window) {
+  if (window == nullptr) {
+    return nullptr;
+  }
+
+  for (;;) {
+    LONG style = GetWindowLong(window, GWL_STYLE);
+    if ((style & WS_OVERLAPPEDWINDOW) == WS_OVERLAPPEDWINDOW ||
+        (style & WS_POPUP) == WS_POPUP) {
+      return window;
+    }
+
+    HWND parent = GetAncestor(window, GA_PARENT);
+    if (parent == nullptr) {
+      return window;
+    }
+
+    window = parent;
+  }
+}
+
 }  // namespace
 
 DaemonControllerDelegateWin::DaemonControllerDelegateWin()
@@ -192,44 +213,6 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateWin::GetConfig() {
     return nullptr;
 
   return make_scoped_ptr(static_cast<base::DictionaryValue*>(config.release()));
-}
-
-void DaemonControllerDelegateWin::InstallHost(
-    const DaemonController::CompletionCallback& done) {
-  DoInstallHost(base::Bind(&InvokeCompletionCallback, done));
-}
-
-void DaemonControllerDelegateWin::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config,
-    bool consent,
-    const DaemonController::CompletionCallback& done) {
-  DoInstallHost(
-      base::Bind(&DaemonControllerDelegateWin::StartHostWithConfig,
-                 base::Unretained(this), base::Passed(&config), consent, done));
-}
-
-void DaemonControllerDelegateWin::DoInstallHost(
-    const DaemonInstallerWin::CompletionCallback& done) {
-  // Configure and start the Daemon Controller if it is installed already.
-  HRESULT hr = ActivateElevatedController();
-  if (SUCCEEDED(hr)) {
-    done.Run(S_OK);
-    return;
-  }
-
-  // Otherwise, install it if its COM registration entry is missing.
-  if (hr == CO_E_CLASSSTRING) {
-    DCHECK(!installer_);
-
-    installer_ = DaemonInstallerWin::Create(
-        GetTopLevelWindow(window_handle_), done);
-    installer_->Install();
-    return;
-  }
-
-  LOG(ERROR) << "Failed to initiate the Chromoting Host installation "
-             << "(error: 0x" << std::hex << hr << std::dec << ").";
-  done.Run(hr);
 }
 
 void DaemonControllerDelegateWin::UpdateConfig(
@@ -402,21 +385,11 @@ void DaemonControllerDelegateWin::ReleaseController() {
   control_is_elevated_ = false;
 }
 
-void DaemonControllerDelegateWin::StartHostWithConfig(
+void DaemonControllerDelegateWin::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,
-    const DaemonController::CompletionCallback& done,
-    HRESULT hr) {
-  installer_.reset();
-
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to install the Chromoting Host "
-               << "(error: 0x" << std::hex << hr << std::dec << ").";
-    InvokeCompletionCallback(done, hr);
-    return;
-  }
-
-  hr = ActivateElevatedController();
+    const DaemonController::CompletionCallback& done) {
+  HRESULT hr = ActivateElevatedController();
   if (FAILED(hr)) {
     InvokeCompletionCallback(done, hr);
     return;

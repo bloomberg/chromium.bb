@@ -257,8 +257,6 @@
             'host/setup/daemon_controller_delegate_mac.mm',
             'host/setup/daemon_controller_delegate_win.cc',
             'host/setup/daemon_controller_delegate_win.h',
-            'host/setup/daemon_installer_win.cc',
-            'host/setup/daemon_installer_win.h',
             'host/setup/me2me_native_messaging_host.cc',
             'host/setup/me2me_native_messaging_host.h',
             'host/setup/oauth_client.cc',

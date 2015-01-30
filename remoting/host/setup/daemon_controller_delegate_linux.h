@@ -18,7 +18,6 @@ class DaemonControllerDelegateLinux : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   DaemonController::State GetState() override;
   scoped_ptr<base::DictionaryValue> GetConfig() override;
-  void InstallHost(const DaemonController::CompletionCallback& done) override;
   void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,

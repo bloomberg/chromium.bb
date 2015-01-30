@@ -140,7 +140,6 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   DaemonController::State GetState() override;
   scoped_ptr<base::DictionaryValue> GetConfig() override;
-  void InstallHost(const DaemonController::CompletionCallback& done) override;
   void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
@@ -166,11 +165,6 @@ DaemonController::State MockDaemonControllerDelegate::GetState() {
 
 scoped_ptr<base::DictionaryValue> MockDaemonControllerDelegate::GetConfig() {
   return make_scoped_ptr(new base::DictionaryValue());
-}
-
-void MockDaemonControllerDelegate::InstallHost(
-    const DaemonController::CompletionCallback& done) {
-  done.Run(DaemonController::RESULT_OK);
 }
 
 void MockDaemonControllerDelegate::SetConfigAndStart(

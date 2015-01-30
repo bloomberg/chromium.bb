@@ -196,11 +196,6 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
   return result.Pass();
 }
 
-void DaemonControllerDelegateLinux::InstallHost(
-    const DaemonController::CompletionCallback& done) {
-  NOTREACHED();
-}
-
 void DaemonControllerDelegateLinux::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,

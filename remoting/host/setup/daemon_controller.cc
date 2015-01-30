@@ -47,16 +47,6 @@ void DaemonController::GetConfig(const GetConfigCallback& done) {
   ServiceOrQueueRequest(request);
 }
 
-void DaemonController::InstallHost(const CompletionCallback& done) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  DaemonController::CompletionCallback wrapped_done = base::Bind(
-      &DaemonController::InvokeCompletionCallbackAndScheduleNext, this, done);
-  base::Closure request = base::Bind(
-      &DaemonController::DoInstallHost, this, wrapped_done);
-  ServiceOrQueueRequest(request);
-}
-
 void DaemonController::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,
@@ -138,12 +128,6 @@ void DaemonController::DoGetConfig(const GetConfigCallback& done) {
   scoped_ptr<base::DictionaryValue> config = delegate_->GetConfig();
   caller_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(done, base::Passed(&config)));
-}
-
-void DaemonController::DoInstallHost(const CompletionCallback& done) {
-  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-
-  delegate_->InstallHost(done);
 }
 
 void DaemonController::DoSetConfigAndStart(
