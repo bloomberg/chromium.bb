@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
@@ -348,8 +349,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertWaitForKeepScreenOnActive(mTestContainerView, false);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    */
+    @FlakyTest
     public void testPowerSaveBlockerIsTransferredToFullscreen()
             throws Throwable {
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
