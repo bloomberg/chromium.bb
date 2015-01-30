@@ -9,7 +9,6 @@ from __future__ import print_function
 import logging
 import os
 import re
-import tempfile
 from xml.dom import minidom
 
 from chromite.cbuildbot import cbuildbot_config
@@ -41,19 +40,9 @@ CHROME_VERSION_ATTR = 'version'
 LKGM_ELEMENT = 'lkgm'
 LKGM_VERSION_ATTR = 'version'
 
-MANIFEST_ELEMENT = 'manifest'
-DEFAULT_ELEMENT = 'default'
-PROJECT_ELEMENT = 'project'
-PROJECT_NAME_ATTR = 'name'
-PROJECT_REMOTE_ATTR = 'remote'
-
 
 class PromoteCandidateException(Exception):
   """Exception thrown for failure to promote manifest candidate."""
-
-
-class FilterManifestException(Exception):
-  """Exception thrown when failing to filter the internal manifest."""
 
 
 class _LKGMCandidateInfo(manifest_version.VersionInfo):
@@ -250,76 +239,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
 
-  @staticmethod
-  def _GetDefaultRemote(manifest_dom):
-    """Returns the default remote in a manifest (if any).
-
-    Args:
-      manifest_dom: DOM Document object representing the manifest.
-
-    Returns:
-      Default remote if one exists, None otherwise.
-    """
-    default_nodes = manifest_dom.getElementsByTagName(DEFAULT_ELEMENT)
-    if default_nodes:
-      if len(default_nodes) > 1:
-        raise FilterManifestException(
-            'More than one <default> element found in manifest')
-      return default_nodes[0].getAttribute(PROJECT_REMOTE_ATTR)
-    return None
-
-  @staticmethod
-  def _FilterCrosInternalProjectsFromManifest(
-      manifest, whitelisted_remotes=constants.EXTERNAL_REMOTES):
-    """Returns a path to a new manifest with internal repositories stripped.
-
-    Args:
-      manifest: Path to an existing manifest that may have internal
-        repositories.
-      whitelisted_remotes: Tuple of remotes to allow in the external manifest.
-        Only projects with those remotes will be included in the external
-        manifest.
-
-    Returns:
-      Path to a new manifest that is a copy of the original without internal
-        repositories or pending commits.
-    """
-    temp_fd, new_path = tempfile.mkstemp('external_manifest')
-    manifest_dom = minidom.parse(manifest)
-    manifest_node = manifest_dom.getElementsByTagName(MANIFEST_ELEMENT)[0]
-    projects = manifest_dom.getElementsByTagName(PROJECT_ELEMENT)
-    pending_commits = manifest_dom.getElementsByTagName(PALADIN_COMMIT_ELEMENT)
-
-    default_remote = LKGMManager._GetDefaultRemote(manifest_dom)
-    internal_projects = set()
-    for project_element in projects:
-      project_remote = project_element.getAttribute(PROJECT_REMOTE_ATTR)
-      project = project_element.getAttribute(PROJECT_NAME_ATTR)
-      if not project_remote:
-        if not default_remote:
-          # This should not happen for a valid manifest. Either each
-          # project must have a remote specified or there should
-          # be manifest default we could use.
-          raise FilterManifestException(
-              'Project %s has unspecified remote with no default' % project)
-        project_remote = default_remote
-      if project_remote not in whitelisted_remotes:
-        internal_projects.add(project)
-        manifest_node.removeChild(project_element)
-
-    for commit_element in pending_commits:
-      if commit_element.getAttribute(
-          PALADIN_PROJECT_ATTR) in internal_projects:
-        manifest_node.removeChild(commit_element)
-
-    with os.fdopen(temp_fd, 'w') as manifest_file:
-      # Filter out empty lines.
-      filtered_manifest_noempty = filter(
-          str.strip, manifest_dom.toxml('utf-8').splitlines())
-      manifest_file.write(os.linesep.join(filtered_manifest_noempty))
-
-    return new_path
-
   def CreateNewCandidate(self, validation_pool=None,
                          chrome_version=None,
                          retries=manifest_version.NUM_RETRIES,
@@ -430,7 +349,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         manifest because of a git error or the manifest is already checked-in.
     """
     last_error = None
-    new_manifest = self._FilterCrosInternalProjectsFromManifest(manifest)
+    new_manifest = manifest_version.FilterManifest(
+        manifest, whitelisted_remotes=constants.EXTERNAL_REMOTES)
     version_info = self.GetCurrentVersionInfo()
     for _attempt in range(0, retries + 1):
       try:

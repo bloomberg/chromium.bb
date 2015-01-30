@@ -8,7 +8,9 @@ from __future__ import print_function
 
 import mox
 import os
+import random
 import tempfile
+from xml.dom import minidom
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -26,6 +28,9 @@ CHROMEOS_BRANCH=%(branch_build_number)s
 CHROMEOS_PATCH=%(patch_number)s
 CHROME_BRANCH=%(chrome_branch)s
 """
+
+FAKE_WHITELISTED_REMOTES = ('cros', 'chromium')
+FAKE_NON_WHITELISTED_REMOTE = 'hottubtimemachine'
 
 FAKE_VERSION_STRING = '1.2.3'
 FAKE_VERSION_STRING_NEXT = '1.2.4'
@@ -402,3 +407,221 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
+
+
+class ProjectSdkManifestTest(cros_test_lib.TestCase):
+  """Test cases for ManifestVersionedSyncStage.ConvertToProjectSdkManifest."""
+
+  def _CreateFakeManifest(self, num_internal, num_external, commits,
+                          has_default_remote=False):
+    """Creates a fake manifest with (optionally) some internal projects.
+
+    Args:
+      num_internal: Number of internal projects to add.
+      num_external: Number of external projects to add.
+      commits: Number of commits to add.
+      has_default_remote: If the manifest should have a default remote.
+
+    Returns:
+      A fake manifest for use in tests.
+    """
+    tmp_manifest = tempfile.mktemp('manifest')
+    # Create fake but empty manifest file.
+    new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
+                                                            None)
+    m_element = new_doc.getElementsByTagName('manifest')[0]
+
+    default_remote = None
+    if has_default_remote:
+      default_remote = FAKE_WHITELISTED_REMOTES[0]
+      new_element = minidom.Element('default')
+      new_element.setAttribute('remote', default_remote)
+      m_element.appendChild(new_element)
+    remotes_to_use = list(FAKE_WHITELISTED_REMOTES) * (
+        num_external / len(FAKE_WHITELISTED_REMOTES))
+
+    internal_remotes = [FAKE_NON_WHITELISTED_REMOTE] * num_internal
+    remotes_to_use.extend(internal_remotes)
+    # Randomize the list of remotes to get wider test coverage for the
+    # filtering logic.
+    random.shuffle(remotes_to_use)
+
+    for idx in xrange(num_internal + num_external):
+      new_element = minidom.Element('project')
+      new_element.setAttribute('name', 'project_%d' % idx)
+      new_element.setAttribute('path', 'some_path/to/project_%d' % idx)
+      new_element.setAttribute('revision', 'revision_%d' % idx)
+      remote = remotes_to_use[idx % len(remotes_to_use)]
+      # Skip setting a remote attribute if this is a default remote.
+      if not has_default_remote or remote is not default_remote:
+        new_element.setAttribute('remote', remote)
+      m_element.appendChild(new_element)
+
+    for idx in xrange(commits):
+      new_element = minidom.Element('pending_commit')
+      new_element.setAttribute('project', 'project_%d' % idx)
+      new_element.setAttribute('change_id', 'changeid_%d' % idx)
+      new_element.setAttribute('commit', 'commit_%d' % idx)
+      m_element.appendChild(new_element)
+
+    with open(tmp_manifest, 'w+') as manifest_file:
+      new_doc.writexml(manifest_file, newl='\n')
+
+    return tmp_manifest
+
+  def testFilterProjectsFromManifest(self):
+    """Tests whether we can remove internal projects from a manifest."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = self._CreateFakeManifest(num_internal=20,
+                                               num_external=80,
+                                               commits=100)
+      fake_new_manifest = manifest_version.FilterManifest(
+          fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      # All external projects must be present in the new manifest.
+      self.assertEqual(len(projects), 80)
+      project_remote_dict = {}
+      # All projects should have whitelisted remotes.
+      for p in projects:
+        remote = p.getAttribute('remote')
+        self.assertIn(remote, FAKE_WHITELISTED_REMOTES)
+        project_remote_dict[p.getAttribute('name')] = remote
+
+      # Check commits. All commits should correspond to projects which
+      # have whitelisted remotes.
+      commits = new_dom.getElementsByTagName('pending_commit')
+      self.assertEqual(len(commits), 80)
+      for c in commits:
+        p = c.getAttribute('project')
+        self.assertIn(project_remote_dict[p], FAKE_WHITELISTED_REMOTES)
+
+    finally:
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
+
+  def testFilterProjectsFromExternalManifest(self):
+    """Tests filtering on a project where no filtering is needed."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = self._CreateFakeManifest(num_internal=0,
+                                               num_external=100,
+                                               commits=20)
+      fake_new_manifest = manifest_version.FilterManifest(
+          fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      self.assertEqual(len(projects), 100)
+      commits = new_dom.getElementsByTagName('pending_commit')
+      self.assertEqual(len(commits), 20)
+
+    finally:
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
+
+  def testFilterDefaultProjectsFromManifest(self):
+    """Tests whether we correctly handle projects with default remotes."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = self._CreateFakeManifest(num_internal=20,
+                                               num_external=80,
+                                               commits=20,
+                                               has_default_remote=True)
+      fake_new_manifest = manifest_version.FilterManifest(
+          fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      self.assertEqual(len(projects), 80)
+
+    finally:
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
+
+
+
+  def _HelperTestConvertToProjectSdkManifestEmpty(self, source, expected):
+    """Test that ConvertToProjectSdkManifest turns |source| into |expected|.
+
+    Args:
+      source: Starting manifest as a string.
+      expected: Expected result manifest, as a string.
+    """
+    manifest_out = None
+
+    try:      # Convert source into a file.
+      with tempfile.NamedTemporaryFile() as manifest_in:
+        osutils.WriteFile(manifest_in.name, source)
+        manifest_out = manifest_version.ConvertToProjectSdkManifest(
+            manifest_in.name)
+
+      # Convert output file into string.
+      result = osutils.ReadFile(manifest_out)
+
+    finally:
+      if manifest_out:
+        os.unlink(manifest_out)
+
+    # Verify the result.
+    self.assertEqual(expected, result)
+
+  def testConvertToProjectSdkManifestEmpty(self):
+    EMPTY = '<?xml version="1.0" encoding="UTF-8"?><manifest></manifest>'
+    EXPECTED = '<?xml version="1.0" encoding="utf-8"?><manifest/>'
+    self._HelperTestConvertToProjectSdkManifestEmpty(EMPTY, EXPECTED)
+
+  def testConvertToProjectSdkManifestMixed(self):
+    MIXED = '''<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <remote alias="cros-int" fetch="https://int-url" name="chrome"/>
+  <remote alias="cros" fetch="https://url/" name="chromium"/>
+  <remote fetch="https://url" name="cros"/>
+  <remote fetch="https://int-url" name="cros-int"/>
+
+  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
+
+  <project name="int" remote="cros-int" />
+  <project groups="foo,bar" name="int-other-groups" remote="cros-int" />
+  <project groups="minilayout" name="int-mini" remote="cros-int" />
+  <project groups="minilayout,foo" name="int-mini-groups" remote="cros-int" />
+
+  <project name="exp" remote="cros" />
+  <project groups="foo,bar" name="exp-other-groups" remote="cros" />
+  <project groups="minilayout" name="exp-mini" remote="cros" />
+  <project groups="minilayout,foo" name="exp-mini-groups" remote="cros" />
+
+  <project name="def-other-groups" />
+  <project groups="foo,bar" name="def-other-groups" />
+  <project groups="minilayout" name="def-mini" />
+  <project groups="minilayout,foo" name="def-mini-groups" />
+  <project groups="minilayout , foo" name="def-spacing" />
+
+  <repo-hooks enabled-list="pre-upload" in-project="chromiumos/repohooks"/>
+</manifest>
+'''
+
+    EXPECTED = '''<?xml version="1.0" encoding="utf-8"?><manifest>
+  <remote alias="cros" fetch="https://url/" name="chromium"/>
+  <remote fetch="https://url" name="cros"/>
+  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
+  <project groups="minilayout" name="exp-mini" remote="cros"/>
+  <project groups="minilayout,foo" name="exp-mini-groups" remote="cros"/>
+  <project groups="minilayout" name="def-mini"/>
+  <project groups="minilayout,foo" name="def-mini-groups"/>
+  <project groups="minilayout , foo" name="def-spacing"/>
+  <repo-hooks enabled-list="pre-upload" in-project="chromiumos/repohooks"/>
+</manifest>'''
+
+    self._HelperTestConvertToProjectSdkManifestEmpty(MIXED, EXPECTED)

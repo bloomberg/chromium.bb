@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import tempfile
+from xml.dom import minidom
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
@@ -28,6 +29,22 @@ from chromite.lib import timeout_util
 BUILD_STATUS_URL = '%s/builder-status' % constants.MANIFEST_VERSIONS_GS_URL
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
+
+MANIFEST_ELEMENT = 'manifest'
+DEFAULT_ELEMENT = 'default'
+PROJECT_ELEMENT = 'project'
+REMOTE_ELEMENT = 'remote'
+PROJECT_NAME_ATTR = 'name'
+PROJECT_REMOTE_ATTR = 'remote'
+PROJECT_GROUP_ATTR = 'groups'
+REMOTE_NAME_ATTR = 'name'
+
+PALADIN_COMMIT_ELEMENT = 'pending_commit'
+PALADIN_PROJECT_ATTR = 'project'
+
+
+class FilterManifestException(Exception):
+  """Exception thrown when failing to filter the internal manifest."""
 
 
 class VersionUpdateException(Exception):
@@ -937,3 +954,128 @@ class BuildSpecsManager(object):
     # Cleanse any failed local changes and throw an exception.
     self.RefreshManifestCheckout()
     raise StatusUpdateException(last_error)
+
+
+def _GetDefaultRemote(manifest_dom):
+  """Returns the default remote in a manifest (if any).
+
+  Args:
+    manifest_dom: DOM Document object representing the manifest.
+
+  Returns:
+    Default remote if one exists, None otherwise.
+  """
+  default_nodes = manifest_dom.getElementsByTagName(DEFAULT_ELEMENT)
+  if default_nodes:
+    if len(default_nodes) > 1:
+      raise FilterManifestException(
+          'More than one <default> element found in manifest')
+    return default_nodes[0].getAttribute(PROJECT_REMOTE_ATTR)
+  return None
+
+
+def _GetGroups(project_element):
+  """Returns the default remote in a manifest (if any).
+
+  Args:
+    project_element: DOM Document object representing a project.
+
+  Returns:
+    List of names of the groups the project belongs too.
+  """
+  group = project_element.getAttribute(PROJECT_GROUP_ATTR)
+  if not group:
+    return []
+
+  return [s.strip() for s in group.split(',')]
+
+
+def FilterManifest(manifest, whitelisted_remotes=None, whitelisted_groups=None):
+  """Returns a path to a new manifest with whitelists enforced.
+
+  Args:
+    manifest: Path to an existing manifest that should be filtered.
+    whitelisted_remotes: Tuple of remotes to allow in the generated manifest.
+      Only projects with those remotes will be included in the external
+      manifest. (None means all remotes are acceptable)
+    whitelisted_groups: Tuple of groups to allow in the generated manifest.
+      (None means all groups are acceptable)
+
+  Returns:
+    Path to a new manifest that is a filtered copy of the original.
+  """
+  temp_fd, new_path = tempfile.mkstemp('external_manifest')
+  manifest_dom = minidom.parse(manifest)
+  manifest_node = manifest_dom.getElementsByTagName(MANIFEST_ELEMENT)[0]
+  remotes = manifest_dom.getElementsByTagName(REMOTE_ELEMENT)
+  projects = manifest_dom.getElementsByTagName(PROJECT_ELEMENT)
+  pending_commits = manifest_dom.getElementsByTagName(PALADIN_COMMIT_ELEMENT)
+
+  default_remote = _GetDefaultRemote(manifest_dom)
+
+  # Remove remotes that don't match our whitelist.
+  for remote_element in remotes:
+    name = remote_element.getAttribute(REMOTE_NAME_ATTR)
+    if (name is not None and
+        whitelisted_remotes and
+        name not in whitelisted_remotes):
+      manifest_node.removeChild(remote_element)
+
+  filtered_projects = set()
+  for project_element in projects:
+    project_remote = project_element.getAttribute(PROJECT_REMOTE_ATTR)
+    project = project_element.getAttribute(PROJECT_NAME_ATTR)
+    if not project_remote:
+      if not default_remote:
+        # This should not happen for a valid manifest. Either each
+        # project must have a remote specified or there should
+        # be manifest default we could use.
+        raise FilterManifestException(
+            'Project %s has unspecified remote with no default' % project)
+      project_remote = default_remote
+
+    groups = _GetGroups(project_element)
+
+    filter_remote = (whitelisted_remotes and
+                     project_remote not in whitelisted_remotes)
+
+    filter_group = (whitelisted_groups and
+                    not any([g in groups for g in whitelisted_groups]))
+
+    if filter_remote or filter_group:
+      filtered_projects.add(project)
+      manifest_node.removeChild(project_element)
+
+  for commit_element in pending_commits:
+    if commit_element.getAttribute(
+        PALADIN_PROJECT_ATTR) in filtered_projects:
+      manifest_node.removeChild(commit_element)
+
+  with os.fdopen(temp_fd, 'w') as manifest_file:
+    # Filter out empty lines.
+    filtered_manifest_noempty = filter(
+        str.strip, manifest_dom.toxml('utf-8').splitlines())
+    manifest_file.write(os.linesep.join(filtered_manifest_noempty))
+
+  return new_path
+
+
+def ConvertToProjectSdkManifest(manifest):
+  """Converts a manifest to a ProjectSDK Manifest.
+
+  Project SDK manifests are based on the current manifest, but stripped
+  down in a variety of ways. If you want the project manifest to be pinned
+  to specific SHA1 values, then you should pass in a pinned manifest.
+
+  This is commonly done with: repo.ExportManifest(mark_revision=True)
+
+  Args:
+    manifest: Path to an existing manifest that should be converted.
+
+  Returns:
+    Path to a new manifest that is a converted copy of the original.
+  """
+  return FilterManifest(
+      manifest,
+      whitelisted_remotes=constants.EXTERNAL_REMOTES,
+      whitelisted_groups=constants.PROJECT_SDK_GROUPS)

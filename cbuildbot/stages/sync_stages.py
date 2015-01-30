@@ -11,7 +11,9 @@ import contextlib
 import datetime
 import logging
 import os
+import shutil
 import sys
+import tempfile
 import time
 from xml.etree import ElementTree
 from xml.dom import minidom
@@ -564,6 +566,58 @@ class ManifestVersionedSyncStage(SyncStage):
     else:
       yield manifest
 
+  @staticmethod
+  def CommitProjectSDKManifest(manifest, release, current_version, debug):
+    """Create and submit the Product SDK Manifest.
+
+    Create the Project SDK manifest, and push it to the external manifest
+    repository.
+
+    Args:
+      manifest: Path to new manifest to commit.
+      release: Current release of the build (ie: 42 if building R42-6513.0.0)
+      current_version: Version to use when commiting manifest.
+      debug: Is this a debug build?
+    """
+    external_manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
+        internal_build=False,
+        read_only=False,
+        test=debug)
+
+    # TODO(dgarrett): Find a persistent directory for this.
+    with osutils.TempDir() as git_repo:
+      repository.UpdateGitRepo(git_repo, external_manifest_url)
+
+      sdk_manifest_path = os.path.join(
+          git_repo, 'project-sdk', '%s' % release, '%s.xml' % current_version)
+
+      if os.path.exists(sdk_manifest_path):
+        raise failures_lib.StepFailure(
+            'Project SDK Manifest already exists: %s' % sdk_manifest_path)
+
+      # Create branch for pushing new manifest file.
+      branch = 'temp_project_sdk_creation_branch'
+      git.CreatePushBranch(branch, git_repo, sync=False)
+
+      # Create new manifest file.
+      logging.info('Creating Project SDK Manifest as: %s', sdk_manifest_path)
+      osutils.SafeMakedirs(os.path.dirname(sdk_manifest_path))
+      shutil.copyfile(manifest, sdk_manifest_path)
+
+      # Commit it locally.
+      logging.info('Committing Project SDK Manifest.')
+      git.AddPath(sdk_manifest_path)
+      git.Commit(git_repo, 'Create project_sdk for %s-%s.' %
+                 (release, current_version))
+
+      # Push it.
+      logging.info('Pushing Project SDK Manifest.')
+      git.PushWithRetry(branch, git_repo)
+
+      logging.info('Project SDK Manifest \'%s\' published:',
+                   os.path.basename(sdk_manifest_path))
+      logging.info('%s', osutils.ReadFile(manifest))
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -590,6 +644,28 @@ class ManifestVersionedSyncStage(SyncStage):
     with self.LocalizeManifest(
         next_manifest, filter_cros=self._run.options.local) as new_manifest:
       self.ManifestCheckout(new_manifest)
+
+    # If we are a Canary Master, create an additional derivative Manifest for
+    # the Project SDK builders.
+    if (cbuildbot_config.IsCanaryType(self._run.config.build_type) and
+        self._run.config.master):
+      logging.info('Creating of Project SDK Manifest.')
+      sdk_manifest = None
+      try:
+        with tempfile.NamedTemporaryFile() as pinned_manifest_file:
+          pinned_manifest = self.repo.ExportManifest(mark_revision=True)
+          osutils.WriteFile(pinned_manifest_file.name, pinned_manifest)
+          sdk_manifest = manifest_version.ConvertToProjectSdkManifest(
+              pinned_manifest_file.name)
+
+        self.CommitProjectSDKManifest(
+            sdk_manifest,
+            self.manifest_manager.GetCurrentVersionInfo().chrome_branch,
+            self.manifest_manager.current_version,
+            self._run.options.debug)
+      finally:
+        if sdk_manifest:
+          os.unlink(sdk_manifest)
 
     # Set the status inflight at the end of the ManifestVersionedSync
     # stage. This guarantees that all syncing has completed.

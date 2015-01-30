@@ -29,8 +29,10 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cidb
 from chromite.lib import clactions
+from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
 from chromite.lib import osutils
@@ -81,6 +83,16 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
 
     self.sync_stage.Run()
 
+  @cros_test_lib.NetworkTest()
+  @mock.patch.object(git, 'PushWithRetry')
+  def testCommitProjectSDKManifest(self, _mock_push):
+    """Tests that we can 'push' an SDK manifest."""
+    # Create test manifest
+    manifest = os.path.join(self.tempdir, 'sdk.xml')
+    osutils.WriteFile(manifest, 'bogus value')
+
+    sync_stages.ManifestVersionedSyncStage.CommitProjectSDKManifest(
+        manifest, 'test_release', 'test_version', True)
 
 class MockPatch(mock.MagicMock):
   """MagicMock for a GerritPatch-like object."""
