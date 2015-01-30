@@ -14,19 +14,17 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(TOOLS_DIR, 'lib', 'tests', 'data')
-BUILD_TOOLS_DIR = os.path.join(os.path.dirname(TOOLS_DIR), 'build_tools')
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
 MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 # For the mock library
 sys.path.append(MOCK_DIR)
 sys.path.append(TOOLS_DIR)
-sys.path.append(BUILD_TOOLS_DIR)
 
 import build_paths
 import create_nmf
 import getos
-from mock import patch, Mock
+import mock
 
 TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
 NACL_X86_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT,
@@ -63,18 +61,24 @@ class TestPosixRelPath(unittest.TestCase):
 
 
 class TestDefaultLibpath(unittest.TestCase):
-  def setUp(self):
-    patcher = patch('create_nmf.GetSDKRoot', Mock(return_value='/dummy/path'))
-    patcher.start()
-    self.addCleanup(patcher.stop)
+  def testWithoutNaClSDKRoot(self):
+    """GetDefaultLibPath wihtout NACL_SDK_ROOT set
 
-  def testUsesSDKRoot(self):
-    paths = create_nmf.GetDefaultLibPath('Debug')
+    In the absence of NACL_SDK_ROOT GetDefaultLibPath should
+    return the empty list."""
+    with mock.patch.dict('os.environ', clear=True):
+      paths = create_nmf.GetDefaultLibPath('Debug')
+    self.assertEqual(paths, [])
+
+  def testHonorNaClSDKRoot(self):
+    with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': '/dummy/path'}):
+      paths = create_nmf.GetDefaultLibPath('Debug')
     for path in paths:
       self.assertTrue(path.startswith('/dummy/path'))
 
   def testIncludesNaClPorts(self):
-    paths = create_nmf.GetDefaultLibPath('Debug')
+    with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': '/dummy/path'}):
+      paths = create_nmf.GetDefaultLibPath('Debug')
     self.assertTrue(any(os.path.join('ports', 'lib') in p for p in paths),
                     "naclports libpath missing: %s" % str(paths))
 
