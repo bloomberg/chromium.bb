@@ -65,6 +65,14 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev
   void DispatchMouseWheelEvent(const MouseWheelEventParams& params) override;
   void DispatchScrollEvent(const ScrollEventParams& params) override;
   void DispatchTouchEvent(const TouchEventParams& params) override;
+  void DispatchKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) override;
+  void DispatchTouchscreenDevicesUpdated(
+      const std::vector<TouchscreenDevice>& devices) override;
+  void DispatchMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) override;
+  void DispatchTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override;
 
  protected:
   // DeviceEventObserver overrides:

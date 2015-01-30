@@ -28,6 +28,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // built early enough for that to be possible.
   void SetInputDeviceFactory(InputDeviceFactoryEvdev* input_device_factory);
 
+  void set_has_mouse(bool has_mouse);
+  void set_has_touchpad(bool has_touchpad);
+
   // InputController:
   bool HasMouse() override;
   bool HasTouchpad() override;
@@ -64,6 +67,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
 
   // Mouse button map.
   MouseButtonMapEvdev* button_map_;
+
+  // Device presence.
+  bool has_mouse_;
+  bool has_touchpad_;
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };

@@ -5,7 +5,12 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_H_
 #define UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_H_
 
+#include <vector>
+
 #include "base/time/time.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -107,6 +112,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   DeviceEventDispatcherEvdev() {}
   virtual ~DeviceEventDispatcherEvdev() {}
 
+  // User input events.
   virtual void DispatchKeyEvent(const KeyEventParams& params) = 0;
   virtual void DispatchMouseMoveEvent(const MouseMoveEventParams& params) = 0;
   virtual void DispatchMouseButtonEvent(
@@ -114,6 +120,16 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   virtual void DispatchMouseWheelEvent(const MouseWheelEventParams& params) = 0;
   virtual void DispatchScrollEvent(const ScrollEventParams& params) = 0;
   virtual void DispatchTouchEvent(const TouchEventParams& params) = 0;
+
+  // Device lifecycle events.
+  virtual void DispatchKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) = 0;
+  virtual void DispatchTouchscreenDevicesUpdated(
+      const std::vector<TouchscreenDevice>& devices) = 0;
+  virtual void DispatchMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) = 0;
+  virtual void DispatchTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) = 0;
 };
 
 }  // namespace ui

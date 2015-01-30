@@ -155,6 +155,30 @@ void EventFactoryEvdev::PostUiEvent(scoped_ptr<Event> event) {
                  base::Passed(&event)));
 }
 
+void EventFactoryEvdev::DispatchKeyboardDevicesUpdated(
+    const std::vector<KeyboardDevice>& devices) {
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnKeyboardDevicesUpdated(devices);
+}
+
+void EventFactoryEvdev::DispatchTouchscreenDevicesUpdated(
+    const std::vector<TouchscreenDevice>& devices) {
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnTouchscreenDevicesUpdated(devices);
+}
+
+void EventFactoryEvdev::DispatchMouseDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  // There's no list of mice in DeviceDataManager.
+  input_controller_.set_has_mouse(devices.size() != 0);
+}
+
+void EventFactoryEvdev::DispatchTouchpadDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  // There's no list of touchpads in DeviceDataManager.
+  input_controller_.set_has_touchpad(devices.size() != 0);
+}
+
 void EventFactoryEvdev::DispatchUiEventTask(scoped_ptr<Event> event) {
   DispatchEvent(event.get());
 }

@@ -237,6 +237,10 @@ bool EventDeviceInfo::HasKeyboard() const {
   return true;
 }
 
+bool EventDeviceInfo::HasMouse() const {
+  return HasRelXY();
+}
+
 bool EventDeviceInfo::HasTouchpad() const {
   return (HasAbsXY() || HasMTAbsXY()) && !IsMappedToScreen();
 }

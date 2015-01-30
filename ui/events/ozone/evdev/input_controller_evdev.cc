@@ -17,7 +17,9 @@ InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
                                            MouseButtonMapEvdev* button_map)
     : input_device_factory_(nullptr),
       keyboard_(keyboard),
-      button_map_(button_map) {
+      button_map_(button_map),
+      has_mouse_(false),
+      has_touchpad_(false) {
 }
 
 InputControllerEvdev::~InputControllerEvdev() {
@@ -28,16 +30,20 @@ void InputControllerEvdev::SetInputDeviceFactory(
   input_device_factory_ = input_device_factory;
 }
 
+void InputControllerEvdev::set_has_mouse(bool has_mouse) {
+  has_mouse_ = has_mouse;
+}
+
+void InputControllerEvdev::set_has_touchpad(bool has_touchpad) {
+  has_touchpad_ = has_touchpad;
+}
+
 bool InputControllerEvdev::HasMouse() {
-  if (!input_device_factory_)
-    return false;
-  return input_device_factory_->HasMouse();
+  return has_mouse_;
 }
 
 bool InputControllerEvdev::HasTouchpad() {
-  if (!input_device_factory_)
-    return false;
-  return input_device_factory_->HasTouchpad();
+  return has_touchpad_;
 }
 
 bool InputControllerEvdev::IsCapsLockEnabled() {

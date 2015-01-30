@@ -33,6 +33,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
                                                  scoped_ptr<Delegate> delegate)
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
+      has_mouse_(devinfo.HasMouse()),
       has_touchpad_(devinfo.HasTouchpad()),
       delegate_(delegate.Pass()) {
   memset(&evdev_, 0, sizeof(evdev_));
@@ -71,6 +72,10 @@ void EventReaderLibevdevCros::OnFileCanReadWithoutBlocking(int fd) {
 
 bool EventReaderLibevdevCros::HasKeyboard() const {
   return has_keyboard_;
+}
+
+bool EventReaderLibevdevCros::HasMouse() const {
+  return has_mouse_;
 }
 
 bool EventReaderLibevdevCros::HasTouchpad() const {

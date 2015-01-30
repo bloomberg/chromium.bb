@@ -48,11 +48,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Stop reading & close an unplugged input device.
   void RemoveInputDevice(const base::FilePath& path);
 
-  // Get a list of device ids that matches a device type. Return true if the
-  // list is not empty. |device_ids| can be NULL.
-  bool GetDeviceIdsByType(const EventDeviceType type,
-                          std::vector<int>* device_ids);
-
   // Disables the internal touchpad.
   void DisableInternalTouchpad();
 
@@ -67,8 +62,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void EnableInternalKeyboard();
 
   // Bits from InputController that have to be answered on IO.
-  bool HasMouse();
-  bool HasTouchpad();
   void SetTouchpadSensitivity(int value);
   void SetTapToClick(bool enabled);
   void SetThreeFingerClick(bool enabled);
@@ -89,6 +82,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void NotifyDeviceChange(const EventConverterEvdev& converter);
   void NotifyKeyboardsUpdated();
   void NotifyTouchscreensUpdated();
+  void NotifyMouseDevicesUpdated();
+  void NotifyTouchpadDevicesUpdated();
 
   void SetIntPropertyForOneType(const EventDeviceType type,
                                 const std::string& name,

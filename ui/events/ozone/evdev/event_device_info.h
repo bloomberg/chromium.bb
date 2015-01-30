@@ -75,6 +75,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Determine whether there's a keyboard on this device.
   bool HasKeyboard() const;
 
+  // Determine whether there's a mouse on this device.
+  bool HasMouse() const;
+
   // Determine whether there's a touchpad on this device.
   bool HasTouchpad() const;
 

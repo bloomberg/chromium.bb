@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_util_linux.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
@@ -125,13 +126,12 @@ std::string DumpGesturePropertyValue(GesturesProp* property) {
 }
 
 // Dump touch device property values to a string.
-void DumpTouchDeviceStatus(InputDeviceFactoryEvdev* device_factory,
-                           GesturePropertyProvider* provider,
+void DumpTouchDeviceStatus(GesturePropertyProvider* provider,
                            std::string* status) {
   // We use DT_ALL since we want gesture property values for all devices that
   // run with the gesture library, not just mice or touchpads.
   std::vector<int> ids;
-  device_factory->GetDeviceIdsByType(DT_ALL, &ids);
+  provider->GetDeviceIdsByType(DT_ALL, &ids);
 
   // Dump the property names and values for each device.
   for (size_t i = 0; i < ids.size(); ++i) {
@@ -374,14 +374,6 @@ void InputDeviceFactoryEvdev::EnableInternalKeyboard() {
   }
 }
 
-bool InputDeviceFactoryEvdev::HasMouse() {
-  return GetDeviceIdsByType(DT_MOUSE, NULL);
-}
-
-bool InputDeviceFactoryEvdev::HasTouchpad() {
-  return GetDeviceIdsByType(DT_TOUCHPAD, NULL);
-}
-
 void InputDeviceFactoryEvdev::SetTouchpadSensitivity(int value) {
   SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity", value);
   SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity", value);
@@ -417,7 +409,7 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
     const GetTouchDeviceStatusReply& reply) {
   scoped_ptr<std::string> status(new std::string);
 #if defined(USE_EVDEV_GESTURES)
-  DumpTouchDeviceStatus(this, gesture_property_provider_.get(), status.get());
+  DumpTouchDeviceStatus(gesture_property_provider_.get(), status.get());
 #endif
   reply.Run(status.Pass());
 }
@@ -429,10 +421,15 @@ void InputDeviceFactoryEvdev::NotifyDeviceChange(
 
   if (converter.HasKeyboard())
     NotifyKeyboardsUpdated();
+
+  if (converter.HasMouse())
+    NotifyMouseDevicesUpdated();
+
+  if (converter.HasTouchpad())
+    NotifyMouseDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
-  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
@@ -445,11 +442,10 @@ void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
     }
   }
 
-  observer->OnTouchscreenDevicesUpdated(touchscreens);
+  dispatcher_->DispatchTouchscreenDevicesUpdated(touchscreens);
 }
 
 void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
-  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   std::vector<KeyboardDevice> keyboards;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasKeyboard()) {
@@ -458,24 +454,31 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
     }
   }
 
-  observer->OnKeyboardDevicesUpdated(keyboards);
+  dispatcher_->DispatchKeyboardDevicesUpdated(keyboards);
 }
 
-bool InputDeviceFactoryEvdev::GetDeviceIdsByType(const EventDeviceType type,
-                                                 std::vector<int>* device_ids) {
-  if (device_ids)
-    device_ids->clear();
-  std::vector<int> ids;
+void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
+  std::vector<InputDevice> mice;
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
+    if (it->second->HasMouse()) {
+      mice.push_back(InputDevice(it->second->id(), it->second->type(),
+                                 std::string() /* Device name */));
+    }
+  }
 
-#if defined(USE_EVDEV_GESTURES)
-  // Ask GesturePropertyProvider for matching devices.
-  gesture_property_provider_->GetDeviceIdsByType(type, &ids);
-#endif
-  // In the future we can add other device matching logics here.
+  dispatcher_->DispatchMouseDevicesUpdated(mice);
+}
 
-  if (device_ids)
-    device_ids->assign(ids.begin(), ids.end());
-  return !ids.empty();
+void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
+  std::vector<InputDevice> touchpads;
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
+    if (it->second->HasTouchpad()) {
+      touchpads.push_back(InputDevice(it->second->id(), it->second->type(),
+                                      std::string() /* Device name */));
+    }
+  }
+
+  dispatcher_->DispatchTouchpadDevicesUpdated(touchpads);
 }
 
 void InputDeviceFactoryEvdev::SetIntPropertyForOneType(

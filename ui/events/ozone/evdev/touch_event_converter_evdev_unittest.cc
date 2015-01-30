@@ -82,6 +82,15 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
     callback_.Run(params);
   }
 
+  void DispatchKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) override {}
+  void DispatchTouchscreenDevicesUpdated(
+      const std::vector<TouchscreenDevice>& devices) override {}
+  void DispatchMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {}
+  void DispatchTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {}
+
  private:
   base::Callback<void(const TouchEventParams& params)> callback_;
 };
