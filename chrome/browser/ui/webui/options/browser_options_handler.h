@@ -226,6 +226,11 @@ class BrowserOptionsHandler
   // |false| and preventing the user from changing the wallpaper if |managed| is
   // |true|.
   void OnWallpaperManagedChanged(bool managed);
+
+  // Updates the UI, allowing the user to change the system time zone if
+  // kSystemTimezonePolicy is set, and preventing the user from changing the
+  // system time zone if kSystemTimezonePolicy is not set.
+  void OnSystemTimezonePolicyChanged();
 #endif
 
   // Callback for the "selectDownloadLocation" message. This will prompt the

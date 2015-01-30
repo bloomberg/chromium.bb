@@ -179,6 +179,7 @@ extern const char kPrimaryMouseButtonRight[];
 extern const char kMouseSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kUse24HourClock[];
+extern const char kResolveTimezoneByGeolocation[];
 extern const char kDisableDrive[];
 extern const char kDisableDriveOverCellular[];
 extern const char kDisableDriveHostedFiles[];
@@ -726,6 +727,10 @@ extern const char kDebuggingFeaturesRequested[];
 extern const char kMessageCenterShowedFirstRunBalloon[];
 extern const char kMessageCenterShowIcon[];
 extern const char kMessageCenterForcedOnTaskbar[];
+
+#if defined(OS_CHROMEOS)
+extern const char kResolveDeviceTimezoneByGeolocation[];
+#endif  // defined(OS_CHROMEOS)
 
 extern const char kAttemptedToEnableAutoupdate[];
 

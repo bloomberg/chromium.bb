@@ -194,6 +194,10 @@ class ChromeUserManagerImpl
   // Update the number of users.
   void UpdateNumberOfUsers();
 
+  // Starts (or stops) automatic timezone refresh on geolocation,
+  // depending on user preferences.
+  void UpdateUserTimeZoneRefresher(Profile* profile);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 

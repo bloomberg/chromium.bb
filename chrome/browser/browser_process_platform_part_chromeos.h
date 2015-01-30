@@ -18,6 +18,7 @@ namespace chromeos {
 class ChromeUserManager;
 class OomPriorityManager;
 class ProfileHelper;
+class TimeZoneResolver;
 }
 
 namespace chromeos {
@@ -86,6 +87,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
     return device_disabling_manager_.get();
   }
 
+  chromeos::TimeZoneResolver* GetTimezoneResolver();
+
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
 
@@ -111,6 +114,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
       device_disabling_manager_delegate_;
   scoped_ptr<chromeos::system::DeviceDisablingManager>
       device_disabling_manager_;
+
+  scoped_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

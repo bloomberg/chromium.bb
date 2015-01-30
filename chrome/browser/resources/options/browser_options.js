@@ -386,8 +386,16 @@ cr.define('options', function() {
       }
 
       // Date and time section (CrOS only).
-      if ($('set-time-button'))
-        $('set-time-button').onclick = this.handleSetTime_.bind(this);
+      if (cr.isChromeOS) {
+        if ($('set-time-button'))
+          $('set-time-button').onclick = this.handleSetTime_.bind(this);
+
+        // Timezone
+        if (loadTimeData.getBoolean('enableTimeZoneTrackingOption')) {
+          $('resolve-timezone-by-geolocation-selection').hidden = false;
+          this.setSystemTimezoneManaged_(false);
+        }
+      }
 
       // Default browser section.
       if (!cr.isChromeOS) {
@@ -1611,6 +1619,29 @@ cr.define('options', function() {
       var event = new Event('wallpaper');
       event.value = managed ? { controlledBy: 'policy' } : {};
       $('wallpaper-indicator').handlePrefChange(event);
+    },
+
+    /**
+     * This is called from chromium code when system timezone "managed" state
+     * is changed. Enables or disables dependent settings.
+     * @param {boolean} managed Is true when system Timezone is managed by
+     *     enterprise policy. False otherwize.
+     */
+    setSystemTimezoneManaged_: function(managed) {
+      if (loadTimeData.getBoolean('enableTimeZoneTrackingOption')) {
+        if (managed) {
+          $('resolve-timezone-by-geolocation-selection').disabled = true;
+          $('resolve-timezone-by-geolocation').onclick = function(event) {};
+        } else {
+          this.enableElementIfPossible_(
+              getRequiredElement('resolve-timezone-by-geolocation-selection'));
+          $('resolve-timezone-by-geolocation').onclick = function(event) {
+            $('timezone-value-select').disabled = event.currentTarget.checked;
+          };
+          $('timezone-value-select').disabled =
+              $('resolve-timezone-by-geolocation').checked;
+        }
+      }
     },
 
     /**

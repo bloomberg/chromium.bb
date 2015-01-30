@@ -485,6 +485,11 @@ const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
 
+// This setting disables manual timezone selection and starts periodic timezone
+// refresh.
+const char kResolveTimezoneByGeolocation[] =
+    "settings.resolve_timezone_by_geolocation";
+
 // A boolean pref to disable Google Drive integration.
 // The pref prefix should remain as "gdata" for backward compatibility.
 const char kDisableDrive[] = "gdata.disabled";
@@ -1955,6 +1960,14 @@ const char kMessageCenterShowIcon[] = "message_center.show_icon";
 
 const char kMessageCenterForcedOnTaskbar[] =
     "message_center.was_forced_on_taskbar";
+
+#if defined(OS_CHROMEOS)
+// This setting starts periodic timezone refresh when not in user session.
+// (user session is controlled by user profile preference
+// kResolveTimezoneByGeolocation
+const char kResolveDeviceTimezoneByGeolocation[] =
+    "settings.resolve_device_timezone_by_geolocation";
+#endif  // defined(OS_CHROMEOS)
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.

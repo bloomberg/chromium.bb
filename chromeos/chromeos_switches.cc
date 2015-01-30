@@ -304,6 +304,9 @@ const char kArtifactsDir[] = "artifacts-dir";
 const char kEnableCaptivePortalBypassProxy[] =
     "enable-captive-portal-bypass-proxy";
 
+// Enable automatic timezone update.
+const char kEnableTimeZoneTrackingOption[] = "enable-timezone-tracking-option";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

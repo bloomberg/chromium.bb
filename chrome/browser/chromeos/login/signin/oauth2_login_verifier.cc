@@ -69,9 +69,9 @@ void OAuth2LoginVerifier::VerifyUserCookies(Profile* profile) {
   // Delay the verification if the network is not connected or on a captive
   // portal.
   DelayNetworkCall(
+      base::TimeDelta::FromMilliseconds(kRequestRestartDelay),
       base::Bind(&OAuth2LoginVerifier::StartAuthCookiesVerification,
-                 AsWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
+                 AsWeakPtr()));
 }
 
 void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
@@ -79,10 +79,9 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
 
   // Delay the verification if the network is not connected or on a captive
   // portal.
-  DelayNetworkCall(
-      base::Bind(
-          &OAuth2LoginVerifier::VerifyProfileTokensImpl, AsWeakPtr(), profile),
-      base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
+  DelayNetworkCall(base::TimeDelta::FromMilliseconds(kRequestRestartDelay),
+                   base::Bind(&OAuth2LoginVerifier::VerifyProfileTokensImpl,
+                              AsWeakPtr(), profile));
 }
 
 void OAuth2LoginVerifier::VerifyProfileTokensImpl(Profile* profile) {

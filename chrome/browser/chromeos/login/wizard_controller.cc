@@ -774,13 +774,13 @@ void WizardController::StartTimezoneResolve() {
 
 void WizardController::PerformPostEulaActions() {
   DelayNetworkCall(
+      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
       base::Bind(&WizardController::StartTimezoneResolve,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
+                 weak_factory_.GetWeakPtr()));
   DelayNetworkCall(
+      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
       ServicesCustomizationDocument::GetInstance()
-          ->EnsureCustomizationAppliedClosure(),
-      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
+          ->EnsureCustomizationAppliedClosure());
 
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.

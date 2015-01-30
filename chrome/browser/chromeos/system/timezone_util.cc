@@ -8,13 +8,21 @@
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "chromeos/timezone/timezone_request.h"
+#include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/ures.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
@@ -141,6 +149,50 @@ scoped_ptr<base::ListValue> GetTimezoneList() {
     timezoneList->Append(option);
   }
   return timezoneList.Pass();
+}
+
+bool HasSystemTimezonePolicy() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged())
+    return false;
+
+  std::string policy_timezone;
+  if (chromeos::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
+                                               &policy_timezone) &&
+      !policy_timezone.empty()) {
+    VLOG(1) << "Refresh TimeZone: TimeZone settings are overridden"
+            << " by DevicePolicy.";
+    return true;
+  }
+  return false;
+}
+
+void ApplyTimeZone(const TimeZoneResponseData* timezone) {
+  if (HasSystemTimezonePolicy())
+    return;
+
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (primary_user) {
+    if (!primary_user->is_profile_created())
+      return;
+
+    Profile* profile =
+        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kResolveTimezoneByGeolocation)) {
+      return;
+    }
+  }
+
+  if (!timezone->timeZoneId.empty()) {
+    VLOG(1) << "Refresh TimeZone: setting timezone to '" << timezone->timeZoneId
+            << "'";
+
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+        base::UTF8ToUTF16(timezone->timeZoneId));
+  }
 }
 
 }  // namespace system

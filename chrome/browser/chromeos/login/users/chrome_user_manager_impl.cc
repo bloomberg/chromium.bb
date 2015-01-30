@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
@@ -50,6 +51,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -376,6 +378,7 @@ void ChromeUserManagerImpl::Observe(
           multi_profile_user_controller_->StartObserving(profile);
         }
       }
+      UpdateUserTimeZoneRefresher(profile);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
@@ -1042,6 +1045,39 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
   base::debug::SetCrashKeyValue(
       crash_keys::kNumberOfUsers,
       base::StringPrintf("%" PRIuS, GetLoggedInUsers().size()));
+}
+
+void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTimeZoneTrackingOption)) {
+    return;
+  }
+
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user == NULL)
+    return;
+
+  // In Multi-Profile mode only primary user settings are in effect.
+  if (user != user_manager::UserManager::Get()->GetPrimaryUser())
+    return;
+
+  if (!IsUserLoggedIn())
+    return;
+
+  // Timezone auto refresh is disabled for Guest, Supervized and OffTheRecord
+  // users, but enabled for Kiosk mode.
+  if (IsLoggedInAsGuest() || IsLoggedInAsSupervisedUser() ||
+      profile->IsOffTheRecord()) {
+    g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
+    return;
+  }
+
+  if (profile->GetPrefs()->GetBoolean(prefs::kResolveTimezoneByGeolocation) &&
+      !system::HasSystemTimezonePolicy()) {
+    g_browser_process->platform_part()->GetTimezoneResolver()->Start();
+  } else {
+    g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
+  }
 }
 
 }  // namespace chromeos

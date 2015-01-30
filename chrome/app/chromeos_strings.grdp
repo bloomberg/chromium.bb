@@ -6034,4 +6034,14 @@ All users must sign out to continue.
   <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the time input element.">
     System time
   </message>
+
+  <message name="IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME" desc="Title for the flag to enable/disable user setting to automatically update timezone by user geolocation.">
+    Automatically resolve timezone by geolocation
+  </message>
+  <message name="IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag to enable/disable user setting to automatically update timezone by user geolocation.">
+    If enabled, in chrome://settings a new option becomes available which allows automatically updating the timezone by the current geolocation.
+  </message>
+  <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
+    Automatically resolve timezone by geolocation
+  </message>
 </grit-part>

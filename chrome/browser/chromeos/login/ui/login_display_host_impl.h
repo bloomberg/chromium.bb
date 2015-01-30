@@ -103,6 +103,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   views::Widget* login_window_for_test() { return login_window_; }
 
+  void StartTimeZoneResolve();
+
  protected:
   // content::NotificationObserver implementation:
   void Observe(int type,

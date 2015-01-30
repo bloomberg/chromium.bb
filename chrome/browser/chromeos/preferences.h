@@ -9,6 +9,7 @@
 
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
@@ -140,6 +141,8 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
   BooleanPrefMember wake_on_wifi_ssid_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   // User owning these preferences.
   const user_manager::User* user_;

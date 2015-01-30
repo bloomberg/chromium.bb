@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/timezone/timezone_provider.h"
+#include "chromeos/timezone/timezone_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -281,6 +282,15 @@ TEST_F(TimeZoneTest, InvalidResponse) {
     LOG(WARNING) << "TimeZoneTest::InvalidResponse: Too less attempts ("
                  << url_factory.attempts() << "), greater then "
                  << expected_retries - 1 << " expected.";
+  }
+}
+
+TEST(TimeZoneResolverTest, CheckIntervals) {
+  for (int requests_count = 1; requests_count < 10; ++requests_count) {
+    EXPECT_EQ(requests_count,
+              TimeZoneResolver::MaxRequestsCountForIntervalForTesting(
+                  TimeZoneResolver::IntervalForNextRequestForTesting(
+                      requests_count)));
   }
 }
 

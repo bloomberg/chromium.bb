@@ -563,9 +563,9 @@ void ServicesCustomizationDocument::OnManifesteRead(
 }
 
 void ServicesCustomizationDocument::StartFileFetch() {
-  DelayNetworkCall(base::Bind(&ServicesCustomizationDocument::DoStartFileFetch,
-                              weak_ptr_factory_.GetWeakPtr()),
-      network_delay_);
+  DelayNetworkCall(network_delay_,
+                   base::Bind(&ServicesCustomizationDocument::DoStartFileFetch,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ServicesCustomizationDocument::DoStartFileFetch() {

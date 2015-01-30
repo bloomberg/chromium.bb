@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -65,6 +66,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -1087,6 +1089,29 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
   TryToPlayStartupSound();
 }
 
+void LoginDisplayHostImpl::StartTimeZoneResolve() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTimeZoneTrackingOption)) {
+    return;
+  }
+
+  if (!g_browser_process->local_state()->GetBoolean(
+          prefs::kResolveDeviceTimezoneByGeolocation)) {
+    return;
+  }
+
+  if (system::HasSystemTimezonePolicy())
+    return;
+
+  // Do not start resolver if we are inside active user session.
+  // If user preferences permit, it will be started on preferences
+  // initialization.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
+    return;
+
+  g_browser_process->platform_part()->GetTimezoneResolver()->Start();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // external
 
@@ -1125,7 +1150,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
           ? session_manager::SESSION_STATE_LOGIN_PRIMARY
           : session_manager::SESSION_STATE_OOBE);
 
-  LoginDisplayHost* display_host = new LoginDisplayHostImpl(screen_bounds);
+  LoginDisplayHostImpl* display_host = new LoginDisplayHostImpl(screen_bounds);
 
   bool show_app_launch_splash_screen =
       (first_screen_name == WizardController::kAppLaunchSplashScreenName);
@@ -1152,9 +1177,11 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   if (StartupUtils::IsEulaAccepted()) {
     DelayNetworkCall(
+        base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
         ServicesCustomizationDocument::GetInstance()
-            ->EnsureCustomizationAppliedClosure(),
-        base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
+            ->EnsureCustomizationAppliedClosure());
+
+    display_host->StartTimeZoneResolve();
   }
 
   bool show_login_screen =

@@ -15,8 +15,8 @@
 
 const unsigned chromeos::kDefaultNetworkRetryDelayMS = 3000;
 
-void chromeos::DelayNetworkCall(const base::Closure& callback,
-                                base::TimeDelta retry) {
+void chromeos::DelayNetworkCall(base::TimeDelta retry,
+                                const base::Closure& callback) {
   bool delay_network_call = false;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
@@ -45,10 +45,8 @@ void chromeos::DelayNetworkCall(const base::Closure& callback,
   }
   if (delay_network_call) {
     content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&chromeos::DelayNetworkCall, callback, retry),
-        retry);
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&chromeos::DelayNetworkCall, retry, callback), retry);
   } else {
     callback.Run();
   }

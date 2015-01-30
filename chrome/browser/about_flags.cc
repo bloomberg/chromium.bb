@@ -2152,6 +2152,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kSitePerProcess)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-timezone-tracking",
+    IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME,
+    IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableTimeZoneTrackingOption)
+  },
+#endif  // defined(OS_CHROMEOS)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

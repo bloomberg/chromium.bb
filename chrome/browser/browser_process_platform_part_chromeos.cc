@@ -12,13 +12,17 @@
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/geolocation/simple_geolocation_provider.h"
+#include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 
@@ -105,6 +109,20 @@ policy::BrowserPolicyConnectorChromeOS*
 BrowserProcessPlatformPart::browser_policy_connector_chromeos() {
   return static_cast<policy::BrowserPolicyConnectorChromeOS*>(
       g_browser_process->browser_policy_connector());
+}
+
+chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
+  if (!timezone_resolver_.get()) {
+    timezone_resolver_.reset(new chromeos::TimeZoneResolver(
+        g_browser_process->system_request_context(),
+        chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
+        base::Bind(&chromeos::system::ApplyTimeZone),
+        base::Bind(&chromeos::DelayNetworkCall,
+                   base::TimeDelta::FromMilliseconds(
+                       chromeos::kDefaultNetworkRetryDelayMS)),
+        g_browser_process->local_state()));
+  }
+  return timezone_resolver_.get();
 }
 
 void BrowserProcessPlatformPart::StartTearDown() {

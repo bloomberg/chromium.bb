@@ -12,10 +12,19 @@ class ListValue;
 }
 
 namespace chromeos {
+
+struct TimeZoneResponseData;
+
 namespace system {
 
 // Creates a list of pairs of each timezone's ID and name.
 scoped_ptr<base::ListValue> GetTimezoneList();
+
+// Returns true if device is managed and has SystemTimezonePolicy set.
+bool HasSystemTimezonePolicy();
+
+// Apply TimeZone update from TimeZoneProvider.
+void ApplyTimeZone(const TimeZoneResponseData* timezone);
 
 }  // namespace system
 }  // namespace chromeos

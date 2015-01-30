@@ -290,6 +290,7 @@
             i18n-content="timezone"></span>
         <div id="timezone-value">
           <select class="control"
+              id="timezone-value-select"
               i18n-options="timezoneList" data-type="string"
               pref="cros.system.timezone"
               aria-labelledby="timezone-value-label"
@@ -302,6 +303,14 @@
               metric="Options_Use24HourClockCheckbox" type="checkbox">
           <span i18n-content="use24HourClock"></span>
         </label>
+        <div id="resolve-timezone-by-geolocation-selection" hidden>
+          <label>
+            <input id="resolve-timezone-by-geolocation"
+                pref="settings.resolve_timezone_by_geolocation"
+                metric="Options_ResolveTimezoneByGeoLocation" type="checkbox">
+            <span i18n-content="resolveTimezoneByGeoLocation"></span>
+          </label>
+        </div>
       </div>
       <div id="time-synced-explanation" class="settings-row"
           i18n-content="timeSyncedExplanation"></div>

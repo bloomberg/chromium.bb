@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/timezone/timezone_resolver.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_manager/user.h"
@@ -87,6 +88,8 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
                                 false);
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
+  registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
+                                false);
 }
 
 // static
@@ -315,6 +318,10 @@ void Preferences::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
+  registry->RegisterBooleanPref(
+      prefs::kResolveTimezoneByGeolocation, false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
 }
 
@@ -355,6 +362,9 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 
   wake_on_wifi_ssid_.Init(prefs::kWakeOnWifiSsid, prefs, callback);
+
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -606,6 +616,27 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     }
     WakeOnWifiManager::Get()->OnPreferenceChanged(
         static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));
+  }
+
+  if (pref_name == prefs::kResolveTimezoneByGeolocation &&
+      reason != REASON_ACTIVE_USER_CHANGED) {
+    const bool value = prefs_->GetBoolean(prefs::kResolveTimezoneByGeolocation);
+    if (user_is_owner) {
+      g_browser_process->local_state()->SetBoolean(
+          prefs::kResolveDeviceTimezoneByGeolocation, value);
+    }
+    if (user_is_primary_) {
+      if (value) {
+        g_browser_process->platform_part()->GetTimezoneResolver()->Start();
+      } else {
+        g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
+        if (reason == REASON_PREF_CHANGED) {
+          // Allow immediate timezone update on Stop + Start.
+          g_browser_process->local_state()->ClearPref(
+              TimeZoneResolver::kLastTimeZoneRefreshTime);
+        }
+      }
+    }
   }
 }
 

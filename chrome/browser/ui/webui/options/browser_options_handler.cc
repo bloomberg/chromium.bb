@@ -502,6 +502,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "cloudPrintEnableNotificationsLabel",
       IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
 #endif
+#if defined(OS_CHROMEOS)
+    { "resolveTimezoneByGeoLocation",
+      IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION },
+#endif
   };
 
 #if defined(ENABLE_SETTINGS_APP)
@@ -677,6 +681,12 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "showWakeOnWifi",
       chromeos::WakeOnWifiManager::Get()->WakeOnWifiSupported() &&
       chromeos::switches::WakeOnWifiEnabled());
+  const bool have_enable_time_zone_tracking_option_switch =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTimeZoneTrackingOption);
+  values->SetBoolean("enableTimeZoneTrackingOption",
+                     have_enable_time_zone_tracking_option_switch &&
+                         !chromeos::system::HasSystemTimezonePolicy());
 #endif
 }
 
@@ -962,6 +972,10 @@ void BrowserOptionsHandler::InitializeHandler() {
         base::Bind(&BrowserOptionsHandler::OnWallpaperPolicyChanged,
                    base::Unretained(this)));
   }
+  chromeos::CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kSystemTimezonePolicy,
+      base::Bind(&BrowserOptionsHandler::OnSystemTimezonePolicyChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 #else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
       prefs::kProxy,
@@ -1413,6 +1427,12 @@ void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
 void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
   web_ui()->CallJavascriptFunction("BrowserOptions.setWallpaperManaged",
                                    base::FundamentalValue(managed));
+}
+
+void BrowserOptionsHandler::OnSystemTimezonePolicyChanged() {
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setSystemTimezoneManaged",
+      base::FundamentalValue(chromeos::system::HasSystemTimezonePolicy()));
 }
 #endif
 
