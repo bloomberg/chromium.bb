@@ -935,6 +935,10 @@ crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure NeedsMan
 
 crbug.com/412758 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash NeedsManualRebaseline ]
 
+crbug.com/453944 [ Mac ] fast/images/png-suite/test.html [ Crash Pass ]
+crbug.com/453944 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ Crash Pass ]
+crbug.com/453944 [ Mac ] virtual/slimmingpaint/fast/images/png-suite/test.html [ Crash Pass ]
+
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/419696 [ Mac Debug ] virtual/slimmingpaint/fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-linux-normalize.html [ Crash Pass ]
