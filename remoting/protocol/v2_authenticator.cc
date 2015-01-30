@@ -13,10 +13,6 @@
 
 using crypto::P224EncryptedKeyExchange;
 
-#if defined(_WIN32) && defined(GetMessage)
-#undef GetMessage
-#endif
-
 namespace remoting {
 namespace protocol {
 
