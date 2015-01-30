@@ -49,12 +49,8 @@ public:
     void error(PassRefPtrWillBeRawPtr<DOMException>);
 
     // This function registers an observer so it fails and returns false when an
-    // observer was already registered.
+    // observer was already registered
     bool readAllAndCreateBlobHandle(const String& contentType, BlobHandleCreatorClient*);
-
-    // This function registers an observer so it fails and returns false when an
-    // observer was already registered.
-    bool startTee(BodyStreamBuffer* out1, BodyStreamBuffer* out2);
 
     // When an observer was registered this function fails and returns false.
     bool registerObserver(Observer*);

@@ -202,22 +202,20 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         return;
     }
     response->setBodyUsed();
-    if (BodyStreamBuffer* buffer = response->internalBuffer()) {
-        if (buffer == response->buffer() && response->streamAccessed()) {
-            bool dataLost = false;
-            buffer = response->createDrainingStream(&dataLost);
-            if (dataLost) {
-                executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Returning the stream accessed Response to the page is not supported."));
-                responseWasRejected();
-                return;
-            }
-        }
+    if (response->streamAccessed()) {
+        // FIXME: We don't support returning the stream accessed Response to the
+        // page.
+        executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Returning the stream accessed Response to the page is not supported."));
+        responseWasRejected();
+        return;
+    }
+    if (response->internalBuffer()) {
         WebServiceWorkerResponse webResponse;
         response->populateWebServiceWorkerResponse(webResponse);
         RefPtrWillBeMember<Stream> outStream(Stream::create(executionContext(), ""));
         webResponse.setStreamURL(outStream->url());
         ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
-        StreamUploader* uploader = new StreamUploader(buffer, outStream);
+        StreamUploader* uploader = new StreamUploader(response->internalBuffer(), outStream);
         uploader->start();
         m_state = Done;
         return;

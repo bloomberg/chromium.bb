@@ -39,6 +39,9 @@ public:
     static Request* create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
     static Request* create(ExecutionContext*, FetchRequestData*);
     static Request* create(ExecutionContext*, const WebServiceWorkerRequest&);
+    // The 'FetchRequestData' object is shared between requests, as it is
+    // immutable to the user after Request creation. Headers are copied.
+    static Request* create(const Request&);
 
     const FetchRequestData* request() { return m_request; }
 
@@ -61,10 +64,7 @@ public:
     void trace(Visitor*) override;
 
 private:
-    // The 'FetchRequestData' object is shared between requests, as it is
-    // immutable to the user after Request creation. Headers are copied.
     explicit Request(const Request&);
-
     Request(ExecutionContext*, FetchRequestData*);
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
 

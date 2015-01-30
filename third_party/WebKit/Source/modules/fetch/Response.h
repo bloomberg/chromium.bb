@@ -50,7 +50,7 @@ public:
     Headers* headers() const;
 
     // From Response.idl:
-    Response* clone(ExceptionState&);
+    Response* clone(ExceptionState&) const;
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 

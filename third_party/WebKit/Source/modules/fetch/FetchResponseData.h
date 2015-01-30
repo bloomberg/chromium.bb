@@ -55,12 +55,6 @@ public:
     void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
     void setContentTypeForBuffer(const String& contentType) { m_contentTypeForBuffer = contentType; }
 
-    // If the type is Default, replaces |m_buffer| and sets |m_blobDataHandle|
-    // to nullptr. If the type is Basic or CORS, replaces |m_buffer| and sets
-    // |m_blobDataHandle| to nullptr, and does the same operation to
-    // |m_internalResponse|. If the type is Error or Opaque, does nothing.
-    void replaceBodyStreamBuffer(BodyStreamBuffer*);
-
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
     void trace(Visitor*);
