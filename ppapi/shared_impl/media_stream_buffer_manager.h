@@ -53,6 +53,8 @@ class PPAPI_SHARED_EXPORT MediaStreamBufferManager {
 
   int32_t buffer_size() const { return buffer_size_; }
 
+  base::SharedMemory* shm() { return shm_.get(); }
+
   // Initializes shared memory for buffers transmission.
   bool SetBuffers(int32_t number_of_buffers,
                   int32_t buffer_size,
