@@ -17,6 +17,7 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/input_controller_evdev.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev.h"
+#include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 
 namespace ui {
@@ -133,9 +134,12 @@ void EventFactoryEvdev::Init() {
                                           weak_ptr_factory_.GetWeakPtr()));
   input_device_factory_.reset(
       new InputDeviceFactoryEvdev(dispatcher.Pass(), cursor_));
+  input_device_factory_proxy_.reset(
+      new InputDeviceFactoryEvdevProxy(base::ThreadTaskRunnerHandle::Get(),
+                                       input_device_factory_->GetWeakPtr()));
 
   // TODO(spang): This settings interface is really broken. crbug.com/450899
-  input_controller_.SetInputDeviceFactory(input_device_factory_.get());
+  input_controller_.SetInputDeviceFactory(input_device_factory_proxy_.get());
 
   // Scan & monitor devices.
   device_manager_->AddObserver(this);
@@ -279,12 +283,12 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
     case DeviceEvent::ADD:
     case DeviceEvent::CHANGE: {
       TRACE_EVENT1("ozone", "OnDeviceAdded", "path", event.path().value());
-      input_device_factory_->AddInputDevice(NextDeviceId(), event.path());
+      input_device_factory_proxy_->AddInputDevice(NextDeviceId(), event.path());
       break;
     }
     case DeviceEvent::REMOVE: {
       TRACE_EVENT1("ozone", "OnDeviceRemoved", "path", event.path().value());
-      input_device_factory_->RemoveInputDevice(event.path());
+      input_device_factory_proxy_->RemoveInputDevice(event.path());
       break;
     }
   }

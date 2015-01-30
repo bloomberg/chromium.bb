@@ -414,6 +414,10 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
   reply.Run(status.Pass());
 }
 
+base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void InputDeviceFactoryEvdev::NotifyDeviceChange(
     const EventConverterEvdev& converter) {
   if (converter.HasTouchscreen())

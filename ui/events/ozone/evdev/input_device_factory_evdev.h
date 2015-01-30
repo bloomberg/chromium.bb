@@ -22,6 +22,7 @@ namespace ui {
 
 class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
+class InputDeviceFactoryEvdevProxy;
 
 #if !defined(USE_EVDEV)
 #error Missing dependency on ui/events/ozone:events_ozone_evdev
@@ -68,6 +69,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void SetMouseSensitivity(int value);
   void SetTapToClickPaused(bool state);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
+
+  base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 
  private:
   // Open device at path & starting processing events (on UI thread).

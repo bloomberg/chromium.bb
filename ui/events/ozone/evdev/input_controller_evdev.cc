@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <linux/input.h>
 
-#include "ui/events/ozone/evdev/input_device_factory_evdev.h"
+#include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
@@ -26,7 +26,7 @@ InputControllerEvdev::~InputControllerEvdev() {
 }
 
 void InputControllerEvdev::SetInputDeviceFactory(
-    InputDeviceFactoryEvdev* input_device_factory) {
+    InputDeviceFactoryEvdevProxy* input_device_factory) {
   input_device_factory_ = input_device_factory;
 }
 

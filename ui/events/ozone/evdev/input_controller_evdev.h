@@ -13,7 +13,7 @@
 
 namespace ui {
 
-class InputDeviceFactoryEvdev;
+class InputDeviceFactoryEvdevProxy;
 class KeyboardEvdev;
 class MouseButtonMapEvdev;
 
@@ -26,7 +26,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
 
   // Initialize device factory. This would be in the constructor if it was
   // built early enough for that to be possible.
-  void SetInputDeviceFactory(InputDeviceFactoryEvdev* input_device_factory);
+  void SetInputDeviceFactory(
+      InputDeviceFactoryEvdevProxy* input_device_factory);
 
   void set_has_mouse(bool has_mouse);
   void set_has_touchpad(bool has_touchpad);
@@ -60,7 +61,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
 
  private:
   // Factory for devices. Needed to update device config.
-  InputDeviceFactoryEvdev* input_device_factory_;
+  InputDeviceFactoryEvdevProxy* input_device_factory_;
 
   // Keyboard state.
   KeyboardEvdev* keyboard_;

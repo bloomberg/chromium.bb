@@ -30,6 +30,7 @@ namespace ui {
 class CursorDelegateEvdev;
 class DeviceManager;
 class InputDeviceFactoryEvdev;
+class InputDeviceFactoryEvdevProxy;
 class SystemInputInjector;
 enum class DomCode;
 
@@ -95,6 +96,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Factory for per-device objects.
   scoped_ptr<InputDeviceFactoryEvdev> input_device_factory_;
+
+  // Proxy for input device factory (manages device I/O objects).
+  scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory_proxy_;
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;
