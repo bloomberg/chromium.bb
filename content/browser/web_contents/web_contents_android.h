@@ -109,6 +109,12 @@ class CONTENT_EXPORT WebContentsAndroid
                                    jint level,
                                    jstring message);
 
+  void OpenURL(JNIEnv* env,
+               jobject jobj,
+               jstring url,
+               jboolean user_gesture,
+               jboolean is_renderer_initiated);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

@@ -604,6 +604,7 @@
             'chrome_version_java',
             'document_tab_model_info_proto_java',
             'profile_account_management_metrics_java',
+            'add_web_contents_result_java',
             'content_setting_java',
             'content_settings_type_java',
             'page_info_connection_type_java',
