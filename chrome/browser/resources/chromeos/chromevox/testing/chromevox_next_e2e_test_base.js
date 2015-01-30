@@ -32,7 +32,14 @@ ChromeVoxNextE2ETest.prototype = {
   runWithAutomation: function(doc, callback) {
     this.runWithDocument(doc, function() {
       chrome.automation.getTree(function(root) {
-        callback(root);
+        if (root.children.length == 0) {
+          root.addEventListener('loadComplete',
+                                function() {
+                                  callback(root);
+                                }.bind(this), true);
+        } else {
+          callback(root);
+        }
       }.bind(this));
     }.bind(this));
   }
