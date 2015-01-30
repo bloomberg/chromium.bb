@@ -74,6 +74,7 @@ promise_test(function() {
   }, 'CORS filtered response');
 
 promise_test(function() {
+    // Access-Control-Expose-Headers with a single header name
     return fetch(other_url + '?ACEHeaders=x-teSt', {mode: 'cors'})
       .then(function(response) {
           assert_equals(response.type, 'cors');
@@ -81,11 +82,11 @@ promise_test(function() {
                         headers_common.concat([['x-tEst', 'test-x-test']]),
                         [],
                         false);
-        });
-  }, 'CORS filtered response with Access-Control-Expose-Headers');
 
-promise_test(function() {
-    return fetch(other_url + '?ACEHeaders=x-teSt,x-teSt2', {mode: 'cors'})
+          // Access-Control-Expose-Headers with multiple header names
+          return fetch(other_url + '?ACEHeaders=x-teSt,x-teSt2',
+                       {mode: 'cors'});
+        })
       .then(function(response) {
           assert_equals(response.type, 'cors');
           check_headers(response.headers,
@@ -93,32 +94,27 @@ promise_test(function() {
                                                ['x-tEst2', 'test-x-test2']]),
                         [],
                         false);
-        });
-  }, 'CORS filtered response with Access-Control-Expose-Headers ' +
-     'with multiple headers');
 
-promise_test(function() {
-    return fetch(other_url + '?ACEHeaders=x-teSt x-teSt2', {mode: 'cors'})
+          // Access-Control-Expose-Headers with an invalid header name
+          return fetch(other_url + '?ACEHeaders=x-teSt x-teSt2',
+                       {mode: 'cors'});
+        })
       .then(function(response) {
           assert_equals(response.type, 'cors');
           check_headers(response.headers, headers_common, [], false);
-        });
-  }, 'CORS filtered response with Access-Control-Expose-Headers ' +
-     'with invalid value');
 
-promise_test(function() {
-    return fetch(other_url + '?ACEHeaders=sEt-cOokie', {mode: 'cors'})
+          // Access-Control-Expose-Headers=Set-Cookie
+          return fetch(other_url + '?ACEHeaders=sEt-cOokie', {mode: 'cors'});
+        })
       .then(function(response) {
           // Set-Cookie header is omitted because Headers guard is response
           assert_equals(response.type, 'cors');
           check_headers(response.headers, headers_common, [], false);
-        });
-  }, 'CORS filtered response with ' +
-     'Access-Control-Expose-Headers=Set-Cookie');
 
-promise_test(function() {
-    return fetch(other_url + '?ACEHeaders=acCess-coNtrol-exPose-heAders',
-                 {mode: 'cors'})
+          // Access-Control-Expose-Headers=Access-Control-Expose-Headers
+          return fetch(other_url + '?ACEHeaders=acCess-coNtrol-exPose-heAders',
+                       {mode: 'cors'});
+        })
       .then(function(response) {
           assert_equals(response.type, 'cors');
           check_headers(response.headers,
@@ -128,8 +124,7 @@ promise_test(function() {
                         [],
                         false);
         });
-  }, 'CORS filtered response with ' +
-     'Access-Control-Expose-Headers=Access-Control-Expose-Headers');
+  }, 'CORS filtered response with Access-Control-Expose-Headers');
 
 // Opaque filtered response is tested in fetch-access-control*
 
