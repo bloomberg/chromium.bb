@@ -1773,3 +1773,5 @@ crbug.com/453781 fast/hidpi/image-srcset-only-src-attribute.html [ Pass Failure 
 crbug.com/453781 fast/hidpi/image-srcset-same-alternative-for-both-attributes.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
+crbug.com/453781 fast/hidpi/image-srcset-invalid-descriptor.html [ Pass Failure ]
+crbug.com/453781 fast/hidpi/image-srcset-remove-dynamically-from-js.html [ Pass Failure ]
