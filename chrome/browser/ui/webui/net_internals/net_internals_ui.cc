@@ -705,7 +705,11 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
   SendJavascriptCommand("receivedConstants", NetInternalsUI::GetConstants());
 
+  // TODO(mmenke) DCHECK in CreateNetLogEntriesForActiveObjects in
+  // net_log_util.cc fails on Android (https://www.crbug.com/453088)
+#if !defined(OS_ANDROID)
   PrePopulateEventList();
+#endif
 
   // Register with network stack to observe events.
   io_thread_->net_log()->AddThreadSafeObserver(this,
