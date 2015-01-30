@@ -4,7 +4,6 @@
 
 import("//build/config/arm.gni")
 import("//build/config/mips.gni")
-import("//testing/test.gni")
 
 # If fixed point implementation shall be used (otherwise float).
 # TODO(wtc): change "mipselx" to "mipsel" in this file when the compilation
@@ -25,23 +24,6 @@ use_opus_rtcd = cpu_arch == "arm" && (is_win || is_android || is_linux)
 
 config("opus_config") {
   include_dirs = [ "src/include" ]
-}
-
-config("opus_test_config") {
-  include_dirs = [
-    "src/celt",
-    "src/silk",
-  ]
-
-  if (is_win) {
-    defines = [ "inline=__inline" ]
-  }
-  if (is_android) {
-    libs = [ "log" ]
-  }
-  if (is_clang) {
-    cflags = [ "-Wno-absolute-value" ]
-  }
 }
 
 if (use_opus_rtcd) {
@@ -191,10 +173,22 @@ executable("opus_compare") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  include_dirs = [
+    "src/celt",
+    "src/silk",
   ]
+
+  if (is_win) {
+    defines = [ "inline=__inline" ]
+  }
+  if (is_android) {
+    libs = [ "log" ]
+  }
+  if (is_clang) {
+    cflags = [ "-Wno-absolute-value" ]
+  }
 
   deps = [
     ":opus",
@@ -207,74 +201,22 @@ executable("opus_demo") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  include_dirs = [
+    "src/celt",
+    "src/silk",
   ]
 
-  deps = [
-    ":opus",
-  ]
-}
-
-test("test_opus_api") {
-  sources = [
-    "src/tests/test_opus_api.c",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
-  ]
-
-  deps = [
-    ":opus",
-  ]
-}
-
-test("test_opus_encode") {
-  sources = [
-    "src/tests/test_opus_encode.c",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
-  ]
-
-  deps = [
-    ":opus",
-  ]
-}
-
-test("test_opus_decode") {
-  sources = [
-    "src/tests/test_opus_decode.c",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
-  ]
-
-  deps = [
-    ":opus",
-  ]
-}
-
-test("test_opus_padding") {
-  sources = [
-    "src/tests/test_opus_padding.c",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":opus_test_config",
-  ]
+  if (is_win) {
+    defines = [ "inline=__inline" ]
+  }
+  if (is_android) {
+    libs = [ "log" ]
+  }
+  if (is_clang) {
+    cflags = [ "-Wno-absolute-value" ]
+  }
 
   deps = [
     ":opus",

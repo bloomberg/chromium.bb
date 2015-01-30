@@ -31,33 +31,6 @@
       }],
     ],
   },
-  'target_defaults': {
-    'target_conditions': [
-      ['_type=="executable"', {
-        # All of the executable targets depend on 'opus'. Unfortunately the
-        # 'dependencies' block cannot be inherited via 'target_defaults'.
-        'include_dirs': [
-          'src/celt',
-          'src/silk',
-        ],
-        'conditions': [
-          ['OS == "win"', {
-            'defines': [
-              'inline=__inline',
-            ],
-          }],
-          ['OS=="android"', {
-            'libraries': [
-              '-llog',
-            ],
-          }],
-          ['clang==1', {
-            'cflags': [ '-Wno-absolute-value' ],
-          }]
-        ],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'opus',
@@ -178,8 +151,29 @@
       'dependencies': [
         'opus'
       ],
+      'conditions': [
+        ['OS == "win"', {
+          'defines': [
+            'inline=__inline',
+          ],
+        }],
+        ['OS=="android"', {
+          'link_settings': {
+            'libraries': [
+              '-llog',
+            ],
+          },
+        }],
+        ['clang==1', {
+          'cflags': [ '-Wno-absolute-value' ],
+        }]
+      ],
       'sources': [
         'src/src/opus_compare.c',
+      ],
+      'include_dirs': [
+        'src/celt',
+        'src/silk',
       ],
     },  # target opus_compare
     {
@@ -188,49 +182,30 @@
       'dependencies': [
         'opus'
       ],
+      'conditions': [
+        ['OS == "win"', {
+          'defines': [
+            'inline=__inline',
+          ],
+        }],
+        ['OS=="android"', {
+          'link_settings': {
+            'libraries': [
+              '-llog',
+            ],
+          },
+        }],
+        ['clang==1', {
+          'cflags': [ '-Wno-absolute-value' ],
+        }]
+      ],
       'sources': [
         'src/src/opus_demo.c',
       ],
+      'include_dirs': [
+        'src/celt',
+        'src/silk',
+      ],
     },  # target opus_demo
-    {
-      'target_name': 'test_opus_api',
-      'type': 'executable',
-      'dependencies': [
-        'opus'
-      ],
-      'sources': [
-        'src/tests/test_opus_api.c',
-      ],
-    },  # target test_opus_api
-    {
-      'target_name': 'test_opus_encode',
-      'type': 'executable',
-      'dependencies': [
-        'opus'
-      ],
-      'sources': [
-        'src/tests/test_opus_encode.c',
-      ],
-    },  # target test_opus_encode
-    {
-      'target_name': 'test_opus_decode',
-      'type': 'executable',
-      'dependencies': [
-        'opus'
-      ],
-      'sources': [
-        'src/tests/test_opus_decode.c',
-      ],
-    },  # target test_opus_decode
-    {
-      'target_name': 'test_opus_padding',
-      'type': 'executable',
-      'dependencies': [
-        'opus'
-      ],
-      'sources': [
-        'src/tests/test_opus_padding.c',
-      ],
-    },  # target test_opus_padding
   ]
 }
