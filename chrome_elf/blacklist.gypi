@@ -60,6 +60,12 @@
       'sources': [
         'blacklist/test/blacklist_test_dll_3.cc',
       ],
+      'msvs_settings': {
+        # There's no exports in this DLL, this tells ninja not to expect an
+        # import lib so that it doesn't keep rebuilding unnecessarily due to
+        # the .lib being "missing".
+        'NoImportLibrary': 'true',
+      },
     },
   ],
 }
