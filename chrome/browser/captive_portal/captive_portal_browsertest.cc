@@ -2126,10 +2126,20 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
             GetStateOfTabReloaderAt(browser(), 0));
 }
 
+// This test is very flaky on Linux and is disabled.
+// https://crbug.com/453875
+#if defined(OS_LINUX)
+#define MAYBE_InterstitialTimerNavigateAwayWhileLoading \
+        DISABLED_InterstitialTimerNavigateAwayWhileLoading
+#else
+#define MAYBE_InterstitialTimerNavigateAwayWhileLoading \
+        InterstitialTimerNavigateAwayWhileLoading
+#endif
+
 // Same as above, but instead of reloading, the page is navigated away. The new
 // page should load, and no interstitials should be shown.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       InterstitialTimerNavigateAwayWhileLoading) {
+                       MAYBE_InterstitialTimerNavigateAwayWhileLoading) {
   net::SpawnedTestServer::SSLOptions https_options;
   https_options.server_certificate =
       net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
