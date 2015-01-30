@@ -66,7 +66,9 @@ ScopedJavaLocalRef<jstring> ConvertToJstringWithSubstitutions(
 
 }  // namespace
 
-const char kCharsetLatin1[] = "ISO-8859-1";
+// This constant cannot be defined as const char[] because it is initialized
+// by base::kCodepageLatin1 (which is const char[]) in net_string_util_icu.cc.
+const char* const kCharsetLatin1 = "ISO-8859-1";
 
 bool ConvertToUtf8(const std::string& text, const char* charset,
                    std::string* output) {
