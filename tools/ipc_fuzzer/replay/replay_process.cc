@@ -12,8 +12,10 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "ipc/mojo/ipc_channel_mojo.h"
 
 namespace ipc_fuzzer {
 
@@ -66,10 +68,22 @@ void ReplayProcess::OpenChannel() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
 
-  channel_ = IPC::ChannelProxy::Create(channel_name,
-                                       IPC::Channel::MODE_CLIENT,
-                                       this,
-                                       io_thread_.message_loop_proxy());
+  // TODO(morrita): As the adoption of ChannelMojo spreads, this
+  // criteria has to be updated.
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  bool should_use_mojo = process_type == switches::kRendererProcess &&
+                         IPC::ChannelMojo::ShouldBeUsed();
+  if (should_use_mojo) {
+    channel_ = IPC::ChannelProxy::Create(
+        IPC::ChannelMojo::CreateClientFactory(channel_name), this,
+        io_thread_.message_loop_proxy());
+  } else {
+    channel_ =
+        IPC::ChannelProxy::Create(channel_name, IPC::Channel::MODE_CLIENT, this,
+                                  io_thread_.message_loop_proxy());
+  }
 }
 
 bool ReplayProcess::OpenTestcase() {
