@@ -164,7 +164,7 @@ private:
     PendingXHRReplayDataMap m_pendingXHRReplayData;
 
     ThreadableLoaderClient* m_pendingEventSource;
-    typedef WillBeHeapHashMap<ThreadableLoaderClient*, unsigned long> EventSourceRequestIdMap;
+    typedef HashMap<ThreadableLoaderClient*, unsigned long> EventSourceRequestIdMap;
     EventSourceRequestIdMap m_eventSourceRequestIdMap;
 
     typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator> > FrameNavigationInitiatorMap;
