@@ -4,6 +4,7 @@
      found in the LICENSE file. -->
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -21,33 +22,38 @@
             android:orientation="vertical"
             android:focusableInTouchMode="true" >
 
-            <TextView
-                style="@style/BoldTextFieldLabel"
-                android:text="@string/autofill_credit_card_editor_name" />
+            <org.chromium.chrome.browser.widget.FloatLabelLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+                <EditText
+                    android:id="@+id/autofill_credit_card_editor_name_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="flagNoExtractUi"
+                    android:contentDescription="@string/accessibility_autofill_cc_name_textbox"
+                    android:inputType="textCapWords"
+                    android:hint="@string/autofill_credit_card_editor_name" />
+            </org.chromium.chrome.browser.widget.FloatLabelLayout>
 
-            <EditText
-                android:id="@+id/autofill_credit_card_editor_name_edit"
+            <org.chromium.chrome.browser.widget.FloatLabelLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+                <EditText
+                    android:id="@+id/autofill_credit_card_editor_number_edit"
+                    android:layout_width="match_parent"
+                    android:contentDescription="@string/accessibility_autofill_cc_number_textbox"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="flagNoExtractUi"
+                    android:inputType="phone"
+                    android:digits="0123456789- "
+                    android:hint="@string/autofill_credit_card_editor_number" />
+            </org.chromium.chrome.browser.widget.FloatLabelLayout>
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:imeOptions="flagNoExtractUi"
-                android:contentDescription="@string/accessibility_autofill_cc_name_textbox"
-                android:inputType="textCapWords" />
-
-            <TextView
-                style="@style/BoldTextFieldLabel"
-                android:text="@string/autofill_credit_card_editor_number" />
-
-            <EditText
-                android:id="@+id/autofill_credit_card_editor_number_edit"
-                android:layout_width="match_parent"
-                android:contentDescription="@string/accessibility_autofill_cc_number_textbox"
-                android:layout_height="wrap_content"
-                android:imeOptions="flagNoExtractUi"
-                android:inputType="phone"
-                android:digits="0123456789- "/>
-
-            <TextView
-                style="@style/BoldTextFieldLabel"
+                android:paddingTop="10dp"
+                android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
                 android:text="@string/autofill_credit_card_editor_expiration_date" />
 
             <LinearLayout

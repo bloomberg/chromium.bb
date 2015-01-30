@@ -15,12 +15,12 @@
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:orientation="vertical"
-        android:paddingTop="6dp" >
+        android:paddingStart="@dimen/pref_homepage_layout_margin"
+        android:paddingEnd="@dimen/pref_homepage_layout_margin" >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
             android:orientation="horizontal" >
 
             <TextView

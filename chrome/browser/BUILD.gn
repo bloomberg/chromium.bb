@@ -592,6 +592,7 @@ static_library("browser") {
       "//components/resources:components_resources",
       "//components/web_contents_delegate_android",
       "//third_party/android_opengl/etc1",
+      "//third_party/libaddressinput:util",
     ]
     deps -= [
       "//third_party/libaddressinput",

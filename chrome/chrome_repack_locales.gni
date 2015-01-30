@@ -62,7 +62,7 @@ template("_repack_one_locale") {
         "//ui/strings:app_locale_settings",
       ]
     }
-    if (enable_autofill_dialog && !is_ios && !is_android) {
+    if (enable_autofill_dialog) {
       sources += [ "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak" ]
       deps += [ "//third_party/libaddressinput:strings" ]
     }

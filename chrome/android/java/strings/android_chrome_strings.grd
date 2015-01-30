@@ -143,6 +143,9 @@
       <message name="IDS_AUTOFILL_EDIT_CREDIT_CARD" desc="Button that allows the user to edit a credit card that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Edit credit card
       </message>
+     <message name="IDS_AUTOFILL_PROFILE_EDITOR_COUNTRY" desc="Label for a spinner input field containg a list of countries or regions [CHAR-LIMIT=32]">
+        Country/Region
+      </message>
       <message name="IDS_AUTOFILL_PROFILE_EDITOR_EMAIL_ADDRESS" desc="Label for text input field containing an e-mail address. [CHAR-LIMIT=32]">
         Email
       </message>
