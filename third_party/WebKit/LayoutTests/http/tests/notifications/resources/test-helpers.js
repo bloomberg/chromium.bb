@@ -37,3 +37,32 @@ function isDedicatedOrSharedWorker()
 {
     return false;
 }
+
+// Unregisters, then registers the Service Worker in |script| using |scope|, waits
+// for it to activate and then inserts a message port. Returns a Promise which will
+// be resolved with an object having the worker's registration and port. The
+// Service Worker will be automatically unregistered once the test has completed.
+function getActiveServiceWorkerWithMessagePort(test, script, scope)
+{
+    var registration = null;
+    return service_worker_unregister_and_register(test, script, scope).then(function(swRegistration) {
+        registration = swRegistration;
+        add_completion_callback(function() {
+            registration.unregister();
+        });
+
+        return wait_for_state(test, registration.installing, 'activated');
+    }).then(function() {
+        assert_not_equals(registration.active, null, 'The Service Worker needs to be activated.');
+        return new Promise(function(resolve) {
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.addEventListener('message', function(event) {
+                if (event.data == 'ready')
+                    resolve({ registration: registration, port: messageChannel.port1 });
+            });
+
+            registration.active.postMessage(messageChannel.port2, [messageChannel.port2]);
+            messageChannel.port1.start();
+        });
+    });
+}
