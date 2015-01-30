@@ -65,7 +65,11 @@ void BlobURLRegistry::unregisterURL(const KURL& publicURL)
 
 URLRegistry& BlobURLRegistry::registry()
 {
-    DEFINE_STATIC_LOCAL(BlobURLRegistry, instance, ());
+    // This is called on multiple threads.
+    // (This code assumes it is safe to register or unregister URLs on
+    // BlobURLRegistry (that is implemented by the embedder) on
+    // multiple threads.)
+    AtomicallyInitializedStaticReference(BlobURLRegistry, instance, new BlobURLRegistry());
     return instance;
 }
 
