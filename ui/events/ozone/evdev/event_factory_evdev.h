@@ -108,11 +108,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
 
-#if defined(USE_EVDEV_GESTURES)
-  // Gesture library property provider (used by touchpads/mice).
-  scoped_ptr<GesturePropertyProvider> gesture_property_provider_;
-#endif
-
   // Object for controlling input devices.
   InputControllerEvdev input_controller_;
 

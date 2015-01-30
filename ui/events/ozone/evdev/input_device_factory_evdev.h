@@ -31,15 +31,14 @@ class DeviceEventDispatcherEvdev;
 class GesturePropertyProvider;
 #endif
 
+typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
+
 // Manager for event device objects. All device I/O starts here.
 class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
  public:
   InputDeviceFactoryEvdev(
       DeviceEventDispatcherEvdev* dispatcher,
       scoped_refptr<base::SingleThreadTaskRunner> dispatch_runner,
-#if defined(USE_EVDEV_GESTURES)
-      GesturePropertyProvider* gesture_property_provider_,
-#endif
       CursorDelegateEvdev* cursor);
   ~InputDeviceFactoryEvdev();
 
@@ -67,6 +66,18 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Enables all keys on the internal keyboard.
   void EnableInternalKeyboard();
 
+  // Bits from InputController that have to be answered on IO.
+  bool HasMouse();
+  bool HasTouchpad();
+  void SetTouchpadSensitivity(int value);
+  void SetTapToClick(bool enabled);
+  void SetThreeFingerClick(bool enabled);
+  void SetTapDragging(bool enabled);
+  void SetNaturalScroll(bool enabled);
+  void SetMouseSensitivity(int value);
+  void SetTapToClickPaused(bool state);
+  void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
+
  private:
   // Open device at path & starting processing events (on UI thread).
   void AttachInputDevice(scoped_ptr<EventConverterEvdev> converter);
@@ -79,6 +90,13 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void NotifyKeyboardsUpdated();
   void NotifyTouchscreensUpdated();
 
+  void SetIntPropertyForOneType(const EventDeviceType type,
+                                const std::string& name,
+                                int value);
+  void SetBoolPropertyForOneType(const EventDeviceType type,
+                                 const std::string& name,
+                                 bool value);
+
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
 
@@ -90,7 +108,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
 #if defined(USE_EVDEV_GESTURES)
   // Gesture library property provider (used by touchpads/mice).
-  GesturePropertyProvider* gesture_property_provider_;
+  scoped_ptr<GesturePropertyProvider> gesture_property_provider_;
 #endif
 
   // Dispatcher for events.

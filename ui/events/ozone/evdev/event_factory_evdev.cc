@@ -19,10 +19,6 @@
 #include "ui/events/ozone/evdev/input_device_factory_evdev.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 
-#if defined(USE_EVDEV_GESTURES)
-#include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
-#endif
-
 namespace ui {
 
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
@@ -34,16 +30,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
           base::Bind(&EventFactoryEvdev::PostUiEvent, base::Unretained(this))),
       keyboard_(&modifiers_, keyboard_layout, dispatch_callback_),
       cursor_(cursor),
-#if defined(USE_EVDEV_GESTURES)
-      gesture_property_provider_(new GesturePropertyProvider),
-#endif
-      input_controller_(&keyboard_,
-                        &button_map_
-#if defined(USE_EVDEV_GESTURES)
-                        ,
-                        gesture_property_provider_.get()
-#endif
-                            ),
+      input_controller_(&keyboard_, &button_map_),
       initialized_(false),
       weak_ptr_factory_(this) {
   DCHECK(device_manager_);
@@ -56,12 +43,8 @@ void EventFactoryEvdev::Init() {
   DCHECK(!initialized_);
 
   // Set up device factory.
-  input_device_factory_.reset(
-      new InputDeviceFactoryEvdev(this, base::ThreadTaskRunnerHandle::Get(),
-#if defined(USE_EVDEV_GESTURES)
-                                  gesture_property_provider_.get(),
-#endif
-                                  cursor_));
+  input_device_factory_.reset(new InputDeviceFactoryEvdev(
+      this, base::ThreadTaskRunnerHandle::Get(), cursor_));
   // TODO(spang): This settings interface is really broken. crbug.com/450899
   input_controller_.SetInputDeviceFactory(input_device_factory_.get());
 

@@ -9,6 +9,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -61,6 +62,95 @@ bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
     return true;  // mouse
 
   return false;
+}
+
+void SetGestureIntProperty(GesturePropertyProvider* provider,
+                           int id,
+                           const std::string& name,
+                           int value) {
+  GesturesProp* property = provider->GetProperty(id, name);
+  if (property) {
+    std::vector<int> values(1, value);
+    property->SetIntValue(values);
+  }
+}
+
+void SetGestureBoolProperty(GesturePropertyProvider* provider,
+                            int id,
+                            const std::string& name,
+                            bool value) {
+  GesturesProp* property = provider->GetProperty(id, name);
+  if (property) {
+    std::vector<bool> values(1, value);
+    property->SetBoolValue(values);
+  }
+}
+
+// Return the values in an array in one string. Used for touch logging.
+template <typename T>
+std::string DumpArrayProperty(const std::vector<T>& value, const char* format) {
+  std::string ret;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (i > 0)
+      ret.append(", ");
+    ret.append(base::StringPrintf(format, value[i]));
+  }
+  return ret;
+}
+
+// Return the values in a gesture property in one string. Used for touch
+// logging.
+std::string DumpGesturePropertyValue(GesturesProp* property) {
+  switch (property->type()) {
+    case GesturePropertyProvider::PT_INT:
+      return DumpArrayProperty(property->GetIntValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_SHORT:
+      return DumpArrayProperty(property->GetShortValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_BOOL:
+      return DumpArrayProperty(property->GetBoolValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_STRING:
+      return "\"" + property->GetStringValue() + "\"";
+      break;
+    case GesturePropertyProvider::PT_REAL:
+      return DumpArrayProperty(property->GetDoubleValue(), "%lf");
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return std::string();
+}
+
+// Dump touch device property values to a string.
+void DumpTouchDeviceStatus(InputDeviceFactoryEvdev* device_factory,
+                           GesturePropertyProvider* provider,
+                           std::string* status) {
+  // We use DT_ALL since we want gesture property values for all devices that
+  // run with the gesture library, not just mice or touchpads.
+  std::vector<int> ids;
+  device_factory->GetDeviceIdsByType(DT_ALL, &ids);
+
+  // Dump the property names and values for each device.
+  for (size_t i = 0; i < ids.size(); ++i) {
+    std::vector<std::string> names = provider->GetPropertyNamesById(ids[i]);
+    status->append("\n");
+    status->append(base::StringPrintf("ID %d:\n", ids[i]));
+    status->append(base::StringPrintf(
+        "Device \'%s\':\n", provider->GetDeviceNameById(ids[i]).c_str()));
+
+    // Note that, unlike X11, we don't maintain the "atom" concept here.
+    // Therefore, the property name indices we output here shouldn't be treated
+    // as unique identifiers of the properties.
+    std::sort(names.begin(), names.end());
+    for (size_t j = 0; j < names.size(); ++j) {
+      status->append(base::StringPrintf("\t%s (%zu):", names[j].c_str(), j));
+      GesturesProp* property = provider->GetProperty(ids[i], names[j]);
+      status->append("\t" + DumpGesturePropertyValue(property) + '\n');
+    }
+  }
 }
 #endif
 
@@ -159,14 +249,11 @@ void CloseInputDevice(const base::FilePath& path,
 InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
     DeviceEventDispatcherEvdev* dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> dispatch_runner,
-#if defined(USE_EVDEV_GESTURES)
-    GesturePropertyProvider* gesture_property_provider,
-#endif
     CursorDelegateEvdev* cursor)
     : ui_task_runner_(dispatch_runner),
       cursor_(cursor),
 #if defined(USE_EVDEV_GESTURES)
-      gesture_property_provider_(gesture_property_provider),
+      gesture_property_provider_(new GesturePropertyProvider),
 #endif
       dispatcher_(dispatcher),
       weak_ptr_factory_(this) {
@@ -185,7 +272,7 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
   params->dispatcher = dispatcher_;
 
 #if defined(USE_EVDEV_GESTURES)
-  params->gesture_property_provider = gesture_property_provider_;
+  params->gesture_property_provider = gesture_property_provider_.get();
 #endif
 
   OpenInputDeviceReplyCallback reply_callback =
@@ -287,6 +374,54 @@ void InputDeviceFactoryEvdev::EnableInternalKeyboard() {
   }
 }
 
+bool InputDeviceFactoryEvdev::HasMouse() {
+  return GetDeviceIdsByType(DT_MOUSE, NULL);
+}
+
+bool InputDeviceFactoryEvdev::HasTouchpad() {
+  return GetDeviceIdsByType(DT_TOUCHPAD, NULL);
+}
+
+void InputDeviceFactoryEvdev::SetTouchpadSensitivity(int value) {
+  SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity", value);
+  SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity", value);
+}
+
+void InputDeviceFactoryEvdev::SetTapToClick(bool enabled) {
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Enable", enabled);
+}
+
+void InputDeviceFactoryEvdev::SetThreeFingerClick(bool enabled) {
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "T5R2 Three Finger Click Enable",
+                            enabled);
+}
+
+void InputDeviceFactoryEvdev::SetTapDragging(bool enabled) {
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Drag Enable", enabled);
+}
+
+void InputDeviceFactoryEvdev::SetNaturalScroll(bool enabled) {
+  SetBoolPropertyForOneType(DT_MULTITOUCH, "Australian Scrolling", enabled);
+}
+
+void InputDeviceFactoryEvdev::SetMouseSensitivity(int value) {
+  SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity", value);
+  SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity", value);
+}
+
+void InputDeviceFactoryEvdev::SetTapToClickPaused(bool state) {
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused", state);
+}
+
+void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
+    const GetTouchDeviceStatusReply& reply) {
+  scoped_ptr<std::string> status(new std::string);
+#if defined(USE_EVDEV_GESTURES)
+  DumpTouchDeviceStatus(this, gesture_property_provider_.get(), status.get());
+#endif
+  reply.Run(status.Pass());
+}
+
 void InputDeviceFactoryEvdev::NotifyDeviceChange(
     const EventConverterEvdev& converter) {
   if (converter.HasTouchscreen())
@@ -341,6 +476,37 @@ bool InputDeviceFactoryEvdev::GetDeviceIdsByType(const EventDeviceType type,
   if (device_ids)
     device_ids->assign(ids.begin(), ids.end());
   return !ids.empty();
+}
+
+void InputDeviceFactoryEvdev::SetIntPropertyForOneType(
+    const EventDeviceType type,
+    const std::string& name,
+    int value) {
+#if defined(USE_EVDEV_GESTURES)
+  std::vector<int> ids;
+  gesture_property_provider_->GetDeviceIdsByType(type, &ids);
+  for (size_t i = 0; i < ids.size(); ++i) {
+    SetGestureIntProperty(gesture_property_provider_.get(), ids[i], name,
+                          value);
+  }
+#endif
+  // In the future, we may add property setting codes for other non-gesture
+  // devices. One example would be keyboard settings.
+  // TODO(sheckylin): See http://crbug.com/398518 for example.
+}
+
+void InputDeviceFactoryEvdev::SetBoolPropertyForOneType(
+    const EventDeviceType type,
+    const std::string& name,
+    bool value) {
+#if defined(USE_EVDEV_GESTURES)
+  std::vector<int> ids;
+  gesture_property_provider_->GetDeviceIdsByType(type, &ids);
+  for (size_t i = 0; i < ids.size(); ++i) {
+    SetGestureBoolProperty(gesture_property_provider_.get(), ids[i], name,
+                           value);
+  }
+#endif
 }
 
 }  // namespace ui

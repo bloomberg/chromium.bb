@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/ozone/public/input_controller.h"
 
@@ -18,20 +17,11 @@ class InputDeviceFactoryEvdev;
 class KeyboardEvdev;
 class MouseButtonMapEvdev;
 
-#if defined(USE_EVDEV_GESTURES)
-class GesturePropertyProvider;
-#endif
-
 // Ozone InputController implementation for the Linux input subsystem ("evdev").
 class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
  public:
   InputControllerEvdev(KeyboardEvdev* keyboard,
-                       MouseButtonMapEvdev* button_map
-#if defined(USE_EVDEV_GESTURES)
-                       ,
-                       GesturePropertyProvider* gesture_property_provider
-#endif
-                       );
+                       MouseButtonMapEvdev* button_map);
   ~InputControllerEvdev() override;
 
   // Initialize device factory. This would be in the constructor if it was
@@ -66,14 +56,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void EnableInternalKeyboard() override;
 
  private:
-  // Set a property value for all devices of one type.
-  void SetIntPropertyForOneType(const EventDeviceType type,
-                                const std::string& name,
-                                int value);
-  void SetBoolPropertyForOneType(const EventDeviceType type,
-                                 const std::string& name,
-                                 bool value);
-
   // Factory for devices. Needed to update device config.
   InputDeviceFactoryEvdev* input_device_factory_;
 
@@ -82,11 +64,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
 
   // Mouse button map.
   MouseButtonMapEvdev* button_map_;
-
-#if defined(USE_EVDEV_GESTURES)
-  // Gesture library property provider.
-  GesturePropertyProvider* gesture_property_provider_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };
