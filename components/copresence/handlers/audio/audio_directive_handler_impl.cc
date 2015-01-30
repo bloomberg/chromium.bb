@@ -88,20 +88,23 @@ void AudioDirectiveHandlerImpl::AddInstruction(
   const TokenInstruction& instruction = directive.token_instruction();
   base::TimeDelta ttl =
       base::TimeDelta::FromMilliseconds(directive.ttl_millis());
+  const size_t token_length = directive.configuration().token_params().length();
 
-  size_t token_length = 0;
   switch (instruction.token_instruction_type()) {
     case TRANSMIT:
       DVLOG(2) << "Audio Transmit Directive received. Token: "
                << instruction.token_id()
                << " with medium=" << instruction.medium()
                << " with TTL=" << ttl.InMilliseconds();
+      DCHECK_GT(token_length, 0u);
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
+          audio_manager_->SetTokenLength(INAUDIBLE, token_length);
           transmits_lists_[INAUDIBLE]->AddDirective(op_id, directive);
           audio_manager_->SetToken(INAUDIBLE, instruction.token_id());
           break;
         case AUDIO_AUDIBLE_DTMF:
+          audio_manager_->SetTokenLength(AUDIBLE, token_length);
           transmits_lists_[AUDIBLE]->AddDirective(op_id, directive);
           audio_manager_->SetToken(AUDIBLE, instruction.token_id());
           break;
@@ -109,32 +112,32 @@ void AudioDirectiveHandlerImpl::AddInstruction(
           NOTREACHED();
       }
       break;
+
     case RECEIVE:
       DVLOG(2) << "Audio Receive Directive received."
                << " with medium=" << instruction.medium()
                << " with TTL=" << ttl.InMilliseconds();
+      DCHECK_GT(token_length, 0u);
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
+          audio_manager_->SetTokenLength(INAUDIBLE, token_length);
           receives_lists_[INAUDIBLE]->AddDirective(op_id, directive);
-          if ((token_length =
-                   directive.configuration().token_params().length()) > 0)
-            audio_manager_->SetTokenLength(INAUDIBLE, token_length);
           break;
         case AUDIO_AUDIBLE_DTMF:
-          if ((token_length =
-                   directive.configuration().token_params().length()) > 0)
-            audio_manager_->SetTokenLength(AUDIBLE, token_length);
+          audio_manager_->SetTokenLength(AUDIBLE, token_length);
           receives_lists_[AUDIBLE]->AddDirective(op_id, directive);
           break;
         default:
           NOTREACHED();
       }
       break;
+
     case UNKNOWN_TOKEN_INSTRUCTION_TYPE:
     default:
       LOG(WARNING) << "Unknown Audio Transmit Directive received. type = "
                    << instruction.token_instruction_type();
   }
+
   ProcessNextInstruction();
 }
 

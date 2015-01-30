@@ -14,7 +14,7 @@ function bytesToBase64(bytes) {
   var bstr = '';
   for (var i = 0; i < bytes.length; ++i)
     bstr += String.fromCharCode(bytes[i]);
-  return btoa(bstr);
+  return btoa(bstr).replace('=', '');
 }
 
 /**
@@ -54,16 +54,22 @@ function WhisperEncoder(params, whisperNacl) {
  * @param {Object} params Encode token parameters object.
  */
 WhisperEncoder.prototype.encode = function(params) {
+  // Pad the token before decoding it.
+  var token = params.token.token;
+  while (token.length % 4 > 0)
+    token += '=';
+
   var msg = {
     type: 'encode_token',
     // Trying to send the token in binary form to Nacl doesn't work correctly.
     // We end up with the correct string + a bunch of extra characters. This is
     // true of returning a binary string too; hence we communicate back and
     // forth by converting the bytes into an array of integers.
-    token: stringToArray(atob(params.token.token)),
+    token: stringToArray(atob(token)),
     repetitions: params.repetitions,
     use_dtmf: params.token.audible
   };
+
   this.whisperNacl_.send(msg);
 };
 

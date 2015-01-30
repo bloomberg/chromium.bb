@@ -24,7 +24,7 @@ namespace {
 
 // TODO(rkc): Add more varied test input.
 const char kSixZeros[] = "MDAwMDAw";
-const char kEightZeros[] = "MDAwMDAwMDA=";
+const char kEightZeros[] = "MDAwMDAwMDA";
 const char kNineZeros[] = "MDAwMDAwMDAw";
 
 const size_t kTokenLengths[] = {6, 6};

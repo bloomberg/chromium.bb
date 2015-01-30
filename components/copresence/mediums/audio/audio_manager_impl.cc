@@ -53,6 +53,8 @@ AudioManagerImpl::AudioManagerImpl()
 
   player_[AUDIBLE] = nullptr;
   player_[INAUDIBLE] = nullptr;
+  token_length_[0] = 0;
+  token_length_[1] = 0;
 }
 
 void AudioManagerImpl::Initialize(WhispernetClient* whispernet_client,
@@ -140,9 +142,9 @@ void AudioManagerImpl::StopRecording(AudioType type) {
 }
 
 void AudioManagerImpl::SetToken(AudioType type,
-                                const std::string& url_unsafe_token) {
+                                const std::string& url_safe_token) {
   DCHECK(type == AUDIBLE || type == INAUDIBLE);
-  std::string token = FromUrlSafe(url_unsafe_token);
+  std::string token = FromUrlSafe(url_safe_token);
   if (!samples_cache_[type]->HasKey(token)) {
     whispernet_client_->EncodeToken(token, type);
   } else {

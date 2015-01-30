@@ -43,7 +43,7 @@ class AudioManagerImpl final : public AudioManager {
   void StopPlaying(AudioType type) override;
   void StartRecording(AudioType type) override;
   void StopRecording(AudioType type) override;
-  void SetToken(AudioType type, const std::string& url_unsafe_token) override;
+  void SetToken(AudioType type, const std::string& url_safe_token) override;
   const std::string GetToken(AudioType type) override;
   bool IsPlayingTokenHeard(AudioType type) override;
   void SetTokenLength(AudioType type, size_t token_length) override;
