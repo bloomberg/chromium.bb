@@ -148,6 +148,13 @@ void DeleteBitmap(const base::FilePath& image_path) {
   base::DeleteFile(image_path, false);
 }
 
+// Used by SaveAvatarImageAtPath to post a task to delete the |downloader|
+// "soon". We can't just delete it directly there because
+// SaveAvatarImageAtPath is called from this very downloader.
+void DeleteDownloader(ProfileAvatarDownloader* downloader) {
+  delete downloader;
+}
+
 }  // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
@@ -903,9 +910,14 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
 
   // Remove the file from the list of downloads in progress. Note that this list
   // only contains the high resolution avatars, and not the Gaia profile images.
-  if (avatar_images_downloads_in_progress_[key]) {
-    delete avatar_images_downloads_in_progress_[key];
-    avatar_images_downloads_in_progress_[key] = NULL;
+  auto downloader_iter = avatar_images_downloads_in_progress_.find(key);
+  if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
+    // We mustn't delete the avatar downloader right here, since we're being
+    // called by it.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&DeleteDownloader,
+                                       downloader_iter->second));
+    avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 
   if (!data->size()) {
@@ -1048,7 +1060,7 @@ void ProfileInfoCache::DownloadHighResAvatar(
   const std::string file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
   // If the file is already being downloaded, don't start another download.
-  if (avatar_images_downloads_in_progress_[file_name])
+  if (avatar_images_downloads_in_progress_.count(file_name))
     return;
 
   // Start the download for this file. The cache takes ownership of the

@@ -571,11 +571,13 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   avatar_downloader.OnFetchComplete(
       GURL("http://www.google.com/avatar.png"), &bitmap);
 
+  // Now the download should not be in progress anymore.
+  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+
   std::string file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
 
   // The file should have been cached and saved.
-  EXPECT_EQ(1U, GetCache()->avatar_images_downloads_in_progress_.size());
   EXPECT_EQ(1U, GetCache()->cached_avatar_images_.size());
   EXPECT_TRUE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
   EXPECT_EQ(GetCache()->cached_avatar_images_[file_name],

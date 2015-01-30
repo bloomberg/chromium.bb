@@ -231,7 +231,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // This prevents a picture from being downloaded multiple times. The
   // ProfileAvatarDownloader instances are deleted when the download completes
   // or when the ProfileInfoCache is destroyed.
-  mutable std::map<std::string, ProfileAvatarDownloader*>
+  std::map<std::string, ProfileAvatarDownloader*>
       avatar_images_downloads_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
