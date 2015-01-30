@@ -55,6 +55,9 @@ class CoreTabHelper : public content::WebContentsObserver,
   explicit CoreTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<CoreTabHelper>;
 
+  static bool GetStatusTextForWebContents(base::string16* status_text,
+                                          content::WebContents* source);
+
   // content::WebContentsObserver overrides:
   void DidStartLoading(content::RenderViewHost* render_view_host) override;
   void WasShown() override;

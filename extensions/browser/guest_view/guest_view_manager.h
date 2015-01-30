@@ -31,7 +31,14 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   explicit GuestViewManager(content::BrowserContext* context);
   ~GuestViewManager() override;
 
+  // Returns the GuestViewManager associated with |context|. If one isn't
+  // available, then it is created and returned.
   static GuestViewManager* FromBrowserContext(content::BrowserContext* context);
+
+  // Returns the GuestViewManager associated with |context|. If one isn't
+  // available, then nullptr is returned.
+  static GuestViewManager* FromBrowserContextIfAvailable(
+      content::BrowserContext* context);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.

@@ -301,10 +301,15 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
   void DeactivateContents(content::WebContents* contents) final;
+  void ContentsMouseEvent(content::WebContents* source,
+                          const gfx::Point& location,
+                          bool motion) override;
   void ContentsZoomChange(bool zoom_in) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) final;
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
   bool ShouldFocusPageAfterCrash() final;
@@ -312,6 +317,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                              const blink::WebGestureEvent& event) final;
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) final;
+  void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
 
  private:
   class OwnerLifetimeObserver;

@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "net/base/load_states.h"
 #include "net/http/http_request_headers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,62 +47,9 @@ base::string16 CoreTabHelper::GetDefaultTitle() {
 }
 
 base::string16 CoreTabHelper::GetStatusText() const {
-  if (!web_contents()->IsLoading() ||
-      web_contents()->GetLoadState().state == net::LOAD_STATE_IDLE) {
-    return base::string16();
-  }
-
-  switch (web_contents()->GetLoadState().state) {
-    case net::LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL:
-    case net::LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT);
-    case net::LOAD_STATE_WAITING_FOR_DELEGATE:
-      if (!web_contents()->GetLoadState().param.empty()) {
-        return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
-                                          web_contents()->GetLoadState().param);
-      } else {
-        return l10n_util::GetStringUTF16(
-            IDS_LOAD_STATE_WAITING_FOR_DELEGATE_GENERIC);
-      }
-    case net::LOAD_STATE_WAITING_FOR_CACHE:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
-    case net::LOAD_STATE_WAITING_FOR_APPCACHE:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_APPCACHE);
-    case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
-      return
-          l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
-    case net::LOAD_STATE_DOWNLOADING_PROXY_SCRIPT:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_DOWNLOADING_PROXY_SCRIPT);
-    case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
-    case net::LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT:
-      return l10n_util::GetStringUTF16(
-          IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
-    case net::LOAD_STATE_RESOLVING_HOST:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);
-    case net::LOAD_STATE_CONNECTING:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING);
-    case net::LOAD_STATE_SSL_HANDSHAKE:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SSL_HANDSHAKE);
-    case net::LOAD_STATE_SENDING_REQUEST:
-      if (web_contents()->GetUploadSize()) {
-        return l10n_util::GetStringFUTF16Int(
-            IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
-            static_cast<int>((100 * web_contents()->GetUploadPosition()) /
-                web_contents()->GetUploadSize()));
-      } else {
-        return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SENDING_REQUEST);
-      }
-    case net::LOAD_STATE_WAITING_FOR_RESPONSE:
-      return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
-                                        web_contents()->GetLoadStateHost());
-    // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
-    case net::LOAD_STATE_IDLE:
-    case net::LOAD_STATE_READING_RESPONSE:
-      break;
-  }
-
-  return base::string16();
+  base::string16 status_text;
+  GetStatusTextForWebContents(&status_text, web_contents());
+  return status_text;
 }
 
 void CoreTabHelper::OnCloseStarted() {
@@ -133,6 +81,100 @@ void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
 
   browser->command_controller()->ContentRestrictionsChanged();
 #endif
+}
+
+// static
+bool CoreTabHelper::GetStatusTextForWebContents(
+    base::string16* status_text, content::WebContents* source) {
+  auto guest_manager =
+      extensions::GuestViewManager::FromBrowserContextIfAvailable(
+          source->GetBrowserContext());
+  if (!source->IsLoading() ||
+      source->GetLoadState().state == net::LOAD_STATE_IDLE) {
+    if (!guest_manager)
+      return false;
+    return guest_manager->ForEachGuest(
+        source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
+                           status_text));
+  }
+
+  switch (source->GetLoadState().state) {
+    case net::LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL:
+    case net::LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT);
+      return true;
+    case net::LOAD_STATE_WAITING_FOR_DELEGATE:
+      if (!source->GetLoadState().param.empty()) {
+        *status_text = l10n_util::GetStringFUTF16(
+            IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
+            source->GetLoadState().param);
+        return true;
+      } else {
+        *status_text = l10n_util::GetStringUTF16(
+            IDS_LOAD_STATE_WAITING_FOR_DELEGATE_GENERIC);
+        return true;
+      }
+    case net::LOAD_STATE_WAITING_FOR_CACHE:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
+      return true;
+    case net::LOAD_STATE_WAITING_FOR_APPCACHE:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_APPCACHE);
+      return true;
+    case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
+      return true;
+    case net::LOAD_STATE_DOWNLOADING_PROXY_SCRIPT:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_DOWNLOADING_PROXY_SCRIPT);
+      return true;
+    case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
+      return true;
+    case net::LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT:
+      *status_text = l10n_util::GetStringUTF16(
+          IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
+      return true;
+    case net::LOAD_STATE_RESOLVING_HOST:
+      *status_text = l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);
+      return true;
+    case net::LOAD_STATE_CONNECTING:
+      *status_text = l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING);
+      return true;
+    case net::LOAD_STATE_SSL_HANDSHAKE:
+      *status_text = l10n_util::GetStringUTF16(IDS_LOAD_STATE_SSL_HANDSHAKE);
+      return true;
+    case net::LOAD_STATE_SENDING_REQUEST:
+      if (source->GetUploadSize()) {
+        *status_text = l10n_util::GetStringFUTF16Int(
+            IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
+            static_cast<int>((100 * source->GetUploadPosition()) /
+                source->GetUploadSize()));
+        return true;
+      } else {
+        *status_text =
+            l10n_util::GetStringUTF16(IDS_LOAD_STATE_SENDING_REQUEST);
+        return true;
+      }
+    case net::LOAD_STATE_WAITING_FOR_RESPONSE:
+      *status_text =
+          l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
+                                     source->GetLoadStateHost());
+      return true;
+    // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
+    case net::LOAD_STATE_IDLE:
+    case net::LOAD_STATE_READING_RESPONSE:
+      break;
+  }
+  if (!guest_manager)
+    return false;
+  return guest_manager->ForEachGuest(
+      source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
+                         status_text));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

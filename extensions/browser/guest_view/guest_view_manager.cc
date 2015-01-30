@@ -36,7 +36,7 @@ GuestViewManager::GuestViewManager(content::BrowserContext* context)
 
 GuestViewManager::~GuestViewManager() {}
 
-// static.
+// static
 GuestViewManager* GuestViewManager::FromBrowserContext(
     BrowserContext* context) {
   GuestViewManager* guest_manager =
@@ -51,6 +51,13 @@ GuestViewManager* GuestViewManager::FromBrowserContext(
     context->SetUserData(guestview::kGuestViewManagerKeyName, guest_manager);
   }
   return guest_manager;
+}
+
+// static
+GuestViewManager* GuestViewManager::FromBrowserContextIfAvailable(
+    BrowserContext* context) {
+  return static_cast<GuestViewManager*>(context->GetUserData(
+      guestview::kGuestViewManagerKeyName));
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
