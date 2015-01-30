@@ -225,7 +225,7 @@ public class BookmarksBridge {
     }
 
     /**
-     * @return The top level folder's parents, which are root node, mobile node, and other node.
+     * @return The top level folder's parents.
      */
     public List<BookmarkId> getTopLevelFolderParentIDs() {
         assert mIsNativeBookmarkModelLoaded;
@@ -238,25 +238,12 @@ public class BookmarksBridge {
      * @param getSpecial Whether special top folders should be returned.
      * @param getNormal  Whether normal top folders should be returned.
      * @return The top level folders. Note that special folders come first and normal top folders
-     *         will be in the alphabetical order. Special top folders are managed bookmark and
-     *         partner bookmark. Normal top folders are desktop permanent folder, and the
-     *         sub-folders of mobile permanent folder and others permanent folder.
+     *         will be in the alphabetical order.
      */
     public List<BookmarkId> getTopLevelFolderIDs(boolean getSpecial, boolean getNormal) {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
         nativeGetTopLevelFolderIDs(mNativeBookmarksBridge, getSpecial, getNormal, result);
-        return result;
-    }
-
-    /**
-     * @return The uncategorized bookmark IDs. They are direct descendant bookmarks of mobile and
-     *         other folders.
-     */
-    public List<BookmarkId> getUncategorizedBookmarkIDs() {
-        assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetUncategorizedBookmarkIDs(mNativeBookmarksBridge, result);
         return result;
     }
 
@@ -702,8 +689,6 @@ public class BookmarksBridge {
             List<BookmarkId> bookmarksList);
     private native void nativeGetTopLevelFolderIDs(long nativeBookmarksBridge, boolean getSpecial,
             boolean getNormal, List<BookmarkId> bookmarksList);
-    private native void nativeGetUncategorizedBookmarkIDs(long nativeBookmarksBridge,
-            List<BookmarkId> bookmarksList);
     private native void nativeGetAllFoldersWithDepths(long nativeBookmarksBridge,
             List<BookmarkId> folderList, List<Integer> depthList);
     private native BookmarkId nativeGetMobileFolderId(long nativeBookmarksBridge);

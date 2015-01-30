@@ -103,14 +103,16 @@ public class BookmarksBridgeTest extends ChromeShellTestBase {
 
         // Map folders to depths as expected results
         HashMap<BookmarkId, Integer> idToDepth = new HashMap<BookmarkId, Integer>();
-        idToDepth.put(folderA, 0);
-        idToDepth.put(folderAA, 1);
-        idToDepth.put(folderAAA, 2);
-        idToDepth.put(folderAAAA, 3);
+        idToDepth.put(mMobileNode, 0);
+        idToDepth.put(folderA, 1);
+        idToDepth.put(folderAA, 2);
+        idToDepth.put(folderAAA, 3);
+        idToDepth.put(folderAAAA, 4);
         idToDepth.put(mDesktopNode, 0);
         idToDepth.put(folderB, 1);
         idToDepth.put(folderBA, 2);
-        idToDepth.put(folderC, 0);
+        idToDepth.put(mOtherNode, 0);
+        idToDepth.put(folderC, 1);
 
         List<BookmarkId> folderList = new ArrayList<BookmarkId>();
         List<Integer> depthList = new ArrayList<Integer>();
@@ -141,44 +143,54 @@ public class BookmarksBridgeTest extends ChromeShellTestBase {
         List<Integer> depthList = new ArrayList<Integer>();
 
         mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderA));
+        idToDepth.put(mMobileNode, 0);
         idToDepth.put(mDesktopNode, 0);
         idToDepth.put(folderB, 1);
         idToDepth.put(folderBA, 2);
-        idToDepth.put(folderC, 0);
+        idToDepth.put(mOtherNode, 0);
+        idToDepth.put(folderC, 1);
         verifyFolderDepths(folderList, depthList, idToDepth);
 
         mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderB));
-        idToDepth.put(folderA, 0);
-        idToDepth.put(folderAA, 1);
-        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mMobileNode, 0);
+        idToDepth.put(folderA, 1);
+        idToDepth.put(folderAA, 2);
+        idToDepth.put(folderAAA, 3);
         idToDepth.put(mDesktopNode, 0);
-        idToDepth.put(folderC, 0);
+        idToDepth.put(mOtherNode, 0);
+        idToDepth.put(folderC, 1);
         verifyFolderDepths(folderList, depthList, idToDepth);
 
         mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderC));
-        idToDepth.put(folderA, 0);
-        idToDepth.put(folderAA, 1);
-        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mMobileNode, 0);
+        idToDepth.put(folderA, 1);
+        idToDepth.put(folderAA, 2);
+        idToDepth.put(folderAAA, 3);
         idToDepth.put(mDesktopNode, 0);
         idToDepth.put(folderB, 1);
         idToDepth.put(folderBA, 2);
+        idToDepth.put(mOtherNode, 0);
         verifyFolderDepths(folderList, depthList, idToDepth);
 
         mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderBA));
-        idToDepth.put(folderA, 0);
-        idToDepth.put(folderAA, 1);
-        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mMobileNode, 0);
+        idToDepth.put(folderA, 1);
+        idToDepth.put(folderAA, 2);
+        idToDepth.put(folderAAA, 3);
         idToDepth.put(mDesktopNode, 0);
         idToDepth.put(folderB, 1);
-        idToDepth.put(folderC, 0);
+        idToDepth.put(mOtherNode, 0);
+        idToDepth.put(folderC, 1);
         verifyFolderDepths(folderList, depthList, idToDepth);
 
         mBookmarksBridge.getMoveDestinations(folderList, depthList,
                 Arrays.asList(folderAA, folderC));
-        idToDepth.put(folderA, 0);
+        idToDepth.put(mMobileNode, 0);
+        idToDepth.put(folderA, 1);
         idToDepth.put(mDesktopNode, 0);
         idToDepth.put(folderB, 1);
         idToDepth.put(folderBA, 2);
+        idToDepth.put(mOtherNode, 0);
         verifyFolderDepths(folderList, depthList, idToDepth);
     }
 

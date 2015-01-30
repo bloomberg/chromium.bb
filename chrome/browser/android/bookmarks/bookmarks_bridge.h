@@ -57,9 +57,6 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                             jboolean get_normal,
                             jobject j_result_obj);
 
-  void GetUncategorizedBookmarkIDs(JNIEnv* env,
-                                   jobject obj,
-                                   jobject j_result_obj);
   void GetAllFoldersWithDepths(JNIEnv* env,
                                jobject obj,
                                jobject j_folders_obj,
