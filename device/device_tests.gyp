@@ -34,6 +34,7 @@
         'battery/battery_status_service_unittest.cc',
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
         'bluetooth/bluetooth_adapter_unittest.cc',
+        'bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
         'bluetooth/bluetooth_device_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',

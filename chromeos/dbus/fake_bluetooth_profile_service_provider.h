@@ -39,6 +39,8 @@ class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
       const Delegate::ConfirmationCallback& callback);
   virtual void Cancel();
 
+  const dbus::ObjectPath& object_path() { return object_path_; }
+
  private:
   friend class FakeBluetoothProfileManagerClient;
 
