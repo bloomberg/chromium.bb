@@ -680,7 +680,6 @@ void PictureLayerTiling::SetLiveTilesRect(
     recycled_twin->live_tiles_rect_ = live_tiles_rect_;
     recycled_twin->VerifyLiveTilesRect(true);
   }
-  client_->TilingLiveRectChanged();
 }
 
 void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {

@@ -142,6 +142,11 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
 
   layer_impl->SanityCheckTilingState();
+
+  // We always need to push properties.
+  // See http://crbug.com/303943
+  // TODO(danakj): Stop always pushing properties since we don't swap tilings.
+  needs_push_properties_ = true;
 }
 
 void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
@@ -566,10 +571,6 @@ void PictureLayerImpl::UpdateRasterSource(
   if (could_have_tilings != can_have_tilings)
     layer_tree_impl()->set_needs_update_draw_properties();
 
-  // SetNeedsPushProperties when changing the raster source. This shouldn't
-  // imply damage but need to be synced.
-  SetNeedsPushProperties();
-
   if (!can_have_tilings) {
     RemoveAllTilings();
     return;
@@ -661,12 +662,6 @@ TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {
 
 bool PictureLayerImpl::RequiresHighResToDraw() const {
   return layer_tree_impl()->RequiresHighResToDraw();
-}
-
-void PictureLayerImpl::TilingLiveRectChanged() {
-  // SetNeedsPushProperties when the live rect changes, as there are new tiles
-  // on the tree. This shouldn't imply damage but need to be synced.
-  SetNeedsPushProperties();
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(

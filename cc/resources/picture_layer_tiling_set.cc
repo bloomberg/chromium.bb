@@ -208,6 +208,7 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
       skewport_target_time_in_seconds_,
       skewport_extrapolation_limit_in_content_pixels_));
   PictureLayerTiling* appended = tilings_.back();
+
   tilings_.sort(LargestToSmallestScaleFunctor());
   return appended;
 }

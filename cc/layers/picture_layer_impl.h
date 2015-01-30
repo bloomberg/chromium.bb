@@ -73,7 +73,6 @@ class CC_EXPORT PictureLayerImpl
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
   WhichTree GetTree() const override;
   bool RequiresHighResToDraw() const override;
-  void TilingLiveRectChanged() override;
 
   void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
                           Region* new_invalidation,
