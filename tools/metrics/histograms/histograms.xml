@@ -35982,6 +35982,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.Cleaner.HasRebooted" enum="BooleanRebooted">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    Whether a reboot happened since the software reporter cleaner tool has
+    finished execution with a pre-reboot exit code.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Cleaner.RunningTime" units="ms">
   <owner>mad@chromium.org</owner>
   <summary>How long it took to run the software reporter cleaner tool.</summary>
@@ -43480,6 +43488,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanRaced" type="int">
   <int value="0" label="Did Not Race"/>
   <int value="1" label="Raced"/>
+</enum>
+
+<enum name="BooleanRebooted" type="int">
+  <int value="0" label="Has not rebooted"/>
+  <int value="1" label="Rebooted"/>
 </enum>
 
 <enum name="BooleanReceived" type="int">
