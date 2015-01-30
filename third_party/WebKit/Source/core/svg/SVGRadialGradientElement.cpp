@@ -22,12 +22,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGRadialGradientElement.h"
 
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
 #include "core/svg/RadialGradientAttributes.h"
-#include "core/svg/SVGTransformList.h"
 
 namespace blink {
 

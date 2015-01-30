@@ -22,12 +22,9 @@
 #include "config.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
-#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/SVGZoomAndPan.h"

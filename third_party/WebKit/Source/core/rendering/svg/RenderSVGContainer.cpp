@@ -22,11 +22,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 #include "core/paint/SVGContainerPainter.h"
-#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

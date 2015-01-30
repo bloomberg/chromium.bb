@@ -20,7 +20,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPatternElement.h"
 
 #include "core/XLinkNames.h"

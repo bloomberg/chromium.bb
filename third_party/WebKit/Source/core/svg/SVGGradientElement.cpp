@@ -20,15 +20,12 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGGradientElement.h"
 
 #include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/svg/RenderSVGPath.h"
-#include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
-#include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGStopElement.h"
 #include "core/svg/SVGTransformList.h"
 
