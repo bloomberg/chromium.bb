@@ -40,6 +40,7 @@ Makefile.in
 array-test
 client-test
 connection-test
+cpp-compile-test
 display-test
 event-loop-test
 exec-fd-leak-checker
