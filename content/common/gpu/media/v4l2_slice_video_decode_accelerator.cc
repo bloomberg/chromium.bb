@@ -2374,7 +2374,7 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   output_record.at_client = true;
 
   media::Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
-                         gfx::Rect(visible_size_));
+                         gfx::Rect(visible_size_), false);
   DVLOGF(3) << dec_surface->ToString()
             << ", bitstream_id: " << picture.bitstream_buffer_id()
             << ", picture_id: " << picture.picture_buffer_id();
