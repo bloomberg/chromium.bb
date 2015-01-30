@@ -109,10 +109,6 @@ int StartIt2MeNativeMessagingHost() {
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
 
-  scoped_refptr<AutoThreadTaskRunner> task_runner =
-      new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                                         run_loop.QuitClosure());
-
   scoped_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 
   scoped_ptr<NativeMessagingPipe> native_messaging_pipe(
@@ -122,13 +118,15 @@ int StartIt2MeNativeMessagingHost() {
   scoped_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(read_file.Pass(), write_file.Pass()));
 
-  scoped_ptr<extensions::NativeMessageHost> host(new It2MeNativeMessagingHost(
-      ChromotingHostContext::Create(task_runner), factory.Pass()));
+  scoped_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
+          message_loop.message_loop_proxy(), run_loop.QuitClosure()));
+  scoped_ptr<extensions::NativeMessageHost> host(
+      new It2MeNativeMessagingHost(context.Pass(), factory.Pass()));
 
   host->Start(native_messaging_pipe.get());
 
-  native_messaging_pipe->Start(
-      host.Pass(), channel.Pass(), run_loop.QuitClosure());
+  native_messaging_pipe->Start(host.Pass(), channel.Pass());
 
   // Run the loop until channel is alive.
   run_loop.Run();

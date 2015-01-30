@@ -26,8 +26,7 @@ class NativeMessagingPipe
 
   // Starts processing messages from the pipe.
   void Start(scoped_ptr<extensions::NativeMessageHost> host,
-             scoped_ptr<extensions::NativeMessagingChannel> channel,
-             const base::Closure& quit_closure);
+             scoped_ptr<extensions::NativeMessagingChannel> channel);
 
   // extensions::NativeMessageHost::Client implementation.
   void PostMessageFromNativeHost(const std::string& message) override;
@@ -38,7 +37,6 @@ class NativeMessagingPipe
   void OnDisconnect() override;
 
  private:
-  base::Closure quit_closure_;
   scoped_ptr<extensions::NativeMessagingChannel> channel_;
   scoped_ptr<extensions::NativeMessageHost> host_;
 

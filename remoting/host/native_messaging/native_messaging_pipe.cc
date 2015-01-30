@@ -19,11 +19,9 @@ NativeMessagingPipe::~NativeMessagingPipe() {
 
 void NativeMessagingPipe::Start(
     scoped_ptr<extensions::NativeMessageHost> host,
-    scoped_ptr<extensions::NativeMessagingChannel> channel,
-    const base::Closure& quit_closure) {
+    scoped_ptr<extensions::NativeMessagingChannel> channel) {
   host_ = host.Pass();
   channel_ = channel.Pass();
-  quit_closure_ = quit_closure;
   channel_->Start(this);
 }
 
@@ -34,8 +32,8 @@ void NativeMessagingPipe::OnMessage(scoped_ptr<base::Value> message) {
 }
 
 void NativeMessagingPipe::OnDisconnect() {
-  if (!quit_closure_.is_null())
-    base::ResetAndReturn(&quit_closure_).Run();
+  host_.reset();
+  channel_.reset();
 }
 
 void NativeMessagingPipe::PostMessageFromNativeHost(
@@ -45,8 +43,8 @@ void NativeMessagingPipe::PostMessageFromNativeHost(
 }
 
 void NativeMessagingPipe::CloseChannel(const std::string& error_message) {
-  if (!quit_closure_.is_null())
-    base::ResetAndReturn(&quit_closure_).Run();
+  host_.reset();
+  channel_.reset();
 }
 
 }  // namespace remoting
