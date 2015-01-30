@@ -407,7 +407,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // We have at least one permission, so show the lower permissions area.
         setVisibilityOfLowerDialogArea(true);
 
-        LinearLayout permissionRow = (LinearLayout) LayoutInflater.from(mContext).inflate(
+        View permissionRow = LayoutInflater.from(mContext).inflate(
                 R.layout.website_settings_permission_row, null);
 
         ImageView permission_icon = (ImageView) permissionRow.findViewById(
