@@ -2,11 +2,6 @@ importScripts('../../serviceworker/resources/worker-testharness.js');
 importScripts('/resources/testharness-helpers.js');
 
 test(function() {
-    assert_true('PushMessageData' in self);
-
-}, 'PushMessageData is exposed on the Service Worker global scope.');
-
-test(function() {
     var data = new PushMessageData('Hello, world!');
     assert_equals(data.text(), 'Hello, world!');
 

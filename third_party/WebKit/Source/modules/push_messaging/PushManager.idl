@@ -5,6 +5,7 @@
 // https://w3c.github.io/push-api/#pushmanager-interface
 
 [
+    Exposed=(Window,ServiceWorker),
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
 ] interface PushManager {
