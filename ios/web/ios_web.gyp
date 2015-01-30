@@ -38,6 +38,8 @@
         'public/url_scheme_util.h',
         'public/user_agent.h',
         'public/user_agent.mm',
+        'public/web_client.cc',
+        'public/web_client.h',
         'public/web_state/js/crw_js_base_manager.h',
         'public/web_state/js/crw_js_injection_evaluator.h',
         'public/web_state/js/crw_js_injection_manager.h',
