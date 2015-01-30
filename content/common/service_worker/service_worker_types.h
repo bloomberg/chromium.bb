@@ -48,6 +48,7 @@ static const int64 kInvalidServiceWorkerVersionId = -1;
 static const int64 kInvalidServiceWorkerResourceId = -1;
 static const int64 kInvalidServiceWorkerResponseId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
+static const int kInvalidServiceWorkerClientId = 0;
 
 enum FetchRequestMode {
   FETCH_REQUEST_MODE_SAME_ORIGIN,
@@ -202,14 +203,6 @@ class ChangedVersionAttributesMask {
 
  private:
   int changed_;
-};
-
-struct ServiceWorkerClientInfo {
-  int client_id;
-  blink::WebPageVisibilityState page_visibility_state;
-  bool is_focused;
-  GURL url;
-  RequestContextFrameType frame_type;
 };
 
 }  // namespace content
