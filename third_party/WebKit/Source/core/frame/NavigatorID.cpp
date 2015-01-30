@@ -33,7 +33,7 @@
 #include "core/frame/NavigatorID.h"
 
 #if !defined(WEBCORE_NAVIGATOR_PLATFORM) && OS(POSIX) && !OS(MACOSX)
-#include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 #include <sys/utsname.h>
 #endif
 
@@ -72,7 +72,7 @@ String NavigatorID::platform()
     return "Win32";
 #else // Unix-like systems
     struct utsname osname;
-    DEFINE_STATIC_LOCAL(String, platformName, (uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
+    AtomicallyInitializedStaticReference(String, platformName, new String(uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
     return platformName;
 #endif
 }
