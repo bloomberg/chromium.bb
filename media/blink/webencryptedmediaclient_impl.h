@@ -5,6 +5,9 @@
 #ifndef MEDIA_BLINK_WEBENCRYPTEDMEDIACLIENT_IMPL_H_
 #define MEDIA_BLINK_WEBENCRYPTEDMEDIACLIENT_IMPL_H_
 
+#include <string>
+
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
@@ -27,6 +30,20 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
       blink::WebEncryptedMediaRequest request);
 
  private:
+  // Report usage of key system to UMA. There are 2 different counts logged:
+  // 1. The key system is requested.
+  // 2. The requested key system and options are supported.
+  // Each stat is only reported once per renderer frame per key system.
+  class Reporter;
+
+  // Gets the Reporter for |key_system|. If it doesn't already exist,
+  // create one.
+  Reporter* GetReporter(const std::string& key_system);
+
+  // Key system <-> Reporter map.
+  typedef base::ScopedPtrHashMap<std::string, Reporter> Reporters;
+  Reporters reporters_;
+
   scoped_ptr<CdmFactory> cdm_factory_;
 };
 

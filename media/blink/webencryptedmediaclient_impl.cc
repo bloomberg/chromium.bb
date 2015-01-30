@@ -5,6 +5,7 @@
 #include "webencryptedmediaclient_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
@@ -17,6 +18,10 @@
 #include "webcontentdecryptionmoduleaccess_impl.h"
 
 namespace media {
+
+// These names are used by UMA.
+const char kKeySystemSupportUMAPrefix[] =
+    "Media.EME.RequestMediaKeySystemAccess.";
 
 static bool IsSupportedContentType(
     const std::string& key_system,
@@ -131,6 +136,56 @@ static bool GetSupportedConfiguration(
   return true;
 }
 
+// Report usage of key system to UMA. There are 2 different counts logged:
+// 1. The key system is requested.
+// 2. The requested key system and options are supported.
+// Each stat is only reported once per renderer frame per key system.
+// Note that WebEncryptedMediaClientImpl is only created once by each
+// renderer frame.
+class WebEncryptedMediaClientImpl::Reporter {
+ public:
+  enum KeySystemSupportStatus {
+    KEY_SYSTEM_REQUESTED = 0,
+    KEY_SYSTEM_SUPPORTED = 1,
+    KEY_SYSTEM_SUPPORT_STATUS_COUNT
+  };
+
+  explicit Reporter(const std::string& key_system_for_uma)
+      : uma_name_(kKeySystemSupportUMAPrefix + key_system_for_uma),
+        is_request_reported_(false),
+        is_support_reported_(false) {}
+  ~Reporter() {}
+
+  void ReportRequested() {
+    if (is_request_reported_)
+      return;
+    Report(KEY_SYSTEM_REQUESTED);
+    is_request_reported_ = true;
+  }
+
+  void ReportSupported() {
+    DCHECK(is_request_reported_);
+    if (is_support_reported_)
+      return;
+    Report(KEY_SYSTEM_SUPPORTED);
+    is_support_reported_ = true;
+  }
+
+ private:
+  void Report(KeySystemSupportStatus status) {
+    // Not using UMA_HISTOGRAM_ENUMERATION directly because UMA_* macros
+    // require the names to be constant throughout the process' lifetime.
+    base::LinearHistogram::FactoryGet(
+        uma_name_, 1, KEY_SYSTEM_SUPPORT_STATUS_COUNT,
+        KEY_SYSTEM_SUPPORT_STATUS_COUNT + 1,
+        base::Histogram::kUmaTargetedHistogramFlag)->Add(status);
+  }
+
+  const std::string uma_name_;
+  bool is_request_reported_;
+  bool is_support_reported_;
+};
+
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     scoped_ptr<CdmFactory> cdm_factory,
     MediaPermission* /* media_permission */)
@@ -158,6 +213,11 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   }
 
   std::string key_system = base::UTF16ToASCII(request.keySystem());
+
+  // Report this request to the appropriate Reporter.
+  Reporter* reporter = GetReporter(key_system);
+  reporter->ReportRequested();
+
   if (!IsConcreteSupportedKeySystem(key_system)) {
     request.requestNotSupported("Unsupported keySystem");
     return;
@@ -173,6 +233,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   // TODO(sandersd): Remove once Blink requires the configurations parameter for
   // requestMediaKeySystemAccess().
   if (configurations.isEmpty()) {
+    reporter->ReportSupported();
     request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
         request.keySystem(), blink::WebMediaKeySystemConfiguration(),
         request.securityOrigin(), cdm_factory_.get()));
@@ -185,6 +246,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     if (GetSupportedConfiguration(key_system, candidate,
                                   request.securityOrigin(),
                                   &accumulated_configuration)) {
+      reporter->ReportSupported();
       request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
           request.keySystem(), accumulated_configuration,
           request.securityOrigin(), cdm_factory_.get()));
@@ -195,6 +257,21 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   // 7.4 Reject promise with a new DOMException whose name is NotSupportedError.
   request.requestNotSupported(
       "None of the requested configurations were supported.");
+}
+
+// Lazily create Reporters.
+WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
+    const std::string& key_system) {
+  std::string uma_name = GetKeySystemNameForUMA(key_system);
+  Reporter* reporter = reporters_.get(uma_name);
+  if (reporter != nullptr)
+    return reporter;
+
+  // Reporter not found, so create one.
+  auto result =
+      reporters_.add(uma_name, make_scoped_ptr(new Reporter(uma_name)));
+  DCHECK(result.second);
+  return result.first->second;
 }
 
 }  // namespace media
