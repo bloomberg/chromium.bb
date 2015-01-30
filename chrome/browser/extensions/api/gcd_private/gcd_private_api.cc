@@ -358,9 +358,8 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
       std::string ssid;
 
       if (!wifi->GetString(kPrivetKeySSID, &ssid)) {
-        callback.Run(gcd_private::STATUS_SETUPPARSEERROR,
-                     base::DictionaryValue());
-        return;
+        return callback.Run(gcd_private::STATUS_SETUPPARSEERROR,
+                            base::DictionaryValue());
       }
 
       if (!wifi->HasKey(kPrivetKeyPassphrase)) {
@@ -369,9 +368,8 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
 
         PasswordMap::iterator found = wifi_passwords_.find(ssid);
         if (found == wifi_passwords_.end()) {
-          callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
-                       base::DictionaryValue());
-          return;
+          return callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
+                              base::DictionaryValue());
         }
 
         input_cloned.reset(input.DeepCopy());
@@ -384,9 +382,8 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
   auto found = sessions_.find(session_id);
 
   if (found == sessions_.end()) {
-    callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR,
-                 base::DictionaryValue());
-    return;
+    return callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR,
+                        base::DictionaryValue());
   }
 
   found->second->SendMessage(api, *input_actual, callback);

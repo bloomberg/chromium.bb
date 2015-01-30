@@ -8,33 +8,24 @@ onload = function() {
       function onSessionEstablished(sessionId, status, pairingTypes) {
         chrome.test.assertEq("success", status);
         chrome.test.assertEq(["embeddedCode"], pairingTypes);
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
-                                      onMessageSentFail);
-        chrome.gcdPrivate.startPairing(sessionId, "embeddedCode",
-                                       onPairingStarted.bind(null, sessionId));
+        chrome.gcdPrivate.startPairing(1234, "pinCode",
+                                       onPairingStarted.bind(null));
       }
 
-      function onPairingStarted(sessionId, status) {
-        chrome.test.assertEq("success", status);
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
-                                      onMessageSentFail);
-        chrome.gcdPrivate.confirmCode(sessionId, "1234",
-                                      onCodeConfirmed.bind(null, sessionId));
+      function onPairingStarted(status) {
+        chrome.test.assertEq("unknownSessionError", status);
+        chrome.gcdPrivate.confirmCode(7567, "1234",
+                                      onCodeConfirmed.bind(null));
       }
 
-      function onCodeConfirmed(sessionId, status) {
-        chrome.test.assertEq("success", status);
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
+      function onCodeConfirmed(status) {
+        chrome.test.assertEq("unknownSessionError", status);
+        chrome.gcdPrivate.sendMessage(555, "/privet/ping", {},
                                       onMessageSent);
       }
 
-      function onMessageSentFail(status, output) {
-        chrome.test.assertEq("sessionError", status);
-      }
-
       function onMessageSent(status, output) {
-        chrome.test.assertEq("success", status);
-        chrome.test.assertEq("pong", output.response);
+        chrome.test.assertEq("unknownSessionError", status);
         chrome.test.notifyPass();
       }
 

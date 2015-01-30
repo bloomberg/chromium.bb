@@ -5,39 +5,8 @@
 onload = function() {
   chrome.test.runTests([
     function wifiMessage() {
-      var messagesNeeded = 3;
+      var messagesNeeded = 4;
       var sessionId = -1;
-
-      function onSessionEstablished(newSessionId) {
-        sessionId = newSessionId;
-        chrome.gcdPrivate.startPairing(sessionId, "embeddedCode",
-                                       onPairingStarted);
-      }
-
-      function onPairingStarted(status) {
-        chrome.test.assertEq("success", status);
-        chrome.gcdPrivate.confirmCode(sessionId, "1234", onCodeConfirmed);
-      }
-
-      function onCodeConfirmed(status) {
-        chrome.test.assertEq("success", status);
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
-          "wifi" : {
-          }
-        }, onMessageSent.bind(null, "setupParseError"));
-
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
-          "wifi" : {
-            "passphrase": "Blah"
-          }
-        }, onMessageSent.bind(null, "setupParseError"));
-
-        chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
-          "wifi" : {
-            "ssid": "Blah"
-          }
-        }, onMessageSent.bind(null, "wifiPasswordError"));
-      }
 
       function onMessageSent(expected_status, status, output) {
         chrome.test.assertEq(expected_status, status);
@@ -47,9 +16,31 @@ onload = function() {
         if (messagesNeeded == 0) {
           chrome.test.notifyPass();
         }
-      }
+      };
 
-      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onSessionEstablished);
+      chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
+        "wifi" : {
+        }
+      }, onMessageSent.bind(null, "setupParseError"));
+
+      chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
+        "wifi" : {
+          "passphrase": "Blah"
+        }
+      }, onMessageSent.bind(null, "setupParseError"));
+
+      chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
+        "wifi" : {
+          "ssid": "Blah"
+        }
+      }, onMessageSent.bind(null, "wifiPasswordError"));
+
+      chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
+        "wifi": {
+          "ssid": "Blah",
+          "passphrase": "111"
+        }
+      }, onMessageSent.bind(null, "unknownSessionError"));
     }
   ]);
 };
