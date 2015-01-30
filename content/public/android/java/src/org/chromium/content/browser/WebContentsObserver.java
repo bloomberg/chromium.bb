@@ -196,6 +196,14 @@ public abstract class WebContentsObserver {
     }
 
     /**
+     * Called when we started navigation to the pending entry.
+     * @param url        The URL that we are navigating to.
+     */
+    @CalledByNative
+    public void didStartNavigationToPendingEntry(String url) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative

@@ -335,6 +335,20 @@ void WebContentsObserverAndroid::DidFirstVisuallyNonEmptyPaint() {
       env, obj.obj());
 }
 
+void WebContentsObserverAndroid::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    NavigationController::ReloadType reload_type) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jstring> jstring_url(
+      ConvertUTF8ToJavaString(env, url.spec()));
+
+  Java_WebContentsObserver_didStartNavigationToPendingEntry(env, obj.obj(),
+                                                            jstring_url.obj());
+}
+
 bool RegisterWebContentsObserverAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
