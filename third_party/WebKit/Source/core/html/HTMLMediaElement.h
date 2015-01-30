@@ -221,9 +221,9 @@ public:
     };
 
     void configureTextTrackGroupForLanguage(const TrackGroup&) const;
-    void configureTextTracks();
-    void configureTextTrackGroup(const TrackGroup&);
-    void configureMetadataTextTrackGroup(const TrackGroup&);
+    void honorUserPreferencesForAutomaticTextTrackSelection();
+    void performAutomaticTextTrackSelection(const TrackGroup&);
+    void enableDefaultMetadataTextTracks(const TrackGroup&);
 
     bool textTracksAreReady() const;
     enum VisibilityChangeAssumption {
