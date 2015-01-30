@@ -328,13 +328,13 @@
         Clear &amp; reset
       </message>
       <message name="IDS_WEBSITE_RESET_CONFIRMATION" desc="The confirmation text asking if the user is sure about clearing all data and reset the permissions for a site.">
-        Are you sure you want to clear all data for this website and reset all its permissions?
+        Are you sure you want to clear all local data, including cookies, and reset all permissions for this website?
       </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to clear all data for an origin">
         Clear stored data
       </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for an origin">
-        All data stored by this website will be deleted
+        All local data stored by this website, including cookies, will be deleted.
       </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OK_BUTTON" desc="Button confirming site data cleanup [CHAR-LIMIT=20]">
         Clear all

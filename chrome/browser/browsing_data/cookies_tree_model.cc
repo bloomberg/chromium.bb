@@ -910,12 +910,17 @@ CookieTreeNode::DetailedInfo CookieTreeFlashLSONode::GetDetailedInfo() const {
 CookiesTreeModel::ScopedBatchUpdateNotifier::ScopedBatchUpdateNotifier(
   CookiesTreeModel* model, CookieTreeNode* node)
       : model_(model), node_(node), batch_in_progress_(false) {
+  model_->RecordBatchSeen();
 }
 
 CookiesTreeModel::ScopedBatchUpdateNotifier::~ScopedBatchUpdateNotifier() {
   if (batch_in_progress_) {
     model_->NotifyObserverTreeNodeChanged(node_);
     model_->NotifyObserverEndBatch();
+  } else {
+    // If no batch started, and this is the last batch, give the model a chance
+    // to send out a final notification.
+    model_->MaybeNotifyBatchesEnded();
   }
 }
 
@@ -938,7 +943,10 @@ CookiesTreeModel::CookiesTreeModel(
       special_storage_policy_(special_storage_policy),
 #endif
       group_by_cookie_source_(group_by_cookie_source),
-      batch_update_(0) {
+      batches_expected_(0),
+      batches_seen_(0),
+      batches_started_(0),
+      batches_ended_(0) {
   data_container_->Init(this);
 }
 
@@ -1017,6 +1025,7 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
 
 void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
   CookieTreeNode* root = GetRoot();
+  SetBatchExpectation(1, true);
   ScopedBatchUpdateNotifier notifier(this, root);
   int num_children = root->child_count();
   notifier.StartBatchUpdate();
@@ -1425,9 +1434,24 @@ void CookiesTreeModel::PopulateFlashLSOInfoWithFilter(
   }
 }
 
+void CookiesTreeModel::SetBatchExpectation(int batches_expected, bool reset) {
+  batches_expected_ = batches_expected;
+  if (reset) {
+    batches_seen_ = 0;
+    batches_started_ = 0;
+    batches_ended_ = 0;
+  } else {
+    MaybeNotifyBatchesEnded();
+  }
+}
+
+void CookiesTreeModel::RecordBatchSeen() {
+  batches_seen_++;
+}
+
 void CookiesTreeModel::NotifyObserverBeginBatch() {
   // Only notify the model once if we're batching in a nested manner.
-  if (batch_update_++ == 0) {
+  if (batches_started_++ == 0) {
     FOR_EACH_OBSERVER(Observer,
                       cookies_observer_list_,
                       TreeModelBeginBatch(this));
@@ -1435,9 +1459,15 @@ void CookiesTreeModel::NotifyObserverBeginBatch() {
 }
 
 void CookiesTreeModel::NotifyObserverEndBatch() {
+  batches_ended_++;
+  MaybeNotifyBatchesEnded();
+}
+
+void CookiesTreeModel::MaybeNotifyBatchesEnded() {
   // Only notify the observers if this is the outermost call to EndBatch() if
   // called in a nested manner.
-  if (--batch_update_ == 0) {
+  if (batches_ended_ == batches_started_ &&
+      batches_seen_ == batches_expected_) {
     FOR_EACH_OBSERVER(Observer,
                       cookies_observer_list_,
                       TreeModelEndBatch(this));

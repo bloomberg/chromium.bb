@@ -215,6 +215,7 @@ public abstract class WebsitePreferenceBridge {
     private static native void nativeGetCookieOrigins(Object list, boolean managedOnly);
     static native int nativeGetCookieSettingForOrigin(String origin, String embedder);
     static native void nativeSetCookieSettingForOrigin(String origin, String embedder, int setting);
+    static native void nativeClearCookieData(String path);
     static native void nativeClearLocalStorageData(String path);
     static native void nativeClearStorageData(String origin, int type, Object callback);
     private static native void nativeFetchLocalStorageInfo(Object callback);

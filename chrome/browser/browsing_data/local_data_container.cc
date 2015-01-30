@@ -39,6 +39,7 @@ LocalDataContainer::LocalDataContainer(
       service_worker_helper_(service_worker_helper),
       flash_lso_helper_(flash_lso_helper),
       model_(NULL),
+      batches_started_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -48,24 +49,28 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   DCHECK(!model_);
   model_ = model;
 
+  batches_started_ = 1;
   DCHECK(cookie_helper_.get());
   cookie_helper_->StartFetching(
       base::Bind(&LocalDataContainer::OnCookiesModelInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 
   if (database_helper_.get()) {
+    batches_started_++;
     database_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnDatabaseModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (local_storage_helper_.get()) {
+    batches_started_++;
     local_storage_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnLocalStorageModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (session_storage_helper_.get()) {
+    batches_started_++;
     session_storage_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnSessionStorageModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -74,46 +79,55 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   // TODO(michaeln): When all of the UI implementations have been updated, make
   // this a required parameter.
   if (appcache_helper_.get()) {
+    batches_started_++;
     appcache_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnAppCacheModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (indexed_db_helper_.get()) {
+    batches_started_++;
     indexed_db_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnIndexedDBModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (file_system_helper_.get()) {
+    batches_started_++;
     file_system_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnFileSystemModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (quota_helper_.get()) {
+    batches_started_++;
     quota_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnQuotaModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (channel_id_helper_.get()) {
+    batches_started_++;
     channel_id_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnChannelIDModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (service_worker_helper_.get()) {
+    batches_started_++;
     service_worker_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnServiceWorkerModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (flash_lso_helper_.get()) {
+    batches_started_++;
     flash_lso_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnFlashLSOInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+
+  model_->SetBatchExpectation(batches_started_, true);
 }
 
 void LocalDataContainer::OnAppCacheModelInfoLoaded() {
@@ -124,8 +138,11 @@ void LocalDataContainer::OnAppCacheModelInfoLoaded() {
 
   scoped_refptr<AppCacheInfoCollection> appcache_info =
       appcache_helper_->info_collection();
-  if (!appcache_info.get() || appcache_info->infos_by_origin.empty())
+  if (!appcache_info.get() || appcache_info->infos_by_origin.empty()) {
+    // This batch has been canceled, so let the model know it won't be arriving.
+    model_->SetBatchExpectation(--batches_started_, false);
     return;
+  }
 
   for (InfoByOrigin::const_iterator origin =
            appcache_info->infos_by_origin.begin();

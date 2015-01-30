@@ -12,6 +12,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
+#include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -285,6 +287,100 @@ static void SetCookieSettingForOrigin(JNIEnv* env, jclass clazz,
 
 namespace {
 
+class SiteDataDeleteHelper :
+      public base::RefCountedThreadSafe<SiteDataDeleteHelper>,
+      public CookiesTreeModel::Observer {
+ public:
+  SiteDataDeleteHelper(Profile* profile, const GURL& domain)
+      : profile_(profile), domain_(domain), ending_batch_processing_(false) {
+  }
+
+  void Run() {
+    AddRef();  // Balanced in TreeModelEndBatch.
+
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile_);
+    content::IndexedDBContext* indexed_db_context =
+        storage_partition->GetIndexedDBContext();
+    content::ServiceWorkerContext* service_worker_context =
+        storage_partition->GetServiceWorkerContext();
+    storage::FileSystemContext* file_system_context =
+        storage_partition->GetFileSystemContext();
+    LocalDataContainer* container = new LocalDataContainer(
+        new BrowsingDataCookieHelper(profile_->GetRequestContext()),
+        new BrowsingDataDatabaseHelper(profile_),
+        new BrowsingDataLocalStorageHelper(profile_),
+        NULL,
+        new BrowsingDataAppCacheHelper(profile_),
+        new BrowsingDataIndexedDBHelper(indexed_db_context),
+        BrowsingDataFileSystemHelper::Create(file_system_context),
+        BrowsingDataQuotaHelper::Create(profile_),
+        BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
+        new BrowsingDataServiceWorkerHelper(service_worker_context),
+        NULL);
+
+    cookies_tree_model_.reset(new CookiesTreeModel(
+        container, profile_->GetExtensionSpecialStoragePolicy(), false));
+    cookies_tree_model_->AddCookiesTreeObserver(this);
+  }
+
+  // TreeModelObserver:
+  void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
+                              int start,
+                              int count) override {}
+  void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
+                                int start,
+                                int count) override {}
+
+  // CookiesTreeModel::Observer:
+  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
+  }
+
+  void TreeModelBeginBatch(CookiesTreeModel* model) override {
+    DCHECK(!ending_batch_processing_);  // Extra batch-start sent.
+  }
+
+  void TreeModelEndBatch(CookiesTreeModel* model) override {
+    DCHECK(!ending_batch_processing_);  // Already in end-stage.
+    ending_batch_processing_ = true;
+
+    RecursivelyFindSiteAndDelete(cookies_tree_model_->GetRoot());
+
+    // This will result in this class getting deleted.
+    Release();
+  }
+
+  void RecursivelyFindSiteAndDelete(CookieTreeNode* node) {
+    CookieTreeNode::DetailedInfo info = node->GetDetailedInfo();
+    for (int i = node->child_count(); i > 0; --i)
+      RecursivelyFindSiteAndDelete(node->GetChild(i - 1));
+
+    if (info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE &&
+        info.cookie &&
+        domain_.DomainIs(info.cookie->Domain().c_str()))
+      cookies_tree_model_->DeleteCookieNode(node);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<SiteDataDeleteHelper>;
+
+  virtual ~SiteDataDeleteHelper() {}
+
+  Profile* profile_;
+
+  // The domain we want to delete data for.
+  GURL domain_;
+
+  // Keeps track of when we're ready to close batch processing.
+  bool ending_batch_processing_;
+
+  scoped_ptr<CookiesTreeModel> cookies_tree_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiteDataDeleteHelper);
+};
+
 class StorageInfoFetcher :
       public base::RefCountedThreadSafe<StorageInfoFetcher> {
  public:
@@ -498,6 +594,14 @@ static void ClearStorageData(JNIEnv* env,
       static_cast<storage::StorageType>(type),
       ScopedJavaLocalRef<jobject>(env, java_callback)));
   storage_data_deleter->Run();
+}
+
+static void ClearCookieData(JNIEnv* env, jclass clazz, jstring jorigin) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  GURL url(ConvertJavaStringToUTF8(env, jorigin));
+  scoped_refptr<SiteDataDeleteHelper> site_data_deleter(
+      new SiteDataDeleteHelper(profile, url));
+  site_data_deleter->Run();
 }
 
 // Register native methods

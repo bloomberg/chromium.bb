@@ -143,6 +143,9 @@ class LocalDataContainer {
   // delegate to deliver the updated data to the CookieTreeModel.
   CookiesTreeModel* model_;
 
+  // Keeps track of how many batches are expected to start.
+  int batches_started_;
+
   base::WeakPtrFactory<LocalDataContainer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDataContainer);
