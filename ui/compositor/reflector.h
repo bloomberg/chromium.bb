@@ -6,18 +6,20 @@
 #define UI_COMPOSITOR_REFLECTOR_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/compositor/compositor_export.h"
 
 namespace ui {
 
-class Reflector : public base::RefCountedThreadSafe<Reflector> {
+class COMPOSITOR_EXPORT Reflector
+    : public base::RefCountedThreadSafe<Reflector> {
  public:
-  Reflector() {}
+  Reflector();
 
-  virtual void OnMirroringCompositorResized() {}
+  virtual void OnMirroringCompositorResized();
 
  protected:
   friend class base::RefCountedThreadSafe<Reflector>;
-  virtual ~Reflector() {}
+  virtual ~Reflector();
 
   DISALLOW_COPY_AND_ASSIGN(Reflector);
 };

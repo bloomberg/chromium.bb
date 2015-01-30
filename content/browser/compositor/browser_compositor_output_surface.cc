@@ -13,7 +13,7 @@
 namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    const scoped_refptr<cc::ContextProvider>& context_provider,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)

@@ -48,7 +48,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
  protected:
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
-      const scoped_refptr<ContextProviderCommandBuffer>& context,
+      const scoped_refptr<cc::ContextProvider>& context,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
