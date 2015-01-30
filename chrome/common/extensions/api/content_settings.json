@@ -183,7 +183,7 @@
       },
       "images": {
         "$ref": "ContentSetting",
-        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is the URL of the image.",
+        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. <br>Default is <var>allow</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is the URL of the image.",
         "value": [
           "images",
           {"type":"string", "enum": ["allow", "block"]}
@@ -191,7 +191,7 @@
       },
       "javascript": {
         "$ref": "ContentSetting",
-        "description": "Whether to run JavaScript. One of<br><var>allow</var>: Run JavaScript,<br><var>block</var>: Don't run JavaScript. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to run JavaScript. One of<br><var>allow</var>: Run JavaScript,<br><var>block</var>: Don't run JavaScript. <br>Default is <var>allow</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "javascript",
           {"type":"string", "enum": ["allow", "block"]}
@@ -207,7 +207,7 @@
       },
       "plugins": {
         "$ref": "ContentSetting",
-        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. <br>Default is <var>allow</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "plugins",
           {"type":"string", "enum": ["allow", "block"]}
@@ -215,7 +215,7 @@
       },
       "popups": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. <br>Default is <var>block</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. <br>Default is <var>block</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "popups",
           {"type":"string", "enum": ["allow", "block"]}
@@ -223,7 +223,7 @@
       },
       "notifications": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. <br>Default is <var>ask</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which wants to show the notification. The secondary URL is not used.",
         "value": [
           "notifications",
           {"type":"string", "enum": ["allow", "block", "ask"]}
@@ -231,7 +231,7 @@
       },
       "mouselock": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to disable the mouse cursor. One of <br><var>allow</var>: Allow sites to disable the mouse cursor,<br><var>block</var>: Don't allow sites to disable the mouse cursor,<br><var>ask</var>: Ask when a site wants to disable the mouse cursor. <br>Default is <var>ask</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to allow sites to disable the mouse cursor. One of <br><var>allow</var>: Allow sites to disable the mouse cursor,<br><var>block</var>: Don't allow sites to disable the mouse cursor,<br><var>ask</var>: Ask when a site wants to disable the mouse cursor. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "mouselock",
           {"type":"string", "enum": ["allow", "block", "ask"]}
