@@ -181,8 +181,9 @@ void AndroidHistoryProviderService::CloseStatement(
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
-    hs->ScheduleAndForget(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::CloseStatement, statement);
+    hs->ScheduleTask(HistoryService::PRIORITY_NORMAL,
+                     base::Bind(&HistoryBackend::CloseStatement,
+                                hs->history_backend_.get(), statement));
   } else {
     delete statement;
   }

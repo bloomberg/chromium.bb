@@ -255,8 +255,9 @@ void HistoryService::ClearCachedDataForContextID(
     history::ContextID context_id) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::ClearCachedDataForContextID, context_id);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::ClearCachedDataForContextID,
+                          history_backend_.get(), context_id));
 }
 
 history::URLDatabase* HistoryService::InMemoryDatabase() {
@@ -307,9 +308,9 @@ void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
                                                  const base::string16& term) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_UI,
-                    &HistoryBackend::SetKeywordSearchTermsForURL,
-                    url, keyword_id, term);
+  ScheduleTask(PRIORITY_UI,
+               base::Bind(&HistoryBackend::SetKeywordSearchTermsForURL,
+                          history_backend_.get(), url, keyword_id, term));
 }
 
 void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
@@ -319,31 +320,34 @@ void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
   if (in_memory_backend_)
     in_memory_backend_->DeleteAllSearchTermsForKeyword(keyword_id);
 
-  ScheduleAndForget(PRIORITY_UI,
-                    &HistoryBackend::DeleteAllSearchTermsForKeyword,
-                    keyword_id);
+  ScheduleTask(PRIORITY_UI,
+               base::Bind(&HistoryBackend::DeleteAllSearchTermsForKeyword,
+                          history_backend_.get(), keyword_id));
 }
 
 void HistoryService::DeleteKeywordSearchTermForURL(const GURL& url) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::DeleteKeywordSearchTermForURL,
-                    url);
+  ScheduleTask(PRIORITY_UI,
+               base::Bind(&HistoryBackend::DeleteKeywordSearchTermForURL,
+                          history_backend_.get(), url));
 }
 
 void HistoryService::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                                   const base::string16& term) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::DeleteMatchingURLsForKeyword,
-                    keyword_id, term);
+  ScheduleTask(PRIORITY_UI,
+               base::Bind(&HistoryBackend::DeleteMatchingURLsForKeyword,
+                          history_backend_.get(), keyword_id, term));
 }
 
 void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::URLsNoLongerBookmarked,
-                    urls);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::URLsNoLongerBookmarked,
+                          history_backend_.get(), urls));
 }
 
 void HistoryService::AddObserver(history::HistoryServiceObserver* observer) {
@@ -382,8 +386,10 @@ void HistoryService::FlushForTest(const base::Closure& flushed) {
 void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetOnBackendDestroyTask,
-                    base::MessageLoop::current(), task);
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::Bind(&HistoryBackend::SetOnBackendDestroyTask,
+                 history_backend_.get(), base::MessageLoop::current(), task));
 }
 
 void HistoryService::AddPage(const GURL& url,
@@ -440,7 +446,9 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
     }
   }
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage, add_page_args);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::AddPage, history_backend_.get(),
+                          add_page_args));
 }
 
 void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
@@ -450,15 +458,17 @@ void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
   if (!CanAddURL(url))
     return;
 
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPageNoVisitForBookmark, url, title);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::AddPageNoVisitForBookmark,
+                          history_backend_.get(), url, title));
 }
 
 void HistoryService::SetPageTitle(const GURL& url,
                                   const base::string16& title) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::SetPageTitle,
+                                           history_backend_.get(), url, title));
 }
 
 void HistoryService::UpdateWithPageEndTime(history::ContextID context_id,
@@ -467,8 +477,10 @@ void HistoryService::UpdateWithPageEndTime(history::ContextID context_id,
                                            Time end_ts) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateWithPageEndTime,
-                    context_id, nav_entry_id, url, end_ts);
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::Bind(&HistoryBackend::UpdateWithPageEndTime, history_backend_.get(),
+                 context_id, nav_entry_id, url, end_ts));
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,
@@ -498,8 +510,9 @@ void HistoryService::AddPageWithDetails(const GURL& url,
   history::URLRows rows;
   rows.push_back(row);
 
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPagesWithDetails, rows, visit_source);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::AddPagesWithDetails,
+                          history_backend_.get(), rows, visit_source));
 }
 
 void HistoryService::AddPagesWithDetails(const history::URLRows& info,
@@ -517,8 +530,9 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
     visitedlink_master_->AddURLs(urls);
   }
 
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPagesWithDetails, info, visit_source);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::AddPagesWithDetails,
+                          history_backend_.get(), info, visit_source));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
@@ -643,8 +657,10 @@ void HistoryService::MergeFavicon(
   if (!CanAddURL(page_url))
     return;
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::MergeFavicon, page_url,
-                    icon_url, icon_type, bitmap_data, pixel_size);
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::Bind(&HistoryBackend::MergeFavicon, history_backend_.get(),
+                 page_url, icon_url, icon_type, bitmap_data, pixel_size));
 }
 
 void HistoryService::SetFavicons(
@@ -657,31 +673,35 @@ void HistoryService::SetFavicons(
   if (!CanAddURL(page_url))
     return;
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicons, page_url,
-      icon_type, icon_url, bitmaps);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::SetFavicons, history_backend_.get(),
+                          page_url, icon_type, icon_url, bitmaps));
 }
 
 void HistoryService::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::SetFaviconsOutOfDateForPage, page_url);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::SetFaviconsOutOfDateForPage,
+                          history_backend_.get(), page_url));
 }
 
 void HistoryService::CloneFavicons(const GURL& old_page_url,
                                    const GURL& new_page_url) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::CloneFavicons,
-                    old_page_url, new_page_url);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::CloneFavicons,
+                          history_backend_.get(), old_page_url, new_page_url));
 }
 
 void HistoryService::SetImportedFavicons(
     const std::vector<ImportedFaviconUsage>& favicon_usage) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::SetImportedFavicons, favicon_usage);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::SetImportedFavicons,
+                          history_backend_.get(), favicon_usage));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
@@ -756,14 +776,15 @@ void HistoryService::QueryDownloads(
 void HistoryService::UpdateDownload(const history::DownloadRow& data) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload, data);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::UpdateDownload,
+                                           history_backend_.get(), data));
 }
 
 void HistoryService::RemoveDownloads(const std::set<uint32>& ids) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::RemoveDownloads, ids);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::RemoveDownloads,
+                                           history_backend_.get(), ids));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
@@ -941,7 +962,8 @@ void HistoryService::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::IterateURLs,
+                                           history_backend_.get(), enumerator));
 }
 
 bool HistoryService::Init(
@@ -981,8 +1003,9 @@ bool HistoryService::Init(
     languages = prefs->GetString(prefs::kAcceptLanguages);
   }
 
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, languages, no_db_,
-                    history_database_params);
+  ScheduleTask(PRIORITY_UI,
+               base::Bind(&HistoryBackend::Init, history_backend_.get(),
+                          languages, no_db_, history_database_params));
 
   if (visitedlink_master_) {
     bool result = visitedlink_master_->Init();
@@ -995,8 +1018,8 @@ bool HistoryService::Init(
 void HistoryService::ScheduleAutocomplete(const base::Callback<
     void(history::HistoryBackend*, history::URLDatabase*)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(
-      PRIORITY_UI, &HistoryBackend::ScheduleAutocomplete, callback);
+  ScheduleTask(PRIORITY_UI, base::Bind(&HistoryBackend::ScheduleAutocomplete,
+                                       history_backend_.get(), callback));
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
@@ -1098,7 +1121,8 @@ void HistoryService::DeleteURL(const GURL& url) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   // We will update the visited links when we observe the delete notifications.
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteURL, url);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::DeleteURL,
+                                           history_backend_.get(), url));
 }
 
 void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
@@ -1106,7 +1130,8 @@ void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // We will update the visited links when we observe the delete
   // notifications.
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteURLs, urls);
+  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::DeleteURLs,
+                                           history_backend_.get(), urls));
 }
 
 void HistoryService::ExpireHistoryBetween(
