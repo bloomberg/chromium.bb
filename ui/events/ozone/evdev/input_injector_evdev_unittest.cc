@@ -8,9 +8,10 @@
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
-#include "ui/events/ozone/evdev/event_modifiers_evdev.h"
-#include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/event_converter_test_util.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
@@ -108,10 +109,11 @@ class InputInjectorEvdevTest : public testing::Test {
   void ExpectClick(int x, int y, int button, int count);
 
   EventObserver event_observer_;
-  EventModifiersEvdev modifiers_;
   EventDispatchCallback dispatch_callback_;
   MockCursorEvdev cursor_;
-  KeyboardEvdev keyboard_;
+
+  scoped_ptr<DeviceManager> device_manager_;
+  scoped_ptr<EventFactoryEvdev> event_factory_;
 
   InputInjectorEvdev injector_;
 
@@ -125,10 +127,14 @@ class InputInjectorEvdevTest : public testing::Test {
 InputInjectorEvdevTest::InputInjectorEvdevTest()
     : dispatch_callback_(base::Bind(&EventObserver::EventDispatchCallback,
                                     base::Unretained(&event_observer_))),
-      keyboard_(&modifiers_,
-                KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
-                dispatch_callback_),
-      injector_(&modifiers_, &cursor_, &keyboard_, dispatch_callback_) {
+      device_manager_(CreateDeviceManagerForTest()),
+      event_factory_(CreateEventFactoryEvdevForTest(
+          &cursor_,
+          device_manager_.get(),
+          ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+          dispatch_callback_)),
+      injector_(CreateDeviceEventDispatcherEvdevForTest(event_factory_.get()),
+                &cursor_) {
 }
 
 void InputInjectorEvdevTest::SimulateMouseClick(int x,

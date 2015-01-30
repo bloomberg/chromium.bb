@@ -144,8 +144,13 @@ void EventFactoryEvdev::Init() {
 }
 
 scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
-  return make_scoped_ptr(new InputInjectorEvdev(
-      &modifiers_, cursor_, &keyboard_, dispatch_callback_));
+  // Use forwarding dispatcher for the injector rather than dispatching
+  // directly. We cannot assume it is safe to (re-)enter ui::Event dispatch
+  // synchronously from the injection point.
+  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher(
+      new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
+                                     weak_ptr_factory_.GetWeakPtr()));
+  return make_scoped_ptr(new InputInjectorEvdev(dispatcher.Pass(), cursor_));
 }
 
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {

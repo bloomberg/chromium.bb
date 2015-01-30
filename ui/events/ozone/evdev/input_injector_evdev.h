@@ -13,16 +13,13 @@ namespace ui {
 
 class Event;
 class CursorDelegateEvdev;
-class KeyboardEvdev;
-class EventModifiersEvdev;
+class DeviceEventDispatcherEvdev;
 
 class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
     : public SystemInputInjector {
  public:
-  InputInjectorEvdev(EventModifiersEvdev* modifiers,
-                     CursorDelegateEvdev* cursor,
-                     KeyboardEvdev* keyboard,
-                     const EventDispatchCallback& callback);
+  InputInjectorEvdev(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+                     CursorDelegateEvdev* cursor);
 
   ~InputInjectorEvdev() override;
 
@@ -33,17 +30,11 @@ class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
   void InjectKeyPress(DomCode physical_key, bool down) override;
 
  private:
-  // Modifier key state (shift, ctrl, etc).
-  EventModifiersEvdev* modifiers_;
-
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
-  // Shared keyboard state.
-  KeyboardEvdev* keyboard_;
-
-  // Callback for dispatching events.
-  EventDispatchCallback callback_;
+  // Interface for dispatching events.
+  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InputInjectorEvdev);
 };
