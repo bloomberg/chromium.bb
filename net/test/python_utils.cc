@@ -9,9 +9,12 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 const char kPythonPathEnv[] = "PYTHONPATH";
@@ -106,10 +109,40 @@ bool GetPyProtoPath(base::FilePath* dir) {
   return true;
 }
 
+#if defined(OS_WIN)
+struct PythonExePath {
+  PythonExePath() {
+    // This is test-only code, so CHECK with a subprocess invocation is ok.
+    base::CommandLine command(base::FilePath(FILE_PATH_LITERAL("cmd")));
+    command.AppendArg("/c");
+    command.AppendArg("python");
+    command.AppendArg("-c");
+    command.AppendArg("import sys; print sys.executable");
+    std::string output;
+    CHECK(GetAppOutput(command, &output));
+    // This does only work if cmd.exe doesn't use a non-US codepage.
+    path_ = base::ASCIIToUTF16(output);
+    TrimWhitespace(path_, base::TRIM_ALL, &path_);
+  }
+  base::string16 path_;
+};
+static base::LazyInstance<PythonExePath>::Leaky g_python_path;
+#endif
+
 bool GetPythonCommand(base::CommandLine* python_cmd) {
   DCHECK(python_cmd);
 
+#if defined(OS_WIN)
+  // Most developers have depot_tools in their path, which only has a
+  // python.bat, not a python.exe.  Go through cmd to find the path to
+  // the python executable.
+  // (Don't just return a a "cmd /c python" command line, because then tests
+  // that try to kill the python process will kill the cmd process instead,
+  // which can cause flakiness.)
+  python_cmd->SetProgram(base::FilePath(g_python_path.Get().path_));
+#else
   python_cmd->SetProgram(base::FilePath(FILE_PATH_LITERAL("python")));
+#endif
 
   // Launch python in unbuffered mode, so that python output doesn't mix with
   // gtest output in buildbot log files. See http://crbug.com/147368.
