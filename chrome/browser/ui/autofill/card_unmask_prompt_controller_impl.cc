@@ -62,8 +62,8 @@ content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
   // TODO(estade): i18n.
   if (ShouldRequestExpirationDate()) {
-    return base::ASCIIToUTF16("Update and verify your card ") +
-        card_.TypeAndLastFourDigits();
+    return base::ASCIIToUTF16("Update your card ") +
+           card_.TypeAndLastFourDigits();
   }
 
   return base::ASCIIToUTF16("Verify your card ") +

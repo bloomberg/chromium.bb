@@ -43,7 +43,7 @@ void CardUnmaskPromptViewAndroid::Show() {
           env, controller_->GetInstructionsMessage());
   java_object_.Reset(Java_CardUnmaskBridge_create(
       env, reinterpret_cast<intptr_t>(this), dialog_title.obj(),
-      instructions.obj(),
+      instructions.obj(), controller_->ShouldRequestExpirationDate(),
       view_android->GetWindowAndroid()->GetJavaObject().obj()));
 
   Java_CardUnmaskBridge_show(env, java_object_.obj());
@@ -58,11 +58,13 @@ bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(JNIEnv* env,
 
 void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
                                               jobject obj,
-                                              jstring response) {
+                                              jstring cvc,
+                                              jstring month,
+                                              jstring year) {
   controller_->OnUnmaskResponse(
-      base::android::ConvertJavaStringToUTF16(env, response),
-      base::string16(),
-      base::string16());
+      base::android::ConvertJavaStringToUTF16(env, cvc),
+      base::android::ConvertJavaStringToUTF16(env, month),
+      base::android::ConvertJavaStringToUTF16(env, year));
 }
 
 void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {

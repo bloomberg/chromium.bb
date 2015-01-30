@@ -13,19 +13,31 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.ui.R;
+
+import java.text.NumberFormat;
+import java.util.Calendar;
 
 /**
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
  */
 public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, TextWatcher {
-    private CardUnmaskPromptDelegate mDelegate;
-    private AlertDialog mDialog;
+    private final CardUnmaskPromptDelegate mDelegate;
+    private final AlertDialog mDialog;
+    private final boolean mShouldRequestExpirationDate;
+
+    private final EditText mCardUnmaskInput;
+    private final Spinner mMonthSpinner;
+    private final Spinner mYearSpinner;
+    private final ProgressBar mVerificationProgressBar;
+    private final TextView mVerificationView;
 
     /**
      * An interface to handle the interaction with an CardUnmaskPrompt object.
@@ -46,16 +58,22 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
          * @param userResponse The value the user entered (a CVC), or an empty string if the
          *        user canceled.
          */
-        void onUserInput(String userResponse);
+        void onUserInput(String cvc, String month, String year);
     }
 
-    public CardUnmaskPrompt(
-            Context context, CardUnmaskPromptDelegate delegate, String title, String instructions) {
+    public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
+            String instructions, boolean shouldRequestExpirationDate) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
         ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
+
+        mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
+        mMonthSpinner = (Spinner) v.findViewById(R.id.expiration_month);
+        mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
+        mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
+        mVerificationView = (TextView) v.findViewById(R.id.verification_message);
 
         mDialog = new AlertDialog.Builder(context)
                           .setTitle(title)
@@ -64,10 +82,14 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                           .setPositiveButton(R.string.card_unmask_confirm_button, null)
                           .setOnDismissListener(this)
                           .create();
+
+        mShouldRequestExpirationDate = shouldRequestExpirationDate;
     }
 
     public void show() {
         mDialog.show();
+
+        if (mShouldRequestExpirationDate) initializeExpirationDateSpinners();
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
@@ -76,16 +98,18 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDelegate.onUserInput(cardUnmaskInput().getText().toString());
+                mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
+                        (String) mMonthSpinner.getSelectedItem(),
+                        (String) mYearSpinner.getSelectedItem());
             }
         });
 
-        final EditText input = cardUnmaskInput();
+        final EditText input = mCardUnmaskInput;
         input.addTextChangedListener(this);
         input.post(new Runnable() {
             @Override
             public void run() {
-                showKeyboardForUnmaskInput();
+                setInitialFocus();
             }
         });
     }
@@ -95,22 +119,26 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     }
 
     public void disableAndWaitForVerification() {
-        cardUnmaskInput().setEnabled(false);
+        mCardUnmaskInput.setEnabled(false);
+        mMonthSpinner.setEnabled(false);
+        mYearSpinner.setEnabled(false);
+
         mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
-        getVerificationProgressBar().setVisibility(View.VISIBLE);
-        getVerificationView().setVisibility(View.GONE);
+        mVerificationProgressBar.setVisibility(View.VISIBLE);
+        mVerificationView.setVisibility(View.GONE);
     }
 
     public void verificationFinished(boolean success) {
-        getVerificationProgressBar().setVisibility(View.GONE);
+        mVerificationProgressBar.setVisibility(View.GONE);
         if (!success) {
-            TextView message = getVerificationView();
+            TextView message = mVerificationView;
             message.setText("Verification failed. Please try again.");
             message.setVisibility(View.VISIBLE);
-            EditText input = cardUnmaskInput();
-            input.setEnabled(true);
-            showKeyboardForUnmaskInput();
+            mCardUnmaskInput.setEnabled(true);
+            mMonthSpinner.setEnabled(true);
+            mYearSpinner.setEnabled(true);
+            setInitialFocus();
             // TODO(estade): UI decision - should we clear the input?
         } else {
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
@@ -130,8 +158,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
 
     @Override
     public void afterTextChanged(Editable s) {
-        boolean valid = mDelegate.checkUserInputValidity(cardUnmaskInput().getText().toString());
-        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(valid);
+        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(areInputsValid());
     }
 
     @Override
@@ -140,21 +167,49 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-    private void showKeyboardForUnmaskInput() {
+    private void initializeExpirationDateSpinners() {
+        ArrayAdapter<CharSequence> monthAdapter = new ArrayAdapter<CharSequence>(
+                mDialog.getContext(), android.R.layout.simple_spinner_item);
+
+        // TODO(estade): i18n, or remove this entry, or something.
+        monthAdapter.add("MM");
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMinimumIntegerDigits(2);
+        for (int month = 1; month <= 12; month++) {
+            monthAdapter.add(nf.format(month));
+        }
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mMonthSpinner.setAdapter(monthAdapter);
+
+        ArrayAdapter<CharSequence> yearAdapter = new ArrayAdapter<CharSequence>(
+                mDialog.getContext(), android.R.layout.simple_spinner_item);
+        yearAdapter.add("YYYY");
+        Calendar calendar = Calendar.getInstance();
+        int initialYear = calendar.get(Calendar.YEAR);
+        for (int year = initialYear; year < initialYear + 10; year++) {
+            yearAdapter.add(Integer.toString(year));
+        }
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mYearSpinner.setAdapter(yearAdapter);
+
+        mMonthSpinner.setVisibility(View.VISIBLE);
+        mYearSpinner.setVisibility(View.VISIBLE);
+    }
+
+    private void setInitialFocus() {
+        if (mShouldRequestExpirationDate) return;
+
         InputMethodManager imm = (InputMethodManager) mDialog.getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(cardUnmaskInput(), InputMethodManager.SHOW_IMPLICIT);
+        imm.showSoftInput(mCardUnmaskInput, InputMethodManager.SHOW_IMPLICIT);
     }
 
-    private EditText cardUnmaskInput() {
-        return (EditText) mDialog.findViewById(R.id.card_unmask_input);
-    }
-
-    private ProgressBar getVerificationProgressBar() {
-        return (ProgressBar) mDialog.findViewById(R.id.verification_progress_bar);
-    }
-
-    private TextView getVerificationView() {
-        return (TextView) mDialog.findViewById(R.id.verification_message);
+    private boolean areInputsValid() {
+        if (mShouldRequestExpirationDate
+                && (mMonthSpinner.getSelectedItemPosition() == 0
+                           || mYearSpinner.getSelectedItemPosition() == 0)) {
+            return false;
+        }
+        return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }
 }

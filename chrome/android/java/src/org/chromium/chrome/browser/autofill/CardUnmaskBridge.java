@@ -22,7 +22,7 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private final CardUnmaskPrompt mCardUnmaskPrompt;
 
     public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, String title,
-            String instructions, WindowAndroid windowAndroid) {
+            String instructions, boolean shouldRequestExpirationDate, WindowAndroid windowAndroid) {
         mNativeCardUnmaskPromptViewAndroid = nativeCardUnmaskPromptViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -36,14 +36,16 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
                 }
             });
         } else {
-            mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions);
+            mCardUnmaskPrompt = new CardUnmaskPrompt(
+                    activity, this, title, instructions, shouldRequestExpirationDate);
         }
     }
 
     @CalledByNative
     private static CardUnmaskBridge create(long nativeUnmaskPrompt, String title,
-            String instructions, WindowAndroid windowAndroid) {
-        return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions, windowAndroid);
+            String instructions, boolean shouldRequestExpirationDate, WindowAndroid windowAndroid) {
+        return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions,
+                shouldRequestExpirationDate, windowAndroid);
     }
 
     @Override
@@ -57,8 +59,8 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     }
 
     @Override
-    public void onUserInput(String userResponse) {
-        nativeOnUserInput(mNativeCardUnmaskPromptViewAndroid, userResponse);
+    public void onUserInput(String cvc, String month, String year) {
+        nativeOnUserInput(mNativeCardUnmaskPromptViewAndroid, cvc, month, year);
     }
 
     /**
@@ -97,5 +99,5 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private native boolean nativeCheckUserInputValidity(
             long nativeCardUnmaskPromptViewAndroid, String userResponse);
     private native void nativeOnUserInput(
-            long nativeCardUnmaskPromptViewAndroid, String userResponse);
+            long nativeCardUnmaskPromptViewAndroid, String cvc, String month, String year);
 }
