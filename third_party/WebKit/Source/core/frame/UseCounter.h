@@ -618,6 +618,8 @@ public:
         FetchBodyStream = 676,
         XMLHttpRequestAsynchronous = 677,
         AudioBufferSourceBufferOnce = 678,
+        WhiteSpacePreFromXMLSpace = 679,
+        WhiteSpaceNowrapFromXMLSpace = 680,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

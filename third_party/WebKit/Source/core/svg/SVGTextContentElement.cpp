@@ -30,6 +30,7 @@
 #include "core/XMLNames.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGTextQuery.h"
 
@@ -224,10 +225,13 @@ void SVGTextContentElement::collectStyleForPresentationAttribute(const Qualified
     else if (name.matches(XMLNames::spaceAttr)) {
         DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve", AtomicString::ConstructFromLiteral));
 
-        if (value == preserveString)
+        if (value == preserveString) {
+            UseCounter::count(document(), UseCounter::WhiteSpacePreFromXMLSpace);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValuePre);
-        else
+        } else {
+            UseCounter::count(document(), UseCounter::WhiteSpaceNowrapFromXMLSpace);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValueNowrap);
+        }
     }
 }
 
