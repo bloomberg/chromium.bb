@@ -12,6 +12,8 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "content/test/web_layer_tree_view_impl_for_testing.h"
@@ -317,6 +319,16 @@ bool TestBlinkWebUnitTestSupport::getBlobItems(
     const blink::WebString& uuid,
     blink::WebVector<blink::WebBlobData::Item*>* items) {
   return blob_registry_.GetBlobItems(uuid, items);
+}
+
+blink::WebScheduler* TestBlinkWebUnitTestSupport::scheduler() {
+  // Lazily create the WebSchedulerImpl and RendererScheduler if needed.
+  if (!web_scheduler_) {
+    if (!renderer_scheduler_)
+      renderer_scheduler_ = RendererScheduler::Create();
+    web_scheduler_.reset(new WebSchedulerImpl(renderer_scheduler_.get()));
+  }
+  return web_scheduler_.get();
 }
 
 }  // namespace content

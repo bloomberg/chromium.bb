@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
@@ -16,7 +17,7 @@ namespace content {
 class RendererScheduler;
 class SingleThreadIdleTaskRunner;
 
-class WebSchedulerImpl : public blink::WebScheduler {
+class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
  public:
   WebSchedulerImpl(RendererScheduler* renderer_scheduler);
   ~WebSchedulerImpl() override;

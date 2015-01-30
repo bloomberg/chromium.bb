@@ -25,6 +25,8 @@ class WebLayerTreeView;
 }
 
 namespace content {
+class RendererScheduler;
+class WebSchedulerImpl;
 
 // An implementation of blink::WebUnitTestSupport and BlinkPlatformImpl for
 // tests.
@@ -83,6 +85,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual blink::WebData readFromFile(const blink::WebString& path);
   virtual bool getBlobItems(const blink::WebString& uuid,
                             blink::WebVector<blink::WebBlobData::Item*>* items);
+  virtual blink::WebScheduler* scheduler();
 
  private:
   MockWebBlobRegistryImpl blob_registry_;
@@ -93,6 +96,8 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
   scoped_ptr<base::StatsTable> stats_table_;
+  scoped_ptr<RendererScheduler> renderer_scheduler_;
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_;
