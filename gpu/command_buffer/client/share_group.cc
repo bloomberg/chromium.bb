@@ -338,7 +338,7 @@ ShareGroup::ShareGroup(bool bind_generates_resource)
       }
     }
   }
-  program_info_manager_.reset(ProgramInfoManager::Create(false));
+  program_info_manager_.reset(new ProgramInfoManager);
 }
 
 void ShareGroup::set_program_info_manager(ProgramInfoManager* manager) {

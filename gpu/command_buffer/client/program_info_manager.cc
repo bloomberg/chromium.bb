@@ -4,248 +4,35 @@
 
 #include "gpu/command_buffer/client/program_info_manager.h"
 
-#include <string>
+namespace {
 
-#include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
-#include "base/synchronization/lock.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+template<typename T> static T LocalGetAs(
+    const std::vector<int8>& data, uint32 offset, size_t size) {
+  const int8* p = &data[0] + offset;
+  if (offset + size > data.size()) {
+    NOTREACHED();
+    return NULL;
+  }
+  return static_cast<T>(static_cast<const void*>(p));
+}
+
+}  // namespace anonymous
 
 namespace gpu {
 namespace gles2 {
 
-class NonCachedProgramInfoManager : public ProgramInfoManager {
- public:
-  NonCachedProgramInfoManager();
-  ~NonCachedProgramInfoManager() override;
-
-  void CreateInfo(GLuint program) override;
-
-  void DeleteInfo(GLuint program) override;
-
-  bool GetProgramiv(GLES2Implementation* gl,
-                    GLuint program,
-                    GLenum pname,
-                    GLint* params) override;
-
-  GLint GetAttribLocation(GLES2Implementation* gl,
-                          GLuint program,
-                          const char* name) override;
-
-  GLint GetUniformLocation(GLES2Implementation* gl,
-                           GLuint program,
-                           const char* name) override;
-
-  GLint GetFragDataLocation(GLES2Implementation* gl,
-                            GLuint program,
-                            const char* name) override;
-
-  bool GetActiveAttrib(GLES2Implementation* gl,
-                       GLuint program,
-                       GLuint index,
-                       GLsizei bufsize,
-                       GLsizei* length,
-                       GLint* size,
-                       GLenum* type,
-                       char* name) override;
-
-  bool GetActiveUniform(GLES2Implementation* gl,
-                        GLuint program,
-                        GLuint index,
-                        GLsizei bufsize,
-                        GLsizei* length,
-                        GLint* size,
-                        GLenum* type,
-                        char* name) override;
-};
-
-NonCachedProgramInfoManager::NonCachedProgramInfoManager() {
+ProgramInfoManager::Program::VertexAttrib::VertexAttrib(
+    GLsizei _size, GLenum _type, const std::string& _name, GLint _location)
+    : size(_size),
+      type(_type),
+      location(_location),
+      name(_name) {
 }
 
-NonCachedProgramInfoManager::~NonCachedProgramInfoManager() {
+ProgramInfoManager::Program::VertexAttrib::~VertexAttrib() {
 }
 
-void NonCachedProgramInfoManager::CreateInfo(GLuint /* program */) {
-}
-
-void NonCachedProgramInfoManager::DeleteInfo(GLuint /* program */) {
-}
-
-bool NonCachedProgramInfoManager::GetProgramiv(
-    GLES2Implementation* /* gl */,
-    GLuint /* program */,
-    GLenum /* pname */,
-    GLint* /* params */) {
-  return false;
-}
-
-GLint NonCachedProgramInfoManager::GetAttribLocation(
-    GLES2Implementation* gl, GLuint program, const char* name) {
-  return gl->GetAttribLocationHelper(program, name);
-}
-
-GLint NonCachedProgramInfoManager::GetUniformLocation(
-    GLES2Implementation* gl, GLuint program, const char* name) {
-  return gl->GetUniformLocationHelper(program, name);
-}
-
-GLint NonCachedProgramInfoManager::GetFragDataLocation(
-    GLES2Implementation* gl, GLuint program, const char* name) {
-  return gl->GetFragDataLocationHelper(program, name);
-}
-
-bool NonCachedProgramInfoManager::GetActiveAttrib(
-    GLES2Implementation* gl,
-    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-    GLint* size, GLenum* type, char* name) {
-  return gl->GetActiveAttribHelper(
-      program, index, bufsize, length, size, type, name);
-}
-
-bool NonCachedProgramInfoManager::GetActiveUniform(
-    GLES2Implementation* gl,
-    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-    GLint* size, GLenum* type, char* name) {
-  return gl->GetActiveUniformHelper(
-      program, index, bufsize, length, size, type, name);
-}
-
-class CachedProgramInfoManager : public ProgramInfoManager {
- public:
-  CachedProgramInfoManager();
-  ~CachedProgramInfoManager() override;
-
-  void CreateInfo(GLuint program) override;
-
-  void DeleteInfo(GLuint program) override;
-
-  bool GetProgramiv(GLES2Implementation* gl,
-                    GLuint program,
-                    GLenum pname,
-                    GLint* params) override;
-
-  GLint GetAttribLocation(GLES2Implementation* gl,
-                          GLuint program,
-                          const char* name) override;
-
-  GLint GetUniformLocation(GLES2Implementation* gl,
-                           GLuint program,
-                           const char* name) override;
-
-  GLint GetFragDataLocation(GLES2Implementation* gl,
-                            GLuint program,
-                            const char* name) override;
-
-  bool GetActiveAttrib(GLES2Implementation* gl,
-                       GLuint program,
-                       GLuint index,
-                       GLsizei bufsize,
-                       GLsizei* length,
-                       GLint* size,
-                       GLenum* type,
-                       char* name) override;
-
-  bool GetActiveUniform(GLES2Implementation* gl,
-                        GLuint program,
-                        GLuint index,
-                        GLsizei bufsize,
-                        GLsizei* length,
-                        GLint* size,
-                        GLenum* type,
-                        char* name) override;
-
- private:
-  class Program {
-   public:
-    struct UniformInfo {
-      UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
-
-      GLsizei size;
-      GLenum type;
-      bool is_array;
-      std::string name;
-      std::vector<GLint> element_locations;
-    };
-    struct VertexAttrib {
-      VertexAttrib(GLsizei _size, GLenum _type, const std::string& _name,
-                       GLint _location)
-          : size(_size),
-            type(_type),
-            location(_location),
-            name(_name) {
-      }
-      GLsizei size;
-      GLenum type;
-      GLint location;
-      std::string name;
-    };
-
-    typedef std::vector<UniformInfo> UniformInfoVector;
-    typedef std::vector<VertexAttrib> AttribInfoVector;
-
-    Program();
-
-    const AttribInfoVector& GetAttribInfos() const {
-      return attrib_infos_;
-    }
-
-    const VertexAttrib* GetAttribInfo(GLint index) const {
-      return (static_cast<size_t>(index) < attrib_infos_.size()) ?
-         &attrib_infos_[index] : NULL;
-    }
-
-    GLint GetAttribLocation(const std::string& name) const;
-
-    const UniformInfo* GetUniformInfo(GLint index) const {
-      return (static_cast<size_t>(index) < uniform_infos_.size()) ?
-         &uniform_infos_[index] : NULL;
-    }
-
-    // Gets the location of a uniform by name.
-    GLint GetUniformLocation(const std::string& name) const;
-
-    GLint GetFragDataLocation(const std::string& name) const;
-    void CacheFragDataLocation(const std::string& name, GLint loc);
-
-    bool GetProgramiv(GLenum pname, GLint* params);
-
-    // Updates the program info after a successful link.
-    void Update(GLES2Implementation* gl,
-                GLuint program,
-                const std::vector<int8>& result);
-
-    bool cached() const { return cached_; }
-
-   private:
-    bool cached_;
-
-    GLsizei max_attrib_name_length_;
-
-    // Attrib by index.
-    AttribInfoVector attrib_infos_;
-
-    GLsizei max_uniform_name_length_;
-
-    // Uniform info by index.
-    UniformInfoVector uniform_infos_;
-
-    base::hash_map<std::string, GLint> frag_data_locations_;
-
-    // This is true if glLinkProgram was successful last time it was called.
-    bool link_status_;
-  };
-
-  Program* GetProgramInfo(GLES2Implementation* gl, GLuint program);
-
-  typedef base::hash_map<GLuint, Program> ProgramInfoMap;
-
-  ProgramInfoMap program_infos_;
-
-  mutable base::Lock lock_;
-};
-
-CachedProgramInfoManager::Program::UniformInfo::UniformInfo(
+ProgramInfoManager::Program::UniformInfo::UniformInfo(
     GLsizei _size, GLenum _type, const std::string& _name)
     : size(_size),
       type(_type),
@@ -254,15 +41,21 @@ CachedProgramInfoManager::Program::UniformInfo::UniformInfo(
   DCHECK(!(size > 1 && !is_array));
 }
 
-CachedProgramInfoManager::Program::Program()
+ProgramInfoManager::Program::UniformInfo::~UniformInfo() {
+}
+
+ProgramInfoManager::Program::Program()
     : cached_(false),
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
       link_status_(false) {
 }
 
+ProgramInfoManager::Program::~Program() {
+}
+
 // TODO(gman): Add a faster lookup.
-GLint CachedProgramInfoManager::Program::GetAttribLocation(
+GLint ProgramInfoManager::Program::GetAttribLocation(
     const std::string& name) const {
   for (GLuint ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
@@ -273,7 +66,19 @@ GLint CachedProgramInfoManager::Program::GetAttribLocation(
   return -1;
 }
 
-GLint CachedProgramInfoManager::Program::GetUniformLocation(
+const ProgramInfoManager::Program::VertexAttrib*
+ProgramInfoManager::Program::GetAttribInfo(GLint index) const {
+  return (static_cast<size_t>(index) < attrib_infos_.size()) ?
+      &attrib_infos_[index] : NULL;
+}
+
+const ProgramInfoManager::Program::UniformInfo*
+ProgramInfoManager::Program::GetUniformInfo(GLint index) const {
+  return (static_cast<size_t>(index) < uniform_infos_.size()) ?
+      &uniform_infos_[index] : NULL;
+}
+
+GLint ProgramInfoManager::Program::GetUniformLocation(
     const std::string& name) const {
   bool getting_array_location = false;
   size_t open_pos = std::string::npos;
@@ -302,7 +107,7 @@ GLint CachedProgramInfoManager::Program::GetUniformLocation(
   return -1;
 }
 
-GLint CachedProgramInfoManager::Program::GetFragDataLocation(
+GLint ProgramInfoManager::Program::GetFragDataLocation(
     const std::string& name) const {
   base::hash_map<std::string, GLint>::const_iterator iter =
       frag_data_locations_.find(name);
@@ -311,12 +116,12 @@ GLint CachedProgramInfoManager::Program::GetFragDataLocation(
   return iter->second;
 }
 
-void CachedProgramInfoManager::Program::CacheFragDataLocation(
+void ProgramInfoManager::Program::CacheFragDataLocation(
     const std::string& name, GLint loc) {
   frag_data_locations_[name] = loc;
 }
 
-bool CachedProgramInfoManager::Program::GetProgramiv(
+bool ProgramInfoManager::Program::GetProgramiv(
     GLenum pname, GLint* params) {
   switch (pname) {
     case GL_LINK_STATUS:
@@ -340,17 +145,7 @@ bool CachedProgramInfoManager::Program::GetProgramiv(
   return false;
 }
 
-template<typename T> static T LocalGetAs(
-    const std::vector<int8>& data, uint32 offset, size_t size) {
-  const int8* p = &data[0] + offset;
-  if (offset + size > data.size()) {
-    NOTREACHED();
-    return NULL;
-  }
-  return static_cast<T>(static_cast<const void*>(p));
-}
-
-void CachedProgramInfoManager::Program::Update(
+void ProgramInfoManager::Program::Update(
     GLES2Implementation* gl,
     GLuint program,
     const std::vector<int8>& result) {
@@ -409,16 +204,19 @@ void CachedProgramInfoManager::Program::Update(
   cached_ = true;
 }
 
-CachedProgramInfoManager::CachedProgramInfoManager() {
+bool ProgramInfoManager::Program::cached() const {
+  return cached_;
 }
 
-CachedProgramInfoManager::~CachedProgramInfoManager() {
 
+ProgramInfoManager::ProgramInfoManager() {
 }
 
-CachedProgramInfoManager::Program*
-    CachedProgramInfoManager::GetProgramInfo(
-        GLES2Implementation* gl, GLuint program) {
+ProgramInfoManager::~ProgramInfoManager() {
+}
+
+ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
+    GLES2Implementation* gl, GLuint program) {
   lock_.AssertAcquired();
   ProgramInfoMap::iterator it = program_infos_.find(program);
   if (it == program_infos_.end()) {
@@ -444,7 +242,7 @@ CachedProgramInfoManager::Program*
   return info;
 }
 
-void CachedProgramInfoManager::CreateInfo(GLuint program) {
+void ProgramInfoManager::CreateInfo(GLuint program) {
   base::AutoLock auto_lock(lock_);
   program_infos_.erase(program);
   std::pair<ProgramInfoMap::iterator, bool> result =
@@ -453,12 +251,12 @@ void CachedProgramInfoManager::CreateInfo(GLuint program) {
   DCHECK(result.second);
 }
 
-void CachedProgramInfoManager::DeleteInfo(GLuint program) {
+void ProgramInfoManager::DeleteInfo(GLuint program) {
   base::AutoLock auto_lock(lock_);
   program_infos_.erase(program);
 }
 
-bool CachedProgramInfoManager::GetProgramiv(
+bool ProgramInfoManager::GetProgramiv(
     GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params) {
   base::AutoLock auto_lock(lock_);
   Program* info = GetProgramInfo(gl, program);
@@ -468,7 +266,7 @@ bool CachedProgramInfoManager::GetProgramiv(
   return info->GetProgramiv(pname, params);
 }
 
-GLint CachedProgramInfoManager::GetAttribLocation(
+GLint ProgramInfoManager::GetAttribLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   {
     base::AutoLock auto_lock(lock_);
@@ -480,7 +278,7 @@ GLint CachedProgramInfoManager::GetAttribLocation(
   return gl->GetAttribLocationHelper(program, name);
 }
 
-GLint CachedProgramInfoManager::GetUniformLocation(
+GLint ProgramInfoManager::GetUniformLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   {
     base::AutoLock auto_lock(lock_);
@@ -492,7 +290,7 @@ GLint CachedProgramInfoManager::GetUniformLocation(
   return gl->GetUniformLocationHelper(program, name);
 }
 
-GLint CachedProgramInfoManager::GetFragDataLocation(
+GLint ProgramInfoManager::GetFragDataLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   // TODO(zmo): make FragData locations part of the ProgramInfo that are
   // fetched altogether from the service side.  See crbug.com/452104.
@@ -516,7 +314,7 @@ GLint CachedProgramInfoManager::GetFragDataLocation(
   return loc;
 }
 
-bool CachedProgramInfoManager::GetActiveAttrib(
+bool ProgramInfoManager::GetActiveAttrib(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
@@ -552,7 +350,7 @@ bool CachedProgramInfoManager::GetActiveAttrib(
       program, index, bufsize, length, size, type, name);
 }
 
-bool CachedProgramInfoManager::GetActiveUniform(
+bool ProgramInfoManager::GetActiveUniform(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
@@ -586,21 +384,6 @@ bool CachedProgramInfoManager::GetActiveUniform(
   }
   return gl->GetActiveUniformHelper(
       program, index, bufsize, length, size, type, name);
-}
-
-ProgramInfoManager::ProgramInfoManager() {
-}
-
-ProgramInfoManager::~ProgramInfoManager() {
-}
-
-ProgramInfoManager* ProgramInfoManager::Create(
-    bool shared_resources_across_processes) {
-  if (shared_resources_across_processes) {
-    return new NonCachedProgramInfoManager();
-  } else {
-    return new CachedProgramInfoManager();
-  }
 }
 
 }  // namespace gles2
