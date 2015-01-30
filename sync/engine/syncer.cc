@@ -4,11 +4,11 @@
 
 #include "sync/engine/syncer.h"
 
-#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "sync/engine/apply_control_data_updates.h"
 #include "sync/engine/commit.h"

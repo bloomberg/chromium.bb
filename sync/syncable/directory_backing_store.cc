@@ -9,11 +9,11 @@
 #include <limits>
 
 #include "base/base64.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"

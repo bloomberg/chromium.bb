@@ -4,7 +4,7 @@
 
 #include "sync/engine/commit.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/engine/commit_processor.h"
 #include "sync/engine/commit_util.h"

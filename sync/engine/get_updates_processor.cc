@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "sync/engine/get_updates_delegate.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/update_handler.h"
