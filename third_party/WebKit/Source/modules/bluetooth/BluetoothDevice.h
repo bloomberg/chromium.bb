@@ -39,6 +39,15 @@ public:
 
     // IDL exposed interface:
     String instanceID() { return m_webDevice.instanceID; }
+    String name() { return m_webDevice.name; }
+    unsigned deviceClass(bool& isNull);
+    String vendorIDSource();
+    unsigned vendorID(bool& isNull);
+    unsigned productID(bool& isNull);
+    unsigned productVersion(bool& isNull);
+    bool paired(bool& isNull);
+    bool connected(bool& isNull);
+    Vector<String> uuids(bool& isNull);
 
 private:
     WebBluetoothDevice m_webDevice;

@@ -21,10 +21,27 @@ async_test(function(t) {
 
         // Attempt (and fail) to overwrite all members, verifying they are readonly.
         device.instanceID = "overwritten";
+        device.name = "overwritten";
+        device.deviceClass = "overwritten";
+        device.vendorIDSource = "overwritten";
+        device.vendorID = "overwritten";
+        device.productID = "overwritten";
+        device.productVersion = "overwritten";
+        device.paired = "overwritten";
+        device.connected = "overwritten";
+        device.uuids = "overwritten"
 
-        // FIXME: Remove "Empty Mock deviceId" after crrev.com/885723002 lands.
-        assert_true(device.instanceID === "Empty Mock deviceId" ||
-                    device.instanceID === "Empty Mock Device instanceID");
+        assert_equals(device.instanceID, "Empty Mock Device instanceID");
+        assert_equals(device.name, "Empty Mock Device name");
+        assert_equals(device.deviceClass, 0x1F00);
+        assert_equals(device.vendorIDSource, "bluetooth");
+        assert_equals(device.vendorID, 0xFFFF);
+        assert_equals(device.productID, 1);
+        assert_equals(device.productVersion, 2);
+        assert_equals(device.paired, true);
+        assert_equals(device.connected, false);
+        assert_equals(device.uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
+        assert_equals(device.uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
 
         t.done();
       }),

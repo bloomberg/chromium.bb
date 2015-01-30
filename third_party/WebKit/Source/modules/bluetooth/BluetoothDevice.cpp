@@ -30,5 +30,62 @@ void BluetoothDevice::dispose(WebBluetoothDevice* webDeviceRaw)
     delete webDeviceRaw;
 }
 
+unsigned BluetoothDevice::deviceClass(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.deviceClass;
+}
+
+String BluetoothDevice::vendorIDSource()
+{
+    switch (m_webDevice.vendorIDSource) {
+        // FIXME: Should return undefined when Unknown. http://crbug.com/451604
+    case WebBluetoothDevice::VendorIDSource::Unknown: return "";
+    case WebBluetoothDevice::VendorIDSource::Bluetooth: return "bluetooth";
+    case WebBluetoothDevice::VendorIDSource::USB: return "usb";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+unsigned BluetoothDevice::vendorID(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.vendorID;
+}
+
+unsigned BluetoothDevice::productID(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.productID;
+}
+
+unsigned BluetoothDevice::productVersion(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.productVersion;
+}
+
+bool BluetoothDevice::paired(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.paired;
+}
+
+bool BluetoothDevice::connected(bool& isNull)
+{
+    isNull = false;
+    return m_webDevice.connected;
+}
+
+Vector<String> BluetoothDevice::uuids(bool& isNull)
+{
+    isNull = false;
+    Vector<String> uuids(m_webDevice.uuids.size());
+    for (size_t i = 0; i < m_webDevice.uuids.size(); ++i)
+        uuids[i] = m_webDevice.uuids[i];
+    return uuids;
+}
+
 } // namespace blink
 

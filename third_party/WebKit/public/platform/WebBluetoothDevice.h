@@ -18,20 +18,6 @@ struct WebBluetoothDevice {
         USB
     };
 
-    // FIXME: Remove after crrev.com/885723002 lands.
-    WebBluetoothDevice(const WebString& instanceID)
-        : instanceID(instanceID)
-        , deviceClass(0)
-        , vendorIDSource(VendorIDSource::Unknown)
-        , vendorID(0)
-        , productID(0)
-        , productVersion(0)
-        , paired(false)
-        , connected(false)
-        , uuids()
-    {
-    }
-
     WebBluetoothDevice(const WebString& instanceID,
         const WebString& name,
         int32_t deviceClass,
