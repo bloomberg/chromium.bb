@@ -28,6 +28,7 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -76,12 +77,11 @@ BluetoothSocketChromeOS::ConnectionRequest::~ConnectionRequest() {}
 BluetoothSocketChromeOS::BluetoothSocketChromeOS(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<BluetoothSocketThread> socket_thread)
-    : BluetoothSocketNet(ui_task_runner, socket_thread) {
+    : BluetoothSocketNet(ui_task_runner, socket_thread), profile_(nullptr) {
 }
 
 BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
-  DCHECK(object_path_.value().empty());
-  DCHECK(profile_.get() == NULL);
+  DCHECK(!profile_);
 
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
@@ -96,8 +96,7 @@ void BluetoothSocketChromeOS::Connect(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(object_path_.value().empty());
-  DCHECK(!profile_.get());
+  DCHECK(!profile_);
 
   if (!uuid.IsValid()) {
     error_callback.Run(kInvalidUUID);
@@ -111,7 +110,7 @@ void BluetoothSocketChromeOS::Connect(
   if (security_level == SECURITY_LEVEL_LOW)
     options_->require_authentication.reset(new bool(false));
 
-  RegisterProfile(success_callback, error_callback);
+  RegisterProfile(device->adapter(), success_callback, error_callback);
 }
 
 void BluetoothSocketChromeOS::Listen(
@@ -122,8 +121,7 @@ void BluetoothSocketChromeOS::Listen(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(object_path_.value().empty());
-  DCHECK(!profile_.get());
+  DCHECK(!profile_);
 
   if (!uuid.IsValid()) {
     error_callback.Run(kInvalidUUID);
@@ -151,7 +149,8 @@ void BluetoothSocketChromeOS::Listen(
       NOTREACHED();
   }
 
-  RegisterProfile(success_callback, error_callback);
+  RegisterProfile(static_cast<BluetoothAdapterChromeOS*>(adapter_.get()),
+                  success_callback, error_callback);
 }
 
 void BluetoothSocketChromeOS::Close() {
@@ -216,96 +215,76 @@ void BluetoothSocketChromeOS::Accept(
 }
 
 void BluetoothSocketChromeOS::RegisterProfile(
+    BluetoothAdapterChromeOS* adapter,
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(object_path_.value().empty());
-  DCHECK(!profile_.get());
+  DCHECK(!profile_);
+  DCHECK(adapter);
 
-  // The object path is relatively meaningless, but has to be unique, so for
-  // connecting profiles use a combination of the device address and profile
-  // UUID.
-  std::string device_address_path, uuid_path;
-  base::ReplaceChars(device_address_, ":-", "_", &device_address_path);
-  base::ReplaceChars(uuid_.canonical_value(), ":-", "_", &uuid_path);
-  if (!device_address_path.empty()) {
-    object_path_ = dbus::ObjectPath("/org/chromium/bluetooth_profile/" +
-                                    device_address_path + "/" + uuid_path);
-  } else {
-    object_path_ = dbus::ObjectPath("/org/chromium/bluetooth_profile/" +
-                                    uuid_path);
-  }
-
-  // Create the service provider for the profile object.
-  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-  profile_.reset(BluetoothProfileServiceProvider::Create(
-      system_bus, object_path_, this));
-  DCHECK(profile_.get());
-
-  // Before reaching out to the Bluetooth Daemon to register a listening socket,
-  // make sure it's actually running. If not, report success and carry on;
+  // If the adapter is not present, this is a listening socket and the
+  // adapter isn't running yet.  Report success and carry on;
   // the profile will be registered when the daemon becomes available.
-  if (adapter_.get() && !adapter_->IsPresent()) {
-    VLOG(1) << object_path_.value() << ": Delaying profile registration.";
-    success_callback.Run();
+  if (!adapter->IsPresent()) {
+    VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
+            << ": Delaying profile registration.";
+    base::MessageLoop::current()->PostTask(FROM_HERE, success_callback);
     return;
   }
 
-  VLOG(1) << object_path_.value() << ": Registering profile.";
-  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
-      RegisterProfile(
-          object_path_,
-          uuid_.canonical_value(),
-          *options_,
-          base::Bind(&BluetoothSocketChromeOS::OnRegisterProfile,
-                     this,
-                     success_callback,
-                     error_callback),
-          base::Bind(&BluetoothSocketChromeOS::OnRegisterProfileError,
-                     this,
-                     error_callback));
+  VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
+          << ": Acquiring profile.";
+
+  adapter->UseProfile(
+      uuid_, device_path_, *options_, this,
+      base::Bind(&BluetoothSocketChromeOS::OnRegisterProfile, this,
+                 success_callback, error_callback),
+      base::Bind(&BluetoothSocketChromeOS::OnRegisterProfileError, this,
+                 error_callback));
 }
 
 void BluetoothSocketChromeOS::OnRegisterProfile(
     const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    const ErrorCompletionCallback& error_callback,
+    BluetoothAdapterProfileChromeOS* profile) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  if (!device_path_.value().empty()) {
-    VLOG(1) << object_path_.value() << ": Profile registered, connecting to "
-            << device_path_.value();
+  DCHECK(!profile_);
 
-    DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-        ConnectProfile(
-            device_path_,
-            uuid_.canonical_value(),
-            base::Bind(
-                &BluetoothSocketChromeOS::OnConnectProfile,
-                this,
-                success_callback),
-            base::Bind(
-                &BluetoothSocketChromeOS::OnConnectProfileError,
-                this,
-                error_callback));
-  } else {
-    VLOG(1) << object_path_.value() << ": Profile registered.";
+  profile_ = profile;
+
+  if (device_path_.value().empty()) {
+    VLOG(1) << uuid_.canonical_value() << ": Profile registered.";
     success_callback.Run();
+    return;
   }
+
+  VLOG(1) << uuid_.canonical_value() << ": Got profile, connecting to "
+          << device_path_.value();
+
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+      device_path_, uuid_.canonical_value(),
+      base::Bind(&BluetoothSocketChromeOS::OnConnectProfile, this,
+                 success_callback),
+      base::Bind(&BluetoothSocketChromeOS::OnConnectProfileError, this,
+                 error_callback));
 }
 
 void BluetoothSocketChromeOS::OnRegisterProfileError(
     const ErrorCompletionCallback& error_callback,
-    const std::string& error_name,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  LOG(WARNING) << object_path_.value() << ": Failed to register profile: "
-               << error_name << ": " << error_message;
+
+  LOG(WARNING) << uuid_.canonical_value()
+               << ": Failed to register profile: " << error_message;
   error_callback.Run(error_message);
 }
 
 void BluetoothSocketChromeOS::OnConnectProfile(
     const base::Closure& success_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  VLOG(1) << object_path_.value() << ": Profile connected.";
+  DCHECK(profile_);
+
+  VLOG(1) << profile_->object_path().value() << ": Profile connected.";
   UnregisterProfile();
   success_callback.Run();
 }
@@ -315,8 +294,11 @@ void BluetoothSocketChromeOS::OnConnectProfileError(
     const std::string& error_name,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  LOG(WARNING) << object_path_.value() << ": Failed to connect profile: "
-               << error_name << ": " << error_message;
+  DCHECK(profile_);
+
+  LOG(WARNING) << profile_->object_path().value()
+               << ": Failed to connect profile: " << error_name << ": "
+               << error_message;
   UnregisterProfile();
   error_callback.Run(error_message);
 }
@@ -324,47 +306,47 @@ void BluetoothSocketChromeOS::OnConnectProfileError(
 void BluetoothSocketChromeOS::AdapterPresentChanged(BluetoothAdapter* adapter,
                                                     bool present) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(!object_path_.value().empty());
-  DCHECK(profile_.get());
 
-  if (!present)
+  if (!present) {
+    // Adapter removed, the profile is now invalid.
+    UnregisterProfile();
     return;
+  }
 
-  VLOG(1) << object_path_.value() << ": Re-register profile.";
-  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
-      RegisterProfile(
-          object_path_,
-          uuid_.canonical_value(),
-          *options_,
-          base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfile,
-                     this),
-          base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfileError,
-                     this));
+  DCHECK(!profile_);
+
+  VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
+          << ": Acquiring profile.";
+
+  static_cast<BluetoothAdapterChromeOS*>(adapter)->UseProfile(
+      uuid_, device_path_, *options_, this,
+      base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfile, this),
+      base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfileError,
+                 this));
 }
 
-void BluetoothSocketChromeOS::OnInternalRegisterProfile() {
+void BluetoothSocketChromeOS::OnInternalRegisterProfile(
+    BluetoothAdapterProfileChromeOS* profile) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(!profile_);
 
-  VLOG(1) << object_path_.value() << ": Profile re-registered";
+  profile_ = profile;
+
+  VLOG(1) << uuid_.canonical_value() << ": Profile re-registered";
 }
 
 void BluetoothSocketChromeOS::OnInternalRegisterProfileError(
-    const std::string& error_name,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
-  // It's okay if the profile already exists, it means we registered it on
-  // initialization.
-  if (error_name == bluetooth_profile_manager::kErrorAlreadyExists)
-    return;
-
-  LOG(WARNING) << object_path_.value() << ": Failed to re-register profile: "
-               << error_name << ": " << error_message;
+  LOG(WARNING) << "Failed to re-register profile: " << error_message;
 }
 
 void BluetoothSocketChromeOS::Released() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  VLOG(1) << object_path_.value() << ": Release";
+  DCHECK(profile_);
+
+  VLOG(1) << profile_->object_path().value() << ": Release";
 }
 
 void BluetoothSocketChromeOS::NewConnection(
@@ -373,8 +355,9 @@ void BluetoothSocketChromeOS::NewConnection(
     const BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  VLOG(1) << object_path_.value() << ": New connection from device: "
-          << device_path.value();
+
+  VLOG(1) << uuid_.canonical_value()
+          << ": New connection from device: " << device_path.value();
 
   if (!device_path_.value().empty()) {
     DCHECK(device_path_ == device_path);
@@ -396,7 +379,7 @@ void BluetoothSocketChromeOS::NewConnection(
     request->callback = callback;
 
     connection_request_queue_.push(request);
-    VLOG(1) << object_path_.value() << ": Connection is now pending.";
+    VLOG(1) << uuid_.canonical_value() << ": Connection is now pending.";
     if (accept_request_) {
       AcceptConnectionRequest();
     }
@@ -407,13 +390,17 @@ void BluetoothSocketChromeOS::RequestDisconnection(
     const dbus::ObjectPath& device_path,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  VLOG(1) << object_path_.value() << ": Request disconnection";
+  DCHECK(profile_);
+
+  VLOG(1) << profile_->object_path().value() << ": Request disconnection";
   callback.Run(SUCCESS);
 }
 
 void BluetoothSocketChromeOS::Cancel() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  VLOG(1) << object_path_.value() << ": Cancel";
+  DCHECK(profile_);
+
+  VLOG(1) << profile_->object_path().value() << ": Cancel";
 
   if (!connection_request_queue_.size())
     return;
@@ -432,8 +419,10 @@ void BluetoothSocketChromeOS::AcceptConnectionRequest() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(accept_request_.get());
   DCHECK(connection_request_queue_.size() >= 1);
+  DCHECK(profile_);
 
-  VLOG(1) << object_path_.value() << ": Accepting pending connection.";
+  VLOG(1) << profile_->object_path().value()
+          << ": Accepting pending connection.";
 
   linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
   request->accepting = true;
@@ -474,9 +463,9 @@ void BluetoothSocketChromeOS::DoNewConnection(
   base::ThreadRestrictions::AssertIOAllowed();
   fd->CheckValidity();
 
-  VLOG(1) << object_path_.value() << ": Validity check complete.";
+  VLOG(1) << uuid_.canonical_value() << ": Validity check complete.";
   if (!fd->is_valid()) {
-    LOG(WARNING) << object_path_.value() << " :" << fd->value()
+    LOG(WARNING) << uuid_.canonical_value() << " :" << fd->value()
                  << ": Invalid file descriptor received from Bluetooth Daemon.";
     ui_task_runner()->PostTask(FROM_HERE,
                                base::Bind(callback, REJECTED));;
@@ -484,7 +473,7 @@ void BluetoothSocketChromeOS::DoNewConnection(
   }
 
   if (tcp_socket()) {
-    LOG(WARNING) << object_path_.value() << ": Already connected";
+    LOG(WARNING) << uuid_.canonical_value() << ": Already connected";
     ui_task_runner()->PostTask(FROM_HERE,
                                base::Bind(callback, REJECTED));;
     return;
@@ -497,14 +486,15 @@ void BluetoothSocketChromeOS::DoNewConnection(
   int net_result = tcp_socket()->AdoptConnectedSocket(fd->value(),
                                                       net::IPEndPoint());
   if (net_result != net::OK) {
-    LOG(WARNING) << object_path_.value() << ": Error adopting socket: "
+    LOG(WARNING) << uuid_.canonical_value() << ": Error adopting socket: "
                  << std::string(net::ErrorToString(net_result));
     ui_task_runner()->PostTask(FROM_HERE,
                                base::Bind(callback, REJECTED));;
     return;
   }
 
-  VLOG(2) << object_path_.value() << ": Taking descriptor, confirming success.";
+  VLOG(2) << uuid_.canonical_value()
+          << ": Taking descriptor, confirming success.";
   fd->TakeValue();
   ui_task_runner()->PostTask(FROM_HERE,
                              base::Bind(callback, SUCCESS));;
@@ -554,40 +544,20 @@ void BluetoothSocketChromeOS::DoCloseListening() {
 
 void BluetoothSocketChromeOS::UnregisterProfile() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(!object_path_.value().empty());
-  DCHECK(profile_.get());
+  DCHECK(profile_);
 
-  VLOG(1) << object_path_.value() << ": Unregister profile";
-  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
-      UnregisterProfile(
-          object_path_,
-          base::Bind(&BluetoothSocketChromeOS::OnUnregisterProfile,
-                     this,
-                     object_path_),
-          base::Bind(&BluetoothSocketChromeOS::OnUnregisterProfileError,
-                     this,
-                     object_path_));
+  VLOG(1) << profile_->object_path().value() << ": Release profile";
 
-  profile_.reset();
-  object_path_ = dbus::ObjectPath("");
+  profile_->RemoveDelegate(
+      device_path_, base::Bind(&BluetoothSocketChromeOS::ReleaseProfile, this));
+
+  profile_ = nullptr;
 }
 
-void BluetoothSocketChromeOS::OnUnregisterProfile(
-    const dbus::ObjectPath& object_path) {
-  VLOG(1) << object_path.value() << ": Profile unregistered";
-}
-
-void BluetoothSocketChromeOS::OnUnregisterProfileError(
-    const dbus::ObjectPath& object_path,
-    const std::string& error_name,
-    const std::string& error_message) {
-  // It's okay if the profile doesn't exist, it means we haven't registered it
-  // yet.
-  if (error_name == bluetooth_profile_manager::kErrorDoesNotExist)
-    return;
-
-  LOG(WARNING) << object_path_.value() << ": Failed to unregister profile: "
-               << error_name << ": " << error_message;
+void BluetoothSocketChromeOS::ReleaseProfile() {
+  if (adapter_)
+    static_cast<BluetoothAdapterChromeOS*>(adapter_.get())
+        ->ReleaseProfile(uuid_);
 }
 
 }  // namespace chromeos

@@ -26,6 +26,8 @@ class FileDescriptor;
 namespace chromeos {
 
 class BluetoothDeviceChromeOS;
+class BluetoothAdapterChromeOS;
+class BluetoothAdapterProfileChromeOS;
 
 // The BluetoothSocketChromeOS class implements BluetoothSocket for the
 // Chrome OS platform.
@@ -75,9 +77,6 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   void Accept(const AcceptCompletionCallback& success_callback,
               const ErrorCompletionCallback& error_callback) override;
 
-  // Returns the object path of the socket.
-  const dbus::ObjectPath& object_path() const { return object_path_; }
-
  protected:
   ~BluetoothSocketChromeOS() override;
 
@@ -87,12 +86,13 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
 
   // Register the underlying profile client object with the Bluetooth Daemon.
-  void RegisterProfile(const base::Closure& success_callback,
+  void RegisterProfile(BluetoothAdapterChromeOS* adapter,
+                       const base::Closure& success_callback,
                        const ErrorCompletionCallback& error_callback);
   void OnRegisterProfile(const base::Closure& success_callback,
-                         const ErrorCompletionCallback& error_callback);
+                         const ErrorCompletionCallback& error_callback,
+                         BluetoothAdapterProfileChromeOS* profile);
   void OnRegisterProfileError(const ErrorCompletionCallback& error_callback,
-                              const std::string& error_name,
                               const std::string& error_message);
 
   // Called by dbus:: on completion of the ConnectProfile() method.
@@ -107,9 +107,8 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
 
   // Called by dbus:: on completion of the RegisterProfile() method call
   // triggered as a result of the adapter becoming present again.
-  void OnInternalRegisterProfile();
-  void OnInternalRegisterProfileError(const std::string& error_name,
-                                      const std::string& error_message);
+  void OnInternalRegisterProfile(BluetoothAdapterProfileChromeOS* profile);
+  void OnInternalRegisterProfileError(const std::string& error_message);
 
   // BluetoothProfileServiceProvider::Delegate:
   void Released() override;
@@ -151,13 +150,11 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
 
   // Unregister the underlying profile client object from the Bluetooth Daemon.
   void UnregisterProfile();
-  void OnUnregisterProfile(const dbus::ObjectPath& object_path);
-  void OnUnregisterProfileError(const dbus::ObjectPath& object_path,
-                                const std::string& error_name,
-                                const std::string& error_message);
 
-  // Adapter the profile is registered against; this is only present when the
-  // socket is listening.
+  // Releases the profile after the delegate is gone.
+  void ReleaseProfile();
+
+  // Adapter the profile is registered against
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Address and D-Bus object path of the device being connected to, empty and
@@ -171,12 +168,8 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   // Copy of the profile options used for registering the profile.
   scoped_ptr<BluetoothProfileManagerClient::Options> options_;
 
-  // Object path of the local profile D-Bus object.
-  dbus::ObjectPath object_path_;
-
-  // Local profile D-Bus object used for receiving profile delegate methods
-  // from BlueZ.
-  scoped_ptr<BluetoothProfileServiceProvider> profile_;
+  // The profile registered with the adapter for this socket.
+  BluetoothAdapterProfileChromeOS* profile_;
 
   // Pending request to an Accept() call.
   struct AcceptRequest {
