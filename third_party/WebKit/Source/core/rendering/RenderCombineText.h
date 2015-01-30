@@ -30,10 +30,8 @@ class RenderCombineText final : public RenderText {
 public:
     RenderCombineText(Node*, PassRefPtr<StringImpl>);
 
-    void updateFont();
+    void combineText();
     void adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const;
-    bool isTransformNeeded() const { return m_scaleX < 1.0f; }
-    void transform(GraphicsContext&, const FloatRect& boxRect) const;
     void getStringToRender(int, StringView&, int& length) const;
     bool isCombined() const { return m_isCombined; }
     float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
@@ -45,10 +43,8 @@ private:
     virtual const char* renderName() const override { return "RenderCombineText"; }
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
-    void updateIsCombinedAndText();
 
     float m_combinedTextWidth;
-    float m_scaleX;
     String m_renderingText;
     bool m_isCombined : 1;
     bool m_needsFontUpdate : 1;
