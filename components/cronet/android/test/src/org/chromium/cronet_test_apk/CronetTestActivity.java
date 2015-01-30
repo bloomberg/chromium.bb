@@ -39,7 +39,7 @@ public class CronetTestActivity extends Activity {
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
     public UrlRequestContext mUrlRequestContext;
     HttpUrlRequestFactory mRequestFactory;
-    HistogramManager mHistogramManager = new HistogramManager();
+    HistogramManager mHistogramManager;
 
     String mUrl;
 
@@ -73,6 +73,8 @@ public class CronetTestActivity extends Activity {
             finish();
             return;
         }
+
+        mHistogramManager = new HistogramManager();
 
         String skipInitString = getCommandLineArg(SKIP_FACTORY_INIT_KEY);
         if (skipInitString != null) {

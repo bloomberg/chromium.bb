@@ -9,6 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.UrlRequest;
 
+import java.util.Arrays;
+
 /**
  * Test HistogramManager.
  */
@@ -23,6 +25,7 @@ public class HistogramManagerTest extends CronetTestBase {
     public void testHistogramManager() throws Exception {
         mActivity = launchCronetTestApp();
         byte delta1[] = mActivity.mHistogramManager.getHistogramDeltas();
+        assertTrue(delta1.length != 0);
 
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
@@ -30,5 +33,7 @@ public class HistogramManagerTest extends CronetTestBase {
         urlRequest.start();
         listener.blockForDone();
         byte delta2[] = mActivity.mHistogramManager.getHistogramDeltas();
+        assertTrue(delta2.length != 0);
+        assertFalse(Arrays.equals(delta1, delta2));
     }
 }

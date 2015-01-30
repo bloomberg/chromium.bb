@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/android/jni_array.h"
+#include "base/metrics/statistics_recorder.h"
 #include "components/metrics/histogram_manager.h"
 
 #include "jni/HistogramManager_jni.h"
@@ -17,6 +18,10 @@ namespace cronet {
 // Explicitly register static JNI functions.
 bool HistogramManagerRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+static void EnsureInitialized(JNIEnv* env, jobject jcaller) {
+  base::StatisticsRecorder::Initialize();
 }
 
 static jbyteArray GetHistogramDeltas(JNIEnv* env, jobject jcaller) {

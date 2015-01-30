@@ -12,6 +12,7 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("cronet")
 public final class HistogramManager {
     public HistogramManager() {
+        nativeEnsureInitialized();
     }
 
     /**
@@ -22,4 +23,6 @@ public final class HistogramManager {
     }
 
     private native byte[] nativeGetHistogramDeltas();
+
+    private native void nativeEnsureInitialized();
 }
