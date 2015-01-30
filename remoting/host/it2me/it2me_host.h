@@ -132,10 +132,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // the UI thread.
   void ShutdownOnUiThread();
 
-  // Called when |policy_watcher_| has stopped listening for changes and it is
-  // safe to delete it.
-  void OnPolicyWatcherShutdown();
-
   // Called when initial policies are read, and when they change.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
 

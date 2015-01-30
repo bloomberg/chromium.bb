@@ -298,14 +298,6 @@ void It2MeHost::ShutdownOnUiThread() {
   desktop_environment_factory_.reset();
 
   // Stop listening for policy updates.
-  if (policy_watcher_.get()) {
-    policy_watcher_->StopWatching(
-        base::Bind(&It2MeHost::OnPolicyWatcherShutdown, this));
-    return;
-  }
-}
-
-void It2MeHost::OnPolicyWatcherShutdown() {
   policy_watcher_.reset();
 }
 
@@ -356,8 +348,7 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
 }
 
 void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
-  // The policy watcher runs on the |ui_task_runner| on ChromeOS and the
-  // |network_task_runner| on other platforms.
+  // The policy watcher runs on the |ui_task_runner|.
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     host_context_->network_task_runner()->PostTask(
         FROM_HERE,
@@ -532,10 +523,12 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid) {
+  DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
+
   scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory(
       new It2MeConfirmationDialogFactory());
   scoped_ptr<PolicyWatcher> policy_watcher =
-      PolicyWatcher::Create(policy_service_, context->network_task_runner());
+      PolicyWatcher::Create(policy_service_, context->file_task_runner());
   return new It2MeHost(context.Pass(), policy_watcher.Pass(),
                        confirmation_dialog_factory.Pass(),
                        observer, xmpp_server_config, directory_bot_jid);

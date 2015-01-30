@@ -277,8 +277,6 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   void ShutdownOnNetworkThread();
 
-  void OnPolicyWatcherShutdown();
-
 #if defined(OS_WIN)
   // Initializes the pairing registry on Windows. This should be invoked on the
   // network thread.
@@ -555,7 +553,7 @@ void HostProcess::OnConfigUpdated(
     // loading from policy verifications and move |policy_watcher_|
     // initialization to StartOnNetworkThread().
     policy_watcher_ =
-        PolicyWatcher::Create(nullptr, context_->network_task_runner());
+        PolicyWatcher::Create(nullptr, context_->file_task_runner());
     policy_watcher_->StartWatching(
         base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
         base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));
@@ -958,11 +956,7 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
 }
 
 void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostProcess::OnPolicyUpdate, this, base::Passed(&policies)));
-    return;
-  }
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   bool restart_required = false;
   restart_required |= OnHostDomainPolicyUpdate(policies.get());
@@ -985,12 +979,9 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
 }
 
 void HostProcess::OnPolicyError() {
-  context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &HostProcess::ShutdownHost,
-          this,
-          kInvalidHostConfigurationExitCode));
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  ShutdownHost(kInvalidHostConfigurationExitCode);
 }
 
 void HostProcess::ApplyHostDomainPolicy() {
@@ -1448,25 +1439,15 @@ void HostProcess::ShutdownOnNetworkThread() {
     shutdown_watchdog_->Arm();
 
     config_watcher_.reset();
+    policy_watcher_.reset();
 
-    if (policy_watcher_.get()) {
-      policy_watcher_->StopWatching(
-          base::Bind(&HostProcess::OnPolicyWatcherShutdown, this));
-    } else {
-      OnPolicyWatcherShutdown();
-    }
+    // Complete the rest of shutdown on the main thread.
+    context_->ui_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&HostProcess::ShutdownOnUiThread, this));
   } else {
     // This method is only called in STOPPING_TO_RESTART and STOPPING states.
     NOTREACHED();
   }
-}
-
-void HostProcess::OnPolicyWatcherShutdown() {
-  policy_watcher_.reset();
-
-  // Complete the rest of shutdown on the main thread.
-  context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&HostProcess::ShutdownOnUiThread, this));
 }
 
 void HostProcess::OnCrash(const std::string& function_name,

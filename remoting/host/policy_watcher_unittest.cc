@@ -42,8 +42,8 @@ class PolicyWatcherTest : public testing::Test {
 
     // Retaining a raw pointer to keep control over policy contents.
     policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
-    policy_watcher_ = PolicyWatcher::CreateFromPolicyLoader(
-        message_loop_proxy_, make_scoped_ptr(policy_loader_));
+    policy_watcher_ =
+        PolicyWatcher::CreateFromPolicyLoader(make_scoped_ptr(policy_loader_));
 
     nat_true_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
@@ -135,13 +135,6 @@ class PolicyWatcherTest : public testing::Test {
                    base::Unretained(&mock_policy_callback_)),
         base::Bind(&MockPolicyCallback::OnPolicyError,
                    base::Unretained(&mock_policy_callback_)));
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void StopWatching() {
-    EXPECT_CALL(*this, PostPolicyWatcherShutdown()).Times(1);
-    policy_watcher_->StopWatching(base::Bind(
-        &PolicyWatcherTest::PostPolicyWatcherShutdown, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -257,7 +250,6 @@ TEST_F(PolicyWatcherTest, None) {
 
   SetPolicies(empty_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatTrue) {
@@ -266,7 +258,6 @@ TEST_F(PolicyWatcherTest, NatTrue) {
 
   SetPolicies(nat_true_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatFalse) {
@@ -275,7 +266,6 @@ TEST_F(PolicyWatcherTest, NatFalse) {
 
   SetPolicies(nat_false_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatOne) {
@@ -284,7 +274,6 @@ TEST_F(PolicyWatcherTest, NatOne) {
 
   SetPolicies(nat_one_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, DomainEmpty) {
@@ -293,7 +282,6 @@ TEST_F(PolicyWatcherTest, DomainEmpty) {
 
   SetPolicies(domain_empty_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, DomainFull) {
@@ -302,7 +290,6 @@ TEST_F(PolicyWatcherTest, DomainFull) {
 
   SetPolicies(domain_full_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatNoneThenTrue) {
@@ -312,7 +299,6 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrue) {
   SetPolicies(empty_);
   StartWatching();
   SetPolicies(nat_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrue) {
@@ -323,7 +309,6 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrue) {
   StartWatching();
   SetPolicies(nat_true_);
   SetPolicies(nat_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrueThenFalse) {
@@ -338,7 +323,6 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrueThenFalse) {
   SetPolicies(nat_true_);
   SetPolicies(nat_true_);
   SetPolicies(nat_false_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatNoneThenFalse) {
@@ -351,7 +335,6 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalse) {
   SetPolicies(empty_);
   StartWatching();
   SetPolicies(nat_false_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
@@ -366,7 +349,6 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
   StartWatching();
   SetPolicies(nat_false_);
   SetPolicies(nat_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
@@ -389,7 +371,6 @@ TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
   SetPolicies(nat_false_domain_full_);
   SetPolicies(nat_false_domain_empty_);
   SetPolicies(nat_true_domain_full_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, FilterUnknownPolicies) {
@@ -401,7 +382,6 @@ TEST_F(PolicyWatcherTest, FilterUnknownPolicies) {
   StartWatching();
   SetPolicies(unknown_policies_);
   SetPolicies(empty_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
@@ -416,7 +396,6 @@ TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
 
   SetPolicies(nat_true_and_overridden_);
   StartWatching();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, PairingFalseThenTrue) {
@@ -432,7 +411,6 @@ TEST_F(PolicyWatcherTest, PairingFalseThenTrue) {
   StartWatching();
   SetPolicies(pairing_false_);
   SetPolicies(pairing_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, GnubbyAuth) {
@@ -448,7 +426,6 @@ TEST_F(PolicyWatcherTest, GnubbyAuth) {
   StartWatching();
   SetPolicies(gnubby_auth_false_);
   SetPolicies(gnubby_auth_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, Relay) {
@@ -464,7 +441,6 @@ TEST_F(PolicyWatcherTest, Relay) {
   StartWatching();
   SetPolicies(relay_false_);
   SetPolicies(relay_true_);
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, UdpPortRange) {
@@ -480,7 +456,6 @@ TEST_F(PolicyWatcherTest, UdpPortRange) {
   StartWatching();
   SetPolicies(port_range_full_);
   SetPolicies(port_range_empty_);
-  StopWatching();
 }
 
 const int kMaxTransientErrorRetries = 5;
@@ -490,7 +465,6 @@ TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
 
   StartWatching();
   SignalTransientErrorForTest();
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
@@ -500,7 +474,6 @@ TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
   for (int i = 0; i < kMaxTransientErrorRetries; i++) {
     SignalTransientErrorForTest();
   }
-  StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
@@ -516,7 +489,6 @@ TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
   for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
     SignalTransientErrorForTest();
   }
-  StopWatching();
 }
 
 // Unit tests cannot instantiate PolicyWatcher on ChromeOS
@@ -568,16 +540,6 @@ TEST_F(PolicyWatcherTest, TestRealChromotingPolicy) {
     base::RunLoop run_loop;
     policy_watcher->StartWatching(base::Bind(OnPolicyUpdatedDumpPolicy),
                                   base::Bind(base::DoNothing));
-    run_loop.RunUntilIdle();
-  }
-
-  {
-    base::RunLoop run_loop;
-    PolicyWatcher* raw_policy_watcher = policy_watcher.release();
-    raw_policy_watcher->StopWatching(
-        base::Bind(base::IgnoreResult(
-                       &base::SequencedTaskRunner::DeleteSoon<PolicyWatcher>),
-                   task_runner, FROM_HERE, raw_policy_watcher));
     run_loop.RunUntilIdle();
   }
 

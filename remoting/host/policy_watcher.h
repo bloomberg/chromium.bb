@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/policy_service.h"
 
 namespace base {
@@ -24,11 +25,9 @@ class SchemaRegistry;
 
 namespace remoting {
 
-// Watches for changes to the managed remote access host policies.  If
-// StartWatching() has been called, then before this object can be deleted,
-// StopWatching() has to be completed (the provided |done| event must be
-// signaled).
-class PolicyWatcher : public policy::PolicyService::Observer {
+// Watches for changes to the managed remote access host policies.
+class PolicyWatcher : public policy::PolicyService::Observer,
+                      public base::NonThreadSafe {
  public:
   // Called first with all policies, and subsequently with any changed policies.
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
@@ -60,41 +59,31 @@ class PolicyWatcher : public policy::PolicyService::Observer {
   // for policy changes and will call |policy_updated_callback| when the error
   // is recovered from and may call |policy_error_callback| when new errors are
   // found.
-  //
-  // See |Create| method's description for comments about which thread will
-  // be used to run the callbacks.
   virtual void StartWatching(
       const PolicyUpdatedCallback& policy_updated_callback,
       const PolicyErrorCallback& policy_error_callback);
 
-  // Should be called after StartWatching() before the object is deleted. Calls
-  // should wait for |stopped_callback| to be called before deleting it.
-  virtual void StopWatching(const base::Closure& stopped_callback);
-
   // Specify a |policy_service| to borrow (on Chrome OS, from the browser
   // process) or specify nullptr to internally construct and use a new
-  // PolicyService (on other OS-es).
+  // PolicyService (on other OS-es). PolicyWatcher must be used on the thread on
+  // which it is created. |policy_service| is called on the same thread.
   //
-  // When |policy_service| is null, then |task_runner| is used for reading the
-  // policy from files / registry / preferences.  PolicyUpdatedCallback and
-  // PolicyErrorCallback will be called on the same |task_runner|.
-  // |task_runner| should be of TYPE_IO type.
+  // When |policy_service| is null, then |file_task_runner| is used for reading
+  // the policy from files / registry / preferences (which are blocking
+  // operations). |file_task_runner| should be of TYPE_IO type.
   //
-  // When |policy_service| is specified then |task_runner| argument is ignored
-  // and 1) BrowserThread::UI is used for PolicyUpdatedCallback and
+  // When |policy_service| is specified then |file_task_runner| argument is
+  // ignored and 1) BrowserThread::UI is used for PolicyUpdatedCallback and
   // PolicyErrorCallback and 2) BrowserThread::FILE is used for reading the
   // policy from files / registry / preferences (although (2) is just an
   // implementation detail and should likely be ignored outside of
   // PolicyWatcher).
   static scoped_ptr<PolicyWatcher> Create(
       policy::PolicyService* policy_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
  private:
   friend class PolicyWatcherTest;
-
-  // Used to check if the class is on the right thread.
-  bool OnPolicyServiceThread() const;
 
   // Takes the policy dictionary from the OS specific store and extracts the
   // relevant policies.
@@ -113,8 +102,6 @@ class PolicyWatcher : public policy::PolicyService::Observer {
   // to call |policy_service_| methods and where we expect to get callbacks
   // from |policy_service_|.
   PolicyWatcher(
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          policy_service_task_runner,
       policy::PolicyService* policy_service,
       scoped_ptr<policy::PolicyService> owned_policy_service,
       scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
@@ -126,8 +113,6 @@ class PolicyWatcher : public policy::PolicyService::Observer {
   // |policy_service_task_runner| is passed through to the constructor of
   // PolicyWatcher.
   static scoped_ptr<PolicyWatcher> CreateFromPolicyLoader(
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          policy_service_task_runner,
       scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader);
 
   // PolicyService::Observer interface.
@@ -135,10 +120,6 @@ class PolicyWatcher : public policy::PolicyService::Observer {
                        const policy::PolicyMap& previous,
                        const policy::PolicyMap& current) override;
   void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
-
-  void StopWatchingOnPolicyServiceThread();
-
-  scoped_refptr<base::SingleThreadTaskRunner> policy_service_task_runner_;
 
   PolicyUpdatedCallback policy_updated_callback_;
   PolicyErrorCallback policy_error_callback_;

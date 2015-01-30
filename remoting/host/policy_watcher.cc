@@ -26,9 +26,7 @@
 #include "base/json/json_reader.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "content/public/browser/browser_thread.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "components/policy/core/common/policy_loader_win.h"
 #elif defined(OS_MACOSX)
 #include "components/policy/core/common/policy_loader_mac.h"
@@ -93,13 +91,10 @@ policy::PolicyNamespace GetPolicyNamespace() {
 void PolicyWatcher::StartWatching(
     const PolicyUpdatedCallback& policy_updated_callback,
     const PolicyErrorCallback& policy_error_callback) {
-  if (!OnPolicyServiceThread()) {
-    policy_service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PolicyWatcher::StartWatching, base::Unretained(this),
-                   policy_updated_callback, policy_error_callback));
-    return;
-  }
+  DCHECK(CalledOnValidThread());
+  DCHECK(!policy_updated_callback.is_null());
+  DCHECK(!policy_error_callback.is_null());
+  DCHECK(policy_updated_callback_.is_null());
 
   policy_updated_callback_ = policy_updated_callback;
   policy_error_callback_ = policy_error_callback;
@@ -113,26 +108,9 @@ void PolicyWatcher::StartWatching(
   }
 }
 
-void PolicyWatcher::StopWatching(const base::Closure& stopped_callback) {
-  policy_service_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&PolicyWatcher::StopWatchingOnPolicyServiceThread,
-                            base::Unretained(this)),
-      stopped_callback);
-}
-
-void PolicyWatcher::StopWatchingOnPolicyServiceThread() {
-  policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
-  policy_updated_callback_.Reset();
-  policy_error_callback_.Reset();
-}
-
-bool PolicyWatcher::OnPolicyServiceThread() const {
-  return policy_service_task_runner_->BelongsToCurrentThread();
-}
-
 void PolicyWatcher::UpdatePolicies(
     const base::DictionaryValue* new_policies_raw) {
-  DCHECK(OnPolicyServiceThread());
+  DCHECK(CalledOnValidThread());
 
   transient_policy_error_retry_counter_ = 0;
 
@@ -176,14 +154,11 @@ void PolicyWatcher::SignalTransientPolicyError() {
 }
 
 PolicyWatcher::PolicyWatcher(
-    const scoped_refptr<base::SingleThreadTaskRunner>&
-        policy_service_task_runner,
     policy::PolicyService* policy_service,
     scoped_ptr<policy::PolicyService> owned_policy_service,
     scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
     scoped_ptr<policy::SchemaRegistry> owned_schema_registry)
-    : policy_service_task_runner_(policy_service_task_runner),
-      transient_policy_error_retry_counter_(0),
+    : transient_policy_error_retry_counter_(0),
       old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
       policy_service_(policy_service),
@@ -222,6 +197,11 @@ PolicyWatcher::PolicyWatcher(
 }
 
 PolicyWatcher::~PolicyWatcher() {
+  // Stop observing |policy_service_| if StartWatching() has been called.
+  if (!policy_updated_callback_.is_null()) {
+    policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+  }
+
   if (owned_policy_provider_) {
     owned_policy_provider_->Shutdown();
   }
@@ -245,8 +225,6 @@ void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
 }
 
 scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
-    const scoped_refptr<base::SingleThreadTaskRunner>&
-        policy_service_task_runner,
     scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader) {
   // TODO(lukasza): Schema below should ideally only cover Chromoting-specific
   // policies (expecting perf and maintanability improvement, but no functional
@@ -268,49 +246,46 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
       new policy::PolicyServiceImpl(providers));
 
   policy::PolicyService* borrowed_policy_service = policy_service.get();
-  return make_scoped_ptr(new PolicyWatcher(
-      policy_service_task_runner, borrowed_policy_service,
-      policy_service.Pass(), policy_provider.Pass(), schema_registry.Pass()));
+  return make_scoped_ptr(
+      new PolicyWatcher(borrowed_policy_service, policy_service.Pass(),
+                        policy_provider.Pass(), schema_registry.Pass()));
 }
 
 scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
     policy::PolicyService* policy_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
 #if defined(OS_CHROMEOS)
+  // On Chrome OS the PolicyService is owned by the browser.
   DCHECK(policy_service);
   return make_scoped_ptr(
-      new PolicyWatcher(content::BrowserThread::GetMessageLoopProxyForThread(
-                            content::BrowserThread::UI),
-                        policy_service, nullptr, nullptr, nullptr));
-#elif defined(OS_WIN)
+      new PolicyWatcher(policy_service, nullptr, nullptr, nullptr));
+#else  // !defined(OS_CHROMEOS)
   DCHECK(!policy_service);
-  // Always read the Chrome policies (even on Chromium) so that policy
-  // enforcement can't be bypassed by running Chromium.
-  // Note that this comment applies to all of Win/Mac/Posix branches below.
-  static const wchar_t kRegistryKey[] = L"SOFTWARE\\Policies\\Google\\Chrome";
-  return PolicyWatcher::CreateFromPolicyLoader(
-      network_task_runner,
-      policy::PolicyLoaderWin::Create(network_task_runner, kRegistryKey));
+
+  // Create platform-specific PolicyLoader. Always read the Chrome policies
+  // (even on Chromium) so that policy enforcement can't be bypassed by running
+  // Chromium.
+  scoped_ptr<policy::AsyncPolicyLoader> policy_loader;
+#if defined(OS_WIN)
+  policy_loader = policy::PolicyLoaderWin::Create(
+      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome");
 #elif defined(OS_MACOSX)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
-  DCHECK(!policy_service);
-  return PolicyWatcher::CreateFromPolicyLoader(
-      network_task_runner,
-      make_scoped_ptr(new policy::PolicyLoaderMac(
-          network_task_runner,
-          policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
-          new MacPreferences(), bundle_id)));
+  policy_loader.reset(new policy::PolicyLoaderMac(
+      file_task_runner,
+      policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
+      new MacPreferences(), bundle_id));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  DCHECK(!policy_service);
-  static const base::FilePath::CharType kPolicyDir[] =
-      FILE_PATH_LITERAL("/etc/opt/chrome/policies");
-  return PolicyWatcher::CreateFromPolicyLoader(
-      network_task_runner, make_scoped_ptr(new policy::ConfigDirPolicyLoader(
-                               network_task_runner, base::FilePath(kPolicyDir),
-                               policy::POLICY_SCOPE_MACHINE)));
+  policy_loader.reset(new policy::ConfigDirPolicyLoader(
+      file_task_runner,
+      base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies")),
+      policy::POLICY_SCOPE_MACHINE));
 #else
 #error OS that is not yet supported by PolicyWatcher code.
 #endif
+
+  return PolicyWatcher::CreateFromPolicyLoader(policy_loader.Pass());
+#endif  // !(OS_CHROMEOS)
 }
 
 }  // namespace remoting
