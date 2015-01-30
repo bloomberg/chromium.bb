@@ -24,6 +24,7 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -152,6 +153,9 @@ bool ShutdownPreThreadsStop() {
   // time to get here. If you have something that *must* happen on end session,
   // consider putting it in BrowserProcessImpl::EndSession.
   PrefService* prefs = g_browser_process->local_state();
+
+  // Log the amount of times the user switched profiles during this session.
+  ProfileMetrics::LogNumberOfProfileSwitches();
 
   metrics::MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics)

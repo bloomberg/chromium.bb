@@ -459,7 +459,6 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   if (IsGuestModeEnabled()) {
-    ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
     profiles::SwitchToGuestProfile(
         desktop_type_,
         base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,

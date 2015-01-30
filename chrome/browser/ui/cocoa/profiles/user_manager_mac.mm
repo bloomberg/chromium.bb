@@ -190,7 +190,7 @@ void UserManager::Show(
     profiles::UserManagerProfileSelected profile_open_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
     // If there's a user manager window open already, just activate it.
     [instance_->window_controller() show];

@@ -50,7 +50,7 @@ void UserManager::Show(
     profiles::UserManagerProfileSelected profile_open_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
     // If we are showing the User Manager after locking a profile, change the
     // active profile to Guest.

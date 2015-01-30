@@ -207,13 +207,16 @@ class ProfileMetrics {
   static bool CountProfileInformation(ProfileManager* manager,
                                       ProfileCounts* counts);
 
+  static void LogNumberOfProfileSwitches();
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileDelete metric);
   static void LogProfileOpenMethod(ProfileOpen metric);
+  static void LogProfileSwitch(ProfileOpen metric,
+                               ProfileManager* manager,
+                               const base::FilePath& profile_path);
   static void LogProfileSwitchGaia(ProfileGaia metric);
-  static void LogProfileSwitchUser(ProfileOpen metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
   static void LogProfileDesktopMenu(ProfileDesktopMenu metric,

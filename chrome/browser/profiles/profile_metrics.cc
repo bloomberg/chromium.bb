@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +22,34 @@ namespace {
 
 const int kMaximumReportedProfileCount = 5;
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
+
+size_t number_of_profile_switches_ = 0;
+
+// Enum for tracking the state of profiles being switched to.
+enum ProfileOpenState {
+  // Profile being switched to is already opened and has browsers opened.
+  PROFILE_OPENED = 0,
+  // Profile being switched to is already opened but has no browsers opened.
+  PROFILE_OPENED_NO_BROWSER,
+  // Profile being switched to is not opened.
+  PROFILE_UNOPENED
+};
+
+ProfileOpenState GetProfileOpenState(
+    ProfileManager* manager,
+    const base::FilePath& path) {
+  Profile* profile_switched_to = manager->GetProfileByPath(path);
+
+  if (!profile_switched_to) {
+    return PROFILE_UNOPENED;
+  }
+
+  if (chrome::GetTotalBrowserCountForProfile(profile_switched_to) > 0) {
+    return PROFILE_OPENED;
+  }
+
+  return PROFILE_OPENED_NO_BROWSER;
+}
 
 ProfileMetrics::ProfileType GetProfileType(
     const base::FilePath& profile_path) {
@@ -147,7 +176,6 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   return true;
 }
 
-
 void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
   ProfileCounts counts;
   if (CountProfileInformation(manager, &counts)) {
@@ -161,6 +189,11 @@ void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
     }
     UpdateReportedOSProfileStatistics(limited_total, limited_signedin);
   }
+}
+
+void ProfileMetrics::LogNumberOfProfileSwitches() {
+  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
+                           number_of_profile_switches_);
 }
 
 void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
@@ -306,18 +339,49 @@ void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
                             NUM_PROFILE_OPEN_METRICS);
 }
 
+void ProfileMetrics::LogProfileSwitch(
+    ProfileOpen metric,
+    ProfileManager* manager,
+    const base::FilePath& profile_path) {
+  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
+  ProfileOpenState open_state = GetProfileOpenState(manager, profile_path);
+  switch (open_state) {
+    case PROFILE_OPENED:
+      UMA_HISTOGRAM_ENUMERATION(
+        "Profile.OpenMethod.ToOpenedProfile",
+        metric,
+        NUM_PROFILE_OPEN_METRICS);
+      break;
+    case PROFILE_OPENED_NO_BROWSER:
+      UMA_HISTOGRAM_ENUMERATION(
+        "Profile.OpenMethod.ToOpenedProfileWithoutBrowser",
+        metric,
+        NUM_PROFILE_OPEN_METRICS);
+      break;
+    case PROFILE_UNOPENED:
+      UMA_HISTOGRAM_ENUMERATION(
+        "Profile.OpenMethod.ToUnopenedProfile",
+        metric,
+        NUM_PROFILE_OPEN_METRICS);
+      break;
+    default:
+      // There are no other possible values.
+      NOTREACHED();
+      break;
+  }
+
+  ++number_of_profile_switches_;
+  // The LogOpenMethod histogram aggregates data from profile switches as well
+  // as opening of profile related UI elements.
+  LogProfileOpenMethod(metric);
+}
+
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   if (metric == GAIA_OPT_IN)
     LogProfileAvatarSelection(AVATAR_GAIA);
   UMA_HISTOGRAM_ENUMERATION("Profile.SwitchGaiaPhotoSettings",
                             metric,
                             NUM_PROFILE_GAIA_METRICS);
-}
-
-void ProfileMetrics::LogProfileSwitchUser(ProfileOpen metric) {
-  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
-                            NUM_PROFILE_OPEN_METRICS);
 }
 
 void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {

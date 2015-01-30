@@ -28078,6 +28078,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.NumberOfSwitches">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Counts the number of times profiles were switched in a browser session. This
+    value is incremented when a profile is switched to and the result is logged
+    during shutdown.
+  </summary>
+</histogram>
+
 <histogram name="Profile.NumberOfUnusedProfiles">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -62506,6 +62515,19 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="GAIA-initiated interaction indicating the default service type"/>
   <affected-histogram name="Profile.AndroidAccountManagementMenu"/>
   <affected-histogram name="Profile.DesktopMenu"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ProfileOpenState" separator=".">
+  <suffix name="ToOpenedProfile"
+      label="The profile being switched to was already loaded and had at
+             least one open browser"/>
+  <suffix name="ToUnopenedProfile"
+      label="The profile being switched to had not yet been loaded this
+             Chrome session"/>
+  <suffix name="ToOpenedProfileWithoutBrowser"
+      label="The profile being switched to was already opened and had no
+             active browsers"/>
+  <affected-histogram name="Profile.OpenMethod"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ProfilePictureDownload" separator=".">
