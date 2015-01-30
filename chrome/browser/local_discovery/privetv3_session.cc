@@ -94,6 +94,8 @@ const EnumToStringMap<PrivetV3Session::PairingType>::Element
     EnumToStringMap<PrivetV3Session::PairingType>::kMap[] = {
         {PairingType::PAIRING_TYPE_PINCODE, "pinCode"},
         {PairingType::PAIRING_TYPE_EMBEDDEDCODE, "embeddedCode"},
+        {PairingType::PAIRING_TYPE_ULTRASOUND32, "ultrasound32"},
+        {PairingType::PAIRING_TYPE_AUDIBLE32, "audible32"},
 };
 
 template <typename T>

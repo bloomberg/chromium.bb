@@ -58,7 +58,9 @@ namespace gcdPrivate {
 
   enum PairingType {
     pinCode,
-    embeddedCode
+    embeddedCode,
+    ultrasound32,
+    audible32
   };
 
   callback CloudDeviceListCallback = void(GCDDevice[] devices);
