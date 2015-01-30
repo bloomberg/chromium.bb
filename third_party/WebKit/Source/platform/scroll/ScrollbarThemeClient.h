@@ -30,6 +30,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -88,6 +89,8 @@ public:
 
     virtual float elasticOverscroll() const = 0;
     virtual void setElasticOverscroll(float) = 0;
+
+    virtual DisplayItemClient displayItemClient() const = 0;
 
 protected:
     virtual ~ScrollbarThemeClient() { }

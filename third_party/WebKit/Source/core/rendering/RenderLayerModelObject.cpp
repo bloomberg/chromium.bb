@@ -65,7 +65,7 @@ bool RenderLayerModelObject::hasSelfPaintingLayer() const
     return m_layer && m_layer->isSelfPaintingLayer();
 }
 
-ScrollableArea* RenderLayerModelObject::scrollableArea() const
+RenderLayerScrollableArea* RenderLayerModelObject::scrollableArea() const
 {
     return m_layer ? m_layer->scrollableArea() : 0;
 }

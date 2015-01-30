@@ -38,12 +38,14 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderQuote.h"
+#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -985,6 +987,13 @@ void RenderView::willBeDestroyed()
 {
     RenderBlockFlow::willBeDestroyed();
     m_compositor.clear();
+}
+
+void RenderView::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+{
+    RenderBlockFlow::invalidateDisplayItemClients(displayItemList);
+    if (m_frameView)
+        displayItemList->invalidate(m_frameView->displayItemClient());
 }
 
 } // namespace blink

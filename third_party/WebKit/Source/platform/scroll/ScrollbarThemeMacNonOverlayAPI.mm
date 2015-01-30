@@ -78,7 +78,10 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
 //     - Skia specific changes
 bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::Scrollbar, damageRect);
+    DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
+    DrawingRecorder recorder(context, scrollbar->displayItemClient(), displayItemType, damageRect);
+    if (recorder.canUseCachedDrawing())
+        return false;
 
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;

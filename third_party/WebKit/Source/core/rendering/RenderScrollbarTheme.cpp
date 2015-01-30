@@ -116,11 +116,12 @@ bool RenderScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContex
     return paintInternal(scrollbar, graphicsContext, damageRect);
 }
 
-void RenderScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
+void RenderScrollbarTheme::paintScrollCorner(GraphicsContext* context, DisplayItemClient displayItemClient, const IntRect& cornerRect)
 {
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
     // FIXME: Implement.
-    context->fillRect(cornerRect, Color::white);
+    if (!recorder.canUseCachedDrawing())
+        context->fillRect(cornerRect, Color::white);
 }
 
 void RenderScrollbarTheme::paintScrollbarBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar)
@@ -150,8 +151,9 @@ void RenderScrollbarTheme::paintThumb(GraphicsContext* context, ScrollbarThemeCl
 
 void RenderScrollbarTheme::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarTickMark, rect);
-    ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
+    DrawingRecorder recorder(context, scrollbar->displayItemClient(), DisplayItem::ScrollbarTickMark, rect);
+    if (!recorder.canUseCachedDrawing())
+        ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
 }
 
 }

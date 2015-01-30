@@ -187,7 +187,7 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
         return;
     }
 
-    ScrollbarTheme::theme()->paintScrollCorner(context, cornerRect);
+    ScrollbarTheme::theme()->paintScrollCorner(context, m_frameView.displayItemClient(), cornerRect);
 }
 
 void FramePainter::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)

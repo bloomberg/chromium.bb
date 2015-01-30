@@ -150,7 +150,7 @@ public:
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    virtual DisplayItemClient displayItemClient() const override;
 
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);

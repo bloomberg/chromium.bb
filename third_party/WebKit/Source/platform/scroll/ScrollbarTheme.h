@@ -80,8 +80,7 @@ public:
 
     virtual void invalidatePart(ScrollbarThemeClient*, ScrollbarPart);
 
-    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
-
+    virtual void paintScrollCorner(GraphicsContext*, DisplayItemClient, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) { }
     virtual void paintOverhangBackground(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
     virtual void paintOverhangShadows(GraphicsContext*, const IntSize&, const IntRect&, const IntRect&, const IntRect&) { }
@@ -134,8 +133,6 @@ public:
 
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
-
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
 protected:
     bool paintInternal(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);

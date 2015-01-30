@@ -25,6 +25,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
+    ASSERT(DisplayItem::isDrawingType(displayItemType));
 #if ENABLE(ASSERT)
     context->setInDrawingRecorder(true);
 #endif

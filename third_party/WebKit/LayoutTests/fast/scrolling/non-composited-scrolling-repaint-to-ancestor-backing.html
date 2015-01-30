@@ -33,5 +33,10 @@
             document.getElementById('container').scrollTop = 1000;
             testRunner.notifyDone();
         });
+    } else {
+        // For manual test.
+        setTimeout(function() {
+            document.getElementById('container').scrollTop = 1000;
+        }, 500);
     }
 </script>

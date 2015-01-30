@@ -47,9 +47,10 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::LinkHighlight: return "LinkHighlight";
     case DisplayItem::PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
     case DisplayItem::Resizer: return "Resizer";
-    case DisplayItem::Scrollbar: return "Scrollbar";
     case DisplayItem::ScrollbarCorner: return "ScrollbarCorner";
+    case DisplayItem::ScrollbarHorizontal: return "ScrollbarHorizontal";
     case DisplayItem::ScrollbarTickMark: return "ScrollbarTickMark";
+    case DisplayItem::ScrollbarVertical: return "ScrollbarVertical";
     case DisplayItem::VideoBitmap: return "VideoBitmap";
     case DisplayItem::ViewBackground: return "ViewBackground";
     default:

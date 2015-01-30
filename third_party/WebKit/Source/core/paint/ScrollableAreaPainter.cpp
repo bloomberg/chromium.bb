@@ -27,12 +27,14 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
     if (!absRect.intersects(damageRect))
         return;
 
-    DrawingRecorder recorder(context, m_renderLayerScrollableArea.box().displayItemClient(), DisplayItem::Resizer, damageRect);
-
     if (m_renderLayerScrollableArea.resizer()) {
         ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.resizer(), context, paintOffset, absRect);
         return;
     }
+
+    DrawingRecorder recorder(context, m_renderLayerScrollableArea.displayItemClient(), DisplayItem::Resizer, damageRect);
+    if (recorder.canUseCachedDrawing())
+        return;
 
     drawPlatformResizerImage(context, absRect);
 
@@ -170,12 +172,15 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     if (!absRect.intersects(damageRect))
         return;
 
-    DrawingRecorder recorder(context, m_renderLayerScrollableArea.box().displayItemClient(), DisplayItem::ScrollbarCorner, damageRect);
-
     if (m_renderLayerScrollableArea.scrollCorner()) {
         ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.scrollCorner(), context, paintOffset, absRect);
         return;
     }
+
+    DrawingRecorder recorder(context, m_renderLayerScrollableArea.displayItemClient(), DisplayItem::ScrollbarCorner, damageRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     // We don't want to paint white if we have overlay scrollbars, since we need
     // to see what is behind it.
     if (!m_renderLayerScrollableArea.hasOverlayScrollbars())

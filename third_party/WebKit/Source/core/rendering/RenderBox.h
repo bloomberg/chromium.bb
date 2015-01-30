@@ -689,6 +689,7 @@ protected:
 #endif
 
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer) override;
+    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
 private:
     void invalidatePaintRectClippedByOldAndNewBounds(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);

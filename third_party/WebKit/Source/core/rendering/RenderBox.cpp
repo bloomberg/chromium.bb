@@ -54,6 +54,7 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
+#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/ShadowList.h"
@@ -61,6 +62,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include <algorithm>
 #include <math.h>
 
@@ -4572,6 +4574,13 @@ void RenderBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
     setLogicalLeft(oldLogicalLeft);
     setMarginLeft(oldMarginLeft);
     setMarginRight(oldMarginRight);
+}
+
+void RenderBox::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+{
+    RenderBoxModelObject::invalidateDisplayItemClients(displayItemList);
+    if (RenderLayerScrollableArea* area = scrollableArea())
+        displayItemList->invalidate(area->displayItemClient());
 }
 
 } // namespace blink

@@ -52,7 +52,8 @@ bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
-    DrawingRecorder recorder(graphicsContext, displayItemClient(), DisplayItem::Scrollbar, damageRect);
+    DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
+    DrawingRecorder recorder(graphicsContext, scrollbar->displayItemClient(), displayItemType, damageRect);
     if (recorder.canUseCachedDrawing())
         return false;
     return paintInternal(scrollbar, graphicsContext, damageRect);
@@ -213,12 +214,14 @@ void ScrollbarTheme::invalidatePart(ScrollbarThemeClient* scrollbar, ScrollbarPa
     scrollbar->invalidateRect(result);
 }
 
-void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
+void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, DisplayItemClient displayItemClient, const IntRect& cornerRect)
 {
     if (cornerRect.isEmpty())
         return;
 
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    if (recorder.canUseCachedDrawing())
+        return;
 
 #if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);

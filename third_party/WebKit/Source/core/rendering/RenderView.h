@@ -186,6 +186,8 @@ private:
 
     RenderObject* backgroundRenderer() const;
 
+    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
+
     FrameView* m_frameView;
 
     RawPtrWillBeMember<RenderObject> m_selectionStart;
