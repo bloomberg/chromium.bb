@@ -25,6 +25,8 @@ namespace ui {
 namespace {
 
 // Thread safe dispatcher proxy for EventFactoryEvdev.
+//
+// This is used on the device I/O thread for dispatching to UI.
 class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
  public:
   ProxyDeviceEventDispatcher(
@@ -128,22 +130,7 @@ EventFactoryEvdev::~EventFactoryEvdev() {
 void EventFactoryEvdev::Init() {
   DCHECK(!initialized_);
 
-  // Set up device factory.
-  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher(
-      new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
-                                          weak_ptr_factory_.GetWeakPtr()));
-  input_device_factory_.reset(
-      new InputDeviceFactoryEvdev(dispatcher.Pass(), cursor_));
-  input_device_factory_proxy_.reset(
-      new InputDeviceFactoryEvdevProxy(base::ThreadTaskRunnerHandle::Get(),
-                                       input_device_factory_->GetWeakPtr()));
-
-  // TODO(spang): This settings interface is really broken. crbug.com/450899
-  input_controller_.SetInputDeviceFactory(input_device_factory_proxy_.get());
-
-  // Scan & monitor devices.
-  device_manager_->AddObserver(this);
-  device_manager_->ScanDevices(this);
+  StartThread();
 
   initialized_ = true;
 }
@@ -152,10 +139,11 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
   // Use forwarding dispatcher for the injector rather than dispatching
   // directly. We cannot assume it is safe to (re-)enter ui::Event dispatch
   // synchronously from the injection point.
-  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher(
+  scoped_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
-  return make_scoped_ptr(new InputInjectorEvdev(dispatcher.Pass(), cursor_));
+  return make_scoped_ptr(
+      new InputInjectorEvdev(proxy_dispatcher.Pass(), cursor_));
 }
 
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
@@ -315,6 +303,28 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
 
 int EventFactoryEvdev::NextDeviceId() {
   return ++last_device_id_;
+}
+
+void EventFactoryEvdev::StartThread() {
+  // Set up device factory.
+  scoped_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
+      new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
+                                     weak_ptr_factory_.GetWeakPtr()));
+  thread_.Start(proxy_dispatcher.Pass(), cursor_,
+                base::Bind(&EventFactoryEvdev::OnThreadStarted,
+                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EventFactoryEvdev::OnThreadStarted(
+    scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory) {
+  input_device_factory_proxy_ = input_device_factory.Pass();
+
+  // TODO(spang): This settings interface is really broken. crbug.com/450899
+  input_controller_.SetInputDeviceFactory(input_device_factory_proxy_.get());
+
+  // Scan & monitor devices.
+  device_manager_->AddObserver(this);
+  device_manager_->ScanDevices(this);
 }
 
 }  // namespace ui

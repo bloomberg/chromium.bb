@@ -22,6 +22,9 @@ class InputDeviceFactoryEvdev;
 typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
 
 // Thread safe proxy for InputDeviceFactoryEvdev.
+//
+// This is used on the UI thread to proxy calls to the real object on
+// the device I/O thread.
 class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
  public:
   InputDeviceFactoryEvdevProxy(

@@ -13,6 +13,7 @@
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
+#include "ui/events/ozone/evdev/event_thread_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_controller_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
@@ -39,6 +40,9 @@ enum class DomCode;
 #endif
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
+//
+// This is a UI thread object, but creates its own thread for I/O. See
+// InputDeviceFactoryEvdev for the I/O thread part.
 class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
                                                     public PlatformEventSource {
  public:
@@ -88,16 +92,19 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   int NextDeviceId();
 
+  // Device thread initialization.
+  void StartThread();
+  void OnThreadStarted(
+      scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory);
+
   // Used to uniquely identify input devices.
   int last_device_id_;
 
   // Interface for scanning & monitoring input devices.
   DeviceManager* device_manager_;  // Not owned.
 
-  // Factory for per-device objects.
-  scoped_ptr<InputDeviceFactoryEvdev> input_device_factory_;
-
   // Proxy for input device factory (manages device I/O objects).
+  // The real object lives on a different thread.
   scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory_proxy_;
 
   // Modifier key state (shift, ctrl, etc).
@@ -115,8 +122,11 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Object for controlling input devices.
   InputControllerEvdev input_controller_;
 
-  // Whether we've set up the device factory & done initial scan.
+  // Whether we've set up the device factory.
   bool initialized_;
+
+  // Thread for device I/O.
+  EventThreadEvdev thread_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;
