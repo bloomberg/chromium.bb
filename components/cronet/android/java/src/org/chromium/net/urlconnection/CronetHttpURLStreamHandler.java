@@ -26,7 +26,7 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
      * Establishes a new connection to the resource specified by the URL url.
      */
     @Override
-    protected URLConnection openConnection(URL url) throws IOException {
+    public URLConnection openConnection(URL url) throws IOException {
         String protocol = url.getProtocol();
         if ("http".equals(protocol) || "https".equals(protocol)) {
             return new CronetHttpURLConnection(url, mUrlRequestContext);
@@ -40,7 +40,7 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
      * using the given proxy.
      */
     @Override
-    protected URLConnection openConnection(URL url, Proxy proxy) {
+    public URLConnection openConnection(URL url, Proxy proxy) {
         throw new UnsupportedOperationException();
     }
 }

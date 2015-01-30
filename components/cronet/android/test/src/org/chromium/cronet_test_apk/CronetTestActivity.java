@@ -37,9 +37,8 @@ public class CronetTestActivity extends Activity {
     public static final String SKIP_FACTORY_INIT_KEY = "skipFactoryInit";
 
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
-
+    public UrlRequestContext mUrlRequestContext;
     HttpUrlRequestFactory mRequestFactory;
-    UrlRequestContext mUrlRequestContext;
     HistogramManager mHistogramManager = new HistogramManager();
 
     String mUrl;
