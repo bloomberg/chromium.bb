@@ -60,7 +60,7 @@ views::View* TraySupervisedUser::CreateDefaultView(
   if (!delegate->IsUserSupervised())
     return NULL;
 
-  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_SUPERVISED_USER);
+  tray_view_ = new LabelTrayView(this, GetSupervisedUserIconId());
   UpdateMessage();
   return tray_view_;
 }
@@ -96,10 +96,8 @@ void TraySupervisedUser::CreateOrUpdateNotification(
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(
       message_center::Notification::CreateSystemNotification(
-          kNotificationId,
-          base::string16() /* no title */,
-          new_message,
-          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SUPERVISED_USER),
+          kNotificationId, base::string16() /* no title */, new_message,
+          bundle.GetImageNamed(GetSupervisedUserIconId()),
           system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
@@ -121,6 +119,17 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
     }
     UpdateMessage();
   }
+}
+
+int TraySupervisedUser::GetSupervisedUserIconId() const {
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+
+  // Not intended to be used for non-supervised users.
+  CHECK(delegate->IsUserSupervised());
+
+  if (delegate->IsUserChild())
+    return IDR_AURA_UBER_TRAY_CHILD_USER;
+  return IDR_AURA_UBER_TRAY_SUPERVISED_USER;
 }
 
 }  // namespace ash

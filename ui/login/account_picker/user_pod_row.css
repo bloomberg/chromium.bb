@@ -430,6 +430,10 @@ html[dir=rtl] .user-type-icon-area {
   background-image: url(chrome://theme/IDR_SUPERVISED_USER_ICON);
 }
 
+.user-type-icon-area.child .user-type-icon-image {
+  background-image: url(chrome://theme/IDR_CHILD_USER_ICON);
+}
+
 .user-type-icon-area.policy .user-type-icon-image {
   background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
 }

@@ -152,6 +152,7 @@
         <structure type="chrome_scaled_image" name="IDR_BUILDINGS_ILLUSTRATION" file="cros/buildings_illustration.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CHEVRON_LEFT" file="common/chevron_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHILD_USER_ICON" file="common/child_user_invert.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BUTTON_MASK" file="common/close_button_mask.png" />
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />

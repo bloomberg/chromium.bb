@@ -46,6 +46,8 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
 
   void CreateOrUpdateSupervisedWarningNotification();
 
+  int GetSupervisedUserIconId() const;
+
   LabelTrayView* tray_view_;
 
   // Previous login status to avoid showing notification upon unlock.
