@@ -868,24 +868,23 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
                                             const base::Value* arg1,
                                             const base::Value* arg2,
                                             const base::Value* arg3) {
-  std::string params;
+  std::string javascript = function_name + "(";
   if (arg1) {
     std::string json;
     base::JSONWriter::Write(arg1, &json);
-    params.append(json);
+    javascript.append(json);
     if (arg2) {
       base::JSONWriter::Write(arg2, &json);
-      params.append(", " + json);
+      javascript.append(", ").append(json);
       if (arg3) {
         base::JSONWriter::Write(arg3, &json);
-        params.append(", " + json);
+        javascript.append(", ").append(json);
       }
     }
   }
-
-  base::string16 javascript = base::UTF8ToUTF16(
-      function_name + "(" + params + ");");
-  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
+  javascript.append(");");
+  web_contents_->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(javascript));
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
