@@ -1657,7 +1657,7 @@ internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
 )
 
 _chrome_pfq_important_boards = frozenset([
-  'peppy',
+  'peppy_freon',
   'rush_ryu',
   'veyron_pinky',
   ])
@@ -2533,6 +2533,7 @@ _release_freon.add_config('link_freon-release',
   _base_configs['link_freon'],
   boards=['link_freon'],
   useflags=append_useflags(['highdpi']),
+  important=True,
 )
 
 ### Arm release configs.
