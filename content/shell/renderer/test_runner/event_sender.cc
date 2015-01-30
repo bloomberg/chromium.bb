@@ -396,6 +396,9 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
+  void GesturePinchBegin(gin::Arguments* args);
+  void GesturePinchEnd(gin::Arguments* args);
+  void GesturePinchUpdate(gin::Arguments* args);
   void GestureTap(gin::Arguments* args);
   void GestureTapDown(gin::Arguments* args);
   void GestureShowPress(gin::Arguments* args);
@@ -526,6 +529,9 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
       .SetMethod("gestureScrollUpdate",
                  &EventSenderBindings::GestureScrollUpdate)
+      .SetMethod("gesturePinchBegin", &EventSenderBindings::GesturePinchBegin)
+      .SetMethod("gesturePinchEnd", &EventSenderBindings::GesturePinchEnd)
+      .SetMethod("gesturePinchUpdate", &EventSenderBindings::GesturePinchUpdate)
       .SetMethod("gestureTap", &EventSenderBindings::GestureTap)
       .SetMethod("gestureTapDown", &EventSenderBindings::GestureTapDown)
       .SetMethod("gestureShowPress", &EventSenderBindings::GestureShowPress)
@@ -783,6 +789,21 @@ void EventSenderBindings::GestureScrollEnd(gin::Arguments* args) {
 void EventSenderBindings::GestureScrollUpdate(gin::Arguments* args) {
   if (sender_)
     sender_->GestureScrollUpdate(args);
+}
+
+void EventSenderBindings::GesturePinchBegin(gin::Arguments* args) {
+  if (sender_)
+    sender_->GesturePinchBegin(args);
+}
+
+void EventSenderBindings::GesturePinchEnd(gin::Arguments* args) {
+  if (sender_)
+    sender_->GesturePinchEnd(args);
+}
+
+void EventSenderBindings::GesturePinchUpdate(gin::Arguments* args) {
+  if (sender_)
+    sender_->GesturePinchUpdate(args);
 }
 
 void EventSenderBindings::GestureTap(gin::Arguments* args) {
@@ -1749,6 +1770,18 @@ void EventSender::GestureScrollUpdate(gin::Arguments* args) {
   GestureEvent(WebInputEvent::GestureScrollUpdate, args);
 }
 
+void EventSender::GesturePinchBegin(gin::Arguments* args) {
+  GestureEvent(WebInputEvent::GesturePinchBegin, args);
+}
+
+void EventSender::GesturePinchEnd(gin::Arguments* args) {
+  GestureEvent(WebInputEvent::GesturePinchEnd, args);
+}
+
+void EventSender::GesturePinchUpdate(gin::Arguments* args) {
+  GestureEvent(WebInputEvent::GesturePinchUpdate, args);
+}
+
 void EventSender::GestureTap(gin::Arguments* args) {
   GestureEvent(WebInputEvent::GestureTap, args);
 }
@@ -1952,15 +1985,35 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
 
 void EventSender::GestureEvent(WebInputEvent::Type type,
                                gin::Arguments* args) {
+  WebGestureEvent event;
+  event.type = type;
+
+  // If the first argument is a string, it is to specify the device, otherwise
+  // the device is assumed to be a touchscreen (since most tests were written
+  // assuming this).
+  event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+  if (args->PeekNext()->IsString()) {
+    std::string device_string;
+    if (!args->GetNext(&device_string)) {
+      args->ThrowError();
+      return;
+    }
+    if (device_string == "touchpad") {
+      event.sourceDevice = blink::WebGestureDeviceTouchpad;
+    } else if (device_string == "touchscreen") {
+      event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+    } else {
+      args->ThrowError();
+      return;
+    }
+  }
+
   double x;
   double y;
   if (!args->GetNext(&x) || !args->GetNext(&y)) {
     args->ThrowError();
     return;
   }
-
-  WebGestureEvent event;
-  event.type = type;
 
   switch (type) {
     case WebInputEvent::GestureScrollUpdate:
@@ -1994,6 +2047,27 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.x = current_gesture_location_.x;
       event.y = current_gesture_location_.y;
       break;
+    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+      current_gesture_location_ = WebPoint(x, y);
+      event.x = current_gesture_location_.x;
+      event.y = current_gesture_location_.y;
+      break;
+    case WebInputEvent::GesturePinchUpdate:
+    {
+      float scale = 1;
+      if (!args->PeekNext().IsEmpty()) {
+        if (!args->GetNext(&scale)) {
+          args->ThrowError();
+          return;
+        }
+      }
+      event.data.pinchUpdate.scale = scale;
+      current_gesture_location_ = WebPoint(x, y);
+      event.x = current_gesture_location_.x;
+      event.y = current_gesture_location_.y;
+      break;
+    }
     case WebInputEvent::GestureTap:
     {
       float tap_count = 1;
