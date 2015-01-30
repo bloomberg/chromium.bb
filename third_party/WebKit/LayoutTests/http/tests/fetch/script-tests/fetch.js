@@ -26,6 +26,20 @@ async_test(function(t) {
       .catch(unreached_rejection(t));
   }, 'fetch non-HTTP(S) CORS');
 
+// https://fetch.spec.whatwg.org/#concept-basic-fetch
+// The last statement:
+// Otherwise
+//   Return a network error.
+async_test(function(t) {
+    fetch('foobar://localhost/', {mode: 'no-cors'})
+      .then(
+        t.unreached_func('scheme not listed in basic fetch spec must fail'),
+        function(e) {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'fetch of scheme not listed in basic fetch spec');
+
 async_test(function(t) {
     fetch('/serviceworker/resources/fetch-status.php?status=200')
       .then(function(response) {
