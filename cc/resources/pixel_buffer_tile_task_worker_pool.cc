@@ -588,7 +588,7 @@ void PixelBufferTileTaskWorkerPool::ScheduleMoreTasks() {
                      task_set));
       task_set_finished_tasks_pending_[task_set] = true;
       InsertNodeForTask(&graph_, new_task_set_finished_tasks[task_set].get(),
-                        kTaskSetFinishedTaskPriority,
+                        kTaskSetFinishedTaskPriorityBase + task_set,
                         scheduled_task_counts[task_set]);
       for (RasterTaskVector::ContainerType::const_iterator it =
                tasks[task_set].container().begin();

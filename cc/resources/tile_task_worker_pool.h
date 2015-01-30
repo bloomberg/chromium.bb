@@ -21,7 +21,7 @@ class RenderingStatsInstrumentation;
 class CC_EXPORT TileTaskWorkerPool {
  public:
   static unsigned kBenchmarkTaskPriority;
-  static unsigned kTaskSetFinishedTaskPriority;
+  static unsigned kTaskSetFinishedTaskPriorityBase;
   static unsigned kTileTaskPriorityBase;
 
   TileTaskWorkerPool();

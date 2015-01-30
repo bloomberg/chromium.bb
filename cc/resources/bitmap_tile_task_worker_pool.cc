@@ -128,7 +128,8 @@ void BitmapTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
 
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
     InsertNodeForTask(&graph_, new_task_set_finished_tasks[task_set].get(),
-                      kTaskSetFinishedTaskPriority, task_count[task_set]);
+                      kTaskSetFinishedTaskPriorityBase + task_set,
+                      task_count[task_set]);
   }
 
   ScheduleTasksOnOriginThread(this, &graph_);
