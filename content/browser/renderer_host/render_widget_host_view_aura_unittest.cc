@@ -1531,31 +1531,38 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   ui::DrawWaiterForTest::WaitForCommit(
       root_window->GetHost()->compositor());
 
-  // On some platforms, the call to view_->Show() causes a posted task to call
-  // ui::WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow, which
-  // the above WaitForCommit may cause to be picked up. Be robust to this extra
-  // IPC coming in.
-  bool has_extra_ipc = (sink_->message_count() == 3);
-  if (has_extra_ipc) {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(InputMsg_HandleInputEvent::ID, msg->type());
-    InputMsg_HandleInputEvent::Param params;
-    InputMsg_HandleInputEvent::Read(msg, &params);
-    const blink::WebInputEvent* event = get<0>(params);
-    EXPECT_EQ(blink::WebInputEvent::MouseMove, event->type);
+  bool has_resize = false;
+  for (uint32 i = 0; i < sink_->message_count(); ++i) {
+    const IPC::Message* msg = sink_->GetMessageAt(i);
+    switch (msg->type()) {
+      case InputMsg_HandleInputEvent::ID: {
+        // On some platforms, the call to view_->Show() causes a posted task to
+        // call
+        // ui::WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow,
+        // which the above WaitForCommit may cause to be picked up. Be robust
+        // to this extra IPC coming in.
+        InputMsg_HandleInputEvent::Param params;
+        InputMsg_HandleInputEvent::Read(msg, &params);
+        const blink::WebInputEvent* event = get<0>(params);
+        EXPECT_EQ(blink::WebInputEvent::MouseMove, event->type);
+        break;
+      }
+      case ViewMsg_SwapCompositorFrameAck::ID:
+        break;
+      case ViewMsg_Resize::ID: {
+        EXPECT_FALSE(has_resize);
+        ViewMsg_Resize::Param params;
+        ViewMsg_Resize::Read(msg, &params);
+        EXPECT_EQ(size3.ToString(), get<0>(params).new_size.ToString());
+        has_resize = true;
+        break;
+      }
+      default:
+        ADD_FAILURE() << "Unexpected message " << msg->type();
+        break;
+    }
   }
-  else {
-    EXPECT_EQ(2u, sink_->message_count());
-  }
-  EXPECT_EQ(ViewMsg_SwapCompositorFrameAck::ID,
-            sink_->GetMessageAt(has_extra_ipc ? 1 : 0)->type());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(has_extra_ipc ? 2 : 1);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(size3.ToString(), get<0>(params).new_size.ToString());
-  }
+  EXPECT_TRUE(has_resize);
   update_params.view_size = size3;
   widget_host_->OnMessageReceived(
       ViewHostMsg_UpdateRect(widget_host_->GetRoutingID(), update_params));
