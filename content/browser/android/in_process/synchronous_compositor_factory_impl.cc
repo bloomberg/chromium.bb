@@ -4,7 +4,6 @@
 
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
-#include "base/command_line.h"
 #include "base/observer_list.h"
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -14,7 +13,6 @@
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -66,8 +64,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
 
 scoped_ptr<gpu::GLInProcessContext> CreateContext(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    const gpu::GLInProcessContextSharedMemoryLimits& mem_limits,
-    bool is_offscreen) {
+    const gpu::GLInProcessContextSharedMemoryLimits& mem_limits) {
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
   gpu::gles2::ContextCreationAttribHelper in_process_attribs;
   WebGraphicsContext3DImpl::ConvertAttributes(
@@ -77,7 +74,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
   scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
       service,
       NULL /* surface */,
-      is_offscreen,
+      false /* is_offscreen */,
       gfx::kNullAcceleratedWidget,
       gfx::Size(1, 1),
       NULL /* share_context */,
@@ -222,7 +219,7 @@ scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
   // pipeline is only one frame deep.
   mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
   return webkit::gpu::ContextProviderInProcess::Create(
-      WrapContext(CreateContext(nullptr, mem_limits, true)),
+      WrapContext(CreateContext(service_, mem_limits)),
       "Child-Compositor");
 }
 
@@ -291,10 +288,9 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   if (!video_context_provider_.get()) {
     DCHECK(service_.get());
 
-    // This needs to run in on-screen |service_| context due to SurfaceTexture
-    // limitations.
-    video_context_provider_ = new VideoContextProvider(CreateContext(
-        service_, gpu::GLInProcessContextSharedMemoryLimits(), false));
+    video_context_provider_ = new VideoContextProvider(
+        CreateContext(service_,
+                      gpu::GLInProcessContextSharedMemoryLimits()));
   }
   return video_context_provider_;
 }

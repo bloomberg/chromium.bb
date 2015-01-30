@@ -13,8 +13,7 @@ namespace gpu {
 
 class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
  public:
-  explicit AsyncPixelTransferManagerIdle(
-      bool use_teximage2d_over_texsubimage2d);
+  AsyncPixelTransferManagerIdle();
   ~AsyncPixelTransferManagerIdle() override;
 
   // AsyncPixelTransferManager implementation:
@@ -44,11 +43,10 @@ class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
 
   // State shared between Managers and Delegates.
   struct SharedState {
-    explicit SharedState(bool use_teximage2d_over_texsubimage2d);
+    SharedState();
     ~SharedState();
     void ProcessNotificationTasks();
 
-    const bool use_teximage2d_over_texsubimage2d;
     int texture_upload_count;
     base::TimeDelta total_texture_upload_time;
     std::list<Task> tasks;
