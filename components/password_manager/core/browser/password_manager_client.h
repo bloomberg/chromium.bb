@@ -163,6 +163,9 @@ class PasswordManagerClient {
   // Returns the main frame URL.
   virtual const GURL& GetMainFrameURL();
 
+  // Whether or not "zero-click" sign-in is enabled.
+  virtual bool IsZeroClickEnabled();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };

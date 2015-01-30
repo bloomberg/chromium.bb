@@ -36,6 +36,7 @@ class TestPasswordManagerClient
       : did_prompt_user_to_save_(false),
         did_prompt_user_to_choose_(false),
         is_off_the_record_(false),
+        is_zero_click_enabled_(true),
         store_(store) {}
   ~TestPasswordManagerClient() override {}
 
@@ -75,6 +76,7 @@ class TestPasswordManagerClient
   }
 
   bool IsOffTheRecord() override { return is_off_the_record_; }
+  bool IsZeroClickEnabled() override { return is_zero_click_enabled_; }
 
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
   bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }
@@ -87,10 +89,15 @@ class TestPasswordManagerClient
     is_off_the_record_ = off_the_record;
   }
 
+  void set_zero_click_enabled(bool zero_click_enabled) {
+    is_zero_click_enabled_ = zero_click_enabled;
+  }
+
  private:
   bool did_prompt_user_to_save_;
   bool did_prompt_user_to_choose_;
   bool is_off_the_record_;
+  bool is_zero_click_enabled_;
   password_manager::PasswordStore* store_;
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
@@ -154,6 +161,13 @@ class CredentialManagerDispatcherTest
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
 
+    form2_.username_value = base::ASCIIToUTF16("Username 2");
+    form2_.display_name = base::ASCIIToUTF16("Display Name 2");
+    form2_.password_value = base::ASCIIToUTF16("Password 2");
+    form2_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
+    form2_.signon_realm = form_.origin.spec();
+    form2_.scheme = autofill::PasswordForm::SCHEME_HTML;
+
     cross_origin_form_.username_value = base::ASCIIToUTF16("Username");
     cross_origin_form_.display_name = base::ASCIIToUTF16("Display Name");
     cross_origin_form_.password_value = base::ASCIIToUTF16("Password");
@@ -174,6 +188,7 @@ class CredentialManagerDispatcherTest
 
  protected:
   autofill::PasswordForm form_;
+  autofill::PasswordForm form2_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
@@ -288,6 +303,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithFullPasswordStore) {
+  client_->set_zero_click_enabled(false);
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
@@ -302,8 +318,68 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
+TEST_F(
+    CredentialManagerDispatcherTest,
+    CredentialManagerOnRequestCredentialWithZeroClickOnlyEmptyPasswordStore) {
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialWithZeroClickOnlyFullPasswordStore) {
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_LOCAL, get<1>(send_param).type);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialWithZeroClickOnlyTwoPasswordStore) {
+  store_->AddLogin(form_);
+  store_->AddLogin(form2_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+
+  // With two items in the password store, we shouldn't get credentials back.
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
+}
+
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWhileRequestPending) {
+  client_->set_zero_click_enabled(false);
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;

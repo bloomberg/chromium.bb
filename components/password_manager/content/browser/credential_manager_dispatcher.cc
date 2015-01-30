@@ -137,6 +137,7 @@ void CredentialManagerDispatcher::OnRequestCredential(
       request_id, zero_click_only,
       web_contents()->GetLastCommittedURL().GetOrigin(), federations));
 
+  // This will result in a callback to ::OnGetPasswordStoreResults().
   store->GetAutofillableLogins(this);
 }
 
@@ -150,19 +151,15 @@ void CredentialManagerDispatcher::OnGetPasswordStoreResults(
 
   // We own the PasswordForm instances, so we're responsible for cleaning
   // up the instances we don't add to |local_results| or |federated_results|.
-  // We'll dump them into a ScopedVector and allow it to delete the
-  // PasswordForms upon destruction.
   std::vector<autofill::PasswordForm*> local_results;
   std::vector<autofill::PasswordForm*> federated_results;
-  ScopedVector<autofill::PasswordForm> discarded_results;
   for (autofill::PasswordForm* form : results) {
-    // TODO(mkwst): Extend this filter to include federations.
     if (form->origin == pending_request_->origin)
       local_results.push_back(form);
     else if (federations.count(form->origin.spec()) != 0)
       federated_results.push_back(form);
     else
-      discarded_results.push_back(form);
+      delete form;
   }
 
   if ((local_results.empty() && federated_results.empty()) ||
@@ -172,11 +169,26 @@ void CredentialManagerDispatcher::OnGetPasswordStoreResults(
     return;
   }
 
-  if (!client_->PromptUserToChooseCredentials(
-          local_results,
-          federated_results,
+  if (local_results.size() == 1 && IsZeroClickAllowed()) {
+    // TODO(mkwst): Use the `one_time_disable_zero_click` flag on the result
+    // to prevent auto-sign-in, once that flag is implemented.
+    CredentialInfo info(*local_results[0],
+                        local_results[0]->federation_url.is_empty()
+                            ? CredentialType::CREDENTIAL_TYPE_LOCAL
+                            : CredentialType::CREDENTIAL_TYPE_FEDERATED);
+    STLDeleteElements(&local_results);
+    STLDeleteElements(&federated_results);
+    SendCredential(pending_request_->id, info);
+    return;
+  }
+
+  if (pending_request_->zero_click_only ||
+      !client_->PromptUserToChooseCredentials(
+          local_results, federated_results,
           base::Bind(&CredentialManagerDispatcher::SendCredential,
                      base::Unretained(this), pending_request_->id))) {
+    STLDeleteElements(&local_results);
+    STLDeleteElements(&federated_results);
     SendCredential(pending_request_->id, CredentialInfo());
   }
 }
@@ -191,7 +203,7 @@ bool CredentialManagerDispatcher::IsSavingEnabledForCurrentPage() const {
 }
 
 bool CredentialManagerDispatcher::IsZeroClickAllowed() const {
-  return !client_->IsOffTheRecord();
+  return !client_->IsOffTheRecord() && client_->IsZeroClickEnabled();
 }
 
 base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
