@@ -21,7 +21,7 @@ class PermissionBubbleRequest {
   virtual ~PermissionBubbleRequest() {}
 
   // The icon to use next to the message text fragment in the permission bubble.
-  // Must be a valid icon of size 16x16. (TODO(gbillock): tbd size)
+  // Must be a valid icon of size 18x18.
   virtual int GetIconID() const = 0;
 
   // Returns the full prompt text for this permission. This is the only text
