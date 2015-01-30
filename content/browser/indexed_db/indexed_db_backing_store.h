@@ -123,10 +123,21 @@ class CONTENT_EXPORT IndexedDBBackingStore
     virtual ~Transaction();
 
     virtual void Begin();
+
+    // CommitPhaseOne determines what blobs (if any) need to be written to disk
+    // and updates the primary blob journal, and kicks off the async writing
+    // of the blob files. In case of crash/rollback, the journal indicates what
+    // files should be cleaned up.
     // The callback will be called eventually on success or failure, or
     // immediately if phase one is complete due to lack of any blobs to write.
     virtual leveldb::Status CommitPhaseOne(scoped_refptr<BlobWriteCallback>);
+
+    // CommitPhaseTwo is called once the blob files (if any) have been written
+    // to disk, and commits the actual transaction to the backing store,
+    // including blob journal updates, then deletes any blob files deleted
+    // by the transaction and not referenced by running scripts.
     virtual leveldb::Status CommitPhaseTwo();
+
     virtual void Rollback();
     void Reset() {
       backing_store_ = NULL;
@@ -213,24 +224,52 @@ class CONTENT_EXPORT IndexedDBBackingStore
    private:
     class BlobWriteCallbackWrapper;
 
+    // Called by CommitPhaseOne: Identifies the blob entries to write and adds
+    // them to the primary blob journal directly (i.e. not as part of the
+    // transaction). Populates blobs_to_write_.
     leveldb::Status HandleBlobPreTransaction(
         BlobEntryKeyValuePairVec* new_blob_entries,
         WriteDescriptorVec* new_files_to_write);
-    // Returns true on success, false on failure.
+
+    // Called by CommitPhaseOne: Populates blob_files_to_remove_ by
+    // determining which blobs are deleted as part of the transaction, and
+    // adds blob entry cleanup operations to the transaction. Returns true on
+    // success, false on failure.
     bool CollectBlobFilesToRemove();
-    // The callback will be called eventually on success or failure.
+
+    // Called by CommitPhaseOne: Kicks off the asynchronous writes of blobs
+    // identified in HandleBlobPreTransaction. The callback will be called
+    // eventually on success or failure.
     void WriteNewBlobs(BlobEntryKeyValuePairVec* new_blob_entries,
                        WriteDescriptorVec* new_files_to_write,
                        scoped_refptr<BlobWriteCallback> callback);
-    leveldb::Status SortBlobsToRemove();
+
+    // Called by CommitPhaseTwo: Partition blob references in blobs_to_remove_
+    // into live (active references) and dead (no references).
+    void PartitionBlobsToRemove(BlobJournalType* dead_blobs,
+                                BlobJournalType* live_blobs) const;
 
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
     BlobChangeMap blob_change_map_;
     BlobChangeMap incognito_blob_map_;
     int64 database_id_;
+
+    // List of blob files being newly written as part of this transaction.
+    // These will be added to the primary blob journal prior to commit, then
+    // removed after a sucessful commit.
+    BlobJournalType blobs_to_write_;
+
+    // List of blob files being deleted as part of this transaction. These will
+    // be added to either the primary or live blob journal as appropriate
+    // following a successful commit.
     BlobJournalType blobs_to_remove_;
     scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
+
+    // Set to true between CommitPhaseOne and CommitPhaseTwo/Rollback, to
+    // indicate that the committing_transaction_count_ on the backing store
+    // has been bumped, and journal cleaning should be deferred.
+    bool committing_;
   };
 
   class Cursor {
@@ -470,7 +509,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
   virtual void ReportBlobUnused(int64 database_id, int64 blob_key);
 
-  base::FilePath GetBlobFileName(int64 database_id, int64 key);
+  base::FilePath GetBlobFileName(int64 database_id, int64 key) const;
 
   virtual scoped_ptr<Cursor> OpenObjectStoreKeyCursor(
       IndexedDBBackingStore::Transaction* transaction,
@@ -523,8 +562,19 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       const Transaction::WriteDescriptor& descriptor,
       Transaction::ChainedBlobWriter* chained_blob_writer);
-  virtual bool RemoveBlobFile(int64 database_id, int64 key);
+
+  // Remove the referenced file on disk.
+  virtual bool RemoveBlobFile(int64 database_id, int64 key) const;
+
+  // Schedule a call to CleanPrimaryJournalIgnoreReturn() via
+  // an owned timer. If this object is destroyed, the timer
+  // will automatically be cancelled.
   virtual void StartJournalCleaningTimer();
+
+  // Attempt to clean the primary journal. This will remove
+  // any referenced files and delete the journal entry. If any
+  // transaction is currently committing this will be deferred
+  // via StartJournalCleaningTimer().
   void CleanPrimaryJournalIgnoreReturn();
 
  private:
@@ -554,8 +604,21 @@ class CONTENT_EXPORT IndexedDBBackingStore
                              int64 object_store_id,
                              IndexedDBObjectStoreMetadata::IndexMap* map)
       WARN_UNUSED_RESULT;
-  bool RemoveBlobDirectory(int64 database_id);
-  leveldb::Status CleanUpBlobJournal(const std::string& level_db_key);
+
+  // Remove the blob directory for the specified database and all contained
+  // blob files.
+  bool RemoveBlobDirectory(int64 database_id) const;
+
+  // Synchronously read the key-specified blob journal entry from the backing
+  // store, delete all referenced blob files, and erase the journal entry.
+  // This must not be used while temporary entries are present e.g. during
+  // a two-stage transaction commit with blobs.
+  leveldb::Status CleanUpBlobJournal(const std::string& level_db_key) const;
+
+  // Synchronously delete the files and/or directories on disk referenced by
+  // the blob journal.
+  leveldb::Status CleanUpBlobJournalEntries(
+      const BlobJournalType& journal) const;
 
   IndexedDBFactory* indexed_db_factory_;
   const GURL origin_url_;
@@ -581,6 +644,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // will hold a reference to this backing store.
   IndexedDBActiveBlobRegistry active_blob_registry_;
   base::OneShotTimer<IndexedDBBackingStore> close_timer_;
+
+  // Incremented whenever a transaction starts committing, decremented when
+  // complete. While > 0, temporary journal entries may exist so out-of-band
+  // journal cleaning must be deferred.
+  size_t committing_transaction_count_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStore);
 };

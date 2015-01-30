@@ -136,7 +136,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     return true;
   }
 
-  bool RemoveBlobFile(int64 database_id, int64 key) override {
+  bool RemoveBlobFile(int64 database_id, int64 key) const override {
     if (database_id_ != database_id ||
         !KeyPrefix::IsValidDatabaseId(database_id)) {
       return false;
@@ -169,7 +169,10 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 
   int64 database_id_;
   std::vector<Transaction::WriteDescriptor> writes_;
-  std::vector<int64> removals_;
+
+  // This is modified in an overridden virtual function that is properly const
+  // in the real implementation, therefore must be mutable here.
+  mutable std::vector<int64> removals_;
 
   DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
@@ -642,6 +645,42 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       EXPECT_EQ(0UL, backing_store_->removals().size());
     }
   }
+}
+
+TEST_F(IndexedDBBackingStoreTest, BlobJournalInterleavedTransactions) {
+  IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
+  transaction1.Begin();
+  ScopedVector<storage::BlobDataHandle> handles1;
+  IndexedDBBackingStore::RecordIdentifier record1;
+  EXPECT_TRUE(backing_store_->PutRecord(&transaction1, 1, 1, m_key3, &m_value3,
+                                        &handles1, &record1).ok());
+  scoped_refptr<TestCallback> callback1(new TestCallback());
+  EXPECT_TRUE(transaction1.CommitPhaseOne(callback1).ok());
+  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(CheckBlobWrites());
+  EXPECT_TRUE(callback1->called);
+  EXPECT_TRUE(callback1->succeeded);
+  EXPECT_EQ(0U, backing_store_->removals().size());
+
+  IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
+  transaction2.Begin();
+  ScopedVector<storage::BlobDataHandle> handles2;
+  IndexedDBBackingStore::RecordIdentifier record2;
+  EXPECT_TRUE(backing_store_->PutRecord(&transaction2, 1, 1, m_key1, &m_value1,
+                                        &handles2, &record2).ok());
+  scoped_refptr<TestCallback> callback2(new TestCallback());
+  EXPECT_TRUE(transaction2.CommitPhaseOne(callback2).ok());
+  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(CheckBlobWrites());
+  EXPECT_TRUE(callback2->called);
+  EXPECT_TRUE(callback2->succeeded);
+  EXPECT_EQ(0U, backing_store_->removals().size());
+
+  EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
+  EXPECT_EQ(0U, backing_store_->removals().size());
+
+  EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
+  EXPECT_EQ(0U, backing_store_->removals().size());
 }
 
 TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
