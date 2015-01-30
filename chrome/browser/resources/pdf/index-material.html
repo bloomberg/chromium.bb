@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <link rel="import" href="elements/viewer-button/viewer-button.html">
   <link rel="import" href="elements/viewer-error-screen/viewer-error-screen.html">
-  <link rel="import" href="elements/viewer-page-indicator/viewer-page-indicator.html">
+  <link rel="import" href="elements/viewer-page-selector/viewer-page-selector.html">
   <link rel="import" href="elements/viewer-password-screen/viewer-password-screen.html">
   <link rel="import" href="elements/viewer-toolbar/viewer-toolbar.html">
 
@@ -21,6 +21,9 @@
   <paper-progress value="0" id="progress-bar"></paper-progress>
   <core-toolbar id="pdf-toolbar">
     <span id="title" flex></span>
+
+    <viewer-page-selector id="page-indicator" flex></viewer-page-selector>
+
     <paper-icon-button icon="file-download" id="save-button"></paper-icon-button>
     <paper-icon-button icon="print" id="print-button"></paper-icon-button>
   </core-toolbar>
@@ -28,7 +31,6 @@
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"></viewer-password-screen>
-<viewer-page-indicator id="page-indicator"></viewer-page-indicator>
 
 <viewer-toolbar id="toolbar">
   <viewer-button id="fit-to-page-button"

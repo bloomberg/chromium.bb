@@ -1,0 +1,38 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  visibility: hidden;
+}
+
+#pageselector {
+  display: inline-block;
+  width: 0.6em;
+}
+
+paper-input /deep/ ::-webkit-input-placeholder {
+  color: rgb(241, 241, 241);
+}
+
+paper-input /deep/ .focused-underline {
+  background-color: rgb(241, 241, 241);
+}
+
+paper-input /deep/ .unfocused-underline {
+  background-color: transparent;
+}
+
+paper-input:hover /deep/ .unfocused-underline {
+  background-color: rgb(241, 241, 241);
+}
+
+paper-input::shadow input[is='core-input'] {
+  margin: 0;
+  text-align: right;
+}
+
+#pagelength {
+  color: rgb(144, 202, 251);
+  font-size: 0.7em;
+}

@@ -66,6 +66,9 @@
   <structure name="IDR_POLYMER_CORE_ICONSET_SVG_CORE_ICONSET_SVG_HTML"
              file="../../../third_party/polymer/components-chromium/core-iconset-svg/core-iconset-svg.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_INPUT_CORE_INPUT_CSS"
+             file="../../../third_party/polymer/components-chromium/core-input/core-input.css"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_INPUT_CORE_INPUT_EXTRACTED_JS"
              file="../../../third_party/polymer/components-chromium/core-input/core-input-extracted.js"
              type="chrome_html" />
@@ -209,6 +212,12 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_PAPER_ICON_BUTTON_PAPER_ICON_BUTTON_HTML"
              file="../../../third_party/polymer/components-chromium/paper-icon-button/paper-icon-button.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_INPUT_PAPER_AUTOGROW_TEXTAREA_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/paper-input/paper-autogrow-textarea-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_INPUT_PAPER_AUTOGROW_TEXTAREA_HTML"
+             file="../../../third_party/polymer/components-chromium/paper-input/paper-autogrow-textarea.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_PAPER_INPUT_PAPER_INPUT_DECORATOR_CSS"
              file="../../../third_party/polymer/components-chromium/paper-input/paper-input-decorator.css"

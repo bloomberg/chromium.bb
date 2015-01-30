@@ -112,6 +112,10 @@ function PDFViewer(streamDetails) {
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
+  this.pageIndicator_.addEventListener('changePage', function(e) {
+    this.viewport_.goToPage(e.detail.page);
+  }.bind(this));
+
   // Setup the button event listeners.
   $('fit-to-width-button').addEventListener('click',
       this.viewport_.fitToWidth.bind(this.viewport_));
@@ -340,6 +344,8 @@ PDFViewer.prototype = {
       // Document load complete.
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
+      if (this.isMaterial_)
+        this.pageIndicator_.style.visibility = 'visible';
       this.handleURLParams_();
       this.loaded_ = true;
       this.sendScriptingMessage_({
@@ -378,7 +384,13 @@ PDFViewer.prototype = {
         if (this.passwordScreen_.active)
           this.passwordScreen_.accept();
 
-        this.pageIndicator_.initialFadeIn();
+        if (this.isMaterial_) {
+          this.pageIndicator_.docLength =
+              this.documentDimensions_.pageDimensions.length;
+        } else {
+          this.pageIndicator_.initialFadeIn();
+        }
+
         this.toolbar_.initialFadeIn();
         break;
       case 'email':
@@ -535,11 +547,13 @@ PDFViewer.prototype = {
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
     this.pageIndicator_.index = visiblePage;
-    if (this.documentDimensions_.pageDimensions.length > 1 &&
-        hasScrollbars.vertical) {
-      this.pageIndicator_.style.visibility = 'visible';
-    } else {
-      this.pageIndicator_.style.visibility = 'hidden';
+    if (!this.isMaterial_) {
+      if (this.documentDimensions_.pageDimensions.length > 1 &&
+          hasScrollbars.vertical) {
+        this.pageIndicator_.style.visibility = 'visible';
+      } else {
+        this.pageIndicator_.style.visibility = 'hidden';
+      }
     }
 
     var visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
