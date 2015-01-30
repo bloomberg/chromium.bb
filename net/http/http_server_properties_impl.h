@@ -71,97 +71,46 @@ class NET_EXPORT HttpServerPropertiesImpl
   // HttpServerProperties methods:
   // -----------------------------
 
-  // Gets a weak pointer for this object.
   base::WeakPtr<HttpServerProperties> GetWeakPtr() override;
-
-  // Deletes all data.
   void Clear() override;
-
-  // Returns true if |server| supports SPDY.
   bool SupportsSpdy(const HostPortPair& server) override;
-
-  // Add |server| into the persistent store.
   void SetSupportsSpdy(const HostPortPair& server, bool support_spdy) override;
-
-  // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
   bool RequiresHTTP11(const HostPortPair& server) override;
-
-  // Require HTTP/1.1 on subsequent connections.  Not persisted.
   void SetHTTP11Required(const HostPortPair& server) override;
-
-  // Modify SSLConfig to force HTTP/1.1 if necessary.
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
-
-  // Returns true if |server| has an Alternate-Protocol header.
   bool HasAlternateProtocol(const HostPortPair& server) override;
-
-  // Returns the Alternate-Protocol and port for |server|.
-  // HasAlternateProtocol(server) must be true.
   AlternateProtocolInfo GetAlternateProtocol(
       const HostPortPair& server) override;
-
-  // Sets the Alternate-Protocol for |server|.
   void SetAlternateProtocol(const HostPortPair& server,
                             uint16 alternate_port,
                             AlternateProtocol alternate_protocol,
                             double probability) override;
-
-  // Sets the Alternate-Protocol for |server| to be BROKEN.
   void SetBrokenAlternateProtocol(const HostPortPair& server) override;
-
-  // Returns true if Alternate-Protocol for |server| was recently BROKEN.
   bool WasAlternateProtocolRecentlyBroken(const HostPortPair& server) override;
-
-  // Confirms that Alternate-Protocol for |server| is working.
   void ConfirmAlternateProtocol(const HostPortPair& server) override;
-
-  // Clears the Alternate-Protocol for |server|.
   void ClearAlternateProtocol(const HostPortPair& server) override;
-
-  // Returns all Alternate-Protocol mappings.
   const AlternateProtocolMap& alternate_protocol_map() const override;
-
   void SetAlternateProtocolProbabilityThreshold(double threshold) override;
-
-  // Gets a reference to the SettingsMap stored for a host.
-  // If no settings are stored, returns an empty SettingsMap.
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
-
-  // Saves an individual SPDY setting for a host. Returns true if SPDY setting
-  // is to be persisted.
   bool SetSpdySetting(const HostPortPair& host_port_pair,
                       SpdySettingsIds id,
                       SpdySettingsFlags flags,
                       uint32 value) override;
-
-  // Clears all entries in |spdy_settings_map_| for a host.
   void ClearSpdySettings(const HostPortPair& host_port_pair) override;
-
-  // Clears all entries in |spdy_settings_map_|.
   void ClearAllSpdySettings() override;
-
-  // Returns all persistent SPDY settings.
   const SpdySettingsMap& spdy_settings_map() const override;
-
-  // Methods for SupportsQuic.
   SupportsQuic GetSupportsQuic(
       const HostPortPair& host_port_pair) const override;
-
   void SetSupportsQuic(const HostPortPair& host_port_pair,
                        bool used_quic,
                        const std::string& address) override;
-
   const SupportsQuicMap& supports_quic_map() const override;
-
-  // Methods for ServerNetworkStats.
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
                              ServerNetworkStats stats) override;
-
   const ServerNetworkStats* GetServerNetworkStats(
       const HostPortPair& host_port_pair) override;
-
   const ServerNetworkStatsMap& server_network_stats_map() const override;
 
  private:
