@@ -32,7 +32,6 @@ class OffDomainInclusionDetector {
   enum class AnalysisEvent {
     NO_EVENT,
     ABORT_EMPTY_MAIN_FRAME_URL,
-    ABORT_INVALID_MAIN_FRAME_URL,
     ABORT_NO_PROFILE,
     ABORT_INCOGNITO,
     ABORT_NO_HISTORY_SERVICE,

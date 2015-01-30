@@ -169,20 +169,14 @@ void OffDomainInclusionDetector::BeginAnalysis(
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   if (!off_domain_inclusion_info->main_frame_url.is_valid()) {
-    if (off_domain_inclusion_info->main_frame_url.is_empty()) {
-      // This can happen in a few scenarios where the referrer is dropped (e.g.,
-      // HTTPS => HTTP requests). Consider adding the original referrer to
-      // ResourceRequestInfo if that's an issue.
-      ReportAnalysisResult(off_domain_inclusion_info.Pass(),
-                           AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
-    } else {
-      // There is no reason for the main frame to start loading resources if its
-      // own URL is invalid but measure this in the wild to make sure.
-      // TODO(gab): UMA has proven that this never happens, remove this in a
-      // follow-up CL.
-      ReportAnalysisResult(off_domain_inclusion_info.Pass(),
-                           AnalysisEvent::ABORT_INVALID_MAIN_FRAME_URL);
-    }
+    // A live experiment confirmed that the only reason the |main_frame_url|
+    // would be invalid is if it's empty. The |main_frame_url| can be empty in
+    // a few scenarios where the referrer is dropped (e.g., HTTPS => HTTP
+    // requests). Consider adding the original referrer to ResourceRequestInfo
+    // if that's an issue.
+    DCHECK(off_domain_inclusion_info->main_frame_url.is_empty());
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
     return;
   }
 
@@ -305,9 +299,6 @@ void OffDomainInclusionDetector::ReportAnalysisResult(
       break;
     case AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL:
       histogram_name = "SBOffDomainInclusion.Abort.EmptyMainFrameURL";
-      break;
-    case AnalysisEvent::ABORT_INVALID_MAIN_FRAME_URL:
-      // TODO(gab): This never occurs in practice, remove the code handling it.
       break;
     case AnalysisEvent::ABORT_NO_PROFILE:
       histogram_name = "SBOffDomainInclusion.Abort.NoProfile";
