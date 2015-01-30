@@ -314,6 +314,42 @@ class IncludeChecker(GenericRegexChecker):
     return '.cc' in props or '.c' in props
 
 
+class BuildConfigChecker(GenericRegexChecker):
+  """Enforce that build_config.h is include when some macros are present.
+
+  build_config.h is required as a header in many sources to provide macro
+  definitions for the operating system and architecture. This presubmit check
+  exists to ensure that it's never accidentally omitted in source files.
+
+  This is implemented as a presubmit as there is no usable mechanism to warn on
+  undefined macro usage on Windows.
+  """
+
+  def __init__(self):
+    GenericRegexChecker.__init__(
+        self,
+        'include "native_client/src/include/build_config.h"|' +
+        'NACL_ANDROID|NACL_LINUX|NACL_OSX|NACL_WINDOWS|' +
+        'NACL_BUILD_ARCH|NACL_BUILD_SUBARCH',
+        analyze_match=True)
+
+  def FindProblems(self, props, data):
+    # Don't check build_config.h itself. The path is shortened here to make
+    # this work on trybots.
+    if 'src/include/build_config.h' in props['name']:
+      return False
+    self._seen_include = False
+    return GenericRegexChecker.FindProblems(self, props, data)
+
+  def IsProblemMatch(self, match):
+    if 'include "native_client/src/include/build_config.h"' in match.group():
+      self._seen_include = True
+    return not self._seen_include
+
+  def FileFilter(self, props):
+    return '.c' in props or '.cc' in props or '.h' in props or '.S' in props
+
+
 # ======================================================================
 # 'props' (short for properties) are tags associated with checkable files.
 #
@@ -425,6 +461,7 @@ CHECKS = [# fatal checks
           (True, 'cpp_comment', CppCommentChecker()),
           (True, 'fixme', FixmeChecker()),
           (True, 'include', IncludeChecker()),
+          (True, 'build_config', BuildConfigChecker()),
           # Non fatal checks
           (False, 'carriage_return', CarriageReturnChecker()),
           (False, 'rewrite', RewriteChecker()),

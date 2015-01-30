@@ -297,7 +297,6 @@
           '-pthread',
           '-fno-exceptions',
           '-Wall', # TODO(bradnelson): why does this disappear?!?
-          '-include', 'native_client/src/include/build_config.h'
         ],
         'conditions': [
           ['nacl_standalone==1 and OS=="linux"', {
@@ -528,9 +527,6 @@
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
-          'OTHER_CFLAGS': [
-            '-include', 'native_client/src/include/build_config.h'
-          ],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
@@ -717,9 +713,6 @@
             'WarnAsError': 'true',
             'DebugInformationFormat': '3',
             'ExceptionHandling': '0',
-            'AdditionalOptions': [
-              '/FI', 'native_client/src/include/build_config.h'
-            ],
           },
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],

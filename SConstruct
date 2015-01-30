@@ -2455,12 +2455,7 @@ def MakeWindowsEnv(platform=None):
       LIBS = ['ws2_32', 'advapi32'],
       # TODO(bsy) remove 4355 once cross-repo
       # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
-      CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800',
-                 # build_config.h is injected as a header in all sources to
-                 # provide macro definitions for the operating system and
-                 # architecture. This is injected so it's never accidentally
-                 # omitted in source files.
-                 '/FI', '$SOURCE_ROOT/native_client/src/include/build_config.h']
+      CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800']
   )
 
   # This linker option allows us to ensure our builds are compatible with
@@ -2516,10 +2511,6 @@ def MakeUnixLikeEnv(platform=None):
         '-fdiagnostics-show-option',
         '-fvisibility=hidden',
         '-fstack-protector',
-        # build_config.h is injected as a header in all sources to provide
-        # macro definitions for the operating system and architecture. This is
-        # injected so it's never accidentally omitted in source files.
-        '-include', '$SOURCE_ROOT/native_client/src/include/build_config.h',
         ] + werror_flags,
     # NOTE: pthread is only neeeded for libppNaClPlugin.so and on arm
     LIBS = ['pthread'],
@@ -3105,8 +3096,6 @@ nacl_env.Append(
         ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}'],
         ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}'],
         ],
-    CCFLAGS = [
-        '-include', '$SOURCE_ROOT/native_client/src/include/build_config.h'],
     )
 
 def FixWindowsAssembler(env):

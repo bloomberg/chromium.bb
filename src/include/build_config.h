@@ -4,6 +4,12 @@
  * found in the LICENSE file.
  */
 
+/*
+ * All macros defined in this file should be checked by the presubmit check in
+ * tools/code_hygiene.py to ensure that this header is included in source files
+ * when needed.
+ */
+
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_BUILD_CONFIG_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_BUILD_CONFIG_H_ 1
 
