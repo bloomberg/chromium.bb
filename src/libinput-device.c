@@ -59,6 +59,17 @@ handle_keyboard_key(struct libinput_device *libinput_device,
 {
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
+	int key_state =
+		libinput_event_keyboard_get_key_state(keyboard_event);
+	int seat_key_count =
+		libinput_event_keyboard_get_seat_key_count(keyboard_event);
+
+	/* Ignore key events that are not seat wide state changes. */
+	if ((key_state == LIBINPUT_KEY_STATE_PRESSED &&
+	     seat_key_count != 1) ||
+	    (key_state == LIBINPUT_KEY_STATE_RELEASED &&
+	     seat_key_count != 0))
+		return;
 
 	notify_key(device->seat,
 		   libinput_event_keyboard_get_time(keyboard_event),
