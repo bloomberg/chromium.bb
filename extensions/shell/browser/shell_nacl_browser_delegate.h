@@ -39,7 +39,7 @@ class ShellNaClBrowserDelegate : public NaClBrowserDelegate {
                              bool is_blocking,
                              const base::FilePath& profile_directory,
                              base::FilePath* file_path) override;
-  void SetDebugPatterns(std::string debug_patterns) override;
+  void SetDebugPatterns(const std::string& debug_patterns) override;
   bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
   content::BrowserPpapiHost::OnKeepaliveCallback GetOnKeepaliveCallback()
       override;

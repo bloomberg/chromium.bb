@@ -66,6 +66,7 @@ const base::FilePath::StringType NaClIrtName() {
   return irt_name;
 }
 
+#if !defined(OS_ANDROID)
 bool CheckEnvVar(const char* name, bool default_value) {
   bool result = default_value;
   const char* var = getenv(name);
@@ -74,6 +75,7 @@ bool CheckEnvVar(const char* name, bool default_value) {
   }
   return result;
 }
+#endif
 
 void ReadCache(const base::FilePath& filename, std::string* data) {
   if (!base::ReadFileToString(filename, data)) {
@@ -140,14 +142,17 @@ NaClBrowser::NaClBrowser()
     : irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
       validation_cache_file_path_(),
-      validation_cache_is_enabled_(
-          CheckEnvVar("NACL_VALIDATION_CACHE",
-                      kValidationCacheEnabledByDefault)),
+      validation_cache_is_enabled_(false),
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
       path_cache_(kFilePathCacheSize),
       ok_(true),
       weak_factory_(this) {
+#if !defined(OS_ANDROID)
+      validation_cache_is_enabled_ =
+          CheckEnvVar("NACL_VALIDATION_CACHE",
+                      kValidationCacheEnabledByDefault);
+#endif
 }
 
 void NaClBrowser::SetDelegate(NaClBrowserDelegate* delegate) {

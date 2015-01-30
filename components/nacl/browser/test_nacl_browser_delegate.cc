@@ -48,7 +48,8 @@ bool TestNaClBrowserDelegate::MapUrlToLocalFilePath(
   return false;
 }
 
-void TestNaClBrowserDelegate::SetDebugPatterns(std::string debug_patterns) {}
+void TestNaClBrowserDelegate::SetDebugPatterns(
+    const std::string& debug_patterns) {}
 
 bool TestNaClBrowserDelegate::URLMatchesDebugPatterns(
     const GURL& manifest_url) {

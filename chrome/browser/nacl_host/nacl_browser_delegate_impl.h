@@ -10,11 +10,14 @@
 
 #include "base/compiler_specific.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/common/url_pattern.h"
 
 namespace extensions {
 class InfoMap;
 }
+#endif
 
 class ProfileManager;
 
@@ -37,7 +40,7 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
                              bool is_blocking,
                              const base::FilePath& profile_directory,
                              base::FilePath* file_path) override;
-  void SetDebugPatterns(std::string debug_patterns) override;
+  void SetDebugPatterns(const std::string& debug_patterns) override;
   bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
   content::BrowserPpapiHost::OnKeepaliveCallback GetOnKeepaliveCallback()
       override;
@@ -48,10 +51,10 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> GetExtensionInfoMap(
       const base::FilePath& profile_directory);
+  std::vector<URLPattern> debug_patterns_;
 #endif
 
   ProfileManager* profile_manager_;
-  std::vector<URLPattern> debug_patterns_;
   bool inverse_debug_patterns_;
   std::set<std::string> allowed_nonsfi_origins_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowserDelegateImpl);

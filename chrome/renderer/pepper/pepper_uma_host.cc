@@ -13,8 +13,6 @@
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
@@ -22,6 +20,11 @@
 #include "ppapi/proxy/ppapi_messages.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#endif  // defined(ENABLE_EXTENSIONS)
 
 namespace {
 

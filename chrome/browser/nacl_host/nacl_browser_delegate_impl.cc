@@ -140,16 +140,21 @@ ppapi::host::HostFactory* NaClBrowserDelegateImpl::CreatePpapiHostFactory(
   return new chrome::ChromeBrowserPepperHostFactory(ppapi_host);
 }
 
-void NaClBrowserDelegateImpl::SetDebugPatterns(std::string debug_patterns) {
-  if (!debug_patterns.empty() && debug_patterns[0] == '!') {
-    inverse_debug_patterns_ = true;
-    debug_patterns.erase(0, 1);
-  }
+void NaClBrowserDelegateImpl::SetDebugPatterns(
+    const std::string& debug_patterns) {
+#if defined(ENABLE_EXTENSIONS)
   if (debug_patterns.empty()) {
     return;
   }
   std::vector<std::string> patterns;
-  base::SplitString(debug_patterns, ',', &patterns);
+  if (debug_patterns[0] == '!') {
+    std::string negated_patterns = debug_patterns;
+    inverse_debug_patterns_ = true;
+    negated_patterns.erase(0, 1);
+    base::SplitString(negated_patterns, ',', &patterns);
+  } else {
+    base::SplitString(debug_patterns, ',', &patterns);
+  }
   for (std::vector<std::string>::iterator iter = patterns.begin();
        iter != patterns.end(); ++iter) {
     // Allow chrome:// schema, which is used to filter out the internal
@@ -166,10 +171,12 @@ void NaClBrowserDelegateImpl::SetDebugPatterns(std::string debug_patterns) {
       debug_patterns_.push_back(pattern);
     }
   }
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
     const GURL& manifest_url) {
+#if defined(ENABLE_EXTENSIONS)
   // Empty patterns are forbidden so we ignore them.
   if (debug_patterns_.empty()) {
     return true;
@@ -187,6 +194,9 @@ bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
   } else {
     return matches;
   }
+#else
+  return false;
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 // This function is security sensitive.  Be sure to check with a security

@@ -68,7 +68,7 @@ class NaClBrowserDelegate {
                                      const base::FilePath& profile_directory,
                                      base::FilePath* file_path) = 0;
   // Set match patterns which will be checked before enabling debug stub.
-  virtual void SetDebugPatterns(std::string debug_patterns) = 0;
+  virtual void SetDebugPatterns(const std::string& debug_patterns) = 0;
 
   // Returns whether NaCl application with this manifest URL should be debugged.
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;

@@ -417,6 +417,10 @@
           'sources': [
             'common/pepper_flash.cc',
             'common/pepper_flash.h',
+          ],
+        }],
+        ['enable_plugins==1 and enable_extensions==1', {
+          'sources': [
             'common/pepper_permission_util.cc',
             'common/pepper_permission_util.h',
           ],

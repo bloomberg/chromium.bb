@@ -66,8 +66,8 @@ bool ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
     bool private_api,
     const content::SocketPermissionRequest* params,
     const std::set<std::string>& allowed_socket_origin) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
 #if defined(ENABLE_EXTENSIONS)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
     extension_set =

@@ -126,7 +126,8 @@ ppapi::host::HostFactory* ShellNaClBrowserDelegate::CreatePpapiHostFactory(
   return NULL;
 }
 
-void ShellNaClBrowserDelegate::SetDebugPatterns(std::string debug_patterns) {
+void ShellNaClBrowserDelegate::SetDebugPatterns(
+    const std::string& debug_patterns) {
   // No debugger support. Developers should use Chrome for debugging.
 }
 

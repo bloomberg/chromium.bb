@@ -207,10 +207,14 @@ static_library("common") {
     sources += [
       "pepper_flash.cc",
       "pepper_flash.h",
+    ]
+    deps += [ "//third_party/adobe/flash:flapper_version_h" ]
+  }
+  if (enable_plugins && enable_extensions) {
+    sources += [
       "pepper_permission_util.cc",
       "pepper_permission_util.h",
     ]
-    deps += [ "//third_party/adobe/flash:flapper_version_h" ]
   }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]
