@@ -193,6 +193,53 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
   ASSERT_TRUE(get<1>(params));
 }
 
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  CreateSigninManager(std::string("foobar123@gmail.com"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  // For gmail, canonicalization is done so that email addresses have a
+  // standard form.
+  const base::string16 test_identity =
+      base::ASCIIToUTF16("Foo.Bar.123@gmail.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, get<0>(params));
+  ASSERT_TRUE(get<1>(params));
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  //
+  CreateSigninManager(std::string("chrome.guy.7FOREVER"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  // For gmail/googlemail, canonicalization is done so that email addresses have
+  // a standard form.
+  const base::string16 test_identity =
+      base::ASCIIToUTF16("chromeguy7forever@googlemail.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, get<0>(params));
+  ASSERT_TRUE(get<1>(params));
+}
+
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   CreateSigninManager(std::string("foo@bar.com"));

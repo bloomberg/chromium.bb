@@ -46,6 +46,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -563,9 +564,9 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
   if (manager) {
-    const base::string16 username =
-        base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
-    ipc_router_.SendChromeIdentityCheckResult(identity, identity == username);
+    ipc_router_.SendChromeIdentityCheckResult(
+        identity, gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
+                                      manager->GetAuthenticatedUsername()));
   } else {
     ipc_router_.SendChromeIdentityCheckResult(identity, false);
   }

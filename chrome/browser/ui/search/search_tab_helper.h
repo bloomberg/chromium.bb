@@ -113,7 +113,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckMismatch);
+                           OnChromeIdentityCheckMatchSlightlyDifferentGmail);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnChromeIdentityCheckMatchSlightlyDifferentGmail2);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, OnChromeIdentityCheckMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckSignedOutMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
