@@ -13,9 +13,9 @@ goog.require('AutomationUtil.Dir');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
-goog.require('cvox.BrailleUtil.ValueSelectionSpan');
-goog.require('cvox.BrailleUtil.ValueSpan');
 goog.require('cvox.Spannable');
+goog.require('cvox.ValueSelectionSpan');
+goog.require('cvox.ValueSpan');
 
 goog.scope(function() {
 var Dir = AutomationUtil.Dir;
@@ -338,9 +338,9 @@ Output.prototype = {
       } else {
         startIndex = valueStart + selSpan.startIndex;
         endIndex = valueStart + selSpan.endIndex;
-        this.brailleBuffer_.setSpan(new cvox.BrailleUtil.ValueSpan(valueStart),
+        this.brailleBuffer_.setSpan(new cvox.ValueSpan(valueStart),
                                     valueStart, valueEnd);
-        this.brailleBuffer_.setSpan(new cvox.BrailleUtil.ValueSelectionSpan(),
+        this.brailleBuffer_.setSpan(new cvox.ValueSelectionSpan(),
                                     startIndex, endIndex);
       }
     }

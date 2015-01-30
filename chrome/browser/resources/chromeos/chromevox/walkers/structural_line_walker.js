@@ -10,6 +10,7 @@
 goog.provide('cvox.StructuralLineWalker');
 
 goog.require('cvox.AbstractSelectionWalker');
+goog.require('cvox.BrailleUtil');
 goog.require('cvox.TraverseContent');
 
 /**

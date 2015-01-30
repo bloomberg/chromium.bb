@@ -95,6 +95,7 @@ CvoxEditableTextUnitTest.prototype = {
 
   /** @override */
   closureModuleDeps: [
+    'cvox.ChromeVoxEditableElement',
     'cvox.ChromeVoxEditableHTMLInput',
     'cvox.ChromeVoxEditableTextBase',
     'cvox.ChromeVoxEventWatcher',
@@ -275,7 +276,7 @@ TEST_F('CvoxEditableTextUnitTest', 'Selection', function() {
 TEST_F('CvoxEditableTextUnitTest', 'MultiLineText', function() {
   var str = 'This string\nspans\nfive lines.\n  \n';
   var tts = new TestTts();
-  var obj = new cvox.ChromeVoxEditableTextBase(str, 0, 0, false, tts);
+  var obj = new cvox.ChromeVoxEditableElement(null, str, 0, 0, false, tts);
   obj.multiline = true;
   obj.getLineIndex = function(index) {
     if (index >= 33) {

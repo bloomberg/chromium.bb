@@ -24,9 +24,10 @@ CvoxBrailleIntegrationUnitTest.prototype = {
     'cvox.BrailleBackground',
     'cvox.BrailleInputHandler',
     'cvox.BrailleKeyCommand',
-    'cvox.BrailleUtil',
     'cvox.ChromeBraille',
     'cvox.ExpandingBrailleTranslator',
+    'cvox.ValueSelectionSpan',
+    'cvox.ValueSpan',
   ],
 
   /** @override */
@@ -146,8 +147,8 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'Write', function() {
 });
 
 TEST_F('CvoxBrailleIntegrationUnitTest', 'WriteWithSpans', function() {
-  var selectionSpan = new cvox.BrailleUtil.ValueSelectionSpan();
-  var valueSpan = new cvox.BrailleUtil.ValueSpan(20);
+  var selectionSpan = new cvox.ValueSelectionSpan();
+  var valueSpan = new cvox.ValueSpan(20);
   var toSend = cvox.NavBraille.fromText(
       new cvox.Spannable('Hello', valueSpan));
   toSend.text.setSpan(selectionSpan, 0, 0);

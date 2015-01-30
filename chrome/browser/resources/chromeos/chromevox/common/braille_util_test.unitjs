@@ -389,32 +389,32 @@ TEST_F('CvoxBrailleUtilUnitTest', 'CreateValue', function() {
   // Value without a selection.
   s = cvox.BrailleUtil.createValue('value');
   assertEquals('value', s.toString());
-  assertUndefined(s.getSpanInstanceOf(cvox.BrailleUtil.ValueSelectionSpan));
-  valueSpan = s.getSpanInstanceOf(cvox.BrailleUtil.ValueSpan);
+  assertUndefined(s.getSpanInstanceOf(cvox.ValueSelectionSpan));
+  valueSpan = s.getSpanInstanceOf(cvox.ValueSpan);
   assertEquals(0, s.getSpanStart(valueSpan));
   assertEquals(s.getLength(), s.getSpanEnd(valueSpan));
 
   // Value with a carret at the start of the text.
   s = cvox.BrailleUtil.createValue('value', 0);
-  selectionSpan = s.getSpanInstanceOf(cvox.BrailleUtil.ValueSelectionSpan);
+  selectionSpan = s.getSpanInstanceOf(cvox.ValueSelectionSpan);
   assertEquals(0, s.getSpanStart(selectionSpan));
   assertEquals(0, s.getSpanEnd(selectionSpan));
 
   // Value with a carret inside the text.
   s = cvox.BrailleUtil.createValue('value', 1);
-  selectionSpan = s.getSpanInstanceOf(cvox.BrailleUtil.ValueSelectionSpan);
+  selectionSpan = s.getSpanInstanceOf(cvox.ValueSelectionSpan);
   assertEquals(1, s.getSpanStart(selectionSpan));
   assertEquals(1, s.getSpanEnd(selectionSpan));
 
   // Value with a carret at the end of the text.
   s = cvox.BrailleUtil.createValue('value', 5);
-  selectionSpan = s.getSpanInstanceOf(cvox.BrailleUtil.ValueSelectionSpan);
+  selectionSpan = s.getSpanInstanceOf(cvox.ValueSelectionSpan);
   assertEquals(5, s.getSpanStart(selectionSpan));
   assertEquals(5, s.getSpanEnd(selectionSpan));
 
   // All of the value selected selected with reversed start and end.
   s = cvox.BrailleUtil.createValue('value', 5, 0);
-  selectionSpan = s.getSpanInstanceOf(cvox.BrailleUtil.ValueSelectionSpan);
+  selectionSpan = s.getSpanInstanceOf(cvox.ValueSelectionSpan);
   assertEquals(0, s.getSpanStart(selectionSpan));
   assertEquals(5, s.getSpanEnd(selectionSpan));
 });

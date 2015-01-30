@@ -214,8 +214,7 @@ cvox.LayoutLineWalker.prototype.extend_ = function(start) {
 cvox.LayoutLineWalker.prototype.appendBraille_ = function(
     prevSel, sel, cur, braille) {
   var item = this.subWalker_.getBraille(prevSel, cur).text;
-  var valueSelectionSpan = item.getSpanInstanceOf(
-      cvox.BrailleUtil.ValueSelectionSpan);
+  var valueSelectionSpan = item.getSpanInstanceOf(cvox.ValueSelectionSpan);
 
   if (braille.text.getLength() > 0) {
     braille.text.append(cvox.BrailleUtil.ITEM_SEPARATOR);

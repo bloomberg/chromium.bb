@@ -17,7 +17,6 @@ CvoxStructuralLineWalkerUnitTest.prototype = {
 
   /** @override */
   closureModuleDeps: [
-    'cvox.BrailleUtil',
     'cvox.StructuralLineWalker',
     'cvox.TestMsgs',
   ],

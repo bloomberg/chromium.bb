@@ -18,15 +18,6 @@ goog.require('cursors.Cursor');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.TabsApiHandler');
 
-// Define types here due to editable_text.js's implicit dependency with
-// ChromeVoxEventWatcher.
-/** @type {Object} */
-cvox.ChromeVoxEventWatcher;
-/** @type {function(boolean)} */
-cvox.ChromeVoxEventWatcher.handleTextChanged;
-/** @type {function()} */
-cvox.ChromeVoxEventWatcher.setUpTextHandler;
-
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = AutomationUtil.Dir;

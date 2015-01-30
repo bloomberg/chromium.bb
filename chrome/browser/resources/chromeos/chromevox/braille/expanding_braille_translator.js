@@ -9,9 +9,10 @@
 
 goog.provide('cvox.ExpandingBrailleTranslator');
 
-goog.require('cvox.BrailleUtil');
 goog.require('cvox.LibLouis');
 goog.require('cvox.Spannable');
+goog.require('cvox.ValueSelectionSpan');
+goog.require('cvox.ValueSpan');
 
 
 /**
@@ -48,7 +49,7 @@ cvox.ExpandingBrailleTranslator =
 
 /**
  * What expansion to apply to the part of the translated string marked by the
- * {@code cvox.BrailleUtil.ValueSpan} spannable.
+ * {@code cvox.ValueSpan} spannable.
  * @enum {number}
  */
 cvox.ExpandingBrailleTranslator.ExpansionType = {
@@ -200,7 +201,7 @@ cvox.ExpandingBrailleTranslator.prototype.findExpandRanges_ = function(
   var result = [];
   if (this.uncontractedTranslator_ &&
       expansionType != cvox.ExpandingBrailleTranslator.ExpansionType.NONE) {
-    var value = text.getSpanInstanceOf(cvox.BrailleUtil.ValueSpan);
+    var value = text.getSpanInstanceOf(cvox.ValueSpan);
     if (value) {
       // The below type casts are valid because the ranges must be valid when
       // the span is known to exist.
@@ -234,8 +235,7 @@ cvox.ExpandingBrailleTranslator.prototype.findExpandRanges_ = function(
  */
 cvox.ExpandingBrailleTranslator.prototype.addRangesForSelection_ = function(
     text, valueStart, valueEnd, outRanges) {
-  var selection = text.getSpanInstanceOf(
-      cvox.BrailleUtil.ValueSelectionSpan);
+  var selection = text.getSpanInstanceOf(cvox.ValueSelectionSpan);
   if (!selection) {
     return;
   }

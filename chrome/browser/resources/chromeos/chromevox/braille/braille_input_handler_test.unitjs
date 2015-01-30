@@ -391,7 +391,6 @@ CvoxBrailleInputHandlerUnitTest.prototype = {
   closureModuleDeps: [
     'cvox.BrailleInputHandler',
     'cvox.BrailleUtil',
-    'cvox.Spannable',
   ],
 
   /**

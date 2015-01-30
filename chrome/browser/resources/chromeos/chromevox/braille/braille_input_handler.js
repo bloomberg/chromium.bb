@@ -133,9 +133,8 @@ cvox.BrailleInputHandler.prototype.init = function() {
  *     spans.
  */
 cvox.BrailleInputHandler.prototype.onDisplayContentChanged = function(text) {
-  var valueSpan = text.getSpanInstanceOf(cvox.BrailleUtil.ValueSpan);
-  var selectionSpan = text.getSpanInstanceOf(
-      cvox.BrailleUtil.ValueSelectionSpan);
+  var valueSpan = text.getSpanInstanceOf(cvox.ValueSpan);
+  var selectionSpan = text.getSpanInstanceOf(cvox.ValueSelectionSpan);
   if (!(valueSpan && selectionSpan)) {
     return;
   }

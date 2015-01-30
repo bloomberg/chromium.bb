@@ -8,15 +8,16 @@
 
 
 goog.provide('cvox.BrailleUtil');
-goog.provide('cvox.BrailleUtil.ValueSelectionSpan');
-goog.provide('cvox.BrailleUtil.ValueSpan');
 
 goog.require('cvox.ChromeVox');
 goog.require('cvox.DomUtil');
+goog.require('cvox.EditableTextAreaShadow');
 goog.require('cvox.Focuser');
 goog.require('cvox.NavBraille');
 goog.require('cvox.NodeStateUtil');
 goog.require('cvox.Spannable');
+goog.require('cvox.ValueSelectionSpan');
+goog.require('cvox.ValueSpan');
 
 
 /**
@@ -78,59 +79,6 @@ cvox.BrailleUtil.TEMPLATE = {
   'tag_button': 'n r s',
   'tag_textarea': 'n: v r s'
 };
-
-
-/**
- * Attached to the value region of a braille spannable.
- * @param {number} offset The offset of the span into the value.
- * @constructor
- */
-cvox.BrailleUtil.ValueSpan = function(offset) {
-  /**
-   * The offset of the span into the value.
-   * @type {number}
-   */
-  this.offset = offset;
-};
-
-
-/**
- * Creates a value span from a json serializable object.
- * @param {!Object} obj The json serializable object to convert.
- * @return {!cvox.BrailleUtil.ValueSpan} The value span.
- */
-cvox.BrailleUtil.ValueSpan.fromJson = function(obj) {
-  return new cvox.BrailleUtil.ValueSpan(obj.offset);
-};
-
-
-/**
- * Converts this object to a json serializable object.
- * @return {!Object} The JSON representation.
- */
-cvox.BrailleUtil.ValueSpan.prototype.toJson = function() {
-  return this;
-};
-
-
-cvox.Spannable.registerSerializableSpan(
-    cvox.BrailleUtil.ValueSpan,
-    'cvox.BrailleUtil.ValueSpan',
-    cvox.BrailleUtil.ValueSpan.fromJson,
-    cvox.BrailleUtil.ValueSpan.prototype.toJson);
-
-
-/**
- * Attached to the selected text within a value.
- * @constructor
- */
-cvox.BrailleUtil.ValueSelectionSpan = function() {
-};
-
-
-cvox.Spannable.registerStatelessSerializableSpan(
-    cvox.BrailleUtil.ValueSelectionSpan,
-    'cvox.BrailleUtil.ValueSelectionSpan');
 
 
 /**
@@ -220,8 +168,8 @@ cvox.BrailleUtil.getContainer = function(prev, node) {
 
 
 /**
- * Gets the braille value of a node. A cvox.BrailleUtil.ValueSpan will be
- * attached, along with (possibly) a cvox.BrailleUtil.ValueSelectionSpan.
+ * Gets the braille value of a node. A {@code cvox.ValueSpan} will be
+ * attached, along with (possibly) a {@code cvox.ValueSelectionSpan}.
  * @param {Node} node The node.
  * @return {!cvox.Spannable} The value spannable.
  */
@@ -229,7 +177,7 @@ cvox.BrailleUtil.getValue = function(node) {
   if (!node) {
     return new cvox.Spannable();
   }
-  var valueSpan = new cvox.BrailleUtil.ValueSpan(0 /* offset */);
+  var valueSpan = new cvox.ValueSpan(0 /* offset */);
   if (cvox.DomUtil.isInputTypeText(node)) {
     var value = node.value;
     if (node.type === 'password') {
@@ -242,7 +190,7 @@ cvox.BrailleUtil.getValue = function(node) {
           node.selectionStart, 0, spannable.getLength());
       var selectionEnd = cvox.BrailleUtil.clamp_(
           node.selectionEnd, 0, spannable.getLength());
-      spannable.setSpan(new cvox.BrailleUtil.ValueSelectionSpan(),
+      spannable.setSpan(new cvox.ValueSelectionSpan(),
                         Math.min(selectionStart, selectionEnd),
                         Math.max(selectionStart, selectionEnd));
     }
@@ -261,7 +209,7 @@ cvox.BrailleUtil.getValue = function(node) {
           node.selectionStart - lineStart, 0, spannable.getLength());
       var selectionEnd = cvox.BrailleUtil.clamp_(
           node.selectionEnd - lineStart, 0, spannable.getLength());
-      spannable.setSpan(new cvox.BrailleUtil.ValueSelectionSpan(),
+      spannable.setSpan(new cvox.ValueSelectionSpan(),
                         Math.min(selectionStart, selectionEnd),
                         Math.max(selectionStart, selectionEnd));
     }
@@ -333,7 +281,7 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
     if (!component.toString() && template[i + 1] == ' ' &&
         (!(component instanceof cvox.Spannable) ||
         !/**@type {cvox.Spannable}*/(component).getSpanInstanceOf(
-            cvox.BrailleUtil.ValueSelectionSpan))) {
+            cvox.ValueSelectionSpan))) {
       i++;
     }
   }
@@ -343,8 +291,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
 
 /**
  * Creates a braille value from a string and, optionally, a selection range.
- * A cvox.BrailleUtil.ValueSpan will be
- * attached, along with a cvox.BrailleUtil.ValueSelectionSpan if applicable.
+ * A {@code cvox.ValueSpan} will be attached, along with a
+ * {@code cvox.ValueSelectionSpan} if applicable.
  * @param {string} text The text to display as the value.
  * @param {number=} opt_selStart Selection start.
  * @param {number=} opt_selEnd Selection end if different from selection start.
@@ -354,7 +302,7 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
 cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
                                         opt_textOffset) {
   var spannable = new cvox.Spannable(
-      text, new cvox.BrailleUtil.ValueSpan(opt_textOffset || 0));
+      text, new cvox.ValueSpan(opt_textOffset || 0));
   if (goog.isDef(opt_selStart)) {
     opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
     // TODO(plundblad): This looses the distinction between the selection
@@ -366,8 +314,7 @@ cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
       opt_selEnd = temp;
     }
 
-    spannable.setSpan(new cvox.BrailleUtil.ValueSelectionSpan(),
-          opt_selStart, opt_selEnd);
+    spannable.setSpan(new cvox.ValueSelectionSpan(), opt_selStart, opt_selEnd);
   }
   return spannable;
 };
@@ -395,7 +342,7 @@ cvox.BrailleUtil.click = function(braille, opt_displayPosition) {
             node instanceof HTMLTextAreaElement)) {
       var valueSpan = spans.filter(
           function(s) {
-            return s instanceof cvox.BrailleUtil.ValueSpan;
+            return s instanceof cvox.ValueSpan;
           })[0];
       if (valueSpan) {
         if (document.activeElement !== node) {
