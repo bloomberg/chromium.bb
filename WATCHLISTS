@@ -705,6 +705,7 @@
     },
     'tracing': {
       'filepath': 'base/debug/trace_event.*'\
+                  '|base/trace_event/'\
                   '|content/browser/tracing/'\
                   '|components/tracing/'
     },
