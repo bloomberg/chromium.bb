@@ -414,25 +414,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       chrome = installer_state->AddProduct(&multi_chrome);
       VLOG(1) << "Upgrading existing Chrome browser in multi-install mode.";
     }
-  } else {
-    // This is a non-multi installation.
-
-    // Check for an existing installation of the product.
-    const ProductState* product_state = original_state.GetProductState(
-        system_level, products[0]->distribution()->GetType());
-    if (product_state != NULL) {
-      // Block downgrades from multi-install to single-install.
-      if (product_state->is_multi_install()) {
-        LOG(ERROR) << "Multi-install "
-                   << products[0]->distribution()->GetDisplayName()
-                   << " exists; aborting single install.";
-        *status = installer::MULTI_INSTALLATION_EXISTS;
-        installer_state->WriteInstallerResult(*status,
-            IDS_INSTALL_MULTI_INSTALLATION_EXISTS_BASE, NULL);
-        return false;
-      }
-    }
-  }
+  }  // else migrate multi-install Chrome to single-install.
 
   return true;
 }
@@ -1247,11 +1229,9 @@ void UninstallMultiChromeFrameIfPresent(const base::CommandLine& cmd_line,
                                         const MasterPreferences& prefs,
                                         InstallationState* original_state,
                                         InstallerState* installer_state) {
-  // Early exit if not installing or updating multi-install product(s).
-  if (installer_state->operation() != InstallerState::MULTI_INSTALL &&
-      installer_state->operation() != InstallerState::MULTI_UPDATE) {
+  // Early exit if not installing or updating.
+  if (installer_state->operation() == InstallerState::UNINSTALL)
     return;
-  }
 
   // Early exit if Chrome Frame is not present as multi-install.
   const ProductState* chrome_frame_state =

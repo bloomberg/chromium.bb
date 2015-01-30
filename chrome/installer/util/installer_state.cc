@@ -576,29 +576,15 @@ void InstallerState::AddComDllList(
                              com_dll_list));
 }
 
-bool InstallerState::SetChannelFlags(bool set,
-                                     ChannelInfo* channel_info) const {
-  bool modified = false;
-  for (Products::const_iterator scan = products_.begin(), end = products_.end();
-       scan != end; ++scan) {
-     modified |= (*scan)->SetChannelFlags(set, channel_info);
-  }
-  return modified;
-}
-
 void InstallerState::UpdateStage(installer::InstallerStage stage) const {
   InstallUtil::UpdateInstallerStage(system_install(), state_key_, stage);
 }
 
 void InstallerState::UpdateChannels() const {
-  if (operation_ != MULTI_INSTALL && operation_ != MULTI_UPDATE) {
-    VLOG(1) << "InstallerState::UpdateChannels noop: " << operation_;
-    return;
-  }
-
-  // Update the "ap" value for the product being installed/updated.  We get the
-  // current value from the registry since the InstallationState instance used
-  // by the bulk of the installer does not track changes made by UpdateStage.
+  DCHECK_NE(UNINSTALL, operation_);
+  // Update the "ap" value for the product being installed/updated.  Use the
+  // current value in the registry since the InstallationState instance used by
+  // the bulk of the installer does not track changes made by UpdateStage.
   // Create the app's ClientState key if it doesn't exist.
   ChannelInfo channel_info;
   base::win::RegKey state_key;
@@ -610,10 +596,18 @@ void InstallerState::UpdateChannels() const {
     channel_info.Initialize(state_key);
 
     // This is a multi-install product.
-    bool modified = channel_info.SetMultiInstall(true);
+    bool modified = channel_info.SetMultiInstall(is_multi_install());
 
-    // Add the appropriate modifiers for all products and their options.
-    modified |= SetChannelFlags(true, &channel_info);
+    if (is_multi_install()) {
+      // Add the appropriate modifiers for all products and their options.
+      for (auto* product : products_)
+        modified |= product->SetChannelFlags(true, &channel_info);
+    } else {
+      // Remove all multi-install products from the channel name.
+      modified |= channel_info.SetChrome(false);
+      modified |= channel_info.SetChromeFrame(false);
+      modified |= channel_info.SetAppLauncher(false);
+    }
 
     VLOG(1) << "ap: " << channel_info.value();
 
@@ -621,40 +615,42 @@ void InstallerState::UpdateChannels() const {
     if (modified)
       channel_info.Write(&state_key);
 
-    // Remove the -stage: modifier since we don't want to propagate that to the
-    // other app_guids.
-    channel_info.SetStage(NULL);
+    if (is_multi_install()) {
+      // Remove the -stage: modifier since we don't want to propagate that to
+      // the other app_guids.
+      channel_info.SetStage(NULL);
 
-    // Synchronize the other products and the package with this one.
-    ChannelInfo other_info;
-    for (int i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
-      BrowserDistribution::Type type =
-          static_cast<BrowserDistribution::Type>(i);
-      // Skip the app_guid we started with.
-      if (type == state_type_)
-        continue;
-      BrowserDistribution* dist = NULL;
-      // Always operate on the binaries.
-      if (i == BrowserDistribution::CHROME_BINARIES) {
-        dist = multi_package_distribution_;
-      } else {
-        const Product* product = FindProduct(type);
-        // Skip this one if it's for a product we're not operating on.
-        if (product == NULL)
+      // Synchronize the other products and the package with this one.
+      ChannelInfo other_info;
+      for (int i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
+        BrowserDistribution::Type type =
+            static_cast<BrowserDistribution::Type>(i);
+        // Skip the app_guid we started with.
+        if (type == state_type_)
           continue;
-        dist = product->distribution();
-      }
-      result =
-          state_key.Create(root_key_,
-                           dist->GetStateKey().c_str(),
-                           KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
-      if (result == ERROR_SUCCESS) {
-        other_info.Initialize(state_key);
-        if (!other_info.Equals(channel_info))
-          channel_info.Write(&state_key);
-      } else {
-        LOG(ERROR) << "Failed opening key " << dist->GetStateKey()
-                   << " to update app channels; result: " << result;
+        BrowserDistribution* dist = NULL;
+        // Always operate on the binaries.
+        if (i == BrowserDistribution::CHROME_BINARIES) {
+          dist = multi_package_distribution_;
+        } else {
+          const Product* product = FindProduct(type);
+          // Skip this one if it's for a product we're not operating on.
+          if (product == NULL)
+            continue;
+          dist = product->distribution();
+        }
+        result =
+            state_key.Create(root_key_,
+                             dist->GetStateKey().c_str(),
+                             KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
+        if (result == ERROR_SUCCESS) {
+          other_info.Initialize(state_key);
+          if (!other_info.Equals(channel_info))
+            channel_info.Write(&state_key);
+        } else {
+          LOG(ERROR) << "Failed opening key " << dist->GetStateKey()
+                     << " to update app channels; result: " << result;
+        }
       }
     }
   } else {

@@ -186,8 +186,6 @@ class InstallerState {
   // and/or unregistered. The list may be empty.
   void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
 
-  bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;
-
   // See InstallUtil::UpdateInstallerStage.
   void UpdateStage(installer::InstallerStage stage) const;
 

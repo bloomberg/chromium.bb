@@ -974,6 +974,58 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
   }
 }
 
+// Migrates the usagestats value from the binaries to Chrome when migrating
+// multi-install Chrome to single-install.
+void AddMigrateUsageStatesWorkItems(const InstallationState& original_state,
+                                    const InstallerState& installer_state,
+                                    WorkItemList* install_list) {
+  // Ensure that a non-multi install or update is being processed (i.e.,
+  // no "--multi-install" on the command line).
+  if (installer_state.is_multi_install())
+    return;
+
+  // Ensure that Chrome is the product being installed or updated (there are no
+  // other products, so it is especially unexpected for this to fail).
+  const Product* chrome_product =
+      installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+  if (!chrome_product) {
+    LOG(DFATAL) << "Not operating on Chrome while migrating to single-install.";
+    return;
+  }
+
+  const ProductState* chrome_state = original_state.GetProductState(
+      installer_state.system_install(),
+      BrowserDistribution::CHROME_BROWSER);
+  // Bail out if there is not an existing multi-install Chrome that is being
+  // updated.
+  if (!chrome_state || !chrome_state->is_multi_install()) {
+    VLOG(1) << "No multi-install Chrome found to migrate to single-install.";
+    return;
+  }
+
+  const ProductState* binaries_state = original_state.GetProductState(
+      installer_state.system_install(),
+      BrowserDistribution::CHROME_BINARIES);
+
+  // There is nothing to be done if the binaries do not have stats.
+  DWORD usagestats = 0;
+  if (!binaries_state || !binaries_state->GetUsageStats(&usagestats)) {
+    VLOG(1) << "No usagestats value found to migrate to single-install.";
+    return;
+  }
+
+  VLOG(1) << "Migrating usagestats value from multi-install to single-install.";
+
+  // Write the value that was read to Chrome's ClientState key.
+  install_list->AddSetRegValueWorkItem(
+      installer_state.root_key(),
+      chrome_product->distribution()->GetStateKey(),
+      KEY_WOW64_32KEY,
+      google_update::kRegUsageStatsField,
+      usagestats,
+      true);
+}
+
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
                             const Version* current_version,
@@ -1189,6 +1241,16 @@ void AddInstallWorkItems(const InstallationState& original_state,
                             install_list);
   }
 
+  // Ensure that the Clients key for the binaries is gone for single installs.
+  if (!installer_state.is_multi_install()) {
+    BrowserDistribution* binaries_dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
+    install_list->AddDeleteRegKeyWorkItem(root,
+                                          binaries_dist->GetVersionKey(),
+                                          KEY_WOW64_32KEY);
+  }
+
 #if defined(GOOGLE_CHROME_BUILD)
   if (!InstallUtil::IsChromeSxSProcess())
     AddRemoveLegacyAppCommandsWorkItems(installer_state, install_list);
@@ -1206,6 +1268,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Copy over brand, usagestats, and other values.
   AddGoogleUpdateWorkItems(original_state, installer_state, install_list);
+
+  // Migrate usagestats back to Chrome.
+  AddMigrateUsageStatesWorkItems(original_state, installer_state, install_list);
 
   // Append the tasks that run after the installation.
   AppendPostInstallTasks(installer_state,
