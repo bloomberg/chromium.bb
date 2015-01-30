@@ -90,7 +90,7 @@ EXTRA_ENV = {
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
   # See: llvm/tools/pnacl-llc/srpc_main.cpp and
-  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
+  # Chromium's plugin/pnacl_translate_thread.cc
   'LLC_FLAGS_COMMON': '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
                       # do the work that would otherwise be done by
@@ -105,7 +105,7 @@ EXTRA_ENV = {
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
   # See: llvm/tools/pnacl-llc/srpc_main.cpp and
-  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
+  # Chromium's plugin/pnacl_translate_thread.cc
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                       '${OPT_LEVEL == 0 ? -disable-fp-elim}',
@@ -155,7 +155,7 @@ TranslatorPatterns = [
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
   # See: llvm/tools/pnacl-llc/srpc_main.cpp and
-  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
+  # Chromium's plugin/pnacl_translate_thread.cc
   ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-force-align-stack)', "env.append('LLC_FLAGS_EXTRA', $0)"),

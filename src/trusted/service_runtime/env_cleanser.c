@@ -48,7 +48,7 @@ char const *const kNaClEnvWhitelist[] = {
   "LC_TELEPHONE",
   "LC_TIME",
   "NACLVERBOSITY",
-  "NACL_PLUGIN_DEBUG",      /* src/trusted/plugin/srpc/utility.cc */
+  "NACL_PLUGIN_DEBUG",      /* Chromium's plugin/utility.cc */
   "NACL_SRPC_DEBUG",        /* src/shared/srpc/utility.c */
   NULL,
 };

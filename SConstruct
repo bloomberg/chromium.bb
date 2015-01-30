@@ -2305,9 +2305,6 @@ Common tasks:
 
 * sel_ldr:            scons --mode=opt-linux sel_ldr
 
-* build the plugin:         scons --mode=opt-linux ppNaClPlugin
-*      or:                  scons --mode=opt-linux src/trusted/plugin
-
 Targets to build trusted code destined for the SDK:
 * build trusted-code tools:     scons build_bin
 * install trusted-code tools:   scons install_bin bindir=...
