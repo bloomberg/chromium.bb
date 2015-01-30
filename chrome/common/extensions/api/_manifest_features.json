@@ -107,7 +107,11 @@
       "extension_types": ["legacy_packaged_app", "platform_app"],
       "whitelist": [
         "nmmhkkegccagdldgiimedpiccmgmieda",
-        "oedeeodfidgoollimchfdnbmhcpnklnd"  // ZIP unpacker.
+        "oedeeodfidgoollimchfdnbmhcpnklnd",  // ZIP unpacker.
+        "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/453955
+        "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/453955
+        "11A01C82EF355E674E4F9728A801F5C3CB40D83F",  // http://crbug.com/453955
+        "F410C88469990EE7947450311D24B8AF2ADB2595"   // http://crbug.com/453955
       ]
     }
   ],
@@ -121,7 +125,11 @@
       "channel": "stable",
       "extension_types": ["legacy_packaged_app", "platform_app"],
       "whitelist": [
-        "nmmhkkegccagdldgiimedpiccmgmieda"
+        "nmmhkkegccagdldgiimedpiccmgmieda",
+        "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/453955
+        "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/453955
+        "11A01C82EF355E674E4F9728A801F5C3CB40D83F",  // http://crbug.com/453955
+        "F410C88469990EE7947450311D24B8AF2ADB2595"   // http://crbug.com/453955
       ]
     }
   ],
