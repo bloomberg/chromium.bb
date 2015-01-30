@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -56,32 +57,6 @@ enum ProxyStartupState {
   PROXY_STARTUP_STATE_COUNT,
 };
 
-// Values of the UMA DataReductionProxy.ProbeURL histogram.
-// This enum must remain synchronized with
-// DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
-// TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
-//     their names match the behavior they track.
-enum ProbeURLFetchResult {
-  // The probe failed because the Internet was disconnected.
-  INTERNET_DISCONNECTED = 0,
-
-  // The probe failed for any other reason, and as a result, the proxy was
-  // disabled.
-  FAILED_PROXY_DISABLED,
-
-  // The probe failed, but the proxy was already restricted.
-  FAILED_PROXY_ALREADY_DISABLED,
-
-  // The probe succeeded, and as a result the proxy was restricted.
-  SUCCEEDED_PROXY_ENABLED,
-
-  // The probe succeeded, but the proxy was already restricted.
-  SUCCEEDED_PROXY_ALREADY_ENABLED,
-
-  // This must always be last.
-  PROBE_URL_FETCH_RESULT_COUNT
-};
-
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
@@ -95,11 +70,11 @@ class DataReductionProxySettings
 
   static bool IsProxyKeySetOnCommandLine();
 
-  DataReductionProxySettings(DataReductionProxyParams* params);
+  DataReductionProxySettings(scoped_ptr<DataReductionProxyParams> params);
   ~DataReductionProxySettings() override;
 
   DataReductionProxyParams* params() const {
-    return params_.get();
+    return config_->params();
   }
 
   // Initializes the data reduction proxy with profile and local state prefs,
@@ -236,9 +211,6 @@ class DataReductionProxySettings
     return configurator_;
   }
 
-  // Reset params for tests.
-  void ResetParamsForTest(DataReductionProxyParams* params);
-
  private:
   friend class DataReductionProxySettingsTestBase;
   friend class DataReductionProxySettingsTest;
@@ -329,7 +301,7 @@ class DataReductionProxySettings
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<DataReductionProxyParams> params_;
+  scoped_ptr<DataReductionProxyConfig> config_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettings);
 };

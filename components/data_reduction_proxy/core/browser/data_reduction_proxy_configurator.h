@@ -83,7 +83,7 @@ class DataReductionProxyConfigurator {
   const net::ProxyConfig& GetProxyConfigOnIOThread() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestBypassList);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfiguratorTest, TestBypassList);
 
   // Used for updating the proxy config on the IO thread.
   scoped_refptr<base::SequencedTaskRunner> network_task_runner_;

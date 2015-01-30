@@ -90,7 +90,7 @@ bool IsEnabledOnCommandLine() {
 namespace data_reduction_proxy {
 
 DataReductionProxySettings::DataReductionProxySettings(
-    DataReductionProxyParams* params)
+    scoped_ptr<DataReductionProxyParams> params)
     : restricted_by_carrier_(false),
       enabled_by_user_(false),
       disabled_on_vpn_(false),
@@ -100,12 +100,12 @@ DataReductionProxySettings::DataReductionProxySettings(
       net_log_(NULL),
       event_store_(NULL),
       configurator_(NULL) {
-  DCHECK(params);
-  params_.reset(params);
+  DCHECK(params.get());
+  config_.reset(new DataReductionProxyConfig(params.Pass()));
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
-  if (params_->allowed())
+  if (params()->allowed())
     spdy_proxy_auth_enabled_.Destroy();
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
@@ -142,7 +142,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   RecordDataReductionInit();
 
   // Disable the proxy if it is not allowed to be used.
-  if (!params_->allowed())
+  if (!params()->allowed())
     return;
 
   AddDefaultProxyBypassRules();
@@ -182,7 +182,7 @@ bool DataReductionProxySettings::IsDataReductionProxyManaged() {
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Prevent configuring the proxy when it is not allowed to be used.
-  if (!params_->allowed())
+  if (!params()->allowed())
     return;
 
   if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
@@ -195,7 +195,7 @@ void DataReductionProxySettings::SetDataReductionProxyAlternativeEnabled(
     bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Prevent configuring the proxy when it is not allowed to be used.
-  if (!params_->alternative_allowed())
+  if (!params()->alternative_allowed())
     return;
   if (data_reduction_proxy_alternative_enabled_.GetValue() != enabled) {
     data_reduction_proxy_alternative_enabled_.SetValue(enabled);
@@ -349,12 +349,12 @@ void DataReductionProxySettings::LogProxyState(
 void DataReductionProxySettings::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (enabled_by_user_) {
-    DCHECK(params_->allowed());
+    DCHECK(params()->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
     if (DisableIfVPN())
       return;
     if (IsDataReductionProxyAlternativeEnabled() &&
-        !params_->alternative_fallback_allowed()) {
+        !params()->alternative_fallback_allowed()) {
       return;
     }
     ProbeWhetherDataReductionProxyIsAvailable();
@@ -365,14 +365,14 @@ void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!on_data_reduction_proxy_enabled_.is_null())
     on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
-  if (!params_->allowed())
+  if (!params()->allowed())
     return;
   MaybeActivateDataReductionProxy(false);
 }
 
 void DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!params_->alternative_allowed())
+  if (!params()->alternative_allowed())
     return;
   MaybeActivateDataReductionProxy(false);
 }
@@ -418,7 +418,7 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled_by_user_ && !disabled_on_vpn_ &&
       !(IsDataReductionProxyAlternativeEnabled() &&
-        !params_->alternative_fallback_allowed())) {
+        !params()->alternative_fallback_allowed())) {
     ProbeWhetherDataReductionProxyIsAvailable();
   }
 }
@@ -433,18 +433,18 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
-  if (enabled & !params_->holdback()) {
+  if (enabled & !params()->holdback()) {
     if (alternative_enabled) {
       configurator_->Enable(restricted,
-                            !params_->alternative_fallback_allowed(),
-                            params_->alt_origin().spec(),
+                            !params()->alternative_fallback_allowed(),
+                            params()->alt_origin().spec(),
                             std::string(),
-                            params_->ssl_origin().spec());
+                            params()->ssl_origin().spec());
     } else {
       configurator_->Enable(restricted,
-                            !params_->fallback_allowed(),
-                            params_->origin().spec(),
-                            params_->fallback_origin().spec(),
+                            !params()->fallback_allowed(),
+                            params()->origin().spec(),
+                            params()->fallback_origin().spec(),
                             std::string());
     }
   } else {
@@ -456,7 +456,7 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
 void DataReductionProxySettings::RecordDataReductionInit() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ProxyStartupState state = PROXY_NOT_AVAILABLE;
-  if (params_->allowed()) {
+  if (params()->allowed()) {
     if (IsDataReductionProxyEnabled())
       state = PROXY_ENABLED;
     else
@@ -483,11 +483,6 @@ void DataReductionProxySettings::GetNetworkList(
     net::NetworkInterfaceList* interfaces,
     int policy) {
   net::GetNetworkList(interfaces, policy);
-}
-
-void DataReductionProxySettings::ResetParamsForTest(
-    DataReductionProxyParams* params) {
-  params_.reset(params);
 }
 
 DataReductionProxySettings::ContentLengthList
@@ -560,7 +555,7 @@ net::URLFetcher* DataReductionProxySettings::GetBaseURLFetcher(
 
 net::URLFetcher*
 DataReductionProxySettings::GetURLFetcherForAvailabilityCheck() {
-  return GetBaseURLFetcher(params_->probe_url(),
+  return GetBaseURLFetcher(params()->probe_url(),
                            net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
 }
 

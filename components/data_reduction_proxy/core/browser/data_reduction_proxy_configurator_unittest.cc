@@ -17,7 +17,7 @@
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfigTest : public testing::Test {
+class DataReductionProxyConfiguratorTest : public testing::Test {
  public:
   void SetUp() override {
     task_runner_ = new base::TestSimpleTaskRunner();
@@ -54,7 +54,7 @@ class DataReductionProxyConfigTest : public testing::Test {
       data_reduction_proxy_event_store_;
 };
 
-TEST_F(DataReductionProxyConfigTest, TestUnrestricted) {
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestricted) {
   config_->Enable(false,
                   false,
                   "https://www.foo.com:443/",
@@ -66,7 +66,7 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestricted) {
       "", "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestUnrestrictedSSL) {
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedSSL) {
   config_->Enable(false,
                   false,
                   "https://www.foo.com:443/",
@@ -79,7 +79,7 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestrictedSSL) {
       "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithBypassRule) {
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRule) {
   config_->AddHostPatternToBypass("<local>");
   config_->AddHostPatternToBypass("*.goo.com");
   config_->Enable(false,
@@ -93,13 +93,13 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithBypassRule) {
       "<local>;*.goo.com;");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithoutFallback) {
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithoutFallback) {
   config_->Enable(false, false, "https://www.foo.com:443/", "", "");
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
                    "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestRestricted) {
+TEST_F(DataReductionProxyConfiguratorTest, TestRestricted) {
   config_->Enable(true,
                   false,
                   "https://www.foo.com:443/",
@@ -109,7 +109,7 @@ TEST_F(DataReductionProxyConfigTest, TestRestricted) {
                    "PROXY www.bar.com:80;DIRECT", "", "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
+TEST_F(DataReductionProxyConfiguratorTest, TestFallbackRestricted) {
   config_->Enable(false,
                   true,
                   "https://www.foo.com:443/",
@@ -119,7 +119,7 @@ TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
                    "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestDisable) {
+TEST_F(DataReductionProxyConfiguratorTest, TestDisable) {
   data_reduction_proxy::DataReductionProxyParams params(
       data_reduction_proxy::DataReductionProxyParams::
           kAllowAllProxyConfigurations);
@@ -132,7 +132,7 @@ TEST_F(DataReductionProxyConfigTest, TestDisable) {
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_NO_RULES, "", "", "");
 }
 
-TEST_F(DataReductionProxyConfigTest, TestBypassList) {
+TEST_F(DataReductionProxyConfiguratorTest, TestBypassList) {
   config_->AddHostPatternToBypass("http://www.google.com");
   config_->AddHostPatternToBypass("fefe:13::abc/33");
   config_->AddURLPatternToBypass("foo.org/images/*");

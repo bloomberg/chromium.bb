@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
@@ -33,6 +34,8 @@ const char kProxy[] = "proxy";
 
 namespace data_reduction_proxy {
 
+namespace {
+
 ProbeURLFetchResult FetchResult(bool enabled, bool success) {
   if (enabled) {
     if (success)
@@ -44,41 +47,7 @@ ProbeURLFetchResult FetchResult(bool enabled, bool success) {
   return FAILED_PROXY_ALREADY_DISABLED;
 }
 
-TestDataReductionProxyConfig::TestDataReductionProxyConfig(
-    scoped_refptr<base::SequencedTaskRunner> network_task_runner,
-    net::NetLog* net_log,
-    data_reduction_proxy::DataReductionProxyEventStore* event_store)
-    : DataReductionProxyConfigurator(network_task_runner, net_log, event_store),
-      enabled_(false),
-      restricted_(false),
-      fallback_restricted_(false) {
-}
-
-TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
-}
-
-void TestDataReductionProxyConfig::Enable(
-    bool restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
-  enabled_ = true;
-  restricted_ = restricted;
-  fallback_restricted_ = fallback_restricted;
-  origin_ = primary_origin;
-  fallback_origin_ = fallback_origin;
-  ssl_origin_ = ssl_origin;
-}
-
-void TestDataReductionProxyConfig::Disable() {
-  enabled_ = false;
-  restricted_ = false;
-  fallback_restricted_ = false;
-  origin_ = "";
-  fallback_origin_ = "";
-  ssl_origin_ = "";
-}
+}  // namespace
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
     : testing::Test() {
@@ -161,7 +130,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
-  configurator_.reset(new TestDataReductionProxyConfig(
+  configurator_.reset(new TestDataReductionProxyConfigurator(
       scoped_refptr<base::TestSimpleTaskRunner>(
           new base::TestSimpleTaskRunner()), &net_log_, event_store_.get()));
   settings_->configurator_ = configurator_.get();
@@ -216,11 +185,12 @@ void DataReductionProxySettingsTestBase::CheckProxyConfigs(
     bool expected_enabled,
     bool expected_restricted,
     bool expected_fallback_restricted) {
-  TestDataReductionProxyConfig* config =
-      static_cast<TestDataReductionProxyConfig*>(settings_->configurator_);
-  ASSERT_EQ(expected_restricted, config->restricted_);
-  ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted_);
-  ASSERT_EQ(expected_enabled, config->enabled_);
+  TestDataReductionProxyConfigurator* config =
+      static_cast<TestDataReductionProxyConfigurator*>(
+          settings_->configurator_);
+  ASSERT_EQ(expected_restricted, config->restricted());
+  ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted());
+  ASSERT_EQ(expected_enabled, config->enabled());
 }
 
 void DataReductionProxySettingsTestBase::CheckProbe(
@@ -291,7 +261,7 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
   base::MessageLoopForUI loop;
   scoped_ptr<DataReductionProxyConfigurator> configurator(
-      new TestDataReductionProxyConfig(
+      new TestDataReductionProxyConfigurator(
           scoped_refptr<base::TestSimpleTaskRunner>(
               new base::TestSimpleTaskRunner()), &net_log_,
               event_store_.get()));

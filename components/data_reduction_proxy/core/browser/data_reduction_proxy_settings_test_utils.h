@@ -5,10 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 
-
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/base/capturing_net_log.h"
@@ -23,59 +21,27 @@ class TestingPrefServiceSimple;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfigurator;
 class DataReductionProxyStatisticsPrefs;
-
-class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
- public:
-  TestDataReductionProxyConfig(
-      scoped_refptr<base::SequencedTaskRunner> network_task_runner,
-      net::NetLog* net_log,
-      data_reduction_proxy::DataReductionProxyEventStore* event_store);
-  ~TestDataReductionProxyConfig() override;
-  void Enable(bool restricted,
-              bool fallback_restricted,
-              const std::string& primary_origin,
-              const std::string& fallback_origin,
-              const std::string& ssl_origin) override;
-  void Disable() override;
-  void AddHostPatternToBypass(const std::string& pattern) override {}
-  void AddURLPatternToBypass(const std::string& pattern) override {}
-
-  // True if the proxy has been enabled, i.e., only after |Enable| has been
-  // called. Defaults to false.
-  bool enabled_;
-
-  // Describes whether the proxy has been put in a restricted mode. True if
-  // |Enable| is called with |restricted| set to true. Defaults to false.
-  bool restricted_;
-
-  // Describes whether the proxy has been put in a mode where the fallback
-  // configuration has been disallowed. True if |Enable| is called with
-  // |fallback_restricted| set to true. Defaults to false.
-  bool fallback_restricted_;
-
-  // The origins that are passed to |Enable|.
-  std::string origin_;
-  std::string fallback_origin_;
-  std::string ssl_origin_;
-};
 
 template <class C>
 class MockDataReductionProxySettings : public C {
  public:
   MockDataReductionProxySettings<C>() : DataReductionProxySettings(
-      new TestDataReductionProxyParams(
+      scoped_ptr<TestDataReductionProxyParams>(new TestDataReductionProxyParams(
           DataReductionProxyParams::kAllowed |
           DataReductionProxyParams::kFallbackAllowed |
           DataReductionProxyParams::kPromoAllowed,
           TestDataReductionProxyParams::HAS_EVERYTHING &
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)) {}
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)).Pass()) {}
   MockDataReductionProxySettings<C>(int flags)
-      : C(new TestDataReductionProxyParams(flags,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)) {}
+      : C(scoped_ptr<TestDataReductionProxyParams>(
+          new TestDataReductionProxyParams(flags,
+              TestDataReductionProxyParams::HAS_EVERYTHING &
+              ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+              ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
+          .Pass()) {}
   MOCK_METHOD0(GetURLFetcherForAvailabilityCheck, net::URLFetcher*());
   MOCK_METHOD0(GetOriginalProfilePrefs, PrefService*());
   MOCK_METHOD0(GetLocalStatePrefs, PrefService*());

@@ -81,12 +81,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
  public:
   DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {
     settings_.reset(
-        new DataReductionProxySettings(CreateTestDataReductionProxyParams()));
-    proxy_params_.reset(CreateTestDataReductionProxyParams());
+        new DataReductionProxySettings(CreateDataReductionProxyParams()));
+    proxy_params_.reset(CreateDataReductionProxyParams().release());
     simple_interceptor_.reset(new SimpleURLRequestInterceptor());
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "http", "www.google.com", simple_interceptor_.Pass());
   }
+
   ~DataReductionProxyProtocolTest() override {
     // URLRequestJobs may post clean-up tasks on destruction.
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(
@@ -94,14 +95,16 @@ class DataReductionProxyProtocolTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  TestDataReductionProxyParams* CreateTestDataReductionProxyParams() {
-    return new TestDataReductionProxyParams(
-        DataReductionProxyParams::kAllowed |
-        DataReductionProxyParams::kFallbackAllowed |
-        DataReductionProxyParams::kPromoAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-        ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
+  scoped_ptr<TestDataReductionProxyParams> CreateDataReductionProxyParams() {
+    return scoped_ptr<TestDataReductionProxyParams>(
+        new TestDataReductionProxyParams(
+            DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+            TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
+        .Pass();
   }
 
   void SetUp() override {

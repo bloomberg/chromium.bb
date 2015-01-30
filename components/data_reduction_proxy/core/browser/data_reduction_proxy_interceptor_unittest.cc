@@ -181,12 +181,12 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     ASSERT_TRUE(direct_.InitializeAndWaitUntilReady());
 
     // Owned by settings_.
-    TestDataReductionProxyParams* params =
-        new TestDataReductionProxyParams(
-            DataReductionProxyParams::kAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
+    scoped_ptr<TestDataReductionProxyParams> params;
+    params.reset(new TestDataReductionProxyParams(
+        DataReductionProxyParams::kAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
     params->set_origin(proxy_.GetURL("/"));
     std::string proxy_name =
         net::HostPortPair::FromURL(GURL(params->origin())).ToString();
@@ -196,7 +196,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
 
     context_.set_proxy_service(proxy_service_.get());
 
-    settings_.reset(new DataReductionProxySettings(params));
+    settings_.reset(new DataReductionProxySettings(params.Pass()));
     io_data_.reset(
         new DataReductionProxyIOData(
             data_reduction_proxy::Client::UNKNOWN,

@@ -34,6 +34,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_config.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_config.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
@@ -102,6 +104,10 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.cc',

@@ -71,7 +71,8 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
                                                NULL);
     settings_.reset(new DataReductionProxySettings(
-        new DataReductionProxyParamsMock()));
+        scoped_ptr<DataReductionProxyParamsMock>(
+            new DataReductionProxyParamsMock()).Pass()));
   }
 
   scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(

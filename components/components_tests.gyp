@@ -91,6 +91,7 @@
             'crx_file/id_util_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol_unittest.cc',
+            'data_reduction_proxy/core/browser/data_reduction_proxy_config_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_configurator_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_io_data_unittest.cc',

@@ -160,8 +160,10 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   data_reduction_proxy_settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings(
-          new data_reduction_proxy::DataReductionProxyParams(
-              data_reduction_proxy::DataReductionProxyParams::kAllowed)));
+          scoped_ptr<data_reduction_proxy::DataReductionProxyParams>(
+              new data_reduction_proxy::DataReductionProxyParams(
+                  data_reduction_proxy::DataReductionProxyParams::kAllowed))
+              .Pass()));
   data_reduction_proxy_io_data_.reset(
       new data_reduction_proxy::DataReductionProxyIOData(
           data_reduction_proxy::Client::WEBVIEW_ANDROID,

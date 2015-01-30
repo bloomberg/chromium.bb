@@ -54,13 +54,13 @@ namespace data_reduction_proxy {
 class DataReductionProxyIODataTest : public testing::Test {
  public:
   void SetUp() override {
-    DataReductionProxyParams* params =
-        new TestDataReductionProxyParams(
-            TestDataReductionProxyParams::kAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
+    scoped_ptr<TestDataReductionProxyParams> params;
+    params.reset(new TestDataReductionProxyParams(
+        TestDataReductionProxyParams::kAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
-    settings_.reset(new DataReductionProxySettings(params));
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+    settings_.reset(new DataReductionProxySettings(params.Pass()));
     RegisterSimpleProfilePrefs(prefs_.registry());
   }
 

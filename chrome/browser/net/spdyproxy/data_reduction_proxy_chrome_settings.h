@@ -37,7 +37,7 @@ class DataReductionProxyChromeSettings
   // Constructs a settings object with the given configuration parameters.
   // Construction and destruction must happen on the UI thread.
   explicit DataReductionProxyChromeSettings(
-      data_reduction_proxy::DataReductionProxyParams* params);
+      scoped_ptr<data_reduction_proxy::DataReductionProxyParams> params);
 
   // Destructs the settings object.
   ~DataReductionProxyChromeSettings() override;

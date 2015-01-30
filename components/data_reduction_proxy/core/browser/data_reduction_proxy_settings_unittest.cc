@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -85,56 +86,56 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionSSLProxy, drp_params.DefaultSSLOrigin());
   ResetSettings(true, true, true, true, false);
-  TestDataReductionProxyConfig* config =
-      static_cast<TestDataReductionProxyConfig*>(
+  TestDataReductionProxyConfigurator* configurator =
+      static_cast<TestDataReductionProxyConfigurator*>(
           settings_->configurator());
 
   settings_->SetProxyConfigs(true, true, false, false);
-  EXPECT_TRUE(config->enabled_);
+  EXPECT_TRUE(configurator->enabled());
   EXPECT_TRUE(net::HostPortPair::FromString(
       expected_params_->DefaultAltOrigin()).Equals(
-          net::HostPortPair::FromString(config->origin_)));
+          net::HostPortPair::FromString(configurator->origin())));
   EXPECT_TRUE(net::HostPortPair::FromString(
       expected_params_->DefaultAltFallbackOrigin()).Equals(
-          net::HostPortPair::FromString(config->fallback_origin_)));
+          net::HostPortPair::FromString(configurator->fallback_origin())));
   EXPECT_TRUE(net::HostPortPair::FromString(
       expected_params_->DefaultSSLOrigin()).Equals(
-          net::HostPortPair::FromString(config->ssl_origin_)));
+          net::HostPortPair::FromString(configurator->ssl_origin())));
 
   settings_->SetProxyConfigs(true, false, false, false);
-  EXPECT_TRUE(config->enabled_);
+  EXPECT_TRUE(configurator->enabled());
   EXPECT_TRUE(net::HostPortPair::FromString(drp_params.DefaultOrigin()).Equals(
-      net::HostPortPair::FromString(config->origin_)));
+      net::HostPortPair::FromString(configurator->origin())));
   EXPECT_TRUE(net::HostPortPair::FromString(
       drp_params.DefaultFallbackOrigin()).Equals(
-          net::HostPortPair::FromString(config->fallback_origin_)));
-  EXPECT_EQ("", config->ssl_origin_);
+          net::HostPortPair::FromString(configurator->fallback_origin())));
+  EXPECT_EQ("", configurator->ssl_origin());
 
   settings_->SetProxyConfigs(false, true, false, false);
-  EXPECT_FALSE(config->enabled_);
-  EXPECT_EQ("", config->origin_);
-  EXPECT_EQ("", config->fallback_origin_);
-  EXPECT_EQ("", config->ssl_origin_);
+  EXPECT_FALSE(configurator->enabled());
+  EXPECT_EQ("", configurator->origin());
+  EXPECT_EQ("", configurator->fallback_origin());
+  EXPECT_EQ("", configurator->ssl_origin());
 
   settings_->SetProxyConfigs(false, false, false, false);
-  EXPECT_FALSE(config->enabled_);
-  EXPECT_EQ("", config->origin_);
-  EXPECT_EQ("", config->fallback_origin_);
-  EXPECT_EQ("", config->ssl_origin_);
+  EXPECT_FALSE(configurator->enabled());
+  EXPECT_EQ("", configurator->origin());
+  EXPECT_EQ("", configurator->fallback_origin());
+  EXPECT_EQ("", configurator->ssl_origin());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigsHoldback) {
   ResetSettings(true, true, true, true, true);
-  TestDataReductionProxyConfig* config =
-      static_cast<TestDataReductionProxyConfig*>(
+  TestDataReductionProxyConfigurator* configurator =
+      static_cast<TestDataReductionProxyConfigurator*>(
           settings_->configurator());
 
    // Holdback.
   settings_->SetProxyConfigs(true, true, false, false);
-  EXPECT_FALSE(config->enabled_);
-  EXPECT_EQ("", config->origin_);
-  EXPECT_EQ("", config->fallback_origin_);
-  EXPECT_EQ("", config->ssl_origin_);
+  EXPECT_FALSE(configurator->enabled());
+  EXPECT_EQ("", configurator->origin());
+  EXPECT_EQ("", configurator->fallback_origin());
+  EXPECT_EQ("", configurator->ssl_origin());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
@@ -410,10 +411,10 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
 
   scoped_ptr<DataReductionProxyConfigurator> configurator(
-      new TestDataReductionProxyConfig(
+      new TestDataReductionProxyConfigurator(
           scoped_refptr<base::TestSimpleTaskRunner>(
-              new base::TestSimpleTaskRunner()), &net_log_,
-              event_store_.get()));
+              new base::TestSimpleTaskRunner()),
+          &net_log_, event_store_.get()));
   settings_->SetProxyConfigurator(configurator.get());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());

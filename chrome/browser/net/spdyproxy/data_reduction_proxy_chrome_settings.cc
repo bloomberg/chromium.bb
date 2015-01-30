@@ -52,7 +52,8 @@ void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs) {
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings(
-    DataReductionProxyParams* params) : DataReductionProxySettings(params) {
+    scoped_ptr<DataReductionProxyParams> params)
+    : DataReductionProxySettings(params.Pass()) {
 }
 
 DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {

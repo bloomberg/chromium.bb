@@ -71,5 +71,6 @@ KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
 #endif
 
   return new DataReductionProxyChromeSettings(
-      new DataReductionProxyParams(flags));
+      scoped_ptr<DataReductionProxyParams>(new DataReductionProxyParams(flags))
+          .Pass());
 }
