@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "media/base/mac/corevideo_glue.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -25,6 +26,8 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       return media::PIXEL_FORMAT_YUY2;
     case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
       return media::PIXEL_FORMAT_MJPEG;
+    case CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
+      return media::PIXEL_FORMAT_NV12;
     default:
       return media::PIXEL_FORMAT_UNKNOWN;
   }
@@ -312,9 +315,31 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
     // Lock the frame and calculate frame size.
     if (CVPixelBufferLockBaseAddress(videoFrame, kCVPixelBufferLock_ReadOnly) ==
         kCVReturnSuccess) {
-      baseAddress = static_cast<char*>(CVPixelBufferGetBaseAddress(videoFrame));
-      frameSize = CVPixelBufferGetHeight(videoFrame) *
-                  CVPixelBufferGetBytesPerRow(videoFrame);
+      baseAddress = static_cast<char*>(
+          CVPixelBufferGetPlaneCount(videoFrame) == 0
+              ? CVPixelBufferGetBaseAddress(videoFrame)
+              : CVPixelBufferGetBaseAddressOfPlane(videoFrame, 0));
+      // Chromium expects the data to be tightly packed, i.e. no row padding
+      // and the planes should follow consecutively.
+      switch (captureFormat.pixel_format) {
+        case media::PIXEL_FORMAT_YUY2:
+        case media::PIXEL_FORMAT_UYVY:
+          CHECK_EQ(CVPixelBufferGetBytesPerRow(videoFrame),
+                   static_cast<size_t>(2 * captureFormat.frame_size.width()));
+          frameSize = captureFormat.frame_size.GetArea() * 16 / 8;  // 16bpp.
+          break;
+        case media::PIXEL_FORMAT_NV12:
+          CHECK_EQ(CVPixelBufferGetBytesPerRowOfPlane(videoFrame, 0),
+                   static_cast<size_t>(captureFormat.frame_size.width()));
+          CHECK_EQ(CVPixelBufferGetBytesPerRowOfPlane(videoFrame, 1),
+                   static_cast<size_t>(captureFormat.frame_size.width()));
+          CHECK_EQ(CVPixelBufferGetBaseAddressOfPlane(videoFrame, 1),
+                   baseAddress + captureFormat.frame_size.GetArea());
+          frameSize = captureFormat.frame_size.GetArea() * 12 / 8;  // 12bpp.
+          break;
+        default:
+          NOTREACHED();
+      }
     } else {
       videoFrame = nil;
     }
