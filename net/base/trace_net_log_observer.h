@@ -5,8 +5,8 @@
 #ifndef NET_BASE_TRACE_NET_LOG_OBSERVER_H_
 #define NET_BASE_TRACE_NET_LOG_OBSERVER_H_
 
-#include "base/debug/trace_event_impl.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 

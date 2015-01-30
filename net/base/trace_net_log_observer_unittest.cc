@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_log.h"

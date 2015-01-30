@@ -5,11 +5,11 @@
 #include "net/cert/crl_set_storage.h"
 
 #include "base/base64.h"
-#include "base/debug/trace_event.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "third_party/zlib/zlib.h"

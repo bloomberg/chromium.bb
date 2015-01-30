@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
 
