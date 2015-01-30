@@ -118,6 +118,10 @@ class WIFI_EXPORT WiFiService {
   // event on completion.
   virtual void RequestConnectedNetworkUpdate() = 0;
 
+  // Get the SSID of the currently connected network, if any.
+  virtual void GetConnectedNetworkSSID(std::string* ssid,
+                                       std::string* error) = 0;
+
  protected:
   WiFiService() {}
 

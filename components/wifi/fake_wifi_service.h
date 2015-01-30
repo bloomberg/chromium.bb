@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WIFI_FAKE_WIFI_SERVICE_H_
 #define COMPONENTS_WIFI_FAKE_WIFI_SERVICE_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/wifi/network_properties.h"
@@ -54,6 +56,8 @@ class FakeWiFiService : public WiFiService {
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) override;
   void RequestConnectedNetworkUpdate() override;
+  void GetConnectedNetworkSSID(std::string* ssid,
+                               std::string* error) override;
 
  private:
   NetworkList::iterator FindNetwork(const std::string& network_guid);

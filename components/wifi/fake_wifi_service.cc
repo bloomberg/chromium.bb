@@ -189,6 +189,12 @@ void FakeWiFiService::SetEventObservers(
 void FakeWiFiService::RequestConnectedNetworkUpdate() {
 }
 
+void FakeWiFiService::GetConnectedNetworkSSID(std::string* ssid,
+                                              std::string* error) {
+  *ssid = "";
+  *error = "";
+}
+
 NetworkList::iterator FakeWiFiService::FindNetwork(
     const std::string& network_guid) {
   for (NetworkList::iterator it = networks_.begin(); it != networks_.end();

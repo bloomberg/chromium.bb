@@ -82,19 +82,20 @@ class WiFiTest {
 
 WiFiTest::Result WiFiTest::Main(int argc, const char* argv[]) {
   if (!ParseCommandLine(argc, argv)) {
-    VLOG(0) <<  "Usage: " << argv[0] <<
-                " [--list]"
-                " [--get_key]"
-                " [--get_properties]"
-                " [--create]"
-                " [--connect]"
-                " [--disconnect]"
-                " [--scan]"
-                " [--network_guid=<network_guid>]"
-                " [--frequency=0|2400|5000]"
-                " [--security=none|WEP-PSK|WPA-PSK|WPA2-PSK]"
-                " [--password=<wifi_password>]"
-                " [<network_guid>]\n";
+    VLOG(0) << "Usage: " << argv[0]
+            << " [--list]"
+               " [--get_connected_ssid]"
+               " [--get_key]"
+               " [--get_properties]"
+               " [--create]"
+               " [--connect]"
+               " [--disconnect]"
+               " [--scan]"
+               " [--network_guid=<network_guid>]"
+               " [--frequency=0|2400|5000]"
+               " [--security=none|WEP-PSK|WPA-PSK|WPA2-PSK]"
+               " [--password=<wifi_password>]"
+               " [<network_guid>]\n";
     return RESULT_WRONG_USAGE;
   }
 
@@ -229,6 +230,17 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
         base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
     wifi_service_->RequestNetworkScan();
     base::MessageLoop::current()->Run();
+    return true;
+  }
+
+  if (parsed_command_line.HasSwitch("get_connected_ssid")) {
+    std::string ssid;
+    std::string error;
+    wifi_service_->GetConnectedNetworkSSID(&ssid, &error);
+    if (error.length() > 0)
+      VLOG(0) << error;
+    else
+      VLOG(0) << "Network SSID: " << ssid;
     return true;
   }
 

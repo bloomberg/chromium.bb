@@ -76,6 +76,8 @@ class WiFiServiceMac : public WiFiService {
 
   void RequestConnectedNetworkUpdate() override;
 
+  void GetConnectedNetworkSSID(std::string* ssid, std::string* error) override;
+
  private:
   // Checks |ns_error| and if is not |nil|, then stores |error_name|
   // into |error|.
@@ -414,6 +416,12 @@ void WiFiServiceMac::SetEventObservers(
 
 void WiFiServiceMac::RequestConnectedNetworkUpdate() {
   OnWlanObserverNotification();
+}
+
+void WiFiServiceMac::GetConnectedNetworkSSID(std::string* ssid,
+                                             std::string* error) {
+  *ssid = base::SysNSStringToUTF8([interface_ ssid]);
+  *error = "";
 }
 
 std::string WiFiServiceMac::GetNetworkConnectionState(

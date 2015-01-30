@@ -226,6 +226,9 @@ class WiFiServiceImpl : public WiFiService {
 
   virtual void RequestConnectedNetworkUpdate() override {}
 
+  virtual void GetConnectedNetworkSSID(std::string* ssid,
+                                       std::string* error) override;
+
  private:
   typedef int32 EncryptionType;
   enum EncryptionTypeEnum {
@@ -356,6 +359,11 @@ class WiFiServiceImpl : public WiFiService {
   // Get properties of the network currently used (connected or in transition)
   // by interface. Populate |current_properties| on success.
   DWORD GetCurrentProperties(NetworkProperties* current_properties);
+
+  // Get the SSID of the network currently used (connected or in transition)
+  // by interface. Populate |ssid| on success. This is a stripped down version
+  // of GetCurrentProperties that doesn't use the BSS list;
+  DWORD GetCurrentSSID(std::string* ssid);
 
   // Connect to network |network_guid| using previosly stored profile if exists,
   // or just network sid. If |frequency| is not |kFrequencyUnknown| then
@@ -804,6 +812,18 @@ void WiFiServiceImpl::SetEventObservers(
                                        NULL,
                                        NULL);
   }
+}
+
+void WiFiServiceImpl::GetConnectedNetworkSSID(std::string* ssid,
+                                              std::string* error) {
+  DWORD error_code = EnsureInitialized();
+  if (CheckError(error_code, kErrorWiFiService, error))
+    return;
+  std::string current_ssid;
+  error_code = GetCurrentSSID(&current_ssid);
+  if (CheckError(error_code, kErrorWiFiService, error))
+    return;
+  *ssid = current_ssid;
 }
 
 void WiFiServiceImpl::OnWlanNotificationCallback(
@@ -1458,6 +1478,37 @@ DWORD WiFiServiceImpl::GetCurrentProperties(NetworkProperties* properties) {
 
   if (bss_list != NULL)
     WlanFreeMemory_function_(bss_list);
+
+  return error;
+}
+
+
+DWORD WiFiServiceImpl::GetCurrentSSID(std::string* ssid) {
+  if (client_ == NULL) {
+    NOTREACHED();
+    return ERROR_NOINTERFACE;
+  }
+  DWORD error = ERROR_SUCCESS;
+  DWORD data_size = 0;
+  PWLAN_CONNECTION_ATTRIBUTES wlan_connection_attributes = NULL;
+  error = WlanQueryInterface_function_(
+      client_,
+      &interface_guid_,
+      wlan_intf_opcode_current_connection,
+      NULL,
+      &data_size,
+      reinterpret_cast<PVOID*>(&wlan_connection_attributes),
+      NULL);
+  if (error == ERROR_SUCCESS &&
+      wlan_connection_attributes != NULL) {
+    WLAN_ASSOCIATION_ATTRIBUTES& connected_wlan =
+        wlan_connection_attributes->wlanAssociationAttributes;
+    *ssid = GUIDFromSSID(connected_wlan.dot11Ssid);
+  }
+
+  // Clean up.
+  if (wlan_connection_attributes != NULL)
+    WlanFreeMemory_function_(wlan_connection_attributes);
 
   return error;
 }
