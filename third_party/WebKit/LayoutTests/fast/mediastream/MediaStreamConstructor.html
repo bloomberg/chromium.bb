@@ -85,7 +85,7 @@ function testConstructor(s) {
     verifyStream(new webkitMediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
     verifyStream(new webkitMediaStream([s.getVideoTracks()[0], s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
 
-    s.onended = function () {
+    s.oninactive = function () {
         verifyStream(new webkitMediaStream([s.getAudioTracks()[0]]), 0, 0);
         verifyStream(new webkitMediaStream([s.getVideoTracks()[0]]), 0, 0);
         verifyStream(new webkitMediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 0, 0);
@@ -108,6 +108,11 @@ function verifyStream(s, numAudioTracks, numVideoTracks) {
     shouldBe("newStream.constructor.name", "'MediaStream'");
     shouldBe('newStream.getAudioTracks().length', 'nAudio');
     shouldBe('newStream.getVideoTracks().length', 'nVideo');
+
+    if (!nAudio && !nVideo)
+        shouldBe('newStream.active', 'false');
+    else
+        shouldBe('newStream.active', 'true');
 
     shouldBeTrue('checkIdAttribute(newStream.id)');
 }

@@ -30,9 +30,12 @@ PASS stream1.getTracks().length is 2
 PASS stream1.getAudioTracks().length is 2
 PASS stream1.getVideoTracks().length is 2
 PASS stream1.getTracks().length is 4
-PASS stream2.ended is true
-PASS stream1.addTrack(audioTrack) threw exception InvalidStateError: Failed to execute 'addTrack' on 'MediaStream': The MediaStream is finished..
-PASS stream1.removeTrack(audioTrack) threw exception InvalidStateError: Failed to execute 'removeTrack' on 'MediaStream': The MediaStream is finished..
+PASS stream2.active is false
+PASS stream1.active is false
+PASS Stream1 active.
+PASS stream1.active is true
+PASS Stream1 inactive.
+PASS stream1.active is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

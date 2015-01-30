@@ -12,6 +12,7 @@ DOMNodeRemovedFromDocument
 DOMSubtreeModified
 abort
 activate
+active
 addsourcebuffer
 addstream
 addtrack
@@ -106,6 +107,7 @@ gesturetapunconfirmed
 hashchange
 icecandidate
 iceconnectionstatechange
+inactive
 input
 install
 invalid

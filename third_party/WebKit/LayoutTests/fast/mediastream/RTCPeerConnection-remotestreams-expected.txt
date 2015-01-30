@@ -7,12 +7,14 @@ PASS pc.setRemoteDescription(sessionDescription, requestSucceeded1, requestFaile
 PASS remote stream was added
 PASS event.stream.getVideoTracks().length is 1
 PASS event.stream.getAudioTracks().length is 1
+PASS event.stream.active is true
 PASS requestSucceeded was called.
 PASS pc.getRemoteStreams().length is 1
 PASS pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailedUnexpectedly); did not throw exception.
 PASS remote stream was removed
 PASS event.stream.getVideoTracks().length is 0
 PASS event.stream.getAudioTracks().length is 0
+PASS event.stream.active is false
 PASS requestSucceeded was called.
 PASS pc.getRemoteStreams().length is 0
 PASS successfullyParsed is true

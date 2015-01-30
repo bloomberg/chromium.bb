@@ -48,10 +48,16 @@
     // DEPRECATED
     [MeasureAs=MediaStreamEnded] readonly attribute boolean ended;
 
+    readonly attribute boolean active;
+
     // DEPRECATED
     [MeasureAs=MediaStreamStop] void stop();
 
+    attribute EventHandler onactive;
+    attribute EventHandler oninactive;
+    //  DEPRECATED
     attribute EventHandler onended;
+
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;
 };

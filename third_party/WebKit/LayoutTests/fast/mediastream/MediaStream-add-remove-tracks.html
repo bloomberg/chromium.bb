@@ -9,6 +9,7 @@ description("Test adding and removing tracks.");
 
 var stream1;
 var stream2;
+var stream3;
 var audioTrack;
 var videoTrack;
 
@@ -46,6 +47,25 @@ function tryRemoveTrack(stream, track) {
 
 function shouldNotFire() {
     testFailed("\"addtrack\" or \"removetrack\" events should not fire as a result of local addTrack() or removeTrack() operations.");
+}
+
+function onStreamInactive() {
+    testPassed('Stream1 inactive.');
+    shouldBeFalse('stream1.active');
+    setTimeout(finishJSTest, 0);
+}
+
+function onStreamActive() {
+    testPassed('Stream1 active.');
+    shouldBeTrue('stream1.active');
+    stream1.oninactive = onStreamInactive;
+    tryRemoveTrack(stream1, stream3.getAudioTracks()[0]);
+}
+
+function gotStream3(s) {
+    stream3 = s;
+    stream1.onactive = onStreamActive;
+    tryAddTrack(stream1, stream3.getAudioTracks()[0]);
 }
 
 function gotStream2(s) {
@@ -116,17 +136,18 @@ function gotStream2(s) {
     shouldBe('stream1.getVideoTracks().length', '2');
     shouldBe('stream1.getTracks().length', '4');
 
-    // when all tracks have been removed, stream.ended should return true.
+    // when all tracks have been removed, stream.active should return false.
     tryRemoveTrack(stream2, stream2.getAudioTracks()[0]);
     tryRemoveTrack(stream2, stream2.getVideoTracks()[0]);
-    shouldBeTrue('stream2.ended');
+    shouldBeFalse('stream2.active');
 
-    stream1.stop();
-
-    shouldThrow('stream1.addTrack(audioTrack)');
-    shouldThrow('stream1.removeTrack(audioTrack)');
-
-    setTimeout(finishJSTest, 0);
+    // when all tracks have been stopped, stream.active should return false.
+    for (var i = 0; i < stream1.getAudioTracks().length; i++)
+        stream1.getAudioTracks()[i].stop();
+    for (var i = 0; i < stream1.getVideoTracks().length; i++)
+        stream1.getVideoTracks()[i].stop();
+    shouldBeFalse('stream1.active');
+    getUserMedia({audio:true, video:true}, gotStream3);
 }
 
 function gotStream1(s) {

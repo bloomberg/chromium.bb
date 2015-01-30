@@ -102,6 +102,7 @@ void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
     : m_client(0)
     , m_id(id)
+    , m_active(true)
     , m_ended(false)
 {
     ASSERT(m_id.length());
@@ -115,6 +116,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
     : m_client(0)
     , m_id(id)
+    , m_active(true)
     , m_ended(false)
 {
     ASSERT(m_id.length());
