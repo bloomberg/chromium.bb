@@ -6444,17 +6444,15 @@ TEST(HttpCache, WriteMetadata_OK) {
 
   // Trivial call.
   cache.http_cache()->WriteMetadata(GURL("foo"), net::DEFAULT_PRIORITY,
-                                    Time::Now(), NULL, 0);
+                                    Time::Now().ToDoubleT(), NULL, 0);
 
   // Write meta data to the same entry.
   scoped_refptr<net::IOBufferWithSize> buf(new net::IOBufferWithSize(50));
   memset(buf->data(), 0, buf->size());
   base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
-                                    net::DEFAULT_PRIORITY,
-                                    response.response_time,
-                                    buf.get(),
-                                    buf->size());
+  cache.http_cache()->WriteMetadata(
+      GURL(kSimpleGET_Transaction.url), net::DEFAULT_PRIORITY,
+      response.response_time.ToDoubleT(), buf.get(), buf->size());
 
   // Release the buffer before the operation takes place.
   buf = NULL;
@@ -6489,11 +6487,9 @@ TEST(HttpCache, WriteMetadata_Fail) {
   base::strlcpy(buf->data(), "Hi there", buf->size());
   base::Time expected_time = response.response_time -
                              base::TimeDelta::FromMilliseconds(20);
-  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
-                                    net::DEFAULT_PRIORITY,
-                                    expected_time,
-                                    buf.get(),
-                                    buf->size());
+  cache.http_cache()->WriteMetadata(
+      GURL(kSimpleGET_Transaction.url), net::DEFAULT_PRIORITY,
+      expected_time.ToDoubleT(), buf.get(), buf->size());
 
   // Makes sure we finish pending operations.
   base::MessageLoop::current()->RunUntilIdle();
@@ -6522,11 +6518,9 @@ TEST(HttpCache, ReadMetadata) {
   scoped_refptr<net::IOBufferWithSize> buf(new net::IOBufferWithSize(50));
   memset(buf->data(), 0, buf->size());
   base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(kTypicalGET_Transaction.url),
-                                    net::DEFAULT_PRIORITY,
-                                    response.response_time,
-                                    buf.get(),
-                                    buf->size());
+  cache.http_cache()->WriteMetadata(
+      GURL(kTypicalGET_Transaction.url), net::DEFAULT_PRIORITY,
+      response.response_time.ToDoubleT(), buf.get(), buf->size());
 
   // Makes sure we finish pending operations.
   base::MessageLoop::current()->RunUntilIdle();
