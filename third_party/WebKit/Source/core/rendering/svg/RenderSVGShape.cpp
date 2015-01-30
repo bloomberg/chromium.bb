@@ -54,7 +54,7 @@ RenderSVGShape::~RenderSVGShape()
 {
 }
 
-void RenderSVGShape::updateShapeFromElement()
+void RenderSVGShape::createPath()
 {
     clearPath();
     m_path = adoptPtr(new Path);
@@ -62,6 +62,11 @@ void RenderSVGShape::updateShapeFromElement()
 
     updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
     processMarkerPositions();
+}
+
+void RenderSVGShape::updateShapeFromElement()
+{
+    createPath();
 
     m_fillBoundingBox = calculateObjectBoundingBox();
     m_strokeBoundingBox = calculateStrokeBoundingBox();

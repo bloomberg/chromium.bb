@@ -107,7 +107,7 @@ bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
         || !hasContinuousStroke()
         || m_radii.width() != m_radii.height()) {
         if (!hasPath())
-            RenderSVGShape::updateShapeFromElement();
+            createPath();
         return RenderSVGShape::shapeDependentStrokeContains(point);
     }
 

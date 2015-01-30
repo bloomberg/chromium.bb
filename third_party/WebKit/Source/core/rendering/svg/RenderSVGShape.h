@@ -81,6 +81,7 @@ public:
 
 protected:
     void clearPath() { m_path.clear(); }
+    void createPath();
 
     virtual void updateShapeFromElement();
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
