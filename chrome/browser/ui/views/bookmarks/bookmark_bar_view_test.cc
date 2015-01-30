@@ -1673,7 +1673,14 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
+#if defined(OS_WIN)
+// Flaky on Win7. crbug/453796
+#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
+#else
+#define MAYBE_ContextMenus3 ContextMenus3
+#endif
+
+VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
