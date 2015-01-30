@@ -2076,7 +2076,10 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_send_begin_main_frame_;
 };
 
+#if !defined(OS_WIN)
+// Flaky on Win: crbug/453787.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+#endif
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
