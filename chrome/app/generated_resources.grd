@@ -12240,7 +12240,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         This site is attempting to download multiple files. Do you want to allow this?
       </message>
       <message name="IDS_MULTI_DOWNLOAD_PERMISSION_FRAGMENT" desc="Permission request shown if multiple downloads are attempted without user interaction and there are multiple permissions requested. Follows a prompt: 'This site would like to:'">
-        download multiple files.
+        Download multiple files
       </message>
       <message name="IDS_MULTI_DOWNLOAD_WARNING_ALLOW" desc="Text on the allow button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
         Allow
@@ -12786,7 +12786,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Allow <ph name="site">$1<ex>mail.google.com</ex></ph> to show desktop notifications?
         </message>
         <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site would like to:' in a permissions request">
-          Desktop notifications
+          Notifications
         </message>
         <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
           Allow
@@ -13704,7 +13704,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
       </message>
       <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone and camera.">
-        Camera and Microphone
+        Camera and microphone
       </message>
       <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone.">
         Microphone
@@ -15059,7 +15059,7 @@ Do you accept?
         Do not allow any sites to send push messages
       </message>
       <message name="IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT" desc="Question asked on the info bar whenever a domain wants to send push messages">
-          push notifications
+          Push notifications
       </message>
       <if expr="enable_notifications">
         <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_TITLE" desc="Title of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
