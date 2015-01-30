@@ -1643,12 +1643,11 @@ void Node::showNodePathForThis() const
 static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
 {
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(*rootNode)) {
-        if (node == markedNode1)
-            WTFLogAlways("%s", markedLabel1);
-        if (node == markedNode2)
-            WTFLogAlways("%s", markedLabel2);
-
         StringBuilder indent;
+        if (node == markedNode1)
+            indent.append(markedLabel1);
+        if (node == markedNode2)
+            indent.append(markedLabel2);
         indent.append(baseIndent);
         for (const Node* tmpNode = &node; tmpNode && tmpNode != rootNode; tmpNode = tmpNode->parentOrShadowHostNode())
             indent.append('\t');
