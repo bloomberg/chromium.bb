@@ -26,14 +26,21 @@ LDLIBS += $(PC_LIBS)
 
 LIBDIR ?= /usr/lib/
 
-CC_LIBRARY(libgbm.so): $(C_OBJECTS)
+GBM_VERSION_MAJOR := 1
+MINIGBM_VERSION := $(GBM_VERSION_MAJOR).0.0
+MINIGBM_FILENAME := libminigbm.so.$(MINIGBM_VERSION)
 
-all: CC_LIBRARY(libgbm.so)
+CC_LIBRARY($(MINIGBM_FILENAME)): LDFLAGS += -Wl,-soname,libgbm.so.$(GBM_VERSION_MAJOR)
+CC_LIBRARY($(MINIGBM_FILENAME)): $(C_OBJECTS)
 
-clean: CLEAN(libgbm.so)
+all: CC_LIBRARY($(MINIGBM_FILENAME))
+
+clean: CLEAN($(MINIGBM_FILENAME))
 
 install: all
 	mkdir -p $(DESTDIR)/$(LIBDIR)
-	install -D -m 755 $(OUT)/libgbm.so $(DESTDIR)/$(LIBDIR)
+	install -D -m 755 $(OUT)/$(MINIGBM_FILENAME) $(DESTDIR)/$(LIBDIR)
+	ln -sf $(MINIGBM_FILENAME) $(DESTDIR)/$(LIBDIR)/libgbm.so
+	ln -sf $(MINIGBM_FILENAME) $(DESTDIR)/$(LIBDIR)/libgbm.so.$(GBM_VERSION_MAJOR)
 	install -D -m 0644 $(SRC)/gbm.pc $(DESTDIR)$(LIBDIR)/pkgconfig/gbm.pc
 	install -D -m 0644 $(SRC)/gbm.h $(DESTDIR)/usr/include/gbm.h
