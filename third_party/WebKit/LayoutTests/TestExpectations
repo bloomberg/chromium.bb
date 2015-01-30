@@ -1700,6 +1700,8 @@ crbug.com/446420 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-transform-multiply
 
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 
+crbug.com/453904 virtual/slimmingpaint/fast/events/selectstart-prevent-selectall.html [ Pass Failure ]
+
 crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
