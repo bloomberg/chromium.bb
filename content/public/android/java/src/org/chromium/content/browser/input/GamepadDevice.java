@@ -10,6 +10,8 @@ import android.view.InputDevice.MotionRange;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import org.chromium.base.VisibleForTesting;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +19,16 @@ import java.util.List;
  * Manages information related to each connected gamepad device.
  */
 class GamepadDevice {
+    // Axis ids are used as indices which are empirically always smaller than 256 so this allows
+    // us to create cheap associative arrays.
+    @VisibleForTesting
+    static final int MAX_RAW_AXIS_VALUES = 256;
+
+    // Keycodes are used as indices which are empirically always smaller than 256 so this allows
+    // us to create cheap associative arrays.
+    @VisibleForTesting
+    static final int MAX_RAW_BUTTON_VALUES = 256;
+
     // An id for the gamepad.
     private int mDeviceId;
     // The index of the gamepad in the Navigator.
@@ -38,8 +50,8 @@ class GamepadDevice {
     // that it be remapped to a canonical ordering when possible. Devices that are
     // not recognized should still be exposed in their raw form. Therefore we must
     // pass the raw Button and raw Axis values.
-    private final float[] mRawButtons = new float[256];
-    private final float[] mRawAxes = new float[256];
+    private final float[] mRawButtons = new float[MAX_RAW_BUTTON_VALUES];
+    private final float[] mRawAxes = new float[MAX_RAW_AXIS_VALUES];
 
     // An identification string for the gamepad.
     private String mDeviceName;
@@ -59,7 +71,7 @@ class GamepadDevice {
         for (MotionRange range : ranges) {
             if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
                 int axis = range.getAxis();
-                assert axis < 256;
+                assert axis < MAX_RAW_AXIS_VALUES;
                 mAxes[i++] = axis;
             }
         }
@@ -141,7 +153,7 @@ class GamepadDevice {
         // Ignore event if it is not for standard gamepad key.
         if (!GamepadList.isGamepadEvent(event)) return false;
         int keyCode = event.getKeyCode();
-        assert keyCode < 256;
+        assert keyCode < MAX_RAW_BUTTON_VALUES;
         // Button value 0.0 must mean fully unpressed, and 1.0 must mean fully pressed.
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             mRawButtons[keyCode] = 1.0f;
