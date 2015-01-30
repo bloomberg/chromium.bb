@@ -23,7 +23,8 @@ namespace {
 
 static int kMaxRecordFrameCount = 180;
 
-std::string EncodeFrame(const SkBitmap& bitmap) {
+scoped_ptr<EncodedFrame> EncodeFrame(
+    const SkBitmap& bitmap, double timestamp) {
   std::vector<unsigned char> data;
   SkAutoLockPixels lock_image(bitmap);
   bool encoded = gfx::PNGCodec::Encode(
@@ -33,15 +34,17 @@ std::string EncodeFrame(const SkBitmap& bitmap) {
       bitmap.width() * bitmap.bytesPerPixel(),
       false, std::vector<gfx::PNGCodec::Comment>(), &data);
 
+  scoped_ptr<EncodedFrame> result(new EncodedFrame(std::string(), timestamp));
+
   if (!encoded)
-    return std::string();
+    return result.Pass();
 
   std::string base_64_data;
   base::Base64Encode(
       base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
-      &base_64_data);
+      &result->first);
 
-  return base_64_data;
+  return result.Pass();
 }
 } // namespace
 
@@ -72,6 +75,8 @@ Response FrameRecorder::StartRecordingFrames(int max_frame_count) {
   state_ = Recording;
   max_frame_count_ = max_frame_count;
   captured_frames_count_ = 0;
+  frame_encoded_callback_.Reset(base::Bind(
+      &FrameRecorder::FrameEncoded, weak_factory_.GetWeakPtr()));
   last_captured_frame_timestamp_ = base::Time();
   std::vector<scoped_refptr<devtools::page::RecordedFrame>> frames;
   frames.reserve(max_frame_count);
@@ -87,6 +92,16 @@ Response FrameRecorder::StopRecordingFrames(
   state_ = Encoding;
   callback_ = callback;
   MaybeSendResponse();
+  return Response::OK();
+}
+
+Response FrameRecorder::CancelRecordingFrames() {
+  frame_encoded_callback_.Cancel();
+  std::vector<scoped_refptr<devtools::page::RecordedFrame>> no_frames;
+  frames_.swap(no_frames);
+  if (state_ == Encoding)
+    callback_.Run(StopRecordingFramesResponse::Create()->set_frames(frames_));
+  state_ = Ready;
   return Response::OK();
 }
 
@@ -113,23 +128,24 @@ void FrameRecorder::FrameCaptured(
   inflight_requests_count_--;
   base::Time timestamp = last_captured_frame_timestamp_;
   last_captured_frame_timestamp_ = base::Time::Now();
-  if (timestamp.is_null() || response != READBACK_SUCCESS)
+  if (timestamp.is_null() || response != READBACK_SUCCESS) {
+    MaybeSendResponse();
     return;
+  }
 
   captured_frames_count_++;
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(),
       FROM_HERE,
-      base::Bind(&EncodeFrame, bitmap),
-      base::Bind(&FrameRecorder::FrameEncoded, weak_factory_.GetWeakPtr(),
-                 timestamp.ToDoubleT()));
+      base::Bind(&EncodeFrame, bitmap, timestamp.ToDoubleT()),
+      frame_encoded_callback_.callback());
 }
 
 void FrameRecorder::FrameEncoded(
-    double timestamp, const std::string& encoded_frame) {
+    const scoped_ptr<EncodedFrame>& encoded_frame) {
   frames_.push_back(RecordedFrame::Create()
-      ->set_data(encoded_frame)
-      ->set_timestamp(timestamp));
+      ->set_data(encoded_frame->first)
+      ->set_timestamp(encoded_frame->second));
   MaybeSendResponse();
 }
 

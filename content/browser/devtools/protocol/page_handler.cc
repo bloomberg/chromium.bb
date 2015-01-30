@@ -415,6 +415,10 @@ Response PageHandler::StopRecordingFrames(DevToolsCommandId command_id) {
       &PageHandler::OnFramesRecorded, base::Unretained(this), command_id));
 }
 
+Response PageHandler::CancelRecordingFrames() {
+  return frame_recorder_->CancelRecordingFrames();
+}
+
 Response PageHandler::ScreencastFrameAck(int frame_number) {
   screencast_frame_acked_ = frame_number;
   return Response::OK();

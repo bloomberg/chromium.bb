@@ -6,9 +6,11 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_FRAME_RECORDER_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -24,6 +26,8 @@ class RenderViewHostImpl;
 namespace devtools {
 namespace page {
 
+using EncodedFrame = std::pair<std::string, double>;
+
 class FrameRecorder {
  public:
   using Response = DevToolsProtocolClient::Response;
@@ -35,6 +39,7 @@ class FrameRecorder {
 
   Response StartRecordingFrames(int max_frame_count);
   Response StopRecordingFrames(StopRecordingFramesCallback callback);
+  Response CancelRecordingFrames();
 
   void SetRenderViewHost(RenderViewHostImpl* host);
   void OnSwapCompositorFrame();
@@ -47,7 +52,7 @@ class FrameRecorder {
   };
 
   void FrameCaptured(const SkBitmap& bitmap, ReadbackResponse response);
-  void FrameEncoded(double timestamp, const std::string& encoded_frame);
+  void FrameEncoded(const scoped_ptr<EncodedFrame>& encoded_frame);
   void MaybeSendResponse();
 
   RenderViewHostImpl* host_;
@@ -59,6 +64,8 @@ class FrameRecorder {
   base::Time last_captured_frame_timestamp_;
   std::vector<scoped_refptr<devtools::page::RecordedFrame>> frames_;
 
+  base::CancelableCallback<void(const scoped_ptr<EncodedFrame>&)>
+      frame_encoded_callback_;
   base::WeakPtrFactory<FrameRecorder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameRecorder);

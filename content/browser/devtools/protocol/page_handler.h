@@ -78,6 +78,7 @@ class PageHandler {
 
   Response StartRecordingFrames(int max_frame_count);
   Response StopRecordingFrames(DevToolsCommandId command_id);
+  Response CancelRecordingFrames();
 
   Response HandleJavaScriptDialog(bool accept, const std::string* prompt_text);
 
