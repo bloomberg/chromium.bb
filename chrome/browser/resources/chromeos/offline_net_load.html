@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;.style.fontSize:fontsize;lang:language">
+<html i18n-values="dir:textdirection;lang:language">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
@@ -31,20 +31,17 @@
             jsdisplay="details"></button>
       </div>
     </div>
-    <!-- Outer and inner divs are needed both for margins and sizing. -->
-    <div id="help-box-outer" class="hidden">
-      <div id="details">
-        <div jsselect="summary">
-          <span jsvalues=".innerHTML:msg"></span>
-        </div>
-        <div class="suggestions" jsselect="suggestions">
-          <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
-          <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
-        </div>
-        <button id="diagnose-button" onclick="diagnoseErrors()"
-          jscontent="diagnose" jsdisplay="diagnose"></button>
-        <div class="error-code" jscontent="errorCode"></div>
+    <div id="details" class="hidden">
+      <div jsselect="summary">
+        <span jsvalues=".innerHTML:msg"></span>
       </div>
+      <div class="suggestions" jsselect="suggestions">
+        <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
+        <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
+      </div>
+      <button id="diagnose-button" onclick="diagnoseErrors()"
+        jscontent="diagnose" jsdisplay="diagnose"></button>
+      <div class="error-code" jscontent="errorCode"></div>
     </div>
   </div>
   <div id="sub-frame-error">
