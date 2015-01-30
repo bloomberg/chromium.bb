@@ -217,8 +217,15 @@ inline float Font::tabWidth(const SimpleFontData& fontData, unsigned tabSize, fl
 {
     if (!tabSize)
         return fontDescription().letterSpacing();
-    float tabWidth = tabSize * fontData.spaceWidth() + fontDescription().letterSpacing();
-    return tabWidth - fmodf(position, tabWidth);
+    float tabWidth = tabSize * fontData.spaceWidth();
+    float distanceToTabStop = tabWidth - fmodf(position, tabWidth);
+
+    // The smallest allowable tab space is letterSpacing(); if the distance
+    // to the next tab stop is less than that, advance an additional tab stop.
+    if (distanceToTabStop < fontDescription().letterSpacing())
+        distanceToTabStop += tabWidth;
+
+    return distanceToTabStop;
 }
 
 } // namespace blink
