@@ -14,12 +14,11 @@ namespace mojo {
 OutputSurfaceMojo::OutputSurfaceMojo(
     OutputSurfaceMojoClient* client,
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    SurfacePtr surface,
-    uint32_t id_namespace)
+    SurfacePtr surface)
     : cc::OutputSurface(context_provider),
       output_surface_mojo_client_(client),
       surface_(surface.Pass()),
-      id_namespace_(id_namespace),
+      id_namespace_(0u),
       local_id_(0u) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
@@ -30,6 +29,11 @@ OutputSurfaceMojo::~OutputSurfaceMojo() {
 
 void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
   id_namespace_ = id_namespace;
+  if (local_id_) {
+    cc::SurfaceId qualified_id(static_cast<uint64_t>(id_namespace_) << 32 |
+                               local_id_);
+    output_surface_mojo_client_->DidCreateSurface(qualified_id);
+  }
 }
 
 void OutputSurfaceMojo::ReturnResources(Array<ReturnedResourcePtr> resources) {
@@ -49,9 +53,11 @@ void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
     }
     local_id_++;
     surface_->CreateSurface(local_id_);
-    cc::SurfaceId qualified_id(static_cast<uint64_t>(id_namespace_) << 32 |
-                               local_id_);
-    output_surface_mojo_client_->DidCreateSurface(qualified_id);
+    if (id_namespace_) {
+      cc::SurfaceId qualified_id(static_cast<uint64_t>(id_namespace_) << 32 |
+                                 local_id_);
+      output_surface_mojo_client_->DidCreateSurface(qualified_id);
+    }
     surface_size_ = frame_size;
   }
 

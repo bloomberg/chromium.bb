@@ -40,7 +40,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
  public:
   WebLayerTreeViewImpl(
       scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
-      mojo::SurfacesServicePtr surfaces_service,
+      mojo::SurfacePtr surface,
       mojo::GpuPtr gpu_service);
   virtual ~WebLayerTreeViewImpl();
 
@@ -116,17 +116,13 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void DidCreateSurface(cc::SurfaceId id) override;
 
  private:
-  void OnSurfaceConnectionCreated(mojo::SurfacePtr surface,
-                                  uint32_t id_namespace);
   void DidCreateSurfaceOnMainThread(cc::SurfaceId id);
 
   // widget_ and view_ will outlive us.
   blink::WebWidget* widget_;
   mojo::View* view_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
-  mojo::SurfacesServicePtr surfaces_service_;
   scoped_ptr<cc::OutputSurface> output_surface_;
-  mojo::GpuPtr gpu_service_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
   base::WeakPtr<WebLayerTreeViewImpl> main_thread_bound_weak_ptr_;

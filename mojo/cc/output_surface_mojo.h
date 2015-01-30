@@ -23,8 +23,7 @@ class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
  public:
   OutputSurfaceMojo(OutputSurfaceMojoClient* client,
                     const scoped_refptr<cc::ContextProvider>& context_provider,
-                    SurfacePtr surface,
-                    uint32_t id_namespace);
+                    SurfacePtr surface);
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;

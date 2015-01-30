@@ -178,8 +178,8 @@ void HTMLDocument::initializeLayerTreeView() {
   ServiceProviderPtr surfaces_service_provider;
   shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider), nullptr);
-  mojo::SurfacesServicePtr surfaces_service;
-  ConnectToService(surfaces_service_provider.get(), &surfaces_service);
+  mojo::SurfacePtr surface;
+  ConnectToService(surfaces_service_provider.get(), &surface);
 
   ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
@@ -188,7 +188,7 @@ void HTMLDocument::initializeLayerTreeView() {
   mojo::GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      compositor_thread_, surfaces_service.Pass(), gpu_service.Pass()));
+      compositor_thread_, surface.Pass(), gpu_service.Pass()));
 }
 
 blink::WebLayerTreeView* HTMLDocument::layerTreeView() {

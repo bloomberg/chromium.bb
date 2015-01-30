@@ -20,18 +20,13 @@ namespace html_viewer {
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
-    mojo::SurfacesServicePtr surfaces_service,
+    mojo::SurfacePtr surface,
     mojo::GpuPtr gpu_service)
     : widget_(NULL),
       view_(NULL),
-      surfaces_service_(surfaces_service.Pass()),
-      gpu_service_(gpu_service.Pass()),
       main_thread_compositor_task_runner_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
   main_thread_bound_weak_ptr_ = weak_factory_.GetWeakPtr();
-  surfaces_service_->CreateSurfaceConnection(
-      base::Bind(&WebLayerTreeViewImpl::OnSurfaceConnectionCreated,
-                 main_thread_bound_weak_ptr_));
 
   cc::LayerTreeSettings settings;
 
@@ -51,6 +46,14 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
                                         compositor_message_loop_proxy,
                                         nullptr);
   DCHECK(layer_tree_host_);
+
+  mojo::CommandBufferPtr cb;
+  gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
+  scoped_refptr<cc::ContextProvider> context_provider(
+      new mojo::ContextProviderMojo(cb.PassMessagePipe()));
+  output_surface_.reset(
+      new mojo::OutputSurfaceMojo(this, context_provider, surface.Pass()));
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {
@@ -226,17 +229,6 @@ bool WebLayerTreeViewImpl::commitRequested() const {
 
 void WebLayerTreeViewImpl::finishAllRendering() {
   layer_tree_host_->FinishAllRendering();
-}
-
-void WebLayerTreeViewImpl::OnSurfaceConnectionCreated(mojo::SurfacePtr surface,
-                                                      uint32_t id_namespace) {
-  mojo::CommandBufferPtr cb;
-  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&cb));
-  scoped_refptr<cc::ContextProvider> context_provider(
-      new mojo::ContextProviderMojo(cb.PassMessagePipe()));
-  output_surface_.reset(new mojo::OutputSurfaceMojo(
-      this, context_provider, surface.Pass(), id_namespace));
-  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void WebLayerTreeViewImpl::DidCreateSurface(cc::SurfaceId id) {
