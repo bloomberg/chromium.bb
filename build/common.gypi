@@ -5597,6 +5597,7 @@
                   'VCCLCompilerTool': {
                     'AdditionalOptions': [
                       '-fsanitize=address',
+                      '-fsanitize-blacklist=<(PRODUCT_DIR)/../../tools/memory/asan/blacklist_win.txt',
                     ],
                     'AdditionalIncludeDirectories': [
                       # MSVC needs to be able to find the sanitizer headers when

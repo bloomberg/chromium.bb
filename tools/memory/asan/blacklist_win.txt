@@ -1,0 +1,26 @@
+# The rules in this file are only applied at compile time on Windows.
+# Because the Chrome buildsystem does not automatically touch the files
+# mentioned here, changing this file requires clobbering all ASan bots.
+#
+# Please think twice before you add or remove these rules.
+
+################################################################################
+# Sandbox executes some of its code before the ASan RTL gets initialized and
+# maps shadow memory.  As a result, instrmented code tries to access unavailable
+# shadow memory and faults.
+# Temporarily disable instrumentation of that code until we come up with
+# a better long-term solution.  See http://crbug.com/382867 for details.
+fun:*TargetNtSetInformationThread@20
+fun:*TargetNtOpenThreadToken@20
+fun:*TargetNtOpenThreadTokenEx@24
+fun:*TargetNtMapViewOfSection@44
+fun:*AutoProtectMemory*sandbox*
+fun:*EatResolverThunk*sandbox*
+fun:*InterceptionAgent*sandbox*
+fun:*PolicyBase*sandbox*
+fun:*ResolverThunk*sandbox*
+fun:*Target*SandboxFactory*sandbox*
+src:*pe_image.h
+src:*pe_image.cc
+src:*resolver_32.cc
+################################################################################
