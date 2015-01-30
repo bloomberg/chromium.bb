@@ -137,8 +137,11 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
     return result;
   }
 
-  if (response.client_auth_certificate().find(reinterpret_cast<const char*>(
-          kAudioOnlyPolicy)) != std::string::npos) {
+  const std::string& audio_policy =
+      std::string(reinterpret_cast<const char*>(kAudioOnlyPolicy),
+                  (arraysize(kAudioOnlyPolicy) / sizeof(unsigned char)));
+  if (response.client_auth_certificate().find(audio_policy) !=
+      std::string::npos) {
     result.channel_policies |= AuthResult::POLICY_AUDIO_ONLY;
   }
 
