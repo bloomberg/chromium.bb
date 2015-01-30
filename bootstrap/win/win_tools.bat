@@ -58,7 +58,7 @@ goto :END
 
 :GIT_CHECK
 if "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" (
-  set GIT_VERSION=1.9.5.chromium.5
+  set GIT_VERSION=1.9.5.chromium.6
 ) else (
   set GIT_VERSION=1.9.5.chromium.5
 )
