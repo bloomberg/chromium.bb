@@ -49,8 +49,8 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   void GetResponseInfo(HttpResponseInfo* info) override;
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
 
-  // Adds the testing URLs to the URLRequestFilter.
-  static void AddUrlHandler(
+  // Adds the testing URLs to the URLRequestFilter, both under HTTP and HTTPS.
+  static void AddUrlHandlers(
       const base::FilePath& base_path,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
@@ -64,6 +64,7 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL.
   static GURL GetMockUrl(const base::FilePath& path);
+  static GURL GetMockHttpsUrl(const base::FilePath& path);
 
   // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL that reports |net_error| at given |phase| of the

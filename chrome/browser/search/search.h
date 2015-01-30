@@ -30,6 +30,13 @@ class PrefRegistrySyncable;
 
 namespace chrome {
 
+// For reporting Cacheable NTP navigations.
+enum CacheableNTPLoad {
+  CACHEABLE_NTP_LOAD_FAILED = 0,
+  CACHEABLE_NTP_LOAD_SUCCEEDED = 1,
+  CACHEABLE_NTP_LOAD_MAX = 2
+};
+
 enum OptInState {
   // The user has not manually opted in/out of InstantExtended.
   INSTANT_EXTENDED_NOT_SET,

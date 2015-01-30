@@ -42,11 +42,9 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &net::URLRequestMockHTTPJob::AddUrlHandler,
-            path,
+            &net::URLRequestMockHTTPJob::AddUrlHandlers, path,
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

@@ -28,6 +28,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeHttpUserAgentSettings;
@@ -315,6 +316,10 @@ class ProfileIOData {
     // ownership of the object by calling release() on this pointer.
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor;
+
+    // Holds the URLRequestInterceptor pointer that is created on the UI thread
+    // and then passed to the list of request_interceptors on the IO thread.
+    scoped_ptr<net::URLRequestInterceptor> new_tab_page_interceptor;
 
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,

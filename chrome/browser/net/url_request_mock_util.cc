@@ -37,8 +37,8 @@ void SetUrlRequestMocksEnabled(bool enabled) {
 
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-    net::URLRequestMockHTTPJob::AddUrlHandler(root_http,
-                                              BrowserThread::GetBlockingPool());
+    net::URLRequestMockHTTPJob::AddUrlHandlers(
+        root_http, BrowserThread::GetBlockingPool());
   } else {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();

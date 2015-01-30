@@ -156,10 +156,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void NavigationEntryCommitted(
@@ -206,10 +202,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   SearchIPCRouter& ipc_router() { return ipc_router_; }
 
   Profile* profile() const;
-
-  // Helper function to navigate the given contents to the local fallback
-  // Instant URL and trim the history correctly.
-  void RedirectToLocalNTP();
 
   // Returns whether input is in progress, i.e. if the omnibox has focus and the
   // active tab is in mode SEARCH_SUGGESTIONS.

@@ -29,8 +29,8 @@ using content::BrowserThread;
 
 namespace {
 void SetUrlRequestMock(const base::FilePath& path) {
-  net::URLRequestMockHTTPJob::AddUrlHandler(path,
-                                            BrowserThread::GetBlockingPool());
+  net::URLRequestMockHTTPJob::AddUrlHandlers(path,
+                                             BrowserThread::GetBlockingPool());
 }
 }
 

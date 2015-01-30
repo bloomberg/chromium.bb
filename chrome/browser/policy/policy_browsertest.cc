@@ -634,10 +634,8 @@ class PolicyTest : public InProcessBrowserTest {
     base::FilePath root_http;
     PathService::Get(content::DIR_TEST_DATA, &root_http);
     BrowserThread::PostTaskAndReply(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(URLRequestMockHTTPJob::AddUrlHandler,
-                   root_http,
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(URLRequestMockHTTPJob::AddUrlHandlers, root_http,
                    make_scoped_refptr(BrowserThread::GetBlockingPool())),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     content::RunMessageLoop();

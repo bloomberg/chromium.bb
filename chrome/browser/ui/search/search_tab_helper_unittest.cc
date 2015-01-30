@@ -397,68 +397,6 @@ class SearchTabHelperWindowTest : public BrowserWithTestWindowTest {
   }
 };
 
-TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailRedirectNTPToLocal) {
-  AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-  content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-  content::NavigationController* controller = &contents->GetController();
-
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(contents);
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  // A failed provisional load of a cacheable NTP should be redirected to local
-  // NTP.
-  const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
-  search_tab_helper->DidFailProvisionalLoad(
-      contents->GetMainFrame(), cacheableNTPURL, 1, base::string16());
-  CommitPendingLoad(controller);
-  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-                 controller->GetLastCommittedEntry()->GetURL());
-}
-
-TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectIfAborted) {
-  AddTab(browser(), GURL("chrome://blank"));
-  content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-  content::NavigationController* controller = &contents->GetController();
-
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(contents);
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  // A failed provisional load of a cacheable NTP should be redirected to local
-  // NTP.
-  const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
-  search_tab_helper->DidFailProvisionalLoad(contents->GetMainFrame(),
-                                            cacheableNTPURL,
-                                            net::ERR_ABORTED,
-                                            base::string16());
-  CommitPendingLoad(controller);
-  EXPECT_EQ(GURL("chrome://blank"),
-                 controller->GetLastCommittedEntry()->GetURL());
-}
-
-TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectNonNTP) {
-  AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-  content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-  content::NavigationController* controller = &contents->GetController();
-
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(contents);
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  // Any other web page shouldn't be redirected when provisional load fails.
-  search_tab_helper->DidFailProvisionalLoad(contents->GetMainFrame(),
-                                            GURL("http://www.example.com"),
-                                            1,
-                                            base::string16());
-  CommitPendingLoad(controller);
-  EXPECT_NE(GURL(chrome::kChromeSearchLocalNtpUrl),
-                 controller->GetLastCommittedEntry()->GetURL());
-}
-
 class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
  public:
   ~SearchTabHelperPrerenderTest() override {}

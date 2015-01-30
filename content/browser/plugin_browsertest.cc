@@ -39,7 +39,7 @@ namespace content {
 namespace {
 
 void SetUrlRequestMock(const base::FilePath& path) {
-  net::URLRequestMockHTTPJob::AddUrlHandler(
+  net::URLRequestMockHTTPJob::AddUrlHandlers(
       path, content::BrowserThread::GetBlockingPool());
 }
 

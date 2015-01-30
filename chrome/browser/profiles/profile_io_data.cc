@@ -48,6 +48,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
+#include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
+#include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -397,6 +399,13 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // later delivery to the job factory in Init().
   params->protocol_handler_interceptor =
       protocol_handler_registry->CreateJobInterceptorFactory();
+
+  NewTabPageInterceptorService* new_tab_interceptor_service =
+      NewTabPageInterceptorServiceFactory::GetForProfile(profile);
+  if (new_tab_interceptor_service) {
+    params->new_tab_page_interceptor =
+        new_tab_interceptor_service->CreateInterceptor();
+  }
 
   params->proxy_config_service
       .reset(ProxyServiceFactory::CreateProxyConfigService(
@@ -1128,6 +1137,12 @@ void ProfileIOData::Init(
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
   tracked_objects::ScopedTracker tracking_profile5(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 ProfileIOData::Init5"));
+
+  // Install the New Tab Page Interceptor.
+  if (profile_params_->new_tab_page_interceptor.get()) {
+    request_interceptors.push_back(
+        profile_params_->new_tab_page_interceptor.release());
+  }
 
   InitializeInternal(
       network_delegate.Pass(), profile_params_.get(),

@@ -585,6 +585,7 @@ void ProfileImplIOData::InitializeInternal(
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
+
   // The data reduction proxy interceptor should be as close to the network
   // as possible.
   request_interceptors.insert(

@@ -19,7 +19,7 @@ namespace cronet {
 void AddUrlInterceptors(JNIEnv* env, jclass jcaller, jstring jtest_files_root) {
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
-  net::URLRequestMockHTTPJob::AddUrlHandler(
+  net::URLRequestMockHTTPJob::AddUrlHandlers(
       test_files_root, new base::SequencedWorkerPool(1, "Worker"));
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
