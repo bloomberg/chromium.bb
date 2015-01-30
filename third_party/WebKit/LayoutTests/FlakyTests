@@ -890,6 +890,7 @@ crbug.com/443566 [ Release Mavericks ] http/tests/misc/image-error.html [ Failur
 crbug.com/443566 [ Release Win7 ] http/tests/misc/image-error.html [ Failure Pass ]
 crbug.com/443566 [ Debug Win7 ] http/tests/misc/image-error.html [ Failure Pass ]
 crbug.com/443566 [ Release XP ] http/tests/misc/image-error.html [ Failure Pass ]
+crbug.com/453820 [ Linux Mac ] virtual/slimmingpaint/fast/images/png-suite/test.html [ Crash Pass ]
 Bug(gardener) [ Release Linux ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Failure Pass ]
 Bug(gardener) [ Debug SnowLeopard ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Failure Pass ]
 Bug(gardener) [ Debug Lion ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Failure Pass ]
