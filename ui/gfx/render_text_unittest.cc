@@ -2423,7 +2423,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     for (int y = 0; y < kCanvasSize.height(); ++y) {
       // Allow one column of anti-aliased pixels past the expected width.
       SkColor color = buffer[width + y * kCanvasSize.width()];
-      EXPECT_LT(230U, color_utils::GetLuminanceForColor(color)) << string;
+      EXPECT_LT(220U, color_utils::GetLuminanceForColor(color)) << string;
       for (int x = 1; x < kTestWidth; ++x) {
         color = buffer[width + x + y * kCanvasSize.width()];
         EXPECT_EQ(SK_ColorWHITE, color) << string;
