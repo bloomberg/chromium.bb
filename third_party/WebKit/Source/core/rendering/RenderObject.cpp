@@ -3088,8 +3088,34 @@ void RenderObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
     }
 
     ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
-    frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
+    frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
     markContainingBlockChainForPaintInvalidation();
+}
+
+void RenderObject::setMayNeedPaintInvalidation()
+{
+    if (mayNeedPaintInvalidation())
+        return;
+    m_bitfields.setMayNeedPaintInvalidation(true);
+    // Make sure our parent is marked as needing invalidation.
+    markContainingBlockChainForPaintInvalidation();
+    frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
+}
+
+void RenderObject::clearMayNeedPaintInvalidation()
+{
+    m_bitfields.setMayNeedPaintInvalidation(false);
+}
+
+void RenderObject::setSelfMayNeedPaintInvalidation()
+{
+    m_bitfields.setMayNeedPaintInvalidation(true);
+}
+
+void RenderObject::markContainingBlockChainForPaintInvalidation()
+{
+    for (RenderObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
+        container->setSelfMayNeedPaintInvalidation();
 }
 
 void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
@@ -3101,7 +3127,7 @@ void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);
     clearLayoutDidGetCalledSinceLastFrame();
-    setMayNeedPaintInvalidation(false);
+    clearMayNeedPaintInvalidation();
     clearShouldInvalidateSelection();
 }
 

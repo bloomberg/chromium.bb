@@ -1018,14 +1018,8 @@ public:
     bool layoutDidGetCalledSinceLastFrame() const { return m_bitfields.layoutDidGetCalledSinceLastFrame(); }
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
-    void setMayNeedPaintInvalidation(bool b)
-    {
-        m_bitfields.setMayNeedPaintInvalidation(b);
-
-        // Make sure our parent is marked as needing invalidation.
-        if (b)
-            markContainingBlockChainForPaintInvalidation();
-    }
+    void setMayNeedPaintInvalidation();
+    void clearMayNeedPaintInvalidation();
 
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
     void setShouldInvalidateSelection()
@@ -1144,6 +1138,8 @@ protected:
     virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
 
 protected:
+    void setSelfMayNeedPaintInvalidation();
+
     void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();
     void postDestroy();
@@ -1221,11 +1217,7 @@ private:
     void checkBlockPositionedObjectsNeedLayout();
 #endif
 
-    void markContainingBlockChainForPaintInvalidation()
-    {
-        for (RenderObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
-            container->setMayNeedPaintInvalidation(true);
-    }
+    void markContainingBlockChainForPaintInvalidation();
 
     static bool isAllowedToModifyRenderTreeStructure(Document&);
 

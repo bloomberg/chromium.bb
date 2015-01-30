@@ -378,7 +378,7 @@ void LayoutTable::layoutCaption(LayoutTableCaption& caption)
     caption.setLogicalLocation(LayoutPoint(caption.marginStart(), captionLogicalTop));
 
     if (!selfNeedsLayout())
-        caption.setMayNeedPaintInvalidation(true);
+        caption.setMayNeedPaintInvalidation();
 
     setLogicalHeight(logicalHeight() + caption.logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
 }
@@ -542,7 +542,7 @@ void LayoutTable::layout()
 
             // As we may skip invalidation on the table, we need to ensure that sections are invalidated when they moved.
             if (sectionMoved && !section->selfNeedsLayout())
-                section->setMayNeedPaintInvalidation(true);
+                section->setMayNeedPaintInvalidation();
 
             setLogicalHeight(logicalHeight() + section->logicalHeight());
 

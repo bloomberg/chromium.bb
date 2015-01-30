@@ -1047,7 +1047,7 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
         RenderBox* child = next;
         next = child->nextSiblingBox();
 
-        child->setMayNeedPaintInvalidation(true);
+        child->setMayNeedPaintInvalidation();
 
         if (childToExclude == child)
             continue; // Skip this child, since it will be positioned by the specialized subclass (fieldsets and ruby runs).
@@ -2447,7 +2447,7 @@ bool RenderBlockFlow::positionNewFloats(LineWidth* width)
         RenderBox* childBox = floatingObject->renderer();
 
         // FIXME Investigate if this can be removed. crbug.com/370006
-        childBox->setMayNeedPaintInvalidation(true);
+        childBox->setMayNeedPaintInvalidation();
 
         LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(*childBox) : marginEndForChild(*childBox);
         if (childBox->style()->clear() & CLEFT)

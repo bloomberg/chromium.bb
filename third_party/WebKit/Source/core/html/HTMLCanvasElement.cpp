@@ -263,7 +263,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     m_imageBufferIsClear = false;
     clearCopiedImage();
     if (renderer())
-        renderer()->setMayNeedPaintInvalidation(true);
+        renderer()->setMayNeedPaintInvalidation();
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw();

@@ -1017,7 +1017,7 @@ void FrameView::layout(bool allowSubtree)
         // for paint invalidation. This simplifies our code as we just always
         // do a full tree walk.
         if (RenderObject* container = rootForThisLayout->container())
-            container->setMayNeedPaintInvalidation(true);
+            container->setMayNeedPaintInvalidation();
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())

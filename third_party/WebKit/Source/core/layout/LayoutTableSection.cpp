@@ -1077,7 +1077,7 @@ void LayoutTableSection::layoutRows()
                 // descendants. An exception is if we need a layout. In this case, we know we're going to
                 // issue paint invalidations ourselves (and the child) anyway.
                 if (!table()->selfNeedsLayout())
-                    cell->setMayNeedPaintInvalidation(true);
+                    cell->setMayNeedPaintInvalidation();
             }
         }
         if (rowHeightIncreaseForPagination) {

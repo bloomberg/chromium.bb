@@ -956,7 +956,7 @@ void RenderDeprecatedFlexibleBox::clearLineClamp()
 void RenderDeprecatedFlexibleBox::placeChild(RenderBox* child, const LayoutPoint& location)
 {
     // FIXME Investigate if this can be removed based on other flags. crbug.com/370010
-    child->setMayNeedPaintInvalidation(true);
+    child->setMayNeedPaintInvalidation();
 
     // Place the child.
     child->setLocation(location);

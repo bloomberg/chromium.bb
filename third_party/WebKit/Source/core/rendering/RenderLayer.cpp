@@ -751,7 +751,7 @@ void RenderLayer::updateDescendantDependentFlags()
             // pretend that invisible RenderObjects have 0x0 rects. Changing
             // visibility therefore changes our rect and we need to visit
             // this RenderObject during the invalidateTreeIfNeeded walk.
-            m_renderer->setMayNeedPaintInvalidation(true);
+            m_renderer->setMayNeedPaintInvalidation();
         }
     }
 }
