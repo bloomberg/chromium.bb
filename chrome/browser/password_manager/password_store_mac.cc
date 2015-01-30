@@ -195,6 +195,46 @@ void AppendSecondToFirst(ScopedVector<autofill::PasswordForm>* first,
   second->weak_clear();
 }
 
+// Returns the best match for |base_form| from |keychain_forms|, or nullptr if
+// there is no suitable match.
+const PasswordForm* BestKeychainFormForForm(
+    const PasswordForm& base_form,
+    const std::vector<PasswordForm*>& keychain_forms) {
+  const PasswordForm* partial_match = nullptr;
+  for (const auto* keychain_form : keychain_forms) {
+    // TODO(stuartmorgan): We should really be scoring path matches and picking
+    // the best, rather than just checking exact-or-not (although in practice
+    // keychain items with paths probably came from us).
+    if (internal_keychain_helpers::FormsMatchForMerge(
+            base_form, *keychain_form,
+            internal_keychain_helpers::FUZZY_FORM_MATCH)) {
+      if (base_form.origin == keychain_form->origin) {
+        return keychain_form;
+      } else if (!partial_match) {
+        partial_match = keychain_form;
+      }
+    }
+  }
+  return partial_match;
+}
+
+// Iterates over all elements in |forms|, passes the pointed to objects to
+// |move_form|, and clears |forms| efficiently. FormMover needs to be a callable
+// entity, accepting scoped_ptr<autofill::PasswordForm> as its sole argument.
+template <typename FormMover>
+inline void MoveAllFormsOut(ScopedVector<autofill::PasswordForm>* forms,
+                            FormMover mover) {
+  for (autofill::PasswordForm* form_ptr : *forms) {
+    mover(scoped_ptr<autofill::PasswordForm>(form_ptr));
+  }
+  // We moved the ownership of every form out of |forms|. For performance
+  // reasons, we can just weak_clear it, instead of nullptr-ing the respective
+  // elements and letting the vector's destructor to go through the list once
+  // more. This was tested on a benchmark, and seemed to make a difference on
+  // Mac.
+  forms->weak_clear();
+}
+
 }  // namespace
 
 #pragma mark -
@@ -402,40 +442,20 @@ bool FormsMatchForMerge(const PasswordForm& form_a,
          form_a.username_value == form_b.username_value;
 }
 
-// Returns an the best match for |base_form| from |keychain_forms|, or NULL if
-// there is no suitable match.
-PasswordForm* BestKeychainFormForForm(
-    const PasswordForm& base_form,
-    const std::vector<PasswordForm*>* keychain_forms) {
-  PasswordForm* partial_match = NULL;
-  for (std::vector<PasswordForm*>::const_iterator i = keychain_forms->begin();
-       i != keychain_forms->end(); ++i) {
-    // TODO(stuartmorgan): We should really be scoring path matches and picking
-    // the best, rather than just checking exact-or-not (although in practice
-    // keychain items with paths probably came from us).
-    if (FormsMatchForMerge(base_form, *(*i), FUZZY_FORM_MATCH)) {
-      if (base_form.origin == (*i)->origin) {
-        return *i;
-      } else if (!partial_match) {
-        partial_match = *i;
-      }
-    }
-  }
-  return partial_match;
-}
-
 // Moves entries from |forms| that are blacklist entries into |blacklist|.
 void ExtractBlacklistForms(ScopedVector<autofill::PasswordForm>* forms,
                            ScopedVector<autofill::PasswordForm>* blacklist) {
   blacklist->reserve(blacklist->size() + forms->size());
   ScopedVector<autofill::PasswordForm> non_blacklist;
-  for (auto& form : *forms) {
+  // Move forms in either |non_blacklist| or |blacklist|, depending on whether
+  // they are blacklisted by the user.
+  MoveAllFormsOut(forms, [&non_blacklist, blacklist](
+                             scoped_ptr<autofill::PasswordForm> form) {
     if (form->blacklisted_by_user)
-      blacklist->push_back(form);
+      blacklist->push_back(form.release());
     else
-      non_blacklist.push_back(form);
-    form = nullptr;
-  }
+      non_blacklist.push_back(form.release());
+  });
   forms->swap(non_blacklist);
 }
 
@@ -455,19 +475,24 @@ void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
   // Merge the normal entries.
   ScopedVector<autofill::PasswordForm> unused_database_forms;
   unused_database_forms.reserve(database_forms->size());
-  std::set<autofill::PasswordForm*> used_keychain_forms;
-  for (auto& db_form : *database_forms) {
-    PasswordForm* best_match =
-        BestKeychainFormForForm(*db_form, &keychain_forms->get());
+  std::set<const autofill::PasswordForm*> used_keychain_forms;
+  // Move all database forms to either |merged_forms| or
+  // |unused_database_forms|, based on whether they have a match in the keychain
+  // forms or not. If there is a match, add its password to the DB form and
+  // mark the keychain form as used.
+  MoveAllFormsOut(database_forms, [keychain_forms, &used_keychain_forms,
+                                   merged_forms, &unused_database_forms](
+                                      scoped_ptr<autofill::PasswordForm> form) {
+    const PasswordForm* best_match =
+        BestKeychainFormForForm(*form, keychain_forms->get());
     if (best_match) {
       used_keychain_forms.insert(best_match);
-      db_form->password_value = best_match->password_value;
-      merged_forms->push_back(db_form);
+      form->password_value = best_match->password_value;
+      merged_forms->push_back(form.release());
     } else {
-      unused_database_forms.push_back(db_form);
+      unused_database_forms.push_back(form.release());
     }
-    db_form = nullptr;
-  }
+  });
   database_forms->swap(unused_database_forms);
 
   // Clear out all the Keychain entries we used.
@@ -522,18 +547,19 @@ void GetPasswordsForForms(const AppleKeychain& keychain,
   // matching PasswordForm using its corresponding SecKeychainItemRef.
   ScopedVector<autofill::PasswordForm> unused_db_forms;
   unused_db_forms.reserve(database_forms->size());
-  for (auto& db_form : *database_forms) {
+  // Move database forms with a password stored in |keychain| to |passwords|,
+  // including the password. The rest is moved to |unused_db_forms|.
+  MoveAllFormsOut(database_forms,
+                  [&keychain, &item_form_pairs, passwords, &unused_db_forms](
+                      scoped_ptr<autofill::PasswordForm> form) {
     ScopedVector<autofill::PasswordForm> keychain_matches =
-        ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, *db_form);
+        ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, *form);
 
     ScopedVector<autofill::PasswordForm> db_form_container;
-    db_form_container.push_back(db_form);
-    db_form = nullptr;
+    db_form_container.push_back(form.release());
     MergePasswordForms(&keychain_matches, &db_form_container, passwords);
-    unused_db_forms.insert(unused_db_forms.end(), db_form_container.begin(),
-                           db_form_container.end());
-    db_form_container.weak_clear();
-  }
+    AppendSecondToFirst(&unused_db_forms, &db_form_container);
+  });
   database_forms->swap(unused_db_forms);
 
   STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
@@ -582,8 +608,7 @@ bool FormIsValidAndMatchesOtherForm(const PasswordForm& query_form,
                                     &is_secure, &security_domain)) {
     return false;
   }
-  return internal_keychain_helpers::FormsMatchForMerge(
-      query_form, other_form, STRICT_FORM_MATCH);
+  return FormsMatchForMerge(query_form, other_form, STRICT_FORM_MATCH);
 }
 
 ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
@@ -597,7 +622,7 @@ ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
       // Create a new object, since the caller is responsible for deleting the
       // returned forms.
       scoped_ptr<PasswordForm> form_with_password(new PasswordForm());
-      internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      FillPasswordFormFromKeychainItem(
           keychain, *(i->first), form_with_password.get(),
           true);  // Load password attributes and data.
       // Do not include blacklisted items found in the keychain.
@@ -1052,10 +1077,7 @@ void PasswordStoreMac::GetLoginsImpl(
   ScopedVector<PasswordForm> keychain_blacklist_forms;
   internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms,
                                                    &keychain_blacklist_forms);
-  matched_forms.insert(matched_forms.end(),
-                       keychain_forms.begin(),
-                       keychain_forms.end());
-  keychain_forms.weak_clear();
+  AppendSecondToFirst(&matched_forms, &keychain_forms);
 
   if (!database_forms.empty()) {
     RemoveDatabaseForms(database_forms.get());
@@ -1169,7 +1191,5 @@ void PasswordStoreMac::CleanOrphanedForms(
   RemoveDatabaseForms(database_forms.get());
 
   // Move the orphaned DB forms to the output parameter.
-  orphaned_forms->insert(orphaned_forms->end(), database_forms.begin(),
-                         database_forms.end());
-  database_forms.weak_clear();
+  AppendSecondToFirst(orphaned_forms, &database_forms);
 }
