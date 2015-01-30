@@ -93,6 +93,7 @@ VideoSender::VideoSender(
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment,
         video_config,
+        gfx::Size(video_config.width, video_config.height),
         base::Bind(&VideoSender::OnEncoderInitialized,
                    weak_factory_.GetWeakPtr(), initialization_cb),
         create_vea_cb,

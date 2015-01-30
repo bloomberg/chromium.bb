@@ -11,26 +11,23 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/video_encoder.h"
 #include "media/video/video_encode_accelerator.h"
-
-namespace media {
-class VideoFrame;
-}
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace cast {
 
-class LocalVideoEncodeAcceleratorClient;
-
-// This object is called external from the main cast thread and internally from
-// the video encoder thread.
+// Cast MAIN thread proxy to the internal media::VideoEncodeAccelerator
+// implementation running on a separate thread.  Encodes media::VideoFrames and
+// emits media::cast::EncodedFrames.
 class ExternalVideoEncoder : public VideoEncoder {
  public:
   ExternalVideoEncoder(
-      scoped_refptr<CastEnvironment> cast_environment,
+      const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
+      const gfx::Size& frame_size,
       const CastInitializationCallback& initialization_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb);
+      const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
   ~ExternalVideoEncoder() override;
 
@@ -43,33 +40,28 @@ class ExternalVideoEncoder : public VideoEncoder {
   void GenerateKeyFrame() override;
   void LatestFrameIdToReference(uint32 frame_id) override;
 
-  // Called when video_accelerator_client_ has finished creating the VEA and
-  // is ready for use.
-  void OnCreateVideoEncodeAccelerator(
-      scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner);
-
- protected:
-  // If |success| is true then encoder is initialized successfully.
-  // Otherwise encoder initialization failed.
-  void EncoderInitialized(bool success);
-  void EncoderError();
-
  private:
-  friend class LocalVideoEncodeAcceleratorClient;
+  class VEAClientImpl;
 
-  VideoSenderConfig video_config_;
-  scoped_refptr<CastEnvironment> cast_environment_;
+  // Method invoked by the CreateVideoEncodeAcceleratorCallback to construct a
+  // VEAClientImpl to own and interface with a new |vea|.  Upon return,
+  // |client_| holds a reference to the new VEAClientImpl.
+  void OnCreateVideoEncodeAccelerator(
+      const gfx::Size& frame_size,
+      VideoCodecProfile codec_profile,
+      int max_frame_rate,
+      const CastInitializationCallback& initialization_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
+      scoped_ptr<media::VideoEncodeAccelerator> vea);
 
-  bool encoder_active_;
+  const scoped_refptr<CastEnvironment> cast_environment_;
+  const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
+  int bit_rate_;
   bool key_frame_requested_;
 
-  scoped_refptr<LocalVideoEncodeAcceleratorClient> video_accelerator_client_;
-  scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+  scoped_refptr<VEAClientImpl> client_;
 
-  CastInitializationCallback initialization_cb_;
-
-  // Weak pointer factory for posting back LocalVideoEncodeAcceleratorClient
-  // notifications to ExternalVideoEncoder.
+  // Provides a weak pointer for the OnCreateVideoEncoderAccelerator() callback.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ExternalVideoEncoder> weak_factory_;
 

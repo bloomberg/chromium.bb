@@ -116,6 +116,8 @@
         'sender/audio_sender_unittest.cc',
         'sender/congestion_control_unittest.cc',
         'sender/external_video_encoder_unittest.cc',
+        'sender/fake_video_encode_accelerator_factory.cc',
+        'sender/fake_video_encode_accelerator_factory.h',
         'sender/video_encoder_impl_unittest.cc',
         'sender/video_sender_unittest.cc',
         'test/end2end_unittest.cc',
