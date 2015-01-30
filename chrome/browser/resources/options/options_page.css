@@ -447,7 +447,3 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
 .standalone-action-link {
   padding: 0;
 }
-
-[guestmode='true'] footer {
-  display: none;
-}

@@ -140,7 +140,7 @@ cr.define('options', function() {
           }
         };
       } else {
-        $('advanced-settings-expander').hidden = true;
+        $('advanced-settings-footer').hidden = true;
         $('advanced-settings').hidden = true;
       }
 
