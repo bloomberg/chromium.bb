@@ -292,7 +292,7 @@ GURL ReadURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   base::win::ScopedCoMem<wchar_t> url;
   // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
   return (FAILED(url_locator->GetURL(&url)) || !url) ?
-      GURL() : GURL(base::WideToUTF16(url.get()));
+      GURL() : GURL(url.get());
 }
 
 // Reads the URL of the favicon of the internet shortcut.
@@ -317,7 +317,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   if (FAILED(property_storage->ReadMultiple(1, properties, output.Receive())) ||
       output.get().vt != VT_LPWSTR)
     return GURL();
-  return GURL(base::WideToUTF16(output.get().pwszVal));
+  return GURL(output.get().pwszVal);
 }
 
 // Reads the favicon imaga data in an NTFS alternate data stream. This is where

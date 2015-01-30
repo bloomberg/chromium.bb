@@ -186,16 +186,14 @@ bool UpdateJumpList(const wchar_t* app_id,
   // This update request is applied into the JumpList when we commit this
   // transaction.
   if (!use_profiles_category && !jumplist_updater.AddCustomCategory(
-          base::UTF16ToWide(
-              l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED)),
+          l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED),
           most_visited_pages, profiles_or_most_visited_items)) {
     return false;
   }
 
   // Update the "Recently Closed" category of the JumpList.
   if (!jumplist_updater.AddCustomCategory(
-          base::UTF16ToWide(
-              l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED)),
+          l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED),
           recently_closed_pages, recently_closed_items)) {
     return false;
   }

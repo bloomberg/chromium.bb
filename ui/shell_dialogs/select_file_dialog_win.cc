@@ -15,7 +15,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/tuple.h"
 #include "base/win/registry.h"
@@ -134,10 +133,9 @@ std::wstring FormatFilterForExtensions(
         // based on the unknown extension type (i.e. if the extension is .qqq,
         // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
-        desc = l10n_util::GetStringFUTF16(
-            IDS_APP_SAVEAS_EXTENSION_FORMAT,
-            base::i18n::ToUpper(base::WideToUTF16(ext_name)),
-            ext_name);
+        desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
+                                          base::i18n::ToUpper(ext_name),
+                                          ext_name);
       }
       if (desc.empty())
         desc = L"*." + ext_name;

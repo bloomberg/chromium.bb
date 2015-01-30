@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/crash/app/crash_reporter_client.h"
 
 namespace breakpad {
@@ -95,32 +95,31 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
   // We only expect this method to be called once per process.
   // Common enties
   custom_entries_.push_back(
-      google_breakpad::CustomInfoEntry(L"ver",
-                                       base::UTF16ToWide(version).c_str()));
+      google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
   custom_entries_.push_back(
-      google_breakpad::CustomInfoEntry(L"prod",
-                                       base::UTF16ToWide(product).c_str()));
+      google_breakpad::CustomInfoEntry(L"prod", product.c_str()));
   custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
-  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-      L"pid", base::StringPrintf(L"%d", ::GetCurrentProcessId()).c_str()));
-  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-      L"channel", base::UTF16ToWide(channel_name).c_str()));
-  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-      L"profile-type", profile_type.c_str()));
+  custom_entries_.push_back(
+      google_breakpad::CustomInfoEntry(
+      L"pid", base::IntToString16(::GetCurrentProcessId()).c_str()));
+  custom_entries_.push_back(
+      google_breakpad::CustomInfoEntry(L"channel", channel_name.c_str()));
+  custom_entries_.push_back(
+      google_breakpad::CustomInfoEntry(L"profile-type", profile_type.c_str()));
 
-  if (!special_build.empty())
-    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-        L"special", base::UTF16ToWide(special_build).c_str()));
+  if (!special_build.empty()) {
+    custom_entries_.push_back(
+        google_breakpad::CustomInfoEntry(L"special", special_build.c_str()));
+  }
 
   if (type == L"plugin" || type == L"ppapi") {
     std::wstring plugin_path = cmd_line->GetSwitchValueNative("plugin-path");
     if (!plugin_path.empty())
       SetPluginPath(plugin_path);
   }
-
 
   // Check whether configuration management controls crash reporting.
   bool crash_reporting_enabled = true;

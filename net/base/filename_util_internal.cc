@@ -202,8 +202,8 @@ void EnsureSafeExtension(const std::string& mime_type,
 
 bool FilePathToString16(const base::FilePath& path, base::string16* converted) {
 #if defined(OS_WIN)
-  return base::WideToUTF16(
-      path.value().c_str(), path.value().size(), converted);
+  *converted = path.value();
+  return true;
 #elif defined(OS_POSIX)
   std::string component8 = path.AsUTF8Unsafe();
   return !component8.empty() &&
