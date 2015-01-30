@@ -131,12 +131,14 @@ function onDocumentLoad() {
     detailsButton.classList.add('singular');
   }
 
+<if expr="not chromeos">
   // Hide the details button if there are no details to show.
   if (loadTimeData.valueExists('summary') &&
           !loadTimeData.getValue('summary').msg) {
     detailsButton.style.display = 'none';
     document.getElementById('help-box-outer').style.display = 'block';
   }
+</if>
 
   // Show control buttons.
   if (loadTimeData.valueExists('reloadButton') &&

@@ -79,6 +79,7 @@ extern const char kDisableExtensions[];
 extern const char kDisableIPv6[];
 extern const char kDisableJavaScriptHarmonyShipping[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
+extern const char kDisableNewOfflineErrorPage[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOfflineAutoReloadVisibleOnly[];
@@ -395,6 +396,7 @@ extern const char kFileManagerExtensionPath[];
 #endif
 
 bool AboutInSettingsEnabled();
+bool NewOfflineErrorPageEnabled();
 bool OutOfProcessPdfEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();

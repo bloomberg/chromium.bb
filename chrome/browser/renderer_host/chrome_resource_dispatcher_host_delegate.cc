@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -362,7 +363,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(OS_CHROMEOS)
   // Check if we need to add offline throttle. This should be done only
   // for main frames.
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  // We will fall back to the old ChromeOS offline error page if the
+  // --disable-new-offline-error-page command-line switch is defined.
+  bool new_error_page_enabled = switches::NewOfflineErrorPageEnabled();
+  if (!new_error_page_enabled &&
+      resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(request,
