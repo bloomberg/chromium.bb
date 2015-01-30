@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) || !defined(USE_AURA)
 void ShowProximityAuthErrorBubble(const base::string16& message,
                                   const gfx::Range& link_range,
                                   const GURL& link_url,
