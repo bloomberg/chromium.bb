@@ -6,8 +6,7 @@
 #include "modules/presentation/PresentationController.h"
 
 #include "core/frame/LocalFrame.h"
-#include "public/platform/WebPresentationClient.h"
-#include "public/platform/WebPresentationController.h"
+#include "public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
 

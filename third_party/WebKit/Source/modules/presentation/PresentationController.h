@@ -9,7 +9,7 @@
 #include "modules/presentation/Presentation.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebPresentationController.h"
+#include "public/platform/modules/presentation/WebPresentationController.h"
 
 namespace blink {
 
