@@ -475,7 +475,6 @@
           'dependencies': [
             'sync_fake_server_jni_headers',
             'test_support_sync_fake_server',
-            '../testing/gtest.gyp:gtest',
             '../base/base.gyp:base',
           ],
           'sources': [

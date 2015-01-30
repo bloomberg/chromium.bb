@@ -30,15 +30,6 @@ class FakeServerHelperAndroid {
   // CreateFakeServer).
   void DeleteFakeServer(JNIEnv* env, jobject obj, jlong fake_server);
 
-  // Returns true if and only if |fake_server| contains |count| entities that
-  // match |model_type_string| and |name|.
-  jboolean VerifyEntityCountByTypeAndName(JNIEnv* env,
-                                          jobject obj,
-                                          jlong fake_server,
-                                          jlong count,
-                                          jstring model_type_string,
-                                          jstring name);
-
  private:
   virtual ~FakeServerHelperAndroid();
 };

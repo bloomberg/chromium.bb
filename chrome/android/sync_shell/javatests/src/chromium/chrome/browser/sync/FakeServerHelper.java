@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+//import org.chromium.chrome.browser.sync.ProfileSyncService;
 
 import java.util.concurrent.Callable;
 
@@ -113,25 +113,6 @@ public class FakeServerHelper {
         nativeDeleteFakeServer(mNativeFakeServerHelperAndroid, nativeFakeServer);
     }
 
-    /**
-     * Returns whether {@code count} entities exist on the fake Sync server with the given
-     * {@code modelType} and {@code name}.
-     *
-     * @param count the number of fake server entities to verify
-     * @param modelType the model type of entities to verify
-     * @param name the name of entities to verify
-     *
-     * @return whether the number of specified entities exist
-     */
-    public boolean verifyEntityCountByTypeAndName(int count, ModelType modelType, String name) {
-        if (sNativeFakeServer == 0L) {
-            throw new IllegalStateException(
-                "useFakeServer must be called before data verification.");
-        }
-        return nativeVerifyEntityCountByTypeAndName(mNativeFakeServerHelperAndroid,
-            sNativeFakeServer, count, modelType.toString(), name);
-    }
-
     // Native methods.
     private native long nativeInit();
     private native long nativeCreateFakeServer(long nativeFakeServerHelperAndroid);
@@ -139,7 +120,4 @@ public class FakeServerHelper {
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteFakeServer(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
-    private native boolean nativeVerifyEntityCountByTypeAndName(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, String modelType,
-            String name);
 }
