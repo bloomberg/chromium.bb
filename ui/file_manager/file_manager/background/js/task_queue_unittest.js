@@ -16,6 +16,7 @@ function setUp() {
     // Reset counts for all update types.
     updates[importer.TaskQueue.UpdateType[updateType]] = 0;
   }
+
   // Counts the number of updates of each type that have been received.
   var updateCallback = function(type, updatedTask) {
     updates[type]++;

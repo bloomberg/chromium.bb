@@ -72,8 +72,10 @@ function testImportMedia(callback) {
   ]);
 
   var scanResult = new TestScanResult(media);
-  var importTask =
-      mediaImporter.importFromScanResult(scanResult, destinationFactory);
+  var importTask = mediaImporter.importFromScanResult(
+        scanResult,
+        importer.Destination.GOOGLE_DRIVE,
+        destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -111,8 +113,10 @@ function testUpdatesHistoryAfterImport(callback) {
   ]);
 
   var scanResult = new TestScanResult(entries);
-  var importTask =
-      mediaImporter.importFromScanResult(scanResult, destinationFactory);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -162,8 +166,10 @@ function testImportCancellation(callback) {
   var EXPECTED_COPY_COUNT = 3;
 
   var scanResult = new TestScanResult(media);
-  var importTask =
-      mediaImporter.importFromScanResult(scanResult, destinationFactory);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportCancelled = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -215,8 +221,10 @@ function testImportWithDuplicates(callback) {
   var EXPECTED_COPY_COUNT = 3;
 
   var scanResult = new TestScanResult(media);
-  var importTask =
-      mediaImporter.importFromScanResult(scanResult, destinationFactory);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(

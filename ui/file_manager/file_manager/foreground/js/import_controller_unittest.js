@@ -26,6 +26,7 @@ var widget;
 // Set up string assets.
 loadTimeData.data = {
   CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
+  CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL: 'Already importing!',
   CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL: 'No new media',
   CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
   CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!',
@@ -51,7 +52,7 @@ function setUp() {
   mediaImporter = new TestImportRunner();
 }
 
-function testGetCommandUpdate_HiddenWhenDriveUnmounted() {
+function testGetCommandUpdate_HiddenWhenDriveUnmounted(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -63,15 +64,18 @@ function testGetCommandUpdate_HiddenWhenDriveUnmounted() {
       '/DCIM');
 
   environment.isDriveMounted = false;
+  var promise = controller.getCommandUpdate().then(
+      function(response) {
+        assertFalse(response.visible);
+        assertFalse(response.executable);
 
-  var response = controller.getCommandUpdate();
-  assertFalse(response.visible);
-  assertFalse(response.executable);
+        mediaScanner.assertScanCount(0);
+      });
 
-  mediaScanner.assertScanCount(0);
+  reportPromise(promise, callback);
 }
 
-function testGetCommandUpdate_HiddenForNonMediaVolume() {
+function testGetCommandUpdate_HiddenForNonMediaVolume(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'drive',
@@ -84,14 +88,18 @@ function testGetCommandUpdate_HiddenForNonMediaVolume() {
 
   environment.isDriveMounted = false;
 
-  var response = controller.getCommandUpdate();
-  assertFalse(response.visible);
-  assertFalse(response.executable);
+  var promise = controller.getCommandUpdate().then(
+      function(response) {
+        assertFalse(response.visible);
+        assertFalse(response.executable);
 
-  mediaScanner.assertScanCount(0);
+        mediaScanner.assertScanCount(0);
+      });
+
+  reportPromise(promise, callback);
 }
 
-function testGetCommandUpdate_InitiatesScan() {
+function testGetCommandUpdate_InitiatesScan(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -106,71 +114,17 @@ function testGetCommandUpdate_InitiatesScan() {
       ],
       '/DCIM');
 
-  var response = controller.getCommandUpdate();
-  assertTrue(response.visible);
-  assertFalse(response.executable);
+  var promise = controller.getCommandUpdate().then(
+      function(response) {
+        assertTrue(response.visible);
+        assertFalse(response.executable);
 
-  mediaScanner.assertScanCount(1);
+        mediaScanner.assertScanCount(1);
+      });
+  reportPromise(promise, callback);
 }
 
-function testDirectoryChange_PushesUpdate() {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-      ],
-      '/DCIM');
-
-  environment.directoryChangedListener_();
-  widget.updates.assertCallCount(1);
-}
-
-function testUnmountInvalidatesScans() {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-        '/DCIM/photos0/IMG00002.jpg',
-        '/DCIM/photos1/',
-        '/DCIM/photos1/IMG00001.jpg',
-        '/DCIM/photos1/IMG00003.jpg'
-      ],
-      '/DCIM');
-
-  controller.getCommandUpdate();
-  mediaScanner.assertScanCount(1);
-
-  // Faux unmount the volume, then request an update again.
-  // A fresh new scan should be started.
-  environment.simulateUnmount();
-  controller.getCommandUpdate();
-  mediaScanner.assertScanCount(2);
-}
-
-function testVolumeUnmount_PushesUpdate() {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-      ],
-      '/DCIM');
-
-  // Faux unmount the volume, then request an update again.
-  // A fresh new scan should be started.
-  environment.simulateUnmount();
-  widget.updates.assertCallCount(1);
-}
-
-function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
+function testGetCommandUpdate_CanExecuteAfterScanIsFinalized(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -188,35 +142,23 @@ function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
   var fileSystem = new MockFileSystem('testFs');
   mediaScanner.fileEntries.push(
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
-  controller.getCommandUpdate();
-  mediaScanner.finalizeScans();
 
-  var response = controller.getCommandUpdate();
-  assertTrue(response.visible);
-  assertTrue(response.executable);
+  environment.directoryChangedListener_();  // initiates a scan.
+  var promise = widget.updatePromise.then(
+      function() {
+        widget.resetPromise();
+        mediaScanner.finalizeScans();
+        return widget.updatePromise;
+      }).then(
+          function(response) {
+            assertTrue(response.visible);
+            assertTrue(response.executable);
+          });
+
+  reportPromise(promise, callback);
 }
 
-function testFinalizeScans_PushesUpdate() {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-      ],
-      '/DCIM');
-
-  var fileSystem = new MockFileSystem('testFs');
-  mediaScanner.fileEntries.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
-  controller.getCommandUpdate();
-  mediaScanner.finalizeScans();
-
-  widget.updates.assertCallCount(1);
-}
-
-function testGetCommandUpdate_CannotExecuteEmptyScanResult() {
+function testGetCommandUpdate_CannotExecuteEmptyScanResult(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -234,12 +176,16 @@ function testGetCommandUpdate_CannotExecuteEmptyScanResult() {
   controller.getCommandUpdate();
   mediaScanner.finalizeScans();
 
-  var response = controller.getCommandUpdate();
-  assertTrue(response.visible);
-  assertFalse(response.executable);
+  var promise = controller.getCommandUpdate().then(
+      function(response) {
+        assertTrue(response.visible);
+        assertFalse(response.executable);
+      });
+
+  reportPromise(promise, callback);
 }
 
-function testClick_StartsImport() {
+function testClick_StartsImport(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -253,8 +199,204 @@ function testClick_StartsImport() {
 
   // First we need to force the controller into a scanning state.
   environment.directoryChangedListener_();
-  widget.executeListener();
-  mediaImporter.assertImportsStarted(1);
+
+  reportPromise(
+      widget.updatePromise.then(
+          function() {
+            widget.resetPromise();
+            widget.executeListener();
+            mediaImporter.assertImportsStarted(1);
+            // return the reset promise so as to allow execution
+            // to complete before the test is finished...even though
+            // we're not waiting on anything in particular.
+            return widget.updatePromise;
+          }),
+      callback);
+}
+
+function testVolumeUnmount_InvalidatesScans(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  environment.directoryChangedListener_();
+  var promise = widget.updatePromise.then(
+          function() {
+            // Reset the promise so we can wait on a second widget update.
+            widget.resetPromise();
+
+            // Faux unmount the volume, then request an update again.
+            // A fresh new scan should be started.
+            environment.simulateUnmount();
+
+            // Return the new promise, so subsequent "thens" only
+            // fire once the widget has been updated again.
+            return widget.updatePromise;
+          }).then(
+            function() {
+              mediaScanner.assertScanCount(2);
+            });
+
+  reportPromise(promise, callback);
+}
+
+function testDirectoryChange_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  environment.directoryChangedListener_();
+  reportPromise(widget.updatePromise, callback);
+}
+
+function testVolumeUnmount_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  // Faux unmount the volume, then request an update again.
+  // A fresh new scan should be started.
+  environment.simulateUnmount();
+  reportPromise(widget.updatePromise, callback);
+}
+
+function testFinalizeScans_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  var fileSystem = new MockFileSystem('testFs');
+  // ensure there is some content in the scan so the code that depends
+  // on this state doesn't croak which it finds it missing.
+  mediaScanner.fileEntries.push(
+      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+
+  environment.directoryChangedListener_();  // initiates a scan.
+  mediaScanner.finalizeScans();
+
+  reportPromise(widget.updatePromise, callback);
+}
+
+function testExecuteImport_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+      ],
+      '/DCIM');
+
+  // First we need to force the controller into a scanning state.
+  environment.directoryChangedListener_();
+  mediaScanner.finalizeScans();
+
+  var promise = widget.updatePromise.then(
+      function() {
+        widget.resetPromise();
+        widget.executeListener();
+        // By returning the new update promise, "reportPromise" will
+        // hang unless an update occurs.
+        return widget.updatePromise;
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testFinishImport_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+      ],
+      '/DCIM');
+
+  // First we need to force the controller into a scanning state.
+  environment.directoryChangedListener_();
+  mediaScanner.finalizeScans();
+
+  var promise = widget.updatePromise.then(
+      function() {
+        widget.resetPromise();
+        widget.executeListener();
+        // By returning the new update promise, "reportPromise" will
+        // hang unless an update occurs.
+        return widget.updatePromise;
+      }).then(
+          function() {
+            widget.resetPromise();
+            mediaImporter.finishImportTasks();
+            return widget.updatePromise;
+          });
+
+  reportPromise(promise, callback);
+}
+
+function testCancelImport_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+      ],
+      '/DCIM');
+
+  // First we need to force the controller into a scanning state.
+  environment.directoryChangedListener_();
+  mediaScanner.finalizeScans();
+
+  var promise = widget.updatePromise.then(
+      function() {
+        widget.resetPromise();
+        widget.executeListener();
+        // By returning the new update promise, "reportPromise" will
+        // hang unless an update occurs.
+        return widget.updatePromise;
+      }).then(
+          function() {
+            widget.resetPromise();
+            mediaImporter.cancelImportTasks();
+            return widget.updatePromise;
+          });
+
+  reportPromise(promise, callback);
 }
 
 /**
@@ -265,7 +407,18 @@ function testClick_StartsImport() {
  */
 function TestImportTask(destination) {
   this.destination_ = destination;
+
+  /** @private {!importer.Resolver} */
+  this.finishedResolver_ = new importer.Resolver();
+
+  /** @public {!Promise} */
+  this.whenFinished = this.finishedResolver_.promise;
 }
+
+/** @return {!Promise<DirectoryEntry>} */
+TestImportTask.prototype.finish = function() {
+  this.finishedResolver_.resolve();
+};
 
 /** @return {!Promise<DirectoryEntry>} */
 TestImportTask.prototype.getDestination = function() {
@@ -281,14 +434,20 @@ function TestImportRunner() {
   /** @type {!Array.<!importer.ScanResult>} */
   this.imported = [];
 
+  /** @type {!Array.<!TestImportTask>} */
+  this.tasks_ = [];
+
   /** @type {DirectoryEntry} */
   this.destination_ = null;
 }
 
 /** @override */
-TestImportRunner.prototype.importFromScanResult = function(scanResult) {
+TestImportRunner.prototype.importFromScanResult =
+    function(scanResult, destination) {
   this.imported.push(scanResult);
-  return new TestImportTask(this.destination_);
+  var task = new TestImportTask(this.destination_);
+  this.tasks_.push(task);
+  return task;
 };
 
 /**
@@ -296,6 +455,24 @@ TestImportRunner.prototype.importFromScanResult = function(scanResult) {
  */
 TestImportRunner.prototype.setDestination = function(destination) {
   this.destination_ = destination;
+};
+
+/**
+ * @param {!DirectoryEntry} destination
+ */
+TestImportRunner.prototype.finishImportTasks = function() {
+  this.tasks_.forEach(
+      function(task) {
+        task.finish();
+      });
+};
+
+/**
+ * @param {!DirectoryEntry} destination
+ */
+TestImportRunner.prototype.cancelImportTasks = function() {
+  // No diff to us.
+  this.finishImportTasks();
 };
 
 /**
@@ -338,6 +515,9 @@ TestControllerEnvironment = function(volumeInfo, directory) {
   /** @private {function(!DirectoryEntry)} */
   this.directoryWasSet_;
 
+  /** @private {number} */
+  this.freeStorageSpace = 123456789;  // bytes
+
   /** @private {!Promise<!DirectoryEntry>} */
   this.directoryWasSetPromise_ = new Promise(function(resolve, reject) {
     this.directoryWasSet_ = resolve;
@@ -375,6 +555,12 @@ TestControllerEnvironment.prototype.isGoogleDriveMounted =
 };
 
 /** @override */
+TestControllerEnvironment.prototype.getFreeStorageSpace =
+    function() {
+  return Promise.resolve(this.freeStorageSpace);
+};
+
+/** @override */
 TestControllerEnvironment.prototype.addVolumeUnmountListener =
     function(listener) {
   this.volumeUnmountListener_ = listener;
@@ -409,12 +595,20 @@ TestControllerEnvironment.prototype.whenCurrentDirectoryIsSet = function() {
  * @struct
  */
 importer.TestCommandWidget = function() {
-
   /** @public {function()} */
   this.executeListener;
 
-  /** @public {!TestCallRecorder} */
-  this.updates = new TestCallRecorder();
+  /** @private {!importer.Resolver.<!importer.CommandUpdate>} */
+  this.updateResolver_ = new importer.Resolver();
+
+  /** @public {!importer.Resolver.<!importer.CommandUpdate>} */
+  this.updatePromise = this.updateResolver_.promise;
+};
+
+/** Resets the widget */
+importer.TestCommandWidget.prototype.resetPromise = function() {
+  this.updateResolver_ = new importer.Resolver();
+  this.updatePromise = this.updateResolver_.promise;
 };
 
 /** @override */
@@ -424,7 +618,8 @@ importer.TestCommandWidget.prototype.addExecuteListener = function(listener) {
 
 /** @override */
 importer.TestCommandWidget.prototype.update = function(update) {
-  this.updates.callback(update);
+  assertFalse(this.updateResolver_.settled, 'Should not have been settled.');
+  this.updateResolver_.resolve(update);
 };
 
 /**

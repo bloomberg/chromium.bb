@@ -21,8 +21,9 @@ importer.ImportRunner.DestinationFactory;
  * Imports all media identified by scanResult.
  *
  * @param {!importer.ScanResult} scanResult
- * @param {!importer.ImportRunner.DestinationFactory=} opt_destination A
- *     function that returns the directory into which media will be imported.
+ * @param {!importer.Destination} destination
+ * @param {!importer.ImportRunner.DestinationFactory=} opt_destinationDirectory
+ *     A function that returns the directory into which media will be imported.
  *
  * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
  */
@@ -59,16 +60,17 @@ importer.MediaImportHandler =
 
 /** @override */
 importer.MediaImportHandler.prototype.importFromScanResult =
-    function(scanResult, opt_destination) {
-  var destination = opt_destination ||
+    function(scanResult, destination, opt_destinationDirectory) {
+  var destinationDirectory = opt_destinationDirectory ||
       importer.MediaImportHandler.defaultDestination.getImportDestination;
 
   var task = new importer.MediaImportHandler.ImportTask(
       this.generateTaskId_(),
       this.historyLoader_,
       scanResult,
-      destination,
-      this.duplicateFinder_);
+      destinationDirectory,
+      this.duplicateFinder_,
+      destination);
 
   task.addObserver(this.onTaskProgress_.bind(this, task));
 
@@ -149,19 +151,24 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
  * @param {!importer.ScanResult} scanResult
  * @param {!importer.ImportRunner.DestinationFactory} destinationFactory A
  *     function that returns the directory into which media will be imported.
-  * @param {!importer.DuplicateFinder} duplicateFinder A duplicate-finder linked
-  *     to the import destination, that will be used to deduplicate imports.
+ * @param {!importer.DuplicateFinder} duplicateFinder A duplicate-finder linked
+ *     to the import destination, that will be used to deduplicate imports.
+ * @param {!importer.Destination} destination The logical destination.
  */
 importer.MediaImportHandler.ImportTask = function(
     taskId,
     historyLoader,
     scanResult,
     destinationFactory,
-    duplicateFinder) {
+    duplicateFinder,
+    destination) {
 
   importer.TaskQueue.BaseTask.call(this, taskId);
   /** @private {string} */
   this.taskId_ = taskId;
+
+  /** @private {!importer.Destination} */
+  this.destination_ = destination;
 
   /** @private {!importer.ImportRunner.DestinationFactory} */
   this.destinationFactory_ = destinationFactory;
@@ -194,6 +201,18 @@ importer.MediaImportHandler.ImportTask = function(
   this.canceled_ = false;
 };
 
+/** @struct */
+importer.MediaImportHandler.ImportTask.prototype = {
+  /** @return {number} Number of imported bytes */
+  get processedBytes() { return this.processedBytes_; },
+
+  /** @return {number} Total number of bytes to import */
+  get totalBytes() { return this.totalBytes_; },
+
+  /** @return {number} Number of files left to import */
+  get remainingFilesCount() { return this.remainingFilesCount_; }
+};
+
 /**
  * Update types that are specific to ImportTask.  Clients can add Observers to
  * ImportTask to listen for these kinds of updates.
@@ -211,18 +230,6 @@ importer.MediaImportHandler.ImportTask.UpdateType = {
  * }}
  */
 importer.MediaImportHandler.ImportTask.EntryChangedInfo;
-
-/** @struct */
-importer.MediaImportHandler.ImportTask.prototype = {
-  /** @return {number} Number of imported bytes */
-  get processedBytes() { return this.processedBytes_; },
-
-  /** @return {number} Total number of bytes to import */
-  get totalBytes() { return this.totalBytes_; },
-
-  /** @return {number} Number of files left to import */
-  get remainingFilesCount() { return this.remainingFilesCount_; }
-};
 
 /**
  * Extends importer.TaskQueue.Task
@@ -429,7 +436,7 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
 
 /**
  * @param {!FileEntry} entry
- * @param {!DirectoryEntry} destination
+ * @private
  */
 importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
     function(entry) {
@@ -437,10 +444,8 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
   this.historyLoader_.getHistory().then(
       /** @param {!importer.ImportHistory} history */
       function(history) {
-        history.markImported(
-            entry,
-            importer.Destination.GOOGLE_DRIVE);
-      });
+        history.markImported(entry, this.destination_);
+      }.bind(this));
 };
 
 /** @private */

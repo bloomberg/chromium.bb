@@ -448,6 +448,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_BUTTON_LABEL" desc="Label for button that initiates media backup to the cloud.">
     Import <ph name="FILE_COUNT">$1<ex>5</ex></ph> files to Google Drive
   </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL" desc="Message to user that there is an active import in progress.">
+    Importing...
+  </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL" desc="Message to user that no new files were found, so cloud import is not possible.">
     No new media
   </message>

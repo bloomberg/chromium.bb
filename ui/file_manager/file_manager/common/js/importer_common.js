@@ -218,7 +218,7 @@ importer.Resolver = function() {
   /** @private {boolean} */
   this.settled_ = false;
 
-  /** @private {function(T)} */
+  /** @private {function(T=)} */
   this.resolve_;
 
   /** @private {function(*=)} */
@@ -240,7 +240,7 @@ importer.Resolver = function() {
 
 importer.Resolver.prototype = /** @struct */ {
   /**
-   * @return {function(T)}
+   * @return {function(T=)}
    * @template T
    */
   get resolve() {
