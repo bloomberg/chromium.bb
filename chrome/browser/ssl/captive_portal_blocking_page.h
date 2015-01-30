@@ -41,6 +41,10 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
     is_wifi_connection_ = is_wifi_connection;
   }
 
+  void SetWiFiSSIDForTesting(const std::string& wifi_ssid) {
+    wifi_ssid_ = wifi_ssid;
+  }
+
  protected:
   // SecurityInterstitialPage methods:
   void PopulateInterstitialStrings(
@@ -55,6 +59,9 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   GURL login_url_;
   // True if on a Wi-Fi connection.
   bool is_wifi_connection_;
+  // SSID of the connected network if the connection is a Wi-Fi connection.
+  std::string wifi_ssid_;
+
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
