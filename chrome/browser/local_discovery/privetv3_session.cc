@@ -22,11 +22,14 @@ namespace {
 
 const char kPrivetV3AuthAnonymous[] = "Privet anonymous";
 const char kPrivetV3CryptoP224Spake2[] = "p224_spake2";
+const char kPrivetV3Auto[] = "auto";
 
 const char kPrivetV3InfoKeyAuth[] = "authentication";
 const char kPrivetV3InfoKeyVersion[] = "version";
 const char kPrivetV3InfoVersion[] = "3.0";
 
+const char kPrivetV3KeyAccessToken[] = "accessToken";
+const char kPrivetV3KeyAuthCode[] = "authCode";
 const char kPrivetV3KeyCertFingerprint[] = "certFingerprint";
 const char kPrivetV3KeyCertSignature[] = "certSignature";
 const char kPrivetV3KeyClientCommitment[] = "clientCommitment";
@@ -34,10 +37,14 @@ const char kPrivetV3KeyCrypto[] = "crypto";
 const char kPrivetV3KeyDeviceCommitment[] = "deviceCommitment";
 const char kPrivetV3KeyMode[] = "mode";
 const char kPrivetV3KeyPairing[] = "pairing";
+const char kPrivetV3KeyRequestedScope[] = "requestedScope";
+const char kPrivetV3KeyScope[] = "scope";
 const char kPrivetV3KeySessionId[] = "sessionId";
+const char kPrivetV3KeyTokenType[] = "tokenType";
 
-const char kPrivetV3PairingConfirmPath[] = "/privet/v3/pairing/confirm";
 const char kPrivetV3PairingStartPath[] = "/privet/v3/pairing/start";
+const char kPrivetV3PairingConfirmPath[] = "/privet/v3/pairing/confirm";
+const char kPrivetV3AuthPath[] = "/privet/v3/auth";
 
 const char kUrlPlaceHolder[] = "http://host/";
 
@@ -344,6 +351,48 @@ void PrivetV3Session::OnPairingConfirmDone(
       !hmac.Verify(fingerprint, signature)) {
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
+
+  std::string auth_code(hmac.DigestLength(), ' ');
+  if (!hmac.Sign(session_id_,
+                 reinterpret_cast<unsigned char*>(string_as_array(&auth_code)),
+                 auth_code.size())) {
+    NOTREACHED();
+    return callback.Run(Result::STATUS_SESSIONERROR);
+  }
+  // From now this is expected certificate.
+  fingerprint_ = fingerprint;
+
+  std::string auth_code_base64;
+  base::Base64Encode(auth_code, &auth_code_base64);
+
+  base::DictionaryValue input;
+  input.SetString(kPrivetV3KeyAuthCode, auth_code_base64);
+  input.SetString(kPrivetV3KeyMode, kPrivetV3KeyPairing);
+  input.SetString(kPrivetV3KeyRequestedScope, kPrivetV3Auto);
+
+  // Now we can use SendMessage with certificate validateion.
+  SendMessage(kPrivetV3AuthPath, input,
+              base::Bind(&PrivetV3Session::OnAuthenticateDone,
+                         weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void PrivetV3Session::OnAuthenticateDone(
+    const ResultCallback& callback,
+    Result result,
+    const base::DictionaryValue& response) {
+  if (result != Result::STATUS_SUCCESS)
+    return callback.Run(result);
+
+  std::string access_token;
+  std::string token_type;
+  std::string scope;
+  if (!response.GetString(kPrivetV3KeyAccessToken, &access_token) ||
+      !response.GetString(kPrivetV3KeyTokenType, &token_type) ||
+      !response.GetString(kPrivetV3KeyScope, &scope)) {
+    return callback.Run(Result::STATUS_SESSIONERROR);
+  }
+
+  privet_auth_token_ = token_type + " " + access_token;
 
   return callback.Run(Result::STATUS_SUCCESS);
 }

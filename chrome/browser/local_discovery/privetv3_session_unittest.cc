@@ -19,6 +19,7 @@ namespace local_discovery {
 
 namespace {
 
+using testing::InSequence;
 using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -182,7 +183,11 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(session_.fingerprint_.empty());
+  EXPECT_EQ("Privet anonymous", session_.privet_auth_token_);
+
   EXPECT_CALL(*this, OnCodeConfirmed(Result::STATUS_SUCCESS)).Times(1);
+  InSequence in_sequence;
   EXPECT_CALL(*this, OnPostData(_))
       .WillOnce(
           testing::Invoke([this, &spake](const base::DictionaryValue& data) {
@@ -220,10 +225,32 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                     fingerprint_base64.c_str(), signature_base64.c_str()),
                 net::HTTP_OK, net::URLRequestStatus::SUCCESS);
           }));
+  EXPECT_CALL(*this, OnPostData(_))
+      .WillOnce(
+          testing::Invoke([this, &spake](const base::DictionaryValue& data) {
+            std::string access_token_base64;
+            EXPECT_TRUE(data.GetString("authCode", &access_token_base64));
+            std::string access_token;
+            EXPECT_TRUE(base::Base64Decode(access_token_base64, &access_token));
+
+            crypto::HMAC hmac(crypto::HMAC::SHA256);
+            const std::string& key = spake.GetUnverifiedKey();
+            EXPECT_TRUE(hmac.Init(key));
+            EXPECT_TRUE(hmac.Verify("testId", access_token));
+
+            fetcher_factory_.SetFakeResponse(
+                GURL("http://host/privet/v3/auth"),
+                "{\"accessToken\":\"567\",\"tokenType\":\"testType\","
+                "\"scope\":\"owner\"}",
+                net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+          }));
   session_.ConfirmCode("testPin",
                        base::Bind(&PrivetV3SessionTest::OnCodeConfirmed,
                                   base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(session_.fingerprint_.empty());
+  EXPECT_EQ("testType 567", session_.privet_auth_token_);
 }
 
 // TODO(vitalybuka): replace PrivetHTTPClient with regular URL fetcher and

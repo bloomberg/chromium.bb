@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -56,7 +57,7 @@ class PrivetV3Session {
   void StartPairing(PairingType pairing_type, const ResultCallback& callback);
 
   // Confirms pairing code by calling /privet/v3/pairing/confirm.
-  // TODO(vitalybuka): Call /privet/v3/pairing/auth after pairing.
+  // Calls /privet/v3/pairing/auth after pairing.
   void ConfirmCode(const std::string& code, const ResultCallback& callback);
 
   // TODO(vitalybuka): Make HTTPS request to device with certificate validation.
@@ -66,6 +67,7 @@ class PrivetV3Session {
 
  private:
   friend class PrivetV3SessionTest;
+  FRIEND_TEST_ALL_PREFIXES(PrivetV3SessionTest, Pairing);
 
   void OnInfoDone(const InitCallback& callback,
                   Result result,
@@ -76,6 +78,10 @@ class PrivetV3Session {
   void OnPairingConfirmDone(const ResultCallback& callback,
                             Result result,
                             const base::DictionaryValue& response);
+  void OnAuthenticateDone(const ResultCallback& callback,
+                          Result result,
+                          const base::DictionaryValue& response);
+
   void RunCallback(const base::Closure& callback);
   void StartGetRequest(const std::string& api, const MessageCallback& callback);
   void StartPostRequest(const std::string& api,
