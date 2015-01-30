@@ -1351,7 +1351,6 @@ _x86_internal_release_boards = frozenset([
   'expresso',
   'falco',
   'falco_li',
-  'fox_wtm2',
   'glimmer',
   'gnawty',
   'guado',
@@ -2484,14 +2483,6 @@ _release.add_config('bobcat-release',
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
-)
-
-_release.add_config('fox_wtm2-release',
-  boards=['fox_wtm2'],
-  # Until these are configured and ready, disable them.
-  signer_tests=False,
-  vm_tests=[],
-  hw_tests=[],
 )
 
 _release.add_config('link-release',
