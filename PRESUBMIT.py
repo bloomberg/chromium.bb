@@ -1596,7 +1596,6 @@ def GetTryServerMasterForBot(bot):
   """
   # Potentially ambiguous bot names are listed explicitly.
   master_map = {
-      'linux_gpu': 'tryserver.chromium.gpu',
       'win_gpu': 'tryserver.chromium.gpu',
       'chromium_presubmit': 'tryserver.chromium.linux',
       'blink_presubmit': 'tryserver.chromium.linux',
