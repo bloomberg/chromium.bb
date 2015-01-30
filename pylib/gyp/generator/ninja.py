@@ -1217,7 +1217,8 @@ class NinjaWriter(object):
             gyp.common.EncodePOSIXShellArgument(link_file_list)))
       if self.flavor == 'win':
         extra_bindings.append(('binary', output))
-        if '/NOENTRY' not in ldflags:
+        if ('/NOENTRY' not in ldflags and
+            not self.msvs_settings.GetNoImportLibrary(config_name)):
           self.target.import_lib = output + '.lib'
           extra_bindings.append(('implibflag',
                                  '/IMPLIB:%s' % self.target.import_lib))

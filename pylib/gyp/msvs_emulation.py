@@ -407,6 +407,13 @@ class MsvsSettings(object):
     else:
       return None
 
+  def GetNoImportLibrary(self, config):
+    """If NoImportLibrary: true, ninja will not expect the output to include
+    an import library."""
+    config = self._TargetConfig(config)
+    noimplib = self._Setting(('NoImportLibrary',), config)
+    return noimplib == 'true'
+
   def GetAsmflags(self, config):
     """Returns the flags that need to be added to ml invocations."""
     config = self._TargetConfig(config)
