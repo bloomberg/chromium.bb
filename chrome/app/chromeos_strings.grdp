@@ -4476,6 +4476,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable caps lock).">
     Caps Lock
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DISABLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (disable caps lock when it's enabled).">
+    Disable Caps Lock
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
     ChromeVox (spoken feedback)
   </message>

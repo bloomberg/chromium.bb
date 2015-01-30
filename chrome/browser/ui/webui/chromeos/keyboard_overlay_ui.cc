@@ -220,6 +220,7 @@ struct I18nContentToMessage {
   { "keyboardOverlayToggleBookmarkBar",
     IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR },
   { "keyboardOverlayToggleCapsLock", IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK },
+  { "keyboardOverlayDisableCapsLock", IDS_KEYBOARD_OVERLAY_DISABLE_CAPS_LOCK },
   { "keyboardOverlayToggleChromevoxSpokenFeedback",
     IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK },
   { "keyboardOverlayToggleProjectionTouchHud",

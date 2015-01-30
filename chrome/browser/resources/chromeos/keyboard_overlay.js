@@ -28,8 +28,11 @@ var MODIFIER_TO_CLASS = {
 
 var IDENTIFIER_TO_CLASS = {
   '2A': 'is-shift',
+  '36': 'is-shift',
   '1D': 'is-ctrl',
+  'E0 1D': 'is-ctrl',
   '38': 'is-alt',
+  'E0 38': 'is-alt',
   'E0 5B': 'is-search'
 };
 
@@ -188,10 +191,47 @@ function hex2char(hex) {
   return result;
 }
 
-var searchIsPressed = false;
+/**
+ * Returns a list of modifiers normalized to ignore the distinction between
+ * right or left keys.
+ * @param {Array} modifiers List of modifiers with distinction between right
+ *        and left keys.
+ * @return {Array} List of normalized modifiers ignoring the difference between
+ *         right or left keys.
+ */
+function normalizeModifiers(modifiers) {
+  var result = [];
+  if (contains(modifiers, 'L_SHIFT') || contains(modifiers, 'R_SHIFT')) {
+    result.push('SHIFT');
+  }
+  if (contains(modifiers, 'L_CTRL') || contains(modifiers, 'R_CTRL')) {
+    result.push('CTRL');
+  }
+  if (contains(modifiers, 'L_ALT') || contains(modifiers, 'R_ALT')) {
+    result.push('ALT');
+  }
+  if (contains(modifiers, 'SEARCH')) {
+    result.push('SEARCH');
+  }
+  return result.sort();
+}
 
 /**
- * Returns a list of modifiers from the key event.
+ * This table will contain the status of the modifiers.
+ */
+var isPressed = {
+  'L_SHIFT': false,
+  'R_SHIFT': false,
+  'L_CTRL': false,
+  'R_CTRL': false,
+  'L_ALT': false,
+  'R_ALT': false,
+  'SEARCH': false,
+};
+
+/**
+ * Returns a list of modifiers from the key event distinguishing right and left
+ * keys.
  * @param {Event} e The key event.
  * @return {Array} List of modifiers based on key event.
  */
@@ -199,7 +239,6 @@ function getModifiers(e) {
   if (!e)
     return [];
 
-  var isKeyDown = (e.type == 'keydown');
   var keyCodeToModifier = {
     16: 'SHIFT',
     17: 'CTRL',
@@ -207,19 +246,19 @@ function getModifiers(e) {
     91: 'SEARCH',
   };
   var modifierWithKeyCode = keyCodeToModifier[e.keyCode];
-  var isPressed = {
-      'SHIFT': e.shiftKey,
-      'CTRL': e.ctrlKey,
-      'ALT': e.altKey,
-      'SEARCH': searchIsPressed
-  };
-  if (modifierWithKeyCode)
-    isPressed[modifierWithKeyCode] = isKeyDown;
+  /** @const */ var DOM_KEY_LOCATION_LEFT = 1;
+  var side = (e.location == DOM_KEY_LOCATION_LEFT) ? 'L_' : 'R_';
+  var isKeyDown = (e.type == 'keydown');
 
-  searchIsPressed = isPressed['SEARCH'];
+  if (modifierWithKeyCode == 'SEARCH') {
+    isPressed['SEARCH'] = isKeyDown;
+  } else {
+    isPressed[side + modifierWithKeyCode] = isKeyDown;
+  }
 
   // make the result array
-  return ['SHIFT', 'CTRL', 'ALT', 'SEARCH'].filter(
+  return result = ['L_SHIFT', 'R_SHIFT', 'L_CTRL', 'R_CTRL', 'L_ALT', 'R_ALT',
+          'SEARCH'].filter(
       function(modifier) {
         return isPressed[modifier];
       }).sort();
@@ -269,18 +308,24 @@ function contains(list, e) {
  * Returns a list of the class names corresponding to the identifier and
  * modifiers.
  * @param {string} identifier Key identifier.
- * @param {Array} modifiers List of key modifiers.
+ * @param {Array} modifiers List of key modifiers (with distinction between
+ *                right and left keys).
+ * @param {Array} normalizedModifiers List of key modifiers (without distinction
+ *                between right or left keys).
  * @return {Array} List of class names corresponding to specified params.
  */
-function getKeyClasses(identifier, modifiers) {
+function getKeyClasses(identifier, modifiers, normalizedModifiers) {
   var classes = ['keyboard-overlay-key'];
-  for (var i = 0; i < modifiers.length; ++i) {
-    classes.push(MODIFIER_TO_CLASS[modifiers[i]]);
+  for (var i = 0; i < normalizedModifiers.length; ++i) {
+    classes.push(MODIFIER_TO_CLASS[normalizedModifiers[i]]);
   }
 
-  if ((identifier == '2A' && contains(modifiers, 'SHIFT')) ||
-      (identifier == '1D' && contains(modifiers, 'CTRL')) ||
-      (identifier == '38' && contains(modifiers, 'ALT')) ||
+  if ((identifier == '2A' && contains(modifiers, 'L_SHIFT')) ||
+      (identifier == '36' && contains(modifiers, 'R_SHIFT')) ||
+      (identifier == '1D' && contains(modifiers, 'L_CTRL')) ||
+      (identifier == 'E0 1D' && contains(modifiers, 'R_CTRL')) ||
+      (identifier == '38' && contains(modifiers, 'L_ALT')) ||
+      (identifier == 'E0 38' && contains(modifiers, 'R_ALT')) ||
       (identifier == 'E0 5B' && contains(modifiers, 'SEARCH'))) {
     classes.push('pressed');
     classes.push(IDENTIFIER_TO_CLASS[identifier]);
@@ -391,8 +436,10 @@ function getKeyTextValue(keyData) {
 /**
  * Updates the whole keyboard.
  * @param {Array} modifiers Key Modifier list.
+ * @param {Array} normModifiers Key Modifier list ignoring the distinction
+ *                between right and left keys.
  */
-function update(modifiers) {
+function update(modifiers, normModifiers) {
   var instructions = $('instructions');
   if (modifiers.length == 0) {
     instructions.style.visibility = 'visible';
@@ -406,18 +453,14 @@ function update(modifiers) {
   for (var i = 0; i < layout.length; ++i) {
     var identifier = remapIdentifier(layout[i][0]);
     var keyData = keyboardGlyphData.keys[identifier];
-    var classes = getKeyClasses(identifier, modifiers, keyData);
-    var keyLabel = getKeyLabel(keyData, modifiers);
-    var shortcutId = shortcutData[getAction(keyLabel, modifiers)];
-    if (modifiers.length == 1 && modifiers[0] == 'SHIFT' &&
-        identifier == '2A') {
-      // Currently there is no way to identify whether the left shift or the
-      // right shift is preesed from the key event, so I assume the left shift
-      // key is pressed here and do not show keyboard shortcut description for
-      // 'Shift - Shift' (Toggle caps lock) on the left shift key, the
-      // identifier of which is '2A'.
-      // TODO(mazda): Remove this workaround (http://crosbug.com/18047)
-      shortcutId = null;
+    var classes = getKeyClasses(identifier, modifiers, normModifiers);
+    var keyLabel = getKeyLabel(keyData, normModifiers);
+    var shortcutId = shortcutData[getAction(keyLabel, normModifiers)];
+    if (modifiers.length == 0 &&
+        (identifier == '2A' || identifier == '36')) {
+      // Either the right or left shift keys are used to disable the caps lock
+      // if it was enabled. To fix crbug.com/453623.
+      shortcutId = 'keyboardOverlayDisableCapsLock';
     }
     if (shortcutId) {
       classes.push('is-shortcut');
@@ -466,6 +509,8 @@ function handleKeyEvent(e) {
     return;
   }
 
+  var modifiers = getModifiers(e);
+
   // To avoid flickering as the user releases the modifier keys that were held
   // to trigger the overlay, avoid updating in response to keyup events until at
   // least one keydown event has been received.
@@ -477,9 +522,9 @@ function handleKeyEvent(e) {
     }
   }
 
-  var modifiers = getModifiers(e);
-  update(modifiers);
-  KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
+  var normModifiers = normalizeModifiers(modifiers);
+  update(modifiers, normModifiers);
+  KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(normModifiers);
   e.preventDefault();
 }
 
@@ -704,7 +749,7 @@ function initKeyboardOverlayId(inputMethodId) {
   if (hasDiamondKey() && getLayoutName() != 'J')
     initDiamondKey();
   initLayout();
-  update([]);
+  update([], []);
   window.webkitRequestAnimationFrame(function() {
     chrome.send('didPaint');
   });
