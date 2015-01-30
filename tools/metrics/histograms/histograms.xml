@@ -36179,74 +36179,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Stability.ExitFunnel.BackgroundOff" units="milliseconds">
+<histogram name="Stability.ExitFunnel" units="milliseconds">
   <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.BackgroundOn" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.BrowserExit" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.EndSession" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.ES_CloseApp" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.ES_Critical" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.ES_Logoff" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.ES_Other" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.KillProcess" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.LastWindowClose" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.SessionEnding" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.TraybarExit" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.WatcherLogoff" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
-</histogram>
-
-<histogram name="Stability.ExitFunnel.WM_ENDSESSION" units="milliseconds">
-  <owner>siggi@chromium.org</owner>
-  <summary>Temporary instrumentation. See http://crbug.com/412384.</summary>
+  <summary>
+    Temporary instrumentation to record the Windows browser's exit path. See
+    http://crbug.com/412384.
+  </summary>
 </histogram>
 
 <histogram name="Stars.Goog_Related" units="percent">
@@ -59955,6 +59893,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Media.EME.ClearKey"/>
   <affected-histogram name="Media.EME.Unknown"/>
   <affected-histogram name="Media.EME.Widevine"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExitFunnels" separator=".">
+  <suffix name="BackgroundOff"/>
+  <suffix name="BackgroundOn"/>
+  <suffix name="BrowserExit"/>
+  <suffix name="EndSession"/>
+  <suffix name="ES_CloseApp"/>
+  <suffix name="ES_Critical"/>
+  <suffix name="ES_Logoff"/>
+  <suffix name="ES_Other"/>
+  <suffix name="KillProcess"/>
+  <suffix name="LastWindowClose"/>
+  <suffix name="SessionEnding"/>
+  <suffix name="TraybarEndSession"/>
+  <suffix name="TraybarExit"/>
+  <suffix name="WatcherLogoff"/>
+  <suffix name="WM_ENDSESSION"/>
+  <affected-histogram name="Stability.ExitFunnel"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExternalExtensionEvent" separator="">
