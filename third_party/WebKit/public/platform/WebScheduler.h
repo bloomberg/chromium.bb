@@ -5,13 +5,15 @@
 #ifndef WebScheduler_h
 #define WebScheduler_h
 
+#include "WebCommon.h"
+
 namespace blink {
 
 class WebTraceLocation;
 
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
-class WebScheduler {
+class BLINK_PLATFORM_EXPORT WebScheduler {
 public:
     virtual ~WebScheduler() { }
 
