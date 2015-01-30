@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "ipc/mojo/ipc_channel_mojo.h"
 
 namespace ipc_fuzzer {
 
@@ -66,10 +67,19 @@ void ReplayProcess::OpenChannel() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
 
-  channel_ = IPC::ChannelProxy::Create(channel_name,
-                                       IPC::Channel::MODE_CLIENT,
-                                       this,
-                                       io_thread_.message_loop_proxy());
+  bool should_use_mojo = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "enable-channel-mojo");
+  if (should_use_mojo) {
+    channel_ = IPC::ChannelProxy::Create(
+        IPC::ChannelMojo::CreateClientFactory(channel_name),
+        this,
+        io_thread_.message_loop_proxy());
+  } else {
+    channel_ = IPC::ChannelProxy::Create(channel_name,
+                                         IPC::Channel::MODE_CLIENT,
+                                         this,
+                                         io_thread_.message_loop_proxy());
+  }
 }
 
 bool ReplayProcess::OpenTestcase() {
