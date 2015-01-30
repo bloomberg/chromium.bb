@@ -41,7 +41,6 @@ public:
     // Implementation of WebPresentationController.
     virtual void didChangeAvailability(bool available) override;
     virtual bool isAvailableChangeWatched() const override;
-    virtual void onClientDestroyed() override;
 
     // Called when the first listener was added to or the last listener was removed from the
     // |availablechange| event.

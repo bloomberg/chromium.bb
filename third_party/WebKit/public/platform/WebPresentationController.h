@@ -18,9 +18,6 @@ public:
 
     // Indicates if the frame has listeners to the |availablechange| event.
     virtual bool isAvailableChangeWatched() const = 0;
-
-    // Called when the corresponding WebPresentationClient is destroyed.
-    virtual void onClientDestroyed() = 0;
 };
 
 } // namespace blink

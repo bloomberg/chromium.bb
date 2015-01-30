@@ -69,11 +69,6 @@ bool PresentationController::isAvailableChangeWatched() const
     return m_presentation->isAvailableChangeWatched();
 }
 
-void PresentationController::onClientDestroyed()
-{
-    m_client = nullptr;
-}
-
 void PresentationController::updateAvailableChangeWatched(bool watched)
 {
     if (m_client)
