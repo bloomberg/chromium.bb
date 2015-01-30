@@ -48,8 +48,7 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
         << "Attempt to use protected media identifier in tabless renderer: "
         << id.ToString()
         << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id,
-                        origin,
+    NotifyPermissionSet(id, requesting_frame_origin,
                         web_contents->GetLastCommittedURL().GetOrigin(),
                         callback, false, false);
     return;
