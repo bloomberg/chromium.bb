@@ -272,7 +272,6 @@ namespace app.window {
     boolean? focused;
 
     // If true, the window will be visible on all workspaces.
-    // This is only available on dev channel.
     boolean? visibleOnAllWorkspaces;
   };
 
@@ -391,7 +390,6 @@ namespace app.window {
 
     // For platforms that support multiple workspaces, is this window visible on
     // all of them?
-    // This is only available on dev channel.
     static void setVisibleOnAllWorkspaces(boolean alwaysVisible);
 
     // Set whether the window should get all keyboard events including system

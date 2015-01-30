@@ -96,7 +96,7 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) = 0;
 
-  // Returns whether the window show be visible on all workspaces.
+  // Sets whether the window should be visible on all workspaces.
   virtual void SetVisibleOnAllWorkspaces(bool always_visible) = 0;
 
   // Returns false if the underlying native window ignores alpha transparency

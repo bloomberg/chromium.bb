@@ -4,8 +4,6 @@
 
 // All these tests are run in Stable channel.
 
-var error = "The visibleOnAllWorkspaces option requires dev channel or newer.";
-
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.runTests([
 
@@ -14,13 +12,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
       chrome.app.window.create(
           'index.html', {
             visibleOnAllWorkspaces: true,
-          }, chrome.test.callbackFail(error));
+          }, chrome.test.callbackPass(function () {}));
     },
 
     // Check chrome.app.window.canSetVisibleOnAllWorkspaces().
     function testCanSetVisibleOnAllWorkspaces() {
       chrome.test.assertTrue(
-          chrome.app.window.canSetVisibleOnAllWorkspaces === undefined);
+          typeof chrome.app.window.canSetVisibleOnAllWorkspaces == 'function');
       chrome.test.callbackPass(function () {})();
     },
 

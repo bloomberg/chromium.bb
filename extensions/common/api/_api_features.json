@@ -53,13 +53,6 @@
       "F94EE6AB36D6C6588670B2B01EB65212D9C64E33"   // Open source xkb extension
     ]
   }],
-  // This does not need to be a complex feature if we could set "noparent" here.
-  // But set "noparent" makes this feature available on stable channel. The
-  // issue is tracked in crbug.com/415750.
-  "app.window.canSetVisibleOnAllWorkspaces": [{
-    "contexts": ["blessed_extension"],
-    "channel": "dev"
-  }],
   "app.currentWindowInternal": {
     "noparent": true,
     "internal": true,
