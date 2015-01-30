@@ -4,8 +4,8 @@
 
 #include "ppapi/proxy/host_dispatcher.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/host_var_serialization_rules.h"

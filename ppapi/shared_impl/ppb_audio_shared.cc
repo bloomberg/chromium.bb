@@ -4,8 +4,8 @@
 
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
