@@ -7,17 +7,17 @@
   },
   "permissions": ["activeTab"],
   "commands": {
-    "red": {
+    "ctrl_f": {
       "suggested_key": "Ctrl+F",
-      "description": "Make the page red"
+      "description": "Send a ctrl f test message"
     },
-    "green": {
+    "ctrl_d": {
       "suggested_key": "Ctrl+D",
-      "description": "Make the page green"
+      "description": "Send a ctrl d test message"
     },
-    "blue": {
+    "alt_shift_f": {
       "suggested_key": "Alt+Shift+F",
-      "description": "Make the page blue"
+      "description": "Send a ctrl shift f test message"
     }
   }
 }

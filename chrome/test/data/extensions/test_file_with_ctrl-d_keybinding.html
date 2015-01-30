@@ -11,7 +11,8 @@ document.onkeydown = function(e) {
   if (e.keyCode == 17 || e.keyCode == 91 || e.keyCode == 93) {
     ctrlDown = true;
   } else if (String.fromCharCode(e.keyCode) == 'D' && ctrlDown) {
-    document.body.bgColor = "magenta";
+    window.domAutomationController.setAutomationId(0);
+    window.domAutomationController.send('web page received');
     return false;
   }
 };

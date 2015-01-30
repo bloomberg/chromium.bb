@@ -12,9 +12,9 @@
     }
   },
   "commands": {
-    "green": {
+    "send message": {
       "suggested_key": "Ctrl+D",
-      "description": "Make the page green"
+      "description": "Send message"
     }
   }
 }

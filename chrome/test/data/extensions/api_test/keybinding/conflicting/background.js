@@ -4,12 +4,12 @@
 
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(windowId) {
-  chrome.tabs.executeScript(null, { code: "document.body.bgColor='green'" });
+  chrome.test.sendMessage('conflicting browser action');
 });
 
 // Called when the user activates the command.
 chrome.commands.onCommand.addListener(function(command) {
-  chrome.tabs.executeScript(null, { code: "document.body.bgColor='yellow'" });
+  chrome.test.sendMessage('conflicting command');
 });
 
 chrome.test.notifyPass();

@@ -1,5 +1,5 @@
 {
-  "name": "Conflicting keybinding test, duplicate of Basics extension (dir next to this), but uses different colors",
+  "name": "Conflicting keybinding test, duplicate of Basics extension (dir next to this), but uses different messages",
   "version": "1.0",
   "manifest_version": 2,
   "background": {
@@ -7,7 +7,7 @@
   },
   "permissions": ["activeTab"],
   "browser_action": {
-    "default_title": "Make this page green"
+    "default_title": "Send message"
   },
   "commands": {
     "toggle-feature": {
