@@ -16,7 +16,7 @@ namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
   {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
-  {"RegisterUploadTestServer", cronet::RegisterUploadTestServer},
+  {"RegisterNativeTestServer", cronet::RegisterNativeTestServer},
   {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},
 };
 

@@ -34,7 +34,7 @@ public class UploadTest extends CronetTestBase {
         super.setUp();
         mActivity = launchCronetTestApp();
         assertNotNull(mActivity);
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }
 
@@ -70,7 +70,7 @@ public class UploadTest extends CronetTestBase {
     public void testUploadData() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getEchoBodyURL(), listener);
+                NativeTestServer.getEchoBodyURL(), listener);
         request.setUploadData("text/plain", UPLOAD_DATA.getBytes("UTF8"));
         request.start();
         listener.blockForComplete();
@@ -88,7 +88,7 @@ public class UploadTest extends CronetTestBase {
     public void testUploadDataWithRedirect() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getRedirectToEchoBody(), listener);
+                NativeTestServer.getRedirectToEchoBody(), listener);
         request.setUploadData("text/plain", UPLOAD_DATA.getBytes("UTF8"));
         request.start();
         listener.blockForComplete();
@@ -108,7 +108,7 @@ public class UploadTest extends CronetTestBase {
             TestHttpUrlRequestListener listener =
                     new TestHttpUrlRequestListener();
             HttpUrlRequest request = createRequest(
-                    UploadTestServer.getEchoHeaderURL("Content-Type"),
+                    NativeTestServer.getEchoHeaderURL("Content-Type"),
                     listener);
             request.setUploadData(contentType, UPLOAD_DATA.getBytes("UTF8"));
             request.start();
@@ -127,7 +127,7 @@ public class UploadTest extends CronetTestBase {
     public void testDefaultUploadMethod() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getEchoMethodURL(), listener);
+                NativeTestServer.getEchoMethodURL(), listener);
         request.setUploadData("text/plain", UPLOAD_DATA.getBytes("UTF8"));
         request.start();
         listener.blockForComplete();
@@ -147,7 +147,7 @@ public class UploadTest extends CronetTestBase {
             TestHttpUrlRequestListener listener =
                     new TestHttpUrlRequestListener();
             HttpUrlRequest request = createRequest(
-                    UploadTestServer.getEchoMethodURL(), listener);
+                    NativeTestServer.getEchoMethodURL(), listener);
             request.setHttpMethod(uploadMethod);
             request.setUploadData("text/plain", UPLOAD_DATA.getBytes("UTF8"));
             request.start();
@@ -166,7 +166,7 @@ public class UploadTest extends CronetTestBase {
     public void testUploadChannel() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getEchoBodyURL(), listener);
+                NativeTestServer.getEchoBodyURL(), listener);
         setUploadChannel(request, "text/plain", UPLOAD_CHANNEL_DATA,
                          UPLOAD_CHANNEL_DATA.length());
         request.start();
@@ -186,7 +186,7 @@ public class UploadTest extends CronetTestBase {
     public void testUploadChannelWithRedirect() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getRedirectToEchoBody(), listener);
+                NativeTestServer.getRedirectToEchoBody(), listener);
         setUploadChannel(request, "text/plain", UPLOAD_CHANNEL_DATA,
                          UPLOAD_CHANNEL_DATA.length());
         request.start();
@@ -207,7 +207,7 @@ public class UploadTest extends CronetTestBase {
     public void testUploadChannelWithReadError() throws Exception {
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = createRequest(
-                UploadTestServer.getEchoBodyURL(), listener);
+                NativeTestServer.getEchoBodyURL(), listener);
         setUploadChannel(request, "text/plain", UPLOAD_CHANNEL_DATA,
                          UPLOAD_CHANNEL_DATA.length() + 2);
         request.start();
@@ -228,7 +228,7 @@ public class UploadTest extends CronetTestBase {
             TestHttpUrlRequestListener listener =
                     new TestHttpUrlRequestListener();
             HttpUrlRequest request = createRequest(
-                    UploadTestServer.getEchoHeaderURL("Content-Type"),
+                    NativeTestServer.getEchoHeaderURL("Content-Type"),
                                                       listener);
             setUploadChannel(request, contentType, UPLOAD_CHANNEL_DATA,
                              UPLOAD_CHANNEL_DATA.length());
@@ -286,7 +286,7 @@ public class UploadTest extends CronetTestBase {
 
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         ChromiumUrlRequest request = (ChromiumUrlRequest) createRequest(
-                UploadTestServer.getEchoBodyURL(), listener);
+                NativeTestServer.getEchoBodyURL(), listener);
         request.setChunkedUpload("dangerous/crocodile");
         try {
             request.appendChunk(byteBuffer, false);

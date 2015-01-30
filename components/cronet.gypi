@@ -301,7 +301,7 @@
           'sources': [
             'cronet/android/test/src/org/chromium/cronet_test_apk/CronetTestUtil.java',
             'cronet/android/test/src/org/chromium/cronet_test_apk/MockUrlRequestJobFactory.java',
-            'cronet/android/test/src/org/chromium/cronet_test_apk/UploadTestServer.java',
+            'cronet/android/test/src/org/chromium/cronet_test_apk/NativeTestServer.java',
             'cronet/android/test/src/org/chromium/cronet_test_apk/NetworkChangeNotifierUtil.java',
           ],
           'variables': {

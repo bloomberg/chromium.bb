@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "jni/UploadTestServer_jni.h"
+#include "jni/NativeTestServer_jni.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -79,7 +79,7 @@ scoped_ptr<net::test_server::HttpResponse> UploadServerRequestHandler(
 
 }  // namespace
 
-jboolean StartUploadTestServer(JNIEnv* env,
+jboolean StartNativeTestServer(JNIEnv* env,
                                jclass jcaller,
                                jstring jtest_files_root) {
   // Shouldn't happen.
@@ -96,7 +96,7 @@ jboolean StartUploadTestServer(JNIEnv* env,
   return g_test_server->InitializeAndWaitUntilReady();
 }
 
-void ShutdownUploadTestServer(JNIEnv* env, jclass jcaller) {
+void ShutdownNativeTestServer(JNIEnv* env, jclass jcaller) {
   if (!g_test_server)
     return;
   delete g_test_server;
@@ -144,7 +144,7 @@ jstring GetFileURL(JNIEnv* env, jclass jcaller, jstring jfile_path) {
   return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-bool RegisterUploadTestServer(JNIEnv* env) {
+bool RegisterNativeTestServer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

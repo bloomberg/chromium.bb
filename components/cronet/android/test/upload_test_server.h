@@ -9,7 +9,7 @@
 
 namespace cronet {
 
-bool RegisterUploadTestServer(JNIEnv* env);
+bool RegisterNativeTestServer(JNIEnv* env);
 
 }  // namespace cronet
 

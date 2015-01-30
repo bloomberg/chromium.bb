@@ -34,7 +34,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
         // Add url interceptors after native application context is initialized.
         mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
@@ -43,7 +43,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
     @Override
     protected void tearDown() throws Exception {
-        UploadTestServer.shutdownUploadTestServer();
+        NativeTestServer.shutdownNativeTestServer();
         mActivity.mUrlRequestContext.shutdown();
         super.tearDown();
     }
@@ -83,22 +83,22 @@ public class CronetUrlRequestTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testSimpleGet() throws Exception {
         TestUrlRequestListener listener = startAndWaitForComplete(
-                UploadTestServer.getEchoMethodURL());
+                NativeTestServer.getEchoMethodURL());
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
         // Default method is 'GET'.
         assertEquals("GET", listener.mResponseAsString);
         assertFalse(listener.mOnRedirectCalled);
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
         checkResponseInfo(listener.mResponseInfo,
-                UploadTestServer.getEchoMethodURL(), 200, "OK");
+                NativeTestServer.getEchoMethodURL(), 200, "OK");
         checkResponseInfo(listener.mExtendedResponseInfo.getResponseInfo(),
-                UploadTestServer.getEchoMethodURL(), 200, "OK");
+                NativeTestServer.getEchoMethodURL(), 200, "OK");
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testNotFound() throws Exception {
-        String url = UploadTestServer.getFileURL("/notfound.html");
+        String url = NativeTestServer.getFileURL("/notfound.html");
         TestUrlRequestListener listener = startAndWaitForComplete(url);
         checkResponseInfo(listener.mResponseInfo, url, 404, "Not Found");
         checkResponseInfo(listener.mExtendedResponseInfo.getResponseInfo(),
@@ -117,7 +117,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         String methodName = "HEAD";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoMethodURL(), listener,
+                NativeTestServer.getEchoMethodURL(), listener,
                 listener.getExecutor());
         // Try to set 'null' method.
         try {
@@ -195,7 +195,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         String headerName = "header-name";
         String headerValue = "header-value";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoHeaderURL(headerName), listener,
+                NativeTestServer.getEchoHeaderURL(headerName), listener,
                 listener.getExecutor());
 
         urlRequest.addHeader(headerName, headerValue);
@@ -219,7 +219,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         String headerValue1 = "header-value1";
         String headerValue2 = "header-value2";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoAllHeadersURL(), listener,
+                NativeTestServer.getEchoAllHeadersURL(), listener,
                 listener.getExecutor());
         urlRequest.addHeader(headerName, headerValue1);
         urlRequest.addHeader(headerName, headerValue2);
@@ -244,7 +244,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoHeaderURL(userAgentName), listener,
+                NativeTestServer.getEchoHeaderURL(userAgentName), listener,
                 listener.getExecutor());
         urlRequest.addHeader(userAgentName, userAgentValue);
         urlRequest.start();
@@ -259,7 +259,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         String headerName = "User-Agent";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoHeaderURL(headerName), listener,
+                NativeTestServer.getEchoHeaderURL(headerName), listener,
                 listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();

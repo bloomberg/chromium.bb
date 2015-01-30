@@ -9,7 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.cronet_test_apk.CronetTestActivity;
 import org.chromium.cronet_test_apk.CronetTestBase;
-import org.chromium.cronet_test_apk.UploadTestServer;
+import org.chromium.cronet_test_apk.NativeTestServer;
 import org.chromium.net.urlconnection.CronetHttpURLStreamHandler;
 
 import java.io.ByteArrayOutputStream;
@@ -26,20 +26,20 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = launchCronetTestApp();
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }
 
     @Override
     protected void tearDown() throws Exception {
-        UploadTestServer.shutdownUploadTestServer();
+        NativeTestServer.shutdownNativeTestServer();
         super.tearDown();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionHttp() throws Exception {
-        URL url = new URL(UploadTestServer.getEchoMethodURL());
+        URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
                 new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
         HttpURLConnection connection =
@@ -78,7 +78,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionWithProxy() throws Exception {
-        URL url = new URL(UploadTestServer.getEchoMethodURL());
+        URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
                 new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
         Proxy proxy = new Proxy(Proxy.Type.HTTP,

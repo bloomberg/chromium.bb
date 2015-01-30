@@ -83,11 +83,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         };
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(TEST_URL,
                 commandLineArgs);
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoHeaderURL(userAgentName), listener,
+                NativeTestServer.getEchoHeaderURL(userAgentName), listener,
                 listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();
@@ -292,7 +292,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         };
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
                 commandLineArgs);
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }
 
@@ -310,7 +310,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisabled() throws Exception {
         enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
-        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -320,10 +320,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testEnableHttpCacheInMemory() throws Exception {
         enableCache(UrlRequestContextConfig.HttpCache.IN_MEMORY);
-        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
-        UploadTestServer.shutdownUploadTestServer();
+        NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(url, true);
     }
 
@@ -331,10 +331,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisk() throws Exception {
         enableCache(UrlRequestContextConfig.HttpCache.DISK);
-        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
-        UploadTestServer.shutdownUploadTestServer();
+        NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(url, true);
     }
 
@@ -342,7 +342,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
         enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
-        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -363,12 +363,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         };
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
                 commandLineArgs);
-        assertTrue(UploadTestServer.startUploadTestServer(
+        assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
-        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
-        UploadTestServer.shutdownUploadTestServer();
+        NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(url, true);
         // Shutdown original context and create another that uses the same cache.
         mActivity.mUrlRequestContext.shutdown();

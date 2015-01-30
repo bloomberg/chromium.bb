@@ -13,14 +13,14 @@ import org.chromium.base.JNINamespace;
  * needed to talk to it.
  */
 @JNINamespace("cronet")
-public final class UploadTestServer {
-    public static boolean startUploadTestServer(Context context) {
-        return nativeStartUploadTestServer(
+public final class NativeTestServer {
+    public static boolean startNativeTestServer(Context context) {
+        return nativeStartNativeTestServer(
                 TestFilesInstaller.getInstalledPath(context));
     }
 
-    public static void shutdownUploadTestServer() {
-        nativeShutdownUploadTestServer();
+    public static void shutdownNativeTestServer() {
+        nativeShutdownNativeTestServer();
     }
 
     public static String getEchoBodyURL() {
@@ -47,8 +47,8 @@ public final class UploadTestServer {
         return nativeGetFileURL(filePath);
     }
 
-    private static native boolean nativeStartUploadTestServer(String filePath);
-    private static native void nativeShutdownUploadTestServer();
+    private static native boolean nativeStartNativeTestServer(String filePath);
+    private static native void nativeShutdownNativeTestServer();
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);
     private static native String nativeGetEchoAllHeadersURL();
