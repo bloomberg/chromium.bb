@@ -133,9 +133,10 @@ void HttpServerPropertiesManager::Clear(const base::Closure& completion) {
   UpdatePrefsFromCacheOnNetworkThread(completion);
 }
 
-bool HttpServerPropertiesManager::SupportsSpdy(const HostPortPair& server) {
+bool HttpServerPropertiesManager::SupportsRequestPriority(
+    const HostPortPair& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->SupportsSpdy(server);
+  return http_server_properties_impl_->SupportsRequestPriority(server);
 }
 
 void HttpServerPropertiesManager::SetSupportsSpdy(const HostPortPair& server,

@@ -223,9 +223,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify SupportsSpdy.
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(google_server));
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(mail_server));
-  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
+  EXPECT_TRUE(
+      http_server_props_manager_->SupportsRequestPriority(google_server));
+  EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(mail_server));
+  EXPECT_FALSE(http_server_props_manager_->SupportsRequestPriority(
       HostPortPair::FromString("foo.google.com:1337")));
 
   // Verify AlternateProtocol.
@@ -304,7 +305,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify that nothing is set.
-  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
+  EXPECT_FALSE(http_server_props_manager_->SupportsRequestPriority(
       HostPortPair::FromString("www.google.com:65536")));
   EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
       HostPortPair::FromString("www.google.com:65536")));
@@ -363,13 +364,15 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Add mail.google.com:443 as a supporting spdy server.
   HostPortPair spdy_server_mail("mail.google.com", 443);
-  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
@@ -556,7 +559,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   // Run the task.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   EXPECT_TRUE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   SupportsQuic supports_quic =
@@ -585,7 +589,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_manager_->Clear(base::MessageLoop::QuitClosure());
   base::RunLoop().Run();
 
-  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   EXPECT_FALSE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   SupportsQuic supports_quic1 =

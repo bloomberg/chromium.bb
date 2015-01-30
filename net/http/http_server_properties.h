@@ -162,8 +162,9 @@ class NET_EXPORT HttpServerProperties {
   // Deletes all data.
   virtual void Clear() = 0;
 
-  // Returns true if |server| supports SPDY.
-  virtual bool SupportsSpdy(const HostPortPair& server) = 0;
+  // Returns true if |server| supports a network protocol which honors
+  // request prioritization.
+  virtual bool SupportsRequestPriority(const HostPortPair& server) = 0;
 
   // Add |server| into the persistent store. Should only be called from IO
   // thread.

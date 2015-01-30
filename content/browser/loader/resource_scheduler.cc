@@ -473,8 +473,8 @@ class ResourceScheduler::Client {
     request->set_request_priority_params(new_priority_params);
     if (!pending_requests_.IsQueued(request)) {
       DCHECK(ContainsKey(in_flight_requests_, request));
-      // The priority and SPDY support may have changed, so update the
-      // delayable count.
+      // The priority of the request and priority support of the server may
+      // have changed, so update the delayable count.
       SetRequestClassification(request, ClassifyRequest(request));
       // Request has already started.
       return;
@@ -617,7 +617,7 @@ class ResourceScheduler::Client {
           net::HostPortPair::FromURL(request->url_request()->url());
       net::HttpServerProperties& http_server_properties =
           *request->url_request()->context()->http_server_properties();
-      if (!http_server_properties.SupportsSpdy(host_port_pair) &&
+      if (!http_server_properties.SupportsRequestPriority(host_port_pair) &&
           ContainsKey(in_flight_requests_, request)) {
         return IN_FLIGHT_DELAYABLE_REQUEST;
       }
@@ -654,7 +654,7 @@ class ResourceScheduler::Client {
   //   * Synchronous requests.
   //   * Non-HTTP[S] requests.
   //
-  // 2. Requests to SPDY-capable origin servers.
+  // 2. Requests to request-priority-capable origin servers.
   //
   // 3. High-priority requests:
   //   * Higher priority requests (>= net::LOW).
@@ -668,8 +668,8 @@ class ResourceScheduler::Client {
   //  The following rules are followed:
   //
   //  ACTIVE_AND_LOADING and UNTHROTTLED Clients follow these rules:
-  //   * Non-delayable, High-priority and SPDY capable requests are issued
-  //     immediately.
+  //   * Non-delayable, High-priority and request-priority capable requests are
+  //     issued immediately.
   //   * Low priority requests are delayable.
   //   * Allow one delayable request to load at a time while layout-blocking
   //     requests are loading or the body tag has not yet been parsed.
@@ -679,8 +679,10 @@ class ResourceScheduler::Client {
   //   * Never exceed 6 delayable requests for a given host.
   //
   //  THROTTLED Clients follow these rules:
-  //   * Non-delayable and SPDY-capable requests are issued immediately.
-  //   * At most one non-SPDY request will be issued per THROTTLED Client
+  //   * Non-delayable and request-priority-capable requests are issued
+  //     immediately.
+  //   * At most one non-request-priority-capable request will be issued per
+  //     THROTTLED Client
   //   * If no high priority requests are in flight, start loading low priority
   //     requests.
   //
@@ -721,15 +723,16 @@ class ResourceScheduler::Client {
         *url_request.context()->http_server_properties();
 
     // TODO(willchan): We should really improve this algorithm as described in
-    // crbug.com/164101. Also, theoretically we should not count a SPDY request
-    // against the delayable requests limit.
-    if (http_server_properties.SupportsSpdy(host_port_pair)) {
+    // crbug.com/164101. Also, theoretically we should not count a
+    // request-priority capable request against the delayable requests limit.
+    if (http_server_properties.SupportsRequestPriority(host_port_pair)) {
       return START_REQUEST;
     }
 
     if (throttle_state_ == THROTTLED &&
         in_flight_requests_.size() >= kMaxNumThrottledRequestsPerClient) {
-      // There may still be SPDY-capable requests that should be issued.
+      // There may still be request-priority-capable requests that should be
+      // issued.
       return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
     }
 

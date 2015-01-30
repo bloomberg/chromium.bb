@@ -41,18 +41,18 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
 
   // Check by initializing NULL spdy servers.
   impl_.InitializeSpdyServers(NULL, true);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Check by initializing empty spdy servers.
   std::vector<std::string> spdy_servers;
   impl_.InitializeSpdyServers(&spdy_servers, true);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Check by initializing with www.google.com:443 spdy server.
   std::vector<std::string> spdy_servers1;
   spdy_servers1.push_back(spdy_server_g);
   impl_.InitializeSpdyServers(&spdy_servers1, true);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Check by initializing with www.google.com:443 and docs.google.com:443 spdy
   // servers.
@@ -71,55 +71,38 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
   std::string string_value_d;
   ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_d));
   ASSERT_EQ(spdy_server_d, string_value_d);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_docs));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
 }
 
-TEST_F(SpdyServerPropertiesTest, SupportsSpdyTest) {
+TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
   HostPortPair spdy_server_empty(std::string(), 443);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_empty));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_empty));
 
   // Add www.google.com:443 as supporting SPDY.
   HostPortPair spdy_server_google("www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Add mail.google.com:443 as not supporting SPDY.
   HostPortPair spdy_server_mail("mail.google.com", 443);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
 
   // Add docs.google.com:443 as supporting SPDY.
   HostPortPair spdy_server_docs("docs.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_docs, true);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_docs));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
+
+  // Add www.youtube.com:443 as supporting QUIC.
+  HostPortPair quic_server_youtube("www.youtube.com", 443);
+  impl_.SetAlternateProtocol(quic_server_youtube, 443, QUIC, 1);
+  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_youtube));
 
   // Verify all the entries are the same after additions.
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_mail));
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_docs));
-}
-
-TEST_F(SpdyServerPropertiesTest, SetSupportsSpdy) {
-  HostPortPair spdy_server_empty(std::string(), 443);
-  impl_.SetSupportsSpdy(spdy_server_empty, true);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_empty));
-
-  // Add www.google.com:443 as supporting SPDY.
-  HostPortPair spdy_server_google("www.google.com", 443);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
-  impl_.SetSupportsSpdy(spdy_server_google, true);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
-
-  // Make www.google.com:443 as not supporting SPDY.
-  impl_.SetSupportsSpdy(spdy_server_google, false);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
-
-  // Add mail.google.com:443 as supporting SPDY.
-  HostPortPair spdy_server_mail("mail.google.com", 443);
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_mail));
-  impl_.SetSupportsSpdy(spdy_server_mail, true);
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_mail));
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_youtube));
 }
 
 TEST_F(SpdyServerPropertiesTest, Clear) {
@@ -129,12 +112,12 @@ TEST_F(SpdyServerPropertiesTest, Clear) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_mail, true);
 
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_mail));
 
   impl_.Clear();
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_google));
-  EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
 }
 
 TEST_F(SpdyServerPropertiesTest, GetSpdyServerList) {
@@ -223,7 +206,7 @@ TEST_F(SpdyServerPropertiesTest, MRUOfGetSpdyServerList) {
 
   // Get www.google.com:443 should reorder SpdyServerHostPortMap. Verify that it
   // is www.google.com:443 is the MRU server.
-  EXPECT_TRUE(impl_.SupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
   impl_.GetSpdyServerList(&spdy_server_list, kMaxSupportsSpdyServerHosts);
   ASSERT_EQ(2U, spdy_server_list.GetSize());
   ASSERT_TRUE(spdy_server_list.GetString(0, &string_value_g));

@@ -134,8 +134,9 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   DCHECK_GT(num_streams, 0);
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
-  if (http_server_properties && http_server_properties->SupportsSpdy(
-      HostPortPair::FromURL(request_info_.url))) {
+  if (http_server_properties &&
+      http_server_properties->SupportsRequestPriority(
+          HostPortPair::FromURL(request_info_.url))) {
     num_streams_ = 1;
   } else {
     num_streams_ = num_streams;

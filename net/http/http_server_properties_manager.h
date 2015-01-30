@@ -80,7 +80,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   base::WeakPtr<HttpServerProperties> GetWeakPtr() override;
   void Clear() override;
-  bool SupportsSpdy(const HostPortPair& server) override;
+  bool SupportsRequestPriority(const HostPortPair& server) override;
   void SetSupportsSpdy(const HostPortPair& server, bool support_spdy) override;
   bool RequiresHTTP11(const HostPortPair& server) override;
   void SetHTTP11Required(const HostPortPair& server) override;
