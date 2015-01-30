@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function toggleHelpBox() {
-  var helpBoxOuter = $('details');
+  var helpBoxOuter = $('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
   var detailsButton = $('details-button');
   if (helpBoxOuter.classList.contains('hidden')) {

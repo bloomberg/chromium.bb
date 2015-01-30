@@ -26,7 +26,6 @@ function setupCheckbox() {
   $('opt-in-label').innerHTML = loadTimeData.getString('optInLink');
   $('opt-in-checkbox').checked = loadTimeData.getBoolean(SB_BOX_CHECKED);
   $('malware-opt-in').classList.remove('hidden');
-  $('body').classList.add('safe-browsing-has-checkbox');
 
   $('opt-in-checkbox').addEventListener('click', function() {
     sendCommand(
