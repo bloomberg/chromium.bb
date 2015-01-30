@@ -23,10 +23,9 @@ using testing::Property;
 
 class EventObserver {
  public:
-  void EventDispatchCallback(scoped_ptr<Event> event) {
+  void EventDispatchCallback(Event* event) {
     DispatchEventFromNativeUiEvent(
-        event.get(),
-        base::Bind(&EventObserver::OnEvent, base::Unretained(this)));
+        event, base::Bind(&EventObserver::OnEvent, base::Unretained(this)));
   }
 
   void OnEvent(Event* event) {

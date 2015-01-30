@@ -128,8 +128,9 @@ class EventConverterEvdevImplTest : public testing::Test {
   }
 
  private:
-  void DispatchEventForTest(scoped_ptr<ui::Event> event) {
-    dispatched_events_.push_back(event.release());
+  void DispatchEventForTest(ui::Event* event) {
+    scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
+    dispatched_events_.push_back(cloned_event.release());
   }
 
   base::MessageLoopForUI ui_loop_;

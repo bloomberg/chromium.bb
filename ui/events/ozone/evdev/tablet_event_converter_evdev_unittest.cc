@@ -180,8 +180,9 @@ class TabletEventConverterEvdevTest : public testing::Test {
     return static_cast<ui::MouseEvent*>(ev);
   }
 
-  void DispatchEventForTest(scoped_ptr<ui::Event> event) {
-    dispatched_events_.push_back(event.release());
+  void DispatchEventForTest(ui::Event* event) {
+    scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
+    dispatched_events_.push_back(cloned_event.release());
   }
 
  private:

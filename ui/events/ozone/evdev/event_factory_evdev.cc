@@ -110,9 +110,10 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                      KeyboardLayoutEngine* keyboard_layout)
     : last_device_id_(0),
       device_manager_(device_manager),
-      dispatch_callback_(
-          base::Bind(&EventFactoryEvdev::PostUiEvent, base::Unretained(this))),
-      keyboard_(&modifiers_, keyboard_layout, dispatch_callback_),
+      keyboard_(&modifiers_,
+                keyboard_layout,
+                base::Bind(&EventFactoryEvdev::DispatchUiEvent,
+                           base::Unretained(this))),
       cursor_(cursor),
       input_controller_(&keyboard_, &button_map_),
       initialized_(false),
@@ -159,12 +160,11 @@ void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
 
 void EventFactoryEvdev::DispatchMouseMoveEvent(
     const MouseMoveEventParams& params) {
-  scoped_ptr<MouseEvent> event(new MouseEvent(ui::ET_MOUSE_MOVED,
-                                              params.location, params.location,
-                                              modifiers_.GetModifierFlags(),
-                                              /* changed_button_flags */ 0));
-  event->set_source_device_id(params.device_id);
-  PostUiEvent(event.Pass());
+  MouseEvent event(ui::ET_MOUSE_MOVED, params.location, params.location,
+                   modifiers_.GetModifierFlags(),
+                   /* changed_button_flags */ 0);
+  event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&event);
 }
 
 void EventFactoryEvdev::DispatchMouseButtonEvent(
@@ -192,30 +192,30 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   int flag = modifiers_.GetEventFlagFromModifier(modifier);
   modifiers_.UpdateModifier(modifier, params.down);
 
-  scoped_ptr<MouseEvent> event(new MouseEvent(
-      params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
-      params.location, params.location, modifiers_.GetModifierFlags() | flag,
-      /* changed_button_flags */ flag));
-  event->set_source_device_id(params.device_id);
-  PostUiEvent(event.Pass());
+  MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
+                   params.location, params.location,
+                   modifiers_.GetModifierFlags() | flag,
+                   /* changed_button_flags */ flag);
+  event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&event);
 }
 
 void EventFactoryEvdev::DispatchMouseWheelEvent(
     const MouseWheelEventParams& params) {
-  scoped_ptr<MouseWheelEvent> event(new MouseWheelEvent(
-      params.delta, params.location, params.location,
-      modifiers_.GetModifierFlags(), 0 /* changed_button_flags */));
-  event->set_source_device_id(params.device_id);
-  PostUiEvent(event.Pass());
+  MouseWheelEvent event(params.delta, params.location, params.location,
+                        modifiers_.GetModifierFlags(),
+                        0 /* changed_button_flags */);
+  event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&event);
 }
 
 void EventFactoryEvdev::DispatchScrollEvent(const ScrollEventParams& params) {
-  scoped_ptr<ScrollEvent> event(new ScrollEvent(
-      params.type, params.location, params.timestamp,
-      modifiers_.GetModifierFlags(), params.delta.x(), params.delta.y(),
-      params.ordinal_delta.x(), params.ordinal_delta.y(), params.finger_count));
-  event->set_source_device_id(params.device_id);
-  PostUiEvent(event.Pass());
+  ScrollEvent event(params.type, params.location, params.timestamp,
+                    modifiers_.GetModifierFlags(), params.delta.x(),
+                    params.delta.y(), params.ordinal_delta.x(),
+                    params.ordinal_delta.y(), params.finger_count);
+  event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&event);
 }
 
 void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
@@ -232,20 +232,18 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
                                                           &radius_y);
 
-  scoped_ptr<TouchEvent> touch_event(new TouchEvent(
-      params.type, gfx::PointF(x, y), modifiers_.GetModifierFlags(),
-      params.touch_id, params.timestamp, radius_x, radius_y,
-      /* angle */ 0., params.pressure));
-  touch_event->set_source_device_id(params.device_id);
-  PostUiEvent(touch_event.Pass());
+  TouchEvent touch_event(params.type, gfx::PointF(x, y),
+                         modifiers_.GetModifierFlags(), params.touch_id,
+                         params.timestamp, radius_x, radius_y,
+                         /* angle */ 0.f, params.pressure);
+  touch_event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&touch_event);
 }
 
-void EventFactoryEvdev::PostUiEvent(scoped_ptr<Event> event) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EventFactoryEvdev::DispatchUiEventTask,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&event)));
+void EventFactoryEvdev::DispatchUiEvent(Event* event) {
+  // DispatchEvent takes PlatformEvent which is void*. This function
+  // wraps it with the real type.
+  DispatchEvent(event);
 }
 
 void EventFactoryEvdev::DispatchKeyboardDevicesUpdated(
@@ -272,9 +270,6 @@ void EventFactoryEvdev::DispatchTouchpadDevicesUpdated(
   input_controller_.set_has_touchpad(devices.size() != 0);
 }
 
-void EventFactoryEvdev::DispatchUiEventTask(scoped_ptr<Event> event) {
-  DispatchEvent(event.get());
-}
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::INPUT)
@@ -302,14 +297,16 @@ void EventFactoryEvdev::OnDispatcherListChanged() {
 
 void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
-  if (cursor_) {
-    cursor_->MoveCursorTo(widget, location);
-    PostUiEvent(make_scoped_ptr(new MouseEvent(ET_MOUSE_MOVED,
-                                               cursor_->GetLocation(),
-                                               cursor_->GetLocation(),
-                                               modifiers_.GetModifierFlags(),
-                                               /* changed_button_flags */ 0)));
-  }
+  if (!cursor_)
+    return;
+
+  cursor_->MoveCursorTo(widget, location);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            MouseMoveEventParams(-1 /* device_id */,
+                                                 cursor_->GetLocation())));
 }
 
 int EventFactoryEvdev::NextDeviceId() {

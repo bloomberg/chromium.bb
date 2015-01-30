@@ -82,11 +82,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void OnDispatcherListChanged() override;
 
  private:
-  // Post a task to dispatch an event.
-  virtual void PostUiEvent(scoped_ptr<Event> event);
-
   // Dispatch event via PlatformEventSource.
-  void DispatchUiEventTask(scoped_ptr<Event> event);
+  void DispatchUiEvent(ui::Event* event);
 
   int NextDeviceId();
 
@@ -98,9 +95,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Factory for per-device objects.
   scoped_ptr<InputDeviceFactoryEvdev> input_device_factory_;
-
-  // Dispatch callback for events.
-  EventDispatchCallback dispatch_callback_;
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;

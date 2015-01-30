@@ -7,6 +7,7 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 
 namespace ui {
 
@@ -86,8 +87,10 @@ class TestEventFactoryEvdev : public EventFactoryEvdev {
   ~TestEventFactoryEvdev() override {}
 
  private:
-  void PostUiEvent(scoped_ptr<Event> event) override {
-    callback_.Run(event.Pass());
+  uint32_t DispatchEvent(PlatformEvent platform_event) override {
+    Event* event = static_cast<Event*>(platform_event);
+    callback_.Run(event);
+    return POST_DISPATCH_NONE;
   }
 
   EventDispatchCallback callback_;

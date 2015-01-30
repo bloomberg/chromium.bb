@@ -11,7 +11,7 @@ namespace ui {
 
 class Event;
 
-typedef base::Callback<void(scoped_ptr<Event>)> EventDispatchCallback;
+typedef base::Callback<void(Event*)> EventDispatchCallback;
 
 }  // namspace ui
 

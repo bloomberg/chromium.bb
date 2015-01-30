@@ -180,12 +180,11 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
   if (!repeat)
     UpdateModifier(ModifierDomKeyToEventFlag(dom_key), down);
 
-  KeyEvent* event =
-      new KeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-                   modifiers_->GetModifierFlags(), dom_key, character);
+  KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
+                 modifiers_->GetModifierFlags(), dom_key, character);
   if (platform_keycode)
-    event->set_platform_keycode(platform_keycode);
-  callback_.Run(make_scoped_ptr(event));
+    event.set_platform_keycode(platform_keycode);
+  callback_.Run(&event);
 }
 
 }  // namespace ui
