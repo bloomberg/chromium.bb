@@ -10,7 +10,7 @@ set -x
 set -e
 set -u
 
-for dirname in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do
+for dirname in binutils gcc glibc linux-headers-for-nacl newlib ; do
   if [[ -d "$SCRIPT_DIR_ABS/SRC/$dirname" ]]; then (
     cd "$SCRIPT_DIR_ABS/SRC/$dirname"
     (git reset --hard &&

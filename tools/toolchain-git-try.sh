@@ -8,7 +8,7 @@
 cd "$(dirname "$0")"
 . REVISIONS
 
-repos='binutils gcc gdb glibc linux-headers-for-nacl newlib'
+repos='binutils gcc glibc linux-headers-for-nacl newlib'
 
 trybots_glibc_only="\
 nacl-toolchain-precise64-glibc\

@@ -20,7 +20,7 @@ fi
 
 # Lazily create a CL called 'toolchain-try' to contain patches to code in
 # tools/SRC.
-for i in binutils gcc gdb glibc linux-headers-for-nacl newlib; do (
+for i in binutils gcc glibc linux-headers-for-nacl newlib; do (
   revname="NACL_$(echo $i | tr '[:lower:]' '[:upper:]')_COMMIT"
   if [[ "$revname" = "NACL_LINUX-HEADERS-FOR-NACL_COMMIT" ]] ; then
     revname="LINUX_HEADERS_FOR_NACL_COMMIT"
