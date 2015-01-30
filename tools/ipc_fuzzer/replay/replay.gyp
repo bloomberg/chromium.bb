@@ -12,7 +12,6 @@
       'type': 'executable',
       'dependencies': [
         '../message_lib/message_lib.gyp:ipc_message_lib',
-        '../../../ipc/mojo/ipc_mojo.gyp:ipc_mojo'
       ],
       'sources': [
         'replay.cc',
