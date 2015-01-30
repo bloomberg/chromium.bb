@@ -1059,7 +1059,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
         // These are not stored in preferences and get cleared on next browser
         // start. Therefore, we don't care for them.
-        break;
+        continue;
       case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
         NOTREACHED();
     }
