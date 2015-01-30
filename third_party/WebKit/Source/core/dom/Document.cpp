@@ -2185,11 +2185,6 @@ void Document::detach(const AttachContext& context)
 
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
-#if ENABLE(OILPAN)
-    // Done with the window, explicitly clear to hasten its
-    // destruction.
-    clearDOMWindow();
-#endif
 
     // FIXME: Currently we call notifyContextDestroyed() only in
     // Document::detach(), which means that we don't call
