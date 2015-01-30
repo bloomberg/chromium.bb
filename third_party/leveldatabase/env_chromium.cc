@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #endif
 
-#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
@@ -17,6 +16,7 @@
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/re2/re2/re2.h"
 

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "base/pickle.h"
+#include "base/trace_event/trace_event.h"
 #include "ipc/ipc_export.h"
 
 #if !defined(NDEBUG)

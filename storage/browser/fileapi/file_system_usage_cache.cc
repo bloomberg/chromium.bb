@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "storage/browser/fileapi/timed_task_helper.h"
 
 namespace storage {

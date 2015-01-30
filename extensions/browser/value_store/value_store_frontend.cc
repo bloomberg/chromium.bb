@@ -5,9 +5,9 @@
 #include "extensions/browser/value_store/value_store_frontend.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 

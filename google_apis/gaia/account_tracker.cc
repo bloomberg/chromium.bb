@@ -4,9 +4,9 @@
 
 #include "google_apis/gaia/account_tracker.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gaia {

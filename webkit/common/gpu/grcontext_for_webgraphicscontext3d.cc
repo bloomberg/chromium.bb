@@ -4,8 +4,8 @@
 
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "third_party/skia/include/gpu/GrContext.h"

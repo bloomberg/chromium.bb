@@ -5,13 +5,13 @@
 #include "init_webrtc.h"
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/trace_event/trace_event.h"
 #include "webrtc/base/basictypes.h"
 #include "webrtc/base/logging.h"
 

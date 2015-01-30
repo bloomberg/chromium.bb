@@ -5,11 +5,11 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/device/device_event.h"
