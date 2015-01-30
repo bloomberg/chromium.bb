@@ -13,9 +13,9 @@ import org.chromium.base.JNINamespace;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Executor;
 
 /**
@@ -117,6 +117,8 @@ final class CronetUrlRequest implements UrlRequest {
         private final HeadersList mAllHeaders = new HeadersList();
         private final boolean mWasCached;
         private final String mNegotiatedProtocol;
+        private Map<String, List<String>> mResponseHeaders;
+        private List<Pair<String, String>> mUnmodifiableAllHeaders;
 
         NativeResponseInfo(String[] urlChain, int httpStatusCode,
                 String httpStatusText, boolean wasCached,
@@ -150,22 +152,30 @@ final class CronetUrlRequest implements UrlRequest {
 
         @Override
         public List<Pair<String, String>> getAllHeadersAsList() {
-            return Collections.unmodifiableList(mAllHeaders);
+            if (mUnmodifiableAllHeaders == null) {
+                mUnmodifiableAllHeaders =
+                        Collections.unmodifiableList(mAllHeaders);
+            }
+            return mUnmodifiableAllHeaders;
         }
 
         @Override
         public Map<String, List<String>> getAllHeaders() {
-            Map<String, List<String>> map = new HashMap<String, List<String>>();
-            for (Pair<String, String> entry : mAllHeaders) {
-                if (map.containsKey(entry.first)) {
-                    map.get(entry.first).add(entry.second);
-                } else {
-                    List<String> values = new ArrayList<String>();
-                    values.add(entry.second);
-                    map.put(entry.first, values);
-                }
+            if (mResponseHeaders != null) {
+                return mResponseHeaders;
             }
-            return Collections.unmodifiableMap(map);
+            Map<String, List<String>> map = new TreeMap<String, List<String>>(
+                    String.CASE_INSENSITIVE_ORDER);
+            for (Pair<String, String> entry : mAllHeaders) {
+                List<String> values = new ArrayList<String>();
+                if (map.containsKey(entry.first)) {
+                    values.addAll(map.get(entry.first));
+                }
+                values.add(entry.second);
+                map.put(entry.first, Collections.unmodifiableList(values));
+            }
+            mResponseHeaders = Collections.unmodifiableMap(map);
+            return mResponseHeaders;
         }
 
         @Override

@@ -4,6 +4,7 @@
 
 package org.chromium.cronet_test_apk.urlconnection;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
@@ -602,6 +603,112 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.disconnect();
     }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testGetResponseHeadersAsMap() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        Map<String, List<String>> responseHeaders =
+                connection.getHeaderFields();
+        // Make sure response header map is not modifiable.
+        try {
+            responseHeaders.put("foo", Arrays.asList("v1", "v2"));
+            fail();
+        } catch (UnsupportedOperationException e) {
+            // Expected.
+        }
+        List<String> contentType = responseHeaders.get("Content-type");
+        // Make sure map value is not modifiable as well.
+        try {
+            contentType.add("v3");
+            fail();
+        } catch (UnsupportedOperationException e) {
+            // Expected.
+        }
+        // Make sure map look up is key insensitive.
+        List<String> contentTypeWithOddCase =
+                responseHeaders.get("ContENt-tYpe");
+        assertEquals(contentType, contentTypeWithOddCase);
+
+        assertEquals(1, contentType.size());
+        assertEquals("text/plain", contentType.get(0));
+        List<String> accessControl =
+                responseHeaders.get("Access-Control-Allow-Origin");
+        assertEquals(1, accessControl.size());
+        assertEquals("*", accessControl.get(0));
+        List<String> singleHeader = responseHeaders.get("header-name");
+        assertEquals(1, singleHeader.size());
+        assertEquals("header-value", singleHeader.get(0));
+        List<String> multiHeader = responseHeaders.get("multi-header-name");
+        assertEquals(2, multiHeader.size());
+        assertEquals("header-value1", multiHeader.get(0));
+        assertEquals("header-value2", multiHeader.get(1));
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testGetResponseHeaderField() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertEquals("*",
+                connection.getHeaderField("Access-Control-Allow-Origin"));
+        assertEquals("header-value", connection.getHeaderField("header-name"));
+        // If there are multiple headers with the same name, the last should be
+        // returned.
+        assertEquals("header-value2",
+                connection.getHeaderField("multi-header-name"));
+        // Lastly, make sure lookup is case-insensitive.
+        assertEquals("header-value2",
+                connection.getHeaderField("MUlTi-heAder-name"));
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testGetResponseHeaderFieldWithPos() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        assertEquals("Content-Type", connection.getHeaderFieldKey(0));
+        assertEquals("text/plain", connection.getHeaderField(0));
+        assertEquals("Access-Control-Allow-Origin",
+                connection.getHeaderFieldKey(1));
+        assertEquals("*", connection.getHeaderField(1));
+        assertEquals("header-name", connection.getHeaderFieldKey(2));
+        assertEquals("header-value", connection.getHeaderField(2));
+        assertEquals("multi-header-name", connection.getHeaderFieldKey(3));
+        assertEquals("header-value1", connection.getHeaderField(3));
+        assertEquals("multi-header-name", connection.getHeaderFieldKey(4));
+        assertEquals("header-value2", connection.getHeaderField(4));
+        // Note that the default implementation also adds additional response
+        // headers, which are not tested here.
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // The default implementation adds additional response headers, so this test
+    // only tests Cronet's implementation.
+    public void testGetResponseHeaderFieldWithPosExceed() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        // Expect null if we exceed the number of header entries.
+        assertEquals(null, connection.getHeaderFieldKey(5));
+        assertEquals(null, connection.getHeaderField(5));
+        assertEquals(null, connection.getHeaderFieldKey(6));
+        assertEquals(null, connection.getHeaderField(6));
+        connection.disconnect();
+    }
+
     private void checkExceptionsAreThrown(HttpURLConnection connection)
             throws Exception {
         try {
@@ -631,6 +738,18 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         } catch (IOException e) {
             // Expected.
         }
+
+        // Default implementation of getHeaderFields() returns null on K, but
+        // returns an empty map on L.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Map<String, List<String>> headers = connection.getHeaderFields();
+            assertNotNull(headers);
+            assertTrue(headers.isEmpty());
+        }
+        // Skip getHeaderFields(), since it can return null or an empty map.
+        assertNull(connection.getHeaderField("foo"));
+        assertNull(connection.getHeaderFieldKey(0));
+        assertNull(connection.getHeaderField(0));
 
         // getErrorStream() does not have a throw clause, it returns null if
         // there's an exception.

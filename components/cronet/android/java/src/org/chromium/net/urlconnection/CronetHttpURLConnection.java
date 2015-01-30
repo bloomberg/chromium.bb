@@ -114,6 +114,65 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     }
 
     /**
+     * Returns an unmodifiable map of the response-header fields and values.
+     */
+    @Override
+    public Map<String, List<String>> getHeaderFields() {
+        try {
+            connect();
+        } catch (IOException e) {
+            return Collections.emptyMap();
+        }
+        return mResponseInfo.getAllHeaders();
+    }
+
+    /**
+     * Returns the value of the named header field. If called on a connection
+     * that sets the same header multiple times with possibly different values,
+     * only the last value is returned.
+     */
+    @Override
+    public final String getHeaderField(String fieldName) {
+        try {
+            connect();
+        } catch (IOException e) {
+            return null;
+        }
+        Map<String, List<String>> map = mResponseInfo.getAllHeaders();
+        if (!map.containsKey(fieldName)) {
+            return null;
+        }
+        List<String> values = map.get(fieldName);
+        return values.get(values.size() - 1);
+    }
+
+    /**
+     * Returns the name of the header field at the given position pos, or null
+     * if there are fewer than pos fields.
+     */
+    @Override
+    public final String getHeaderFieldKey(int pos) {
+        Pair<String, String> header = getHeaderFieldPair(pos);
+        if (header == null) {
+            return null;
+        }
+        return header.first;
+    }
+
+    /**
+     * Returns the header value at the field position pos or null if the header
+     * has fewer than pos fields.
+     */
+    @Override
+    public final String getHeaderField(int pos) {
+        Pair<String, String> header = getHeaderFieldPair(pos);
+        if (header == null) {
+            return null;
+        }
+        return header.second;
+    }
+
+    /**
      * Returns an InputStream for reading data from the resource pointed by this
      * URLConnection.
      * @throws FileNotFoundException if http response code is equal or greater
@@ -343,5 +402,22 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             throw new NullPointerException(
                     "Response info is null when there is no exception.");
         }
+    }
+
+    /**
+     * Helper method to return the response header field at position pos.
+     */
+    private Pair<String, String> getHeaderFieldPair(int pos) {
+        try {
+            connect();
+        } catch (IOException e) {
+            return null;
+        }
+        List<Pair<String, String>> headers =
+                mResponseInfo.getAllHeadersAsList();
+        if (pos >= headers.size()) {
+            return null;
+        }
+        return headers.get(pos);
     }
 }
