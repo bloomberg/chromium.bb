@@ -3,6 +3,16 @@ if (self.importScripts) {
 }
 
 promise_test(function() {
+    var response = new Response;
+    return response.text()
+      .then(function(text) {
+          assert_equals(text, '',
+                        'response.text() must return an empty string' +
+                        'if body is null');
+        });
+  }, 'Behavior of Response with no constructor arguments.');
+
+promise_test(function() {
     var response = new Response('test string');
     assert_equals(
       response.headers.get('Content-Type'),
