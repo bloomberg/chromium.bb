@@ -62,7 +62,7 @@ public:
     void terminate(ExceptionState&);
 
     String scriptURL() const;
-    const AtomicString& state() const;
+    String state() const;
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.

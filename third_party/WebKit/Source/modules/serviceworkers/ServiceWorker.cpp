@@ -122,30 +122,23 @@ String ServiceWorker::scriptURL() const
     return m_outerWorker->url().string();
 }
 
-const AtomicString& ServiceWorker::state() const
+String ServiceWorker::state() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, unknown, ("unknown", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, installing, ("installing", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, installed, ("installed", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, activating, ("activating", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, activated, ("activated", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, redundant, ("redundant", AtomicString::ConstructFromLiteral));
-
     switch (m_outerWorker->state()) {
     case WebServiceWorkerStateUnknown:
         // The web platform should never see this internal state
         ASSERT_NOT_REACHED();
-        return unknown;
+        return "unknown";
     case WebServiceWorkerStateInstalling:
-        return installing;
+        return "installing";
     case WebServiceWorkerStateInstalled:
-        return installed;
+        return "installed";
     case WebServiceWorkerStateActivating:
-        return activating;
+        return "activating";
     case WebServiceWorkerStateActivated:
-        return activated;
+        return "activated";
     case WebServiceWorkerStateRedundant:
-        return redundant;
+        return "redundant";
     default:
         ASSERT_NOT_REACHED();
         return nullAtom;
