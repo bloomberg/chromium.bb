@@ -810,8 +810,28 @@ AccessibilityOrientation AXRenderObject::orientation() const
 
 String AXRenderObject::text() const
 {
-    if (isPasswordFieldAndShouldHideValue())
-        return String();
+    if (isPasswordFieldAndShouldHideValue()) {
+        if (!m_renderer)
+            return String();
+
+        RenderStyle* style = m_renderer->style();
+        if (!style)
+            return String();
+
+        int unmaskedTextLength = toHTMLInputElement(node())->value().length();
+        switch (style->textSecurity()) {
+        case TSNONE:
+            break; // Fall through to the non-password branch.
+        case TSDISC:
+            return String(&bullet, unmaskedTextLength);
+        case TSCIRCLE:
+            return String(&whiteBullet, unmaskedTextLength);
+        case TSSQUARE:
+            return String(&blackSquare, unmaskedTextLength);
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
 
     return AXNodeObject::text();
 }
@@ -820,9 +840,6 @@ int AXRenderObject::textLength() const
 {
     if (!isTextControl())
         return -1;
-
-    if (isPasswordFieldAndShouldHideValue())
-        return -1; // need to return something distinct from 0
 
     return text().length();
 }
@@ -891,9 +908,6 @@ String AXRenderObject::actionVerb() const
 String AXRenderObject::stringValue() const
 {
     if (!m_renderer)
-        return String();
-
-    if (isPasswordFieldAndShouldHideValue())
         return String();
 
     RenderBoxModelObject* cssBox = renderBoxModelObject();
