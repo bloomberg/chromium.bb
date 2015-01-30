@@ -34,9 +34,12 @@ UDPSocketImpl::PendingSendRequest::PendingSendRequest() {}
 
 UDPSocketImpl::PendingSendRequest::~PendingSendRequest() {}
 
-UDPSocketImpl::UDPSocketImpl()
-    : socket_(net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(),
-              nullptr, net::NetLog::Source()),
+UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request)
+    : binding_(this, request.Pass()),
+      socket_(net::DatagramSocket::DEFAULT_BIND,
+              net::RandIntCallback(),
+              nullptr,
+              net::NetLog::Source()),
       state_(NOT_BOUND_OR_CONNECTED),
       allow_address_reuse_(false),
       remaining_recv_slots_(0),
@@ -60,7 +63,9 @@ void UDPSocketImpl::AllowAddressReuse(
 
 void UDPSocketImpl::Bind(
     NetAddressPtr addr,
-    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+    const Callback<void(NetworkErrorPtr,
+                        NetAddressPtr,
+                        InterfaceRequest<UDPSocketReceiver>)>& callback) {
   int net_result = net::OK;
   bool opened = false;
 
@@ -98,7 +103,7 @@ void UDPSocketImpl::Bind(
 
     state_ = BOUND;
     callback.Run(MakeNetworkError(net_result),
-                 NetAddress::From(bound_ip_end_point));
+                 NetAddress::From(bound_ip_end_point), GetProxy(&receiver_));
 
     if (remaining_recv_slots_ > 0) {
       DCHECK(!recvfrom_buffer_.get());
@@ -110,12 +115,14 @@ void UDPSocketImpl::Bind(
   DCHECK(net_result != net::OK);
   if (opened)
     socket_.Close();
-  callback.Run(MakeNetworkError(net_result), nullptr);
+  callback.Run(MakeNetworkError(net_result), nullptr, nullptr);
 }
 
 void UDPSocketImpl::Connect(
     NetAddressPtr remote_addr,
-    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+    const Callback<void(NetworkErrorPtr,
+                        NetAddressPtr,
+                        InterfaceRequest<UDPSocketReceiver>)>& callback) {
   int net_result = net::OK;
   bool opened = false;
 
@@ -147,7 +154,7 @@ void UDPSocketImpl::Connect(
 
     state_ = CONNECTED;
     callback.Run(MakeNetworkError(net_result),
-                 NetAddress::From(local_ip_end_point));
+                 NetAddress::From(local_ip_end_point), GetProxy(&receiver_));
 
     if (remaining_recv_slots_ > 0) {
       DCHECK(!recvfrom_buffer_.get());
@@ -159,7 +166,7 @@ void UDPSocketImpl::Connect(
   DCHECK(net_result != net::OK);
   if (opened)
     socket_.Close();
-  callback.Run(MakeNetworkError(net_result), nullptr);
+  callback.Run(MakeNetworkError(net_result), nullptr, nullptr);
 }
 
 void UDPSocketImpl::SetSendBufferSize(
@@ -216,6 +223,8 @@ void UDPSocketImpl::NegotiateMaxPendingSendRequests(
 }
 
 void UDPSocketImpl::ReceiveMore(uint32_t datagram_number) {
+  if (!receiver_)
+    return;
   if (datagram_number == 0)
     return;
   if (std::numeric_limits<size_t>::max() - remaining_recv_slots_ <
@@ -264,6 +273,7 @@ void UDPSocketImpl::SendTo(NetAddressPtr dest_addr,
 
 void UDPSocketImpl::DoRecvFrom() {
   DCHECK(IsBoundOrConnected());
+  DCHECK(receiver_);
   DCHECK(!recvfrom_buffer_.get());
   DCHECK_GT(remaining_recv_slots_, 0u);
 
@@ -337,9 +347,8 @@ void UDPSocketImpl::OnRecvFromCompleted(int net_result) {
   }
   recvfrom_buffer_ = nullptr;
 
-  client()->OnReceived(MakeNetworkError(net_result), net_address.Pass(),
-                       array.Pass());
-
+  receiver_->OnReceived(MakeNetworkError(net_result), net_address.Pass(),
+                        array.Pass());
   DCHECK_GT(remaining_recv_slots_, 0u);
   remaining_recv_slots_--;
   if (remaining_recv_slots_ > 0)

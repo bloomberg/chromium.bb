@@ -129,6 +129,42 @@ class TestCallback : public TestCallbackBase<Callback<void(NetworkErrorPtr)>> {
   NetworkErrorPtr result_;
 };
 
+class TestCallbackWithAddressAndReceiver
+    : public TestCallbackBase<
+          Callback<void(NetworkErrorPtr,
+                        NetAddressPtr,
+                        InterfaceRequest<UDPSocketReceiver>)>> {
+ public:
+  TestCallbackWithAddressAndReceiver() { Initialize(new State()); }
+  ~TestCallbackWithAddressAndReceiver() {}
+
+  const NetworkErrorPtr& result() const { return result_; }
+  const NetAddressPtr& net_address() const { return net_address_; }
+  InterfaceRequest<UDPSocketReceiver>& receiver() { return receiver_; }
+
+ private:
+  struct State : public StateBase {
+    ~State() override {}
+
+    void Run(NetworkErrorPtr result,
+             NetAddressPtr net_address,
+             InterfaceRequest<UDPSocketReceiver> receiver) const override {
+      if (test_callback_) {
+        TestCallbackWithAddressAndReceiver* callback =
+            static_cast<TestCallbackWithAddressAndReceiver*>(test_callback_);
+        callback->result_ = result.Pass();
+        callback->net_address_ = net_address.Pass();
+        callback->receiver_ = receiver.Pass();
+      }
+      NotifyRun();
+    }
+  };
+
+  NetworkErrorPtr result_;
+  NetAddressPtr net_address_;
+  InterfaceRequest<UDPSocketReceiver> receiver_;
+};
+
 class TestCallbackWithAddress
     : public TestCallbackBase<Callback<void(NetworkErrorPtr, NetAddressPtr)>> {
  public:
@@ -228,11 +264,11 @@ struct ReceiveResult {
   Array<uint8_t> data;
 };
 
-class UDPSocketClientImpl : public UDPSocketClient {
+class UDPSocketReceiverImpl : public UDPSocketReceiver {
  public:
-  UDPSocketClientImpl() : run_loop_(nullptr), expected_receive_count_(0) {}
+  UDPSocketReceiverImpl() : run_loop_(nullptr), expected_receive_count_(0) {}
 
-  ~UDPSocketClientImpl() override {
+  ~UDPSocketReceiverImpl() override {
     while (!results_.empty()) {
       delete results_.front();
       results_.pop();
@@ -275,12 +311,12 @@ class UDPSocketClientImpl : public UDPSocketClient {
   std::queue<ReceiveResult*> results_;
   size_t expected_receive_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocketReceiverImpl);
 };
 
 class UDPSocketAppTest : public test::ApplicationTestBase {
  public:
-  UDPSocketAppTest() {}
+  UDPSocketAppTest() : receiver_binding_(&receiver_) {}
   ~UDPSocketAppTest() override {}
 
   void SetUp() override {
@@ -291,13 +327,13 @@ class UDPSocketAppTest : public test::ApplicationTestBase {
     connection->ConnectToService(&network_service_);
 
     network_service_->CreateUDPSocket(GetProxy(&socket_));
-    socket_.set_client(&receiver_);
   }
 
  protected:
   NetworkServicePtr network_service_;
   UDPSocketPtr socket_;
-  UDPSocketClientImpl receiver_;
+  UDPSocketReceiverImpl receiver_;
+  Binding<UDPSocketReceiver> receiver_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketAppTest);
 };
@@ -322,7 +358,7 @@ TEST_F(UDPSocketAppTest, Settings) {
   callback3.WaitForResult();
   EXPECT_NE(net::OK, callback3.result()->code);
 
-  TestCallbackWithAddress callback4;
+  TestCallbackWithAddressAndReceiver callback4;
   socket_->Bind(GetLocalHostWithAnyPort(), callback4.callback());
   callback4.WaitForResult();
   EXPECT_EQ(net::OK, callback4.result()->code);
@@ -356,18 +392,20 @@ TEST_F(UDPSocketAppTest, Settings) {
 }
 
 TEST_F(UDPSocketAppTest, TestReadWrite) {
-  TestCallbackWithAddress callback1;
+  TestCallbackWithAddressAndReceiver callback1;
   socket_->Bind(GetLocalHostWithAnyPort(), callback1.callback());
   callback1.WaitForResult();
   ASSERT_EQ(net::OK, callback1.result()->code);
   ASSERT_NE(0u, callback1.net_address()->ipv4->port);
+
+  receiver_binding_.Bind(callback1.receiver().Pass());
 
   NetAddressPtr server_addr = callback1.net_address().Clone();
 
   UDPSocketPtr client_socket;
   network_service_->CreateUDPSocket(GetProxy(&client_socket));
 
-  TestCallbackWithAddress callback2;
+  TestCallbackWithAddressAndReceiver callback2;
   client_socket->Bind(GetLocalHostWithAnyPort(), callback2.callback());
   callback2.WaitForResult();
   ASSERT_EQ(net::OK, callback2.result()->code);
@@ -402,24 +440,28 @@ TEST_F(UDPSocketAppTest, TestReadWrite) {
 }
 
 TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
-  TestCallbackWithAddress callback1;
+  TestCallbackWithAddressAndReceiver callback1;
   socket_->Bind(GetLocalHostWithAnyPort(), callback1.callback());
   callback1.WaitForResult();
   ASSERT_EQ(net::OK, callback1.result()->code);
   ASSERT_NE(0u, callback1.net_address()->ipv4->port);
 
+  receiver_binding_.Bind(callback1.receiver().Pass());
+
   NetAddressPtr server_addr = callback1.net_address().Clone();
 
   UDPSocketPtr client_socket;
   network_service_->CreateUDPSocket(GetProxy(&client_socket));
-  UDPSocketClientImpl client_socket_receiver;
-  client_socket.set_client(&client_socket_receiver);
 
-  TestCallbackWithAddress callback2;
+  TestCallbackWithAddressAndReceiver callback2;
   client_socket->Connect(server_addr.Clone(), callback2.callback());
   callback2.WaitForResult();
   ASSERT_EQ(net::OK, callback2.result()->code);
   ASSERT_NE(0u, callback2.net_address()->ipv4->port);
+
+  UDPSocketReceiverImpl client_socket_receiver;
+  Binding<UDPSocketReceiver> client_receiver_binding(
+      &client_socket_receiver, callback2.receiver().Pass());
 
   NetAddressPtr client_addr = callback2.net_address().Clone();
 

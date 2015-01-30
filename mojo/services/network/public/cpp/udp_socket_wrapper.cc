@@ -40,6 +40,23 @@ void UDPSocketWrapper::SendCallbackHandler::Run(NetworkErrorPtr result) const {
   delegate_->OnSendToCompleted(result.Pass(), forward_callback_);
 }
 
+UDPSocketWrapper::ReceiverBindingCallback::ReceiverBindingCallback(
+    UDPSocketWrapper* delegate,
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& wrapper_callback)
+    : delegate_(delegate), wrapper_callback_(wrapper_callback) {
+}
+
+UDPSocketWrapper::ReceiverBindingCallback::~ReceiverBindingCallback() {
+}
+
+void UDPSocketWrapper::ReceiverBindingCallback::Run(
+    NetworkErrorPtr result,
+    NetAddressPtr addr,
+    InterfaceRequest<UDPSocketReceiver> request) const {
+  delegate_->StartReceivingData(request.Pass());
+  wrapper_callback_.Run(result.Pass(), addr.Pass());
+}
+
 UDPSocketWrapper::ReceivedData::ReceivedData() {}
 UDPSocketWrapper::ReceivedData::~ReceivedData() {}
 
@@ -47,20 +64,22 @@ UDPSocketWrapper::SendRequest::SendRequest() {}
 UDPSocketWrapper::SendRequest::~SendRequest() {}
 
 UDPSocketWrapper::UDPSocketWrapper(UDPSocketPtr socket)
-  : socket_(socket.Pass()),
-    max_receive_queue_size_(kDefaultReceiveQueueSlots),
-    max_pending_sends_(1),
-    current_pending_sends_(0) {
+    : binding_(this),
+      socket_(socket.Pass()),
+      max_receive_queue_size_(kDefaultReceiveQueueSlots),
+      max_pending_sends_(1),
+      current_pending_sends_(0) {
   Initialize(0);
 }
 
 UDPSocketWrapper::UDPSocketWrapper(UDPSocketPtr socket,
                                    uint32_t receive_queue_slots,
                                    uint32_t requested_max_pending_sends)
-  : socket_(socket.Pass()),
-    max_receive_queue_size_(receive_queue_slots),
-    max_pending_sends_(1),
-    current_pending_sends_(0) {
+    : binding_(this),
+      socket_(socket.Pass()),
+      max_receive_queue_size_(receive_queue_slots),
+      max_pending_sends_(1),
+      current_pending_sends_(0) {
   Initialize(requested_max_pending_sends);
 }
 
@@ -82,13 +101,19 @@ void UDPSocketWrapper::AllowAddressReuse(const ErrorCallback& callback) {
 void UDPSocketWrapper::Bind(
     NetAddressPtr addr,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
-  socket_->Bind(addr.Pass(), callback);
+  socket_->Bind(
+      addr.Pass(),
+      BindOrConnectCallback(static_cast<BindOrConnectCallback::Runnable*>(
+          new ReceiverBindingCallback(this, callback))));
 }
 
 void UDPSocketWrapper::Connect(
     NetAddressPtr remote_addr,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
-  socket_->Connect(remote_addr.Pass(), callback);
+  socket_->Connect(
+      remote_addr.Pass(),
+      BindOrConnectCallback(static_cast<BindOrConnectCallback::Runnable*>(
+          new ReceiverBindingCallback(this, callback))));
 }
 
 void UDPSocketWrapper::SetSendBufferSize(uint32_t size,
@@ -159,13 +184,11 @@ void UDPSocketWrapper::OnReceived(NetworkErrorPtr result,
 }
 
 void UDPSocketWrapper::Initialize(uint32_t requested_max_pending_sends) {
-  socket_.set_client(this);
   socket_->NegotiateMaxPendingSendRequests(
       requested_max_pending_sends,
       Callback<void(uint32_t)>(
           static_cast< Callback<void(uint32_t)>::Runnable*>(
               new NegotiateCallbackHandler(this))));
-  socket_->ReceiveMore(max_receive_queue_size_);
 }
 
 void UDPSocketWrapper::OnNegotiateMaxPendingSendRequestsCompleted(
@@ -208,6 +231,12 @@ bool UDPSocketWrapper::ProcessNextSendRequest() {
   delete request;
 
   return true;
+}
+
+void UDPSocketWrapper::StartReceivingData(
+    InterfaceRequest<UDPSocketReceiver> request) {
+  binding_.Bind(request.Pass());
+  socket_->ReceiveMore(max_receive_queue_size_);
 }
 
 }  // namespace mojo

@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "network/public/interfaces/udp_socket.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 
@@ -18,11 +19,15 @@ namespace mojo {
 // - You don't need to worry about the max-pending-send-requests restriction
 //   imposed by the service side. If you make many SendTo() calls in a short
 //   period of time, it caches excessive requests and sends them later.
-class UDPSocketWrapper : public UDPSocketClient {
+class UDPSocketWrapper : public UDPSocketReceiver {
  public:
-  typedef Callback<void(NetworkErrorPtr, NetAddressPtr, Array<uint8_t>)>
-      ReceiveCallback;
-  typedef Callback<void(NetworkErrorPtr)> ErrorCallback;
+  using ReceiveCallback =
+      Callback<void(NetworkErrorPtr, NetAddressPtr, Array<uint8_t>)>;
+  using ErrorCallback = Callback<void(NetworkErrorPtr)>;
+  using BindOrConnectCallback =
+      Callback<void(NetworkErrorPtr,
+                    NetAddressPtr,
+                    InterfaceRequest<UDPSocketReceiver>)>;
 
   explicit UDPSocketWrapper(UDPSocketPtr socket);
 
@@ -98,6 +103,26 @@ class UDPSocketWrapper : public UDPSocketClient {
     ErrorCallback forward_callback_;
   };
 
+  class ReceiverBindingCallback : public BindOrConnectCallback::Runnable {
+   public:
+    ReceiverBindingCallback(
+        UDPSocketWrapper* delegate,
+        const Callback<void(NetworkErrorPtr, NetAddressPtr)>& wrapper_callback);
+    ~ReceiverBindingCallback() override;
+
+    // BindOrConnectCallback::Runnable implementation:
+    void Run(NetworkErrorPtr result,
+             NetAddressPtr addr,
+             InterfaceRequest<UDPSocketReceiver> request) const override;
+
+   private:
+    // Because this callback is passed to a method of |socket_|, and |socket_|
+    // is owned by |delegate_|, it should be safe to assume that |delegate_| is
+    // valid if/when Run() is called.
+    UDPSocketWrapper* delegate_;
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)> wrapper_callback_;
+  };
+
   struct ReceivedData {
     ReceivedData();
     ~ReceivedData();
@@ -116,7 +141,7 @@ class UDPSocketWrapper : public UDPSocketClient {
     ErrorCallback callback;
   };
 
-  // UDPSocketClient implementation:
+  // UDPSocketReceiver implementation:
   void OnReceived(NetworkErrorPtr result,
                   NetAddressPtr src_addr,
                   Array<uint8_t> data) override;
@@ -129,6 +154,12 @@ class UDPSocketWrapper : public UDPSocketClient {
 
   // Returns true if a send request in |send_requests_| has been processed.
   bool ProcessNextSendRequest();
+
+  // Binds to a UDPSocketReceiver request and notifies |socket_| that we're
+  // ready to start receiving data.
+  void StartReceivingData(InterfaceRequest<UDPSocketReceiver> request);
+
+  Binding<UDPSocketReceiver> binding_;
 
   UDPSocketPtr socket_;
 

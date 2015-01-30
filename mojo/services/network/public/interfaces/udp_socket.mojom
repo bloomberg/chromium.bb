@@ -7,17 +7,15 @@ module mojo;
 import "network/public/interfaces/net_address.mojom";
 import "network/public/interfaces/network_error.mojom";
 
-// UDPSocket and UDPSocketClient represent a UDP socket and its client. The
+// UDPSocket and UDPSocketReceiver represent a UDP socket and its client. The
 // typical flow of using the interfaces is:
-// - Acquire a UDPSocket interface pointer and set a UDPSocketClient instance.
+// - Acquire a UDPSocket interface pointer.
 // - (optional) Set options which are allowed prior to Bind()/Connect().
 // - Bind or connect the socket.
+// - (optional) Bind the UDPSocketReceiver request returned by Bind()/Connect()
 // - (optional) Set options which are allowed after Bind()/Connect().
 // - Send / request to receive datagrams. Received datagrams will be delivered
-//   to UDPSocketClient.OnReceived().
-
-// TODO(yzshen): Get rid of [Client] annotation.
-[Client=UDPSocketClient]
+//   to the bound receiver's OnReceived() call.
 interface UDPSocket {
   // Allows the socket to share the local address to which it will be bound with
   // other processes. Should be called before Bind().
@@ -28,15 +26,20 @@ interface UDPSocket {
   // connected.
   // |bound_addr| is non-null on success. It might not be the same as |addr|.
   // For example, if port 0 is used in |addr|, an available port is picked and
-  // returned in |bound_addr|.
-  Bind(NetAddress addr) => (NetworkError result, NetAddress? bound_addr);
-
+  // returned in |bound_addr|. The caller may provide an implementation of
+  // |receiver| to receive datagrams read from the socket. |receiver| is null
+  // on failure.
+  Bind(NetAddress addr) => (NetworkError result, NetAddress? bound_addr,
+                            UDPSocketReceiver&? receiver);
 
   // Connects the socket to the remote address. The socket must not be bound or
   // connected.
   // |local_addr| is non-null on success.
+  // The caller may provide an implementation of |receiver| to receive datagrams
+  // read from the socket. |receiver| is null on failure.
   Connect(NetAddress remote_addr) => (NetworkError result,
-                                      NetAddress? local_addr);
+                                      NetAddress? local_addr,
+                                      UDPSocketReceiver&? receiver);
 
   // Sets the OS send buffer size (in bytes) for the socket. The socket must be
   // bound or connected.
@@ -60,8 +63,8 @@ interface UDPSocket {
   NegotiateMaxPendingSendRequests(uint32 requested_size)
       => (uint32 actual_size);
 
-  // Notifies that the client is ready to accept |number| of datagrams.
-  // Correspondingly, OnReceived() of the UDPSocketClient interface will be
+  // Notifies that the receiver is ready to accept |number| of datagrams.
+  // Correspondingly, OnReceived() of the UDPSocketReceiver interface will be
   // called |number| times (errors also count), unless the connection is closed
   // before that.
   //
@@ -108,7 +111,7 @@ interface UDPSocket {
   SendTo(NetAddress? dest_addr, array<uint8> data) => (NetworkError result);
 };
 
-interface UDPSocketClient {
+interface UDPSocketReceiver {
   // On success, |data| is non-null, |src_addr| is non-null if the socket is
   // not connected, |result.code| is a non-negative number indicating how many
   // bytes have been received. On failure, |result.code| is a network error

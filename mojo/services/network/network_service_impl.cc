@@ -66,8 +66,9 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
   callback.Run(MakeNetworkError(net::ERR_NOT_IMPLEMENTED), NetAddressPtr());
 }
 
-void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> socket) {
-  BindToRequest(new UDPSocketImpl(), &socket);
+void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> request) {
+  // The lifetime of this UDPSocketImpl is bound to that of the underlying pipe.
+  new UDPSocketImpl(request.Pass());
 }
 
 }  // namespace mojo

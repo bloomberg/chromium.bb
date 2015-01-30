@@ -13,6 +13,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace net {
 class IOBuffer;
@@ -21,22 +22,28 @@ class IOBufferWithSize;
 
 namespace mojo {
 
-class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
+class UDPSocketImpl : public UDPSocket {
  public:
-  UDPSocketImpl();
+  // The lifetime of a new UDPSocketImpl is bound to the connection associated
+  // with |request|.
+  explicit UDPSocketImpl(InterfaceRequest<UDPSocket> request);
   ~UDPSocketImpl() override;
 
   // UDPSocket implementation.
   void AllowAddressReuse(
       const Callback<void(NetworkErrorPtr)>& callback) override;
 
-  void Bind(
-      NetAddressPtr addr,
-      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+  void Bind(NetAddressPtr addr,
+            const Callback<void(NetworkErrorPtr,
+                                NetAddressPtr,
+                                InterfaceRequest<UDPSocketReceiver>)>& callback)
+      override;
 
-  void Connect(
-      NetAddressPtr remote_addr,
-      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+  void Connect(NetAddressPtr remote_addr,
+               const Callback<void(NetworkErrorPtr,
+                                   NetAddressPtr,
+                                   InterfaceRequest<UDPSocketReceiver>)>&
+                   callback) override;
 
   void SetSendBufferSize(
       uint32_t size,
@@ -85,6 +92,8 @@ class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
     return state_ == BOUND || state_ == CONNECTED;
   }
 
+  StrongBinding<UDPSocket> binding_;
+
   net::UDPSocket socket_;
 
   State state_;
@@ -96,7 +105,11 @@ class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
   // Non-null when there is a pending SendTo operation on |socket_|.
   scoped_refptr<net::IOBufferWithSize> sendto_buffer_;
 
+  // The address of the pending RecvFrom operation, if any.
   net::IPEndPoint recvfrom_address_;
+
+  // The interface which gets data from fulfilled receive requests.
+  UDPSocketReceiverPtr receiver_;
 
   // How many more packets the client side expects to receive.
   size_t remaining_recv_slots_;
