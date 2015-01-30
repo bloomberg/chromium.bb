@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A RendererNetPredictor instance is maintained for each RenderThread.
+// A RendererDnsPrefetch instance is maintained for each RenderThread.
 // URL strings are typically added to the embedded queue during rendering.
 // The first addition to the queue (transitioning from empty to having
 // some names) causes a processing task to be added to the Renderer Thread.
@@ -18,22 +18,24 @@
 // sent names.  If the entire queue is processed, then the list of "sent names"
 // is cleared so that future gatherings might again pass along the same names.
 
-#ifndef COMPONENTS_DNS_PREFETCH_RENDERER_RENDERER_NET_PREDICTOR_H_
-#define COMPONENTS_DNS_PREFETCH_RENDERER_RENDERER_NET_PREDICTOR_H_
+#ifndef COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_DNS_PREFETCH_H_
+#define COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_DNS_PREFETCH_H_
 
 #include <map>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "components/dns_prefetch/renderer/predictor_queue.h"
+#include "components/network_hints/renderer/dns_prefetch_queue.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
-class RendererNetPredictor {
+// An internal interface to the network_hints component for efficiently sending
+// DNS prefetch requests to the net stack.
+class RendererDnsPrefetch {
  public:
-  RendererNetPredictor();
-  ~RendererNetPredictor();
+  RendererDnsPrefetch();
+  ~RendererDnsPrefetch();
 
   // Push a name into the queue to be resolved.
   void Resolve(const char* name, size_t length);
@@ -97,11 +99,11 @@ class RendererNetPredictor {
   int buffer_full_discard_count_;
   int numeric_ip_discard_count_;
 
-  base::WeakPtrFactory<RendererNetPredictor> weak_factory_;
+  base::WeakPtrFactory<RendererDnsPrefetch> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererNetPredictor);
-};  // class RendererNetPredictor
+  DISALLOW_COPY_AND_ASSIGN(RendererDnsPrefetch);
+};  // class RendererDnsPrefetch
 
-}  // namespace dns_prefetch
+}  // namespace network_hints
 
-#endif  // COMPONENTS_DNS_PREFETCH_RENDERER_RENDERER_NET_PREDICTOR_H_
+#endif  // COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_DNS_PREFETCH_H_

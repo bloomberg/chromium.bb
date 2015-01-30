@@ -21,16 +21,18 @@
 // rendering, the supplier is the renderer (typically), and the consumer
 // is a thread that sends messages to an async DNS resolver.
 
-#ifndef COMPONENTS_DNS_PREFETCH_RENDERER_PREDICTOR_QUEUE_H__
-#define COMPONENTS_DNS_PREFETCH_RENDERER_PREDICTOR_QUEUE_H__
+#ifndef COMPONENTS_NETWORK_HINTS_RENDERER_DNS_PREFETCH_QUEUE_H__
+#define COMPONENTS_NETWORK_HINTS_RENDERER_DNS_PREFETCH_QUEUE_H__
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
+// A queue of DNS lookup requests for internal use within the network_hints
+// component.
 class DnsQueue {
  public:
   // BufferSize is a signed type used for indexing into a buffer.
@@ -86,6 +88,6 @@ class DnsQueue {
   DISALLOW_COPY_AND_ASSIGN(DnsQueue);
 };  // class DnsQueue
 
-}  // namespace dns_prefetch
+}  // namespace network_hints
 
-#endif  // COMPONENTS_DNS_PREFETCH_RENDERER_PREDICTOR_QUEUE_H__
+#endif  // COMPONENTS_NETWORK_HINTS_RENDERER_DNS_PREFETCH_QUEUE_H__

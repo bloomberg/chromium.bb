@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 class PrescientNetworkingDispatcher;
-}  // namespace dns_prefetch
+}  // namespace network_hints
 
 namespace chromecast {
 namespace shell {
@@ -37,7 +37,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
                       const base::Closure& closure) override;
 
  private:
-  scoped_ptr<dns_prefetch::PrescientNetworkingDispatcher>
+  scoped_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
   scoped_ptr<CastRenderProcessObserver> cast_observer_;
 

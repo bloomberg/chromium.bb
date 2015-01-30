@@ -6,19 +6,19 @@
 #include <string>
 #include <vector>
 
-#include "components/dns_prefetch/common/prefetch_common.h"
+#include "components/network_hints/common/network_hints_common.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
 // Singly-included section for custom IPC traits.
-#ifndef COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_MESSAGES_H_
-#define COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_MESSAGES_H_
+#ifndef COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_MESSAGES_H_
+#define COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_MESSAGES_H_
 
 namespace IPC {
 
 template <>
-struct ParamTraits<dns_prefetch::LookupRequest> {
-  typedef dns_prefetch::LookupRequest param_type;
+struct ParamTraits<network_hints::LookupRequest> {
+  typedef network_hints::LookupRequest param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -26,7 +26,7 @@ struct ParamTraits<dns_prefetch::LookupRequest> {
 
 }  // namespace IPC
 
-#endif  // COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_MESSAGES_H_
+#endif  // COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_MESSAGES_H_
 
 #define IPC_MESSAGE_START DnsPrefetchMsgStart
 
@@ -37,4 +37,4 @@ struct ParamTraits<dns_prefetch::LookupRequest> {
 // Request for a DNS prefetch of the names in the array.
 // NameList is typedef'ed std::vector<std::string>
 IPC_MESSAGE_CONTROL1(DnsPrefetchMsg_RequestPrefetch,
-                     dns_prefetch::LookupRequest)
+                     network_hints::LookupRequest)

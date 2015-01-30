@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/dns_prefetch.gypi:predictor_renderer
+# GYP version: components/network_hints.gypi:predictor_renderer
 source_set("renderer") {
   sources = [
-    "predictor_queue.cc",
-    "predictor_queue.h",
+    "dns_prefetch_queue.cc",
+    "dns_prefetch_queue.h",
     "prescient_networking_dispatcher.cc",
     "prescient_networking_dispatcher.h",
-    "renderer_net_predictor.cc",
-    "renderer_net_predictor.h",
+    "renderer_dns_prefetch.cc",
+    "renderer_dns_prefetch.h",
   ]
 
   public_deps = [
-    "//components/dns_prefetch/common",
+    "//components/network_hints/common",
     "//content/public/renderer",
     "//third_party/WebKit/public:blink",
   ]

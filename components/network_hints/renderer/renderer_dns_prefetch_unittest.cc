@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Single threaded tests of RendererNetPredictor functionality.
+// Single threaded tests of RendererDnsPrefetch functionality.
 
-#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
+#include "components/network_hints/renderer/renderer_dns_prefetch.h"
 
 #include <algorithm>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
 class RenderDnsMasterTest : public testing::Test {
 };
@@ -21,8 +21,8 @@ TEST(RenderDnsMasterTest, NumericIpDiscardCheck) {
   // Combination of digits plus dots.
   const std::string N1("1.3."), N2("5.5.7.12");
 
-#define TESTNAME(string) RendererNetPredictor::is_numeric_ip((string.data()), \
-                                                             (string).size())
+#define TESTNAME(string) RendererDnsPrefetch::is_numeric_ip((string.data()), \
+                                                            (string).size())
 
   EXPECT_TRUE(TESTNAME(N1));
   EXPECT_TRUE(TESTNAME(N2));
@@ -34,4 +34,4 @@ TEST(RenderDnsMasterTest, NumericIpDiscardCheck) {
 #undef TESTNAME
 }
 
-}  // namespace dns_prefetch
+}  // namespace network_hints

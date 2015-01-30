@@ -24,7 +24,7 @@
 #include "chromecast/common/global_descriptors.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_handler_host_linux.h"
-#include "components/dns_prefetch/browser/net_message_filter.h"
+#include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -64,10 +64,10 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-  scoped_refptr<content::BrowserMessageFilter> net_message_filter(
-      new dns_prefetch::NetMessageFilter(
+  scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
+      new network_hints::NetworkHintsMessageFilter(
           url_request_context_factory_->host_resolver()));
-  host->AddFilter(net_message_filter.get());
+  host->AddFilter(network_hints_message_filter.get());
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(host->GetID()));

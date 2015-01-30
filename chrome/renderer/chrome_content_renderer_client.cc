@@ -59,9 +59,9 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
+#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
@@ -310,7 +310,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   prescient_networking_dispatcher_.reset(
-      new dns_prefetch::PrescientNetworkingDispatcher());
+      new network_hints::PrescientNetworkingDispatcher());
 #if defined(ENABLE_SPELLCHECK)
   // ChromeRenderViewTest::SetUp() creates a Spellcheck and injects it using
   // SetSpellcheck(). Don't overwrite it.

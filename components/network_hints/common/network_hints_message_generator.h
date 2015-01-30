@@ -4,4 +4,4 @@
 
 // Multiply-included file, no traditional include guard.
 
-#include "components/dns_prefetch/common/prefetch_messages.h"
+#include "components/network_hints/common/network_hints_messages.h"

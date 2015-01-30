@@ -21,7 +21,7 @@ namespace chrome_browser_net {
 class Predictor;
 }
 
-namespace dns_prefetch {
+namespace network_hints {
 struct LookupRequest;
 }
 
@@ -59,7 +59,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   ~ChromeRenderMessageFilter() override;
 
-  void OnDnsPrefetch(const dns_prefetch::LookupRequest& request);
+  void OnDnsPrefetch(const network_hints::LookupRequest& request);
   void OnPreconnect(const GURL& url);
   void OnResourceTypeStats(const blink::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);

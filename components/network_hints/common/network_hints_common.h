@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_
-#define COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_
+#ifndef COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_COMMON_H_
+#define COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_COMMON_H_
 
 #include <string>
 #include <vector>
 
 #include "url/gurl.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
 // IPC messages are passed from the renderer to the browser in the form of
 // Namelist instances.
@@ -36,6 +36,6 @@ extern const size_t kMaxDnsHostnamesPerRequest;
 // The maximum length for a given DNS hostname to resolve.
 extern const size_t kMaxDnsHostnameLength;
 
-}
+}  // namespace network_hints
 
-#endif  // COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_
+#endif  // COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_COMMON_H_

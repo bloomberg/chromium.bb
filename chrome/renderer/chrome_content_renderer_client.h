@@ -34,7 +34,7 @@ class BrowserPluginDelegate;
 struct WebPluginInfo;
 }
 
-namespace dns_prefetch {
+namespace network_hints {
 class PrescientNetworkingDispatcher;
 }
 
@@ -222,7 +222,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       permissions_policy_delegate_;
 #endif
 
-  scoped_ptr<dns_prefetch::PrescientNetworkingDispatcher>
+  scoped_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
   scoped_ptr<password_manager::CredentialManagerClient>
       credential_manager_client_;

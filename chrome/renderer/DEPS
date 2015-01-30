@@ -16,7 +16,7 @@ include_rules = [
   "+components/plugins/renderer",
   "+components/printing/common",
   "+components/printing/renderer",
-  "+components/dns_prefetch/renderer",
+  "+components/network_hints/renderer",
   "+components/signin/core/common",
   "+components/translate/content/common",
   "+components/translate/content/renderer",

@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
-#include "components/dns_prefetch/common/prefetch_common.h"
+#include "components/network_hints/common/network_hints_common.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/load_flags.h"

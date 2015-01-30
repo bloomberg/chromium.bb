@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dns_prefetch/browser/net_message_filter.h"
+#include "components/network_hints/browser/network_hints_message_filter.h"
 
 #include "base/logging.h"
-#include "components/dns_prefetch/common/prefetch_common.h"
-#include "components/dns_prefetch/common/prefetch_messages.h"
+#include "components/network_hints/common/network_hints_common.h"
+#include "components/network_hints/common/network_hints_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -14,7 +14,7 @@
 #include "net/dns/single_request_host_resolver.h"
 #include "url/gurl.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
 namespace {
 
@@ -62,25 +62,27 @@ class DnsLookupRequest {
 
 }  // namespace
 
-NetMessageFilter::NetMessageFilter(net::HostResolver* host_resolver)
+NetworkHintsMessageFilter::NetworkHintsMessageFilter(
+    net::HostResolver* host_resolver)
     : content::BrowserMessageFilter(DnsPrefetchMsgStart),
       host_resolver_(host_resolver) {
   DCHECK(host_resolver_);
 }
 
-NetMessageFilter::~NetMessageFilter() {
+NetworkHintsMessageFilter::~NetworkHintsMessageFilter() {
 }
 
-bool NetMessageFilter::OnMessageReceived(const IPC::Message& message) {
+bool NetworkHintsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NetMessageFilter, message)
+  IPC_BEGIN_MESSAGE_MAP(NetworkHintsMessageFilter, message)
     IPC_MESSAGE_HANDLER(DnsPrefetchMsg_RequestPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void NetMessageFilter::OnDnsPrefetch(const LookupRequest& lookup_request) {
+void NetworkHintsMessageFilter::OnDnsPrefetch(
+    const LookupRequest& lookup_request) {
   DCHECK(host_resolver_);
   for (const std::string& hostname : lookup_request.hostname_list) {
     DnsLookupRequest* request = new DnsLookupRequest(host_resolver_, hostname);
@@ -90,4 +92,4 @@ void NetMessageFilter::OnDnsPrefetch(const LookupRequest& lookup_request) {
   }
 }
 
-}  // namespace dns_prefetch
+}  // namespace network_hints

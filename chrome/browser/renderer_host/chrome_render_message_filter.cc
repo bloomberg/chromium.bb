@@ -18,8 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/render_messages.h"
-#include "components/dns_prefetch/common/prefetch_common.h"
-#include "components/dns_prefetch/common/prefetch_messages.h"
+#include "components/network_hints/common/network_hints_common.h"
+#include "components/network_hints/common/network_hints_messages.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -106,7 +106,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 }
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
-    const dns_prefetch::LookupRequest& request) {
+    const network_hints::LookupRequest& request) {
   if (predictor_)
     predictor_->DnsPrefetchList(request.hostname_list);
 }

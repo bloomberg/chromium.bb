@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
+#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 
 #include "base/logging.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
 PrescientNetworkingDispatcher::PrescientNetworkingDispatcher() {
 }
@@ -21,7 +21,7 @@ void PrescientNetworkingDispatcher::prefetchDNS(
     return;
 
   std::string hostname_utf8 = hostname.utf8();
-  net_predictor_.Resolve(hostname_utf8.data(), hostname_utf8.length());
+  dns_prefetch_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 
-}  // namespace dns_prefetch
+}  // namespace network_hints

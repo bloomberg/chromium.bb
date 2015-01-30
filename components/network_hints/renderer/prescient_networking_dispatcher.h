@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DNS_PREFETCH_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_
-#define COMPONENTS_DNS_PREFETCH_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_
+#ifndef COMPONENTS_NETWORK_HINTS_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_
+#define COMPONENTS_NETWORK_HINTS_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_
 
 #include "base/macros.h"
-#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
+#include "components/network_hints/renderer/renderer_dns_prefetch.h"
 #include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
 
-namespace dns_prefetch {
+namespace network_hints {
 
+// The main entry point from blink for sending DNS prefetch requests to the
+// network stack.
 class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
  public:
   PrescientNetworkingDispatcher();
@@ -19,11 +21,11 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
   void prefetchDNS(const blink::WebString& hostname) override;
 
  private:
-  dns_prefetch::RendererNetPredictor net_predictor_;
+  network_hints::RendererDnsPrefetch dns_prefetch_;
 
   DISALLOW_COPY_AND_ASSIGN(PrescientNetworkingDispatcher);
 };
 
-}   // namespace dns_prefetch
+}   // namespace network_hints
 
-#endif  // COMPONENTS_DNS_PREFETCH_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_
+#endif  // COMPONENTS_NETWORK_HINTS_RENDERER_PRESCIENT_NETWORKING_DISPATCHER_H_

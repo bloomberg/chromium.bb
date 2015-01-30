@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See header file for description of RendererNetPredictor class
+// See header file for description of RendererDnsPrefetch class
 
-#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
+#include "components/network_hints/renderer/renderer_dns_prefetch.h"
 
 #include <ctype.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "components/dns_prefetch/common/prefetch_common.h"
-#include "components/dns_prefetch/common/prefetch_messages.h"
-#include "components/dns_prefetch/renderer/predictor_queue.h"
+#include "components/network_hints/common/network_hints_common.h"
+#include "components/network_hints/common/network_hints_messages.h"
+#include "components/network_hints/renderer/dns_prefetch_queue.h"
 #include "content/public/renderer/render_thread.h"
 
 using content::RenderThread;
 
-namespace dns_prefetch {
+namespace network_hints {
 
-RendererNetPredictor::RendererNetPredictor()
+RendererDnsPrefetch::RendererDnsPrefetch()
     : c_string_queue_(1000),
       weak_factory_(this) {
   Reset();
 }
 
-RendererNetPredictor::~RendererNetPredictor() {
+RendererDnsPrefetch::~RendererDnsPrefetch() {
 }
 
-void RendererNetPredictor::Reset() {
+void RendererDnsPrefetch::Reset() {
   domain_map_.clear();
   c_string_queue_.Clear();
   buffer_full_discard_count_ = 0;
@@ -38,7 +38,7 @@ void RendererNetPredictor::Reset() {
 }
 
 // Push names into queue quickly!
-void RendererNetPredictor::Resolve(const char* name, size_t length) {
+void RendererDnsPrefetch::Resolve(const char* name, size_t length) {
   if (!length)
     return;  // Don't store empty strings in buffer.
   if (is_numeric_ip(name, length))
@@ -53,7 +53,7 @@ void RendererNetPredictor::Resolve(const char* name, size_t length) {
         return;  // Overkill safety net: Don't send too many InvokeLater's.
       weak_factory_.InvalidateWeakPtrs();
       RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
-          FROM_HERE, base::Bind(&RendererNetPredictor::SubmitHostnames,
+          FROM_HERE, base::Bind(&RendererDnsPrefetch::SubmitHostnames,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(10));
     }
@@ -68,7 +68,7 @@ void RendererNetPredictor::Resolve(const char* name, size_t length) {
 
 // Extract data from the Queue, and then send it off the the Browser process
 // to be resolved.
-void RendererNetPredictor::SubmitHostnames() {
+void RendererDnsPrefetch::SubmitHostnames() {
   // Get all names out of the C_string_queue (into our map)
   ExtractBufferedNames();
   // TBD: IT could be that we should only extract about as many names as we are
@@ -88,7 +88,7 @@ void RendererNetPredictor::SubmitHostnames() {
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
     weak_factory_.InvalidateWeakPtrs();
     RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
-        FROM_HERE, base::Bind(&RendererNetPredictor::SubmitHostnames,
+        FROM_HERE, base::Bind(&RendererDnsPrefetch::SubmitHostnames,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(10));
   } else {
@@ -98,7 +98,7 @@ void RendererNetPredictor::SubmitHostnames() {
 }
 
 // Pull some hostnames from the queue, and add them to our map.
-void RendererNetPredictor::ExtractBufferedNames(size_t size_goal) {
+void RendererDnsPrefetch::ExtractBufferedNames(size_t size_goal) {
   size_t count(0);  // Number of entries to find (0 means find all).
   if (size_goal > 0) {
     if (size_goal <= domain_map_.size())
@@ -126,7 +126,7 @@ void RendererNetPredictor::ExtractBufferedNames(size_t size_goal) {
   }
 }
 
-void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
+void RendererDnsPrefetch::DnsPrefetchNames(size_t max_count) {
   // We are on the renderer thread, and just need to send things to the browser.
   NameList names;
   for (DomainUseMap::iterator it = domain_map_.begin();
@@ -144,7 +144,7 @@ void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   DCHECK_GE(new_name_count_, names.size());
   new_name_count_ -= names.size();
 
-  dns_prefetch::LookupRequest request;
+  network_hints::LookupRequest request;
   request.hostname_list = names;
   RenderThread::Get()->Send(new DnsPrefetchMsg_RequestPrefetch(request));
 }
@@ -152,7 +152,7 @@ void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
 // is_numeric_ip() checks to see if all characters in name are either numeric,
 // or dots.  Such a name will not actually be passed to DNS, as it is an IP
 // address.
-bool RendererNetPredictor::is_numeric_ip(const char* name, size_t length) {
+bool RendererDnsPrefetch::is_numeric_ip(const char* name, size_t length) {
   // Scan for a character outside our lookup list.
   while (length-- > 0) {
     if (!isdigit(*name) && '.' != *name)

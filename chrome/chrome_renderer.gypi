@@ -255,7 +255,7 @@
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:data_reduction_proxy_core_common',
-        '../components/components.gyp:dns_prefetch_renderer',
+        '../components/components.gyp:network_hints_renderer',
         '../components/components.gyp:error_page_renderer',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:password_manager_content_renderer',

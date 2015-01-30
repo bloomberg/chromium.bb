@@ -4,12 +4,12 @@
 
 #include <sstream>
 
-#include "components/dns_prefetch/renderer/predictor_queue.h"
+#include "components/network_hints/renderer/dns_prefetch_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Single threaded tests of DnsQueue functionality.
 
-namespace dns_prefetch {
+namespace network_hints {
 
 class DnsQueueTest : public testing::Test {
 };
@@ -259,4 +259,4 @@ TEST(DnsQueueTest, WrapOnVariousSubstrings) {
   EXPECT_FALSE(tester.Pop());
 }
 
-};  // namespace dns_prefetch
+};  // namespace network_hints

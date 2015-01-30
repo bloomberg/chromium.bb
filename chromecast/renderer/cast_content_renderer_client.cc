@@ -13,7 +13,7 @@
 #include "chromecast/renderer/cast_render_process_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/cma_media_renderer_factory.h"
-#include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
+#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -108,7 +108,7 @@ void CastContentRendererClient::RenderThreadStarted() {
   cast_observer_.reset(new CastRenderProcessObserver());
 
   prescient_networking_dispatcher_.reset(
-      new dns_prefetch::PrescientNetworkingDispatcher());
+      new network_hints::PrescientNetworkingDispatcher());
 }
 
 void CastContentRendererClient::RenderViewCreated(
