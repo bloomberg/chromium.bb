@@ -27,86 +27,96 @@
 #include "config.h"
 #include "platform/weborigin/SchemeRegistry.h"
 
-#include "wtf/MainThread.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
+static Mutex& threadSpecificMutex()
+{
+    // The first call to this should be made before or during blink
+    // initialization to avoid racy static local initialization.
+    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+    return mutex;
+}
+
 static URLSchemesSet& localURLSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, localSchemes, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, localSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (localSchemes.isEmpty())
-        localSchemes.add("file");
+    if (localSchemes->isEmpty())
+        localSchemes->add("file");
 
-    return localSchemes;
+    return *localSchemes;
 }
 
 static URLSchemesSet& displayIsolatedURLSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, displayIsolatedSchemes, ());
-    return displayIsolatedSchemes;
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, displayIsolatedSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    return *displayIsolatedSchemes;
 }
 
 static URLSchemesSet& mixedContentRestrictingSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, mixedContentRestrictingSchemes, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, mixedContentRestrictingSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (mixedContentRestrictingSchemes.isEmpty())
-        mixedContentRestrictingSchemes.add("https");
+    if (mixedContentRestrictingSchemes->isEmpty())
+        mixedContentRestrictingSchemes->add("https");
 
-    return mixedContentRestrictingSchemes;
+    return *mixedContentRestrictingSchemes;
 }
 
 static URLSchemesSet& secureSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, secureSchemes, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, secureSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (secureSchemes.isEmpty()) {
-        secureSchemes.add("https");
-        secureSchemes.add("about");
-        secureSchemes.add("data");
-        secureSchemes.add("wss");
+    if (secureSchemes->isEmpty()) {
+        secureSchemes->add("https");
+        secureSchemes->add("about");
+        secureSchemes->add("data");
+        secureSchemes->add("wss");
     }
 
-    return secureSchemes;
+    return *secureSchemes;
 }
 
 static URLSchemesSet& schemesWithUniqueOrigins()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, schemesWithUniqueOrigins, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, schemesWithUniqueOrigins, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (schemesWithUniqueOrigins.isEmpty()) {
-        schemesWithUniqueOrigins.add("about");
-        schemesWithUniqueOrigins.add("javascript");
+    if (schemesWithUniqueOrigins->isEmpty()) {
+        schemesWithUniqueOrigins->add("about");
+        schemesWithUniqueOrigins->add("javascript");
         // This is a willful violation of HTML5.
         // See https://bugs.webkit.org/show_bug.cgi?id=11885
-        schemesWithUniqueOrigins.add("data");
+        schemesWithUniqueOrigins->add("data");
     }
 
-    return schemesWithUniqueOrigins;
+    return *schemesWithUniqueOrigins;
 }
 
 static URLSchemesSet& emptyDocumentSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, emptyDocumentSchemes, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, emptyDocumentSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (emptyDocumentSchemes.isEmpty())
-        emptyDocumentSchemes.add("about");
+    if (emptyDocumentSchemes->isEmpty())
+        emptyDocumentSchemes->add("about");
 
-    return emptyDocumentSchemes;
+    return *emptyDocumentSchemes;
 }
 
 static HashSet<String>& schemesForbiddenFromDomainRelaxation()
 {
-    DEFINE_STATIC_LOCAL(HashSet<String>, schemes, ());
-    return schemes;
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<HashSet<String>>, schemes, new ThreadSpecific<HashSet<String>>(), threadSpecificMutex());
+    return *schemes;
 }
 
 static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
-    return notAllowingJavascriptURLsSchemes;
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, notAllowingJavascriptURLsSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    return *notAllowingJavascriptURLsSchemes;
 }
 
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme)
@@ -122,21 +132,22 @@ const URLSchemesSet& SchemeRegistry::localSchemes()
 static URLSchemesSet& CORSEnabledSchemes()
 {
     // FIXME: http://bugs.webkit.org/show_bug.cgi?id=77160
-    DEFINE_STATIC_LOCAL(URLSchemesSet, CORSEnabledSchemes, ());
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, CORSEnabledSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
 
-    if (CORSEnabledSchemes.isEmpty()) {
-        CORSEnabledSchemes.add("http");
-        CORSEnabledSchemes.add("https");
-        CORSEnabledSchemes.add("data");
+    if (CORSEnabledSchemes->isEmpty()) {
+        CORSEnabledSchemes->add("http");
+        CORSEnabledSchemes->add("https");
+        CORSEnabledSchemes->add("data");
     }
 
-    return CORSEnabledSchemes;
+    return *CORSEnabledSchemes;
 }
 
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
-    return schemes;
+    using PolicyAreasMap = URLSchemesMap<SchemeRegistry::PolicyAreas>;
+    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<PolicyAreasMap>, schemes, new ThreadSpecific<PolicyAreasMap>(), threadSpecificMutex());
+    return *schemes;
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme)

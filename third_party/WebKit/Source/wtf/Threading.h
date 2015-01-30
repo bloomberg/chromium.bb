@@ -37,18 +37,31 @@
 
 // For portability, we do not make use of C++11 thread-safe statics, as supported
 // by some toolchains. Make use of double-checked locking to reduce overhead.
-#define AtomicallyInitializedStaticReference(T, name, initializer)      \
+#define AtomicallyInitializedStaticReferenceInternal(T, name, initializer, LOCK, UNLOCK) \
     /* Init to nullptr is thread-safe on all implementations. */        \
     static void* name##Pointer = nullptr;                               \
     if (!WTF::acquireLoad(&name##Pointer)) {                            \
-        WTF::lockAtomicallyInitializedStaticMutex();                    \
+        LOCK;                                                           \
         if (!WTF::acquireLoad(&name##Pointer)) {                        \
             WTF::RemoveConst<T>::Type* initializerResult = initializer; \
             WTF::releaseStore(&name##Pointer, initializerResult);       \
         }                                                               \
-        WTF::unlockAtomicallyInitializedStaticMutex();                  \
+        UNLOCK;                                                         \
     }                                                                   \
     T& name = *static_cast<T*>(name##Pointer)
+
+// Uses system-wide default lock. This version cannot be used before
+// WTF::initializeThreading() is called.
+#define AtomicallyInitializedStaticReference(T, name, initializer)      \
+    AtomicallyInitializedStaticReferenceInternal(                       \
+        T, name, initializer, \
+        WTF::lockAtomicallyInitializedStaticMutex(),                    \
+        WTF::unlockAtomicallyInitializedStaticMutex())
+
+// Same as above but uses a given lock.
+#define AtomicallyInitializedStaticReferenceWithLock(T, name, initializer, lockable)  \
+    AtomicallyInitializedStaticReferenceInternal(                       \
+        T, name, initializer, lockable.lock(), lockable.unlock());
 
 namespace WTF {
 
