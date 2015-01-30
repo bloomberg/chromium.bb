@@ -473,7 +473,12 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 FileTable.prototype.renderName_ = function(entry, columnId, table) {
   var label = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
-  label.appendChild(this.renderIconType_(entry, columnId, table));
+
+  var icon = this.renderIconType_(entry, columnId, table);
+  icon.appendChild(this.renderThumbnail_(entry));
+  icon.appendChild(this.renderCheckmark_());
+  label.appendChild(icon);
+
   label.entry = entry;
   label.className = 'detail-name';
   label.appendChild(filelist.renderFileNameLabel(this.ownerDocument, entry));
@@ -763,6 +768,45 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
   icon.className = 'detail-icon';
   icon.setAttribute('file-type-icon', FileType.getIcon(entry));
   return icon;
+};
+
+/**
+ * Renders the file thumbnail in the detail table.
+ * @param {Entry} entry The Entry object to render.
+ * @return {!HTMLDivElement} Created element.
+ * @private
+ */
+FileTable.prototype.renderThumbnail_ = function(entry) {
+  var box = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
+  box.className = 'detail-thumbnail';
+
+  if (entry) {
+    this.metadataCache_.getOne(
+        entry, 'thumbnail|filesystem|external|media',
+        function(metadata) {
+          var loader = new ThumbnailLoader(
+              entry, ThumbnailLoader.LoaderType.IMAGE, metadata);
+          loader.load(box, ThumbnailLoader.FillMode.FILL,
+                      ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
+                      function(image, transform) {
+                        box.classList.add('loaded');
+                      });
+        });
+  }
+  return box;
+};
+
+/**
+ * Renders the selection checkmark in the detail table.
+ * @return {!HTMLDivElement} Created element.
+ * @private
+ */
+FileTable.prototype.renderCheckmark_ = function() {
+  var checkmark = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
+  checkmark.className = 'detail-checkmark';
+  return checkmark;
 };
 
 /**

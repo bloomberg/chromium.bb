@@ -781,28 +781,24 @@ body[type='full-page'] .detail-name .detail-icon {
   padding-left: 26px;
 }
 
-#list-container list > li[selected],
-#list-container list > li:active,
 #default-actions-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
 
-#list-container list:focus > li[selected],
 #default-actions-list:focus > li[selected] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-#list-container list > li.accepts[selected] {
-  background-color: rgb(215, 215, 215);
-}
-
-#list-container list:focus > li.accepts[selected] {
-  background-color: rgb(48, 125, 254);
-}
-
+#list-container list > li[selected],
+#list-container list > li:active,
 #list-container list > li.accepts {
-  background-color: #f1f1f1;
+  background-color: rgb(232, 232, 232);
+}
+
+#list-container list:focus > li[selected],
+#list-container list:focus > li.accepts[selected] {
+  background-color: rgb(213, 234, 245);
 }
 
 #list-container.nohover grid > .accepts {
@@ -1072,23 +1068,21 @@ li[renaming=''] .filename-label {
 }
 
 .table-row-cell > .detail-name {
-  color: rgb(0, 0, 0);
-}
-
-
-#list-container list:focus > [selected] .table-row-cell,
-#list-container list:focus > [selected] .detail-name {
-  color: white;
+  color: rgb(74, 74, 74);
 }
 
 .table-row-cell {
   align-items: center;
 }
 
-#list-container li.table-row,
 #default-actions-list li {
   height: 32px;
   line-height: 32px;
+}
+
+#list-container li.table-row {
+  height: 40px;
+  line-height: 40px;
 }
 
 /* The icon in the name column. See file_types.css for specific icons. */
@@ -1102,9 +1096,39 @@ li[renaming=''] .filename-label {
   width: 24px;
 }
 
-#detail-table .detail-icon {
-  /* To shift the icon position. */
-  margin-bottom: 2px;
+#list-container list li .detail-icon {
+  -webkit-margin-end: 10px;
+  height: 28px;
+  width: 28px;
+}
+
+#list-container list li .detail-checkmark {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/list_checked.png) 1x,
+      url(../images/files/ui/2x/list_checked.png) 2x);
+  height: 28px;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 220ms ease;
+  width: 28px;
+}
+
+#list-container list li[selected] .detail-checkmark {
+  opacity: 1;
+}
+
+#list-container list li .detail-thumbnail {
+  border-radius: 14px;
+  height: 28px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  transition: opacity 220ms ease;
+  width: 28px;
+}
+
+#list-container list li:not([selected]) .detail-thumbnail.loaded {
+  opacity: 1;
 }
 
 .preview-panel .spacer {
