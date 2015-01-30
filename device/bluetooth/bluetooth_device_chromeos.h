@@ -88,9 +88,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   // Returns the object path of the device.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
-  // Returns the adapter which owns this device instance.
-  BluetoothAdapterChromeOS* adapter() const { return adapter_; }
-
  protected:
    // BluetoothDevice override
   std::string GetDeviceName() const override;

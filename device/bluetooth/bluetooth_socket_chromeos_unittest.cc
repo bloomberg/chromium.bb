@@ -12,7 +12,6 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -145,9 +144,6 @@ class BluetoothSocketChromeOSTest : public testing::Test {
   void CreateServiceSuccessCallback(scoped_refptr<BluetoothSocket> socket) {
     ++success_callback_count_;
     last_socket_ = socket;
-
-    if (message_loop_.is_running())
-      message_loop_.Quit();
   }
 
   void AcceptSuccessCallback(const BluetoothDevice* device,
@@ -191,6 +187,7 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
+
   message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
@@ -300,8 +297,6 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.Run();
-
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
   EXPECT_TRUE(last_socket_.get() != NULL);
@@ -329,8 +324,6 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
       FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(&base::DoNothing),
       base::Bind(&DoNothingDBusErrorCallback));
-
-  message_loop_.RunUntilIdle();
 
   server_socket->Accept(
       base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
@@ -370,8 +363,6 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
-
   fake_bluetooth_device_client->ConnectProfile(
       static_cast<BluetoothDeviceChromeOS*>(device)->object_path(),
       FakeBluetoothProfileManagerClient::kRfcommUuid,
@@ -407,8 +398,6 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
       base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
-
   EXPECT_EQ(1U, success_callback_count_);
 }
 
@@ -427,7 +416,6 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -451,8 +439,6 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   // Make the adapter visible. This should register a profile.
   fake_bluetooth_adapter_client->SetVisible(true);
 
-  message_loop_.RunUntilIdle();
-
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
           FakeBluetoothProfileManagerClient::kRfcommUuid);
@@ -462,8 +448,6 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   socket->Disconnect(
       base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
-
-  message_loop_.RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
 }
@@ -481,7 +465,6 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -505,13 +488,13 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   // Make the adapter invisible, and fiddle with the profile fake to unregister
   // the profile since this doesn't happen automatically.
   fake_bluetooth_adapter_client->SetVisible(false);
-
-  message_loop_.RunUntilIdle();
+  fake_bluetooth_profile_manager_client->UnregisterProfile(
+      static_cast<BluetoothSocketChromeOS*>(socket.get())->object_path(),
+      base::Bind(&base::DoNothing),
+      base::Bind(&DoNothingDBusErrorCallback));
 
   // Then make the adapter visible again. This should re-register the profile.
   fake_bluetooth_adapter_client->SetVisible(true);
-
-  message_loop_.RunUntilIdle();
 
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
@@ -522,8 +505,6 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   socket->Disconnect(
       base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
-
-  message_loop_.RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
 }

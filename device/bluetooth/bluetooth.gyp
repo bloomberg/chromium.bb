@@ -30,8 +30,6 @@
         'bluetooth_adapter_factory.h',
         'bluetooth_adapter_mac.h',
         'bluetooth_adapter_mac.mm',
-        "bluetooth_adapter_profile_chromeos.cc",
-        "bluetooth_adapter_profile_chromeos.h",
         'bluetooth_adapter_win.cc',
         'bluetooth_adapter_win.h',
         'bluetooth_audio_sink.cc',

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -54,7 +53,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
                          "Profile already registered");
     } else {
       profile_map_[uuid] = profile_path;
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+      callback.Run();
     }
   }
 }
@@ -78,7 +77,7 @@ void FakeBluetoothProfileManagerClient::UnregisterProfile(
       }
     }
 
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    callback.Run();
   }
 }
 

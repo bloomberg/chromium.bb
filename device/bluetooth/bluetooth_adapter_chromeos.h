@@ -5,7 +5,6 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 
-#include <map>
 #include <queue>
 #include <string>
 #include <utility>
@@ -17,8 +16,6 @@
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
@@ -32,7 +29,6 @@ class BluetoothSocketThread;
 namespace chromeos {
 
 class BluetoothChromeOSTest;
-class BluetoothAdapterProfileChromeOS;
 class BluetoothDeviceChromeOS;
 class BluetoothPairingChromeOS;
 class BluetoothRemoteGattCharacteristicChromeOS;
@@ -48,11 +44,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
       public chromeos::BluetoothInputClient::Observer,
       public chromeos::BluetoothAgentServiceProvider::Delegate {
  public:
-  typedef base::Callback<void(const std::string& error_message)>
-      ErrorCompletionCallback;
-  typedef base::Callback<void(BluetoothAdapterProfileChromeOS* profile)>
-      ProfileRegisteredCallback;
-
   static base::WeakPtr<BluetoothAdapter> CreateAdapter();
 
   // BluetoothAdapter:
@@ -123,23 +114,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // Returns the object path of the adapter.
   const dbus::ObjectPath& object_path() const { return object_path_; }
-
-  // Request a profile on the adapter for a custom service with a
-  // specific UUID for the device at |device_path| to be sent to |delegate|.
-  // If |device_path| is the empty string, incoming connections will be
-  // assigned to |delegate|.  When the profile is
-  // successfully registered, |success_callback| will be called with a pointer
-  // to the profile which is managed by BluetoothAdapterChromeOS.  On failure,
-  // |error_callback| will be called.
-  void UseProfile(const device::BluetoothUUID& uuid,
-                  const dbus::ObjectPath& device_path,
-                  const BluetoothProfileManagerClient::Options& options,
-                  BluetoothProfileServiceProvider::Delegate* delegate,
-                  const ProfileRegisteredCallback& success_callback,
-                  const ErrorCompletionCallback& error_callback);
-
-  // Releases the profile associated with |uuid|
-  void ReleaseProfile(const device::BluetoothUUID& uuid);
 
  protected:
   // BluetoothAdapter:
@@ -261,22 +235,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                             const std::string& error_name,
                             const std::string& error_message);
 
-  // Called by dbus:: on completion of the D-Bus method to register a profile.
-  void OnRegisterProfile(const device::BluetoothUUID& uuid,
-                         const dbus::ObjectPath& device_path,
-                         BluetoothProfileServiceProvider::Delegate* delegate,
-                         const ProfileRegisteredCallback& success_callback,
-                         const ErrorCompletionCallback& error_callback);
-  bool SetProfileDelegate(const device::BluetoothUUID& uuid,
-                          const dbus::ObjectPath& device_path,
-                          BluetoothProfileServiceProvider::Delegate* delegate,
-                          const ProfileRegisteredCallback& success_callback,
-                          const ErrorCompletionCallback& error_callback);
-  void OnRegisterProfileError(const device::BluetoothUUID& uuid,
-                              const ErrorCompletionCallback& error_callback,
-                              const std::string& error_name,
-                              const std::string& error_message);
-
   // Processes the queued discovery requests. For each DiscoveryCallbackPair in
   // the queue, this method will try to add a new discovery session. This method
   // is called whenever a pending D-Bus call to start or stop discovery has
@@ -316,9 +274,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
-
-  // The profiles we have registered with the bluetooth daemon.
-  std::map<device::BluetoothUUID, BluetoothAdapterProfileChromeOS*> profiles_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

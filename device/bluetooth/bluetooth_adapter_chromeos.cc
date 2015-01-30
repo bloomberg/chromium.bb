@@ -20,7 +20,6 @@
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
@@ -928,76 +927,6 @@ void BluetoothAdapterChromeOS::NotifyGattDescriptorValueChanged(
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                     observers_,
                     GattDescriptorValueChanged(this, descriptor, value));
-}
-
-void BluetoothAdapterChromeOS::UseProfile(
-    const BluetoothUUID& uuid,
-    const dbus::ObjectPath& device_path,
-    const BluetoothProfileManagerClient::Options& options,
-    BluetoothProfileServiceProvider::Delegate* delegate,
-    const ProfileRegisteredCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
-  DCHECK(delegate);
-
-  if (profiles_.find(uuid) != profiles_.end()) {
-    // TODO(jamuraa) check that the options are the same and error when they are
-    // not.
-    SetProfileDelegate(uuid, device_path, delegate, success_callback,
-                       error_callback);
-    return;
-  }
-
-  profiles_[uuid] = BluetoothAdapterProfileChromeOS::Register(
-      this, uuid, options,
-      base::Bind(&BluetoothAdapterChromeOS::OnRegisterProfile, this, uuid,
-                 device_path, delegate, success_callback, error_callback),
-      base::Bind(&BluetoothAdapterChromeOS::OnRegisterProfileError, this, uuid,
-                 error_callback));
-}
-
-void BluetoothAdapterChromeOS::ReleaseProfile(const BluetoothUUID& uuid) {
-  if (profiles_.find(uuid) != profiles_.end()) {
-    delete profiles_[uuid];
-    profiles_.erase(uuid);
-  }
-}
-
-void BluetoothAdapterChromeOS::OnRegisterProfile(
-    const BluetoothUUID& uuid,
-    const dbus::ObjectPath& device_path,
-    BluetoothProfileServiceProvider::Delegate* delegate,
-    const ProfileRegisteredCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
-  SetProfileDelegate(uuid, device_path, delegate, success_callback,
-                     error_callback);
-}
-
-bool BluetoothAdapterChromeOS::SetProfileDelegate(
-    const BluetoothUUID& uuid,
-    const dbus::ObjectPath& device_path,
-    BluetoothProfileServiceProvider::Delegate* delegate,
-    const ProfileRegisteredCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
-  if (profiles_[uuid]->SetDelegate(device_path, delegate)) {
-    success_callback.Run(profiles_[uuid]);
-    return true;
-  }
-  // Already set
-  error_callback.Run(bluetooth_agent_manager::kErrorAlreadyExists);
-  return false;
-}
-
-void BluetoothAdapterChromeOS::OnRegisterProfileError(
-    const BluetoothUUID& uuid,
-    const ErrorCompletionCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message) {
-  LOG(WARNING) << object_path_.value()
-               << ": Failed to register profile: " << error_name << ": "
-               << error_message;
-  error_callback.Run(error_message);
-  delete profiles_[uuid];
-  profiles_.erase(uuid);
 }
 
 void BluetoothAdapterChromeOS::OnSetDiscoverable(
