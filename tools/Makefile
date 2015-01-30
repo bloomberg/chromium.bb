@@ -121,16 +121,18 @@ ifeq ($(PLATFORM), win)
   # I'm explicitly coding the path.
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS ?= scons.bat
-  REVISION ?= git rev-parse HEAD | tr -d $$"\r"
+  REVISION ?= $(shell git rev-parse HEAD | tr -d $$"\r")
   PREFIX_NATIVE = $(shell cygpath -m $(PREFIX))
   CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:$(PATH)
   SCONS ?= scons
-  REVISION ?= git rev-parse HEAD
+  REVISION ?= $(shell git rev-parse HEAD)
   PREFIX_NATIVE = $(DESTDIR)$(PREFIX)
   CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
+
+REVISION_DATE ?= $(shell git show --no-patch --format=%cd --date=short $(REVISION) | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+')
 
 ##################################################################
 #  The version numbers for the tools we will be building.
@@ -934,11 +936,10 @@ buildbot-build-with-newlib: | \
 
 # Don't generate patch files for things like gmp or linux-headers-for-nacl
 # because these are not changed from upstream.
-REVISION_NAME := $(shell $(REVISION) | tr : _)
-BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-$(REVISION_NAME)
-GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-$(REVISION_NAME)
-GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-$(REVISION_NAME)
-NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-$(REVISION_NAME)
+BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-$(REVISION)
+GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-$(REVISION)
+GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-$(REVISION)
+NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-$(REVISION)
 
 patch-names = $(BINUTILS_PATCHNAME) $(GCC_PATCHNAME) \
 	      $(GLIBC_PATCHNAME) $(NEWLIB_PATCHNAME)
@@ -975,15 +976,14 @@ buildbot-build-with-glibc: | \
 buildbot-mark-version: | \
   pinned-src-binutils \
   pinned-src-gcc
-	cd SRC/binutils
 	printf -- "--- SRC/binutils/bfd/version.h\n\
 	+++ SRC/binutils/bfd/version.h\n\
 	@@ -3 +3 @@\n\
 	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C git show --no-patch --format=%cd --date=short HEAD | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client `LC_ALL=C $(REVISION)`, Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" $(REVISION_DATE) (Native Client $(REVISION), Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
 	patch -p0
-	LC_ALL=C git show --no-patch --format=%cd --date=short HEAD | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+' > SRC/gcc/gcc/DATESTAMP
-	echo "Native Client `LC_ALL=C $(REVISION)`, Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
+	echo $(REVISION_DATE) > SRC/gcc/gcc/DATESTAMP
+	echo "Native Client $(REVISION), Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
 endif
 
 ##################################################################
