@@ -31,6 +31,20 @@ PASS tmpKey.algorithm.name is "PBKDF2"
 PASS tmpKey.usages.join(',') is "deriveKey,deriveBits"
 PASS: deriveBits should be [e4dfce3830983830c50c351a0b0f79e1] and was
 PASS derivedBits.byteLength is 0
+PASS tmpKey.type is "secret"
+PASS typeof tmpKey.extractable is 'boolean'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is "PBKDF2"
+PASS tmpKey.usages.join(',') is "deriveKey,deriveBits"
+PASS: deriveBits should be [750261780a187897a9978371599db5d1] and was
+PASS derivedBits.byteLength is 0
+PASS tmpKey.type is "secret"
+PASS typeof tmpKey.extractable is 'boolean'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is "PBKDF2"
+PASS tmpKey.usages.join(',') is "deriveKey,deriveBits"
+PASS: deriveBits should be [] and was
+PASS derivedBits.byteLength is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

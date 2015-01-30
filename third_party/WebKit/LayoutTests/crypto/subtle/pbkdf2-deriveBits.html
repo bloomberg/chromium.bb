@@ -58,8 +58,25 @@ var kPbkdf2SuccessVectors = [
     derived_key: "e4dfce3830983830c50c351a0b0f79e1"
   },
 
-  // FIXME: Derive using an empty password (http://crbug.com/449409).
-  // FIXME: Derive zero bytes.
+  // Empty password.
+  {
+    password: [],
+    salt: "salt",
+    c: 20,
+    dkLen: 16,
+    hash: "SHA-384",
+    derived_key: "750261780a187897a9978371599db5d1"
+  },
+
+  // Derive zero bytes.
+  {
+    password: "password",
+    salt: "salt",
+    c: 4096,
+    dkLen: 0,
+    hash: "SHA-512",
+    derived_key: ""
+  },
 ];
 
 function runPbkdf2SuccessTestCase(testCase)
