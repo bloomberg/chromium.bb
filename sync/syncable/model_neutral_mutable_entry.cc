@@ -44,6 +44,42 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
   kernel_ = kernel.release();
 }
 
+ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
+                                                   CreateNewTypeRoot,
+                                                   ModelType type)
+    : Entry(trans), base_write_transaction_(trans) {
+  DCHECK(!IsTypeWithServerGeneratedRoot(type));
+  Entry same_type_root(trans, GET_TYPE_ROOT, type);
+  kernel_ = NULL;
+  if (same_type_root.good()) {
+    return;  // already have a type root for the given type
+  }
+
+  scoped_ptr<EntryKernel> kernel(new EntryKernel());
+
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(type, &specifics);
+  kernel->put(SPECIFICS, specifics);
+
+  kernel->put(ID,
+              syncable::Id::CreateFromClientString(ModelTypeToString(type)));
+  kernel->put(META_HANDLE, trans->directory()->NextMetahandle());
+  kernel->put(PARENT_ID, syncable::Id::GetRoot());
+  kernel->put(BASE_VERSION, CHANGES_VERSION);
+  kernel->put(NON_UNIQUE_NAME, ModelTypeToString(type));
+  kernel->put(IS_DIR, true);
+
+  kernel->mark_dirty(&trans->directory()->kernel_->dirty_metahandles);
+
+  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
+    return;  // Failed inserting.
+  }
+
+  trans->TrackChangesTo(kernel.get());
+
+  kernel_ = kernel.release();
+}
+
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(
     BaseWriteTransaction* trans, GetById, const Id& id)
     : Entry(trans, GET_BY_ID, id), base_write_transaction_(trans) {

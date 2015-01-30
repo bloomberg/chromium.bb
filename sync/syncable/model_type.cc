@@ -1156,4 +1156,8 @@ bool IsActOnceDataType(ModelType model_type) {
   return model_type == HISTORY_DELETE_DIRECTIVES;
 }
 
+bool IsTypeWithServerGeneratedRoot(ModelType model_type) {
+  return model_type == BOOKMARKS || model_type == NIGORI;
+}
+
 }  // namespace syncer

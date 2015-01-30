@@ -184,7 +184,23 @@ syncable::Id FindLocalIdToUpdate(
 
       return local_entry.GetId();
     }
+  } else if (update.has_server_defined_unique_tag() &&
+             !update.server_defined_unique_tag().empty()) {
+    // The client creates type root folders with a local ID on demand when a
+    // progress marker for the given type is initially set.
+    // The server might also attempt to send a type root folder for the same
+    // type (during the transition period until support for root folders is
+    // removed for new client versions).
+    // TODO(stanisc): crbug.com/438313: remove this once the transition to
+    // implicit root folders on the server is done.
+    syncable::Entry local_entry(trans, syncable::GET_BY_SERVER_TAG,
+                                update.server_defined_unique_tag());
+    if (local_entry.good() && !local_entry.GetId().ServerKnows()) {
+      DCHECK(local_entry.GetId() != update_id);
+      return local_entry.GetId();
+    }
   }
+
   // Fallback: target an entry having the server ID, creating one if needed.
   return update_id;
 }
@@ -198,6 +214,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     return SUCCESS;  // No work to do.
   syncable::Id id = entry->GetId();
   const sync_pb::EntitySpecifics& specifics = entry->GetServerSpecifics();
+  ModelType type = GetModelTypeFromSpecifics(specifics);
 
   // Only apply updates that we can decrypt. If we can't decrypt the update, it
   // is likely because the passphrase has not arrived yet. Because the
@@ -227,23 +244,30 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 
   if (!entry->GetServerIsDel()) {
     syncable::Id new_parent = entry->GetServerParentId();
-    Entry parent(trans, GET_BY_ID,  new_parent);
-    // A note on non-directory parents:
-    // We catch most unfixable tree invariant errors at update receipt time,
-    // however we deal with this case here because we may receive the child
-    // first then the illegal parent. Instead of dealing with it twice in
-    // different ways we deal with it once here to reduce the amount of code and
-    // potential errors.
-    if (!parent.good() || parent.GetIsDel() || !parent.GetIsDir()) {
-      DVLOG(1) <<  "Entry has bad parent, returning conflict_hierarchy.";
-      return CONFLICT_HIERARCHY;
-    }
-    if (entry->GetParentId() != new_parent) {
-      if (!entry->GetIsDel() && !IsLegalNewParent(trans, id, new_parent)) {
-        DVLOG(1) << "Not updating item " << id
-                 << ", illegal new parent (would cause loop).";
+    if (!new_parent.IsNull()) {
+      // Perform this step only if the parent is specified.
+      // The unset parent means that the implicit type root would be used.
+      Entry parent(trans, GET_BY_ID, new_parent);
+      // A note on non-directory parents:
+      // We catch most unfixable tree invariant errors at update receipt time,
+      // however we deal with this case here because we may receive the child
+      // first then the illegal parent. Instead of dealing with it twice in
+      // different ways we deal with it once here to reduce the amount of code
+      // and potential errors.
+      if (!parent.good() || parent.GetIsDel() || !parent.GetIsDir()) {
+        DVLOG(1) << "Entry has bad parent, returning conflict_hierarchy.";
         return CONFLICT_HIERARCHY;
       }
+      if (entry->GetParentId() != new_parent) {
+        if (!entry->GetIsDel() && !IsLegalNewParent(trans, id, new_parent)) {
+          DVLOG(1) << "Not updating item " << id
+                   << ", illegal new parent (would cause loop).";
+          return CONFLICT_HIERARCHY;
+        }
+      }
+    } else {
+      // new_parent is unset.
+      DCHECK(!IsTypeWithServerGeneratedRoot(type));
     }
   } else if (entry->GetIsDir()) {
     Directory::Metahandles handles;

@@ -9,6 +9,7 @@
 #include "sync/engine/update_applicator.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_write_transaction.h"
 
@@ -65,14 +66,40 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     }
   }
 
+  // Auto-create permanent folder for the type if the progress marker
+  // changes from empty to non-empty.
+  if (!IsTypeWithServerGeneratedRoot(type_) &&
+      dir_->HasEmptyDownloadProgress(type_) &&
+      IsValidProgressMarker(progress_marker)) {
+    CreateTypeRoot(&trans);
+  }
+
   UpdateSyncEntities(&trans, applicable_updates, status);
 
   if (IsValidProgressMarker(progress_marker)) {
     ExpireEntriesIfNeeded(&trans, progress_marker);
     UpdateProgressMarker(progress_marker);
   }
+
   debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
+}
+
+void DirectoryUpdateHandler::CreateTypeRoot(
+    syncable::ModelNeutralWriteTransaction* trans) {
+  syncable::ModelNeutralMutableEntry entry(
+      trans, syncable::CREATE_NEW_TYPE_ROOT, type_);
+  if (!entry.good()) {
+    // This will fail only if matching entry already exists, for example
+    // if the type gets disabled and its progress marker gets cleared,
+    // then the type gets re-enabled again.
+    DVLOG(1) << "Type root folder " << ModelTypeToRootTag(type_)
+             << " already exists.";
+    return;
+  }
+
+  entry.PutServerIsDir(true);
+  entry.PutUniqueServerTag(ModelTypeToRootTag(type_));
 }
 
 void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
@@ -205,6 +232,9 @@ void DirectoryUpdateHandler::UpdateSyncEntities(
 
 bool DirectoryUpdateHandler::IsValidProgressMarker(
     const sync_pb::DataTypeProgressMarker& progress_marker) const {
+  if (progress_marker.token().empty()) {
+    return false;
+  }
   int field_number = progress_marker.data_type_id();
   ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
   if (!IsRealDataType(model_type) || type_ != model_type) {

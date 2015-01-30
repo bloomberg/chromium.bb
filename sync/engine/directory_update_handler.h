@@ -91,6 +91,9 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
   // Skips all checks and goes straight to applying the updates.
   SyncerError ApplyUpdatesImpl(sessions::StatusController* status);
 
+  // Creates root node for the handled model type.
+  void CreateTypeRoot(syncable::ModelNeutralWriteTransaction* trans);
+
   syncable::Directory* dir_;
   ModelType type_;
   scoped_refptr<ModelSafeWorker> worker_;

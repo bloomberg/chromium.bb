@@ -35,19 +35,23 @@ string Id::GetServerId() const {
 
 Id Id::CreateFromServerId(const string& server_id) {
   Id id;
-  if (server_id == "0")
-    id.s_ = "r";
-  else
-    id.s_ = string("s") + server_id;
+  if (!server_id.empty()) {
+    if (server_id == "0")
+      id.s_ = "r";
+    else
+      id.s_ = string("s") + server_id;
+  }
   return id;
 }
 
 Id Id::CreateFromClientString(const string& local_id) {
   Id id;
-  if (local_id == "0")
-    id.s_ = "r";
-  else
-    id.s_ = string("c") + local_id;
+  if (!local_id.empty()) {
+    if (local_id == "0")
+      id.s_ = "r";
+    else
+      id.s_ = string("c") + local_id;
+  }
   return id;
 }
 

@@ -199,10 +199,13 @@ class SYNC_EXPORT Directory {
   void GetDownloadProgressAsString(
       ModelType type,
       std::string* value_out) const;
-  size_t GetEntriesCount() const;
   void SetDownloadProgress(
       ModelType type,
       const sync_pb::DataTypeProgressMarker& value);
+  bool HasEmptyDownloadProgress(ModelType type) const;
+
+  // Gets the total number of entries in the directory.
+  size_t GetEntriesCount() const;
 
   // Gets/Increments transaction version of a model type. Must be called when
   // holding kernel mutex.

@@ -28,6 +28,8 @@ int GetUnsyncedEntries(BaseTransaction* trans,
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
                       const Id& new_parent_id) {
+  DCHECK(!entry_id.IsNull());
+  DCHECK(!new_parent_id.IsNull());
   if (entry_id.IsRoot())
     return false;
   // we have to ensure that the entry is not an ancestor of the new parent.
@@ -66,11 +68,14 @@ void ChangeEntryIDAndUpdateChildren(
     while (i != children.end()) {
       ModelNeutralMutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
       CHECK(child_entry.good());
-      // Use the unchecked setter here to avoid touching the child's
-      // UNIQUE_POSITION field.  In this case, UNIQUE_POSITION among the
-      // children will be valid after the loop, since we update all the children
-      // at once.
-      child_entry.PutParentIdPropertyOnly(new_id);
+      // Change the parent ID of the entry unless it was unset (implicit)
+      if (!child_entry.GetParentId().IsNull()) {
+        // Use the unchecked setter here to avoid touching the child's
+        // UNIQUE_POSITION field.  In this case, UNIQUE_POSITION among the
+        // children will be valid after the loop, since we update all the
+        // children at once.
+        child_entry.PutParentIdPropertyOnly(new_id);
+      }
     }
   }
 }

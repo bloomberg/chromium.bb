@@ -20,6 +20,8 @@ enum CreateNewUpdateItem {
   CREATE_NEW_UPDATE_ITEM
 };
 
+enum CreateNewTypeRoot { CREATE_NEW_TYPE_ROOT };
+
 // This Entry includes all the operations one can safely perform on the sync
 // thread.  In particular, it does not expose setters to make changes that need
 // to be communicated to the model (and the model's thread).  It is not possible
@@ -30,6 +32,9 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
   ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                            CreateNewUpdateItem,
                            const Id& id);
+  ModelNeutralMutableEntry(BaseWriteTransaction* trans,
+                           CreateNewTypeRoot,
+                           ModelType type);
   ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetByHandle, int64);
   ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetById, const Id&);
   ModelNeutralMutableEntry(

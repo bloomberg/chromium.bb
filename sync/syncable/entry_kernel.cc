@@ -57,7 +57,7 @@ bool EntryKernel::ShouldMaintainPosition() const {
 }
 
 bool EntryKernel::ShouldMaintainHierarchy() const {
-  // We maintain hierarchy for bookmarks, device info, and top-level folders,
+  // We maintain hierarchy for bookmarks and top-level folders,
   // but no other types.  Note that the Nigori node consists of a single
   // top-level folder, so it's included in this set.
   return (GetModelTypeFromSpecifics(ref(SPECIFICS)) == syncer::BOOKMARKS)

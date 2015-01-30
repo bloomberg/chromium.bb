@@ -324,6 +324,10 @@ SYNC_EXPORT bool IsProxyType(ModelType model_type);
 // TODO(haitaol): Make entries of act-once data types immutable.
 SYNC_EXPORT bool IsActOnceDataType(ModelType model_type);
 
+// Returns true if |model_type| requires its root folder to be explicitly
+// created on the server during initial sync.
+SYNC_EXPORT bool IsTypeWithServerGeneratedRoot(ModelType model_type);
+
 // Returns set of model types that should be backed up before first sync.
 SYNC_EXPORT ModelTypeSet BackupTypes();
 

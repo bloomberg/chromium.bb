@@ -84,6 +84,12 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
     return e.good() && !e.GetIsDel();
   }
 
+  bool TypeRootExists(ModelType model_type) {
+    syncable::ReadTransaction trans(FROM_HERE, dir());
+    syncable::Entry e(&trans, syncable::GET_TYPE_ROOT, model_type);
+    return e.good() && !e.GetIsDel();
+  }
+
  protected:
   // Used in the construction of DirectoryTypeDebugInfoEmitters.
   ObserverList<TypeDebugInfoObserver> type_observers_;
@@ -267,27 +273,17 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   context.set_context("context");
   context.set_version(1);
 
-  scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
-                   Id::GetRoot().GetServerId(), SYNCED_NOTIFICATIONS);
-  type_root->set_server_defined_unique_tag(
-      ModelTypeToRootTag(SYNCED_NOTIFICATIONS));
-  type_root->set_folder(true);
-
   scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
-                   type_root->id_string(),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
                    SYNCED_NOTIFICATIONS);
 
   scoped_ptr<sync_pb::SyncEntity> e2 =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")),
-                   type_root->id_string(),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
                    SYNCED_NOTIFICATIONS);
   e2->set_version(kDefaultVersion + 100);
 
   // Add to the applicable updates list.
   SyncEntityList updates;
-  updates.push_back(type_root.get());
   updates.push_back(e1.get());
   updates.push_back(e2.get());
 
@@ -298,7 +294,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   handler.ApplyUpdates(&status);
 
   // Verify none is deleted because they are unapplied during GC.
-  EXPECT_TRUE(EntryExists(type_root->id_string()));
+  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
   EXPECT_TRUE(EntryExists(e1->id_string()));
   EXPECT_TRUE(EntryExists(e2->id_string()));
 
@@ -308,7 +304,6 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
             handler.ProcessGetUpdatesResponse(
                 progress, context, SyncEntityList(), &status));
   handler.ApplyUpdates(&status);
-  EXPECT_TRUE(EntryExists(type_root->id_string()));
   EXPECT_FALSE(EntryExists(e1->id_string()));
   EXPECT_TRUE(EntryExists(e2->id_string()));
 }
@@ -330,19 +325,11 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   old_context.set_context("data");
   old_context.set_data_type_id(field_number);
 
-  scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
-                   Id::GetRoot().GetServerId(), SYNCED_NOTIFICATIONS);
-  type_root->set_server_defined_unique_tag(
-      ModelTypeToRootTag(SYNCED_NOTIFICATIONS));
-  type_root->set_folder(true);
   scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
-                   type_root->id_string(),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
                    SYNCED_NOTIFICATIONS);
 
   SyncEntityList updates;
-  updates.push_back(type_root.get());
   updates.push_back(e1.get());
 
   // The first response should be processed fine.
@@ -351,7 +338,9 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
                 progress, old_context, updates, &status));
   handler.ApplyUpdates(&status);
 
-  EXPECT_TRUE(EntryExists(type_root->id_string()));
+  // The PREFERENCES root should be auto-created.
+  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
+
   EXPECT_TRUE(EntryExists(e1->id_string()));
 
   {
@@ -368,8 +357,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   new_context.set_data_type_id(field_number);
 
   scoped_ptr<sync_pb::SyncEntity> e2 =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")),
-                   type_root->id_string(),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
                    SYNCED_NOTIFICATIONS);
   updates.clear();
   updates.push_back(e2.get());
@@ -410,21 +398,12 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   context.set_context("context");
   context.set_version(1);
 
-  scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
-                   Id::GetRoot().GetServerId(), ARTICLES);
-  type_root->set_server_defined_unique_tag(ModelTypeToRootTag(ARTICLES));
-  type_root->set_folder(true);
-
-  scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
-                   type_root->id_string(),
-                   ARTICLES);
+  scoped_ptr<sync_pb::SyncEntity> e1 = CreateUpdate(
+      SyncableIdToProto(Id::CreateFromServerId("e1")), "", ARTICLES);
   sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
   *attachment_id = CreateAttachmentIdProto();
 
   SyncEntityList updates;
-  updates.push_back(type_root.get());
   updates.push_back(e1.get());
 
   // Process and apply updates.
@@ -433,7 +412,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
       handler.ProcessGetUpdatesResponse(progress, context, updates, &status));
   handler.ApplyUpdates(&status);
 
-  ASSERT_TRUE(EntryExists(type_root->id_string()));
+  ASSERT_TRUE(TypeRootExists(ARTICLES));
   ASSERT_TRUE(EntryExists(e1->id_string()));
   {
     syncable::ReadTransaction trans(FROM_HERE, dir());

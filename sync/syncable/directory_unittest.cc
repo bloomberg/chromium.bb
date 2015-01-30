@@ -1044,6 +1044,56 @@ TEST_F(SyncableDirectoryTest, ChangeEntryIDAndUpdateChildren_ParentAndChild) {
   EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
 }
 
+// A test that roughly mimics the directory interaction that occurs when a
+// type root folder is created locally and then re-created (updated) from the
+// server.
+TEST_F(SyncableDirectoryTest, ChangeEntryIDAndUpdateChildren_ImplicitParent) {
+  TestIdFactory id_factory;
+  Id orig_parent_id;
+  Id child_id;
+
+  {
+    // Create two client-side items, a parent and child.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+    MutableEntry parent(&trans, CREATE, PREFERENCES, id_factory.root(),
+                        "parent");
+    parent.PutIsDir(true);
+    parent.PutIsUnsynced(true);
+
+    // The child has unset parent ID. The parent is inferred from the type.
+    MutableEntry child(&trans, CREATE, PREFERENCES, "child");
+    child.PutIsUnsynced(true);
+
+    orig_parent_id = parent.GetId();
+    child_id = child.GetId();
+  }
+
+  {
+    // Simulate what happens after committing two items.  Their IDs will be
+    // replaced with server IDs.  The child is renamed first, then the parent.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+    MutableEntry parent(&trans, GET_BY_ID, orig_parent_id);
+
+    ChangeEntryIDAndUpdateChildren(&trans, &parent, id_factory.NewServerId());
+    parent.PutIsUnsynced(false);
+    parent.PutBaseVersion(1);
+    parent.PutServerVersion(1);
+  }
+
+  // Final check for validity.
+  EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
+
+  // Verify that child's PARENT_ID hasn't been updated.
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    Entry child(&trans, GET_BY_ID, child_id);
+    EXPECT_TRUE(child.good());
+    EXPECT_TRUE(child.GetParentId().IsNull());
+  }
+}
+
 // A test based on the scenario where we create a bookmark folder and entry
 // locally, but with a twist.  In this case, the bookmark is deleted before we
 // are able to sync either it or its parent folder.  This scenario used to cause

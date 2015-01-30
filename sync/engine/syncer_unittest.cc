@@ -1261,13 +1261,10 @@ TEST_F(SyncerTest, TestPurgeWithJournal) {
 }
 
 TEST_F(SyncerTest, ResetVersions) {
-  // Download the top level pref node and some pref items.
-  mock_server_->AddUpdateDirectory(
-      parent_id_, root_id_, "prefs", 1, 10, std::string(), std::string());
-  mock_server_->SetLastUpdateServerTag(ModelTypeToRootTag(PREFERENCES));
-  mock_server_->AddUpdatePref("id1", parent_id_.GetServerId(), "tag1", 20, 20);
-  mock_server_->AddUpdatePref("id2", parent_id_.GetServerId(), "tag2", 30, 30);
-  mock_server_->AddUpdatePref("id3", parent_id_.GetServerId(), "tag3", 40, 40);
+  // Download some pref items.
+  mock_server_->AddUpdatePref("id1", "", "tag1", 20, 20);
+  mock_server_->AddUpdatePref("id2", "", "tag2", 30, 30);
+  mock_server_->AddUpdatePref("id3", "", "tag3", 40, 40);
   SyncShareNudge();
 
   {
@@ -1280,7 +1277,7 @@ TEST_F(SyncerTest, ResetVersions) {
     MutableEntry entry2(&wtrans, GET_BY_CLIENT_TAG, "tag2");
     entry2.PutIsUnappliedUpdate(true);
 
-    MutableEntry entry4(&wtrans, CREATE, PREFERENCES, parent_id_, "name");
+    MutableEntry entry4(&wtrans, CREATE, PREFERENCES, "name");
     entry4.PutUniqueClientTag("tag4");
     entry4.PutIsUnsynced(true);
   }
@@ -2486,12 +2483,17 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
+  // Disable PREFERENCES which is enabled at the setup step to avoid
+  // auto-creating
+  // PREFERENCES root folder and failing the test below that verifies the number
+  // of children at the root.
+  DisableDatatype(PREFERENCES);
+
   const FullModelTypeSet all_types = FullModelTypeSet::All();
   syncable::Id parent_id = ids_.NewServerId();
   syncable::Id child_id = ids_.NewServerId();
   syncable::Id parent_local_id;
   syncable::Id child_local_id;
-
 
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
@@ -4086,12 +4088,10 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
   EXPECT_TRUE(ids_.FromNumber(3) < ids_.FromNumber(4));
 
   syncable::Id id1 = TestIdFactory::MakeServer("1");
-  mock_server_->AddUpdatePref(id1.GetServerId(), ids_.root().GetServerId(),
-                              "tag1", 10, 100);
+  mock_server_->AddUpdatePref(id1.GetServerId(), "", "tag1", 10, 100);
 
   syncable::Id id4 = TestIdFactory::MakeServer("4");
-  mock_server_->AddUpdatePref(id4.GetServerId(), ids_.root().GetServerId(),
-                              "tag2", 11, 110);
+  mock_server_->AddUpdatePref(id4.GetServerId(), "", "tag2", 11, 110);
 
   mock_server_->set_conflict_all_commits(true);
 
@@ -4124,17 +4124,19 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ("tag2", tag2.GetUniqueClientTag());
     tag2_metahandle = tag2.GetMetahandle();
 
+    // Preferences type root should have been created by the updates above.
+    Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
+    ASSERT_TRUE(pref_root.good());
+
     syncable::Directory::Metahandles children;
-    directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
+    directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(2U, children.size());
   }
 
   syncable::Id id2 = TestIdFactory::MakeServer("2");
-  mock_server_->AddUpdatePref(id2.GetServerId(), ids_.root().GetServerId(),
-                              "tag1", 12, 120);
+  mock_server_->AddUpdatePref(id2.GetServerId(), "", "tag1", 12, 120);
   syncable::Id id3 = TestIdFactory::MakeServer("3");
-  mock_server_->AddUpdatePref(id3.GetServerId(), ids_.root().GetServerId(),
-                              "tag2", 13, 130);
+  mock_server_->AddUpdatePref(id3.GetServerId(), "", "tag2", 13, 130);
   SyncShareNudge();
 
   {
@@ -4164,8 +4166,12 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ("tag2", tag2.GetUniqueClientTag());
     EXPECT_EQ(tag2_metahandle, tag2.GetMetahandle());
 
+    // Preferences type root should have been created by the updates above.
+    Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
+    ASSERT_TRUE(pref_root.good());
+
     syncable::Directory::Metahandles children;
-    directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
+    directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(2U, children.size());
   }
 }
@@ -4177,34 +4183,33 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
   EXPECT_TRUE(ids_.FromNumber(201) < ids_.FromNumber(205));
 
   // Least ID: winner.
-  mock_server_->AddUpdatePref(ids_.FromNumber(1).GetServerId(),
-                              ids_.root().GetServerId(), "tag a", 1, 10);
-  mock_server_->AddUpdatePref(ids_.FromNumber(2).GetServerId(),
-                              ids_.root().GetServerId(), "tag a", 11, 110);
-  mock_server_->AddUpdatePref(ids_.FromNumber(3).GetServerId(),
-                              ids_.root().GetServerId(), "tag a", 12, 120);
-  mock_server_->AddUpdatePref(ids_.FromNumber(4).GetServerId(),
-                              ids_.root().GetServerId(), "tag a", 13, 130);
-
-  mock_server_->AddUpdatePref(ids_.FromNumber(105).GetServerId(),
-                              ids_.root().GetServerId(), "tag b", 14, 140);
-  mock_server_->AddUpdatePref(ids_.FromNumber(102).GetServerId(),
-                              ids_.root().GetServerId(), "tag b", 15, 150);
+  mock_server_->AddUpdatePref(ids_.FromNumber(1).GetServerId(), "", "tag a", 1,
+                              10);
+  mock_server_->AddUpdatePref(ids_.FromNumber(2).GetServerId(), "", "tag a", 11,
+                              110);
+  mock_server_->AddUpdatePref(ids_.FromNumber(3).GetServerId(), "", "tag a", 12,
+                              120);
+  mock_server_->AddUpdatePref(ids_.FromNumber(4).GetServerId(), "", "tag a", 13,
+                              130);
+  mock_server_->AddUpdatePref(ids_.FromNumber(105).GetServerId(), "", "tag b",
+                              14, 140);
+  mock_server_->AddUpdatePref(ids_.FromNumber(102).GetServerId(), "", "tag b",
+                              15, 150);
   // Least ID: winner.
-  mock_server_->AddUpdatePref(ids_.FromNumber(101).GetServerId(),
-                              ids_.root().GetServerId(), "tag b", 16, 160);
-  mock_server_->AddUpdatePref(ids_.FromNumber(104).GetServerId(),
-                              ids_.root().GetServerId(), "tag b", 17, 170);
+  mock_server_->AddUpdatePref(ids_.FromNumber(101).GetServerId(), "", "tag b",
+                              16, 160);
+  mock_server_->AddUpdatePref(ids_.FromNumber(104).GetServerId(), "", "tag b",
+                              17, 170);
 
-  mock_server_->AddUpdatePref(ids_.FromNumber(205).GetServerId(),
-                              ids_.root().GetServerId(), "tag c", 18, 180);
-  mock_server_->AddUpdatePref(ids_.FromNumber(202).GetServerId(),
-                              ids_.root().GetServerId(), "tag c", 19, 190);
-  mock_server_->AddUpdatePref(ids_.FromNumber(204).GetServerId(),
-                              ids_.root().GetServerId(), "tag c", 20, 200);
+  mock_server_->AddUpdatePref(ids_.FromNumber(205).GetServerId(), "", "tag c",
+                              18, 180);
+  mock_server_->AddUpdatePref(ids_.FromNumber(202).GetServerId(), "", "tag c",
+                              19, 190);
+  mock_server_->AddUpdatePref(ids_.FromNumber(204).GetServerId(), "", "tag c",
+                              20, 200);
   // Least ID: winner.
-  mock_server_->AddUpdatePref(ids_.FromNumber(201).GetServerId(),
-                              ids_.root().GetServerId(), "tag c", 21, 210);
+  mock_server_->AddUpdatePref(ids_.FromNumber(201).GetServerId(), "", "tag c",
+                              21, 210);
 
   mock_server_->set_conflict_all_commits(true);
 
@@ -4243,9 +4248,65 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
     EXPECT_EQ(21, tag_c.GetBaseVersion());
     EXPECT_EQ("tag c", tag_c.GetUniqueClientTag());
 
+    // Preferences type root should have been created by the updates above.
+    Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
+    ASSERT_TRUE(pref_root.good());
+
+    // Verify that we have exactly 3 tagged nodes under the type root.
     syncable::Directory::Metahandles children;
-    directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
+    directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(3U, children.size());
+  }
+}
+
+// This verifies transition to implicit permanent folders.
+TEST_F(SyncerTest, EntryWithParentIdUpdatedWithEntryWithoutParentId) {
+  // Make sure SPECIFICS root exists so that we can get its parent ID.
+  mock_server_->AddUpdateSpecifics(1, 0, "Folder", 10, 10, true, 1,
+                                   DefaultPreferencesSpecifics());
+  mock_server_->SetLastUpdateServerTag(ModelTypeToRootTag(PREFERENCES));
+  SyncShareNudge();
+
+  Id pref_root_id;
+  {
+    // Preferences type root should have been created by the update above.
+    // We need it in order to get its ID.
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
+    ASSERT_TRUE(pref_root.good());
+    pref_root_id = pref_root.GetId();
+  }
+
+  // Add a preference item with explicit parent ID.
+  mock_server_->AddUpdatePref(ids_.FromNumber(2).GetServerId(),
+                              ids_.FromNumber(1).GetServerId(), "tag", 1, 10);
+
+  SyncShareNudge();
+
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry pref_entry(&trans, GET_BY_CLIENT_TAG, "tag");
+    ASSERT_TRUE(pref_entry.good());
+    ASSERT_EQ(pref_root_id, pref_entry.GetParentId());
+  }
+
+  // Make another update where the same item get updated, this time
+  // with implicit parent ID.
+  mock_server_->AddUpdatePref(ids_.FromNumber(2).GetServerId(), "", "tag", 2,
+                              20);
+
+  SyncShareNudge();
+
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry pref_entry(&trans, GET_BY_CLIENT_TAG, "tag");
+    ASSERT_TRUE(pref_entry.good());
+    ASSERT_TRUE(pref_entry.GetParentId().IsNull());
+
+    // Verify that there is still one node under the type root.
+    syncable::Directory::Metahandles children;
+    directory()->GetChildHandlesById(&trans, pref_root_id, &children);
+    ASSERT_EQ(1U, children.size());
   }
 }
 
