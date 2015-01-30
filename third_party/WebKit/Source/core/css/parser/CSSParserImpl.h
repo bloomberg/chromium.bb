@@ -23,6 +23,7 @@ class StyleRuleImport;
 class StyleRuleKeyframe;
 class StyleRuleKeyframes;
 class StyleRuleMedia;
+class StyleRuleNamespace;
 class StyleRuleSupports;
 class StyleRuleViewport;
 class StyleSheetContents;
@@ -68,12 +69,12 @@ private:
     template<typename T>
     void consumeRuleList(CSSParserTokenRange, RuleListType, T callback);
 
-    // These two functions update the range they're given and allowed rules
-    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType&);
-    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType&);
+    // These two functions update the range they're given
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType);
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
 
     PassRefPtrWillBeRawPtr<StyleRuleImport> consumeImportRule(CSSParserTokenRange prelude);
-    void consumeNamespaceRule(CSSParserTokenRange prelude); // This modifies m_styleSheet directly!
+    PassRefPtrWillBeRawPtr<StyleRuleNamespace> consumeNamespaceRule(CSSParserTokenRange prelude); // This can set m_defaultNamespace
     PassRefPtrWillBeRawPtr<StyleRuleMedia> consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleSupports> consumeSupportsRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleViewport> consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);

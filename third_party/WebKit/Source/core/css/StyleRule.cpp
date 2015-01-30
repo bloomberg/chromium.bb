@@ -34,6 +34,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
+#include "core/css/StyleRuleNamespace.h"
 
 namespace blink {
 
@@ -80,6 +81,9 @@ void StyleRuleBase::trace(Visitor* visitor)
     case Keyframe:
         toStyleRuleKeyframe(this)->traceAfterDispatch(visitor);
         return;
+    case Namespace:
+        toStyleRuleNamespace(this)->traceAfterDispatch(visitor);
+        return;
     case Viewport:
         toStyleRuleViewport(this)->traceAfterDispatch(visitor);
         return;
@@ -116,6 +120,9 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
         return;
     case Keyframe:
         toStyleRuleKeyframe(this)->~StyleRuleKeyframe();
+        return;
+    case Namespace:
+        toStyleRuleNamespace(this)->~StyleRuleNamespace();
         return;
     case Viewport:
         toStyleRuleViewport(this)->~StyleRuleViewport();
@@ -154,6 +161,9 @@ void StyleRuleBase::destroy()
     case Keyframe:
         delete toStyleRuleKeyframe(this);
         return;
+    case Namespace:
+        delete toStyleRuleNamespace(this);
+        return;
     case Viewport:
         delete toStyleRuleViewport(this);
         return;
@@ -188,6 +198,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Filter:
         return toStyleRuleFilter(this)->copy();
     case Keyframe:
+    case Namespace:
         ASSERT_NOT_REACHED();
         return nullptr;
     }
@@ -228,6 +239,7 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
         rule = CSSFilterRule::create(toStyleRuleFilter(self), parentSheet);
         break;
     case Keyframe:
+    case Namespace:
         ASSERT_NOT_REACHED();
         return nullptr;
     }

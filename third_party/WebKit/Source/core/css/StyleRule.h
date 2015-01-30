@@ -45,6 +45,7 @@ public:
         Page,
         Keyframes,
         Keyframe,
+        Namespace,
         Supports,
         Viewport,
         Filter,
@@ -55,6 +56,7 @@ public:
     bool isFontFaceRule() const { return type() == FontFace; }
     bool isKeyframesRule() const { return type() == Keyframes; }
     bool isKeyframeRule() const { return type() == Keyframe; }
+    bool isNamespaceRule() const { return type() == Namespace; }
     bool isMediaRule() const { return type() == Media; }
     bool isPageRule() const { return type() == Page; }
     bool isStyleRule() const { return type() == Style; }

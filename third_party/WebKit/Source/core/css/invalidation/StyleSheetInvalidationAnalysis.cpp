@@ -127,6 +127,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
 
     // These should all be impossible to reach:
     case StyleRule::Keyframe:
+    case StyleRule::Namespace:
     case StyleRule::Style:
         break;
     }
