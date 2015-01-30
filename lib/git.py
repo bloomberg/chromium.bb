@@ -60,6 +60,9 @@ GIT_TRANSIENT_ERRORS = (
 
     # crbug.com/388876
     r'Connection timed out',
+
+    # crbug.com/451458, b/19202011
+    r'repository cannot accept new pushes; contact support',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
