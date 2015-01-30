@@ -37,23 +37,6 @@ AppListStartPageWebUITest.prototype = {
   browsePreload: 'chrome://app-list/',
 
   /**
-   * Recommend apps data.
-   * @private
-   */
-  recommendedApps_: [
-    {
-      'appId': 'app_id_1',
-      'textTitle': 'app 1',
-      'iconUrl': 'icon_url_1'
-    },
-    {
-      'appId': 'app_id_2',
-      'textTitle': 'app 2',
-      'iconUrl': 'icon_url_2'
-    }
-  ],
-
-  /**
    * Placeholder for mock speech recognizer.
    */
   speechRecognizer: null,
@@ -126,9 +109,7 @@ AppListStartPageWebUITest.prototype = {
                                      'launchApp',
                                      'setSpeechRecognitionState',
                                      'speechResult']);
-    this.mockHandler.stubs().initialize().will(callFunction(function() {
-      appList.startPage.setRecommendedApps(this.recommendedApps_);
-    }.bind(this)));
+    this.mockHandler.stubs().initialize();
     this.mockHandler.stubs().launchApp(ANYTHING);
 
     this.registerMockSpeechRecognition_();
@@ -140,22 +121,6 @@ AppListStartPageWebUITest.prototype = {
 
 TEST_F('AppListStartPageWebUITest', 'Basic', function() {
   assertEquals(this.browsePreload, document.location.href);
-
-  var recommendedApp = $('start-page').querySelector('.recommended-apps');
-  assertEquals(this.recommendedApps_.length, recommendedApp.childElementCount);
-  for (var i = 0; i < recommendedApp.childElementCount; ++i) {
-    assertEquals(this.recommendedApps_[i].appId,
-                 recommendedApp.children[i].appId);
-  }
-});
-
-TEST_F('AppListStartPageWebUITest', 'ClickToLaunch', function() {
-  var recommendedApp = $('start-page').querySelector('.recommended-apps');
-  for (var i = 0; i < recommendedApp.childElementCount; ++i) {
-    this.mockHandler.expects(once()).launchApp(
-        [this.recommendedApps_[i].appId]);
-    cr.dispatchSimpleEvent(recommendedApp.children[i], 'click');
-  }
 });
 
 TEST_F('AppListStartPageWebUITest', 'SpeechRecognitionState', function() {

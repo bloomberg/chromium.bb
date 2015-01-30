@@ -6,7 +6,6 @@
  * @fileoverview App launcher start page implementation.
  */
 
-<include src="recommended_apps.js">
 <include src="speech_manager.js">
 
 cr.define('appList.startPage', function() {
@@ -15,55 +14,11 @@ cr.define('appList.startPage', function() {
   var speechManager = null;
 
   /**
-   * Creates a StartPage object.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var StartPage = cr.ui.define('div');
-
-  StartPage.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
-    /**
-     * Instance of the recommended apps card.
-     * @type {appsList.startPage.RecommendedApps}
-     * @private
-     */
-    recommendedApps_: null,
-
-    /** @override */
-    decorate: function() {
-      this.recommendedApps_ = new appList.startPage.RecommendedApps();
-      this.appendChild(this.recommendedApps_);
-    },
-
-    /**
-     * Sets the recommended apps.
-     * @param {!Array.<!{appId: string,
-     *                   iconUrl: string,
-     *                   textTitle: string}>} apps An array of app info
-     *     dictionary to be displayed in the AppItemView.
-     */
-    setRecommendedApps: function(apps) {
-      this.recommendedApps_.setApps(apps);
-    }
-  };
-
-  /**
    * Initialize the page.
    */
   function initialize() {
-    StartPage.decorate($('start-page'));
     speechManager = new speech.SpeechManager();
     chrome.send('initialize');
-  }
-
-  /**
-   * Sets the recommended apps.
-   * @param {Array.<Object>} apps An array of app info dictionary.
-   */
-  function setRecommendedApps(apps) {
-    $('start-page').setRecommendedApps(apps);
   }
 
   /**
@@ -109,7 +64,6 @@ cr.define('appList.startPage', function() {
 
   return {
     initialize: initialize,
-    setRecommendedApps: setRecommendedApps,
     setHotwordEnabled: setHotwordEnabled,
     setNaclArch: setNaclArch,
     onAppListShown: onAppListShown,
@@ -118,5 +72,4 @@ cr.define('appList.startPage', function() {
   };
 });
 
-document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.addEventListener('DOMContentLoaded', appList.startPage.initialize);

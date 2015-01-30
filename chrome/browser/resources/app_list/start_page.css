@@ -3,24 +3,13 @@
  * found in the LICENSE file. */
 
 html,
-body,
-#start-page {
+body {
   background-color: rgb(245, 245, 245);
   height: 100%;
   margin: 0;
   overflow: hidden;
   padding: 0;
   width: 100%;
-}
-
-#start-page {
-  -webkit-align-items: stretch;
-  -webkit-flex-direction: column;
-  -webkit-justify-content: flex-start;
-  -webkit-user-select: none;
-  box-sizing: border-box;
-  display: -webkit-flex;
-  padding: 10px;
 }
 
 #logo {
@@ -31,5 +20,3 @@ body,
   margin: auto;
   width: 269px;
 }
-
-<include src="recommended_apps.css">

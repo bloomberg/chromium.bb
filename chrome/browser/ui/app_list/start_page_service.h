@@ -37,7 +37,6 @@ class Profile;
 
 namespace app_list {
 
-class RecommendedApps;
 class SpeechAuthHelper;
 class SpeechRecognizer;
 class StartPageObserver;
@@ -72,7 +71,6 @@ class StartPageService : public KeyedService,
   content::WebContents* GetStartPageContents();
   content::WebContents* GetSpeechRecognitionContents();
 
-  RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
   Profile* profile() { return profile_; }
   SpeechRecognitionState state() { return state_; }
 
@@ -135,7 +133,6 @@ class StartPageService : public KeyedService,
   scoped_ptr<content::WebContents> contents_;
   scoped_ptr<StartPageWebContentsDelegate> contents_delegate_;
   scoped_ptr<ProfileDestroyObserver> profile_destroy_observer_;
-  scoped_ptr<RecommendedApps> recommended_apps_;
   SpeechRecognitionState state_;
   ObserverList<StartPageObserver> observers_;
   bool speech_button_toggled_manually_;

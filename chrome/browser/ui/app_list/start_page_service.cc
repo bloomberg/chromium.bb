@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
-#include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/speech_auth_helper.h"
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -205,7 +204,6 @@ StartPageService* StartPageService::Get(Profile* profile) {
 StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
       profile_destroy_observer_(new ProfileDestroyObserver(this)),
-      recommended_apps_(new RecommendedApps(profile)),
       state_(app_list::SPEECH_RECOGNITION_OFF),
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false),

@@ -14,7 +14,6 @@
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -38,36 +37,12 @@ namespace {
 const char kOldHotwordExtensionVersionString[] = "0.1.1.5023";
 #endif
 
-scoped_ptr<base::DictionaryValue> CreateAppInfo(
-    const extensions::Extension* app) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("appId", app->id());
-  dict->SetString("textTitle", app->short_name());
-  dict->SetString("title", app->name());
-
-  const bool grayscale = false;
-  bool icon_exists = true;
-  GURL icon_url = extensions::ExtensionIconSource::GetIconURL(
-      app,
-      extension_misc::EXTENSION_ICON_MEDIUM,
-      ExtensionIconSet::MATCH_BIGGER,
-      grayscale,
-      &icon_exists);
-  dict->SetString("iconUrl", icon_url.spec());
-
-  return dict.Pass();
-}
-
 }  // namespace
 
-StartPageHandler::StartPageHandler()
-    : recommended_apps_(NULL),
-      extension_registry_observer_(this) {
+StartPageHandler::StartPageHandler() : extension_registry_observer_(this) {
 }
 
 StartPageHandler::~StartPageHandler() {
-  if (recommended_apps_)
-    recommended_apps_->RemoveObserver(this);
 }
 
 void StartPageHandler::RegisterMessages() {
@@ -114,22 +89,6 @@ void StartPageHandler::OnExtensionUnloaded(
 #endif
 }
 
-void StartPageHandler::OnRecommendedAppsChanged() {
-  SendRecommendedApps();
-}
-
-void StartPageHandler::SendRecommendedApps() {
-  const RecommendedApps::Apps& recommends = recommended_apps_->apps();
-
-  base::ListValue recommended_list;
-  for (size_t i = 0; i < recommends.size(); ++i) {
-    recommended_list.Append(CreateAppInfo(recommends[i].get()).release());
-  }
-
-  web_ui()->CallJavascriptFunction("appList.startPage.setRecommendedApps",
-                                   recommended_list);
-}
-
 #if defined(OS_CHROMEOS)
 void StartPageHandler::OnHotwordEnabledChanged() {
   // If the hotword extension is new enough, we should use the new
@@ -161,11 +120,6 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
     return;
 
   service->WebUILoaded();
-
-  recommended_apps_ = service->recommended_apps();
-  recommended_apps_->AddObserver(this);
-
-  SendRecommendedApps();
 
 #if defined(OS_CHROMEOS)
   if (app_list::switches::IsVoiceSearchEnabled() &&

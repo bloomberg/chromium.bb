@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/app_list/recommended_apps_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -23,12 +22,9 @@ class ExtensionRegistry;
 
 namespace app_list {
 
-class RecommendedApps;
-
 // Handler for the app launcher start page.
 class StartPageHandler : public content::WebUIMessageHandler,
-                         public extensions::ExtensionRegistryObserver,
-                         public RecommendedAppsObserver {
+                         public extensions::ExtensionRegistryObserver {
  public:
   StartPageHandler();
   ~StartPageHandler() override;
@@ -45,12 +41,6 @@ class StartPageHandler : public content::WebUIMessageHandler,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
-  // RecommendedAppsObserver overrdies:
-  void OnRecommendedAppsChanged() override;
-
-  // Creates a ListValue for the recommended apps and sends it to js side.
-  void SendRecommendedApps();
-
 #if defined(OS_CHROMEOS)
   // Called when the pref has been changed.
   void OnHotwordEnabledChanged();
@@ -63,7 +53,6 @@ class StartPageHandler : public content::WebUIMessageHandler,
   void HandleSpeechSoundLevel(const base::ListValue* args);
   void HandleSpeechRecognition(const base::ListValue* args);
 
-  RecommendedApps* recommended_apps_;  // Not owned.
   PrefChangeRegistrar pref_change_registrar_;
 
   ScopedObserver<extensions::ExtensionRegistry,
