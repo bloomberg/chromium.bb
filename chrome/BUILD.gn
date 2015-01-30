@@ -32,22 +32,49 @@ if (!is_android) {
     if (is_win) {
       sources += [
         "$target_gen_dir/chrome_exe_version.rc",
+        "app/chrome_crash_reporter_client.cc",
+        "app/chrome_crash_reporter_client.h",
+        "app/chrome_exe.rc",
         "app/chrome_exe_main_win.cc",
         "app/client_util.cc",
         "app/client_util.h",
+        "app/chrome_watcher_command_line_win.cc",
+        "app/chrome_watcher_command_line_win.h",
         "app/signature_validator_win.cc",
         "app/signature_validator_win.h",
+        "common/crash_keys.cc",
+        "common/crash_keys.h'",
         "//content/app/startup_helper_win.cc",
+        "//content/public/common/content_switches.cc",
       ]
       deps += [
         ":chrome_version_resources",
         ":image_pre_reader",
+        ":main_dll",
+
+        # 'chrome_nacl_win64" TODO(GYP)
+        # '../win8/delegate_execute/delegate_execute.gyp:*', TODO(GYP)
+        # '../win8/metro_driver/metro_driver.gyp:metro_driver', TODO(GYP)
+        "//base",
+        "//breakpad:breakpad_handler",
+        "//breakpad:breakpad_sender",
         "//chrome/browser:chrome_process_finder",
         "//chrome/chrome_watcher",
         "//chrome/chrome_watcher:client",
+        "//chrome/installer/util",
+        "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
+        "//components/crash/app",
+        "//crypto",
+        "//sandbox",
         "//ui/gfx",
       ]
+      libs = [
+        "wintrust.lib",
+        "crypt32.lib",
+      ]
+      configs -= [ "//build/config/win:console" ]
+      configs += [ "//build/config/win:windowed" ]
     } else if (use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
@@ -99,6 +126,7 @@ if (!is_android) {
       deps += [
         ":packed_extra_resources",
         ":packed_resources",
+        "//components/startup_metric_utils",
 
         # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
         # file decide what to do on a per-OS basis; on Mac, internal plugins

@@ -40,6 +40,8 @@ source_set("unit_tests") {
     "watcher_metrics_provider_win_unittest.cc",
   ]
   deps = [
+    ":browser_watcher",
+    ":browser_watcher_client",
     "//testing/gtest",
   ]
 }

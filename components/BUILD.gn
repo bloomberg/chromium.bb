@@ -271,4 +271,7 @@ test("components_unittests") {
     # TODO(GYP) enable this as above.
     #deps += [ "//components/constrained_window:unit_tests" ]
   }
+  if (is_win) {
+    deps += [ "//components/browser_watcher:unit_tests" ]
+  }
 }

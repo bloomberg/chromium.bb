@@ -301,41 +301,4 @@ group("root") {
   if (is_mac || is_ios) {
     deps -= [ "//ui/touch_selection" ]
   }
-
-  if (is_win) {
-    deps -= [
-      "//apps",
-      "//ash",
-      "//chrome/browser",
-      "//chrome/browser/devtools",
-      "//chrome/common",
-      "//chrome/plugin",
-      "//chrome/renderer",
-      "//chrome/test",
-      "//chrome/utility",
-      "//components:all_components",
-      "//cc/blink",
-      "//content",
-      "//content/shell:content_shell",
-      "//content/test:test_support",
-      "//extensions/browser",
-      "//extensions/common",
-      "//extensions/renderer",
-      "//media/blink",
-      "//mojo",
-      "//pdf",
-      "//ppapi:ppapi_c",
-      "//printing",
-      "//remoting/client/plugin",
-      "//third_party/WebKit/public:all_blink",
-      "//ui/app_list",
-      "//ui/aura",
-      "//ui/keyboard",
-      "//ui/snapshot",
-      "//ui/views",
-      "//ui/views/controls/webview",
-      "//ui/web_dialogs",
-      "//ui/wm",
-    ]
-  }
 }

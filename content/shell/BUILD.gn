@@ -278,6 +278,10 @@ static_library("content_shell_lib") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4267" ]
+    sources += [
+      "common/v8_breakpad_support_win.cc",
+      "common/v8_breakpad_support_win.h",
+    ]
   }
 
   if (is_linux) {
@@ -487,7 +491,6 @@ if (!is_android && !is_mac) {
     #  - RC file.
     #  - 'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
     sources = [
-      "../app/startup_helper_win.cc",
       "app/shell_main.cc",
     ]
 

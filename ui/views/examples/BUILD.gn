@@ -157,4 +157,9 @@ executable("views_examples_with_content_exe") {
     "//content",
     "//ui/views_content_client",
   ]
+
+  if (is_win) {
+    configs += [ "//build/config/win:windowed" ]
+    configs -= [ "//build/config/win:console" ]
+  }
 }

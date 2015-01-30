@@ -595,7 +595,7 @@ source_set("browser") {
         "api/networking_private/network_config_dbus_constants_linux.h",
       ]
     } else if (is_win || is_mac) {
-      deps += [ "//components/wifi_component" ]
+      deps += [ "//components/wifi" ]
       sources += [
         "api/networking_private/networking_private_event_router_nonchromeos.cc",
         "api/networking_private/networking_private_service_client.cc",

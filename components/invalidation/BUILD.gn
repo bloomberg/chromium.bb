@@ -108,9 +108,8 @@ static_library("invalidation") {
   }
 }
 
-static_library("unittests") {
+group("unittests") {
   testonly = true
-  sources = []
   deps = [
     ":invalidation",
     ":test_support",

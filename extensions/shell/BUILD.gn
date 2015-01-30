@@ -163,6 +163,11 @@ if (!(is_chromeos && !use_ozone)) {
       ":app_shell_lib",
       "//extensions:shell_and_test_pak",
     ]
+
+    if (is_win) {
+      configs += [ "//build/config/win:windowed" ]
+      configs -= [ "//build/config/win:console" ]
+    }
   }
 }
 

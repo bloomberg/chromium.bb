@@ -56,6 +56,7 @@ static_library("test_support") {
       "//content/browser/speech/proto",
       "//content/public/child:child_sources",
       "//content/gpu",
+      "//content/public/plugin:plugin_sources",
       "//content/public/renderer:renderer_sources",
       "//content/public/utility:utility_sources",
       "//content/shell:pak",
@@ -125,6 +126,7 @@ static_library("test_support") {
 
     if (is_win) {
       deps += [ "//third_party/iaccessible2" ]
+      sources += [ "../app/startup_helper_win.cc" ]
     }
 
     if (!is_android && !is_ios) {

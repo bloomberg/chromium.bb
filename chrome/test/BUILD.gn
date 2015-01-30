@@ -284,7 +284,7 @@ if (!is_android) {
         # SendMouseMoveNotifyWhenDone
         sources -= [ "../browser/ui/views/toolbar/toolbar_button_test.cc" ]
       }
-      if (is_chromeos) {
+      if (is_chromeos || !use_x11) {
         sources -= [
           "../../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
           "../../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
@@ -367,14 +367,7 @@ if (!is_android) {
       sources += rebase_path(gypi_values.chrome_interactive_ui_test_win_sources,
                              ".",
                              "//chrome")
-      sources += [
-        # TODO: It would be nice to have these pulled in automatically from
-        # direct_dependent_settings in their various targets
-        # (net.gyp:net_resources, etc.), but that causes errors in other
-        # targets when resulting .res files get referenced multiple times.
-        "$root_gen_dir/chrome/other_version.rc",
-        "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
-      ]
+      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
         "//chrome:chrome_version_resources",
         "//third_party/isimpledom",
@@ -838,10 +831,7 @@ if (!is_android) {
       ]
     }
     if (is_win) {
-      sources += [
-        "$root_gen_dir/chrome/other_version.rc",
-        "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
-      ]
+      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
         "//chrome:chrome_version_resources",
         "//third_party/wtl",
@@ -1070,10 +1060,7 @@ if (!is_android) {
       ldflags = [ "-Wl,-ObjC" ]
     }
     if (is_win) {
-      sources += [
-        "$root_gen_dir/chrome/other_version.rc",
-        "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
-      ]
+      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
         "//chrome:chrome_version_resources",
         "//third_party/wtl",
@@ -1136,10 +1123,7 @@ if (!is_android) {
       ldflags = [ "-Wl,-ObjC" ]
     }
     if (is_win) {
-      sources += [
-        "$root_gen_dir/chrome/other_version.rc",
-        "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
-      ]
+      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
         "//chrome:chrome_version_resources",
         "//third_party/wtl",
