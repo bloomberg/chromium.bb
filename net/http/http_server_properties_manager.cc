@@ -612,7 +612,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
        it != map.end() && count < kMaxAlternateProtocolHostsToPersist; ++it) {
     const HostPortPair& server = it->first;
     std::string canonical_suffix =
-        http_server_properties_impl_->GetCanonicalSuffix(server);
+        http_server_properties_impl_->GetCanonicalSuffix(server.host());
     if (!canonical_suffix.empty()) {
       if (persisted_map.find(canonical_suffix) != persisted_map.end())
         continue;

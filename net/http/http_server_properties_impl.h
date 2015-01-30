@@ -63,9 +63,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   static void ForceAlternateProtocol(const AlternateProtocolInfo& pair);
   static void DisableForcedAlternateProtocol();
 
-  // Returns the canonical host suffix for |server|, or std::string() if none
+  // Returns the canonical host suffix for |host|, or std::string() if none
   // exists.
-  std::string GetCanonicalSuffix(const HostPortPair& server);
+  std::string GetCanonicalSuffix(const std::string& host);
 
   // -----------------------------
   // HttpServerProperties methods:

@@ -234,12 +234,12 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
 }
 
 std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
-    const HostPortPair& server) {
+    const std::string& host) {
   // If this host ends with a canonical suffix, then return the canonical
   // suffix.
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
+    if (EndsWith(host, canonical_suffixes_[i], false)) {
       return canonical_suffix;
     }
   }
