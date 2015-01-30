@@ -260,7 +260,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     out.scaledDuration = timing.iterationDuration;
     out.direction = timing.direction;
     // Compositor's time offset is positive for seeking into the animation.
-    out.scaledTimeOffset = -timing.startDelay + timeOffset;
+    out.scaledTimeOffset = -timing.startDelay / playerPlaybackRate + timeOffset;
     out.playbackRate = timing.playbackRate * playerPlaybackRate;
     out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
     out.iterationStart = timing.iterationStart;
