@@ -578,7 +578,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #endif  // !OS_ANDROID && !OS_IOS
 
-#if defined(OS_MACOSX)
+    // Don't create this loop on iOS, since the outer loop is already handled
+    // and a loop that's destroyed in shutdown interleaves badly with the event
+    // loop pool on iOS.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
     // We need this pool for all the objects created before we get to the
     // event loop, but we don't want to leave them hanging around until the
     // app quits. Each "main" needs to flush this pool right before it goes into
@@ -822,7 +825,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // _CRTDBG_MAP_ALLOC
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
     autorelease_pool_.reset(NULL);
 #endif
 
