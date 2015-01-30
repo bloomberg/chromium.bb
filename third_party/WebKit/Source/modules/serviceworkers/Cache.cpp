@@ -363,8 +363,6 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request body is already used"));
     if (response->hasBody() && response->bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Response body is already used"));
-    if (response->internalBuffer() && response->streamAccessed())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Storing the Response which .body is accessed is not supported."));
 
     if (request->hasBody())
         request->setBodyUsed();
@@ -373,10 +371,18 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    if (response->internalBuffer()) {
+    if (BodyStreamBuffer* buffer = response->internalBuffer()) {
+        if (buffer == response->buffer() && response->streamAccessed()) {
+            bool dataLost = false;
+            buffer = response->createDrainingStream(&dataLost);
+            if (dataLost) {
+                resolver->reject(DOMException::create(NotSupportedError, "Storing the Response which .body is partially read is not supported."));
+                return promise;
+            }
+        }
         // If the response body type is stream, read the all data and create the
         // blob handle and dispatch the put batch asynchronously.
-        response->internalBuffer()->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), new AsyncPutBatch(resolver, this, request, response));
+        buffer->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), new AsyncPutBatch(resolver, this, request, response));
         return promise;
     }
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
