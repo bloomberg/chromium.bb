@@ -15,6 +15,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -39,7 +40,10 @@ AppListButton::AppListButton(views::ButtonListener* listener,
       draw_background_as_active_(false),
       host_(host),
       shelf_widget_(shelf_widget) {
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
+  SetAccessibleName(
+      app_list::switches::IsExperimentalAppListEnabled()
+          ? l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE)
+          : l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
   SetSize(gfx::Size(kShelfSize, kShelfSize));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
                       kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));

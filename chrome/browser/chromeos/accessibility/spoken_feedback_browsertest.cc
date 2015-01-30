@@ -295,7 +295,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-  EXPECT_EQ("Shelf toolbar Apps Button", speech_monitor_.GetNextUtterance());
+  const char* expected = app_list::switches::IsExperimentalAppListEnabled()
+                             ? "Shelf toolbar Launcher Button"
+                             : "Shelf toolbar Apps Button";
+  EXPECT_EQ(expected, speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);
   EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));
@@ -322,7 +325,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   // check this in the classic app launcher.
   if (!app_list::switches::IsExperimentalAppListEnabled()) {
     SendKeyPress(ui::VKEY_DOWN);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));
+    EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));
   }
 }
 
