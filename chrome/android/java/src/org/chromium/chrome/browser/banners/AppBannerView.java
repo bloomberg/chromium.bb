@@ -122,6 +122,7 @@ public class AppBannerView extends SwipableOverlayView
     private AppData mAppData;
 
     // Views comprising the app banner.
+    private ViewGroup mContainerView;
     private ImageView mIconView;
     private TextView mTitleView;
     private Button mInstallButtonView;
@@ -164,7 +165,8 @@ public class AppBannerView extends SwipableOverlayView
         AppBannerView banner =
                 (AppBannerView) LayoutInflater.from(context).inflate(BANNER_LAYOUT, null);
         banner.initialize(observer, data);
-        banner.addToView(contentViewCore);
+        banner.setContentViewCore(contentViewCore);
+        banner.addToParentView(contentViewCore.getContainerView());
         return banner;
     }
 
@@ -219,6 +221,7 @@ public class AppBannerView extends SwipableOverlayView
         }
 
         // Pull out all of the controls we are expecting.
+        mContainerView = (ViewGroup) findViewById(R.id.banner_container);
         mIconView = (ImageView) findViewById(R.id.app_icon);
         mTitleView = (TextView) findViewById(R.id.app_title);
         mInstallButtonView = (Button) findViewById(R.id.app_install_button);
@@ -380,7 +383,7 @@ public class AppBannerView extends SwipableOverlayView
     }
 
     @Override
-    protected ViewGroup.MarginLayoutParams createLayoutParams() {
+    public ViewGroup.MarginLayoutParams createLayoutParams() {
         // Define the margin around the entire banner that accounts for the drop shadow.
         ViewGroup.MarginLayoutParams params = super.createLayoutParams();
         params.setMargins(mMarginLeft, 0, mMarginRight, mMarginBottom);
@@ -392,8 +395,8 @@ public class AppBannerView extends SwipableOverlayView
      * @return Whether or not the View was successfully dismissed.
      */
     @Override
-    boolean removeFromParent() {
-        if (super.removeFromParent()) {
+    public boolean removeFromParentView() {
+        if (super.removeFromParentView()) {
             mObserver.onBannerRemoved(this);
             destroy();
             return true;
@@ -634,9 +637,10 @@ public class AppBannerView extends SwipableOverlayView
         // Determine how big each component wants to be.  The icon is measured separately because
         // it is not stacked with the other controls.
         measureChildForSpace(mIconView, maxControlWidth, maxControlHeight);
-        for (int i = 0; i < getChildCount(); i++) {
-            if (getChildAt(i) != mIconView) {
-                measureChildForSpace(getChildAt(i), maxControlWidth, maxStackedControlHeight);
+        for (int i = 0; i < mContainerView.getChildCount(); i++) {
+            View child = mContainerView.getChildAt(i);
+            if (child != mIconView) {
+                measureChildForSpace(child, maxControlWidth, maxStackedControlHeight);
             }
         }
 
@@ -699,6 +703,7 @@ public class AppBannerView extends SwipableOverlayView
                 + (mPaddingCard * 2);
         int bannerHeight = biggestStackHeight + bannerPadding;
         setMeasuredDimension(bannerWidth, bannerHeight);
+        measureChildForSpaceExactly(mContainerView, bannerWidth, bannerHeight);
 
         // Make the banner highlight view be the exact same size as the banner's card background.
         final int cardWidth = bannerWidth - bgPaddingWidth;
@@ -713,6 +718,8 @@ public class AppBannerView extends SwipableOverlayView
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
+        mContainerView.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+
         int top = mBackgroundDrawablePadding.top;
         int bottom = getMeasuredHeight() - mBackgroundDrawablePadding.bottom;
         int start = mBackgroundDrawablePadding.left;

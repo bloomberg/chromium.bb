@@ -63,7 +63,8 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
                 (DomDistillerFeedbackReportingView) LayoutInflater.from(context)
                         .inflate(VIEW_LAYOUT, null);
         view.initialize(feedbackObserver);
-        view.addToView(contentViewCore);
+        view.setContentViewCore(contentViewCore);
+        view.addToParentView(contentViewCore.getContainerView());
         return view;
     }
 

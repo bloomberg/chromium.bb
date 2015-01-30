@@ -1259,7 +1259,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         updateTitle();
         removeSadTabIfPresent();
-        mInfoBarContainer.onPageStarted();
 
         if (getContentViewCore() != null) {
             getContentViewCore().stopCurrentAccessibilityNotifications();
@@ -1365,10 +1364,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // initialized.
             WebContents webContents = mContentViewCore.getWebContents();
             mInfoBarContainer = new InfoBarContainer(
-                    mContext, getId(), mContentViewParent, webContents);
+                    mContext, getId(), mContentViewParent, webContents, this);
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
         }
+        mInfoBarContainer.setContentViewCore(mContentViewCore);
 
         if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
             mAppBannerManager = new AppBannerManager(this);
@@ -1773,6 +1773,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
             mInfoBarContainer.removeFromParentView();
+            mInfoBarContainer.setContentViewCore(null);
         }
         mContentViewParent = null;
         mContentViewCore.destroy();

@@ -20,7 +20,11 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 
+import org.chromium.chrome.browser.EmptyTabObserver;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.UiUtils;
@@ -67,12 +71,13 @@ import org.chromium.ui.UiUtils;
  * fling is completed, the more forgiving FLING_THRESHOLD is used to determine how far a user must
  * swipe to dismiss the View rather than try to use the fling velocity.
  */
-public abstract class SwipableOverlayView extends FrameLayout {
+public abstract class SwipableOverlayView extends ScrollView {
     private static final float ALPHA_THRESHOLD = 0.25f;
     private static final float DISMISS_SWIPE_THRESHOLD = 0.75f;
     private static final float FULL_THRESHOLD = 0.5f;
     private static final float VERTICAL_FLING_SHOW_THRESHOLD = 0.2f;
     private static final float VERTICAL_FLING_HIDE_THRESHOLD = 0.9f;
+    private static final long REATTACH_FADE_IN_MS = 250;
     protected static final float ZERO_THRESHOLD = 0.001f;
 
     private static final int GESTURE_NONE = 0;
@@ -87,17 +92,33 @@ public abstract class SwipableOverlayView extends FrameLayout {
     private static final long MS_DISMISS_FLING_THRESHOLD = MS_ANIMATION_DURATION * 2;
     private static final long MS_SLOW_DISMISS = MS_ANIMATION_DURATION * 3;
 
+    /** Resets the state of the SwipableOverlayView, as needed. */
+    protected class SwipableOverlayViewTabObserver extends EmptyTabObserver {
+        @Override
+        public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
+                int statusCode) {
+            setDoStayInvisible(false);
+        }
+    }
+
     // Detects when the user is dragging the View.
     private final GestureDetector mGestureDetector;
 
     // Detects when the user is dragging the ContentViewCore.
     private final GestureStateListener mGestureStateListener;
 
+    // Listens for changes in the layout.
+    private final View.OnLayoutChangeListener mLayoutChangeListener;
+
     // Monitors for animation completions and resets the state.
     private final AnimatorListenerAdapter mAnimatorListenerAdapter;
 
     // Interpolator used for the animation.
     private final Interpolator mInterpolator;
+
+    // Observes the Tab.
+    private final TabObserver mTabObserver;
 
     // Tracks whether the user is scrolling or flinging.
     private int mGestureState;
@@ -135,6 +156,12 @@ public abstract class SwipableOverlayView extends FrameLayout {
     // The ContentViewCore to which the overlay is added.
     private ContentViewCore mContentViewCore;
 
+    // Keeps the View from becoming visible when it normally would.
+    private boolean mDoStayInvisible;
+
+    // Whether the View should be allowed to be swiped away.
+    private boolean mIsSwipable = true;
+
     /**
      * Creates a SwipableOverlayView.
      * @param context Context for acquiring resources.
@@ -146,22 +173,53 @@ public abstract class SwipableOverlayView extends FrameLayout {
         mGestureDetector = new GestureDetector(context, gestureListener);
         mGestureStateListener = createGestureStateListener();
         mGestureState = GESTURE_NONE;
+        mLayoutChangeListener = createLayoutChangeListener();
         mAnimatorListenerAdapter = createAnimatorListenerAdapter();
         mInterpolator = new DecelerateInterpolator(1.0f);
+        mTabObserver = createTabObserver();
     }
 
     /**
-     * Adds this View to the given ContentViewCore's view.
-     * @param layout Layout to add this View to.
+     * Indicates whether the View should be allowed to be swiped away.
+     * @param swipable Whether the View is reacts to horizontal gestures.
      */
-    protected void addToView(ContentViewCore contentViewCore) {
-        assert mContentViewCore == null;
-        mContentViewCore = contentViewCore;
-        contentViewCore.getContainerView().addView(this, 0, createLayoutParams());
-        contentViewCore.addGestureStateListener(mGestureStateListener);
+    protected void setIsSwipable(boolean swipable) {
+        mIsSwipable = swipable;
+    }
 
-        // Listen for the layout to know when to animate the View coming onto the screen.
-        addOnLayoutChangeListener(createLayoutChangeListener());
+    /**
+     * Watches the given ContentViewCore for scrolling changes.
+     */
+    public void setContentViewCore(ContentViewCore contentViewCore) {
+        if (mContentViewCore != null) {
+            mContentViewCore.removeGestureStateListener(mGestureStateListener);
+        }
+
+        mContentViewCore = contentViewCore;
+        if (mContentViewCore != null) {
+            mContentViewCore.addGestureStateListener(mGestureStateListener);
+        }
+    }
+
+    public void addToParentView(ViewGroup parentView) {
+        if (parentView != null && parentView.indexOfChild(this) == -1) {
+            parentView.addView(this, createLayoutParams());
+
+            // Listen for the layout to know when to animate the View coming onto the screen.
+            addOnLayoutChangeListener(mLayoutChangeListener);
+        }
+    }
+
+    /**
+     * Removes the SwipableOverlayView from its parent and stops monitoring the ContentViewCore.
+     * @return Whether the View was removed from its parent.
+     */
+    public boolean removeFromParentView() {
+        if (getParent() == null) return false;
+
+        ((ViewGroup) getParent()).removeView(this);
+        removeOnLayoutChangeListener(mLayoutChangeListener);
+        return true;
     }
 
     /**
@@ -169,21 +227,43 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * for other types of behavior.
      * @return LayoutParams for use when adding the View to its parent.
      */
-    protected ViewGroup.MarginLayoutParams createLayoutParams() {
+    public ViewGroup.MarginLayoutParams createLayoutParams() {
         return new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
     }
 
     /**
-     * Removes the View from its parent.
+     * Call with {@code true} when a higher priority bottom element is visible to keep the View
+     * from ever becoming visible.  Call with {@code false} to restore normal visibility behavior.
+     * @param doStayInvisible Whether the View should stay invisible even when they would
+     *        normally become visible.
      */
-    boolean removeFromParent() {
-        if (mContentViewCore != null) {
-            mContentViewCore.getContainerView().removeView(this);
-            mContentViewCore = null;
-            return true;
+    public void setDoStayInvisible(boolean doStayInvisible) {
+        mDoStayInvisible = doStayInvisible;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!mDoStayInvisible) {
+            ObjectAnimator.ofFloat(this, "alpha", 0.f, 1.f).setDuration(REATTACH_FADE_IN_MS)
+                    .start();
+            setVisibility(VISIBLE);
         }
-        return false;
+    }
+
+    /**
+     * @return TabObserver that can be used to monitor a Tab.
+     */
+    protected TabObserver createTabObserver() {
+        return new SwipableOverlayViewTabObserver();
+    }
+
+    /**
+     * @return TabObserver that is used to monitor a Tab.
+     */
+    public TabObserver getTabObserver() {
+        return mTabObserver;
     }
 
     /**
@@ -192,8 +272,16 @@ public abstract class SwipableOverlayView extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         // Hide the View when the keyboard is showing.
-        boolean keyboardIsShowing = UiUtils.isKeyboardShowing(getContext(), this);
-        setVisibility(keyboardIsShowing ? INVISIBLE : VISIBLE);
+        boolean isShowing = (getVisibility() == View.VISIBLE);
+        if (UiUtils.isKeyboardShowing(getContext(), this)) {
+            if (isShowing) {
+                setVisibility(View.INVISIBLE);
+            }
+        } else {
+            if (!isShowing && !mDoStayInvisible) {
+                setVisibility(View.VISIBLE);
+            }
+        }
 
         // Update the viewport height when the parent View's height changes (e.g. after rotation).
         int currentParentHeight = getParent() == null ? 0 : ((View) getParent()).getHeight();
@@ -218,6 +306,8 @@ public abstract class SwipableOverlayView extends FrameLayout {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!mIsSwipable) return false;
+
         if (mGestureDetector.onTouchEvent(event)) return true;
         if (mCurrentAnimation != null) return true;
 
@@ -391,7 +481,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                removeOnLayoutChangeListener(this);
+                removeOnLayoutChangeListener(mLayoutChangeListener);
 
                 // Animate the View coming in from the bottom of the screen.
                 setTranslationY(mTotalHeight);
@@ -560,7 +650,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
         return new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (mIsDismissed) removeFromParent();
+                if (mIsDismissed) removeFromParentView();
 
                 mGestureState = GESTURE_NONE;
                 mCurrentAnimation = null;
