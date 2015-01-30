@@ -150,6 +150,27 @@ struct ProgramInfoHeader {
   // ProgramInput inputs[num_attribs + num_uniforms];
 };
 
+// The data for one UniformBlock from GetProgramInfoCHROMIUM
+struct UniformBlockInfo {
+  uint32_t binding;  // UNIFORM_BLOCK_BINDING
+  uint32_t data_size;  // UNIFORM_BLOCK_DATA_SIZE
+  uint32_t name_offset;  // offset from UniformBlocksHeader to start of name.
+  uint32_t name_length;  // UNIFORM_BLOCK_BLOCK_NAME_LENGTH
+  uint32_t active_uniforms;  // UNIFORM_BLOCK_ACTIVE_UNIFORMS
+  // offset from UniformBlocksHeader to |active_uniforms| indices.
+  uint32_t active_uniform_offset;
+  // UNIFORM_BLOCK_REFERENDED_BY_VERTEX_SHADER
+  uint32_t referenced_by_vertex_shader;
+  // UNIFORM_BLOCK_REFERENDED_BY_FRAGMENT_SHADER
+  uint32_t referenced_by_fragment_shader;
+};
+
+// The format of the bucket filled out by GetUniformBlocksCHROMIUM
+struct UniformBlocksHeader {
+  uint32_t num_uniform_blocks;
+  // UniformBlockInfo uniform_blocks[num_uniform_blocks];
+};
+
 // The format of QuerySync used by EXT_occlusion_query_boolean
 struct QuerySync {
   void Reset() {
@@ -200,6 +221,32 @@ static_assert(offsetof(ProgramInfoHeader, num_attribs) == 4,
               "offset of ProgramInfoHeader.num_attribs should be 4");
 static_assert(offsetof(ProgramInfoHeader, num_uniforms) == 8,
               "offset of ProgramInfoHeader.num_uniforms should be 8");
+
+static_assert(sizeof(UniformBlockInfo) == 32,
+              "size of UniformBlockInfo should be 32");
+static_assert(offsetof(UniformBlockInfo, binding) == 0,
+              "offset of UniformBlockInfo.binding should be 0");
+static_assert(offsetof(UniformBlockInfo, data_size) == 4,
+              "offset of UniformBlockInfo.data_size should be 4");
+static_assert(offsetof(UniformBlockInfo, name_offset) == 8,
+              "offset of UniformBlockInfo.name_offset should be 8");
+static_assert(offsetof(UniformBlockInfo, name_length) == 12,
+              "offset of UniformBlockInfo.name_length should be 12");
+static_assert(offsetof(UniformBlockInfo, active_uniforms) == 16,
+              "offset of UniformBlockInfo.active_uniforms should be 16");
+static_assert(offsetof(UniformBlockInfo, active_uniform_offset) == 20,
+              "offset of UniformBlockInfo.active_uniform_offset should be 20");
+static_assert(offsetof(UniformBlockInfo, referenced_by_vertex_shader) == 24,
+              "offset of UniformBlockInfo.referenced_by_vertex_shader "
+              "should be 24");
+static_assert(offsetof(UniformBlockInfo, referenced_by_fragment_shader) == 28,
+              "offset of UniformBlockInfo.referenced_by_fragment_shader "
+              "should be 28");
+
+static_assert(sizeof(UniformBlocksHeader) == 4,
+              "size of UniformBlocksHeader should be 4");
+static_assert(offsetof(UniformBlocksHeader, num_uniform_blocks) == 0,
+              "offset of UniformBlocksHeader.num_uniform_blocks should be 0");
 
 namespace cmds {
 

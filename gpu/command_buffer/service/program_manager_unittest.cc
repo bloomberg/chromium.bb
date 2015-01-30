@@ -28,7 +28,7 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
 namespace gpu {
@@ -38,6 +38,12 @@ namespace {
 const uint32 kMaxVaryingVectors = 8;
 
 void ShaderCacheCb(const std::string& key, const std::string& shader) {}
+
+uint32 ComputeOffset(const void* start, const void* position) {
+  return static_cast<const uint8*>(position) -
+         static_cast<const uint8*>(start);
+}
+
 }  // namespace anonymous
 
 class ProgramManagerTest : public GpuServiceTest {
@@ -214,7 +220,8 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
   } VarInfo;
 
   void SetUp() override {
-    GpuServiceTest::SetUp();
+    // Need to be at leat 3.1 for UniformBlock related GL APIs.
+    GpuServiceTest::SetUpWithGLVersion("3.1", NULL);
 
     SetupDefaultShaderExpectations();
 
@@ -1073,6 +1080,153 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
             static_cast<uint32>(input - inputs));
 }
 
+TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetUniformBlocksNone) {
+  CommonDecoder::Bucket bucket;
+  const Program* program = manager_.GetProgram(kClientProgramId);
+  ASSERT_TRUE(program != NULL);
+  // The program's previous link failed.
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_FALSE))
+      .RetiresOnSaturation();
+  EXPECT_TRUE(program->GetUniformBlocks(&bucket));
+  EXPECT_EQ(sizeof(UniformBlocksHeader), bucket.size());
+  UniformBlocksHeader* header =
+      bucket.GetDataAs<UniformBlocksHeader*>(0, sizeof(UniformBlocksHeader));
+  EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_uniform_blocks);
+  // Zero uniform blocks.
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORM_BLOCKS, _))
+      .WillOnce(SetArgPointee<2>(0))
+      .RetiresOnSaturation();
+  EXPECT_TRUE(program->GetUniformBlocks(&bucket));
+  EXPECT_EQ(sizeof(UniformBlocksHeader), bucket.size());
+  header =
+      bucket.GetDataAs<UniformBlocksHeader*>(0, sizeof(UniformBlocksHeader));
+  EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_uniform_blocks);
+}
+
+TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetUniformBlocksValid) {
+  CommonDecoder::Bucket bucket;
+  const Program* program = manager_.GetProgram(kClientProgramId);
+  ASSERT_TRUE(program != NULL);
+  struct Data {
+    UniformBlocksHeader header;
+    UniformBlockInfo entry[2];
+    char name0[4];
+    uint32_t indices0[2];
+    char name1[8];
+    uint32_t indices1[1];
+  };
+  Data data;
+  // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
+  // This is a testing only problem.
+  const char* kName[] = { "cow", "chicken" };
+  const uint32_t kIndices0[] = { 1, 2 };
+  const uint32_t kIndices1[] = { 3 };
+  const uint32_t* kIndices[] = { kIndices0, kIndices1 };
+  data.header.num_uniform_blocks = 2;
+  data.entry[0].binding = 0;
+  data.entry[0].data_size = 8;
+  data.entry[0].name_offset = ComputeOffset(&data, data.name0);
+  data.entry[0].name_length = arraysize(data.name0);
+  data.entry[0].active_uniforms = arraysize(data.indices0);
+  data.entry[0].active_uniform_offset = ComputeOffset(&data, data.indices0);
+  data.entry[0].referenced_by_vertex_shader = static_cast<uint32_t>(true);
+  data.entry[0].referenced_by_fragment_shader = static_cast<uint32_t>(false);
+  data.entry[1].binding = 1;
+  data.entry[1].data_size = 4;
+  data.entry[1].name_offset = ComputeOffset(&data, data.name1);
+  data.entry[1].name_length = arraysize(data.name1);
+  data.entry[1].active_uniforms = arraysize(data.indices1);
+  data.entry[1].active_uniform_offset = ComputeOffset(&data, data.indices1);
+  data.entry[1].referenced_by_vertex_shader = static_cast<uint32_t>(false);
+  data.entry[1].referenced_by_fragment_shader = static_cast<uint32_t>(true);
+  memcpy(data.name0, kName[0], arraysize(data.name0));
+  data.indices0[0] = kIndices[0][0];
+  data.indices0[1] = kIndices[0][1];
+  memcpy(data.name1, kName[1], arraysize(data.name1));
+  data.indices1[0] = kIndices[1][0];
+
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORM_BLOCKS, _))
+      .WillOnce(SetArgPointee<2>(data.header.num_uniform_blocks))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(
+          1 + std::max(strlen(kName[0]), strlen(kName[1]))))
+      .RetiresOnSaturation();
+  for (uint32_t ii = 0; ii < data.header.num_uniform_blocks; ++ii) {
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii, GL_UNIFORM_BLOCK_BINDING, _))
+        .WillOnce(SetArgPointee<3>(data.entry[ii].binding))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii, GL_UNIFORM_BLOCK_DATA_SIZE, _))
+        .WillOnce(SetArgPointee<3>(data.entry[ii].data_size))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii, GL_UNIFORM_BLOCK_NAME_LENGTH, _))
+        .WillOnce(SetArgPointee<3>(data.entry[ii].name_length))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockName(
+                    kServiceProgramId, ii, data.entry[ii].name_length, _, _))
+          .WillOnce(DoAll(
+              SetArgPointee<3>(strlen(kName[ii])),
+              SetArrayArgument<4>(
+                  kName[ii], kName[ii] + data.entry[ii].name_length)))
+          .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, _))
+        .WillOnce(SetArgPointee<3>(data.entry[ii].active_uniforms))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii,
+                    GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER, _))
+        .WillOnce(SetArgPointee<3>(data.entry[ii].referenced_by_vertex_shader))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii,
+                    GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER, _))
+        .WillOnce(SetArgPointee<3>(
+            data.entry[ii].referenced_by_fragment_shader))
+        .RetiresOnSaturation();
+  }
+  for (uint32_t ii = 0; ii < data.header.num_uniform_blocks; ++ii) {
+    EXPECT_CALL(*(gl_.get()),
+                GetActiveUniformBlockiv(
+                    kServiceProgramId, ii,
+                    GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, _))
+        .WillOnce(SetArrayArgument<3>(
+            kIndices[ii], kIndices[ii] + data.entry[ii].active_uniforms))
+        .RetiresOnSaturation();
+  }
+  program->GetUniformBlocks(&bucket);
+  EXPECT_EQ(sizeof(Data), bucket.size());
+  Data* bucket_data = bucket.GetDataAs<Data*>(0, sizeof(Data));
+  EXPECT_TRUE(bucket_data != NULL);
+  EXPECT_EQ(0, memcmp(&data, bucket_data, sizeof(Data)));
+}
+
 // Some drivers optimize out unused uniform array elements, so their
 // location would be -1.
 TEST_F(ProgramManagerWithShaderTest, UnusedUniformArrayElements) {
@@ -1717,7 +1871,7 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
                 ShaderSource(shader_id, 1, Pointee(src), NULL)).Times(1);
     EXPECT_CALL(*gl_.get(), CompileShader(shader_id)).Times(1);
     EXPECT_CALL(*gl_.get(), GetShaderiv(shader_id, GL_COMPILE_STATUS, _))
-        .WillOnce(SetArgumentPointee<2>(GL_TRUE));
+        .WillOnce(SetArgPointee<2>(GL_TRUE));
   }
 
   void SetExpectationsForNoCompile(const Shader* shader) {
@@ -1737,9 +1891,9 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
                 ShaderSource(shader_id, 1, Pointee(src), NULL)).Times(1);
     EXPECT_CALL(*gl_.get(), CompileShader(shader_id)).Times(1);
     EXPECT_CALL(*gl_.get(), GetShaderiv(shader_id, GL_COMPILE_STATUS, _))
-        .WillOnce(SetArgumentPointee<2>(GL_FALSE));
+        .WillOnce(SetArgPointee<2>(GL_FALSE));
     EXPECT_CALL(*gl_.get(), GetShaderiv(shader_id, GL_INFO_LOG_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(0));
+        .WillOnce(SetArgPointee<2>(0));
     EXPECT_CALL(*gl_.get(), GetShaderInfoLog(shader_id, 0, _, _))
         .Times(1);
   }

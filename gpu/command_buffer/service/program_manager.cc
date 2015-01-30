@@ -107,6 +107,11 @@ bool IsBuiltInInvariant(
   return hit->second.isInvariant;
 }
 
+uint32 ComputeOffset(const void* start, const void* position) {
+  return static_cast<const uint8*>(position) -
+         static_cast<const uint8*>(start);
+}
+
 }  // anonymous namespace.
 
 Program::UniformInfo::UniformInfo()
@@ -1201,11 +1206,6 @@ bool Program::CheckVaryingsPacking(
       combined_map.size());
 }
 
-static uint32 ComputeOffset(const void* start, const void* position) {
-  return static_cast<const uint8*>(position) -
-         static_cast<const uint8*>(start);
-}
-
 void Program::GetProgramInfo(
     ProgramManager* manager, CommonDecoder::Bucket* bucket) const {
   // NOTE: It seems to me the math in here does not need check for overflow
@@ -1288,6 +1288,141 @@ void Program::GetProgramInfo(
   }
 
   DCHECK_EQ(ComputeOffset(header, strings), size);
+}
+
+bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
+  // The data is packed into the bucket in the following order
+  //   1) header
+  //   2) N entries of block data (except for name and indices)
+  //   3) name1, indices1, name2, indices2, ..., nameN, indicesN
+  //
+  // We query all the data directly through GL calls, assuming they are
+  // cheap through MANGLE.
+
+  DCHECK(bucket);
+  GLuint program = service_id();
+
+  uint32_t header_size = sizeof(UniformBlocksHeader);
+
+  uint32_t num_uniform_blocks = 0;
+  GLint param = GL_FALSE;
+  // We assume program is a valid program service id.
+  glGetProgramiv(program, GL_LINK_STATUS, &param);
+  if (param == GL_TRUE) {
+    param = 0;
+    glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &param);
+    num_uniform_blocks = static_cast<uint32_t>(param);
+  }
+  if (num_uniform_blocks == 0) {
+    // Although spec allows an implementation to return uniform block info
+    // even if a link fails, for consistency, we disallow that.
+    bucket->SetSize(header_size);
+    UniformBlocksHeader* header =
+        bucket->GetDataAs<UniformBlocksHeader*>(0, header_size);
+    header->num_uniform_blocks = 0;
+    return true;
+  }
+
+  std::vector<UniformBlockInfo> blocks(num_uniform_blocks);
+  base::CheckedNumeric<uint32_t> size = sizeof(UniformBlockInfo);
+  size *= num_uniform_blocks;
+  uint32_t entry_size = size.ValueOrDefault(0);
+  size += header_size;
+  std::vector<std::string> names(num_uniform_blocks);
+  GLint max_name_length = 0;
+  glGetProgramiv(
+      program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_name_length);
+  std::vector<GLchar> buffer(max_name_length);
+  GLsizei length;
+  for (uint32_t ii = 0; ii < num_uniform_blocks; ++ii) {
+    param = 0;
+    glGetActiveUniformBlockiv(program, ii, GL_UNIFORM_BLOCK_BINDING, &param);
+    blocks[ii].binding = static_cast<uint32_t>(param);
+
+    param = 0;
+    glGetActiveUniformBlockiv(program, ii, GL_UNIFORM_BLOCK_DATA_SIZE, &param);
+    blocks[ii].data_size = static_cast<uint32_t>(param);
+
+    blocks[ii].name_offset = size.ValueOrDefault(0);
+    param = 0;
+    glGetActiveUniformBlockiv(
+        program, ii, GL_UNIFORM_BLOCK_NAME_LENGTH, &param);
+    DCHECK_GE(max_name_length, param);
+    memset(&buffer[0], 0, param);
+    length = 0;
+    glGetActiveUniformBlockName(
+        program, ii, static_cast<GLsizei>(param), &length, &buffer[0]);
+    DCHECK_EQ(param, length + 1);
+    names[ii] = std::string(&buffer[0], length);
+    // TODO(zmo): optimize the name mapping lookup.
+    const std::string* original_name = GetOriginalNameFromHashedName(names[ii]);
+    if (original_name)
+      names[ii] = *original_name;
+    blocks[ii].name_length = names[ii].size() + 1;
+    size += blocks[ii].name_length;
+
+    param = 0;
+    glGetActiveUniformBlockiv(
+        program, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param);
+    blocks[ii].active_uniforms = static_cast<uint32_t>(param);
+    blocks[ii].active_uniform_offset = size.ValueOrDefault(0);
+    base::CheckedNumeric<uint32_t> indices_size = blocks[ii].active_uniforms;
+    indices_size *= sizeof(uint32_t);
+    if (!indices_size.IsValid())
+      return false;
+    size += indices_size.ValueOrDefault(0);
+
+    param = 0;
+    glGetActiveUniformBlockiv(
+        program, ii, GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER, &param);
+    blocks[ii].referenced_by_vertex_shader = static_cast<uint32_t>(param);
+
+    param = 0;
+    glGetActiveUniformBlockiv(
+        program, ii, GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER, &param);
+    blocks[ii].referenced_by_fragment_shader = static_cast<uint32_t>(param);
+  }
+  if (!size.IsValid())
+    return false;
+  uint32_t total_size = size.ValueOrDefault(0);
+  DCHECK_LE(header_size + entry_size, total_size);
+  uint32_t data_size = total_size - header_size - entry_size;
+
+  bucket->SetSize(total_size);
+  UniformBlocksHeader* header =
+      bucket->GetDataAs<UniformBlocksHeader*>(0, total_size);
+  UniformBlockInfo* entries = bucket->GetDataAs<UniformBlockInfo*>(
+      header_size, entry_size);
+  char* data = bucket->GetDataAs<char*>(header_size + entry_size, data_size);
+  DCHECK(header);
+  DCHECK(entries);
+  DCHECK(data);
+
+  // Copy over data for the header and entries.
+  header->num_uniform_blocks = num_uniform_blocks;
+  memcpy(entries, &blocks[0], entry_size);
+
+  std::vector<GLint> params;
+  for (uint32_t ii = 0; ii < num_uniform_blocks; ++ii) {
+    // Get active uniform name.
+    memcpy(data, names[ii].c_str(), blocks[ii].name_length);
+    data += blocks[ii].name_length;
+
+    // Get active uniform indices.
+    if (params.size() < blocks[ii].active_uniforms)
+      params.resize(blocks[ii].active_uniforms);
+    uint32_t num_bytes = blocks[ii].active_uniforms * sizeof(GLint);
+    memset(&params[0], 0, num_bytes);
+    glGetActiveUniformBlockiv(
+        program, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &params[0]);
+    uint32_t* indices = reinterpret_cast<uint32_t*>(data);
+    for (uint32_t uu = 0; uu < blocks[ii].active_uniforms; ++uu) {
+      indices[uu] = static_cast<uint32_t>(params[uu]);
+    }
+    data += num_bytes;
+  }
+  DCHECK_EQ(ComputeOffset(header, data), total_size);
+  return true;
 }
 
 Program::~Program() {

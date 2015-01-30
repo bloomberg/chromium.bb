@@ -149,6 +149,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void GetProgramInfo(
       ProgramManager* manager, CommonDecoder::Bucket* bucket) const;
 
+  // Gets all the UniformBlock info.
+  // Return false on overflow.
+  bool GetUniformBlocks(CommonDecoder::Bucket* bucket) const;
+
   // Sets the sampler values for a uniform.
   // This is safe to call for any location. If the location is not
   // a sampler uniform nothing will happen.
