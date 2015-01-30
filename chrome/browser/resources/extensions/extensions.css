@@ -236,7 +236,7 @@ html[dir='rtl'] .extension-list-item {
 .location-text,
 .blacklist-text,
 .enable-checkbox input:disabled + .enable-checkbox-text {
-  color: rgb(151, 156, 160);
+  color: rgb(115, 119, 122);
 }
 
 .enable-controls {

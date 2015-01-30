@@ -30,18 +30,6 @@ ExtensionSettingsWebUITest.prototype = {
   /** @override */
   accessibilityIssuesAreErrors: true,
 
-  /** @override */
-  setUp: function() {
-    // TODO(aboxhall): remove these when crbug.com/267035 is closed.
-    this.accessibilityAuditConfig.ignoreSelectors(
-      'lowContrastElements',
-      '.enable-checkbox input:disabled + .enable-checkbox-text > *');
-    this.accessibilityAuditConfig.ignoreSelectors(
-      'lowContrastElements', '.extension-description > *');
-    this.accessibilityAuditConfig.ignoreSelectors(
-      'lowContrastElements', '.location-text');
-  },
-
   /**
    * A URL to load before starting each test.
    * @type {string}
