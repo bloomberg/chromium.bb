@@ -498,6 +498,11 @@ void MediaStreamDevicesController::RequestFinished() {
 }
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
+  // If not all ancestors of the requesting frame have the same origin, do not
+  // allow the request per default.
+  if (!request_.all_ancestors_have_same_origin)
+    return false;
+
   // The request from internal objects like chrome://URLs is always allowed.
   if (CheckAllowAllMediaStreamContentForOrigin(profile_,
                                                request_.security_origin)) {

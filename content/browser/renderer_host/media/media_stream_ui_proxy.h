@@ -38,7 +38,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   // WebContentsDelegate::RequestMediaAccessPermission(). The specified
   // |response_callback| is called when the WebContentsDelegate approves or
   // denies request.
-  virtual void RequestAccess(const MediaStreamRequest& request,
+  virtual void RequestAccess(scoped_ptr<MediaStreamRequest> request,
                              const ResponseCallback& response_callback);
 
   // Checks if we have permission to access the microphone or camera. Note that
@@ -97,7 +97,7 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   void SetCameraAccess(bool access);
 
   // MediaStreamUIProxy overrides.
-  void RequestAccess(const MediaStreamRequest& request,
+  void RequestAccess(scoped_ptr<MediaStreamRequest> request,
                      const ResponseCallback& response_callback) override;
   void CheckAccess(const GURL& security_origin,
                    MediaStreamType type,

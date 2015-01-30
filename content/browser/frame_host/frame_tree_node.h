@@ -97,6 +97,10 @@ class CONTENT_EXPORT FrameTreeNode {
     replication_state_.sandbox_flags = sandbox_flags;
   }
 
+  bool HasSameOrigin(const FrameTreeNode& node) const {
+    return replication_state_.origin.IsSameAs(node.replication_state_.origin);
+  }
+
   const FrameReplicationState& current_replication_state() const {
     return replication_state_;
   }

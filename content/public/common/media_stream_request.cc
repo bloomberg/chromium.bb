@@ -103,7 +103,8 @@ MediaStreamRequest::MediaStreamRequest(
       requested_audio_device_id(requested_audio_device_id),
       requested_video_device_id(requested_video_device_id),
       audio_type(audio_type),
-      video_type(video_type) {
+      video_type(video_type),
+      all_ancestors_have_same_origin(false) {
 }
 
 MediaStreamRequest::~MediaStreamRequest() {}

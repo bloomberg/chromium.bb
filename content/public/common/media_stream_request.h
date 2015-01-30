@@ -218,9 +218,6 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // identifying this request. This is used for cancelling request.
   int page_request_id;
 
-  // Used by tab capture.
-  std::string tab_capture_device_id;
-
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
   GURL security_origin;
 
@@ -242,6 +239,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   // Flag to indicate if the request contains video.
   MediaStreamType video_type;
+
+  // True if all ancestors of the requesting frame have the same origin.
+  bool all_ancestors_have_same_origin;
 };
 
 // Interface used by the content layer to notify chrome about changes in the
