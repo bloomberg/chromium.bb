@@ -120,15 +120,13 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
 - (void)setHasError:(BOOL)hasError withTitle:(NSString*)title {
   hasError_ = hasError;
-  if (hasError) {
-    [self accessibilitySetOverrideValue:l10n_util::GetNSStringF(
-        IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME,
-        base::SysNSStringToUTF16(title))
-                           forAttribute:NSAccessibilityTitleAttribute];
-  } else {
-    [self accessibilitySetOverrideValue:title
-                           forAttribute:NSAccessibilityTitleAttribute];
-  }
+  int messageId = hasError ?
+      IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME :
+      IDS_PROFILES_NEW_AVATAR_BUTTON_ACCESSIBLE_NAME;
+
+  [self accessibilitySetOverrideValue:l10n_util::GetNSStringF(
+      messageId, base::SysNSStringToUTF16(title))
+                         forAttribute:NSAccessibilityTitleAttribute];
 }
 
 @end
@@ -159,7 +157,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
     SigninErrorController* errorController =
         profiles::GetSigninErrorController(browser->profile());
     hasError_ = errorController && errorController->HasError();
-    [cell setHasError:hasError_ withTitle:nil];
 
     [button_ setWantsLayer:YES];
     [self setView:button_];
@@ -233,6 +230,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   NSString* buttonTitle = base::SysUTF16ToNSString(useGenericButton ?
       base::string16() :
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
+  [[button_ cell] setHasError:hasError_ withTitle:buttonTitle];
 
   HoverImageButton* button =
       base::mac::ObjCCastStrict<HoverImageButton>(button_);
@@ -287,7 +285,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
 - (void)updateErrorStatus:(BOOL)hasError {
   hasError_ = hasError;
-  [[button_ cell] setHasError:hasError withTitle:[button_ title]];
   [self updateAvatarButtonAndLayoutParent:YES];
 }
 
