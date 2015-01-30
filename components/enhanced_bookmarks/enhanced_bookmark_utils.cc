@@ -46,6 +46,7 @@ std::vector<const BookmarkNode*> PrimaryPermanentNodes(BookmarkModel* model) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(model->other_node());
   nodes.push_back(model->mobile_node());
+  nodes.push_back(model->bookmark_bar_node());
   return nodes;
 }
 
@@ -63,12 +64,6 @@ std::vector<const BookmarkNode*> RootLevelFolders(BookmarkModel* model) {
         root_level_folders.push_back(node);
     }
   }
-
-  // Add the bookmark bar if it has children.
-  const BookmarkNode* bb_node = model->bookmark_bar_node();
-  if (bb_node->child_count() > 0)
-    root_level_folders.push_back(bb_node);
-
   return root_level_folders;
 }
 
