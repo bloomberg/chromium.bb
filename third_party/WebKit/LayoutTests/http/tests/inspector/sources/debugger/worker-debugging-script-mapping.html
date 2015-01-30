@@ -19,10 +19,27 @@ function test()
     {
         InspectorTest.evaluateInPage("installWorker()");
         InspectorTest.waitUntilPaused(paused);
+        InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", sourceMapLoaded);
     }
 
-    function paused(callFrames)
+    var callFrames;
+    var callbacksLeft = 2;
+
+    function paused(callFramesParam)
     {
+        callFrames = callFramesParam;
+        maybeFinishTest();
+    }
+
+    function sourceMapLoaded()
+    {
+        maybeFinishTest();
+    }
+
+    function maybeFinishTest()
+    {
+        if (--callbacksLeft)
+            return;
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.completeDebuggerTest();
     }
