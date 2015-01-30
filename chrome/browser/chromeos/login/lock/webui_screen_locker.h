@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -52,11 +53,12 @@ class WebUIScreenLocker : public WebUILoginView,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
                           public ash::VirtualKeyboardStateObserver,
-                          public keyboard::KeyboardControllerObserver {
+                          public keyboard::KeyboardControllerObserver,
+                          public gfx::DisplayObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
-  // ScreenLockerDelegate implementation.
+  // ScreenLockerDelegate:
   void LockScreen() override;
   void ScreenLockReady() override;
   void OnAuthenticate() override;
@@ -70,7 +72,7 @@ class WebUIScreenLocker : public WebUILoginView,
   void OnLockWebUIReady() override;
   void OnLockBackgroundDisplayed() override;
 
-  // LoginDisplay::Delegate: implementation
+  // LoginDisplay::Delegate:
   void CancelPasswordChangedFlow() override;
   void CreateAccount() override;
   void CompleteLogin(const UserContext& user_context) override;
@@ -90,27 +92,33 @@ class WebUIScreenLocker : public WebUILoginView,
   void SetDisplayEmail(const std::string& email) override;
   void Signout() override;
 
-  // LockWindow::Observer implementation.
+  // LockWindow::Observer:
   void OnLockWindowReady() override;
 
-  // LockStateObserver override.
+  // LockStateObserver:
   void OnLockStateEvent(ash::LockStateObserver::EventType event) override;
 
-  // WidgetObserver override.
+  // WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // PowerManagerClient::Observer overrides:
+  // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
   void LidEventReceived(bool open, const base::TimeTicks& time) override;
 
-  // Overridden from content::WebContentsObserver:
+  // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
 
-  // Overridden from ash::KeyboardStateObserver:
+  // ash::KeyboardStateObserver:
   void OnVirtualKeyboardStateChanged(bool activated) override;
 
-  // Overridden from keyboard::KeyboardControllerObserver:
+  // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+
+  // gfx::DisplayObserver:
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override;
 
   // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI();

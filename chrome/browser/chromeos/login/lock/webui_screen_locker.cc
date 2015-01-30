@@ -68,6 +68,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
+  ash::Shell::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   if (keyboard::KeyboardController::GetInstance()) {
@@ -155,6 +156,7 @@ void WebUIScreenLocker::FocusUserPod() {
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  ash::Shell::GetScreen()->RemoveObserver(this);
   ash::Shell::GetInstance()->
       lock_state_controller()->RemoveObserver(this);
 
@@ -199,7 +201,7 @@ OobeUI* WebUIScreenLocker::GetOobeUI() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebUIScreenLocker, LoginDisplay::Delegate implementation:
+// WebUIScreenLocker, LoginDisplay::Delegate:
 
 void WebUIScreenLocker::CancelPasswordChangedFlow()  {
   NOTREACHED();
@@ -271,7 +273,7 @@ void WebUIScreenLocker::Signout() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LockWindow::Observer implementation:
+// LockWindow::Observer:
 
 void WebUIScreenLocker::OnLockWindowReady() {
   VLOG(1) << "Lock window ready; WebUI is " << (webui_ready_ ? "too" : "not");
@@ -281,7 +283,7 @@ void WebUIScreenLocker::OnLockWindowReady() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SessionLockStateObserver override.
+// SessionLockStateObserver:
 
 void WebUIScreenLocker::OnLockStateEvent(
     ash::LockStateObserver::EventType event) {
@@ -294,7 +296,7 @@ void WebUIScreenLocker::OnLockStateEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetObserver override.
+// WidgetObserver:
 
 void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
   lock_window_->RemoveObserver(this);
@@ -302,7 +304,7 @@ void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerManagerClient::Observer overrides.
+// PowerManagerClient::Observer:
 
 void WebUIScreenLocker::LidEventReceived(bool open,
                                          const base::TimeTicks& time) {
@@ -345,7 +347,7 @@ void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// keyboard::KeyboardControllerObserver overrides.
+// keyboard::KeyboardControllerObserver:
 
 void WebUIScreenLocker::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
@@ -366,6 +368,31 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
   }
 
   keyboard_bounds_ = new_bounds;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// gfx::DisplayObserver:
+
+void WebUIScreenLocker::OnDisplayAdded(const gfx::Display& new_display) {
+}
+
+void WebUIScreenLocker::OnDisplayRemoved(const gfx::Display& old_display) {
+}
+
+void WebUIScreenLocker::OnDisplayMetricsChanged(const gfx::Display& display,
+                                                uint32_t changed_metrics) {
+  gfx::Display primary_display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  if (display.id() != primary_display.id() ||
+      !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
+    return;
+  }
+
+  if (GetOobeUI()) {
+    const gfx::Size& size = primary_display.size();
+    GetOobeUI()->GetCoreOobeActor()->SetClientAreaSize(size.width(),
+                                                       size.height());
+  }
 }
 
 }  // namespace chromeos
