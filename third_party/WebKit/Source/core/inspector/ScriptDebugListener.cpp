@@ -98,4 +98,10 @@ ScriptDebugListener::Script& ScriptDebugListener::Script::setIsContentScript(boo
     return *this;
 }
 
+ScriptDebugListener::Script& ScriptDebugListener::Script::setIsInternalScript(bool isInternalScript)
+{
+    m_isInternalScript = isInternalScript;
+    return *this;
+}
+
 } // namespace blink

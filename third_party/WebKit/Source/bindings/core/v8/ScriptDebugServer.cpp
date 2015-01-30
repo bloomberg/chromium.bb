@@ -600,7 +600,8 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
         .setStartColumn(object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger(m_isolate)->Value())
         .setEndLine(object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger(m_isolate)->Value())
         .setEndColumn(object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger(m_isolate)->Value())
-        .setIsContentScript(object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean(m_isolate)->Value());
+        .setIsContentScript(object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean(m_isolate)->Value())
+        .setIsInternalScript(object->Get(v8AtomicString(m_isolate, "isInternalScript"))->ToBoolean(m_isolate)->Value());
 
     listener->didParseSource(sourceID, script, compileResult);
 }

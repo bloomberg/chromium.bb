@@ -373,7 +373,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& sour
     return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), source.streamer(), isolate, corsStatus, cacheOptions);
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, ScriptStreamer* streamer, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, ScriptStreamer* streamer, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
 {
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
@@ -384,7 +384,9 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
         v8String(isolate, fileName),
         v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt()),
         v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt()),
-        v8Boolean(corsStatus == SharableCrossOrigin, isolate));
+        v8Boolean(corsStatus == SharableCrossOrigin, isolate),
+        v8::Handle<v8::Integer>(),
+        v8Boolean(isInternalScript, isolate));
 
     OwnPtr<CompileFn> compileFn = streamer
         ? selectCompileFunction(resource, streamer)
@@ -423,7 +425,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8:
 
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, 0, isolate);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, 0, isolate, SharableCrossOrigin, V8CacheOptionsDefault, true);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
