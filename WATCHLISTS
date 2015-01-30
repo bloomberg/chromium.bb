@@ -255,6 +255,9 @@
     'content_shell': {
       'filepath': 'content/shell/',
     },
+    'content_worker': {
+      'filepath': 'content/.*worker',
+    },
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
@@ -862,6 +865,7 @@
     'content_shell': ['jochen+watch@chromium.org',
                       'mkwst+moarreviews-shell@chromium.org',
                       'mlamouri+watch-content@chromium.org'],
+    'content_worker': ['kinuko+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'custom_handlers': ['vabr@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
