@@ -119,9 +119,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   }
 #endif  // USE_X11
 
-  vaapi_wrapper_ = VaapiWrapper::Create(
-      VaapiWrapper::kDecode,
-      profile,
+  vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
+      VaapiWrapper::kDecode, profile,
       base::Bind(&ReportToUMA, content::VaapiH264Decoder::VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {

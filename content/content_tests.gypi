@@ -1657,6 +1657,34 @@
               }],
             ],
           },
+          {
+            'target_name': 'vaapi_jpeg_decoder_unittest',
+            'type': '<(gtest_target_type)',
+            'dependencies': [
+              'content.gyp:content_common',
+              '../base/base.gyp:base',
+              '../media/media.gyp:media',
+              '../media/media.gyp:media_test_support',
+              '../testing/gtest.gyp:gtest',
+            ],
+            'sources': [
+              'common/gpu/media/vaapi_jpeg_decoder_unittest.cc',
+            ],
+            'include_dirs': [
+              '<(DEPTH)/third_party/libva',
+            ],
+            'conditions': [
+              ['use_x11==1', {
+                'dependencies': [
+                  '../build/linux/system.gyp:x11',
+                ]
+              }, {
+                'dependencies': [
+                  '../build/linux/system.gyp:libdrm',
+                ]
+              }],
+            ],
+          }
         ]
     }],
     ['chromeos==1', {

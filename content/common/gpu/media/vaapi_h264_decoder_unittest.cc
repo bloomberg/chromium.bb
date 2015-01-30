@@ -111,8 +111,8 @@ bool VaapiH264DecoderLoop::Initialize(base::FilePath input_file,
   media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
   base::Closure report_error_cb =
       base::Bind(&LogOnError, VaapiH264Decoder::VAAPI_ERROR);
-  wrapper_ =
-      VaapiWrapper::Create(VaapiWrapper::kDecode, profile, report_error_cb);
+  wrapper_ = VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kDecode, profile,
+                                               report_error_cb);
   if (!wrapper_.get()) {
     LOG(ERROR) << "Can't create vaapi wrapper";
     return false;
@@ -247,14 +247,14 @@ void VaapiH264DecoderLoop::OutputPicture(
   VAImage image;
   void* mem;
 
-  if (!wrapper_->GetVaImageForTesting(va_surface->id(), &image, &mem)) {
+  if (!wrapper_->GetDerivedVaImage(va_surface->id(), &image, &mem)) {
     LOG(ERROR) << "Cannot get VAImage.";
     return;
   }
 
   if (image.format.fourcc != VA_FOURCC_NV12) {
     LOG(ERROR) << "Unexpected image format: " << image.format.fourcc;
-    wrapper_->ReturnVaImageForTesting(&image);
+    wrapper_->ReturnVaImage(&image);
     return;
   }
 
@@ -269,7 +269,7 @@ void VaapiH264DecoderLoop::OutputPicture(
     LOG(ERROR) << "Cannot convert image to I420.";
   }
 
-  wrapper_->ReturnVaImageForTesting(&image);
+  wrapper_->ReturnVaImage(&image);
 }
 
 void VaapiH264DecoderLoop::RecycleSurface(VASurfaceID va_surface_id) {

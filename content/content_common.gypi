@@ -870,6 +870,8 @@
         'common/gpu/media/vaapi_h264_decoder.h',
         'common/gpu/media/vaapi_h264_dpb.cc',
         'common/gpu/media/vaapi_h264_dpb.h',
+        'common/gpu/media/vaapi_jpeg_decoder.cc',
+        'common/gpu/media/vaapi_jpeg_decoder.h',
         'common/gpu/media/vaapi_picture.cc',
         'common/gpu/media/vaapi_picture.h',
         'common/gpu/media/vaapi_video_decode_accelerator.cc',

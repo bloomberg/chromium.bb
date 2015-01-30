@@ -214,8 +214,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(
 
   UpdateRates(initial_bitrate, kDefaultFramerate);
 
-  vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kEncode,
-                                        output_profile,
+  vaapi_wrapper_ =
+      VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kEncode, output_profile,
                                         base::Bind(&ReportToUMA, VAAPI_ERROR));
   if (!vaapi_wrapper_.get()) {
     LOG(ERROR) << "Failed initializing VAAPI";

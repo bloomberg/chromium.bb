@@ -45,9 +45,19 @@ class CONTENT_EXPORT VaapiWrapper {
     kEncode,
   };
 
+  // Create VaapiWrapper for VAProfile.
   // |report_error_to_uma_cb| will be called independently from reporting
   // errors to clients via method return values.
   static scoped_ptr<VaapiWrapper> Create(
+      CodecMode mode,
+      VAProfile profile,
+      const base::Closure& report_error_to_uma_cb);
+
+  // Create VaapiWrapper for VideoCodecProfile. It maps VideoCodecProfile
+  // |profile| to VAProfile.
+  // |report_error_to_uma_cb| will be called independently from reporting
+  // errors to clients via method return values.
+  static scoped_ptr<VaapiWrapper> CreateForVideoCodec(
       CodecMode mode,
       media::VideoCodecProfile profile,
       const base::Closure& report_error_to_uma_cb);
@@ -118,16 +128,29 @@ class CONTENT_EXPORT VaapiWrapper {
   // Returns true if the VAAPI version is less than the specified version.
   bool VAAPIVersionLessThan(int major, int minor);
 
-  // Get a VAImage from a VASurface and map it into memory. The VAImage should
-  // be released using the ReturnVaImage function. Returns true when successful.
-  // This is intended for testing only.
-  bool GetVaImageForTesting(VASurfaceID va_surface_id,
-                            VAImage* image,
-                            void** mem);
+  // Get a VAImage from a VASurface and map it into memory. The size and format
+  // are derived from the surface. Use GetVaImage() instead if |format| or
+  // |size| are different from surface internal representation. The VAImage
+  // should be released using the ReturnVaImage function. Returns true when
+  // successful.
+  bool GetDerivedVaImage(VASurfaceID va_surface_id, VAImage* image, void** mem);
+
+  // Get a VAImage from a VASurface |va_surface_id| and map it into memory with
+  // given |format| and |size|. The output is |image| and the mapped memory is
+  // |mem|. If |format| doesn't equal to the internal format, the underlying
+  // implementation will do format conversion if supported. |size| should be
+  // smaller than or equal to the surface. If |size| is smaller, the image will
+  // be cropped. The VAImage should be released using the ReturnVaImage
+  // function. Returns true when successful.
+  bool GetVaImage(VASurfaceID va_surface_id,
+                  VAImageFormat* format,
+                  const gfx::Size& size,
+                  VAImage* image,
+                  void** mem);
 
   // Release the VAImage (and the associated memory mapping) obtained from
-  // GetVaImage(). This is intended for testing only.
-  void ReturnVaImageForTesting(VAImage* image);
+  // GetVaImage() or GetDerivedVaImage().
+  void ReturnVaImage(VAImage* image);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
   bool UploadVideoFrameToSurface(const scoped_refptr<media::VideoFrame>& frame,
@@ -162,9 +185,7 @@ class CONTENT_EXPORT VaapiWrapper {
  private:
   VaapiWrapper();
 
-  bool Initialize(CodecMode mode,
-                  media::VideoCodecProfile profile,
-                  const base::Closure& report_error__to_uma_cb);
+  bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();
   bool VaInitialize(const base::Closure& report_error_to_uma_cb);
   bool GetSupportedVaProfiles(std::vector<VAProfile>* profiles);

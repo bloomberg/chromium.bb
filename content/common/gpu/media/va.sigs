@@ -9,6 +9,7 @@ VAStatus vaBeginPicture(VADisplay dpy, VAContextID context, VASurfaceID render_t
 VAStatus vaCreateBuffer(VADisplay dpy, VAContextID context, VABufferType type, unsigned int size, unsigned int num_elements, void *data, VABufferID *buf_id);
 VAStatus vaCreateConfig(VADisplay dpy, VAProfile profile, VAEntrypoint entrypoint, VAConfigAttrib *attrib_list, int num_attribs, VAConfigID *config_id);
 VAStatus vaCreateContext(VADisplay dpy, VAConfigID config_id, int picture_width, int picture_height, int flag, VASurfaceID *render_targets, int num_render_targets, VAContextID *context);
+VAStatus vaCreateImage(VADisplay dpy, VAImageFormat *format, int width, int height, VAImage *image);
 VAStatus vaCreateSurfaces(VADisplay dpy, unsigned int format, unsigned int width, unsigned int height, VASurfaceID *surfaces, unsigned int num_surfaces, VASurfaceAttrib *attrib_list, unsigned int num_attribs);
 VAStatus vaDeriveImage(VADisplay dpy, VASurfaceID surface, VAImage *image);
 VAStatus vaDestroyBuffer(VADisplay dpy, VABufferID buffer_id);
@@ -20,6 +21,7 @@ int vaDisplayIsValid(VADisplay dpy);
 VAStatus vaEndPicture(VADisplay dpy, VAContextID context);
 const char *vaErrorStr(VAStatus error_status);
 VAStatus vaGetConfigAttributes(VADisplay dpy, VAProfile profile, VAEntrypoint entrypoint, VAConfigAttrib *attrib_list, int num_attribs);
+VAStatus vaGetImage(VADisplay dpy, VASurfaceID surface, int x, int y, unsigned int width, unsigned int height, VAImageID image);
 VAStatus vaInitialize(VADisplay dpy, int *major_version, int *minor_version);
 VAStatus vaMapBuffer(VADisplay dpy, VABufferID buf_id, void **pbuf);
 int vaMaxNumEntrypoints (VADisplay dpy);
