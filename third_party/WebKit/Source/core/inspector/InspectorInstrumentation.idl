@@ -314,6 +314,15 @@ interface InspectorInstrumentation {
     [Resource]
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
 
+    [Resource]
+    void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
+
+    [Resource]
+    void willDispachEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data);
+
+    [Resource]
+    void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
+
     [AsyncCallTracker, Resource]
     void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 

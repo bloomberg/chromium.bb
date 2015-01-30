@@ -98,6 +98,10 @@ public:
     void didFailXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*);
     void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&);
 
+    void willSendEventSourceRequest(ThreadableLoaderClient*);
+    void willDispachEventSourceEvent(ThreadableLoaderClient*, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data);
+    void didFinishEventSourceRequest(ThreadableLoaderClient*);
+
     void willDestroyResource(Resource*);
 
     void applyUserAgentOverride(String* userAgent);
@@ -158,6 +162,10 @@ private:
 
     typedef WillBeHeapHashMap<ThreadableLoaderClient*, RefPtrWillBeMember<XHRReplayData> > PendingXHRReplayDataMap;
     PendingXHRReplayDataMap m_pendingXHRReplayData;
+
+    ThreadableLoaderClient* m_pendingEventSource;
+    typedef WillBeHeapHashMap<ThreadableLoaderClient*, unsigned long> EventSourceRequestIdMap;
+    EventSourceRequestIdMap m_eventSourceRequestIdMap;
 
     typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator> > FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;

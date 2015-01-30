@@ -47,6 +47,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/EventSourceInit.h"
 #include "platform/network/ResourceError.h"
@@ -144,6 +145,8 @@ void EventSource::connect()
     resourceLoaderOptions.securityOrigin = origin;
     resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
 
+    InspectorInstrumentation::willSendEventSourceRequest(&executionContext, this);
+    // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient will be called synchronously.
     m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
 
     if (m_loader)
@@ -154,6 +157,8 @@ void EventSource::networkRequestEnded()
 {
     if (!m_requestInFlight)
         return;
+
+    InspectorInstrumentation::didFinishEventSourceRequest(executionContext(), this);
 
     m_requestInFlight = false;
 
@@ -376,6 +381,7 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
                 m_lastEventId = m_currentlyParsedEventId;
                 m_currentlyParsedEventId = nullAtom;
             }
+            InspectorInstrumentation::willDispachEventSourceEvent(executionContext(), this, m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, m_lastEventId, m_data);
             dispatchEvent(createMessageEvent());
         }
         if (!m_eventName.isEmpty())

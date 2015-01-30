@@ -579,6 +579,12 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     if (!client)
         return;
 
+    if (client == m_pendingEventSource) {
+        m_eventSourceRequestIdMap.set(client, identifier);
+        m_pendingEventSource = nullptr;
+        return;
+    }
+
     PendingXHRReplayDataMap::iterator it = m_pendingXHRReplayData.find(client);
     if (it == m_pendingXHRReplayData.end())
         return;
@@ -623,6 +629,26 @@ void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest* xhr, Threadable
 
     // See comments on |didFailXHRLoading| for why we are delaying delete.
     delayedRemoveReplayXHR(xhr);
+}
+
+void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* eventSource)
+{
+    m_pendingEventSource = eventSource;
+}
+
+void InspectorResourceAgent::willDispachEventSourceEvent(ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data)
+{
+    EventSourceRequestIdMap::iterator it = m_eventSourceRequestIdMap.find(eventSource);
+    if (it == m_eventSourceRequestIdMap.end())
+        return;
+    m_frontend->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), currentTime(), eventName.string(), eventId.string(), String(data));
+}
+
+void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)
+{
+    m_eventSourceRequestIdMap.remove(eventSource);
+    if (eventSource == m_pendingEventSource)
+        m_pendingEventSource = nullptr;
 }
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
@@ -1001,6 +1027,7 @@ InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     , m_pageAgent(pageAgent)
     , m_frontend(0)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
+    , m_pendingEventSource(nullptr)
     , m_isRecalculatingStyle(false)
     , m_removeFinishedReplayXHRTimer(this, &InspectorResourceAgent::removeFinishedReplayXHRFired)
 {
