@@ -279,6 +279,8 @@ class ASH_EXPORT DisplayInfo {
 
   // The list of available variations for the color calibration.
   std::vector<ui::ColorCalibrationProfile> available_color_profiles_;
+
+  // If you add a new member, you need to update Copy().
 };
 
 }  // namespace ash

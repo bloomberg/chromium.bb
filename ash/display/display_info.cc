@@ -266,13 +266,15 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   name_ = native_info.name_;
   has_overscan_ = native_info.has_overscan_;
 
+  touch_support_ = native_info.touch_support_;
+  touch_device_id_ = native_info.touch_device_id_;
+  device_scale_factor_ = native_info.device_scale_factor_;
   DCHECK(!native_info.bounds_in_native_.IsEmpty());
   bounds_in_native_ = native_info.bounds_in_native_;
   size_in_pixel_ = native_info.size_in_pixel_;
-  device_scale_factor_ = native_info.device_scale_factor_;
+  is_aspect_preserving_scaling_ = native_info.is_aspect_preserving_scaling_;
   display_modes_ = native_info.display_modes_;
-  touch_support_ = native_info.touch_support_;
-  touch_device_id_ = native_info.touch_device_id_;
+  available_color_profiles_ = native_info.available_color_profiles_;
 
   // Rotation, ui_scale, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from
@@ -289,12 +291,6 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
     configured_ui_scale_ = native_info.configured_ui_scale_;
     color_profile_ = native_info.color_profile();
   }
-
-  available_color_profiles_ = native_info.available_color_profiles();
-
-  // Don't copy insets as it may be given by preference.  |rotation_|
-  // is treated as a native so that it can be specified in
-  // |CreateFromSpec|.
 }
 
 void DisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
