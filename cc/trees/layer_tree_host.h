@@ -151,9 +151,6 @@ class CC_EXPORT LayerTreeHost {
 
   void SetDeferCommits(bool defer_commits);
 
-  // Test only hook
-  virtual void DidDeferCommit();
-
   int source_frame_number() const { return source_frame_number_; }
 
   void SetNeedsDisplayOnAllLayers();

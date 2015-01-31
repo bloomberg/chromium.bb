@@ -162,6 +162,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
 
   base::TimeTicks LastBeginImplFrameTime();
 
+  void SetDeferCommits(bool defer_commits);
+
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::debug::TracedValue* value) const override;
 
