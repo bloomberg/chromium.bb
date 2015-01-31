@@ -16,6 +16,7 @@ goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
 goog.require('cvox.ChromeVoxEditableTextBase');
+goog.require('cvox.TabsApiHandler');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -34,6 +35,14 @@ Background = function() {
    * @private
    */
   this.whitelist_ = ['chromevox_next_test'];
+
+  /**
+   * @type {cvox.TabsApiHandler}
+   * @private
+   */
+  this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
+                                              cvox.ChromeVox.braille,
+                                              cvox.ChromeVox.earcons);
 
   /**
    * @type {cursors.Range}
@@ -73,29 +82,43 @@ Background = function() {
 
   // Register listeners for ...
   // Desktop.
-  chrome.automation.getDesktop(this.onGotDesktop);
+  chrome.automation.getDesktop(this.onGotTree);
+
+  // Tabs.
+  chrome.tabs.onUpdated.addListener(this.onTabUpdated);
 };
 
 Background.prototype = {
   /**
-   * Handles all setup once a new automation tree appears.
-   * @param {chrome.automation.AutomationNode} desktop
+   * Handles chrome.tabs.onUpdated.
+   * @param {number} tabId
+   * @param {Object} changeInfo
    */
-  onGotDesktop: function(desktop) {
+  onTabUpdated: function(tabId, changeInfo) {
+    if (changeInfo.status != 'complete')
+      return;
+    chrome.tabs.get(tabId, function(tab) {
+      if (!tab.url)
+        return;
+
+      var next = this.isWhitelisted_(tab.url);
+
+      this.toggleChromeVoxVersion({next: next, classic: !next});
+    }.bind(this));
+  },
+
+  /**
+   * Handles all setup once a new automation tree appears.
+   * @param {chrome.automation.AutomationNode} root
+   */
+  onGotTree: function(root) {
     // Register all automation event listeners.
     for (var eventType in this.listeners_)
-      desktop.addEventListener(eventType, this.listeners_[eventType], true);
+      root.addEventListener(eventType, this.listeners_[eventType], true);
 
-    // The focused state gets set on the containing webView node.
-    var webView = desktop.find({role: chrome.automation.RoleType.webView,
-                                state: {focused: true}});
-    if (webView) {
-      var root = webView.find({role: chrome.automation.RoleType.rootWebArea});
-      if (root) {
-        this.onLoadComplete(
-            {target: root,
-             type: chrome.automation.EventType.loadComplete});
-      }
+    if (root.attributes.docLoaded) {
+      this.onLoadComplete(
+          {target: root, type: chrome.automation.EventType.loadComplete});
     }
   },
 
@@ -247,30 +270,14 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    console.log('processing load complete!');
-
-    var next = this.isWhitelisted_(evt.target.attributes.url);
-    this.toggleChromeVoxVersion({next: next, classic: !next});
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != chrome.automation.RoleType.desktop &&
         !this.active_)
       return;
 
-    if (this.currentRange_)
-      return;
-
-    var root = evt.target;
-    var webView = root;
-    while (webView && webView.role != chrome.automation.RoleType.webView)
-      webView = webView.parent;
-
-    if (!webView || !webView.state.focused)
-      return;
-
-    var node = AutomationUtil.findNodePost(root,
+    var node = AutomationUtil.findNodePost(evt.target,
         Dir.FORWARD,
         AutomationPredicate.leaf);
-
     if (node)
       this.currentRange_ = cursors.Range.fromNode(node);
 
@@ -355,11 +362,21 @@ Background.prototype = {
 
     if (opt_options.next) {
       if (!chrome.commands.onCommand.hasListener(this.onGotCommand))
-          chrome.commands.onCommand.addListener(this.onGotCommand);
-        this.active_ = true;
+        chrome.commands.onCommand.addListener(this.onGotCommand);
+
+      if (!this.active_)
+        chrome.automation.getTree(this.onGotTree);
+      this.active_ = true;
     } else {
       if (chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.removeListener(this.onGotCommand);
+
+      if (this.active_) {
+        for (var eventType in this.listeners_) {
+          this.currentRange_.getStart().getNode().root.removeEventListener(
+              eventType, this.listeners_[eventType], true);
+        }
+      }
       this.active_ = false;
     }
 

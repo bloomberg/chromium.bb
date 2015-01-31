@@ -78,7 +78,7 @@ void WebView::SetWebContents(content::WebContents* replacement) {
     DCHECK(!is_embedding_fullscreen_widget_);
   }
   AttachWebContents();
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
@@ -266,7 +266,7 @@ gfx::Size WebView::GetPreferredSize() const {
 void WebView::RenderProcessExited(content::RenderProcessHost* host,
                                   base::TerminationStatus status,
                                   int exit_code) {
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::RenderProcessHostDestroyed(content::RenderProcessHost* host) {
@@ -293,11 +293,11 @@ bool WebView::EmbedsFullscreenWidget() const {
 // WebView, content::WebContentsObserver implementation:
 
 void WebView::RenderViewReady() {
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::RenderViewDeleted(content::RenderViewHost* render_view_host) {
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -305,7 +305,7 @@ void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
   FocusManager* const focus_manager = GetFocusManager();
   if (focus_manager && focus_manager->GetFocusedView() == this)
     OnFocus();
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::WebContentsDestroyed() {
@@ -313,7 +313,7 @@ void WebView::WebContentsDestroyed() {
     observing_render_process_host_->RemoveObserver(this);
     observing_render_process_host_ = nullptr;
   }
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::DidShowFullscreenWidget(int routing_id) {
@@ -332,11 +332,11 @@ void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen) {
 }
 
 void WebView::DidAttachInterstitialPage() {
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 void WebView::DidDetachInterstitialPage() {
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -398,18 +398,14 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
     // the same.  So, do not change attachment.
     OnBoundsChanged(bounds());
   }
-  NotifyMaybeTextInputClientAndAccessibilityChanged();
+  NotifyMaybeTextInputClientChanged();
 }
 
-void WebView::NotifyMaybeTextInputClientAndAccessibilityChanged() {
+void WebView::NotifyMaybeTextInputClientChanged() {
   // Update the TextInputClient as needed; see GetTextInputClient().
   FocusManager* const focus_manager = GetFocusManager();
   if (focus_manager)
     focus_manager->OnTextInputClientChanged(this);
-
-#if defined(OS_CHROMEOS)
-  NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, true);
-#endif  // defined OS_CHROMEOS
 }
 
 content::WebContents* WebView::CreateWebContents(
