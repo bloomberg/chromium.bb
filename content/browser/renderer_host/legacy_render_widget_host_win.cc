@@ -147,6 +147,15 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   // because it sometimes gets sign-extended incorrectly (but not always).
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
+  // http://crbug.com/440579 TODO(dmazzoni): remove this logging when
+  // flakiness is fixed.
+  LOG(INFO) << "LegacyRenderWidgetHostHWND::OnGetObject"
+            << " message=" << message
+            << " w_param=" << w_param
+            << " l_param=" << l_param
+            << " obj_id=" << obj_id
+            << " host_=" << host_;
+
   if (kIdScreenReaderHoneyPot == obj_id) {
     // When an MSAA client has responded to our fake event on this id,
     // enable screen reader support.
@@ -159,14 +168,18 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
 
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
       host_->GetRenderWidgetHost());
-  if (!rwhi)
+  if (!rwhi) {
+    LOG(WARNING) << "No RWHI";
     return static_cast<LRESULT>(0L);
+  }
 
   BrowserAccessibilityManagerWin* manager =
       static_cast<BrowserAccessibilityManagerWin*>(
           rwhi->GetRootBrowserAccessibilityManager());
-  if (!manager)
+  if (!manager) {
+    LOG(WARNING) << "No manager";
     return static_cast<LRESULT>(0L);
+  }
 
   base::win::ScopedComPtr<IAccessible> root(
       manager->GetRoot()->ToBrowserAccessibilityWin());
