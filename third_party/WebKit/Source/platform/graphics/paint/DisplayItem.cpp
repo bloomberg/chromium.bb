@@ -92,7 +92,14 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         return clipTypeAsDebugString(type);
     if (isEndClipType(type))
         return "End" + clipTypeAsDebugString(endClipTypeToClipType(type));
+
     PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);
+    if (isEndFloatClipType(type))
+        return "End" + typeAsDebugString(endFloatClipTypeToFloatClipType(type));
+
+    PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);
+    if (isEndScrollType(type))
+        return "End" + typeAsDebugString(endScrollTypeToScrollType(type));
 
     switch (type) {
     case BeginFilter: return "BeginFilter";
@@ -103,8 +110,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndTransform: return "EndTransform";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
-    case BeginScroll: return "BeginScroll";
-    case EndScroll: return "EndScroll";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";

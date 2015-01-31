@@ -99,7 +99,6 @@ public:
         FloatClipPaintPhaseFirst = FloatClipFirst,
         FloatClipPaintPhaseLast = FloatClipFirst + PaintPhaseMax,
         FloatClipLast = FloatClipPaintPhaseLast,
-
         EndFloatClipFirst,
         EndFloatClipLast = EndFloatClipFirst + FloatClipLast - FloatClipFirst,
 
@@ -108,7 +107,7 @@ public:
         ScrollPaintPhaseLast = ScrollPaintPhaseFirst + PaintPhaseMax,
         ScrollLast = ScrollPaintPhaseLast,
         EndScrollFirst,
-        EndScrollLast,
+        EndScrollLast = EndScrollFirst + ScrollLast - ScrollFirst,
 
         BeginFilter,
         EndFilter,
@@ -118,8 +117,6 @@ public:
         EndTransform,
         BeginClipPath,
         EndClipPath,
-        BeginScroll,
-        EndScroll
     };
 
     // Create a dummy display item which just holds the id but has no display operation.
@@ -142,8 +139,18 @@ public:
     bool is##Category() const { return is##Category##Type(type()); }
 
 #define DEFINE_CONVERSION_METHODS(Category1, category1, Category2, category2) \
-    static Type category1##TypeTo##Category2##Type(Type type) { ASSERT(is##Category1##Type(type)); return static_cast<Type>(type - Category1##First + Category2##First); } \
-    static Type category2##TypeTo##Category1##Type(Type type) { ASSERT(is##Category2##Type(type)); return static_cast<Type>(type - Category2##First + Category1##First); }
+    static Type category1##TypeTo##Category2##Type(Type type) \
+    { \
+        static_assert(Category1##Last - Category1##First == Category2##Last - Category2##First, \
+            "Categories " #Category1 " and " #Category2 " should have same number of enum values. See comments of DisplayItem::Type"); \
+        ASSERT(is##Category1##Type(type)); \
+        return static_cast<Type>(type - Category1##First + Category2##First); \
+    } \
+    static Type category2##TypeTo##Category1##Type(Type type) \
+    { \
+        ASSERT(is##Category2##Type(type)); \
+        return static_cast<Type>(type - Category2##First + Category1##First); \
+    }
 
 #define DEFINE_PAIRED_CATEGORY_METHODS(Category, category) \
     DEFINE_CATEGORY_METHODS(Category) \
@@ -151,7 +158,12 @@ public:
     DEFINE_CONVERSION_METHODS(Category, category, End##Category, end##Category)
 
 #define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category) \
-    static Type paintPhaseTo##Category##Type(int paintPhase) { return static_cast<Type>(paintPhase + Category##PaintPhaseFirst); }
+    static Type paintPhaseTo##Category##Type(int paintPhase) \
+    { \
+        static_assert(Category##PaintPhaseLast - Category##PaintPhaseFirst == PaintPhaseMax, \
+            "Invalid paint-phase-based category " #Category ". See comments of DisplayItem::Type"); \
+        return static_cast<Type>(paintPhase + Category##PaintPhaseFirst); \
+    }
 
     DEFINE_CATEGORY_METHODS(Drawing)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Drawing)
