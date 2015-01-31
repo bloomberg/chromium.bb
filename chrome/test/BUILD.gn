@@ -212,7 +212,7 @@ source_set("test_support_unit") {
   ]
 }
 
-if (!is_android) {
+if (!is_android && (!is_win || link_chrome_on_windows)) {
   gypi_values = exec_script("//build/gypi_to_gn.py",
                             [ rebase_path("../chrome_tests.gypi") ],
                             "scope",

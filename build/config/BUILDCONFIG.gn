@@ -76,6 +76,11 @@ declare_args() {
   # cross-compiles (compiling the same target for multiple toolchains in the
   # same build) to work.
   target_arch = "arm"
+
+  # TODO(brettw) remove this flag (and therefore enable linking all targets) on
+  # Windows when we have sufficient bot capacity. In the meantime, you can
+  # enable linking for local compiles.
+  link_chrome_on_windows = false
 }
 
 # =============================================================================

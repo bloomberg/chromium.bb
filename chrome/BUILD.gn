@@ -12,7 +12,14 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-if (!is_android) {
+if (is_win && !link_chrome_on_windows) {
+  # When linking is disabled on Windows, create a dummy Chrome target to
+  # make targets work that depend on Chrome.
+  group("chrome") {
+  }
+}
+
+if (!is_android && (!is_win || link_chrome_on_windows)) {
   # TODO(GYP) for Windows need to the the reorder-imports step which probably
   # means adding another target and renaming this to chrome_initial like in GYP.
   executable("chrome") {
