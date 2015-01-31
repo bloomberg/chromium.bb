@@ -72,3 +72,15 @@ function extractDomain(url) {
   a.href = url;
   return a.hostname;
 }
+
+/**
+ * Extract protocol from an URL.
+ * @param {string} url An URL string.
+ * @return {string} The protocol of the URL.
+ */
+function extractProtocol(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a.protocol;
+}
+

@@ -82,6 +82,14 @@ Authenticator.prototype = {
     var params = getUrlSearchParams(location.search);
     this.parentPage_ = params.parentPage || this.PARENT_PAGE;
     this.gaiaUrl_ = params.gaiaUrl || this.GAIA_URL;
+
+    // Sanitize Gaia url before continuing.
+    var scheme = extractProtocol(this.gaiaUrl_);
+    if (scheme != 'https:' && scheme != 'http:') {
+      console.error('Bad Gaia URL, url=' + this.gaiaURL_);
+      return;
+    }
+
     this.gaiaPath_ = params.gaiaPath || this.GAIA_PAGE_PATH;
     this.inputLang_ = params.hl;
     this.inputEmail_ = params.email;
