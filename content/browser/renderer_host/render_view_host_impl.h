@@ -168,8 +168,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   WebPreferences GetWebkitPreferences() override;
   void UpdateWebkitPreferences(const WebPreferences& prefs) override;
   void OnWebkitPreferencesChanged() override;
-  void GetAudioOutputControllers(
-      const GetAudioOutputControllersCallback& callback) const override;
   void SelectWordAroundCaret() override;
 
 #if defined(OS_ANDROID)

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/process/kill.h"
@@ -24,6 +26,10 @@ class TimeDelta;
 
 namespace gpu {
 union ValueState;
+}
+
+namespace media {
+class AudioOutputController;
 }
 
 namespace content {
@@ -254,6 +260,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Send a new ValueState to the Gpu Service to update a subscription target
   virtual void SendUpdateValueState(
       unsigned int target, const gpu::ValueState& state) = 0;
+
+  // Retrieves the list of AudioOutputController objects associated
+  // with this object and passes it to the callback you specify, on
+  // the same thread on which you called the method.
+  typedef std::list<scoped_refptr<media::AudioOutputController>>
+      AudioOutputControllerList;
+  typedef base::Callback<void(const AudioOutputControllerList&)>
+      GetAudioOutputControllersCallback;
+  virtual void GetAudioOutputControllers(
+      const GetAudioOutputControllersCallback& callback) const = 0;
 
   // Static management functions -----------------------------------------------
 

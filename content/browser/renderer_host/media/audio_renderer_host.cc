@@ -146,14 +146,11 @@ AudioRendererHost::~AudioRendererHost() {
 }
 
 void AudioRendererHost::GetOutputControllers(
-    int render_view_id,
-    const RenderViewHost::GetAudioOutputControllersCallback& callback) const {
+    const RenderProcessHost::GetAudioOutputControllersCallback&
+        callback) const {
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioRendererHost::DoGetOutputControllers, this,
-                 render_view_id),
-      callback);
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioRendererHost::DoGetOutputControllers, this), callback);
 }
 
 void AudioRendererHost::OnChannelClosing() {
@@ -281,17 +278,15 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
   UpdateNumPlayingStreams(entry, is_playing);
 }
 
-RenderViewHost::AudioOutputControllerList
-AudioRendererHost::DoGetOutputControllers(int render_view_id) const {
+RenderProcessHost::AudioOutputControllerList
+AudioRendererHost::DoGetOutputControllers() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  RenderViewHost::AudioOutputControllerList controllers;
+  RenderProcessHost::AudioOutputControllerList controllers;
   for (AudioEntryMap::const_iterator it = audio_entries_.begin();
        it != audio_entries_.end();
        ++it) {
-    AudioEntry* entry = it->second;
-    if (entry->render_view_id() == render_view_id)
-      controllers.push_back(entry->controller());
+    controllers.push_back(it->second->controller());
   }
 
   return controllers;

@@ -48,7 +48,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_logging.h"
 #include "media/audio/audio_output_controller.h"
@@ -77,8 +77,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Calls |callback| with the list of AudioOutputControllers for this object.
   void GetOutputControllers(
-      int render_view_id,
-      const RenderViewHost::GetAudioOutputControllersCallback& callback) const;
+      const RenderProcessHost::GetAudioOutputControllersCallback&
+          callback) const;
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -144,8 +144,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Send playing/paused status to the renderer.
   void DoNotifyStreamStateChanged(int stream_id, bool is_playing);
 
-  RenderViewHost::AudioOutputControllerList DoGetOutputControllers(
-      int render_view_id) const;
+  RenderProcessHost::AudioOutputControllerList DoGetOutputControllers() const;
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);

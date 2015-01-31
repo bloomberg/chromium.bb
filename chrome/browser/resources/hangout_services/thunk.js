@@ -107,12 +107,12 @@ chrome.runtime.onMessageExternal.addListener(
           return true;
         } else if (method == 'getActiveSink') {
           chrome.webrtcAudioPrivate.getActiveSink(
-              sender.tab.id, doSendResponse);
+              requestInfo, doSendResponse);
           return true;
         } else if (method == 'setActiveSink') {
           var sinkId = message['sinkId'];
           chrome.webrtcAudioPrivate.setActiveSink(
-              sender.tab.id, sinkId, doSendResponse);
+              requestInfo, sinkId, doSendResponse);
           return true;
         } else if (method == 'getAssociatedSink') {
           var sourceId = message['sourceId'];

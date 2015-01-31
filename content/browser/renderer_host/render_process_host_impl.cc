@@ -2394,4 +2394,9 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
+void RenderProcessHostImpl::GetAudioOutputControllers(
+    const GetAudioOutputControllersCallback& callback) const {
+  audio_renderer_host()->GetOutputControllers(callback);
+}
+
 }  // namespace content

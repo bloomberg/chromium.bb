@@ -9,7 +9,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "media/audio/audio_device_name.h"
 #include "url/gurl.h"
@@ -68,11 +68,11 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   // entire function should fail.
   //
   // Call from any thread. Callback will occur on originating thread.
-  bool GetControllerList(int tab_id);
+  bool GetControllerList(const api::webrtc_audio_private::RequestInfo& request);
 
   // Must override this if you call GetControllerList.
   virtual void OnControllerList(
-      const content::RenderViewHost::AudioOutputControllerList& list);
+      const content::RenderProcessHost::AudioOutputControllerList& list);
 
   // Calculates a single HMAC. Call from any thread. Calls back via
   // OnHMACCalculated on UI thread.
@@ -134,7 +134,7 @@ class WebrtcAudioPrivateGetActiveSinkFunction
 
   bool RunAsync() override;
   void OnControllerList(
-      const content::RenderViewHost::AudioOutputControllerList& controllers)
+      const content::RenderProcessHost::AudioOutputControllerList& controllers)
       override;
   void OnHMACCalculated(const std::string& hmac) override;
 };
@@ -153,18 +153,18 @@ class WebrtcAudioPrivateSetActiveSinkFunction
 
   bool RunAsync() override;
   void OnControllerList(
-      const content::RenderViewHost::AudioOutputControllerList& controllers)
+      const content::RenderProcessHost::AudioOutputControllerList& controllers)
       override;
   void OnOutputDeviceNames(
       scoped_ptr<media::AudioDeviceNames> device_names) override;
   void SwitchDone();
   void DoneOnUIThread();
 
-  int tab_id_;
+  api::webrtc_audio_private::RequestInfo request_info_;
   std::string sink_id_;
 
   // Filled in by OnControllerList.
-  content::RenderViewHost::AudioOutputControllerList controllers_;
+  content::RenderProcessHost::AudioOutputControllerList controllers_;
 
   // Number of sink IDs we are still waiting for. Can become greater
   // than 0 in OnControllerList, decreases on every OnSinkId call.

@@ -271,6 +271,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // immediately after receiving response headers.
   void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
 
+  void GetAudioOutputControllers(
+      const GetAudioOutputControllersCallback& callback) const override;
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

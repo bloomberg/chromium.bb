@@ -23,11 +23,13 @@
 namespace extensions {
 
 using content::BrowserThread;
-using content::RenderViewHost;
+using content::RenderProcessHost;
 using media::AudioDeviceNames;
 using media::AudioManager;
 
 namespace wap = api::webrtc_audio_private;
+
+using api::webrtc_audio_private::RequestInfo;
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService> > g_factory =
@@ -130,27 +132,38 @@ void WebrtcAudioPrivateFunction::OnOutputDeviceNames(
   NOTREACHED();
 }
 
-bool WebrtcAudioPrivateFunction::GetControllerList(int tab_id) {
-  content::WebContents* contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(
-          tab_id, GetProfile(), true, NULL, NULL, &contents, NULL)) {
-    error_ = extensions::ErrorUtils::FormatErrorMessage(
-        extensions::tabs_constants::kTabNotFoundError,
-        base::IntToString(tab_id));
+bool WebrtcAudioPrivateFunction::GetControllerList(const RequestInfo& request) {
+  content::RenderProcessHost* rph = nullptr;
+
+  // If |guest_process_id| is defined, directly use this id to find the
+  // corresponding RenderProcessHost.
+  if (request.guest_process_id.get()) {
+    rph = content::RenderProcessHost::FromID(*request.guest_process_id.get());
+  } else if (request.tab_id.get()) {
+    int tab_id = *request.tab_id.get();
+    content::WebContents* contents = NULL;
+    if (!ExtensionTabUtil::GetTabById(tab_id, GetProfile(), true, NULL, NULL,
+                                      &contents, NULL)) {
+      error_ = extensions::ErrorUtils::FormatErrorMessage(
+          extensions::tabs_constants::kTabNotFoundError,
+          base::IntToString(tab_id));
+      return false;
+    }
+    rph = contents->GetRenderProcessHost();
+  } else {
     return false;
   }
 
-  RenderViewHost* rvh = contents->GetRenderViewHost();
-  if (!rvh)
+  if (!rph)
     return false;
 
-  rvh->GetAudioOutputControllers(base::Bind(
-      &WebrtcAudioPrivateFunction::OnControllerList, this));
+  rph->GetAudioOutputControllers(
+      base::Bind(&WebrtcAudioPrivateFunction::OnControllerList, this));
   return true;
 }
 
 void WebrtcAudioPrivateFunction::OnControllerList(
-    const content::RenderViewHost::AudioOutputControllerList& list) {
+    const content::RenderProcessHost::AudioOutputControllerList& list) {
   NOTREACHED();
 }
 
@@ -254,11 +267,11 @@ bool WebrtcAudioPrivateGetActiveSinkFunction::RunAsync() {
       wap::GetActiveSink::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  return GetControllerList(params->tab_id);
+  return GetControllerList(params->request);
 }
 
 void WebrtcAudioPrivateGetActiveSinkFunction::OnControllerList(
-    const RenderViewHost::AudioOutputControllerList& controllers) {
+    const RenderProcessHost::AudioOutputControllerList& controllers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (controllers.empty()) {
@@ -295,9 +308,8 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnHMACCalculated(
 }
 
 WebrtcAudioPrivateSetActiveSinkFunction::
-WebrtcAudioPrivateSetActiveSinkFunction()
-    : tab_id_(0),
-      num_remaining_sink_ids_(0) {
+    WebrtcAudioPrivateSetActiveSinkFunction()
+    : num_remaining_sink_ids_(0) {
 }
 
 WebrtcAudioPrivateSetActiveSinkFunction::
@@ -312,22 +324,40 @@ bool WebrtcAudioPrivateSetActiveSinkFunction::RunAsync() {
 
   InitResourceContext();
 
-  tab_id_ = params->tab_id;
+  if (params->request.guest_process_id.get()) {
+    request_info_.guest_process_id.reset(
+        new int(*params->request.guest_process_id.get()));
+  } else if (params->request.tab_id.get()) {
+    request_info_.tab_id.reset(new int(*params->request.tab_id.get()));
+  } else {
+    return false;
+  }
+
   sink_id_ = params->sink_id;
 
-  return GetControllerList(tab_id_);
+  return GetControllerList(request_info_);
 }
 
 void WebrtcAudioPrivateSetActiveSinkFunction::OnControllerList(
-    const RenderViewHost::AudioOutputControllerList& controllers) {
+    const RenderProcessHost::AudioOutputControllerList& controllers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::string requested_process_type;
+  int requested_process_id;
+  if (request_info_.guest_process_id.get()) {
+    requested_process_type = "guestProcessId";
+    requested_process_id = *request_info_.guest_process_id.get();
+  } else {
+    requested_process_type = "tabId";
+    requested_process_id = *request_info_.tab_id.get();
+  }
 
   controllers_ = controllers;
   num_remaining_sink_ids_ = controllers_.size();
   if (num_remaining_sink_ids_ == 0) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
-        "No active stream for tab with id: *.",
-        base::IntToString(tab_id_));
+        "No active stream for " + requested_process_type + " *",
+        base::IntToString(requested_process_id));
     SendResponse(false);
   } else {
     // We need to get the output device names, and calculate the HMAC
@@ -359,7 +389,7 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnOutputDeviceNames(
       DVLOG(2) << "Found no matching raw sink ID for HMAC " << sink_id_;
   }
 
-  RenderViewHost::AudioOutputControllerList::const_iterator it =
+  RenderProcessHost::AudioOutputControllerList::const_iterator it =
       controllers_.begin();
   for (; it != controllers_.end(); ++it) {
     (*it)->SwitchOutputDevice(raw_sink_id, base::Bind(

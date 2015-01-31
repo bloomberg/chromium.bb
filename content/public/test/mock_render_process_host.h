@@ -112,6 +112,9 @@ class MockRenderProcessHost : public RenderProcessHost {
     process_handle = new_handle.Pass();
   }
 
+  void GetAudioOutputControllers(
+      const GetAudioOutputControllersCallback& callback) const override {}
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;

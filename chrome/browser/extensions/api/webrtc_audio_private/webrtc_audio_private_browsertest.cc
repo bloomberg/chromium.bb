@@ -32,7 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::JSONWriter;
-using content::RenderViewHost;
+using content::RenderProcessHost;
 using content::WebContents;
 using media::AudioDeviceNames;
 using media::AudioManager;
@@ -49,7 +49,7 @@ class AudioWaitingExtensionTest : public ExtensionApiTest {
     // or more AudioOutputController objects for our tab.
     bool audio_playing = false;
     for (size_t remaining_tries = 50; remaining_tries > 0; --remaining_tries) {
-      tab->GetRenderViewHost()->GetAudioOutputControllers(
+      tab->GetRenderProcessHost()->GetAudioOutputControllers(
           base::Bind(OnAudioControllers, &audio_playing));
       base::MessageLoop::current()->RunUntilIdle();
       if (audio_playing)
@@ -65,7 +65,7 @@ class AudioWaitingExtensionTest : public ExtensionApiTest {
   // Used by the test above to wait until audio is playing.
   static void OnAudioControllers(
       bool* audio_playing,
-      const RenderViewHost::AudioOutputControllerList& list) {
+      const RenderProcessHost::AudioOutputControllerList& list) {
     if (!list.empty())
       *audio_playing = true;
   }
@@ -84,9 +84,15 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
   }
 
  protected:
+  void AppendTabIdToRequestInfo(base::ListValue* params, int tab_id) {
+    base::DictionaryValue* request_info = new base::DictionaryValue();
+    request_info->SetInteger("tabId", tab_id);
+    params->Append(request_info);
+  }
+
   std::string InvokeGetActiveSink(int tab_id) {
     base::ListValue parameters;
-    parameters.AppendInteger(tab_id);
+    AppendTabIdToRequestInfo(&parameters, tab_id);
     std::string parameter_string;
     JSONWriter::Write(&parameters, &parameter_string);
 
@@ -221,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   int tab_id = ExtensionTabUtil::GetTabId(tab);
   base::ListValue parameters;
-  parameters.AppendInteger(tab_id);
+  AppendTabIdToRequestInfo(&parameters, tab_id);
   std::string parameter_string;
   JSONWriter::Write(&parameters, &parameter_string);
 
@@ -244,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   int tab_id = ExtensionTabUtil::GetTabId(tab);
   base::ListValue parameters;
-  parameters.AppendInteger(tab_id);
+  AppendTabIdToRequestInfo(&parameters, tab_id);
   parameters.AppendString("no such id");
   std::string parameter_string;
   JSONWriter::Write(&parameters, &parameter_string);
@@ -255,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
   std::string error(RunFunctionAndReturnError(function.get(),
                                               parameter_string,
                                               browser()));
-  EXPECT_EQ(base::StringPrintf("No active stream for tab with id: %d.", tab_id),
+  EXPECT_EQ(base::StringPrintf("No active stream for tabId %d", tab_id),
             error);
 }
 
@@ -290,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
     dict->GetString("sinkId", &target_device);
 
     base::ListValue parameters;
-    parameters.AppendInteger(tab_id);
+    AppendTabIdToRequestInfo(&parameters, tab_id);
     parameters.AppendString(target_device);
     std::string parameter_string;
     JSONWriter::Write(&parameters, &parameter_string);

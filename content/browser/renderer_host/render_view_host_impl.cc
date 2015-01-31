@@ -1360,13 +1360,6 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   updating_web_preferences_ = false;
 }
 
-void RenderViewHostImpl::GetAudioOutputControllers(
-    const GetAudioOutputControllersCallback& callback) const {
-  scoped_refptr<AudioRendererHost> audio_host =
-      static_cast<RenderProcessHostImpl*>(GetProcess())->audio_renderer_host();
-  audio_host->GetOutputControllers(GetRoutingID(), callback);
-}
-
 void RenderViewHostImpl::ClearFocusedElement() {
   is_focused_element_editable_ = false;
   Send(new ViewMsg_ClearFocusedElement(GetRoutingID()));
