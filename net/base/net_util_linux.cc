@@ -4,12 +4,18 @@
 
 #include "net/base/net_util_linux.h"
 
-#include <net/if.h>
-#include <netinet/in.h>
+#if !defined(OS_ANDROID)
+#include <linux/ethtool.h>
+#endif  // !defined(OS_ANDROID)
+#include <linux/if.h>
+#include <linux/sockios.h>
+#include <linux/wireless.h>
 #include <set>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,6 +75,34 @@ inline const unsigned char* GetIPAddressData(const IPAddressNumber& ip) {
 #endif
 }
 
+// Gets the connection type for interface |ifname| by checking for wireless
+// or ethtool extensions.
+NetworkChangeNotifier::ConnectionType GetInterfaceConnectionType(
+    const std::string& ifname) {
+  base::ScopedFD s(socket(AF_INET, SOCK_STREAM, 0));
+  if (!s.is_valid())
+    return NetworkChangeNotifier::CONNECTION_UNKNOWN;
+
+  // Test wireless extensions for CONNECTION_WIFI
+  struct iwreq pwrq = {};
+  strncpy(pwrq.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
+  if (ioctl(s.get(), SIOCGIWNAME, &pwrq) != -1)
+    return NetworkChangeNotifier::CONNECTION_WIFI;
+
+#if !defined(OS_ANDROID)
+  // Test ethtool for CONNECTION_ETHERNET
+  struct ethtool_cmd ecmd = {};
+  ecmd.cmd = ETHTOOL_GSET;
+  struct ifreq ifr = {};
+  ifr.ifr_data = &ecmd;
+  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
+  if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1)
+    return NetworkChangeNotifier::CONNECTION_ETHERNET;
+#endif  // !defined(OS_ANDROID)
+
+  return NetworkChangeNotifier::CONNECTION_UNKNOWN;
+}
+
 bool GetNetworkListImpl(
     NetworkInterfaceList* networks,
     int policy,
@@ -112,13 +146,12 @@ bool GetNetworkListImpl(
         ifnames.find(it->second.ifa_index);
     std::string ifname;
     if (itname == ifnames.end()) {
-      char buffer[IF_NAMESIZE] = {0};
-      if (get_interface_name(it->second.ifa_index, buffer)) {
-        ifname = ifnames[it->second.ifa_index] = buffer;
-      } else {
-        // Ignore addresses whose interface name can't be retrieved.
+      char buffer[IFNAMSIZ] = {0};
+      ifname.assign(get_interface_name(it->second.ifa_index, buffer));
+      // Ignore addresses whose interface name can't be retrieved.
+      if (ifname.empty())
         continue;
-      }
+      ifnames[it->second.ifa_index] = ifname;
     } else {
       ifname = itname->second;
     }
@@ -128,9 +161,11 @@ bool GetNetworkListImpl(
     if (ShouldIgnoreInterface(ifname, policy))
       continue;
 
+    NetworkChangeNotifier::ConnectionType type =
+        GetInterfaceConnectionType(ifname);
+
     networks->push_back(
-        NetworkInterface(ifname, ifname, it->second.ifa_index,
-                         NetworkChangeNotifier::CONNECTION_UNKNOWN, it->first,
+        NetworkInterface(ifname, ifname, it->second.ifa_index, type, it->first,
                          it->second.ifa_prefixlen, ip_attributes));
   }
 
@@ -146,9 +181,9 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   internal::AddressTrackerLinux tracker;
   tracker.Init();
 
-  return internal::GetNetworkListImpl(networks, policy,
-                                      tracker.GetOnlineLinks(),
-                                      tracker.GetAddressMap(), &if_indextoname);
+  return internal::GetNetworkListImpl(
+      networks, policy, tracker.GetOnlineLinks(), tracker.GetAddressMap(),
+      &internal::AddressTrackerLinux::GetInterfaceName);
 }
 
 }  // namespace net

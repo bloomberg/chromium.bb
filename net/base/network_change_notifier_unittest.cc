@@ -4,6 +4,7 @@
 
 #include "net/base/network_change_notifier.h"
 
+#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -54,6 +55,35 @@ TEST(NetworkChangeNotifierTest, NetMaxBandwidthRange) {
       EXPECT_GE(1.0, max_bandwidth);
       EXPECT_LE(24.0, max_bandwidth);
       break;
+  }
+}
+
+TEST(NetworkChangeNotifierTest, ConnectionTypeFromInterfaceList) {
+  NetworkInterfaceList list;
+
+  // Test empty list.
+  EXPECT_EQ(NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list),
+            NetworkChangeNotifier::CONNECTION_NONE);
+
+  for (int i = NetworkChangeNotifier::CONNECTION_UNKNOWN;
+       i <= NetworkChangeNotifier::CONNECTION_LAST; i++) {
+    // Check individual types.
+    NetworkInterface interface;
+    interface.type = static_cast<NetworkChangeNotifier::ConnectionType>(i);
+    list.clear();
+    list.push_back(interface);
+    EXPECT_EQ(NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list), i);
+    // Check two types.
+    for (int j = NetworkChangeNotifier::CONNECTION_UNKNOWN;
+         j <= NetworkChangeNotifier::CONNECTION_LAST; j++) {
+      list.clear();
+      interface.type = static_cast<NetworkChangeNotifier::ConnectionType>(i);
+      list.push_back(interface);
+      interface.type = static_cast<NetworkChangeNotifier::ConnectionType>(j);
+      list.push_back(interface);
+      EXPECT_EQ(NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list),
+                i == j ? i : NetworkChangeNotifier::CONNECTION_UNKNOWN);
+    }
   }
 }
 

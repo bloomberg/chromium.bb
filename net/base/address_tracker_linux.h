@@ -65,6 +65,13 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Safe to call from any thread, but will block until Init() has completed.
   NetworkChangeNotifier::ConnectionType GetCurrentConnectionType();
 
+  // Returns the name for the interface with interface index |interface_index|.
+  // |buf| should be a pointer to an array of size IFNAMSIZ. The returned
+  // pointer will point to |buf|. This function acts like if_indextoname which
+  // cannot be used as net/if.h cannot be mixed with linux/if.h. We'll stick
+  // with exclusively talking to the kernel and not the C library.
+  static char* GetInterfaceName(int interface_index, char* buf);
+
  private:
   friend class AddressTrackerLinuxTest;
 
@@ -83,8 +90,9 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   };
 
   // A function that returns the name of an interface given the interface index
-  // in |interface_index|.
-  typedef const char* (*GetInterfaceNameFunction)(int interface_index);
+  // in |interface_index|. |ifname| should be a buffer of size IFNAMSIZ. The
+  // function should return a pointer to |ifname|.
+  typedef char* (*GetInterfaceNameFunction)(int interface_index, char* ifname);
 
   // Sets |*address_changed| to indicate whether |address_map_| changed and
   // sets |*link_changed| to indicate if |online_links_| changed and sets
@@ -114,8 +122,11 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Close |netlink_fd_|
   void CloseSocket();
 
-  // Does |msg| refer to a tunnel interface?
-  bool IsTunnelInterface(const struct ifinfomsg* msg) const;
+  // Does |interface_index| refer to a tunnel interface?
+  bool IsTunnelInterface(int interface_index) const;
+
+  // Updates current_connection_type_ based on the network list.
+  void UpdateCurrentConnectionType();
 
   // Gets the name of an interface given the interface index |interface_index|.
   // May return empty string if it fails but should not return NULL. This is
@@ -136,10 +147,10 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   mutable base::Lock online_links_lock_;
   base::hash_set<int> online_links_;
 
-  base::Lock is_offline_lock_;
-  bool is_offline_;
-  bool is_offline_initialized_;
-  base::ConditionVariable is_offline_initialized_cv_;
+  base::Lock connection_type_lock_;
+  bool connection_type_initialized_;
+  base::ConditionVariable connection_type_initialized_cv_;
+  NetworkChangeNotifier::ConnectionType current_connection_type_;
   bool tracking_;
 
   // Used to verify single-threaded access in non-tracking mode.

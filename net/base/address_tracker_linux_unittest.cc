@@ -22,10 +22,10 @@ namespace {
 
 const int kTestInterfaceTun = 123;
 
-const char* TestGetInterfaceName(int interface_index) {
+char* TestGetInterfaceName(int interface_index, char* buf) {
   if (interface_index == kTestInterfaceTun)
-    return "tun0";
-  return "eth0";
+    return strncpy(buf, "tun0", IFNAMSIZ);
+  return strncpy(buf, "eth0", IFNAMSIZ);
 }
 
 }  // namespace
@@ -520,8 +520,10 @@ TEST_F(AddressTrackerLinuxTest, TunnelInterface) {
 TEST_F(AddressTrackerLinuxTest, GetInterfaceName) {
   InitializeAddressTracker(true);
 
-  for (int i = 0; i < 10; i++)
-    EXPECT_NE((const char*)NULL, original_get_interface_name_(i));
+  for (int i = 0; i < 10; i++) {
+    char buf[IFNAMSIZ] = {0};
+    EXPECT_NE((const char*)NULL, original_get_interface_name_(i, buf));
+  }
 }
 
 TEST_F(AddressTrackerLinuxTest, NonTrackingMode) {

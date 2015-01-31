@@ -913,11 +913,11 @@ char* CopyInterfaceName(const char* ifname, int ifname_size, char* output) {
   return output;
 }
 
-char* GetInterfaceName(unsigned int interface_index, char* ifname) {
+char* GetInterfaceName(int interface_index, char* ifname) {
   return CopyInterfaceName(ifname_em1, arraysize(ifname_em1), ifname);
 }
 
-char* GetInterfaceNameVM(unsigned int interface_index, char* ifname) {
+char* GetInterfaceNameVM(int interface_index, char* ifname) {
   return CopyInterfaceName(ifname_vm, arraysize(ifname_vm), ifname);
 }
 

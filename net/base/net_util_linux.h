@@ -6,7 +6,7 @@
 #define NET_BASE_NET_UTIL_LINUX_H_
 
 // This file is only used to expose some of the internals
-// of net_util_linux.cc to tests.
+// of net_util_linux.cc to address_tracker_linux and tests.
 
 #include "base/containers/hash_tables.h"
 #include "net/base/address_tracker_linux.h"
@@ -15,8 +15,7 @@
 namespace net {
 namespace internal {
 
-typedef char* (*GetInterfaceNameFunction)(unsigned int interface_index,
-                                          char* ifname);
+typedef char* (*GetInterfaceNameFunction)(int interface_index, char* ifname);
 
 NET_EXPORT bool GetNetworkListImpl(
     NetworkInterfaceList* networks,

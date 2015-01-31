@@ -655,6 +655,27 @@ bool NetworkChangeNotifier::IsConnectionCellular(ConnectionType type) {
 }
 
 // static
+NetworkChangeNotifier::ConnectionType
+NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
+    const NetworkInterfaceList& interfaces) {
+  bool first = true;
+  ConnectionType result = CONNECTION_NONE;
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+#if defined(OS_WIN)
+    if (interfaces[i].friendly_name == "Teredo Tunneling Pseudo-Interface")
+      continue;
+#endif
+    if (first) {
+      first = false;
+      result = interfaces[i].type;
+    } else if (result != interfaces[i].type) {
+      return CONNECTION_UNKNOWN;
+    }
+  }
+  return result;
+}
+
+// static
 NetworkChangeNotifier* NetworkChangeNotifier::CreateMock() {
   return new MockNetworkChangeNotifier();
 }

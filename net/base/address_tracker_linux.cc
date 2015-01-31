@@ -8,9 +8,11 @@
 #include <linux/if.h>
 #include <sys/ioctl.h>
 
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/net_util_linux.h"
 
 namespace net {
 namespace internal {
@@ -76,26 +78,22 @@ bool GetAddress(const struct nlmsghdr* header,
   return true;
 }
 
-// Returns the name for the interface with interface index |interface_index|.
-// The return value points to a function-scoped static so it may be changed by
-// subsequent calls. This function could be replaced with if_indextoname() but
-// net/if.h cannot be mixed with linux/if.h so we'll stick with exclusively
-// talking to the kernel and not the C library.
-const char* GetInterfaceName(int interface_index) {
-  int ioctl_socket = socket(AF_INET, SOCK_DGRAM, 0);
-  if (ioctl_socket < 0)
-    return "";
-  static struct ifreq ifr;
-  memset(&ifr, 0, sizeof(ifr));
-  ifr.ifr_ifindex = interface_index;
-  int rv = ioctl(ioctl_socket, SIOCGIFNAME, &ifr);
-  close(ioctl_socket);
-  if (rv != 0)
-    return "";
-  return ifr.ifr_name;
-}
-
 }  // namespace
+
+// static
+char* AddressTrackerLinux::GetInterfaceName(int interface_index, char* buf) {
+  memset(buf, 0, IFNAMSIZ);
+  base::ScopedFD ioctl_socket(socket(AF_INET, SOCK_DGRAM, 0));
+  if (!ioctl_socket.is_valid())
+    return buf;
+
+  struct ifreq ifr = {};
+  ifr.ifr_ifindex = interface_index;
+
+  if (ioctl(ioctl_socket.get(), SIOCGIFNAME, &ifr) == 0)
+    strncpy(buf, ifr.ifr_name, IFNAMSIZ - 1);
+  return buf;
+}
 
 AddressTrackerLinux::AddressTrackerLinux()
     : get_interface_name_(GetInterfaceName),
@@ -103,9 +101,9 @@ AddressTrackerLinux::AddressTrackerLinux()
       link_callback_(base::Bind(&base::DoNothing)),
       tunnel_callback_(base::Bind(&base::DoNothing)),
       netlink_fd_(-1),
-      is_offline_(true),
-      is_offline_initialized_(false),
-      is_offline_initialized_cv_(&is_offline_lock_),
+      connection_type_initialized_(false),
+      connection_type_initialized_cv_(&connection_type_lock_),
+      current_connection_type_(NetworkChangeNotifier::CONNECTION_NONE),
       tracking_(false) {
 }
 
@@ -117,9 +115,9 @@ AddressTrackerLinux::AddressTrackerLinux(const base::Closure& address_callback,
       link_callback_(link_callback),
       tunnel_callback_(tunnel_callback),
       netlink_fd_(-1),
-      is_offline_(true),
-      is_offline_initialized_(false),
-      is_offline_initialized_cv_(&is_offline_lock_),
+      connection_type_initialized_(false),
+      connection_type_initialized_cv_(&connection_type_lock_),
+      current_connection_type_(NetworkChangeNotifier::CONNECTION_NONE),
       tracking_(true) {
   DCHECK(!address_callback.is_null());
   DCHECK(!link_callback.is_null());
@@ -203,9 +201,9 @@ void AddressTrackerLinux::Init() {
   // Consume pending message to populate links_online_, but don't notify.
   ReadMessages(&address_changed, &link_changed, &tunnel_changed);
   {
-    AddressTrackerAutoLock lock(*this, is_offline_lock_);
-    is_offline_initialized_ = true;
-    is_offline_initialized_cv_.Signal();
+    AddressTrackerAutoLock lock(*this, connection_type_lock_);
+    connection_type_initialized_ = true;
+    connection_type_initialized_cv_.Signal();
   }
 
   if (tracking_) {
@@ -221,10 +219,10 @@ void AddressTrackerLinux::Init() {
 
 void AddressTrackerLinux::AbortAndForceOnline() {
   CloseSocket();
-  AddressTrackerAutoLock lock(*this, is_offline_lock_);
-  is_offline_ = false;
-  is_offline_initialized_ = true;
-  is_offline_initialized_cv_.Signal();
+  AddressTrackerAutoLock lock(*this, connection_type_lock_);
+  current_connection_type_ = NetworkChangeNotifier::CONNECTION_UNKNOWN;
+  connection_type_initialized_ = true;
+  connection_type_initialized_cv_.Signal();
 }
 
 AddressTrackerLinux::AddressMap AddressTrackerLinux::GetAddressMap() const {
@@ -241,15 +239,12 @@ NetworkChangeNotifier::ConnectionType
 AddressTrackerLinux::GetCurrentConnectionType() {
   // http://crbug.com/125097
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  AddressTrackerAutoLock lock(*this, is_offline_lock_);
-  // Make sure the initial offline state is set before returning.
-  while (!is_offline_initialized_) {
-    is_offline_initialized_cv_.Wait();
+  AddressTrackerAutoLock lock(*this, connection_type_lock_);
+  // Make sure the initial connection type is set before returning.
+  while (!connection_type_initialized_) {
+    connection_type_initialized_cv_.Wait();
   }
-  // TODO(droger): Return something more detailed than CONNECTION_UNKNOWN.
-  // http://crbug.com/160537
-  return is_offline_ ? NetworkChangeNotifier::CONNECTION_NONE :
-                       NetworkChangeNotifier::CONNECTION_UNKNOWN;
+  return current_connection_type_;
 }
 
 void AddressTrackerLinux::ReadMessages(bool* address_changed,
@@ -279,15 +274,8 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     }
     HandleMessage(buffer, rv, address_changed, link_changed, tunnel_changed);
   }
-  if (*link_changed) {
-    bool is_offline;
-    {
-      AddressTrackerAutoLock lock(*this, online_links_lock_);
-      is_offline = online_links_.empty();
-    }
-    AddressTrackerAutoLock lock(*this, is_offline_lock_);
-    is_offline_ = is_offline;
-  }
+  if (*link_changed || *address_changed)
+    UpdateCurrentConnectionType();
 }
 
 void AddressTrackerLinux::HandleMessage(char* buffer,
@@ -351,14 +339,14 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
           AddressTrackerAutoLock lock(*this, online_links_lock_);
           if (online_links_.insert(msg->ifi_index).second) {
             *link_changed = true;
-            if (IsTunnelInterface(msg))
+            if (IsTunnelInterface(msg->ifi_index))
               *tunnel_changed = true;
           }
         } else {
           AddressTrackerAutoLock lock(*this, online_links_lock_);
           if (online_links_.erase(msg->ifi_index)) {
             *link_changed = true;
-            if (IsTunnelInterface(msg))
+            if (IsTunnelInterface(msg->ifi_index))
               *tunnel_changed = true;
           }
         }
@@ -369,7 +357,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
         AddressTrackerAutoLock lock(*this, online_links_lock_);
         if (online_links_.erase(msg->ifi_index)) {
           *link_changed = true;
-          if (IsTunnelInterface(msg))
+          if (IsTunnelInterface(msg->ifi_index))
             *tunnel_changed = true;
         }
       } break;
@@ -401,9 +389,41 @@ void AddressTrackerLinux::CloseSocket() {
   netlink_fd_ = -1;
 }
 
-bool AddressTrackerLinux::IsTunnelInterface(const struct ifinfomsg* msg) const {
+bool AddressTrackerLinux::IsTunnelInterface(int interface_index) const {
   // Linux kernel drivers/net/tun.c uses "tun" name prefix.
-  return strncmp(get_interface_name_(msg->ifi_index), "tun", 3) == 0;
+  char buf[IFNAMSIZ] = {0};
+  return strncmp(get_interface_name_(interface_index, buf), "tun", 3) == 0;
+}
+
+void AddressTrackerLinux::UpdateCurrentConnectionType() {
+  AddressTrackerLinux::AddressMap address_map = GetAddressMap();
+  base::hash_set<int> online_links = GetOnlineLinks();
+
+  // Strip out tunnel interfaces from online_links
+  for (base::hash_set<int>::const_iterator it = online_links.begin();
+       it != online_links.end();) {
+    if (IsTunnelInterface(*it)) {
+      base::hash_set<int>::const_iterator tunnel_it = it;
+      ++it;
+      online_links.erase(*tunnel_it);
+    } else {
+      ++it;
+    }
+  }
+
+  NetworkInterfaceList networks;
+  NetworkChangeNotifier::ConnectionType type =
+      NetworkChangeNotifier::CONNECTION_NONE;
+  if (GetNetworkListImpl(&networks, 0, online_links, address_map,
+                         get_interface_name_)) {
+    type = NetworkChangeNotifier::ConnectionTypeFromInterfaceList(networks);
+  } else {
+    type = online_links.empty() ? NetworkChangeNotifier::CONNECTION_NONE
+                                : NetworkChangeNotifier::CONNECTION_UNKNOWN;
+  }
+
+  AddressTrackerAutoLock lock(*this, connection_type_lock_);
+  current_connection_type_ = type;
 }
 
 AddressTrackerLinux::AddressTrackerAutoLock::AddressTrackerAutoLock(
