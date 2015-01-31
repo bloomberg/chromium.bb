@@ -593,6 +593,17 @@ void GuestViewBase::LoadingStateChanged(content::WebContents* source,
       embedder_web_contents(), to_different_document);
 }
 
+content::ColorChooser* GuestViewBase::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<content::ColorSuggestion>& suggestions) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return nullptr;
+
+  return embedder_web_contents()->GetDelegate()->OpenColorChooser(
+      web_contents, color, suggestions);
+}
+
 void GuestViewBase::RunFileChooser(WebContents* web_contents,
                                    const content::FileChooserParams& params) {
   if (!attached() || !embedder_web_contents()->GetDelegate())

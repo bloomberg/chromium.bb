@@ -145,10 +145,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                    const base::Callback<void(bool)>& callback) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
-  content::ColorChooser* OpenColorChooser(
-      content::WebContents* web_contents,
-      SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,

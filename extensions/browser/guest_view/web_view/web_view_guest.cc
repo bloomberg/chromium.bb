@@ -861,16 +861,6 @@ content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(
   return &javascript_dialog_helper_;
 }
 
-content::ColorChooser* WebViewGuest::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor color,
-    const std::vector<content::ColorSuggestion>& suggestions) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return nullptr;
-  return embedder_web_contents()->GetDelegate()->OpenColorChooser(
-      web_contents, color, suggestions);
-}
-
 void WebViewGuest::NavigateGuest(const std::string& src,
                                  bool force_navigation) {
   if (src.empty())

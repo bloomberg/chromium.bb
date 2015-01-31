@@ -310,6 +310,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const content::NativeWebKeyboardEvent& event) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) final;
+  content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions) override;
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
   bool ShouldFocusPageAfterCrash() final;
