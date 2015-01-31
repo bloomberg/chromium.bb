@@ -71,6 +71,63 @@ private:
     OwnPtr<BlobData> m_blobData;
 };
 
+class StreamTeePump : public BodyStreamBuffer::Observer {
+public:
+    StreamTeePump(BodyStreamBuffer* inBuffer, BodyStreamBuffer* outBuffer1, BodyStreamBuffer* outBuffer2)
+        : m_inBuffer(inBuffer)
+        , m_outBuffer1(outBuffer1)
+        , m_outBuffer2(outBuffer2)
+    {
+    }
+    void onWrite() override
+    {
+        while (RefPtr<DOMArrayBuffer> buf = m_inBuffer->read()) {
+            m_outBuffer1->write(buf);
+            m_outBuffer2->write(buf);
+        }
+    }
+    void onClose() override
+    {
+        m_outBuffer1->close();
+        m_outBuffer2->close();
+        cleanup();
+    }
+    void onError() override
+    {
+        m_outBuffer1->error(m_inBuffer->exception());
+        m_outBuffer2->error(m_inBuffer->exception());
+        cleanup();
+    }
+    void trace(Visitor* visitor) override
+    {
+        BodyStreamBuffer::Observer::trace(visitor);
+        visitor->trace(m_inBuffer);
+        visitor->trace(m_outBuffer1);
+        visitor->trace(m_outBuffer2);
+    }
+    void start()
+    {
+        m_inBuffer->registerObserver(this);
+        onWrite();
+        if (m_inBuffer->hasError())
+            return onError();
+        if (m_inBuffer->isClosed())
+            return onClose();
+    }
+
+private:
+    void cleanup()
+    {
+        m_inBuffer->unregisterObserver();
+        m_inBuffer.clear();
+        m_outBuffer1.clear();
+        m_outBuffer2.clear();
+    }
+    Member<BodyStreamBuffer> m_inBuffer;
+    Member<BodyStreamBuffer> m_outBuffer1;
+    Member<BodyStreamBuffer> m_outBuffer2;
+};
+
 } // namespace
 
 PassRefPtr<DOMArrayBuffer> BodyStreamBuffer::read()
@@ -115,6 +172,15 @@ bool BodyStreamBuffer::readAllAndCreateBlobHandle(const String& contentType, Blo
         return false;
     BlobCreator* blobCreator = new BlobCreator(this, contentType, client);
     blobCreator->start();
+    return true;
+}
+
+bool BodyStreamBuffer::startTee(BodyStreamBuffer* out1, BodyStreamBuffer* out2)
+{
+    if (m_observer)
+        return false;
+    StreamTeePump* teePump = new StreamTeePump(this, out1, out2);
+    teePump->start();
     return true;
 }
 

@@ -230,16 +230,24 @@ Headers* Response::headers() const
     return m_headers;
 }
 
-Response* Response::clone(ExceptionState& exceptionState) const
+Response* Response::clone(ExceptionState& exceptionState)
 {
     if (bodyUsed()) {
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
+    // FIXME: We throw an error while cloning the Response which body was
+    // partially read. But in Request case, we don't. When the behavior of the
+    // partially read streams will be well defined in the spec, we have to
+    // implement the behavior correctly.
     if (streamAccessed()) {
-        // FIXME: Support clone() of the stream accessed Response.
-        exceptionState.throwTypeError("clone() of the Response which .body is accessed is not supported.");
-        return nullptr;
+        bool dataLost = false;
+        BodyStreamBuffer* drainingStream = createDrainingStream(&dataLost);
+        if (dataLost) {
+            exceptionState.throwTypeError("Cloning the Response which body was partially read is not supported.");
+            return nullptr;
+        }
+        m_response->replaceBodyStreamBuffer(drainingStream);
     }
     return Response::createClone(*this);
 }

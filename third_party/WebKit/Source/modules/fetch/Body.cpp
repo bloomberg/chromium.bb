@@ -58,7 +58,7 @@ public:
         Errored,
         BodyUsed,
     };
-    ReadableStreamSource(Body* body) : m_body(body), m_state(Initial)
+    ReadableStreamSource(Body* body) : m_body(body), m_state(Initial), m_queueCount(0)
     {
         if (m_body->buffer()) {
             m_bodyStreamBuffer = m_body->buffer();
@@ -99,12 +99,13 @@ public:
         }
     }
     // Creates a new BodyStreamBuffer to drain the data.
-    BodyStreamBuffer* createDrainingStream()
+    BodyStreamBuffer* createDrainingStream(bool* dataLost)
     {
         ASSERT(!m_drainingStreamBuffer);
         ASSERT(m_state != Initial);
         ASSERT(m_state != BodyUsed);
         ASSERT(m_stream);
+        ASSERT(dataLost);
         m_drainingStreamBuffer = new BodyStreamBuffer();
         if (m_state == Errored) {
             m_drainingStreamBuffer->error(exception());
@@ -114,6 +115,7 @@ public:
         Deque<std::pair<RefPtr<DOMArrayBuffer>, size_t>> tmp_queue;
         if (m_stream->state() == ReadableStream::Readable)
             m_stream->read(tmp_queue);
+        *dataLost = m_queueCount != tmp_queue.size();
         while (!tmp_queue.isEmpty()) {
             std::pair<RefPtr<DOMArrayBuffer>, size_t> data = tmp_queue.takeFirst();
             m_drainingStreamBuffer->write(data.first);
@@ -180,10 +182,12 @@ private:
 
     void write(PassRefPtr<DOMArrayBuffer> buf)
     {
-        if (m_drainingStreamBuffer)
+        if (m_drainingStreamBuffer) {
             m_drainingStreamBuffer->write(buf);
-        else
+        } else {
+            ++m_queueCount;
             m_stream->enqueue(buf);
+        }
     }
     void close()
     {
@@ -223,6 +227,8 @@ private:
     Member<BodyStreamBuffer> m_drainingStreamBuffer;
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
     State m_state;
+    // The count of the chunks which were enqueued to the ReadableStream.
+    size_t m_queueCount;
 };
 
 ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
@@ -249,7 +255,8 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
 
     if (m_stream) {
         ASSERT(m_streamSource);
-        m_streamSource->createDrainingStream()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
+        bool dataLost;
+        m_streamSource->createDrainingStream(&dataLost)->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
     } else if (buffer()) {
         buffer()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
     } else {
@@ -350,6 +357,15 @@ void Body::setBodyUsed()
 bool Body::streamAccessed() const
 {
     return m_stream;
+}
+
+BodyStreamBuffer* Body::createDrainingStream(bool* dataLost)
+{
+    ASSERT(m_stream);
+    BodyStreamBuffer* newBuffer = m_streamSource->createDrainingStream(dataLost);
+    m_stream = nullptr;
+    m_streamSource = nullptr;
+    return newBuffer;
 }
 
 void Body::stop()

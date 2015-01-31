@@ -251,13 +251,6 @@ Request* Request::create(ExecutionContext* context, const WebServiceWorkerReques
     return r;
 }
 
-Request* Request::create(const Request& copyFrom)
-{
-    Request* r = new Request(copyFrom);
-    r->suspendIfNeeded();
-    return r;
-}
-
 Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
     : Body(context)
     , m_request(FetchRequestData::create(webRequest))
@@ -266,13 +259,12 @@ Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRe
     m_headers->setGuard(Headers::RequestGuard);
 }
 
-Request::Request(const Request& copy_from)
-    : Body(copy_from)
-    , m_request(copy_from.m_request->createCopy())
+Request::Request(const Request& cloneFrom)
+    : Body(cloneFrom)
+    , m_request(cloneFrom.m_request->createCopy())
     , m_headers(Headers::create(m_request->headerList()))
 {
 }
-
 
 String Request::method() const
 {
@@ -342,12 +334,13 @@ Request* Request::clone(ExceptionState& exceptionState) const
         exceptionState.throwTypeError("Request body is already used");
         return nullptr;
     }
-    if (streamAccessed()) {
-        // FIXME: Support clone() of the stream accessed Request.
-        exceptionState.throwTypeError("clone() of the Request which .body is accessed is not supported.");
-        return nullptr;
-    }
-    return Request::create(*this);
+    // FIXME: We throw an error while cloning the Response which body was
+    // partially read. But in Request case, we don't. When the behavior of the
+    // partially read streams will be well defined in the spec, we have to
+    // implement the behavior correctly.
+    Request* r = new Request(*this);
+    r->suspendIfNeeded();
+    return r;
 }
 
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
