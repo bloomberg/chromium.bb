@@ -11,8 +11,7 @@ non_exit_nexe = env.ComponentProgram('non_exit', 'non_exit.c',
 node = env.SelUniversalTest(
     'hard_shutdown_test.out',
     non_exit_nexe,
-    sel_universal_flags=['--uses_reverse_service',
-                         '--no_app_channel',
+    sel_universal_flags=['--no_app_channel',
                          '--command_file',
                          env.File('hard_shutdown_test.stdin')],
     )
@@ -23,8 +22,7 @@ env.AddNodeToTestSuite(node,
 node = env.SelUniversalTest(
     'force_shutdown_test.out',
     non_exit_nexe,
-    sel_universal_flags=['--uses_reverse_service',
-                         '--no_app_channel',
+    sel_universal_flags=['--no_app_channel',
                          '--command_file',
                          env.File('hard_shutdown_test.stdin')],
     )

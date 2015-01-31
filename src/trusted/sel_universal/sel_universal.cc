@@ -26,9 +26,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/pnacl_emu_handler.h"
-#include "native_client/src/trusted/sel_universal/reverse_emulate.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
@@ -64,7 +62,6 @@ static const char* kUsage =
     "  --command_file <file>\n"
     "  --var <tag> <value>\n"
     "  --url_alias <url> <filename>\n"
-    "  --uses_reverse_service\n"
     "  --no_app_channel\n"
     "\n"
     "The following sel_ldr arguments might be useful:\n"
@@ -84,7 +81,6 @@ static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silence_nexe = false;
 static vector<string> command_prefix;
-static bool uses_reverse_service = false;
 static bool app_channel = true;
 
 // When given argc and argv this function (a) extracts the nexe argument,
@@ -146,8 +142,6 @@ static nacl::string ProcessArguments(int argc,
       const string val = string(argv[i + 2]);
       i += 2;
       initial_vars[tag] = val;
-    } else if (flag == "--uses_reverse_service") {
-      uses_reverse_service = true;
     } else if (flag == "--no_app_channel") {
       app_channel = false;
     } else if (flag == "--") {
@@ -255,11 +249,6 @@ int raii_main(int argc, char* argv[]) {
 
   delete host_file;
 
-  if (uses_reverse_service) {
-    ReverseEmulateInit(&command_channel, launcher.get(), &launcher_factory,
-        command_prefix, sel_ldr_argv);
-  }
-
   if (!launcher->StartModule(&command_channel)) {
     NaClLog(LOG_ERROR,
             "sel_universal: start module failed\n");
@@ -307,7 +296,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("pnacl_emu_add_varname_mapping",
                   HandlerPnaclEmuAddVarnameMapping);
   loop.AddHandler("stream_file", HandlerPnaclFileStream);
-  loop.AddHandler("wait_for_exit", HandlerWaitForExit);
 
   loop.AddHandler("hard_shutdown", HandlerHardShutdown);
   loop.AddHandler("force_shutdown", HandlerForceShutdown);
@@ -326,10 +314,6 @@ int raii_main(int argc, char* argv[]) {
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
-
-  if (uses_reverse_service) {
-    ReverseEmulateFini();
-  }
 
   return success ? 0 : -1;
 }
