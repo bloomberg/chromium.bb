@@ -160,8 +160,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
 
-  ASSERT_TRUE(media_codec->Start(
-      kCodecMP3, 44100, 2, NULL, 0, 0, 0, false, NULL));
+  ASSERT_TRUE(media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false, NULL));
 
   int input_buf_index = -1;
   MediaCodecStatus status =
@@ -230,13 +229,12 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   uint8 invalid_first_byte[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
   EXPECT_FALSE(media_codec->Start(
       kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte),
-      0, 0, false, NULL));
+      false, NULL));
 
   // Size of the header does not match with the data we passed in.
   uint8 invalid_size[] = { 0x02, 0x01, 0xff, 0x01, 0xff };
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size),
-      0, 0, false, NULL));
+      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), false, NULL));
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
@@ -246,31 +244,8 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
     very_large_header[i] = 0xff;
   very_large_header[large_size - 1] = 0xfe;
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, very_large_header, 0x80000000,
-      0, 0, false, NULL));
+      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false, NULL));
   delete[] very_large_header;
-}
-
-TEST(MediaCodecBridgeTest, InvalidOpusHeader) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
-
-  scoped_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(AudioCodecBridge::Create(kCodecOpus));
-  uint8 dummy_extra_data[] = { 0, 0 };
-
-  // Extra Data is NULL.
-  EXPECT_FALSE(media_codec->Start(
-      kCodecOpus, 48000, 2, NULL, 0, -1, 0, false, NULL));
-
-  // Codec Delay is < 0.
-  EXPECT_FALSE(media_codec->Start(
-      kCodecOpus, 48000, 2, dummy_extra_data, sizeof(dummy_extra_data),
-      -1, 0, false, NULL));
-
-  // Seek Preroll is < 0.
-  EXPECT_FALSE(media_codec->Start(
-      kCodecOpus, 48000, 2, dummy_extra_data, sizeof(dummy_extra_data),
-      0, -1, false, NULL));
 }
 
 TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {

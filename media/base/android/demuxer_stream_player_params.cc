@@ -11,8 +11,6 @@ DemuxerConfigs::DemuxerConfigs()
       audio_channels(0),
       audio_sampling_rate(0),
       is_audio_encrypted(false),
-      audio_codec_delay_ns(-1),
-      audio_seek_preroll_ns(-1),
       video_codec(kUnknownVideoCodec),
       is_video_encrypted(false) {}
 

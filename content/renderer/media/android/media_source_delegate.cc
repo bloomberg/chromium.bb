@@ -737,13 +737,6 @@ bool MediaSourceDelegate::GetDemuxerConfigFromStream(
     configs->is_audio_encrypted = config.is_encrypted();
     configs->audio_extra_data = std::vector<uint8>(
         config.extra_data(), config.extra_data() + config.extra_data_size());
-    configs->audio_codec_delay_ns = static_cast<int64_t>(
-        config.codec_delay()  *
-        (static_cast<double>(base::Time::kNanosecondsPerSecond) /
-         config.samples_per_second()));
-    configs->audio_seek_preroll_ns =
-        config.seek_preroll().InMicroseconds() *
-        base::Time::kNanosecondsPerMicrosecond;
     return true;
   }
   if (!is_audio && video_stream_) {

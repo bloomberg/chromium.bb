@@ -284,11 +284,6 @@ static bool VerifyCodec(
           base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
         return false;
       }
-      // Opus is only supported on Lollipop+ (API Level 21).
-      if (codec_info->tag == CodecInfo::HISTOGRAM_OPUS &&
-          base::android::BuildInfo::GetInstance()->sdk_int() < 21) {
-        return false;
-      }
 #endif
       if (video_codecs)
         video_codecs->push_back(codec_info->tag);

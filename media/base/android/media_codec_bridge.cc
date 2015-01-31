@@ -41,8 +41,6 @@ static const std::string AudioCodecToAndroidMimeType(const AudioCodec& codec) {
       return "audio/mpeg";
     case kCodecVorbis:
       return "audio/vorbis";
-    case kCodecOpus:
-      return "audio/opus";
     case kCodecAAC:
       return "audio/mp4a-latm";
     default:
@@ -75,8 +73,6 @@ static const std::string CodecTypeToAndroidMimeType(const std::string& codec) {
     return "video/x-vnd.on2.vp9";
   if (codec == "vorbis")
     return "audio/vorbis";
-  if (codec == "opus")
-    return "audio/opus";
   return std::string();
 }
 
@@ -96,8 +92,6 @@ static const std::string AndroidMimeTypeToCodecType(const std::string& mime) {
     return "mp3";
   if (mime == "audio/vorbis")
     return "vorbis";
-  if (mime == "audio/opus")
-    return "opus";
   return std::string();
 }
 
@@ -531,8 +525,6 @@ bool AudioCodecBridge::Start(const AudioCodec& codec,
                              int channel_count,
                              const uint8* extra_data,
                              size_t extra_data_size,
-                             int64 codec_delay_ns,
-                             int64 seek_preroll_ns,
                              bool play_audio,
                              jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
@@ -550,10 +542,8 @@ bool AudioCodecBridge::Start(const AudioCodec& codec,
       env, j_mime.obj(), sample_rate, channel_count));
   DCHECK(!j_format.is_null());
 
-  if (!ConfigureMediaFormat(j_format.obj(), codec, extra_data, extra_data_size,
-                            codec_delay_ns, seek_preroll_ns)) {
+  if (!ConfigureMediaFormat(j_format.obj(), codec, extra_data, extra_data_size))
     return false;
-  }
 
   if (!Java_MediaCodecBridge_configureAudio(
            env, media_codec(), j_format.obj(), media_crypto, 0, play_audio)) {
@@ -566,10 +556,8 @@ bool AudioCodecBridge::Start(const AudioCodec& codec,
 bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
                                             const AudioCodec& codec,
                                             const uint8* extra_data,
-                                            size_t extra_data_size,
-                                            int64 codec_delay_ns,
-                                            int64 seek_preroll_ns) {
-  if (extra_data_size == 0 && codec != kCodecOpus)
+                                            size_t extra_data_size) {
+  if (extra_data_size == 0)
     return true;
 
   JNIEnv* env = AttachCurrentThread();
@@ -658,33 +646,6 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
       // TODO(qinmin): pass an extra variable to this function to determine
       // whether we need to call this.
       Java_MediaCodecBridge_setFrameHasADTSHeader(env, j_format);
-      break;
-    }
-    case kCodecOpus: {
-      if (!extra_data || extra_data_size == 0 ||
-          codec_delay_ns < 0 || seek_preroll_ns < 0) {
-        LOG(ERROR) << "Invalid Opus Header";
-        return false;
-      }
-
-      // csd0 - Opus Header
-      ScopedJavaLocalRef<jbyteArray> csd0 =
-          base::android::ToJavaByteArray(env, extra_data, extra_data_size);
-      Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 0, csd0.obj());
-
-      // csd1 - Codec Delay
-      ScopedJavaLocalRef<jbyteArray> csd1 =
-          base::android::ToJavaByteArray(
-              env, reinterpret_cast<const uint8*>(&codec_delay_ns),
-              sizeof(int64_t));
-      Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 1, csd1.obj());
-
-      // csd2 - Seek Preroll
-      ScopedJavaLocalRef<jbyteArray> csd2 =
-          base::android::ToJavaByteArray(
-              env, reinterpret_cast<const uint8*>(&seek_preroll_ns),
-              sizeof(int64_t));
-      Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 2, csd2.obj());
       break;
     }
     default:
