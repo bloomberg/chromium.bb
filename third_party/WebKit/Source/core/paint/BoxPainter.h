@@ -65,6 +65,7 @@ private:
     static void clipBorderSideForComplexInnerPath(GraphicsContext*, const FloatRoundedRect&, const FloatRoundedRect&, BoxSide, const BorderEdge[]);
 
     LayoutRect boundsForDrawingRecorder(const LayoutPoint& paintOffset);
+    LayoutRect scrolledBackgroundRect();
 
     // FIXME: this should be const.
     RenderBox& m_renderBox;

@@ -53,19 +53,26 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
 
 LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 {
-    LayoutRect bounds;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (m_renderBox.isDocumentElement()) {
-            // The document element is specified to paint its background infinitely.
-            bounds = m_renderBox.view()->backgroundRect(&m_renderBox);
-        } else {
-            // Use the visual overflow rect here, because it will include overflow introduced by the theme.
-            bounds = m_renderBox.visualOverflowRect();
-            bounds.moveBy(paintOffset);
-            bounds = pixelSnappedIntRect(bounds);
-        }
-    }
-    return bounds;
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return LayoutRect();
+
+    // The document element is specified to paint its background infinitely.
+    if (m_renderBox.isDocumentElement())
+        return scrolledBackgroundRect();
+
+    // Use the visual overflow rect here, because it will include overflow introduced by the theme.
+    LayoutRect bounds = m_renderBox.visualOverflowRect();
+    bounds.moveBy(paintOffset);
+    return pixelSnappedIntRect(bounds);
+}
+
+LayoutRect BoxPainter::scrolledBackgroundRect()
+{
+    RenderView* renderView = m_renderBox.view();
+    LayoutRect result = renderView->backgroundRect(&m_renderBox);
+    if (renderView->hasOverflowClip())
+        result.move(-renderView->scrolledContentOffset());
+    return result;
 }
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
@@ -145,7 +152,7 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
     Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
 
-    paintFillLayers(paintInfo, bgColor, bgLayer, m_renderBox.view()->backgroundRect(&m_renderBox), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundRenderer);
+    paintFillLayers(paintInfo, bgColor, bgLayer, scrolledBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundRenderer);
 }
 
 void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
