@@ -245,7 +245,7 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
     RenderLayer* layer = nullptr;
     bound.edgeTopInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
     bound.edgeBottomInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
-    bound.layer = layer->graphicsLayerBacking();
+    bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 
 bool renderObjectContainsPosition(RenderObject* target, const Position& position)

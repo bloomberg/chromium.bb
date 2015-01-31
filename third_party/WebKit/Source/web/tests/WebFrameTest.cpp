@@ -4460,6 +4460,8 @@ TEST_F(CompositedSelectionBoundsTest, Transformed) { runTest("composited_selecti
 TEST_F(CompositedSelectionBoundsTest, SplitLayer) { runTest("composited_selection_bounds_split_layer.html"); }
 TEST_F(CompositedSelectionBoundsTest, EmptyLayer) { runTest("composited_selection_bounds_empty_layer.html"); }
 TEST_F(CompositedSelectionBoundsTest, Iframe) { runTestWithMultipleFiles("composited_selection_bounds_iframe.html", "composited_selection_bounds_basic.html", nullptr); }
+TEST_F(CompositedSelectionBoundsTest, DetachedFrame) { runTest("composited_selection_bounds_detached_frame.html"); }
+
 
 TEST_F(WebFrameTest, CompositedSelectionBoundsCleared)
 {

@@ -2041,11 +2041,16 @@ FloatPoint RenderObject::localToInvalidationBackingPoint(const LayoutPoint& loca
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     ASSERT(paintInvalidationContainer);
     ASSERT(paintInvalidationContainer->layer());
-    ASSERT(paintInvalidationContainer->layer()->compositingState() != NotComposited);
 
     if (backingLayer)
         *backingLayer = paintInvalidationContainer->layer();
     FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), paintInvalidationContainer, TraverseDocumentBoundaries);
+
+    // A renderer can have no invalidation backing if it is from a detached frame,
+    // or when forced compositing is disabled.
+    if (paintInvalidationContainer->layer()->compositingState() == NotComposited)
+        return containerPoint;
+
     RenderLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
