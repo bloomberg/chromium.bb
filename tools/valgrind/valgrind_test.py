@@ -712,6 +712,9 @@ class DrMemory(BaseTool):
     # disable leak scan for now
     proc += ["-no_count_leaks", "-no_leak_scan"]
 
+    # disable warnings about unaddressable prefetches
+    proc += ["-no_check_prefetch"]
+
     # crbug.com/413215, no heap mismatch check for Windows release build binary
     if common.IsWindows() and "Release" in self._options.build_dir:
         proc += ["-no_check_delete_mismatch"]
