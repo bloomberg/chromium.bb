@@ -32,6 +32,8 @@ namespace extensions {
 
 ApiUnitTest::ApiUnitTest()
     : notification_service_(content::NotificationService::Create()) {
+  extensions_browser_client()->set_extension_system_factory(
+      &extension_system_factory_);
 }
 
 ApiUnitTest::~ApiUnitTest() {
@@ -39,8 +41,6 @@ ApiUnitTest::~ApiUnitTest() {
 
 void ApiUnitTest::SetUp() {
   ExtensionsTest::SetUp();
-  extensions_browser_client()->set_extension_system_factory(
-      &extension_system_factory_);
 
   thread_bundle_.reset(new content::TestBrowserThreadBundle(
       content::TestBrowserThreadBundle::DEFAULT));
@@ -53,10 +53,24 @@ void ApiUnitTest::SetUp() {
                    .Build();
 }
 
+void ApiUnitTest::CreateBackgroundPage() {
+  if (!contents_) {
+    GURL url = BackgroundInfo::GetBackgroundURL(extension());
+    if (url.is_empty())
+      url = GURL(url::kAboutBlankURL);
+    content::SiteInstance* site_instance =
+        content::SiteInstance::CreateForURL(browser_context(), url);
+    contents_.reset(content::WebContents::Create(
+        content::WebContents::CreateParams(browser_context(), site_instance)));
+  }
+}
+
 scoped_ptr<base::Value> ApiUnitTest::RunFunctionAndReturnValue(
     UIThreadExtensionFunction* function,
     const std::string& args) {
   function->set_extension(extension());
+  if (contents_)
+    function->SetRenderViewHost(contents_->GetRenderViewHost());
   return scoped_ptr<base::Value>(utils::RunFunctionAndReturnSingleResult(
       function, args, browser_context()));
 }
@@ -95,6 +109,8 @@ std::string ApiUnitTest::RunFunctionAndReturnError(
     UIThreadExtensionFunction* function,
     const std::string& args) {
   function->set_extension(extension());
+  if (contents_)
+    function->SetRenderViewHost(contents_->GetRenderViewHost());
   return utils::RunFunctionAndReturnError(function, args, browser_context());
 }
 

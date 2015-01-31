@@ -8,7 +8,8 @@ import unittest
 
 from api_models import APIModels
 from compiled_file_system import CompiledFileSystem
-from extensions_paths import API_PATHS, CHROME_API, CHROME_EXTENSIONS
+from extensions_paths import (API_PATHS, CHROME_API, CHROME_EXTENSIONS,
+    EXTENSIONS_API)
 from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
 from mock_file_system import MockFileSystem
@@ -38,7 +39,7 @@ _TEST_DATA = {
     }),
     '_manifest_features.json': '{}',
     '_permission_features.json': '{}',
-    'alarms.idl': ReadFile(CHROME_API, 'alarms.idl'),
+    'alarms.idl': ReadFile(EXTENSIONS_API, 'alarms.idl'),
     'input_ime.json': ReadFile(CHROME_API, 'input_ime.json'),
     'page_action.json': ReadFile(CHROME_API, 'page_action.json'),
   },

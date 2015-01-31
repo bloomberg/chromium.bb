@@ -22,6 +22,7 @@ class ListValue;
 namespace content {
 class NotificationService;
 class TestBrowserThreadBundle;
+class WebContents;
 }
 
 class UIThreadExtensionFunction;
@@ -39,6 +40,7 @@ class ApiUnitTest : public ExtensionsTest {
   ApiUnitTest();
   ~ApiUnitTest() override;
 
+  content::WebContents* contents() { return contents_.get(); }
   const Extension* extension() const { return extension_.get(); }
   scoped_refptr<Extension> extension_ref() { return extension_; }
   void set_extension(scoped_refptr<Extension> extension) {
@@ -48,6 +50,11 @@ class ApiUnitTest : public ExtensionsTest {
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
   void SetUp() override;
+
+  // Creates a background page for |extension_|, and sets it for the WebContents
+  // to be used in API calls.
+  // If |contents_| is already set, this does nothing.
+  void CreateBackgroundPage();
 
   // Various ways of running an API function. These methods take ownership of
   // |function|. |args| should be in JSON format, wrapped in a list.
@@ -86,6 +93,10 @@ class ApiUnitTest : public ExtensionsTest {
   TestingPrefServiceSimple testing_pref_service_;
 
   MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
+
+  // The WebContents used to associate a RenderViewHost with API function calls,
+  // or null.
+  scoped_ptr<content::WebContents> contents_;
 
   // The Extension used when running API function calls.
   scoped_refptr<Extension> extension_;

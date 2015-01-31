@@ -70,15 +70,6 @@ base::ListValue* ToList(base::Value* val) {
   return static_cast<base::ListValue*>(val);
 }
 
-scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
-    Manifest::Location location) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
-      extensions::api_test_utils::ParseDictionary(
-          "{\"name\": \"Test\", \"version\": \"1.0\"}"));
-  return extensions::api_test_utils::CreateExtension(
-      location, test_extension_value.get(), std::string());
-}
-
 bool HasPrivacySensitiveFields(base::DictionaryValue* val) {
   std::string result;
   if (val->GetString(keys::kUrlKey, &result) ||

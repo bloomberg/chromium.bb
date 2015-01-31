@@ -21,6 +21,11 @@
 // chrome/test/data/extensions/api_test/stubs_app/manifest.json
 
 {
+  "alarms": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  },
   "app.window.alwaysOnTop": {
     "channel": "stable",
     "extension_types": ["platform_app"]

@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -35,6 +34,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/api/alarms.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -58,7 +58,7 @@ using extensions::ResultCatcher;
 
 namespace {
 
-namespace alarms = extensions::api::alarms;
+namespace alarms = extensions::core_api::alarms;
 
 const char kPowerTestApp[] = "ephemeral_apps/power";
 

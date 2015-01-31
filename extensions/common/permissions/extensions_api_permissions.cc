@@ -31,6 +31,7 @@ APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
 std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
     const {
   APIPermissionInfo::InitInfo permissions_to_register[] = {
+      {APIPermission::kAlarms, "alarms"},
       {APIPermission::kAlphaEnabled, "app.window.alpha"},
       {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
       {APIPermission::kAppView,

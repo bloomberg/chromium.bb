@@ -40,11 +40,6 @@ base::DictionaryValue* ToDictionary(base::Value* val);
 // If |val| is a list, return it as one, otherwise NULL.
 base::ListValue* ToList(base::Value* val);
 
-// Creates an extension instance with a specified location that can be attached
-// to an ExtensionFunction before running.
-scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
-    extensions::Manifest::Location location);
-
 // Returns true if |val| contains privacy information, e.g. url,
 // title, and faviconUrl.
 bool HasPrivacySensitiveFields(base::DictionaryValue* val);

@@ -356,6 +356,10 @@
         # Android build still compiles. See conditions below.
         'browser/api/activity_log/web_request_constants.cc',
         'browser/api/activity_log/web_request_constants.h',
+        'browser/api/alarms/alarms_api.cc',
+        'browser/api/alarms/alarms_api.h',
+        'browser/api/alarms/alarm_manager.cc',
+        'browser/api/alarms/alarm_manager.h',
         'browser/api/api_resource.cc',
         'browser/api/api_resource.h',
         'browser/api/api_resource_manager.h',

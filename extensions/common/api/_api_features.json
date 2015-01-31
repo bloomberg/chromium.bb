@@ -19,6 +19,10 @@
 // hashes back to ids.
 
 {
+  "alarms": {
+    "dependencies": ["permission:alarms"],
+    "contexts": ["blessed_extension"]
+  },
   "app.runtime": [{
     "channel": "stable",
     "contexts": ["blessed_extension"],

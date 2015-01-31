@@ -6,7 +6,7 @@
 import json
 import unittest
 
-from extensions_paths import CHROME_API, CHROME_EXTENSIONS
+from extensions_paths import CHROME_API, CHROME_EXTENSIONS, EXTENSIONS_API
 from mock_file_system import MockFileSystem
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
@@ -32,7 +32,7 @@ _TEST_DATA = {
     }),
     '_manifest_features.json': '{}',
     '_permission_features.json': '{}',
-    'alarms.idl': ReadFile(CHROME_API, 'alarms.idl'),
+    'alarms.idl': ReadFile(EXTENSIONS_API, 'alarms.idl'),
     'input_ime.json': ReadFile(CHROME_API, 'input_ime.json'),
     'page_action.json': ReadFile(CHROME_API, 'page_action.json'),
   },

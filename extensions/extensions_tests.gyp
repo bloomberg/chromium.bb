@@ -41,6 +41,7 @@
         '..',
       ],
       'sources': [
+        'browser/api/alarms/alarms_api_unittest.cc',
         'browser/api/api_resource_manager_unittest.cc',
         'browser/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/api/cast_channel/cast_auth_ica_unittest.cc',

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -15,6 +16,7 @@ class BrowserContext;
 class ContentBrowserClient;
 class ContentClient;
 class ContentUtilityClient;
+class RenderViewHostTestEnabler;
 }
 
 namespace extensions {
@@ -54,6 +56,10 @@ class ExtensionsTest : public testing::Test {
   scoped_ptr<content::ContentBrowserClient> content_browser_client_;
   scoped_ptr<content::BrowserContext> browser_context_;
   scoped_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
+
+  // The existence of this object enables tests via
+  // RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsTest);
 };

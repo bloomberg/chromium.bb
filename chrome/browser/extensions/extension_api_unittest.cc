@@ -7,9 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -19,7 +17,7 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
-ExtensionApiUnittest::ExtensionApiUnittest() : contents_(NULL) {
+ExtensionApiUnittest::ExtensionApiUnittest() {
 }
 
 ExtensionApiUnittest::~ExtensionApiUnittest() {
@@ -27,24 +25,13 @@ ExtensionApiUnittest::~ExtensionApiUnittest() {
 
 void ExtensionApiUnittest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
-  extension_ = utils::CreateEmptyExtensionWithLocation(Manifest::UNPACKED);
-}
-
-void ExtensionApiUnittest::CreateBackgroundPage() {
-  if (!contents_) {
-    GURL url = BackgroundInfo::GetBackgroundURL(extension());
-    if (url.is_empty())
-      url = GURL(url::kAboutBlankURL);
-    AddTab(browser(), url);
-    contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-  }
+  extension_ = api_test_utils::CreateEmptyExtensionWithLocation(
+      Manifest::UNPACKED);
 }
 
 scoped_ptr<base::Value> ExtensionApiUnittest::RunFunctionAndReturnValue(
     UIThreadExtensionFunction* function, const std::string& args) {
   function->set_extension(extension());
-  if (contents_)
-    function->SetRenderViewHost(contents_->GetRenderViewHost());
   return scoped_ptr<base::Value>(
       utils::RunFunctionAndReturnSingleResult(function, args, browser()));
 }
@@ -81,8 +68,6 @@ scoped_ptr<base::ListValue> ExtensionApiUnittest::RunFunctionAndReturnList(
 std::string ExtensionApiUnittest::RunFunctionAndReturnError(
     UIThreadExtensionFunction* function, const std::string& args) {
   function->set_extension(extension());
-  if (contents_)
-    function->SetRenderViewHost(contents_->GetRenderViewHost());
   return utils::RunFunctionAndReturnError(function, args, browser());
 }
 

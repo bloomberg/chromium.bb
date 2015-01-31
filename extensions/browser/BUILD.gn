@@ -39,6 +39,10 @@ source_set("browser") {
     sources += [
       "api/activity_log/web_request_constants.cc",
       "api/activity_log/web_request_constants.h",
+      "api/alarms/alarms_api.cc",
+      "api/alarms/alarms_api.h",
+      "api/alarms/alarm_manager.cc",
+      "api/alarms/alarm_manager.h",
       "api/api_resource.cc",
       "api/api_resource.h",
       "api/api_resource_manager.h",

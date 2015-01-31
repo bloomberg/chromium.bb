@@ -57,6 +57,11 @@ scoped_refptr<extensions::Extension> CreateExtension(
     base::DictionaryValue* test_extension_value,
     const std::string& id_input);
 
+// Creates an extension instance with a specified location that can be attached
+// to an ExtensionFunction before running.
+scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
+    extensions::Manifest::Location location);
+
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. Takes ownership of
 // |function|. The caller takes ownership of the result.

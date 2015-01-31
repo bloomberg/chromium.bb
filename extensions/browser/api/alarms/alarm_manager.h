@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
-#define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
+#ifndef EXTENSIONS_BROWSER_API_ALARMS_ALARM_MANAGER_H_
+#define EXTENSIONS_BROWSER_API_ALARMS_ALARM_MANAGER_H_
 
 #include <map>
 #include <queue>
@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
-#include "chrome/common/extensions/api/alarms.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/api/alarms.h"
 
 namespace base {
 class Clock;
@@ -34,12 +34,12 @@ class ExtensionRegistry;
 struct Alarm {
   Alarm();
   Alarm(const std::string& name,
-        const api::alarms::AlarmCreateInfo& create_info,
+        const core_api::alarms::AlarmCreateInfo& create_info,
         base::TimeDelta min_granularity,
         base::Time now);
   ~Alarm();
 
-  linked_ptr<api::alarms::Alarm> js_alarm;
+  linked_ptr<core_api::alarms::Alarm> js_alarm;
   // The granularity isn't exposed to the extension's javascript, but we poll at
   // least as often as the shortest alarm's granularity.  It's initialized as
   // the relative delay requested in creation, even if creation uses an absolute
@@ -90,8 +90,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
   typedef base::Callback<void(const AlarmList*)> GetAllAlarmsCallback;
   // Passes the list of pending alarms for the given extension, or
   // NULL if none exist, to |callback|.
-  void GetAllAlarms(
-      const std::string& extension_id, const GetAllAlarmsCallback& callback);
+  void GetAllAlarms(const std::string& extension_id,
+                    const GetAllAlarmsCallback& callback);
 
   typedef base::Callback<void(bool)> RemoveAlarmCallback;
   // Cancels and removes the alarm with the given name. Invokes |callback| when
@@ -103,8 +103,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
   typedef base::Callback<void()> RemoveAllAlarmsCallback;
   // Cancels and removes all alarms for the given extension. Invokes |callback|
   // when done.
-  void RemoveAllAlarms(
-      const std::string& extension_id, const RemoveAllAlarmsCallback& callback);
+  void RemoveAllAlarms(const std::string& extension_id,
+                       const RemoveAllAlarmsCallback& callback);
 
   // Replaces AlarmManager's owned clock with |clock| and takes ownership of it.
   void SetClockForTesting(base::Clock* clock);
@@ -160,8 +160,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
                             const std::string& extension_id);
 
   // Part of RemoveAllAlarms that is executed after alarms are loaded.
-  void RemoveAllAlarmsWhenReady(
-      const RemoveAllAlarmsCallback& callback, const std::string& extension_id);
+  void RemoveAllAlarmsWhenReady(const RemoveAllAlarmsCallback& callback,
+                                const std::string& extension_id);
 
   // Helper to return the iterators within the AlarmMap and AlarmList for the
   // matching alarm, or an iterator to the end of the AlarmMap if none were
@@ -177,8 +177,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   void OnAlarm(AlarmIterator iter);
 
   // Internal helper to add an alarm and start the timer with the given delay.
-  void AddAlarmImpl(const std::string& extension_id,
-                    const Alarm& alarm);
+  void AddAlarmImpl(const std::string& extension_id, const Alarm& alarm);
 
   // Syncs our alarm data for the given extension to/from the state storage.
   void WriteToStorage(const std::string& extension_id);
@@ -209,9 +208,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
                               extensions::UninstallReason reason) override;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "AlarmManager";
-  }
+  static const char* service_name() { return "AlarmManager"; }
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
   content::BrowserContext* const browser_context_;
@@ -244,4 +241,4 @@ class AlarmManager : public BrowserContextKeyedAPI,
 
 }  //  namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
+#endif  // EXTENSIONS_BROWSER_API_ALARMS_ALARM_MANAGER_H_

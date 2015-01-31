@@ -135,6 +135,13 @@ scoped_refptr<Extension> CreateExtension(
                          std::string());
 }
 
+scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
+    Manifest::Location location) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+  return CreateExtension(location, test_extension_value.get(), std::string());
+}
+
 base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,

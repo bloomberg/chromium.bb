@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__
-#define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__
+#ifndef EXTENSIONS_BROWSER_API_ALARMS_ALARMS_API_H_
+#define EXTENSIONS_BROWSER_API_ALARMS_ALARMS_API_H_
 
 #include <vector>
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace base {
 class Clock;
@@ -17,12 +17,13 @@ namespace extensions {
 struct Alarm;
 typedef std::vector<Alarm> AlarmList;
 
-class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
+class AlarmsCreateFunction : public AsyncExtensionFunction {
  public:
   AlarmsCreateFunction();
   // Use |clock| instead of the default clock. Does not take ownership
   // of |clock|. Used for testing.
   explicit AlarmsCreateFunction(base::Clock* clock);
+
  protected:
   ~AlarmsCreateFunction() override;
 
@@ -39,7 +40,7 @@ class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
   bool owns_clock_;
 };
 
-class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
+class AlarmsGetFunction : public AsyncExtensionFunction {
  protected:
   ~AlarmsGetFunction() override {}
 
@@ -51,7 +52,7 @@ class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.get", ALARMS_GET)
 };
 
-class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
+class AlarmsGetAllFunction : public AsyncExtensionFunction {
  protected:
   ~AlarmsGetAllFunction() override {}
 
@@ -63,7 +64,7 @@ class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
 };
 
-class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
+class AlarmsClearFunction : public AsyncExtensionFunction {
  protected:
   ~AlarmsClearFunction() override {}
 
@@ -75,7 +76,7 @@ class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
 };
 
-class AlarmsClearAllFunction : public ChromeAsyncExtensionFunction {
+class AlarmsClearAllFunction : public AsyncExtensionFunction {
  protected:
   ~AlarmsClearAllFunction() override {}
 
@@ -87,6 +88,6 @@ class AlarmsClearAllFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.clearAll", ALARMS_CLEARALL)
 };
 
-} //  namespace extensions
+}  //  namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__
+#endif  // EXTENSIONS_BROWSER_API_ALARMS_ALARMS_API_H_

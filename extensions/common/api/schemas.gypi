@@ -9,6 +9,7 @@
   'variables': {
     'chromium_code': 1,
     'schema_files': [
+      'alarms.idl',
       'app_current_window_internal.idl',
       'app_runtime.idl',
       'app_view_guest_internal.json',

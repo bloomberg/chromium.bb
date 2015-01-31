@@ -4,6 +4,7 @@
 
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
+#include "extensions/browser/api/alarms/alarm_manager.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
@@ -29,6 +30,7 @@
 namespace extensions {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+  AlarmManager::GetFactoryInstance();
   ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance();
   ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance();
   ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance();

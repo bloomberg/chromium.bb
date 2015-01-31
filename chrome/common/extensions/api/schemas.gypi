@@ -10,7 +10,6 @@
     'main_schema_files': [
       'accessibility_private.json',
       'activity_log_private.json',
-      'alarms.idl',
       'automation.idl',
       'automation_internal.idl',
       'autotest_private.idl',

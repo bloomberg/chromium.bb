@@ -34,10 +34,6 @@
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "alarms": {
-    "dependencies": ["permission:alarms"],
-    "contexts": ["blessed_extension"]
-  },
   "app": {
     "blacklist": [
       "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice

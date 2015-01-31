@@ -664,7 +664,6 @@
       'browser/extensions/activity_log/hashed_ad_network_database_unittest.cc',
       'browser/extensions/activity_log/uma_policy_unittest.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
-      'browser/extensions/api/alarms/alarms_api_unittest.cc',
       'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
       'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
       'browser/extensions/api/content_settings/content_settings_unittest.cc',
