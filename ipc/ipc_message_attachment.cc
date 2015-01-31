@@ -6,6 +6,9 @@
 
 namespace IPC {
 
+MessageAttachment::MessageAttachment() {
+}
+
 MessageAttachment::~MessageAttachment() {
 }
 

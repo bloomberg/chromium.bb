@@ -16,6 +16,10 @@
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
+#if defined(OS_POSIX) && !defined(OS_NACL)
+#include "ipc/ipc_platform_file_attachment_posix.h"
+#endif
+
 namespace IPC {
 
 namespace {
@@ -352,8 +356,9 @@ MojoResult ChannelMojo::WriteToMessageAttachmentSet(
       return unwrap_result;
     }
 
-    bool ok = message->attachment_set()->AddToOwn(
-        base::ScopedFD(platform_handle.release().fd));
+    bool ok = message->attachment_set()->AddAttachment(
+        new internal::PlatformFileAttachment(
+            base::ScopedFD(platform_handle.release().fd)));
     DCHECK(ok);
   }
 
@@ -367,7 +372,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
   // We dup() the handles in IPC::Message to transmit.
   // IPC::MessageAttachmentSet has intricate lifecycle semantics
   // of FDs, so just to dup()-and-own them is the safest option.
-  if (message->HasFileDescriptors()) {
+  if (message->HasAttachments()) {
     MessageAttachmentSet* fdset = message->attachment_set();
     std::vector<base::PlatformFile> fds_to_send(fdset->size());
     fdset->PeekDescriptors(&fds_to_send[0]);

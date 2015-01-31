@@ -7,10 +7,12 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
 namespace {
@@ -127,22 +129,16 @@ void Message::set_received_time(int64 time) const {
 }
 #endif
 
-#if defined(OS_POSIX)
-bool Message::WriteFile(base::ScopedFD descriptor) {
+bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(attachment_set()->size());
-  return attachment_set()->AddToOwn(descriptor.Pass());
+  return attachment_set()->AddAttachment(attachment);
 }
 
-bool Message::WriteBorrowingFile(const base::PlatformFile& descriptor) {
-  // We write the index of the descriptor so that we don't have to
-  // keep the current descriptor as extra decoding state when deserialising.
-  WriteInt(attachment_set()->size());
-  return attachment_set()->AddToBorrow(descriptor);
-}
-
-bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
+bool Message::ReadAttachment(
+    PickleIterator* iter,
+    scoped_refptr<MessageAttachment>* attachment) const {
   int descriptor_index;
   if (!iter->ReadInt(&descriptor_index))
     return false;
@@ -151,18 +147,12 @@ bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
   if (!attachment_set)
     return false;
 
-  base::PlatformFile file = attachment_set->TakeDescriptorAt(descriptor_index);
-  if (file < 0)
-    return false;
-
-  descriptor->reset(file);
-  return true;
+  *attachment = attachment_set->GetAttachmentAt(descriptor_index);
+  return nullptr != attachment->get();
 }
 
-bool Message::HasFileDescriptors() const {
+bool Message::HasAttachments() const {
   return attachment_set_.get() && !attachment_set_->empty();
 }
-
-#endif
 
 }  // namespace IPC

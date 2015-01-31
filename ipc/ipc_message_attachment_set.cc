@@ -8,12 +8,12 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_message_attachment.h"
-#include "ipc/ipc_platform_file_attachment.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #endif // OS_POSIX
 
 namespace IPC {
@@ -49,9 +49,18 @@ unsigned MessageAttachmentSet::size() const {
   return static_cast<unsigned>(attachments_.size());
 }
 
-void MessageAttachmentSet::AddAttachment(
+bool MessageAttachmentSet::AddAttachment(
     scoped_refptr<MessageAttachment> attachment) {
+#if defined(OS_POSIX)
+  if (attachment->GetType() != MessageAttachment::TYPE_PLATFORM_FILE ||
+      num_descriptors() == kMaxDescriptorsPerMessage) {
+    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
+    return false;
+  }
+#endif
+
   attachments_.push_back(attachment);
+  return true;
 }
 
 scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
@@ -95,55 +104,6 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
 
 #if defined(OS_POSIX)
 
-bool MessageAttachmentSet::AddToBorrow(base::PlatformFile fd) {
-  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
-
-  if (num_descriptors() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
-    return false;
-  }
-
-  AddAttachment(new internal::PlatformFileAttachment(fd));
-  return true;
-}
-
-bool MessageAttachmentSet::AddToOwn(base::ScopedFD fd) {
-  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
-
-  if (num_descriptors() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
-    return false;
-  }
-
-  AddAttachment(new internal::PlatformFileAttachment(fd.get()));
-  owned_descriptors_.push_back(new base::ScopedFD(fd.Pass()));
-  DCHECK(num_descriptors() <= kMaxDescriptorsPerMessage);
-  return true;
-}
-
-base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
-  scoped_refptr<MessageAttachment> attachment = GetAttachmentAt(index);
-  if (!attachment)
-    return -1;
-
-  base::PlatformFile file = internal::GetPlatformFile(attachment);
-
-  // TODO(morrita): In production, attachments_.size() should be same as
-  // owned_descriptors_.size() as all read descriptors are owned by Message.
-  // We have to do this because unit test breaks this assumption. It should be
-  // changed to exercise with own-able descriptors.
-  for (ScopedVector<base::ScopedFD>::const_iterator i =
-           owned_descriptors_.begin();
-       i != owned_descriptors_.end(); ++i) {
-    if ((*i)->get() == file) {
-      ignore_result((*i)->release());
-      break;
-    }
-  }
-
-  return file;
-}
-
 void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {
   for (size_t i = 0; i != attachments_.size(); ++i)
     buffer[i] = internal::GetPlatformFile(attachments_[i]);
@@ -162,15 +122,16 @@ bool MessageAttachmentSet::ContainsDirectoryDescriptor() const {
 
 void MessageAttachmentSet::CommitAll() {
   attachments_.clear();
-  owned_descriptors_.clear();
   consumed_descriptor_highwater_ = 0;
 }
 
 void MessageAttachmentSet::ReleaseFDsToClose(
     std::vector<base::PlatformFile>* fds) {
-  for (ScopedVector<base::ScopedFD>::iterator i = owned_descriptors_.begin();
-       i != owned_descriptors_.end(); ++i) {
-    fds->push_back((*i)->release());
+  for (size_t i = 0; i < attachments_.size(); ++i) {
+    internal::PlatformFileAttachment* file =
+        static_cast<internal::PlatformFileAttachment*>(attachments_[i].get());
+    if (file->Owns())
+      fds->push_back(file->TakePlatformFile());
   }
 
   CommitAll();
@@ -183,11 +144,9 @@ void MessageAttachmentSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 
   attachments_.reserve(count);
-  owned_descriptors_.reserve(count);
-  for (unsigned i = 0; i < count; ++i) {
-    AddAttachment(new internal::PlatformFileAttachment(buffer[i]));
-    owned_descriptors_.push_back(new base::ScopedFD(buffer[i]));
-  }
+  for (unsigned i = 0; i < count; ++i)
+    AddAttachment(
+        new internal::PlatformFileAttachment(base::ScopedFD(buffer[i])));
 }
 
 #endif  // OS_POSIX

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/ipc_platform_file_attachment.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 
 namespace IPC {
 namespace internal {
@@ -11,11 +11,20 @@ PlatformFileAttachment::PlatformFileAttachment(base::PlatformFile file)
     : file_(file) {
 }
 
+PlatformFileAttachment::PlatformFileAttachment(base::ScopedFD file)
+    : file_(file.get()), owning_(file.Pass()) {
+}
+
 PlatformFileAttachment::~PlatformFileAttachment() {
 }
 
 MessageAttachment::Type PlatformFileAttachment::GetType() const {
   return TYPE_PLATFORM_FILE;
+}
+
+base::PlatformFile PlatformFileAttachment::TakePlatformFile() {
+  ignore_result(owning_.release());
+  return file_;
 }
 
 base::PlatformFile GetPlatformFile(

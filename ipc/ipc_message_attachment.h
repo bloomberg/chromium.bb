@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_MESSAGE_ATTACHMENT_H_
 #define IPC_IPC_MESSAGE_ATTACHMENT_H_
 
+#include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_export.h"
 
@@ -21,10 +23,14 @@ class IPC_EXPORT MessageAttachment
   };
 
   virtual Type GetType() const = 0;
+  virtual base::PlatformFile TakePlatformFile() = 0;
 
  protected:
   friend class base::RefCounted<MessageAttachment>;
+  MessageAttachment();
   virtual ~MessageAttachment();
+
+  DISALLOW_COPY_AND_ASSIGN(MessageAttachment);
 };
 
 }  // namespace IPC

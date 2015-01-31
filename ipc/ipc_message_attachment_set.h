@@ -21,9 +21,10 @@ namespace IPC {
 class MessageAttachment;
 
 // -----------------------------------------------------------------------------
-// A MessageAttachmentSet is an ordered set of POSIX file descriptors. These are
-// associated with IPC messages so that descriptors can be transmitted over a
-// UNIX domain socket.
+// A MessageAttachmentSet is an ordered set of MessageAttachment objects. These
+// are associated with IPC messages so that attachments, each of which is either
+// a platform file or a mojo handle, can be transmitted over the underlying UNIX
+// domain socket (for ChannelPosix) or Mojo MessagePipe (for ChannelMojo).
 // -----------------------------------------------------------------------------
 class IPC_EXPORT MessageAttachmentSet
     : public base::RefCountedThreadSafe<MessageAttachmentSet> {
@@ -37,7 +38,14 @@ class IPC_EXPORT MessageAttachmentSet
   // Return true if no unconsumed descriptors remain
   bool empty() const { return 0 == size(); }
 
-  void AddAttachment(scoped_refptr<MessageAttachment> attachment);
+  bool AddAttachment(scoped_refptr<MessageAttachment> attachment);
+
+  // Take the nth attachment from the beginning of the set, Code using this
+  // /must/ access the attachments in order, and must do it at most once.
+  //
+  // This interface is designed for the deserialising code as it doesn't
+  // support close flags.
+  //   returns: an attachment, or nullptr on error
   scoped_refptr<MessageAttachment> GetAttachmentAt(unsigned index);
 
 #if defined(OS_POSIX)
@@ -50,30 +58,6 @@ class IPC_EXPORT MessageAttachmentSet
   // In debugging mode, it's a fatal error to try and add more than this number
   // of descriptors to a MessageAttachmentSet.
   static const size_t kMaxDescriptorsPerMessage = 7;
-
-  // ---------------------------------------------------------------------------
-  // Interfaces for building during message serialisation...
-
-  // Add a descriptor to the end of the set. Returns false iff the set is full.
-  bool AddToBorrow(base::PlatformFile fd);
-  // Add a descriptor to the end of the set and automatically close it after
-  // transmission. Returns false iff the set is full.
-  bool AddToOwn(base::ScopedFD fd);
-
-  // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
-  // Interfaces for accessing during message deserialisation...
-
-  // Take the nth descriptor from the beginning of the set,
-  // transferring the ownership of the descriptor taken. Code using this
-  // /must/ access the descriptors in order, and must do it at most once.
-  //
-  // This interface is designed for the deserialising code as it doesn't
-  // support close flags.
-  //   returns: file descriptor, or -1 on error
-  base::PlatformFile TakeDescriptorAt(unsigned n);
-
-  // ---------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------
   // Interfaces for transmission...
@@ -115,14 +99,6 @@ class IPC_EXPORT MessageAttachmentSet
   // A vector of attachments of the message, which might be |PlatformFile| or
   // |MessagePipe|.
   std::vector<scoped_refptr<MessageAttachment>> attachments_;
-
-#if defined(OS_POSIX)
-  // A vector of owning descriptors. If this message is sent, then file
-  // descriptors are sent as control data. After sending, any owning descriptors
-  // are closed. If this message has been received then all received
-  // descriptors are owned by this message.
-  ScopedVector<base::ScopedFD> owned_descriptors_;
-#endif
 
   // This contains the index of the next descriptor which should be consumed.
   // It's used in a couple of ways. Firstly, at destruction we can check that

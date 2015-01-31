@@ -42,6 +42,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/unix_domain_socket_util.h"
 
@@ -793,7 +794,8 @@ void ChannelPosix::QueueHelloMessage() {
 #if defined(IPC_USES_READWRITE)
   scoped_ptr<Message> hello;
   if (remote_fd_pipe_.is_valid()) {
-    if (!msg->WriteBorrowingFile(remote_fd_pipe_.get())) {
+    if (!msg->WriteAttachment(
+            new internal::PlatformFileAttachment(remote_fd_pipe_.get()))) {
       NOTREACHED() << "Unable to pickle hello message file descriptors";
     }
     DCHECK_EQ(msg->attachment_set()->size(), 1U);
@@ -1014,11 +1016,11 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
         // server also contains the fd_pipe_, which  will be used for all
         // subsequent file descriptor passing.
         DCHECK_EQ(msg.attachment_set()->size(), 1U);
-        base::ScopedFD descriptor;
-        if (!msg.ReadFile(&iter, &descriptor)) {
+        scoped_refptr<MessageAttachment> attachment;
+        if (!msg.ReadAttachment(&iter, &attachment)) {
           NOTREACHED();
         }
-        fd_pipe_.reset(descriptor.release());
+        fd_pipe_.reset(attachment->TakePlatformFile());
       }
 #endif  // IPC_USES_READWRITE
       peer_pid_ = pid;

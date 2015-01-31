@@ -17,6 +17,7 @@
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
 namespace {
@@ -328,8 +329,9 @@ class ListenerThatExpectsFile : public IPC::Listener {
     PickleIterator iter(message);
 
     base::ScopedFD fd;
-    EXPECT_TRUE(message.ReadFile(&iter, &fd));
-    base::File file(fd.release());
+    scoped_refptr<IPC::MessageAttachment> attachment;
+    EXPECT_TRUE(message.ReadAttachment(&iter, &attachment));
+    base::File file(attachment->TakePlatformFile());
     std::string content(GetSendingFileContent().size(), ' ');
     file.Read(0, &content[0], content.size());
     EXPECT_EQ(content, GetSendingFileContent());
@@ -359,7 +361,8 @@ class ListenerThatExpectsFile : public IPC::Listener {
     file.Flush();
     IPC::Message* message = new IPC::Message(
         0, 2, IPC::Message::PRIORITY_NORMAL);
-    message->WriteFile(base::ScopedFD(file.TakePlatformFile()));
+    message->WriteAttachment(new IPC::internal::PlatformFileAttachment(
+        base::ScopedFD(file.TakePlatformFile())));
     ASSERT_TRUE(sender->Send(message));
   }
 
