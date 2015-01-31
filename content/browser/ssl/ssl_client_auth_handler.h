@@ -43,7 +43,8 @@ class SSLClientAuthHandler {
   // Called when |core_| is done retrieving the cert list.
   void DidGetClientCerts();
 
-  // Called when the user has selected a cert.
+  // Called when the user has selected a cert. If the user chose to continue
+  // with no certificate, |cert| is NULL.
   void CertificateSelected(net::X509Certificate* cert);
 
   // A reference-counted core so the ClientCertStore may outlive

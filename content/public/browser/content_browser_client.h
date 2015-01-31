@@ -399,7 +399,8 @@ class CONTENT_EXPORT ContentBrowserClient {
                                      CertificateRequestResultType* result) {}
 
   // Selects a SSL client certificate and returns it to the |callback|. If no
-  // certificate was selected nullptr is returned to the |callback|.
+  // certificate was selected nullptr is returned to the |callback|. Note:
+  // |callback| may be called synchronously or asynchronously.
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_frame_id,

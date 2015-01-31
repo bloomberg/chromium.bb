@@ -40,35 +40,38 @@ namespace {
 // inspection.
 class ClientCertStoreStub : public net::ClientCertStore {
  public:
-  ClientCertStoreStub(const net::CertificateList& certs)
-      : response_(certs), async_(false), request_count_(0) {}
+  // Creates a new ClientCertStoreStub that returns |response| on query. It
+  // saves the number of requests and most recently certificate authorities list
+  // in |requested_authorities| and |request_count|, respectively. The caller is
+  // responsible for ensuring those pointers outlive the ClientCertStoreStub.
+  //
+  // TODO(ppi): Make the stub independent from the internal representation of
+  // SSLCertRequestInfo. For now it seems that we can neither save the
+  // scoped_refptr<> (since it is never passed to us) nor copy the entire
+  // CertificateRequestInfo (since there is no copy constructor).
+  ClientCertStoreStub(const net::CertificateList& response,
+                      int* request_count,
+                      std::vector<std::string>* requested_authorities)
+      : response_(response),
+        async_(false),
+        requested_authorities_(requested_authorities),
+        request_count_(request_count) {
+    requested_authorities_->clear();
+    *request_count_ = 0;
+  }
 
   ~ClientCertStoreStub() override {}
 
   // Configures whether the certificates are returned asynchronously or not.
   void set_async(bool async) { async_ = async; }
 
-  // Returns |cert_authorities| field of the certificate request passed in the
-  // most recent call to GetClientCerts().
-  // TODO(ppi): Make the stub independent from the internal representation of
-  // SSLCertRequestInfo. For now it seems that we cannot neither save the
-  // scoped_refptr<> (since it is never passed to us) nor copy the entire
-  // CertificateRequestInfo (since there is no copy constructor).
-  std::vector<std::string> requested_authorities() {
-    return requested_authorities_;
-  }
-
-  // Returns the number of calls to GetClientCerts().
-  int request_count() {
-    return request_count_;
-  }
-
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
                       net::CertificateList* selected_certs,
                       const base::Closure& callback) override {
-    ++request_count_;
-    requested_authorities_ = cert_request_info.cert_authorities;
+    *requested_authorities_ = cert_request_info.cert_authorities;
+    ++(*request_count_);
+
     *selected_certs = response_;
     if (async_) {
       base::MessageLoop::current()->PostTask(FROM_HERE, callback);
@@ -80,8 +83,8 @@ class ClientCertStoreStub : public net::ClientCertStore {
  private:
   const net::CertificateList response_;
   bool async_;
-  int request_count_;
-  std::vector<std::string> requested_authorities_;
+  std::vector<std::string>* requested_authorities_;
+  int* request_count_;
 };
 
 // Arbitrary read buffer size.
@@ -377,15 +380,12 @@ class ResourceLoaderTest : public testing::Test,
 // selection.
 TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   // Set up the test client cert store.
+  int store_request_count;
+  std::vector<std::string> store_requested_authorities;
   net::CertificateList dummy_certs(1, scoped_refptr<net::X509Certificate>(
       new net::X509Certificate("test", "test", base::Time(), base::Time())));
-  scoped_ptr<ClientCertStoreStub> test_store(
-      new ClientCertStoreStub(dummy_certs));
-  EXPECT_EQ(0, test_store->request_count());
-
-  // Ownership of the |test_store| is about to be turned over to ResourceLoader.
-  // We need to keep raw pointer copies to access these objects later.
-  ClientCertStoreStub* raw_ptr_to_store = test_store.get();
+  scoped_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
+      dummy_certs, &store_request_count, &store_requested_authorities));
   resource_context_.SetClientCertStore(test_store.Pass());
 
   // Prepare a dummy certificate request.
@@ -407,8 +407,8 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   SetBrowserClientForTesting(old_client);
 
   // Check if the test store was queried against correct |cert_authorities|.
-  EXPECT_EQ(1, raw_ptr_to_store->request_count());
-  EXPECT_EQ(dummy_authority, raw_ptr_to_store->requested_authorities());
+  EXPECT_EQ(1, store_request_count);
+  EXPECT_EQ(dummy_authority, store_requested_authorities);
 
   // Check if the retrieved certificates were passed to the content browser
   // client.
@@ -446,14 +446,13 @@ TEST_F(ResourceLoaderTest, ClientCertStoreNull) {
 
 TEST_F(ResourceLoaderTest, ClientCertStoreAsyncCancel) {
   // Set up the test client cert store.
+  int store_request_count;
+  std::vector<std::string> store_requested_authorities;
   scoped_ptr<ClientCertStoreStub> test_store(
-      new ClientCertStoreStub(net::CertificateList()));
+      new ClientCertStoreStub(net::CertificateList(), &store_request_count,
+                              &store_requested_authorities));
   test_store->set_async(true);
-  EXPECT_EQ(0, test_store->request_count());
-
-  // Ownership of the |test_store| is about to be turned over to ResourceLoader.
-  // We need to keep raw pointer copies to access these objects later.
-  ClientCertStoreStub* raw_ptr_to_store = test_store.get();
+  EXPECT_EQ(0, store_request_count);
   resource_context_.SetClientCertStore(test_store.Pass());
 
   // Prepare a dummy certificate request.
@@ -467,8 +466,8 @@ TEST_F(ResourceLoaderTest, ClientCertStoreAsyncCancel) {
   loader_->OnCertificateRequested(raw_ptr_to_request_, cert_request_info.get());
 
   // Check if the test store was queried against correct |cert_authorities|.
-  EXPECT_EQ(1, raw_ptr_to_store->request_count());
-  EXPECT_EQ(dummy_authority, raw_ptr_to_store->requested_authorities());
+  EXPECT_EQ(1, store_request_count);
+  EXPECT_EQ(dummy_authority, store_requested_authorities);
 
   // Cancel the request before the store calls the callback.
   loader_.reset();

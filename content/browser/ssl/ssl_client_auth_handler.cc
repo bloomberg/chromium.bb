@@ -56,6 +56,10 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
 
   void GetClientCerts() {
     if (client_cert_store_) {
+      // TODO(davidben): This is still a cyclical ownership where
+      // GetClientCerts' requirement that |client_cert_store_| remains alive
+      // until the call completes is maintained by the reference held in the
+      // callback.
       client_cert_store_->GetClientCerts(
           *cert_request_info_, &cert_request_info_->client_certs,
           base::Bind(&SSLClientAuthHandler::Core::DidGetClientCerts, this));
@@ -85,8 +89,7 @@ SSLClientAuthHandler::SSLClientAuthHandler(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info,
     const SSLClientAuthHandler::CertificateCallback& callback)
-    : core_(nullptr),
-      request_(request),
+    : request_(request),
       cert_request_info_(cert_request_info),
       callback_(callback),
       weak_factory_(this) {
