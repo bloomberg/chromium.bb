@@ -155,13 +155,11 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
         password_generation::EDITING_POPUP_SHOWN);
   }
   editing_popup_shown_ = false;
-}
 
-void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
 }
 
-void PasswordGenerationAgent::DidFinishLoad() {
+void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
 }
 
