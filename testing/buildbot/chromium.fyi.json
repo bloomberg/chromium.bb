@@ -395,7 +395,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -447,7 +446,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -499,7 +497,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -551,7 +548,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -603,7 +599,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -655,7 +650,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -707,7 +701,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -756,7 +749,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
@@ -805,7 +797,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests",
       "views_unittests",
       "browser_tests",
       {
