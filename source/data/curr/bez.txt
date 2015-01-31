@@ -127,14 +127,6 @@ bez{
             "SLL",
             "Lupila lwa Lioni",
         }
-        STD{
-            "STD",
-            "Lupila lwa Husaotome na Huprinisipe",
-        }
-        SZL{
-            "SZL",
-            "Lupila lwa Lilangeni",
-        }
         TND{
             "TND",
             "Lupila lwa Hutunisia",

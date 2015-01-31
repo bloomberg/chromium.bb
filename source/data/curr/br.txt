@@ -135,10 +135,6 @@ br{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "lur Inizi Falkland",
-        }
         GBP{
             "£ RU",
             "lur sterling Breizh-Veur",
@@ -227,10 +223,6 @@ br{
             "KHR",
             "riel Kambodja",
         }
-        KPW{
-            "KPW",
-            "won Korea an Norzh",
-        }
         KRW{
             "₩",
             "won Korea ar Su",
@@ -238,10 +230,6 @@ br{
         KWD{
             "KWD",
             "dinar Koweit",
-        }
-        KYD{
-            "KYD",
-            "dollar Inizi Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ br{
             "SAR",
             "riyal Arabia Saoudat",
         }
-        SBD{
-            "SBD",
-            "dollar Inizi Salomon",
-        }
         SDG{
             "SDG",
             "lur Soudan",
@@ -414,18 +398,6 @@ br{
         SSP{
             "SSP",
             "lur Susoudan",
-        }
-        STD{
-            "STD",
-            "dobra São Tomé ha Príncipe",
-        }
-        SYP{
-            "SYP",
-            "lur Siria",
-        }
-        SZL{
-            "SZL",
-            "lilangeni Swaziland",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ br{
             "FCFA",
             "lur CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "dollar Karib ar reter",
-        }
         XDR{
             "XDR",
             "gwirioù tennañ arbennik",
@@ -502,10 +470,6 @@ br{
         XOF{
             "CFA",
             "lur CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "lur CFP",
         }
         YER{
             "YER",
@@ -536,7 +500,6 @@ br{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -545,7 +508,6 @@ br{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         TRY{"₺"}
         TTD{"$"}
@@ -771,13 +733,6 @@ br{
             other{"euro"}
             two{"euro"}
         }
-        FKP{
-            few{"lur Inizi Falkland"}
-            many{"a lurioù Inizi Falkland"}
-            one{"lur Inizi Falkland"}
-            other{"lur Inizi Falkland"}
-            two{"lur Inizi Falkland"}
-        }
         GBP{
             few{"lur sterling Breizh-Veur"}
             many{"a lurioù sterling Breizh-Veur"}
@@ -932,13 +887,6 @@ br{
             other{"riel Kambodja"}
             two{"riel Kambodja"}
         }
-        KPW{
-            few{"won Korea an Norzh"}
-            many{"a wonoù Korea an Norzh"}
-            one{"won Korea an Norzh"}
-            other{"won Korea an Norzh"}
-            two{"won Korea an Norzh"}
-        }
         KRW{
             few{"won Korea ar Su"}
             many{"a wonoù Korea ar Su"}
@@ -952,13 +900,6 @@ br{
             one{"dinar Koweit"}
             other{"dinar Koweit"}
             two{"zinar Koweit"}
-        }
-        KYD{
-            few{"dollar Inizi Cayman"}
-            many{"a zollaroù Inizi Cayman"}
-            one{"dollar Inizi Cayman"}
-            other{"dollar Inizi Cayman"}
-            two{"zollar Inizi Cayman"}
         }
         KZT{
             few{"zenge Kazakstan"}
@@ -1219,13 +1160,6 @@ br{
             other{"riyal Arabia Saoudat"}
             two{"riyal Arabia Saoudat"}
         }
-        SBD{
-            few{"dollar Inizi Salomon"}
-            many{"a zollaroù Inizi Salomon"}
-            one{"dollar Inizi Salomon"}
-            other{"dollar Inizi Salomon"}
-            two{"zollar Inizi Salomon"}
-        }
         SDG{
             few{"lur Soudan"}
             many{"a lurioù Soudan"}
@@ -1260,27 +1194,6 @@ br{
             one{"lur Susoudan"}
             other{"lur Susoudan"}
             two{"lur Susoudan"}
-        }
-        STD{
-            few{"dobra São Tomé ha Príncipe"}
-            many{"a zobraoù São Tomé ha Príncipe"}
-            one{"dobra São Tomé ha Príncipe"}
-            other{"dobra São Tomé ha Príncipe"}
-            two{"zobra São Tomé ha Príncipe"}
-        }
-        SYP{
-            few{"lur Siria"}
-            many{"a lurioù Siria"}
-            one{"lur Siria"}
-            other{"lur Siria"}
-            two{"lur Siria"}
-        }
-        SZL{
-            few{"lilangeni Swaziland"}
-            many{"a lilangenioù Swaziland"}
-            one{"lilangeni Swaziland"}
-            other{"lilangeni Swaziland"}
-            two{"lilangeni Swaziland"}
         }
         THB{
             few{"baht Thailand"}
@@ -1394,26 +1307,12 @@ br{
             other{"lur CFA BEAC"}
             two{"lur CFA BEAC"}
         }
-        XCD{
-            few{"dollar Karib ar reter"}
-            many{"a zollaroù Karib ar reter"}
-            one{"dollar Karib ar reter"}
-            other{"dollar Karib ar reter"}
-            two{"zollar Karib ar reter"}
-        }
         XOF{
             few{"lur CFA BCEAO"}
             many{"a lurioù CFA BCEAO"}
             one{"lur CFA BCEAO"}
             other{"lur CFA BCEAO"}
             two{"lur CFA BCEAO"}
-        }
-        XPF{
-            few{"lur CFP"}
-            many{"a lurioù CFP"}
-            one{"lur CFP"}
-            other{"lur CFP"}
-            two{"lur CFP"}
         }
         YER{
             few{"rial Yemen"}

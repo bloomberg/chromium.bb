@@ -123,14 +123,6 @@ xog{
             "SLL",
             "Lewone",
         }
-        STD{
-            "STD",
-            "Dobura ey’eSantome ne Purincipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinaali ey’eTunizya",

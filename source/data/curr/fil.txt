@@ -135,10 +135,6 @@ fil{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland Islands Pound",
-        }
         GBP{
             "£",
             "British Pound Sterling",
@@ -227,10 +223,6 @@ fil{
             "KHR",
             "Cambodian Riel",
         }
-        KPW{
-            "KPW",
-            "North Korean Won",
-        }
         KRW{
             "₩",
             "South Korean Won",
@@ -238,10 +230,6 @@ fil{
         KWD{
             "KWD",
             "Kuwaiti Dinar",
-        }
-        KYD{
-            "KYD",
-            "Dolyar ng Cayman Islands",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ fil{
             "SAR",
             "Saudi Riyal",
         }
-        SBD{
-            "SBD",
-            "Dolyar ng Solomon Islands",
-        }
         SDG{
             "SDG",
             "Sudanese Pound",
@@ -414,18 +398,6 @@ fil{
         SSP{
             "SSP",
             "South Sudanese Pound",
-        }
-        STD{
-            "STD",
-            "Sao Tome and Principe Dobra",
-        }
-        SYP{
-            "SYP",
-            "Syrian Pound",
-        }
-        SZL{
-            "SZL",
-            "Swazi Lilangeni",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ fil{
             "FCFA",
             "CFA Franc BEAC",
         }
-        XCD{
-            "EC$",
-            "Dolyar ng Silangang Caribbean",
-        }
         XOF{
             "CFA",
             "CFA Franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP Franc",
         }
         YER{
             "YER",
@@ -536,7 +500,6 @@ fil{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         LAK{"₭"}
         MNT{"₮"}
         MXN{"$"}
@@ -675,10 +638,6 @@ fil{
             one{"euro"}
             other{"euros"}
         }
-        FKP{
-            one{"Falkland Islands pound"}
-            other{"Falkland Islands pounds"}
-        }
         GBP{
             one{"British pound sterling"}
             other{"British pounds sterling"}
@@ -767,10 +726,6 @@ fil{
             one{"Cambodian riel"}
             other{"Cambodian riels"}
         }
-        KPW{
-            one{"North Korean won"}
-            other{"North Korean won"}
-        }
         KRW{
             one{"South Korean won"}
             other{"South Korean won"}
@@ -778,10 +733,6 @@ fil{
         KWD{
             one{"Kuwaiti dinar"}
             other{"Kuwaiti dinars"}
-        }
-        KYD{
-            one{"dolyar ng Cayman Islands"}
-            other{"dolyares ng Cayman Islands"}
         }
         KZT{
             one{"Kazakhstani tenge"}
@@ -931,10 +882,6 @@ fil{
             one{"Saudi riyal"}
             other{"Saudi riyals"}
         }
-        SBD{
-            one{"dolyar ng Solomon Islands"}
-            other{"dolyar ng Solomon Islands"}
-        }
         SDG{
             one{"Sudanese pound"}
             other{"Sudanese pounds"}
@@ -954,18 +901,6 @@ fil{
         SSP{
             one{"South Sudanese pound"}
             other{"South Sudanese pounds"}
-        }
-        STD{
-            one{"Sao Tome and Principe dobra"}
-            other{"Sao Tome and Principe dobras"}
-        }
-        SYP{
-            one{"Syrian pound"}
-            other{"Syrian pounds"}
-        }
-        SZL{
-            one{"Swazi lilangeni"}
-            other{"Swazi emalangeni"}
         }
         THB{
             one{"Thai baht"}
@@ -1031,17 +966,9 @@ fil{
             one{"CFA franc BEAC"}
             other{"CFA francs BEAC"}
         }
-        XCD{
-            one{"dolyar ng Silangang Caribbean"}
-            other{"dolyares ng Silangang Caribbean"}
-        }
         XOF{
             one{"CFA franc BCEAO"}
             other{"CFA francs BCEAO"}
-        }
-        XPF{
-            one{"CFP franc"}
-            other{"CFP francs"}
         }
         YER{
             one{"Yemeni rial"}

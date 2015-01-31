@@ -127,14 +127,6 @@ rof{
             "SLL",
             "leoni",
         }
-        STD{
-            "STD",
-            "heleri sa Sao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "lilangeni",
-        }
         TND{
             "TND",
             "heleri sa Tunisia",

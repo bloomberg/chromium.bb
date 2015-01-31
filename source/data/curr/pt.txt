@@ -135,10 +135,6 @@ pt{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Libra malvinense",
-        }
         GBP{
             "£",
             "Libra esterlina britânica",
@@ -227,10 +223,6 @@ pt{
             "KHR",
             "Riel cambojano",
         }
-        KPW{
-            "KPW",
-            "Won norte-coreano",
-        }
         KRW{
             "₩",
             "Won sul-coreano",
@@ -238,10 +230,6 @@ pt{
         KWD{
             "KWD",
             "Dinar kuwaitiano",
-        }
-        KYD{
-            "KYD",
-            "Dólar das Ilhas Caiman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ pt{
             "SAR",
             "Riyal saudita",
         }
-        SBD{
-            "SBD",
-            "Dólar das Ilhas Salomão",
-        }
         SDG{
             "SDG",
             "Libra sudanesa",
@@ -414,18 +398,6 @@ pt{
         SSP{
             "SSP",
             "Libra sul-sudanesa",
-        }
-        STD{
-            "STD",
-            "Dobra de São Tomé e Príncipe",
-        }
-        SYP{
-            "SYP",
-            "Libra síria",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni suazi",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ pt{
             "FCFA",
             "Franco CFA de BEAC",
         }
-        XCD{
-            "EC$",
-            "Dólar do Caribe Oriental",
-        }
         XDR{
             "XDR",
             "Direitos Especiais de Giro",
@@ -502,10 +470,6 @@ pt{
         XOF{
             "CFA",
             "Franco CFA de BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Franco CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ pt{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ pt{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ pt{
             one{"Euro"}
             other{"Euros"}
         }
-        FKP{
-            one{"Libra malvinense"}
-            other{"Libras malvinenses"}
-        }
         GBP{
             one{"Libra esterlina britânica"}
             other{"Libras esterlinas britânicas"}
@@ -780,10 +738,6 @@ pt{
             one{"Riel cambojano"}
             other{"Rieles cambojanos"}
         }
-        KPW{
-            one{"Won norte-coreano"}
-            other{"Wons norte-coreanos"}
-        }
         KRW{
             one{"Won sul-coreano"}
             other{"Wons sul-coreanos"}
@@ -791,10 +745,6 @@ pt{
         KWD{
             one{"Dinar kuwaitiano"}
             other{"Dinares kuwaitianos"}
-        }
-        KYD{
-            one{"Dólar das Ilhas Caiman"}
-            other{"Dólares das Ilhas Caiman"}
         }
         KZT{
             one{"Tenge cazaque"}
@@ -944,10 +894,6 @@ pt{
             one{"Riyal saudita"}
             other{"Riyales sauditas"}
         }
-        SBD{
-            one{"Dólar das Ilhas Salomão"}
-            other{"Dólares das Ilhas Salomão"}
-        }
         SDG{
             one{"Libra sudanesa"}
             other{"Libras sudanesas"}
@@ -967,18 +913,6 @@ pt{
         SSP{
             one{"Libra sul-sudanesa"}
             other{"Libras sul-sudanesas"}
-        }
-        STD{
-            one{"Dobra de São Tomé e Príncipe"}
-            other{"Dobras de São Tomé e Príncipe"}
-        }
-        SYP{
-            one{"Libra síria"}
-            other{"Libras sírias"}
-        }
-        SZL{
-            one{"Lilangeni suazi"}
-            other{"Lilangenis suazis"}
         }
         THB{
             one{"Baht tailandês"}
@@ -1044,10 +978,6 @@ pt{
             one{"Franco CFA de BEAC"}
             other{"Francos CFA de BEAC"}
         }
-        XCD{
-            one{"Dólar do Caribe Oriental"}
-            other{"Dólares do Caribe Oriental"}
-        }
         XDR{
             one{"Direitos de desenho especiais"}
             other{"Direitos de desenho especiais"}
@@ -1055,10 +985,6 @@ pt{
         XOF{
             one{"Franco CFA de BCEAO"}
             other{"Francos CFA de BCEAO"}
-        }
-        XPF{
-            one{"Franco CFP"}
-            other{"Francos CFP"}
         }
         YER{
             one{"Rial iemenita"}

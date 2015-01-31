@@ -127,14 +127,6 @@ asa{
             "SLL",
             "leoni",
         }
-        STD{
-            "STD",
-            "dobra ya Thao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "lilangeni",
-        }
         TND{
             "TND",
             "dinari ya Tunithia",

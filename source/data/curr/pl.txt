@@ -135,10 +135,6 @@ pl{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "funt falklandzki",
-        }
         GBP{
             "GBP",
             "funt szterling",
@@ -227,10 +223,6 @@ pl{
             "KHR",
             "riel kambodżański",
         }
-        KPW{
-            "KPW",
-            "won północnokoreański",
-        }
         KRW{
             "KRW",
             "won południowokoreański",
@@ -238,10 +230,6 @@ pl{
         KWD{
             "KWD",
             "dinar kuwejcki",
-        }
-        KYD{
-            "KYD",
-            "dolar kajmański",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ pl{
             "SAR",
             "rial saudyjski",
         }
-        SBD{
-            "SBD",
-            "dolar Wysp Salomona",
-        }
         SDG{
             "SDG",
             "funt sudański",
@@ -414,18 +398,6 @@ pl{
         SSP{
             "SSP",
             "funt południowosudański",
-        }
-        STD{
-            "STD",
-            "dobra Wysp Świętego Tomasza i Książęcej",
-        }
-        SYP{
-            "SYP",
-            "funt syryjski",
-        }
-        SZL{
-            "SZL",
-            "lilangeni Suazi",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ pl{
             "FCFA",
             "frank CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "dolar wschodniokaraibski",
-        }
         XDR{
             "XDR",
             "specjalne prawa ciągnienia",
@@ -502,10 +470,6 @@ pl{
         XOF{
             "CFA",
             "frank CFA",
-        }
-        XPF{
-            "CFPF",
-            "frank CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ pl{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ pl{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -750,12 +712,6 @@ pl{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            few{"funty falklandzkie"}
-            many{"funtów falklandzkich"}
-            one{"funt falklandzki"}
-            other{"funta falklandzkiego"}
-        }
         GBP{
             few{"funty szterlingi"}
             many{"funtów szterlingów"}
@@ -888,12 +844,6 @@ pl{
             one{"riel kambodżański"}
             other{"riela kambodżańskiego"}
         }
-        KPW{
-            few{"wony północnokoreańskie"}
-            many{"wonów północnokoreańskich"}
-            one{"won północnokoreański"}
-            other{"wona północnokoreańskiego"}
-        }
         KRW{
             few{"wony południowokoreańskie"}
             many{"wonów południowokoreańskich"}
@@ -905,12 +855,6 @@ pl{
             many{"dinarów kuwejckich"}
             one{"dinar kuwejcki"}
             other{"dinara kuwejckiego"}
-        }
-        KYD{
-            few{"dolary kajmańskie"}
-            many{"dolarów kajmańskich"}
-            one{"dolar kajmański"}
-            other{"dolara kajmańskiego"}
         }
         KZT{
             few{"tenge kazachskie"}
@@ -1134,12 +1078,6 @@ pl{
             one{"rial saudyjski"}
             other{"riala saudyjskiego"}
         }
-        SBD{
-            few{"dolary Wysp Salomona"}
-            many{"dolarów Wysp Salomona"}
-            one{"dolar Wysp Salomona"}
-            other{"dolara Wysp Salomona"}
-        }
         SDG{
             few{"funty sudańskie"}
             many{"funtów sudańskich"}
@@ -1169,24 +1107,6 @@ pl{
             many{"funtów południowosudańskich"}
             one{"funt południowosudański"}
             other{"funta południowosudańskiego"}
-        }
-        STD{
-            few{"dobry Wysp Świętego Tomasza i Książęcej"}
-            many{"dobr Wysp Świętego Tomasza i Książęcej"}
-            one{"dobra Wysp Świętego Tomasza i Książęcej"}
-            other{"dobry Wysp Świętego Tomasza i Książęcej"}
-        }
-        SYP{
-            few{"funty syryjskie"}
-            many{"funtów syryjskich"}
-            one{"funt syryjski"}
-            other{"funta syryjskiego"}
-        }
-        SZL{
-            few{"emalangeni Suazi"}
-            many{"emalangeni Suazi"}
-            one{"lilangeni Suazi"}
-            other{"emalangeni Suazi"}
         }
         THB{
             few{"bahty tajskie"}
@@ -1284,23 +1204,11 @@ pl{
             one{"frank CFA BEAC"}
             other{"franka CFA BEAC"}
         }
-        XCD{
-            few{"dolary wschodniokaraibskie"}
-            many{"dolarów wschodniokaraibskich"}
-            one{"dolar wschodniokaraibski"}
-            other{"dolara wschodniokaraibskiego"}
-        }
         XOF{
             few{"franki CFA"}
             many{"franków CFA"}
             one{"frank CFA"}
             other{"franka CFA"}
-        }
-        XPF{
-            few{"franki CFP"}
-            many{"franków CFP"}
-            one{"frank CFP"}
-            other{"franka CFP"}
         }
         YER{
             few{"riale jemeńskie"}

@@ -127,14 +127,6 @@ saq{
             "SLL",
             "Leoni",
         }
-        STD{
-            "STD",
-            "Njilingi eel Sao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Njilingi eel Tunisia",

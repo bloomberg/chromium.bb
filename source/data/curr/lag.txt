@@ -127,14 +127,6 @@ lag{
             "SLL",
             "Leóoni",
         }
-        STD{
-            "STD",
-            "Dóbura ya SaoTóome na Pirínsipe",
-        }
-        SZL{
-            "SZL",
-            "Lilengéeni",
-        }
         TND{
             "TND",
             "Dináari ya Tunísia",

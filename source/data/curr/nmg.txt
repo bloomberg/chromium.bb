@@ -127,14 +127,6 @@ nmg{
             "SLL",
             "Mɔn Leɔne",
         }
-        STD{
-            "STD",
-            "Mɔn Sao tomé na prinship",
-        }
-        SZL{
-            "SZL",
-            "Mɔn Ligangeni",
-        }
         TND{
             "TND",
             "Mɔn Tunisia",

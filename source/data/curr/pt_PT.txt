@@ -56,10 +56,6 @@ pt_PT{
             "CZK",
             "Coroa checa",
         }
-        FKP{
-            "FKP",
-            "Libra das Ilhas Falkland",
-        }
         GHS{
             "GHS",
             "Cedi de Gana",
@@ -79,10 +75,6 @@ pt_PT{
         KGS{
             "KGS",
             "Som do Quirguistão",
-        }
-        KYD{
-            "KYD",
-            "Dólar das Ilhas Caimão",
         }
         KZT{
             "KZT",
@@ -168,10 +160,6 @@ pt_PT{
             "SGD",
             "Dólar de Singapura",
         }
-        SZL{
-            "SZL",
-            "Lilangeni da Suazilândia",
-        }
         THB{
             "฿",
             "Baht da Tailândia",
@@ -207,10 +195,6 @@ pt_PT{
         XAF{
             "FCFA",
             "Franco CFA (BEAC)",
-        }
-        XCD{
-            "EC$",
-            "Dólar das Caraíbas Orientais",
         }
         XOF{
             "CFA",
@@ -266,10 +250,6 @@ pt_PT{
             one{"Coroa checa"}
             other{"Coroas checas"}
         }
-        FKP{
-            one{"Libra das Ilhas Falkland"}
-            other{"Libras das Ilhas Falkland"}
-        }
         GHS{
             one{"Cedi de Gana"}
             other{"Cedis de Gana"}
@@ -297,10 +277,6 @@ pt_PT{
         KGS{
             one{"Som do Quirguistão"}
             other{"Sons do Quirguistão"}
-        }
-        KYD{
-            one{"Dólar das Ilhas Caimão"}
-            other{"Dólares das Ilhas Caimão"}
         }
         KZT{
             one{"Tenge do Cazaquistão"}
@@ -394,10 +370,6 @@ pt_PT{
             one{"Dólar de Singapura"}
             other{"Dólares de Singapura"}
         }
-        SZL{
-            one{"Lilangeni da Suazilândia"}
-            other{"Lilangenis da Suazilândia"}
-        }
         THB{
             one{"Baht da Tailândia"}
             other{"Bahts da Tailândia"}
@@ -433,10 +405,6 @@ pt_PT{
         XAF{
             one{"Franco CFA (BEAC)"}
             other{"Francos CFA (BEAC)"}
-        }
-        XCD{
-            one{"Dólar das Caraíbas Orientais"}
-            other{"Dólares das Caraíbas Orientais"}
         }
         XOF{
             one{"Franco CFA (BCEAO)"}

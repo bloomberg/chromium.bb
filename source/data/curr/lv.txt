@@ -135,10 +135,6 @@ lv{
             "€",
             "eiro",
         }
-        FKP{
-            "FKP",
-            "Folklenda Salu mārciņa",
-        }
         GBP{
             "£",
             "Lielbritānijas sterliņu mārciņa",
@@ -227,10 +223,6 @@ lv{
             "KHR",
             "Kambodžas riels",
         }
-        KPW{
-            "KPW",
-            "Ziemeļkorejas vona",
-        }
         KRW{
             "₩",
             "Dienvidkorejas vona",
@@ -238,10 +230,6 @@ lv{
         KWD{
             "KWD",
             "Kuveitas dinārs",
-        }
-        KYD{
-            "KYD",
-            "Kaimanu salu dolārs",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ lv{
             "SAR",
             "Saūda riāls",
         }
-        SBD{
-            "SBD",
-            "Zālamana Salu dolārs",
-        }
         SDG{
             "SDG",
             "Sudānas mārciņa",
@@ -414,18 +398,6 @@ lv{
         SSP{
             "SSP",
             "Dienvidsudānas mārciņa",
-        }
-        STD{
-            "STD",
-            "Santome un Prinsipi dobra",
-        }
-        SYP{
-            "SYP",
-            "Sīrijas mārciņa",
-        }
-        SZL{
-            "SZL",
-            "Svazilendas lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ lv{
             "FCFA",
             "Centrālāfrikas CFA franks",
         }
-        XCD{
-            "EC$",
-            "Austrumkarību dolārs",
-        }
         XDR{
             "XDR",
             "Speciālās aizņēmuma tiesības",
@@ -502,10 +470,6 @@ lv{
         XOF{
             "CFA",
             "Rietumāfrikas CFA franks",
-        }
-        XPF{
-            "CFPF",
-            "CFP franks",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ lv{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ lv{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -719,11 +681,6 @@ lv{
             other{"eiro"}
             zero{"eiro"}
         }
-        FKP{
-            one{"Folklenda Salu mārciņa"}
-            other{"Folklenda Salu mārciņas"}
-            zero{"Folklenda Salu mārciņas"}
-        }
         GBP{
             one{"Lielbritānijas sterliņu mārciņa"}
             other{"Lielbritānijas sterliņu mārciņas"}
@@ -834,11 +791,6 @@ lv{
             other{"Kambodžas rieli"}
             zero{"Kambodžas rieli"}
         }
-        KPW{
-            one{"Ziemeļkorejas vona"}
-            other{"Ziemeļkorejas vonas"}
-            zero{"Ziemeļkorejas vonas"}
-        }
         KRW{
             one{"Dienvidkorejas vona"}
             other{"Dienvidkorejas vonas"}
@@ -848,11 +800,6 @@ lv{
             one{"Kuveitas dinārs"}
             other{"Kuveitas dināri"}
             zero{"Kuveitas dināri"}
-        }
-        KYD{
-            one{"Kaimanu salu dolārs"}
-            other{"Kaimanu salu dolāri"}
-            zero{"Kaimanu salu dolāri"}
         }
         KZT{
             one{"Kazahstānas tenge"}
@@ -1039,11 +986,6 @@ lv{
             other{"Saūda riāli"}
             zero{"Saūda riāli"}
         }
-        SBD{
-            one{"Zālamana Salu dolārs"}
-            other{"Zālamana Salu dolāri"}
-            zero{"Zālamana Salu dolāri"}
-        }
         SDG{
             one{"Sudānas mārciņa"}
             other{"Sudānas mārciņas"}
@@ -1068,21 +1010,6 @@ lv{
             one{"Dienvidsudānas mārciņa"}
             other{"Dienvidsudānas mārciņas"}
             zero{"Dienvidsudānas mārciņas"}
-        }
-        STD{
-            one{"Santome un Prinsipi dobra"}
-            other{"Santome un Prinsipi dobras"}
-            zero{"Santome un Prinsipi dobras"}
-        }
-        SYP{
-            one{"Sīrijas mārciņa"}
-            other{"Sīrijas mārciņas"}
-            zero{"Sīrijas mārciņas"}
-        }
-        SZL{
-            one{"Svazilendas lilangeni"}
-            other{"Svazilendas lilangeni"}
-            zero{"Svazilendas lilangeni"}
         }
         THB{
             one{"Taizemes bāts"}
@@ -1164,20 +1091,10 @@ lv{
             other{"Centrālāfrikas CFA franki"}
             zero{"Centrālāfrikas CFA franki"}
         }
-        XCD{
-            one{"Austrumkarību dolārs"}
-            other{"Austrumkarību dolāri"}
-            zero{"Austrumkarību dolāri"}
-        }
         XOF{
             one{"Rietumāfrikas CFA franks"}
             other{"Rietumāfrikas CFA franki"}
             zero{"Rietumāfrikas CFA franki"}
-        }
-        XPF{
-            one{"CFP franks"}
-            other{"CFP franki"}
-            zero{"CFP franki"}
         }
         YER{
             one{"Jemenas riāls"}

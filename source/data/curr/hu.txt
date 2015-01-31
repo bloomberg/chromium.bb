@@ -135,10 +135,6 @@ hu{
             "EUR",
             "euró",
         }
-        FKP{
-            "FKP",
-            "falkland-szigeteki font",
-        }
         GBP{
             "GBP",
             "brit font sterling",
@@ -227,10 +223,6 @@ hu{
             "KHR",
             "kambodzsai riel",
         }
-        KPW{
-            "KPW",
-            "észak-koreai won",
-        }
         KRW{
             "KRW",
             "dél-koreai won",
@@ -238,10 +230,6 @@ hu{
         KWD{
             "KWD",
             "kuvaiti dínár",
-        }
-        KYD{
-            "KYD",
-            "kajmán-szigeteki dollár",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ hu{
             "SAR",
             "szaúdi riyal",
         }
-        SBD{
-            "SBD",
-            "salamon-szigeteki dollár",
-        }
         SDG{
             "SDG",
             "szudáni font",
@@ -414,18 +398,6 @@ hu{
         SSP{
             "SSP",
             "dél-szudáni font",
-        }
-        STD{
-            "STD",
-            "São Tomé és Príncipe-i dobra",
-        }
-        SYP{
-            "SYP",
-            "szíriai font",
-        }
-        SZL{
-            "SZL",
-            "szváziföldi lilangeni",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ hu{
             "FCFA",
             "CFA frank BEAC",
         }
-        XCD{
-            "XCD",
-            "kelet-karibi dollár",
-        }
         XDR{
             "XDR",
             "Special Drawing Rights",
@@ -502,10 +470,6 @@ hu{
         XOF{
             "CFA",
             "CFA frank BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "csendes-óceáni valutaközösségi frank",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ hu{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ hu{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ hu{
             one{"euró"}
             other{"euró"}
         }
-        FKP{
-            one{"falkland-szigeteki font"}
-            other{"falkland-szigeteki font"}
-        }
         GBP{
             one{"brit font sterling"}
             other{"brit font sterling"}
@@ -780,10 +738,6 @@ hu{
             one{"kambodzsai riel"}
             other{"kambodzsai riel"}
         }
-        KPW{
-            one{"észak-koreai won"}
-            other{"észak-koreai won"}
-        }
         KRW{
             one{"dél-koreai won"}
             other{"dél-koreai won"}
@@ -791,10 +745,6 @@ hu{
         KWD{
             one{"kuvaiti dínár"}
             other{"kuvaiti dínár"}
-        }
-        KYD{
-            one{"kajmán-szigeteki dollár"}
-            other{"kajmán-szigeteki dollár"}
         }
         KZT{
             one{"kazahsztáni tenge"}
@@ -944,10 +894,6 @@ hu{
             one{"szaúdi riyal"}
             other{"szaúdi riyal"}
         }
-        SBD{
-            one{"salamon-szigeteki dollár"}
-            other{"salamon-szigeteki dollár"}
-        }
         SDG{
             one{"szudáni font"}
             other{"szudáni font"}
@@ -967,18 +913,6 @@ hu{
         SSP{
             one{"dél-szudáni font"}
             other{"dél-szudáni font"}
-        }
-        STD{
-            one{"São Tomé és Príncipe-i dobra"}
-            other{"São Tomé és Príncipe-i dobra"}
-        }
-        SYP{
-            one{"szíriai font"}
-            other{"szíriai font"}
-        }
-        SZL{
-            one{"szváziföldi lilangeni"}
-            other{"szváziföldi lilangeni"}
         }
         THB{
             one{"thai baht"}
@@ -1044,17 +978,9 @@ hu{
             one{"CFA frank BEAC"}
             other{"CFA frank BEAC"}
         }
-        XCD{
-            one{"kelet-karibi dollár"}
-            other{"kelet-karibi dollár"}
-        }
         XOF{
             one{"CFA frank BCEAO"}
             other{"CFA frank BCEAO"}
-        }
-        XPF{
-            one{"csendes-óceáni valutaközösségi frank"}
-            other{"csendes-óceáni valutaközösségi frank"}
         }
         YER{
             one{"jemeni rial"}

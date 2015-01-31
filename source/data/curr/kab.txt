@@ -127,14 +127,6 @@ kab{
             "SLL",
             "Alyun",
         }
-        STD{
-            "STD",
-            "Asw Ṭum d Udubra Amenzay",
-        }
-        SZL{
-            "SZL",
-            "Alilangini",
-        }
         TND{
             "TND",
             "Adinar Atunsi",

@@ -40,10 +40,6 @@ fr_CA{
             "COP",
             "peso colombien",
         }
-        FKP{
-            "FKP",
-            "livre des Îles Malouines",
-        }
         GBP{
             "£",
             "livre sterling",
@@ -96,10 +92,6 @@ fr_CA{
             "QAR",
             "riyal du Qatar",
         }
-        SBD{
-            "SBD",
-            "dollar des îles Salomon",
-        }
         SGD{
             "$ SG",
             "dollar de Singapour",
@@ -132,19 +124,11 @@ fr_CA{
             "XOF",
             "franc CFA (BCEAO)",
         }
-        XPF{
-            "XPF",
-            "franc CFP",
-        }
     }
     CurrencyPlurals{
         AZN{
             one{"manat azerbaïdjanais"}
             other{"manats azerbaïdjanais"}
-        }
-        FKP{
-            one{"livre des Îles Malouines"}
-            other{"livres des Îles Malouines"}
         }
         GEL{
             one{"lari géorgien"}

@@ -135,10 +135,6 @@ sl{
             "€",
             "evro",
         }
-        FKP{
-            "FKP",
-            "falklandski funt",
-        }
         GBP{
             "£",
             "britanski funt",
@@ -227,10 +223,6 @@ sl{
             "KHR",
             "kamboški riel",
         }
-        KPW{
-            "KPW",
-            "severnokorejski von",
-        }
         KRW{
             "₩",
             "južnokorejski von",
@@ -238,10 +230,6 @@ sl{
         KWD{
             "KWD",
             "kuvajtski dinar",
-        }
-        KYD{
-            "KYD",
-            "kajmanski dolar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ sl{
             "SAR",
             "saudski rial",
         }
-        SBD{
-            "SBD",
-            "solomonski dolar",
-        }
         SDG{
             "SDG",
             "sudanski funt",
@@ -414,18 +398,6 @@ sl{
         SSP{
             "SSP",
             "južnosudanski funt",
-        }
-        STD{
-            "STD",
-            "saotomejska dobra",
-        }
-        SYP{
-            "SYP",
-            "sirijski funt",
-        }
-        SZL{
-            "SZL",
-            "svazijski lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ sl{
             "FCFA",
             "CFA frank BEAC",
         }
-        XCD{
-            "EC$",
-            "vzhodnokaribski dolar",
-        }
         XDR{
             "XDR",
             "posebne pravice črpanja",
@@ -502,10 +470,6 @@ sl{
         XOF{
             "CFA",
             "CFA frank BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP frank",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ sl{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ sl{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -750,12 +712,6 @@ sl{
             other{"evrov"}
             two{"evra"}
         }
-        FKP{
-            few{"falklandski funt"}
-            one{"falklandski funt"}
-            other{"falklandski funt"}
-            two{"falklandski funt"}
-        }
         GBP{
             few{"britanski funti"}
             one{"britanski funt"}
@@ -888,12 +844,6 @@ sl{
             other{"kamboški riel"}
             two{"kamboški riel"}
         }
-        KPW{
-            few{"severnokorejski von"}
-            one{"severnokorejski von"}
-            other{"severnokorejski von"}
-            two{"severnokorejski von"}
-        }
         KRW{
             few{"južnokorejski von"}
             one{"južnokorejski von"}
@@ -905,12 +855,6 @@ sl{
             one{"kuvajtski dinar"}
             other{"kuvajtski dinar"}
             two{"kuvajtski dinar"}
-        }
-        KYD{
-            few{"kajmanski dolar"}
-            one{"kajmanski dolar"}
-            other{"kajmanski dolar"}
-            two{"kajmanski dolar"}
         }
         KZT{
             few{"kazahstanski tenge"}
@@ -1134,12 +1078,6 @@ sl{
             other{"saudski rial"}
             two{"saudski rial"}
         }
-        SBD{
-            few{"solomonski dolar"}
-            one{"solomonski dolar"}
-            other{"solomonski dolar"}
-            two{"solomonski dolar"}
-        }
         SDG{
             few{"sudanski funt"}
             one{"sudanski funt"}
@@ -1169,24 +1107,6 @@ sl{
             one{"južnosudanski funt"}
             other{"južnosudanskih funtov"}
             two{"južnosudanska funta"}
-        }
-        STD{
-            few{"saotomejska dobra"}
-            one{"saotomejska dobra"}
-            other{"saotomejska dobra"}
-            two{"saotomejska dobra"}
-        }
-        SYP{
-            few{"sirijski funt"}
-            one{"sirijski funt"}
-            other{"sirijski funt"}
-            two{"sirijski funt"}
-        }
-        SZL{
-            few{"svazijski lilangeni"}
-            one{"svazijski lilangeni"}
-            other{"svazijski lilangeni"}
-            two{"svazijski lilangeni"}
         }
         THB{
             few{"tajski baht"}
@@ -1284,23 +1204,11 @@ sl{
             other{"CFA frank BEAC"}
             two{"CFA frank BEAC"}
         }
-        XCD{
-            few{"vzhodnokaribski dolar"}
-            one{"vzhodnokaribski dolar"}
-            other{"vzhodnokaribski dolar"}
-            two{"vzhodnokaribski dolar"}
-        }
         XOF{
             few{"CFA frank BCEAO"}
             one{"CFA frank BCEAO"}
             other{"CFA frank BCEAO"}
             two{"CFA frank BCEAO"}
-        }
-        XPF{
-            few{"CFP frank"}
-            one{"CFP frank"}
-            other{"CFP frank"}
-            two{"CFP frank"}
         }
         YER{
             few{"jemenski rial"}

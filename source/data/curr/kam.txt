@@ -127,14 +127,6 @@ kam{
             "SLL",
             "Leoni",
         }
-        STD{
-            "STD",
-            "Dobra ya Sao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Ndinari ya Tunisia",

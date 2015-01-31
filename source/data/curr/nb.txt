@@ -135,10 +135,6 @@ nb{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "falklandspund",
-        }
         GBP{
             "£",
             "britiske pund sterling",
@@ -227,10 +223,6 @@ nb{
             "KHR",
             "kambodsjanske riel",
         }
-        KPW{
-            "KPW",
-            "nordkoreanske won",
-        }
         KRW{
             "KRW",
             "sørkoreanske won",
@@ -238,10 +230,6 @@ nb{
         KWD{
             "KWD",
             "kuwaitiske dinarer",
-        }
-        KYD{
-            "KYD",
-            "caymanske dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ nb{
             "SAR",
             "saudiarabiske riyaler",
         }
-        SBD{
-            "SBD",
-            "salomonske dollar",
-        }
         SDG{
             "SDG",
             "sudanske pund",
@@ -414,18 +398,6 @@ nb{
         SSP{
             "SSP",
             "sørsudanske pund",
-        }
-        STD{
-            "STD",
-            "São Tomé og Príncipe-dobra",
-        }
-        SYP{
-            "SYP",
-            "syriske pund",
-        }
-        SZL{
-            "SZL",
-            "swazilandske lilangeni",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ nb{
             "XAF",
             "sentralafrikanske CFA-franc",
         }
-        XCD{
-            "XCD",
-            "østkaribiske dollar",
-        }
         XDR{
             "XDR",
             "spesielle trekkrettigheter",
@@ -502,10 +470,6 @@ nb{
         XOF{
             "CFA",
             "vestafrikanske CFA-franc",
-        }
-        XPF{
-            "XPF",
-            "CFP-franc",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ nb{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ nb{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ nb{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"falklandspund"}
-            other{"falklandspund"}
-        }
         GBP{
             one{"britisk pund sterling"}
             other{"britiske pund sterling"}
@@ -780,10 +738,6 @@ nb{
             one{"kambodsjansk riel"}
             other{"kambodsjanske riel"}
         }
-        KPW{
-            one{"nordkoreansk won"}
-            other{"nordkoreanske won"}
-        }
         KRW{
             one{"sørkoreansk won"}
             other{"sørkoreanske won"}
@@ -791,10 +745,6 @@ nb{
         KWD{
             one{"kuwaitisk dinar"}
             other{"kuwaitiske dinarer"}
-        }
-        KYD{
-            one{"caymansk dollar"}
-            other{"caymanske dollar"}
         }
         KZT{
             one{"kasakhstansk tenge"}
@@ -944,10 +894,6 @@ nb{
             one{"saudiarabisk riyal"}
             other{"saudiarabiske riyaler"}
         }
-        SBD{
-            one{"salomonsk dollar"}
-            other{"salomonske dollar"}
-        }
         SDG{
             one{"sudansk pund"}
             other{"sudanske pund"}
@@ -967,18 +913,6 @@ nb{
         SSP{
             one{"sørsudansk pund"}
             other{"sørsudanske pund"}
-        }
-        STD{
-            one{"São Tomé og Príncipe-dobra"}
-            other{"São Tomé og Príncipe-dobra"}
-        }
-        SYP{
-            one{"syrisk pund"}
-            other{"syriske pund"}
-        }
-        SZL{
-            one{"swazilandsk lilangeni"}
-            other{"swazilandske lilangeni"}
         }
         THB{
             one{"thailandsk baht"}
@@ -1044,10 +978,6 @@ nb{
             one{"sentralafrikansk CFA-franc"}
             other{"sentralafrikanske CFA-franc"}
         }
-        XCD{
-            one{"østkaribisk dollar"}
-            other{"østkaribiske dollar"}
-        }
         XDR{
             one{"spesiell trekkrettighet"}
             other{"spesielle trekkrettigheter"}
@@ -1055,10 +985,6 @@ nb{
         XOF{
             one{"vestafrikansk CFA-franc"}
             other{"vestafrikanske CFA-franc"}
-        }
-        XPF{
-            one{"CFP-franc"}
-            other{"CFP-franc"}
         }
         YER{
             one{"jemenittisk rial"}

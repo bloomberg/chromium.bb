@@ -127,14 +127,6 @@ ksf{
             "SLL",
             "mɔni mǝ á syɛraleon",
         }
-        STD{
-            "STD",
-            "mɔni mǝ á saotomɛ́ ri priŋsib",
-        }
-        SZL{
-            "SZL",
-            "mɔni mǝ á swazilan",
-        }
         TND{
             "TND",
             "mɔni mǝ á tunɛsí",

@@ -133,10 +133,6 @@ en_GB{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland Islands Pound",
-        }
         GBP{
             "£",
             "British Pound Sterling",
@@ -221,10 +217,6 @@ en_GB{
             "KHR",
             "Cambodian Riel",
         }
-        KPW{
-            "KPW",
-            "North Korean Won",
-        }
         KRW{
             "₩",
             "South Korean Won",
@@ -232,10 +224,6 @@ en_GB{
         KWD{
             "KWD",
             "Kuwaiti Dinar",
-        }
-        KYD{
-            "KYD",
-            "Cayman Islands Dollar",
         }
         KZT{
             "KZT",
@@ -385,10 +373,6 @@ en_GB{
             "SAR",
             "Saudi Riyal",
         }
-        SBD{
-            "SBD",
-            "Solomon Islands Dollar",
-        }
         SDG{
             "SDG",
             "Sudanese Pound",
@@ -408,18 +392,6 @@ en_GB{
         SSP{
             "SSP",
             "South Sudanese Pound",
-        }
-        STD{
-            "STD",
-            "São Tomé and Príncipe Dobra",
-        }
-        SYP{
-            "SYP",
-            "Syrian Pound",
-        }
-        SZL{
-            "SZL",
-            "Swazi Lilangeni",
         }
         THB{
             "฿",
@@ -481,10 +453,6 @@ en_GB{
             "FCFA",
             "CFA Franc BEAC",
         }
-        XCD{
-            "EC$",
-            "East Caribbean Dollar",
-        }
         XDR{
             "XDR",
             "Special Drawing Rights",
@@ -492,10 +460,6 @@ en_GB{
         XOF{
             "CFA",
             "CFA Franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP Franc",
         }
         YER{
             "YER",
@@ -532,7 +496,6 @@ en_GB{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -542,7 +505,6 @@ en_GB{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -557,10 +519,6 @@ en_GB{
         ILS{
             one{"Israeli new shekel"}
             other{"Israeli new shekels"}
-        }
-        STD{
-            one{"São Tomé and Príncipe dobra"}
-            other{"São Tomé and Príncipe dobras"}
         }
         TTD{
             one{"Trinidad and Tobago dollar"}

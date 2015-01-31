@@ -9,10 +9,6 @@
 en_SZ{
     %%Parent{"en_001"}
     Currencies{
-        SZL{
-            "E",
-            "Swazi Lilangeni",
-        }
     }
     Version{"2.1.6.69"}
 }

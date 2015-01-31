@@ -127,14 +127,6 @@ rn{
             "SLL",
             "Ilewone",
         }
-        STD{
-            "STD",
-            "Idobura ryo muri Sawotome na Perensipe",
-        }
-        SZL{
-            "SZL",
-            "Ililangeni",
-        }
         TND{
             "TND",
             "Idinari ryo muri Tuniziya",

@@ -135,10 +135,6 @@ vi{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Bảng Quần đảo Falkland",
-        }
         GBP{
             "£",
             "Bảng Anh",
@@ -227,10 +223,6 @@ vi{
             "KHR",
             "Riel Campuchia",
         }
-        KPW{
-            "KPW",
-            "Won Triều Tiên",
-        }
         KRW{
             "₩",
             "Won Hàn Quốc",
@@ -238,10 +230,6 @@ vi{
         KWD{
             "KWD",
             "Dinar Kuwait",
-        }
-        KYD{
-            "KYD",
-            "Đô la Quần đảo Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ vi{
             "SAR",
             "Riyal Ả Rập Xê-út",
         }
-        SBD{
-            "SBD",
-            "Đô la quần đảo Solomon",
-        }
         SDG{
             "SDG",
             "Bảng Sudan",
@@ -414,18 +398,6 @@ vi{
         SSP{
             "SSP",
             "Bảng Nam Sudan",
-        }
-        STD{
-            "STD",
-            "Dobra São Tomé và Príncipe",
-        }
-        SYP{
-            "SYP",
-            "Bảng Syria",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni Swaziland",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ vi{
             "FCFA",
             "CFA Franc BEAC",
         }
-        XCD{
-            "EC$",
-            "Đô la Đông Caribê",
-        }
         XDR{
             "XDR",
             "Quyền Rút vốn Đặc biệt",
@@ -502,10 +470,6 @@ vi{
         XOF{
             "CFA",
             "Franc CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Franc CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ vi{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ vi{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -657,9 +619,6 @@ vi{
         EUR{
             other{"euro"}
         }
-        FKP{
-            other{"bảng Quần đảo Falkland"}
-        }
         GBP{
             other{"bảng Anh"}
         }
@@ -726,17 +685,11 @@ vi{
         KHR{
             other{"riel Campuchia"}
         }
-        KPW{
-            other{"won Triều Tiên"}
-        }
         KRW{
             other{"won Hàn Quốc"}
         }
         KWD{
             other{"dinar Kuwait"}
-        }
-        KYD{
-            other{"đô la Quần đảo Cayman"}
         }
         KZT{
             other{"tenge Kazakhstan"}
@@ -849,9 +802,6 @@ vi{
         SAR{
             other{"riyal Ả Rập Xê-út"}
         }
-        SBD{
-            other{"đô la quần đảo Solomon"}
-        }
         SDG{
             other{"bảng Sudan"}
         }
@@ -866,15 +816,6 @@ vi{
         }
         SSP{
             other{"bảng Nam Sudan"}
-        }
-        STD{
-            other{"dobra São Tomé và Príncipe"}
-        }
-        SYP{
-            other{"bảng Syria"}
-        }
-        SZL{
-            other{"emalangeni Swaziland"}
         }
         THB{
             other{"bạt Thái Lan"}
@@ -924,14 +865,8 @@ vi{
         XAF{
             other{"CFA Franc BEAC"}
         }
-        XCD{
-            other{"đô la Đông Caribê"}
-        }
         XOF{
             other{"franc CFA BCEAO"}
-        }
-        XPF{
-            other{"franc CFP"}
         }
         YER{
             other{"rial Yemen"}

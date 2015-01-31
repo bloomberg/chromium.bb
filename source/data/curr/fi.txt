@@ -135,10 +135,6 @@ fi{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "Falklandinsaarten punta",
-        }
         GBP{
             "£",
             "Englannin punta",
@@ -227,10 +223,6 @@ fi{
             "KHR",
             "Kambodžan riel",
         }
-        KPW{
-            "KPW",
-            "Pohjois-Korean won",
-        }
         KRW{
             "KRW",
             "Etelä-Korean won",
@@ -238,10 +230,6 @@ fi{
         KWD{
             "KWD",
             "Kuwaitin dinaari",
-        }
-        KYD{
-            "KYD",
-            "Caymansaarten dollari",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ fi{
             "SAR",
             "Saudi-Arabian rial",
         }
-        SBD{
-            "SBD",
-            "Salomonsaarten dollari",
-        }
         SDG{
             "SDG",
             "Sudanin punta",
@@ -414,18 +398,6 @@ fi{
         SSP{
             "SSP",
             "Etelä-Sudanin punta",
-        }
-        STD{
-            "STD",
-            "São Tomén ja Príncipen dobra",
-        }
-        SYP{
-            "SYP",
-            "Syyrian punta",
-        }
-        SZL{
-            "SZL",
-            "Swazimaan lilangeni",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ fi{
             "FCFA",
             "CFA-frangi BEAC",
         }
-        XCD{
-            "XCD",
-            "Itä-Karibian dollari",
-        }
         XDR{
             "XDR",
             "erityisnosto-oikeus (SDR)",
@@ -502,10 +470,6 @@ fi{
         XOF{
             "CFA",
             "CFA-frangi BCEAO",
-        }
-        XPF{
-            "XPF",
-            "CFP-frangi",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ fi{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         LAK{"₭"}
         MNT{"₮"}
         MXN{"$"}
@@ -551,7 +514,6 @@ fi{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -687,10 +649,6 @@ fi{
             one{"euro"}
             other{"euroa"}
         }
-        FKP{
-            one{"Falklandinsaarten punta"}
-            other{"Falklandinsaarten puntaa"}
-        }
         GBP{
             one{"Englannin punta"}
             other{"Englannin puntaa"}
@@ -779,10 +737,6 @@ fi{
             one{"Kambodžan riel"}
             other{"Kambodžan rieliä"}
         }
-        KPW{
-            one{"Pohjois-Korean won"}
-            other{"Pohjois-Korean wonia"}
-        }
         KRW{
             one{"Etelä-Korean won"}
             other{"Etelä-Korean wonia"}
@@ -790,10 +744,6 @@ fi{
         KWD{
             one{"Kuwaitin dinaari"}
             other{"Kuwaitin dinaaria"}
-        }
-        KYD{
-            one{"Caymansaarten dollari"}
-            other{"Caymansaarten dollaria"}
         }
         KZT{
             one{"Kazakstanin tenge"}
@@ -943,10 +893,6 @@ fi{
             one{"Saudi-Arabian rial"}
             other{"Saudi-Arabian rialia"}
         }
-        SBD{
-            one{"Salomonsaarten dollari"}
-            other{"Salomonsaarten dollaria"}
-        }
         SDG{
             one{"Sudanin punta"}
             other{"Sudanin puntaa"}
@@ -966,18 +912,6 @@ fi{
         SSP{
             one{"Etelä-Sudanin punta"}
             other{"Etelä-Sudanin puntaa"}
-        }
-        STD{
-            one{"São Tomén ja Príncipen dobra"}
-            other{"São Tomén ja Príncipen dobraa"}
-        }
-        SYP{
-            one{"Syyrian punta"}
-            other{"Syyrian puntaa"}
-        }
-        SZL{
-            one{"Swazimaan lilangeni"}
-            other{"Swazimaan lilangenia"}
         }
         THB{
             one{"Thaimaan baht"}
@@ -1043,10 +977,6 @@ fi{
             one{"CFA-frangi BEAC"}
             other{"CFA-frangia BEAC"}
         }
-        XCD{
-            one{"Itä-Karibian dollari"}
-            other{"Itä-Karibian dollaria"}
-        }
         XDR{
             one{"erityisnosto-oikeus (SDR)"}
             other{"erityisnosto-oikeutta (SDR)"}
@@ -1054,10 +984,6 @@ fi{
         XOF{
             one{"CFA-frangi BCEAO"}
             other{"CFA-frangia BCEAO"}
-        }
-        XPF{
-            one{"CFP-frangi"}
-            other{"CFP-frangia"}
         }
         YER{
             one{"Jemenin rial"}

@@ -135,10 +135,6 @@ nn{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "Falkland-pund",
-        }
         GBP{
             "£",
             "britisk pund sterling",
@@ -227,10 +223,6 @@ nn{
             "KHR",
             "kambodsjansk riel",
         }
-        KPW{
-            "KPW",
-            "nordkoreansk won",
-        }
         KRW{
             "₩",
             "sørkoreansk won",
@@ -238,10 +230,6 @@ nn{
         KWD{
             "KWD",
             "kuwaitisk dinar",
-        }
-        KYD{
-            "KYD",
-            "caymansk dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ nn{
             "SAR",
             "saudiarabisk rial",
         }
-        SBD{
-            "SBD",
-            "salomonsk dollar",
-        }
         SDG{
             "SDG",
             "sudansk pund",
@@ -410,18 +394,6 @@ nn{
         SLL{
             "SLL",
             "sierraleonsk leone",
-        }
-        STD{
-            "STD",
-            "Sao Tome og Principe-dobra",
-        }
-        SYP{
-            "SYP",
-            "syrisk pund",
-        }
-        SZL{
-            "SZL",
-            "swazilandsk lilangeni",
         }
         THB{
             "THB",
@@ -483,10 +455,6 @@ nn{
             "FCFA",
             "CFA franc BEAC",
         }
-        XCD{
-            "EC$",
-            "austkaribisk dollar",
-        }
         XDR{
             "XDR",
             "spesielle trekkrettar",
@@ -494,10 +462,6 @@ nn{
         XOF{
             "CFA",
             "CFA franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP franc",
         }
         YER{
             "YER",
@@ -568,10 +532,6 @@ nn{
         ETB{
             one{"etiopisk birr"}
             other{"etiopiske birr"}
-        }
-        FKP{
-            one{"Falkland-pund"}
-            other{"Falkland-pund"}
         }
         GEL{
             one{"georgisk lari"}
@@ -649,10 +609,6 @@ nn{
             one{"kambodsjansk riel"}
             other{"kambodsjanske riel"}
         }
-        KPW{
-            one{"nordkoreansk won"}
-            other{"nordkoreanske won"}
-        }
         KRW{
             one{"sørkoreansk won"}
             other{"sørkoreanske won"}
@@ -660,10 +616,6 @@ nn{
         KWD{
             one{"kuwaitisk dinar"}
             other{"kuwaitiske dinarar"}
-        }
-        KYD{
-            one{"caymansk dollar"}
-            other{"caymanske dollar"}
         }
         KZT{
             one{"kasakhstansk tenge"}
@@ -801,10 +753,6 @@ nn{
             one{"saudiarabisk rial"}
             other{"saudiarabiske rial"}
         }
-        SBD{
-            one{"salomonsk dollar"}
-            other{"salomonske dollar"}
-        }
         SDG{
             one{"sudansk pund"}
             other{"sudanske pund"}
@@ -820,14 +768,6 @@ nn{
         SLL{
             one{"sierraleonsk leone"}
             other{"sierraleonske leone"}
-        }
-        SYP{
-            one{"syrisk pund"}
-            other{"syriske pund"}
-        }
-        SZL{
-            one{"swazilandsk lilangeni"}
-            other{"swazilandske lilangeni"}
         }
         THB{
             one{"thailandsk baht"}
@@ -885,17 +825,9 @@ nn{
             one{"CFA franc BEAC"}
             other{"CFA franc BEAC"}
         }
-        XCD{
-            one{"austkaribisk dollar"}
-            other{"austkaribiske dollar"}
-        }
         XDR{
             one{"spesiell trekkrett"}
             other{"spesielle trekkrettar"}
-        }
-        XPF{
-            one{"CFP-franc"}
-            other{"CFP-franc"}
         }
         YER{
             one{"jemenittisk rial"}

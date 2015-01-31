@@ -79,17 +79,9 @@ root{
             "FCFA",
             "XAF",
         }
-        XCD{
-            "EC$",
-            "XCD",
-        }
         XOF{
             "CFA",
             "XOF",
-        }
-        XPF{
-            "CFPF",
-            "XPF",
         }
     }
     Currencies%narrow{
@@ -113,7 +105,6 @@ root{
         DOP{"$"}
         EGP{"E£"}
         EUR{"€"}
-        FKP{"£"}
         GBP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -128,9 +119,7 @@ root{
         JMD{"$"}
         JPY{"¥"}
         KHR{"៛"}
-        KPW{"₩"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         LBP{"L£"}
@@ -152,12 +141,9 @@ root{
         PLN{"zł"}
         PYG{"₲"}
         RWF{"RF"}
-        SBD{"$"}
         SEK{"kr"}
         SGD{"$"}
         SSP{"£"}
-        STD{"Db"}
-        SYP{"£"}
         THB{"฿"}
         TRY{"₺"}
         TTD{"$"}
@@ -167,7 +153,6 @@ root{
         UYU{"$"}
         VEF{"Bs"}
         VND{"₫"}
-        XCD{"$"}
         ZAR{"R"}
         ZMW{"ZK"}
     }

@@ -16,10 +16,6 @@ zh_Hans_HK{
             "HNL",
             "洪都拉斯拉伦皮拉",
         }
-        KYD{
-            "KYD",
-            "开曼群岛元",
-        }
         KZT{
             "KZT",
             "哈萨克斯坦腾格",
@@ -36,9 +32,6 @@ zh_Hans_HK{
     CurrencyPlurals{
         HNL{
             other{"洪都拉斯拉伦皮拉"}
-        }
-        KYD{
-            other{"开曼群岛元"}
         }
         KZT{
             other{"哈萨克斯坦腾格"}

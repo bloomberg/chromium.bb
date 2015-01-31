@@ -135,10 +135,6 @@ et{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "Falklandi saarte nael",
-        }
         GBP{
             "£",
             "Suurbritannia naelsterling",
@@ -227,10 +223,6 @@ et{
             "KHR",
             "Kambodža riaal",
         }
-        KPW{
-            "KPW",
-            "Põhja-Korea vonn",
-        }
         KRW{
             "₩",
             "Lõuna-Korea vonn",
@@ -238,10 +230,6 @@ et{
         KWD{
             "KWD",
             "Kuveidi dinaar",
-        }
-        KYD{
-            "KYD",
-            "Caymani saarte dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ et{
             "SAR",
             "Saudi-Araabia riaal",
         }
-        SBD{
-            "SBD",
-            "Saalomoni saarte dollar",
-        }
         SDG{
             "SDG",
             "Sudaani nael",
@@ -414,18 +398,6 @@ et{
         SSP{
             "SSP",
             "Lõuna-Sudaani nael",
-        }
-        STD{
-            "STD",
-            "São Tomé ja Príncipe dobra",
-        }
-        SYP{
-            "SYP",
-            "Süüria nael",
-        }
-        SZL{
-            "SZL",
-            "Svaasimaa lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ et{
             "FCFA",
             "CFA frank BEAC",
         }
-        XCD{
-            "EC$",
-            "Ida-Kariibi dollar",
-        }
         XDR{
             "XDR",
             "Rahvusvahelise Valuutafondi arvestusühik",
@@ -502,10 +470,6 @@ et{
         XOF{
             "CFA",
             "Aafrika ühisfrank BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Prantsuse Vaikse-Ookeani frank",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ et{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ et{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ et{
             one{"euro"}
             other{"eurot"}
         }
-        FKP{
-            one{"Falklandi saarte nael"}
-            other{"Falklandi saarte naela"}
-        }
         GBP{
             one{"Suurbritannia naelsterling"}
             other{"Suurbritannia naelsterlingit"}
@@ -780,10 +738,6 @@ et{
             one{"Kambodža riaal"}
             other{"Kambodža riaali"}
         }
-        KPW{
-            one{"Põhja-Korea vonn"}
-            other{"Põhja-Korea vonni"}
-        }
         KRW{
             one{"Lõuna-Korea vonn"}
             other{"Lõuna-Korea vonni"}
@@ -791,10 +745,6 @@ et{
         KWD{
             one{"Kuveidi dinaar"}
             other{"Kuveidi dinaari"}
-        }
-        KYD{
-            one{"Caymani saarte dollar"}
-            other{"Caymani saarte dollarit"}
         }
         KZT{
             one{"Kasahstani tenge"}
@@ -944,10 +894,6 @@ et{
             one{"Saudi-Araabia riaal"}
             other{"Saudi-Araabia riaali"}
         }
-        SBD{
-            one{"Saalomoni saarte dollar"}
-            other{"Saalomoni saarte dollarit"}
-        }
         SDG{
             one{"Sudaani nael"}
             other{"Sudaani naela"}
@@ -967,18 +913,6 @@ et{
         SSP{
             one{"Lõuna-Sudaani nael"}
             other{"Lõuna-Sudaani naela"}
-        }
-        STD{
-            one{"São Tomé ja Príncipe dobra"}
-            other{"São Tomé ja Príncipe dobrat"}
-        }
-        SYP{
-            one{"Süüria nael"}
-            other{"Süüria naela"}
-        }
-        SZL{
-            one{"Svaasimaa lilangeni"}
-            other{"Svaasimaa lilangenit"}
         }
         THB{
             one{"Tai baat"}
@@ -1044,17 +978,9 @@ et{
             one{"CFA frank BEAC"}
             other{"CFA franki BEAC"}
         }
-        XCD{
-            one{"Ida-Kariibi dollar"}
-            other{"Ida-Kariibi dollarit"}
-        }
         XOF{
             one{"Aafrika ühisfrank BCEAO"}
             other{"Aafrika ühisfranki BCEAO"}
-        }
-        XPF{
-            one{"Prantsuse Vaikse-Ookeani frank"}
-            other{"Prantsuse Vaikse-Ookeani franki"}
         }
         YER{
             one{"Jeemeni riaal"}

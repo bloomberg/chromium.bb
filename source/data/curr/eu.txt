@@ -135,10 +135,6 @@ eu{
             "€",
             "Euroa",
         }
-        FKP{
-            "FKP",
-            "Falkland uharteetako libera",
-        }
         GBP{
             "£",
             "Libera esterlina",
@@ -227,10 +223,6 @@ eu{
             "KHR",
             "Kanbodiako riela",
         }
-        KPW{
-            "KPW",
-            "Ipar Koreako wona",
-        }
         KRW{
             "₩",
             "Hego Koreako wona",
@@ -238,10 +230,6 @@ eu{
         KWD{
             "KWD",
             "Kuwaiteko dinarra",
-        }
-        KYD{
-            "KYD",
-            "Kaiman uharteetako dolarra",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ eu{
             "SAR",
             "Saudiko riala",
         }
-        SBD{
-            "SBD",
-            "Salomon uharteetako dolarra",
-        }
         SDG{
             "SDG",
             "Sudango libera",
@@ -414,18 +398,6 @@ eu{
         SSP{
             "SSP",
             "Hego Sudango libera",
-        }
-        STD{
-            "STD",
-            "Sao Tomeko eta Principeko dobra",
-        }
-        SYP{
-            "SYP",
-            "Siriako libera",
-        }
-        SZL{
-            "SZL",
-            "Swaziko lilangenia",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ eu{
             "FCFA",
             "Afrika erdialdeko frankoa BEAC",
         }
-        XCD{
-            "EC$",
-            "Karibe ekialdeko dolarra",
-        }
         XOF{
             "CFA",
             "Afrika ekialdeko frankoa BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP frankoa",
         }
         YER{
             "YER",
@@ -538,7 +502,6 @@ eu{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -548,7 +511,6 @@ eu{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -684,10 +646,6 @@ eu{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"Falkland uharteetako libera"}
-            other{"Falkland uharteetako libera"}
-        }
         GBP{
             one{"libera esterlina"}
             other{"libera esterlina"}
@@ -776,10 +734,6 @@ eu{
             one{"Kanbodiako riel"}
             other{"Kanbodiako riel"}
         }
-        KPW{
-            one{"Ipar Koreako won"}
-            other{"Ipar Koreako won"}
-        }
         KRW{
             one{"Hego Koreako won"}
             other{"Hego Koreako won"}
@@ -787,10 +741,6 @@ eu{
         KWD{
             one{"Kuwaiteko dinar"}
             other{"Kuwaiteko dinar"}
-        }
-        KYD{
-            one{"Kaiman uharteetako dolar"}
-            other{"Kaiman uharteetako dolar"}
         }
         KZT{
             one{"Kazakhstango tenge"}
@@ -940,10 +890,6 @@ eu{
             one{"Saudiko rial"}
             other{"Saudiko rial"}
         }
-        SBD{
-            one{"Salomon uharteetako dolar"}
-            other{"Salomon uharteetako dolar"}
-        }
         SDG{
             one{"Sudango libera"}
             other{"Sudango libera"}
@@ -963,18 +909,6 @@ eu{
         SSP{
             one{"Hego Sudango libera"}
             other{"Hego Sudango libera"}
-        }
-        STD{
-            one{"Sao Tomeko eta Principeko dobra"}
-            other{"Sao Tomeko eta Principeko dobra"}
-        }
-        SYP{
-            one{"Siriako libera"}
-            other{"Siriako libera"}
-        }
-        SZL{
-            one{"Swaziko lilangeni"}
-            other{"Swaziko lilangeni"}
         }
         THB{
             one{"Thailandiako baht"}
@@ -1040,17 +974,9 @@ eu{
             one{"Afrika erdialdeko franko BEAC"}
             other{"Afrika erdialdeko franko BEAC"}
         }
-        XCD{
-            one{"Karibe ekialdeko dolar"}
-            other{"Karibe ekialdeko dolar"}
-        }
         XOF{
             one{"Afrika ekialdeko franko BCEAO"}
             other{"Afrika ekialdeko franko BCEAO"}
-        }
-        XPF{
-            one{"CFP franko"}
-            other{"CFP franko"}
         }
         YER{
             one{"Yemengo rial"}

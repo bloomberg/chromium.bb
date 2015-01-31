@@ -135,10 +135,6 @@ sk{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "falklandská libra",
-        }
         GBP{
             "GBP",
             "britská libra",
@@ -227,10 +223,6 @@ sk{
             "KHR",
             "kambodžský riel",
         }
-        KPW{
-            "KPW",
-            "severokórejský won",
-        }
         KRW{
             "KRW",
             "juhokórejský won",
@@ -238,10 +230,6 @@ sk{
         KWD{
             "KWD",
             "kuvajtský dinár",
-        }
-        KYD{
-            "KYD",
-            "kajmanský dolár",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ sk{
             "SAR",
             "saudskoarabský rial",
         }
-        SBD{
-            "SBD",
-            "šalamúnsky dolár",
-        }
         SDG{
             "SDG",
             "sudánska libra",
@@ -414,18 +398,6 @@ sk{
         SSP{
             "SSP",
             "juhosudánska libra",
-        }
-        STD{
-            "STD",
-            "svätotomášska dobra",
-        }
-        SYP{
-            "SYP",
-            "sýrska libra",
-        }
-        SZL{
-            "SZL",
-            "svazijské lilangeni",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ sk{
             "FCFA",
             "stredoafrický frank",
         }
-        XCD{
-            "EC$",
-            "východokaribský dolár",
-        }
         XDR{
             "XDR",
             "Špeciálne práva čerpania",
@@ -502,10 +470,6 @@ sk{
         XOF{
             "CFA",
             "západoafrický frank",
-        }
-        XPF{
-            "CFPF",
-            "CFP frank",
         }
         YER{
             "YER",
@@ -541,7 +505,6 @@ sk{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -551,7 +514,6 @@ sk{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -749,12 +711,6 @@ sk{
             one{"euro"}
             other{"eur"}
         }
-        FKP{
-            few{"falklandské libry"}
-            many{"falklandskej libry"}
-            one{"falklandská libra"}
-            other{"falklandských libier"}
-        }
         GBP{
             few{"britské libry"}
             many{"britskej libry"}
@@ -887,12 +843,6 @@ sk{
             one{"kambodžský riel"}
             other{"kambodžských rielov"}
         }
-        KPW{
-            few{"severokórejské wony"}
-            many{"severokórejskeho wonu"}
-            one{"severokórejský won"}
-            other{"severokórejských wonov"}
-        }
         KRW{
             few{"juhokórejské wony"}
             many{"juhokórejského wonu"}
@@ -904,12 +854,6 @@ sk{
             many{"kuvajtského dinára"}
             one{"kuvajtský dinár"}
             other{"kuvajtských dinárov"}
-        }
-        KYD{
-            few{"kajmanské doláre"}
-            many{"kajmanského dolára"}
-            one{"kajmanský dolár"}
-            other{"kajmanských dolárov"}
         }
         KZT{
             few{"kazašské tenge"}
@@ -1133,12 +1077,6 @@ sk{
             one{"saudskoarabský rial"}
             other{"saudskoarabských rialov"}
         }
-        SBD{
-            few{"šalamúnske doláre"}
-            many{"šalamúnskeho dolára"}
-            one{"šalamúnsky dolár"}
-            other{"šalamúnskych dolárov"}
-        }
         SDG{
             few{"sudánske libry"}
             many{"sudánskej libry"}
@@ -1168,24 +1106,6 @@ sk{
             many{"juhosudánskej libry"}
             one{"juhosudánska libra"}
             other{"juhosudánskych libier"}
-        }
-        STD{
-            few{"svätotomášske dobry"}
-            many{"svätotomášskej dobry"}
-            one{"svätotomášska dobra"}
-            other{"svätotomášskych dobier"}
-        }
-        SYP{
-            few{"sýrske libry"}
-            many{"sýrskej libry"}
-            one{"sýrska libra"}
-            other{"sýrskych libier"}
-        }
-        SZL{
-            few{"svazijské lilangeni"}
-            many{"svazijského lilangeni"}
-            one{"svazijské lilangeni"}
-            other{"svazijských lilangeni"}
         }
         THB{
             few{"thajské bahty"}
@@ -1283,23 +1203,11 @@ sk{
             one{"stredoafrický frank"}
             other{"stredoafrických frankov"}
         }
-        XCD{
-            few{"východokaribské doláre"}
-            many{"východokaribského dolára"}
-            one{"východokaribský dolár"}
-            other{"východokaribských dolárov"}
-        }
         XOF{
             few{"západoafrické franky"}
             many{"západoafrického franku"}
             one{"západoafrický frank"}
             other{"západoafrických frankov"}
-        }
-        XPF{
-            few{"CFP franky"}
-            many{"CFP franku"}
-            one{"CFP frank"}
-            other{"CFP frankov"}
         }
         YER{
             few{"jemenské rialy"}

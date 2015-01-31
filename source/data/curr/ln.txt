@@ -127,14 +127,6 @@ ln{
             "SLL",
             "Leonɛ",
         }
-        STD{
-            "STD",
-            "Dobra ya Sao Tomé mpé Presipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinarɛ ya Tinizi",

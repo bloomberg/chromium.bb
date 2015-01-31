@@ -135,10 +135,6 @@ ro{
             "EUR",
             "euro",
         }
-        FKP{
-            "FKP",
-            "liră din Insulele Falkland",
-        }
         GBP{
             "GBP",
             "liră sterlină",
@@ -227,10 +223,6 @@ ro{
             "KHR",
             "riel cambodgian",
         }
-        KPW{
-            "KPW",
-            "won nord-coreean",
-        }
         KRW{
             "KRW",
             "won sud-coreean",
@@ -238,10 +230,6 @@ ro{
         KWD{
             "KWD",
             "dinar kuweitian",
-        }
-        KYD{
-            "KYD",
-            "dolar din Insulele Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ ro{
             "SAR",
             "rial saudit",
         }
-        SBD{
-            "SBD",
-            "dolar din Insulele Solomon",
-        }
         SDG{
             "SDG",
             "liră sudaneză",
@@ -414,18 +398,6 @@ ro{
         SSP{
             "SSP",
             "liră sud-sudaneză",
-        }
-        STD{
-            "STD",
-            "dobra Sao Tome și Principe",
-        }
-        SYP{
-            "SYP",
-            "liră siriană",
-        }
-        SZL{
-            "SZL",
-            "lilangeni din Swaziland",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ ro{
             "FCFA",
             "franc CFA BEAC",
         }
-        XCD{
-            "XCD",
-            "dolar din Caraibele de Est",
-        }
         XDR{
             "XDR",
             "drepturi speciale de tragere",
@@ -502,10 +470,6 @@ ro{
         XOF{
             "CFA",
             "franc CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "franc CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ ro{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ ro{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -719,11 +681,6 @@ ro{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            few{"lire din Insulele Falkland"}
-            one{"liră din Insulele Falkland"}
-            other{"lire din Insulele Falkland"}
-        }
         GBP{
             few{"lire sterline"}
             one{"liră sterlină"}
@@ -834,11 +791,6 @@ ro{
             one{"riel cambodgian"}
             other{"rieli cambodgieni"}
         }
-        KPW{
-            few{"woni nord-coreeni"}
-            one{"won nord-coreean"}
-            other{"woni nord-coreeni"}
-        }
         KRW{
             few{"woni sud-coreeni"}
             one{"won sud-coreean"}
@@ -848,11 +800,6 @@ ro{
             few{"dinari kuweitieni"}
             one{"dinar kuweitian"}
             other{"dinari kuweitieni"}
-        }
-        KYD{
-            few{"dolari din Insulele Cayman"}
-            one{"dolar din Insulele Cayman"}
-            other{"dolari din Insulele Cayman"}
         }
         KZT{
             few{"tenge kazahe"}
@@ -1039,11 +986,6 @@ ro{
             one{"rial saudit"}
             other{"riali saudiți"}
         }
-        SBD{
-            few{"dolari din Insulele Solomon"}
-            one{"dolar din Insulele Solomon"}
-            other{"dolari din Insulele Solomon"}
-        }
         SDG{
             few{"lire sudaneze"}
             one{"liră sudaneză"}
@@ -1068,21 +1010,6 @@ ro{
             few{"lire sud-sudaneze"}
             one{"liră sud-sudaneză"}
             other{"lire sud-sudaneze"}
-        }
-        STD{
-            few{"dobre Sao Tome și Principe"}
-            one{"dobra Sao Tome și Principe"}
-            other{"dobre Sao Tome și Principe"}
-        }
-        SYP{
-            few{"lire siriene"}
-            one{"liră siriană"}
-            other{"lire siriene"}
-        }
-        SZL{
-            few{"emalangeni din Swaziland"}
-            one{"lilangeni din Swaziland"}
-            other{"emalangeni din Swaziland"}
         }
         THB{
             few{"bahți thailandezi"}
@@ -1164,20 +1091,10 @@ ro{
             one{"franc CFA BEAC"}
             other{"franci Comunitatea Financiară"}
         }
-        XCD{
-            few{"dolari din Caraibele de Est"}
-            one{"dolar din Caraibele de Est"}
-            other{"dolari din Caraibele de Est"}
-        }
         XOF{
             few{"franci CFA BCEAO"}
             one{"franc CFA BCEAO"}
             other{"franci CFA BCEAO"}
-        }
-        XPF{
-            few{"franci CFP"}
-            one{"franc CFP"}
-            other{"franci CFP"}
         }
         YER{
             few{"riali yemeniți"}

@@ -57,10 +57,6 @@ es_MX{
             "ETB",
             "birr etíope",
         }
-        FKP{
-            "FKP",
-            "libra malvinense",
-        }
         GBP{
             "GBP",
             "libra esterlina británica",
@@ -169,21 +165,9 @@ es_MX{
             "SAR",
             "riyal saudí",
         }
-        SBD{
-            "SBD",
-            "dólar de las Islas Salomón",
-        }
         SLL{
             "SLL",
             "leone de Sierra Leona",
-        }
-        STD{
-            "STD",
-            "dobra de Santo Tomé y Príncipe",
-        }
-        SZL{
-            "SZL",
-            "lilangeni suazi",
         }
         THB{
             "THB",
@@ -204,10 +188,6 @@ es_MX{
         VND{
             "VND",
             "dong vietnamita",
-        }
-        XPF{
-            "XPF",
-            "franco CFP",
         }
         ZAR{
             "ZAR",
@@ -268,10 +248,6 @@ es_MX{
         ETB{
             one{"birr etíope"}
             other{"birrs etíopes"}
-        }
-        FKP{
-            one{"libra malvinense"}
-            other{"libras malvinenses"}
         }
         GBP{
             one{"libra esterlina británica"}
@@ -381,21 +357,9 @@ es_MX{
             one{"riyal saudí"}
             other{"riyales saudíes"}
         }
-        SBD{
-            one{"dólar de las Islas Salomón"}
-            other{"dólares de las Islas Salomón"}
-        }
         SLL{
             one{"leone de Sierra Leona"}
             other{"leones de Sierra Leona"}
-        }
-        STD{
-            one{"dobra de Santo Tomé y Príncipe"}
-            other{"dobras de Santo Tomé y Príncipe"}
-        }
-        SZL{
-            one{"lilangeni suazi"}
-            other{"lilangenis suazis"}
         }
         THB{
             one{"baht tailandés"}

@@ -135,10 +135,6 @@ lt{
             "EUR",
             "Euras",
         }
-        FKP{
-            "FKP",
-            "Falklando salų svaras",
-        }
         GBP{
             "GBP",
             "Didžiosios Britanijos svaras sterlingų",
@@ -227,10 +223,6 @@ lt{
             "KHR",
             "Kambodžos rielis",
         }
-        KPW{
-            "KPW",
-            "Šiaurės Korėjos vonas",
-        }
         KRW{
             "KRW",
             "Pietų Korėjos vonas",
@@ -238,10 +230,6 @@ lt{
         KWD{
             "KWD",
             "Kuveito dinaras",
-        }
-        KYD{
-            "KYD",
-            "Kaimanų salų doleris",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ lt{
             "SAR",
             "Saudo Arabijos rijalas",
         }
-        SBD{
-            "SBD",
-            "Saliamono salų doleris",
-        }
         SDG{
             "SDG",
             "Sudano svaras",
@@ -414,18 +398,6 @@ lt{
         SSP{
             "SSP",
             "Pietų Sudano svaras",
-        }
-        STD{
-            "STD",
-            "San Tomės ir Principės dobra",
-        }
-        SYP{
-            "SYP",
-            "Sirijos svaras",
-        }
-        SZL{
-            "SZL",
-            "Svazilando lilangenis",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ lt{
             "XAF",
             "CFA BEAC frankas",
         }
-        XCD{
-            "XCD",
-            "Rytų Karibų doleris",
-        }
         XDR{
             "XDR",
             "SDR tarptautinis valiutos fondas",
@@ -502,10 +470,6 @@ lt{
         XOF{
             "XOF",
             "CFA BCEAO frankas",
-        }
-        XPF{
-            "XPF",
-            "CFP frankas",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ lt{
         JPY{"JPY"}
         KHR{"KHR"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"KZT"}
         LAK{"LAK"}
         MNT{"MNT"}
@@ -552,7 +515,6 @@ lt{
         NZD{"$"}
         PHP{"₱"}
         PYG{"Gs"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -750,12 +712,6 @@ lt{
             one{"euras"}
             other{"eurų"}
         }
-        FKP{
-            few{"Falklando salų svarai"}
-            many{"Falklando salų svaro"}
-            one{"Falklando salų svaras"}
-            other{"Falklando salų svarų"}
-        }
         GBP{
             few{"Didžiosios Britanijos svarai sterlingų"}
             many{"Didžiosios Britanijos svaro sterlingų"}
@@ -888,12 +844,6 @@ lt{
             one{"Kambodžos rielis"}
             other{"Kambodžos rielių"}
         }
-        KPW{
-            few{"Šiaurės Korėjos vonai"}
-            many{"Šiaurės Korėjos vono"}
-            one{"Šiaurės Korėjos vonas"}
-            other{"Šiaurės Korėjos vonų"}
-        }
         KRW{
             few{"Pietų Korėjos vonai"}
             many{"Pietų Korėjos vono"}
@@ -905,12 +855,6 @@ lt{
             many{"Kuveito dinaro"}
             one{"Kuveito dinaras"}
             other{"Kuveito dinarų"}
-        }
-        KYD{
-            few{"Kaimanų salų doleriai"}
-            many{"Kaimanų salų dolerio"}
-            one{"Kaimanų salų doleris"}
-            other{"Kaimanų salų dolerių"}
         }
         KZT{
             few{"Kazachstano tengės"}
@@ -1134,12 +1078,6 @@ lt{
             one{"Saudo Arabijos rijalas"}
             other{"Saudo Arabijos rijalų"}
         }
-        SBD{
-            few{"Saliamono salų doleriai"}
-            many{"Saliamono salų dolerio"}
-            one{"Saliamono salų doleris"}
-            other{"Saliamono salų dolerių"}
-        }
         SDG{
             few{"Sudano svarai"}
             many{"Sudano svaro"}
@@ -1169,24 +1107,6 @@ lt{
             many{"Pietų Sudano svaro"}
             one{"Pietų Sudano svaras"}
             other{"Pietų Sudano svarų"}
-        }
-        STD{
-            few{"San Tomės ir Principės dobros"}
-            many{"San Tomės ir Principės dobros"}
-            one{"San Tomės ir Principės dobra"}
-            other{"Sao Tomės ir Principės dobrų"}
-        }
-        SYP{
-            few{"Sirijos svarai"}
-            many{"Sirijos svaro"}
-            one{"Sirijos svaras"}
-            other{"Sirijos svarų"}
-        }
-        SZL{
-            few{"Svazilando lilangeniai"}
-            many{"Svazilendo lilangenio"}
-            one{"Svazilando lilangenis"}
-            other{"Svazilendo lilangenių"}
         }
         THB{
             few{"Tailando batai"}
@@ -1284,12 +1204,6 @@ lt{
             one{"CFA BEAC frankas"}
             other{"CFA BEAC frankų"}
         }
-        XCD{
-            few{"Rytų Karibų doleriai"}
-            many{"Rytų Karibų dolerio"}
-            one{"Rytų Karibų doleris"}
-            other{"Rytų Karibų dolerių"}
-        }
         XDR{
             few{"SDR tarptautinis valiutos fondas"}
             many{"SDR tarptautinis valiutos fondas"}
@@ -1301,12 +1215,6 @@ lt{
             many{"CFA BCEAO franko"}
             one{"CFA BCEAO frankas"}
             other{"CFA BCEAO frankų"}
-        }
-        XPF{
-            few{"CFP frankai"}
-            many{"CFP franko"}
-            one{"CFP frankas"}
-            other{"CFP frankų"}
         }
         YER{
             few{"Jemeno rialai"}

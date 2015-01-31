@@ -3471,7 +3471,7 @@ int32_t   RegexCompile::maxMatchLength(int32_t start, int32_t end) {
                     break;
                 }
 
-                int32_t maxLoopCount = fRXPat->fCompiledPat->elementAti(loc+3);
+                int32_t maxLoopCount = static_cast<int32_t>(fRXPat->fCompiledPat->elementAti(loc+3));
                 if (maxLoopCount == -1) {
                     // Unbounded Loop. No upper bound on match length.
                     currentLen = INT32_MAX;

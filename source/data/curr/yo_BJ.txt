@@ -116,10 +116,6 @@ yo_BJ{
             "SDG",
             "Dina ti Orílɛ́ède Sudani",
         }
-        STD{
-            "STD",
-            "Dobira ti Orílɛ́ède Sao tome Ati Pirisipe",
-        }
         TND{
             "TND",
             "Dina ti Orílɛ́ède Tunisia",

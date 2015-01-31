@@ -127,14 +127,6 @@ ff{
             "SLL",
             "Lewoon Seraa Liyon",
         }
-        STD{
-            "STD",
-            "Dobra Sawo Tome e Prensipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni Swaasilannda",
-        }
         TND{
             "TND",
             "Dinaar Tunisii",

@@ -135,10 +135,6 @@ fy{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falklâneilânske pûn",
-        }
         GBP{
             "£",
             "Brits pûn sterling",
@@ -227,10 +223,6 @@ fy{
             "KHR",
             "Kambodjaanske riel",
         }
-        KPW{
-            "KPW",
-            "Noard-Koreaanske won",
-        }
         KRW{
             "₩",
             "Sûd-Koreaanske won",
@@ -238,10 +230,6 @@ fy{
         KWD{
             "KWD",
             "Koeweitse dinar",
-        }
-        KYD{
-            "KYD",
-            "Caymaneilânske dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ fy{
             "SAR",
             "Saoedi-Arabyske riyal",
         }
-        SBD{
-            "SI$",
-            "Salomon-dollar",
-        }
         SDG{
             "SDG",
             "Soedaneeske pûn",
@@ -414,18 +398,6 @@ fy{
         SSP{
             "SSP",
             "Sûd-Soedaneeske pûn",
-        }
-        STD{
-            "STD",
-            "Santomese dobra",
-        }
-        SYP{
-            "SYP",
-            "Syrysk pûn",
-        }
-        SZL{
-            "SZL",
-            "Swazyske lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ fy{
             "FCFA",
             "CFA-frank",
         }
-        XCD{
-            "EC$",
-            "East-Karibyske dollar",
-        }
         XDR{
             "XDR",
             "Special Drawing Rights",
@@ -502,10 +470,6 @@ fy{
         XOF{
             "CFA",
             "CFA-franc BCEAO",
-        }
-        XPF{
-            "XPF",
-            "CFP-franc",
         }
         YER{
             "YER",
@@ -645,10 +609,6 @@ fy{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"Falklâneilânske pûn"}
-            other{"Falklâneilânske pûn"}
-        }
         GBP{
             one{"Brits pûn sterling"}
             other{"Brits pûn sterling"}
@@ -737,10 +697,6 @@ fy{
             one{"Kambodjaanske riel"}
             other{"Kambodjaanske riel"}
         }
-        KPW{
-            one{"Noard-Koreaanske won"}
-            other{"Noard-Koreaanske won"}
-        }
         KRW{
             one{"Sûd-Koreaanske won"}
             other{"Sûd-Koreaanske won"}
@@ -748,10 +704,6 @@ fy{
         KWD{
             one{"Koeweitse dinar"}
             other{"Koeweitse dinar"}
-        }
-        KYD{
-            one{"Caymaneilânske dollar"}
-            other{"Caymaneilânske dollar"}
         }
         KZT{
             one{"Kazachstaanske tenge"}
@@ -901,10 +853,6 @@ fy{
             one{"Saoedi-Arabyske riyal"}
             other{"Saoedi-Arabyske riyal"}
         }
-        SBD{
-            one{"Salomon-dollar"}
-            other{"Salomon-dollar"}
-        }
         SDG{
             one{"Soedaneeske pûn"}
             other{"Soedaneeske pûn"}
@@ -924,18 +872,6 @@ fy{
         SSP{
             one{"Sûd-Soedaneeske pûn"}
             other{"Sûd-Soedaneeske pûn"}
-        }
-        STD{
-            one{"Santomese dobra"}
-            other{"Santomese dobra"}
-        }
-        SYP{
-            one{"Syrysk pûn"}
-            other{"Syrysk pûn"}
-        }
-        SZL{
-            one{"Swazyske lilangeni"}
-            other{"Swazyske lilangeni"}
         }
         THB{
             one{"Thaise baht"}
@@ -1001,10 +937,6 @@ fy{
             one{"CFA-frank"}
             other{"CFA-frank"}
         }
-        XCD{
-            one{"East-Karibyske dollar"}
-            other{"East-Karibyske dollar"}
-        }
         XDR{
             one{"Special Drawing Rights"}
             other{"Special Drawing Rights"}
@@ -1012,10 +944,6 @@ fy{
         XOF{
             one{"CFA-franc BCEAO"}
             other{"CFA-franc BCEAO"}
-        }
-        XPF{
-            one{"CFP-franc"}
-            other{"CFP-frank"}
         }
         YER{
             one{"Jemenityske rial"}

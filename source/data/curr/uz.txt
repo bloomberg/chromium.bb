@@ -135,10 +135,6 @@ uz{
             "€",
             "Yevro",
         }
-        FKP{
-            "FKP",
-            "Folklend oroli funti",
-        }
         GBP{
             "£",
             "Ingliz funt sterlingi",
@@ -227,10 +223,6 @@ uz{
             "KHR",
             "KHR",
         }
-        KPW{
-            "KPW",
-            "KPW",
-        }
         KRW{
             "₩",
             "Janubiy Koreya voni",
@@ -238,10 +230,6 @@ uz{
         KWD{
             "KWD",
             "KWD",
-        }
-        KYD{
-            "KYD",
-            "Kayman Orollari Dollari",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ uz{
             "SAR",
             "Saudiya Arabistoni riyoli",
         }
-        SBD{
-            "SBD",
-            "SBD",
-        }
         SDG{
             "SDG",
             "Sudan funti",
@@ -414,18 +398,6 @@ uz{
         SSP{
             "SSP",
             "Janubiy Sudan funti",
-        }
-        STD{
-            "STD",
-            "STD",
-        }
-        SYP{
-            "SYP",
-            "SYP",
-        }
-        SZL{
-            "SZL",
-            "SZL",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ uz{
             "FCFA",
             "XAF",
         }
-        XCD{
-            "EC$",
-            "Sharqiy Karib dollari",
-        }
         XOF{
             "CFA",
             "XOF",
-        }
-        XPF{
-            "CFPF",
-            "XPF",
         }
         YER{
             "YER",
@@ -528,7 +492,6 @@ uz{
         EUR{"€"}
         GBP{"£"}
         JMD{"$"}
-        KYD{"$"}
         MXN{"$"}
         PYG{"₲"}
         SSP{"£"}
@@ -662,10 +625,6 @@ uz{
             one{"yevro"}
             other{"yevro"}
         }
-        FKP{
-            one{"Folklend oroli funti"}
-            other{"Folklend oroli funti"}
-        }
         GBP{
             one{"Ingliz funt sterlingi"}
             other{"Ingliz funt sterlingi"}
@@ -754,10 +713,6 @@ uz{
             one{"Kambodja riyeli"}
             other{"KHR"}
         }
-        KPW{
-            one{"Shimoliy Koreya uoni"}
-            other{"KPW"}
-        }
         KRW{
             one{"Janubiy Koreya voni"}
             other{"Janubiy Koreya voni"}
@@ -765,10 +720,6 @@ uz{
         KWD{
             one{"Quvayt dinori"}
             other{"KWD"}
-        }
-        KYD{
-            one{"Kayman orollari dollari"}
-            other{"Kayman orollari dollari"}
         }
         KZT{
             one{"Qozogʻiston tengesi"}
@@ -918,10 +869,6 @@ uz{
             one{"Saudiya Arabistoni riyoli"}
             other{"Saudiya Arabistoni riyoli"}
         }
-        SBD{
-            one{"Solomon Orollari dollari"}
-            other{"SBD"}
-        }
         SDG{
             one{"Sudan funti"}
             other{"Sudan funti"}
@@ -941,18 +888,6 @@ uz{
         SSP{
             one{"Janubiy Sudan funti"}
             other{"Janubiy Sudan funti"}
-        }
-        STD{
-            one{"San-Tome va Prinsipi dobrasi"}
-            other{"STD"}
-        }
-        SYP{
-            one{"Suriya funti"}
-            other{"SYP"}
-        }
-        SZL{
-            one{"Svazilend lilangenisi"}
-            other{"SZL"}
         }
         THB{
             one{"Tayland bahti"}
@@ -1018,17 +953,9 @@ uz{
             one{"Kamerun franki"}
             other{"XAF"}
         }
-        XCD{
-            one{"Sharqiy Karib dollari"}
-            other{"Sharqiy Karib dollari"}
-        }
         XOF{
             one{"Kot d-ivuar franki"}
             other{"XOF"}
-        }
-        XPF{
-            one{"Fransuz Polineziyasi franki"}
-            other{"XPF"}
         }
         YER{
             one{"Yaman riali"}

@@ -131,14 +131,6 @@ seh{
             "SLL",
             "Leone de Serra Leoa",
         }
-        STD{
-            "STD",
-            "Dobra de São Tomé e Príncipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni da Suazilândia",
-        }
         TND{
             "TND",
             "Dinar tunisiano",

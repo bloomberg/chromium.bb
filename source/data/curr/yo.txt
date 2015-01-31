@@ -127,14 +127,6 @@ yo{
             "SLL",
             "Lioni",
         }
-        STD{
-            "STD",
-            "Dobira ti Orílẹ́ède Sao tome Ati Pirisipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dina ti Orílẹ́ède Tunisia",

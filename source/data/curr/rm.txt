@@ -135,10 +135,6 @@ rm{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "glivra dal Falkland",
-        }
         GBP{
             "£",
             "glivra sterlina",
@@ -227,10 +223,6 @@ rm{
             "KHR",
             "riel cambodschan",
         }
-        KPW{
-            "KPW",
-            "won da la Corea dal Nord",
-        }
         KRW{
             "₩",
             "won da la Corea dal Sid",
@@ -238,10 +230,6 @@ rm{
         KWD{
             "KWD",
             "dinar dal Kuwait",
-        }
-        KYD{
-            "KYD",
-            "dollar da las Inslas Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ rm{
             "SAR",
             "riyal saudit",
         }
-        SBD{
-            "SBD",
-            "dollar da las Salomonas",
-        }
         SDG{
             "SDG",
             "glivra sudanaisa",
@@ -410,18 +394,6 @@ rm{
         SLL{
             "SLL",
             "leone da la Sierra Leone",
-        }
-        STD{
-            "STD",
-            "dobra da São Tomé e Principe",
-        }
-        SYP{
-            "SYP",
-            "glivra siriana",
-        }
-        SZL{
-            "SZL",
-            "lilangeni dal Swaziland",
         }
         THB{
             "THB",
@@ -483,10 +455,6 @@ rm{
             "FCFA",
             "franc CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "dollar da la Caribica Orientala",
-        }
         XDR{
             "XDR",
             "dretgs da prelevaziun spezials",
@@ -494,10 +462,6 @@ rm{
         XOF{
             "CFA",
             "franc CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "franc CFP",
         }
         YER{
             "YER",
@@ -549,10 +513,6 @@ rm{
             one{"dollar giamaican"}
             other{"dollar giamaican"}
         }
-        KYD{
-            one{"dollar da las Inslas Cayman"}
-            other{"dollar da las Inslas Cayman"}
-        }
         MXN{
             one{"peso mexican"}
             other{"peso mexican"}
@@ -584,10 +544,6 @@ rm{
         USD{
             one{"dollar dals Stadis Unids da l’America"}
             other{"dollar dals Stadis Unids da l’America"}
-        }
-        XCD{
-            one{"dollar da la Caribica Orientala"}
-            other{"dollar da la Caribica Orientala"}
         }
     }
     CurrencyUnitPatterns{

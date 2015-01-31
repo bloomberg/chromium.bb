@@ -103,10 +103,6 @@ kea{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "FKP",
-        }
         GBP{
             "£",
             "Libra sterlina britaniku",
@@ -182,10 +178,6 @@ kea{
         KGS{
             "KGS",
             "KGS",
-        }
-        KPW{
-            "KPW",
-            "KPW",
         }
         KRW{
             "₩",
@@ -331,18 +323,6 @@ kea{
             "SLL",
             "Leone di Sera Leoa",
         }
-        STD{
-            "STD",
-            "Dobra di Sãu Tume i Prinsipi",
-        }
-        SYP{
-            "SYP",
-            "SYP",
-        }
-        SZL{
-            "SZL",
-            "Lilanjeni",
-        }
         THB{
             "฿",
             "Baht tailandes",
@@ -395,17 +375,9 @@ kea{
             "FCFA",
             "Franku CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "XCD",
-        }
         XOF{
             "CFA",
             "Franku CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "XPF",
         }
         YER{
             "YER",
@@ -439,7 +411,6 @@ kea{
         MNT{"₮"}
         NZD{"$"}
         PHP{"₱"}
-        SBD{"$"}
         SGD{"$"}
         TRY{"₺"}
         VND{"₫"}
@@ -561,12 +532,6 @@ kea{
         }
         SLL{
             other{"Leone di Sera Leoa"}
-        }
-        STD{
-            other{"Dobra di Sãu Tume i Prinsipi"}
-        }
-        SZL{
-            other{"Lilanjeni"}
         }
         THB{
             other{"Baht tailandes"}

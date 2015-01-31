@@ -9,10 +9,6 @@
 en_KY{
     %%Parent{"en_001"}
     Currencies{
-        KYD{
-            "$",
-            "Cayman Islands Dollar",
-        }
     }
     Version{"2.1.6.69"}
 }

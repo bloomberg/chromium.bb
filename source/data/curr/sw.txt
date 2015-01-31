@@ -135,10 +135,6 @@ sw{
             "€",
             "yuro",
         }
-        FKP{
-            "FKP",
-            "Pauni ya Visiwa vya Falkland",
-        }
         GBP{
             "£",
             "pauni ya Uingereza",
@@ -227,10 +223,6 @@ sw{
             "KHR",
             "Riel ya Kambodia",
         }
-        KPW{
-            "KPW",
-            "Won ya Korea Kaskazini",
-        }
         KRW{
             "₩",
             "Won ya Korea Kusini",
@@ -238,10 +230,6 @@ sw{
         KWD{
             "KWD",
             "Dinari ya Kuwaiti",
-        }
-        KYD{
-            "KYD",
-            "Dola ya Visiwa vya Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ sw{
             "SAR",
             "riyal ya Saudia",
         }
-        SBD{
-            "SBD",
-            "Dola ya Visiwa vya Solomon",
-        }
         SDG{
             "SDG",
             "pauni ya Sudani",
@@ -414,18 +398,6 @@ sw{
         SSP{
             "SSP",
             "pauni ya Sudani Kusini",
-        }
-        STD{
-            "STD",
-            "dobra ya Sao Tome na Principe",
-        }
-        SYP{
-            "SYP",
-            "Pauni ya Syria",
-        }
-        SZL{
-            "SZL",
-            "lilangeni",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ sw{
             "FCFA",
             "CFA faranga ya BEAC",
         }
-        XCD{
-            "EC$",
-            "Dola ya Karibea ya Mashariki",
-        }
         XOF{
             "CFA",
             "CFA faranga za BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Faranga ya CFP",
         }
         YER{
             "YER",
@@ -538,7 +502,6 @@ sw{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -548,7 +511,6 @@ sw{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -684,10 +646,6 @@ sw{
             one{"yuro"}
             other{"yuro"}
         }
-        FKP{
-            one{"Pauni ya Visiwa vya Falkland"}
-            other{"Pauni za Visiwa vya Falkland"}
-        }
         GBP{
             one{"pauni ya Uingereza"}
             other{"pauni za Uingereza"}
@@ -776,10 +734,6 @@ sw{
             one{"Riel ya Kambodia"}
             other{"Riel za Kambodia"}
         }
-        KPW{
-            one{"Won ya Korea Kaskazini"}
-            other{"Won za Korea Kaskazini"}
-        }
         KRW{
             one{"Won ya Korea Kusini"}
             other{"Won za Korea Kusini"}
@@ -787,10 +741,6 @@ sw{
         KWD{
             one{"Dinari ya Kuwaiti"}
             other{"Dinari za Kuwaiti"}
-        }
-        KYD{
-            one{"Dola ya Visiwa vya Cayman"}
-            other{"Dola ya Visiwa vya Cayman"}
         }
         KZT{
             one{"Tenge ya Kazakistani"}
@@ -940,10 +890,6 @@ sw{
             one{"riyal ya Saudia"}
             other{"riyal za Saudia"}
         }
-        SBD{
-            one{"Dola ya Visiwa vya Solomon"}
-            other{"Dola za Visiwa vya Solomon"}
-        }
         SDG{
             one{"pauni ya Sudani"}
             other{"pauni za Sudani"}
@@ -963,18 +909,6 @@ sw{
         SSP{
             one{"pauni ya Sudani Kusini"}
             other{"pauni za Sudani Kusini"}
-        }
-        STD{
-            one{"dobra ya Sao Tome na Principe"}
-            other{"dobra za Sao Tome na Principe"}
-        }
-        SYP{
-            one{"Pauni ya Syria"}
-            other{"Pauni za Syria"}
-        }
-        SZL{
-            one{"lilangeni"}
-            other{"lilangeni"}
         }
         THB{
             one{"Baht ya Tailandi"}
@@ -1040,17 +974,9 @@ sw{
             one{"CFA faranga ya BEAC"}
             other{"CFA faranga za BEAC"}
         }
-        XCD{
-            one{"Dola ya Karibea ya Mashariki"}
-            other{"Dola za Karibea ya Mashariki"}
-        }
         XOF{
             one{"CFA faranga za BCEAO"}
             other{"CFA faranga za BCEAO"}
-        }
-        XPF{
-            one{"Faranga ya CFP"}
-            other{"Faranga za CFP"}
         }
         YER{
             one{"Rial ya Yemeni"}

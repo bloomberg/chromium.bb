@@ -127,14 +127,6 @@ tzm{
             "SLL",
             "Lyun Usirralyuni",
         }
-        STD{
-            "STD",
-            "Dubra Usawṭumi",
-        }
-        SZL{
-            "SZL",
-            "Lilanjini Uswazi",
-        }
         TND{
             "TND",
             "Ḍinar Utunsi",

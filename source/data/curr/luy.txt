@@ -127,14 +127,6 @@ luy{
             "SLL",
             "Leoni",
         }
-        STD{
-            "STD",
-            "Dobra ya Sao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinari ya Tunisia",

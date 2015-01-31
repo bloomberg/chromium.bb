@@ -135,10 +135,6 @@ de{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland-Pfund",
-        }
         GBP{
             "£",
             "Britisches Pfund Sterling",
@@ -227,10 +223,6 @@ de{
             "KHR",
             "Kambodschanischer Riel",
         }
-        KPW{
-            "KPW",
-            "Nordkoreanischer Won",
-        }
         KRW{
             "₩",
             "Südkoreanischer Won",
@@ -238,10 +230,6 @@ de{
         KWD{
             "KWD",
             "Kuwait-Dinar",
-        }
-        KYD{
-            "KYD",
-            "Kaiman-Dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ de{
             "SAR",
             "Saudi-Rial",
         }
-        SBD{
-            "SBD",
-            "Salomonen-Dollar",
-        }
         SDG{
             "SDG",
             "Sudanesisches Pfund",
@@ -414,18 +398,6 @@ de{
         SSP{
             "SSP",
             "Südsudanesisches Pfund",
-        }
-        STD{
-            "STD",
-            "São-toméischer Dobra",
-        }
-        SYP{
-            "SYP",
-            "Syrisches Pfund",
-        }
-        SZL{
-            "SZL",
-            "Swasiländischer Lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ de{
             "FCFA",
             "CFA-Franc (BEAC)",
         }
-        XCD{
-            "EC$",
-            "Ostkaribischer Dollar",
-        }
         XDR{
             "XDR",
             "Sonderziehungsrechte",
@@ -502,10 +470,6 @@ de{
         XOF{
             "CFA",
             "CFA-Franc (BCEAO)",
-        }
-        XPF{
-            "CFPF",
-            "CFP-Franc",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ de{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ de{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ de{
             one{"Euro"}
             other{"Euro"}
         }
-        FKP{
-            one{"Falkland-Pfund"}
-            other{"Falkland-Pfund"}
-        }
         GBP{
             one{"Britisches Pfund Sterling"}
             other{"Britische Pfund Sterling"}
@@ -780,10 +738,6 @@ de{
             one{"Kambodschanischer Riel"}
             other{"Kambodschanische Riel"}
         }
-        KPW{
-            one{"Nordkoreanischer Won"}
-            other{"Nordkoreanische Won"}
-        }
         KRW{
             one{"Südkoreanischer Won"}
             other{"Südkoreanische Won"}
@@ -791,10 +745,6 @@ de{
         KWD{
             one{"Kuwait-Dinar"}
             other{"Kuwait-Dinar"}
-        }
-        KYD{
-            one{"Kaiman-Dollar"}
-            other{"Kaiman-Dollar"}
         }
         KZT{
             one{"Kasachischer Tenge"}
@@ -944,10 +894,6 @@ de{
             one{"Saudi-Rial"}
             other{"Saudi-Rial"}
         }
-        SBD{
-            one{"Salomonen-Dollar"}
-            other{"Salomonen-Dollar"}
-        }
         SDG{
             one{"Sudanesisches Pfund"}
             other{"Sudanesische Pfund"}
@@ -967,18 +913,6 @@ de{
         SSP{
             one{"Südsudanesisches Pfund"}
             other{"Südsudanesische Pfund"}
-        }
-        STD{
-            one{"São-toméischer Dobra"}
-            other{"São-toméische Dobra"}
-        }
-        SYP{
-            one{"Syrisches Pfund"}
-            other{"Syrische Pfund"}
-        }
-        SZL{
-            one{"Swasiländischer Lilangeni"}
-            other{"Swasiländische Emalangeni"}
         }
         THB{
             one{"Thailändischer Baht"}
@@ -1044,10 +978,6 @@ de{
             one{"CFA-Franc (BEAC)"}
             other{"CFA-Franc (BEAC)"}
         }
-        XCD{
-            one{"Ostkaribischer Dollar"}
-            other{"Ostkaribische Dollar"}
-        }
         XDR{
             one{"Sonderziehungsrechte"}
             other{"Sonderziehungsrechte"}
@@ -1055,10 +985,6 @@ de{
         XOF{
             one{"CFA-Franc (BCEAO)"}
             other{"CFA-Francs (BCEAO)"}
-        }
-        XPF{
-            one{"CFP-Franc"}
-            other{"CFP-Franc"}
         }
         YER{
             one{"Jemen-Rial"}

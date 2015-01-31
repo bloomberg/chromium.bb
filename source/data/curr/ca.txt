@@ -135,10 +135,6 @@ ca{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "lliura de les illes Malvines",
-        }
         GBP{
             "£",
             "lliura esterlina britànica",
@@ -227,10 +223,6 @@ ca{
             "KHR",
             "riel cambodjà",
         }
-        KPW{
-            "KPW",
-            "won nord-coreà",
-        }
         KRW{
             "₩",
             "won sud-coreà",
@@ -238,10 +230,6 @@ ca{
         KWD{
             "KWD",
             "dinar kuwaitià",
-        }
-        KYD{
-            "KYD",
-            "dòlar de les illes Caiman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ ca{
             "SAR",
             "rial saudita",
         }
-        SBD{
-            "SBD",
-            "dòlar de les illes Salomó",
-        }
         SDG{
             "SDG",
             "lliura sudanesa",
@@ -414,18 +398,6 @@ ca{
         SSP{
             "SSP",
             "lliura del Sudan del Sud",
-        }
-        STD{
-            "STD",
-            "dobra de São Tomé i Príncipe",
-        }
-        SYP{
-            "SYP",
-            "lliura síria",
-        }
-        SZL{
-            "SZL",
-            "lilangeni swazi",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ ca{
             "FCFA",
             "franc CFA BEAC",
         }
-        XCD{
-            "XCD",
-            "dòlar del Carib Oriental",
-        }
         XDR{
             "XDR",
             "drets especials de gir",
@@ -502,10 +470,6 @@ ca{
         XOF{
             "XOF",
             "franc CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "franc CFP",
         }
         YER{
             "YER",
@@ -653,10 +617,6 @@ ca{
             one{"euro"}
             other{"euros"}
         }
-        FKP{
-            one{"lliura de les illes Malvines"}
-            other{"lliures de les illes Malvines"}
-        }
         GBP{
             one{"lliura esterlina britànica"}
             other{"lliures esterlines britàniques"}
@@ -745,10 +705,6 @@ ca{
             one{"riel cambodjà"}
             other{"riels cambodjans"}
         }
-        KPW{
-            one{"won nord-coreà"}
-            other{"wons nord-coreans"}
-        }
         KRW{
             one{"won sud-coreà"}
             other{"wons sud-coreans"}
@@ -756,10 +712,6 @@ ca{
         KWD{
             one{"dinar kuwaitià"}
             other{"dinars kuwaitians"}
-        }
-        KYD{
-            one{"dòlar de les illes Caiman"}
-            other{"dòlars de les illes Caiman"}
         }
         KZT{
             one{"tenge kazakh"}
@@ -909,10 +861,6 @@ ca{
             one{"rial saudita"}
             other{"rials saudites"}
         }
-        SBD{
-            one{"dòlar de les illes Salomó"}
-            other{"dòlars de les illes Salomó"}
-        }
         SDG{
             one{"lliura sudanesa"}
             other{"lliures sudaneses"}
@@ -932,18 +880,6 @@ ca{
         SSP{
             one{"lliura del Sudan del Sud"}
             other{"lliures del Sudan del Sud"}
-        }
-        STD{
-            one{"dobra de São Tomé i Príncipe"}
-            other{"dobras de São Tomé i Príncipe"}
-        }
-        SYP{
-            one{"lliura síria"}
-            other{"lliures síries"}
-        }
-        SZL{
-            one{"lilangeni swazi"}
-            other{"emalangeni swazis"}
         }
         THB{
             one{"baht tailandès"}
@@ -1009,10 +945,6 @@ ca{
             one{"franc CFA BEAC"}
             other{"francs CFA BEAC"}
         }
-        XCD{
-            one{"dòlar del Carib Oriental"}
-            other{"dòlars del Carib Oriental"}
-        }
         XDR{
             one{"drets especials de gir"}
             other{"drets especials de gir"}
@@ -1020,10 +952,6 @@ ca{
         XOF{
             one{"franc CFA BCEAO"}
             other{"francs CFA BCEAO"}
-        }
-        XPF{
-            one{"franc CFP"}
-            other{"francs CFP"}
         }
         YER{
             one{"rial iemenita"}

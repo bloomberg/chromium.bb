@@ -135,10 +135,6 @@ hsb{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "falklandski punt",
-        }
         GBP{
             "£",
             "britiski punt",
@@ -227,10 +223,6 @@ hsb{
             "KHR",
             "kambodźaski riel",
         }
-        KPW{
-            "KPW",
-            "sewjernokorejski won",
-        }
         KRW{
             "₩",
             "južnokorejski won",
@@ -238,10 +230,6 @@ hsb{
         KWD{
             "KWD",
             "kuwaitski dinar",
-        }
-        KYD{
-            "KYD",
-            "kajmanski dolar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ hsb{
             "SAR",
             "saudi-arabski rial",
         }
-        SBD{
-            "SBD",
-            "salomonski dolar",
-        }
         SDG{
             "SDG",
             "sudanski punt",
@@ -414,18 +398,6 @@ hsb{
         SSP{
             "SSP",
             "južnosudanski punt",
-        }
-        STD{
-            "STD",
-            "são tomeski dobra",
-        }
-        SYP{
-            "SYP",
-            "syriski punt",
-        }
-        SZL{
-            "SZL",
-            "swasiski lilangeni",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ hsb{
             "FCFA",
             "CFA-frank (BEAC)",
         }
-        XCD{
-            "EC$",
-            "wuchodnokaribiski dolar",
-        }
         XOF{
             "CFA",
             "CFA-frank (BCEAO)",
-        }
-        XPF{
-            "CFPF",
-            "CFP-frank",
         }
         YER{
             "YER",
@@ -706,12 +670,6 @@ hsb{
             other{"eurow"}
             two{"euraj"}
         }
-        FKP{
-            few{"falklandske punty"}
-            one{"falklandski punt"}
-            other{"falklandskich puntow"}
-            two{"falklandskej puntaj"}
-        }
         GBP{
             few{"britiske punty"}
             one{"britiski punt"}
@@ -844,12 +802,6 @@ hsb{
             other{"kambodźaskich rielow"}
             two{"kambodźaskej rielej"}
         }
-        KPW{
-            few{"sewjernokorejske wony"}
-            one{"sewjernokorejski won"}
-            other{"sewjernokorejskich wonow"}
-            two{"sewjernokorejskej wonaj"}
-        }
         KRW{
             few{"južnokorejske wony"}
             one{"južnokorejski won"}
@@ -861,12 +813,6 @@ hsb{
             one{"kuwaitski dinar"}
             other{"kuwaitskich dinarow"}
             two{"kuwaitskej dinaraj"}
-        }
-        KYD{
-            few{"kajmanske dolary"}
-            one{"kajmanski dolar"}
-            other{"kajmanskich dolarow"}
-            two{"kajmanskej dolaraj"}
         }
         KZT{
             few{"kazachske tengi"}
@@ -1090,12 +1036,6 @@ hsb{
             other{"saudi-arabskich rialow"}
             two{"saudi-arabskej rialej"}
         }
-        SBD{
-            few{"salomonske dolary"}
-            one{"salomonski dolar"}
-            other{"salomonskich dolarow"}
-            two{"salomonskej dolaraj"}
-        }
         SDG{
             few{"sudanske punty"}
             one{"sudanski punt"}
@@ -1125,24 +1065,6 @@ hsb{
             one{"južnosudanski punt"}
             other{"južnosudanskich puntow"}
             two{"južnosudanskej puntaj"}
-        }
-        STD{
-            few{"são tomeske dobry"}
-            one{"são tomeski dobra"}
-            other{"são tomeskich dobrow"}
-            two{"são tomeskej dobraj"}
-        }
-        SYP{
-            few{"syriske punty"}
-            one{"syriski punt"}
-            other{"syriskich puntow"}
-            two{"syriskej puntaj"}
-        }
-        SZL{
-            few{"swasiske lilangenije"}
-            one{"swasiski lilangeni"}
-            other{"swasiskich lilangenijow"}
-            two{"swasiskej lilangenijej"}
         }
         THB{
             few{"thaiske bahty"}
@@ -1240,23 +1162,11 @@ hsb{
             other{"CFA-frankow (BEAC)"}
             two{"CFA-frankaj (BEAC)"}
         }
-        XCD{
-            few{"wuchodnokaribiske dolary"}
-            one{"wuchodnokaribiski dolar"}
-            other{"wuchodnokaribiskich dolarow"}
-            two{"wuchodnokaribiskej dolaraj"}
-        }
         XOF{
             few{"CFA-franki (BCEAO)"}
             one{"CFA-frank (BCEAO)"}
             other{"CFA-frankow (BCEAO)"}
             two{"CFA-frankaj (BCEAO)"}
-        }
-        XPF{
-            few{"CFP-franki"}
-            one{"CFP-frank"}
-            other{"CFP-frankow"}
-            two{"CFP-frankaj"}
         }
         YER{
             few{"jemenske riale"}

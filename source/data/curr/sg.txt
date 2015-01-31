@@ -127,14 +127,6 @@ sg{
             "SLL",
             "leône tî Sierâ-Leône",
         }
-        STD{
-            "STD",
-            "dôbra tî Sâô Tomë na Prinsîpe",
-        }
-        SZL{
-            "SZL",
-            "lilangùeni tî Swazïlânde",
-        }
         TND{
             "TND",
             "dinära tî Tunizïi",

@@ -97,10 +97,6 @@ zh_Hant_HK{
             "CFA",
             "多哥非洲共同體法郎",
         }
-        XPF{
-            "CFPF",
-            "太平洋法郎",
-        }
     }
     CurrencyPlurals{
         AED{
@@ -132,9 +128,6 @@ zh_Hant_HK{
         }
         HRK{
             other{"克羅地亞庫納"}
-        }
-        KYD{
-            other{"開曼群島美元"}
         }
         LTL{
             other{"立陶宛里塔"}
@@ -174,9 +167,6 @@ zh_Hant_HK{
         }
         XAF{
             other{"中非法郎"}
-        }
-        XPF{
-            other{"太平洋法郎"}
         }
     }
     Version{"2.1.8.28"}

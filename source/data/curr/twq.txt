@@ -127,14 +127,6 @@ twq{
             "SLL",
             "Leeon",
         }
-        STD{
-            "STD",
-            "Sao Tome nda Prinsipe Dobra",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Tunizi Dinar",

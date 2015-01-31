@@ -127,14 +127,6 @@ mfe{
             "SLL",
             "leonn Sierra-Leone",
         }
-        STD{
-            "STD",
-            "dobra santomeen",
-        }
-        SZL{
-            "SZL",
-            "lilangeni swazi",
-        }
         TND{
             "TND",
             "dinar tinizien",

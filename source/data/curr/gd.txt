@@ -135,10 +135,6 @@ gd{
             "€",
             "Eòro",
         }
-        FKP{
-            "FKP",
-            "Punnd Fàclannach",
-        }
         GBP{
             "£",
             "Punnd Sasannach",
@@ -227,10 +223,6 @@ gd{
             "KHR",
             "Riel Cambuideach",
         }
-        KPW{
-            "KPW",
-            "Won Choirèa a Tuath",
-        }
         KRW{
             "₩",
             "Won Choirèa a Deas",
@@ -238,10 +230,6 @@ gd{
         KWD{
             "KWD",
             "Dinar Cuibhèiteach",
-        }
-        KYD{
-            "KYD",
-            "Dolar Caimeanach",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ gd{
             "SAR",
             "Riyal Sabhdach",
         }
-        SBD{
-            "SBD",
-            "Dolar Eileanan Sholaimh",
-        }
         SDG{
             "SDG",
             "Punnd Sudànach",
@@ -414,18 +398,6 @@ gd{
         SSP{
             "SSP",
             "Punnd Sudàin a Deas",
-        }
-        STD{
-            "STD",
-            "Dobra São Tomé agus Príncipe",
-        }
-        SYP{
-            "SYP",
-            "Punnd Siridheach",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni Suasaidheach",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ gd{
             "FCFA",
             "Franc CFA Meadhan-Afragach",
         }
-        XCD{
-            "EC$",
-            "Dolar Caraibeach earach",
-        }
         XDR{
             "XDR",
             "Còir tarraing shònraichte",
@@ -502,10 +470,6 @@ gd{
         XOF{
             "CFA",
             "Franc CFA Afraga an Iar",
-        }
-        XPF{
-            "CFPF",
-            "Franc CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ gd{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ gd{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -750,12 +712,6 @@ gd{
             other{"Eòro"}
             two{"Eòro"}
         }
-        FKP{
-            few{"puinnd Fhàclannach"}
-            one{"phunnd Fàclannach"}
-            other{"punnd Fàclannach"}
-            two{"phunnd Fàclannach"}
-        }
         GBP{
             few{"puinnd Shasannach"}
             one{"phunnd Sasannach"}
@@ -888,12 +844,6 @@ gd{
             other{"riel Cambuideach"}
             two{"riel Cambuideach"}
         }
-        KPW{
-            few{"won Choirèa a Tuath"}
-            one{"won Choirèa a Tuath"}
-            other{"won Choirèa a Tuath"}
-            two{"won Choirèa a Tuath"}
-        }
         KRW{
             few{"won Choirèa a Deas"}
             one{"won Choirèa a Deas"}
@@ -905,12 +855,6 @@ gd{
             one{"dinar Cuibhèiteach"}
             other{"dinar Cuibhèiteach"}
             two{"dhinar Cuibhèiteach"}
-        }
-        KYD{
-            few{"dolaran Caimeanach"}
-            one{"dolar Caimeanach"}
-            other{"dolar Caimeanach"}
-            two{"dholar Caimeanach"}
         }
         KZT{
             few{"tenge Casachach"}
@@ -1134,12 +1078,6 @@ gd{
             other{"riyal Sabhdach"}
             two{"riyal Sabhdach"}
         }
-        SBD{
-            few{"dolaran Eileanan Sholaimh"}
-            one{"dolar Eileanan Sholaimh"}
-            other{"dolar Eileanan Sholaimh"}
-            two{"dholar Eileanan Sholaimh"}
-        }
         SDG{
             few{"puinnd Shudànach"}
             one{"phunnd Sudànach"}
@@ -1169,24 +1107,6 @@ gd{
             one{"phunnd Sudàin a Deas"}
             other{"punnd Sudàin a Deas"}
             two{"phunnd Sudàin a Deas"}
-        }
-        STD{
-            few{"dobra São Tomé agus Príncipe"}
-            one{"dhobra São Tomé agus Príncipe"}
-            other{"dobra São Tomé agus Príncipe"}
-            two{"dobra São Tomé agus Príncipe"}
-        }
-        SYP{
-            few{"puinnd Shiridheach"}
-            one{"phunnd Siridheach"}
-            other{"punnd Siridheach"}
-            two{"phunnd Siridheach"}
-        }
-        SZL{
-            few{"lilangeni Suasaidheach"}
-            one{"lilangeni Suasaidheach"}
-            other{"lilangeni Suasaidheach"}
-            two{"lilangeni Suasaidheach"}
         }
         THB{
             few{"baht Tàidheach"}
@@ -1284,12 +1204,6 @@ gd{
             other{"franc CFA Meadhan-Afragach"}
             two{"fhranc CFA Meadhan-Afragach"}
         }
-        XCD{
-            few{"dolaran Caraibeach earach"}
-            one{"dolar Caraibeach earach"}
-            other{"dolar Caraibeach earach"}
-            two{"dholar Caraibeach earach"}
-        }
         XDR{
             few{"còirichean tarraing sònraichte"}
             one{"chòir tarraing shònraichte"}
@@ -1301,12 +1215,6 @@ gd{
             one{"fhranc CFA Afraga an Iar"}
             other{"franc CFA Afraga an Iar"}
             two{"fhranc CFA Afraga an Iar"}
-        }
-        XPF{
-            few{"franc CFP"}
-            one{"fhranc CFP"}
-            other{"franc CFP"}
-            two{"fhranc CFP"}
         }
         YER{
             few{"rial Eamanach"}

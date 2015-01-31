@@ -135,10 +135,6 @@ tr{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland Adaları Lirası",
-        }
         GBP{
             "£",
             "İngiliz Sterlini",
@@ -227,10 +223,6 @@ tr{
             "KHR",
             "Kamboçya Rieli",
         }
-        KPW{
-            "KPW",
-            "Kuzey Kore Wonu",
-        }
         KRW{
             "₩",
             "Güney Kore Wonu",
@@ -238,10 +230,6 @@ tr{
         KWD{
             "KWD",
             "Kuveyt Dinarı",
-        }
-        KYD{
-            "KYD",
-            "Cayman Adaları Doları",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ tr{
             "SAR",
             "Suudi Arabistan Riyali",
         }
-        SBD{
-            "SBD",
-            "Solomon Adaları Doları",
-        }
         SDG{
             "SDG",
             "Sudan Lirası",
@@ -414,18 +398,6 @@ tr{
         SSP{
             "SSP",
             "Güney Sudan Lirası",
-        }
-        STD{
-            "STD",
-            "São Tomé ve Príncipe Dobrası",
-        }
-        SYP{
-            "SYP",
-            "Suriye Lirası",
-        }
-        SZL{
-            "SZL",
-            "Svaziland Lilangenisi",
         }
         THB{
             "฿",
@@ -496,10 +468,6 @@ tr{
             "FCFA",
             "CFA Frangı BEAC",
         }
-        XCD{
-            "EC$",
-            "Doğu Karayip Doları",
-        }
         XDR{
             "XDR",
             "Özel Çekme Hakkı (SDR)",
@@ -507,10 +475,6 @@ tr{
         XOF{
             "CFA",
             "CFA Frangı BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP Frangı",
         }
         YER{
             "YER",
@@ -547,7 +511,6 @@ tr{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -557,7 +520,6 @@ tr{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -693,10 +655,6 @@ tr{
             one{"Euro"}
             other{"Euro"}
         }
-        FKP{
-            one{"Falkland Adaları lirası"}
-            other{"Falkland Adaları lirası"}
-        }
         GBP{
             one{"İngiliz sterlini"}
             other{"İngiliz sterlini"}
@@ -785,10 +743,6 @@ tr{
             one{"Kamboçya rieli"}
             other{"Kamboçya rieli"}
         }
-        KPW{
-            one{"Kuzey Kore wonu"}
-            other{"Kuzey Kore wonu"}
-        }
         KRW{
             one{"Güney Kore wonu"}
             other{"Güney Kore wonu"}
@@ -796,10 +750,6 @@ tr{
         KWD{
             one{"Kuveyt dinarı"}
             other{"Kuveyt dinarı"}
-        }
-        KYD{
-            one{"Cayman Adaları doları"}
-            other{"Cayman Adaları doları"}
         }
         KZT{
             one{"Kazakistan tengesi"}
@@ -949,10 +899,6 @@ tr{
             one{"Suudi Arabistan riyali"}
             other{"Suudi Arabistan riyali"}
         }
-        SBD{
-            one{"Solomon Adaları doları"}
-            other{"Solomon Adaları doları"}
-        }
         SDG{
             one{"Sudan lirası"}
             other{"Sudan lirası"}
@@ -972,18 +918,6 @@ tr{
         SSP{
             one{"Güney Sudan lirası"}
             other{"Güney Sudan lirası"}
-        }
-        STD{
-            one{"São Tomé ve Príncipe dobrası"}
-            other{"São Tomé ve Príncipe dobrası"}
-        }
-        SYP{
-            one{"Suriye lirası"}
-            other{"Suriye lirası"}
-        }
-        SZL{
-            one{"Svaziland lilangenisi"}
-            other{"Svaziland lilangenisi"}
         }
         THB{
             one{"Tayland bahtı"}
@@ -1049,17 +983,9 @@ tr{
             one{"CFA frangı BEAC"}
             other{"CFA frangı BEAC"}
         }
-        XCD{
-            one{"Doğu Karayip doları"}
-            other{"Doğu Karayip doları"}
-        }
         XOF{
             one{"CFA frangı BCEAO"}
             other{"CFA frangı BCEAO"}
-        }
-        XPF{
-            one{"CFP frangı"}
-            other{"CFP frangı"}
         }
         YER{
             one{"Yemen riyali"}

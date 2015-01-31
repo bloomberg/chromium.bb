@@ -137,10 +137,13 @@ This directory contains the source code of ICU 54.1 for C/C++.
     for ckb to 'Kurdish (Arabic)'.
 
   - android/patch_locale.sh (to be run for Android build only):
-      a. Make changes to source/data/{curr,region,lang} to exclude these data
+      a. Make changes to source/data/{region,lang} to exclude these data
          except the language and script names of zh_Hans and zh_Hant.
-      b. Remove exemplar cities in timezone data (data/zone)
-      c. Keep only the minimal calendar data in data/locales
+      b. Remove exemplar cities in timezone data (data/zone).
+      c. Keep only the minimal calendar data in data/locales.
+      d. Include currency display names for a smaller subset of currencies.
+      e. Minimize the locale data for 9 locales to which Chrome on Android
+         is not localized.
 
 6. Timezone data update
   - Grab the latest version of the following timezone data files and
@@ -170,6 +173,11 @@ This directory contains the source code of ICU 54.1 for C/C++.
   - patches/vscomp.patch for building with Visual Studio on Windows.
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
+     c. Fix 'signed vs unsigned comparison' warning in
+        collationfastlatin.cpp. The upstream ToT does not have these lines
+        any more.
+     d. Add static_cast to avoid a possible data truncatiion warning 
+        upstream bug: http://bugs.icu-project.org/trac/ticket/11104
 
   - patches/data.build.patch :
       Remove unnecessary resources : unames, collator rule source

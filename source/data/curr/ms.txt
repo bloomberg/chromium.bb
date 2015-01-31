@@ -135,10 +135,6 @@ ms{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Paun Kepulauan Falkland",
-        }
         GBP{
             "£",
             "Paun Sterling British",
@@ -227,10 +223,6 @@ ms{
             "KHR",
             "Riel Kemboja",
         }
-        KPW{
-            "KPW",
-            "Won Korea Utara",
-        }
         KRW{
             "₩",
             "Won Korea Selatan",
@@ -238,10 +230,6 @@ ms{
         KWD{
             "KWD",
             "Dinar Kuwait",
-        }
-        KYD{
-            "KYD",
-            "Dolar Kepulauan Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ ms{
             "SAR",
             "Riyal Saudi",
         }
-        SBD{
-            "SBD",
-            "Dolar Kepulauan Solomon",
-        }
         SDG{
             "SDG",
             "Paun Sudan",
@@ -414,18 +398,6 @@ ms{
         SSP{
             "SSP",
             "Paun Sudan selatan",
-        }
-        STD{
-            "STD",
-            "Dobra Sao Tome dan Principe",
-        }
-        SYP{
-            "SYP",
-            "Paun Syria",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni Swazi",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ ms{
             "FCFA",
             "Franc CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "Dolar Caribbean Timur",
-        }
         XOF{
             "CFA",
             "Franc CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Franc CFP",
         }
         YER{
             "YER",
@@ -538,7 +502,6 @@ ms{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -548,7 +511,6 @@ ms{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -653,9 +615,6 @@ ms{
         EUR{
             other{"Euro"}
         }
-        FKP{
-            other{"Paun Kepulauan Falkland"}
-        }
         GBP{
             other{"Paun Sterling British"}
         }
@@ -722,17 +681,11 @@ ms{
         KHR{
             other{"Riel Kemboja"}
         }
-        KPW{
-            other{"Won Korea Utara"}
-        }
         KRW{
             other{"Won Korea Selatan"}
         }
         KWD{
             other{"Dinar Kuwait"}
-        }
-        KYD{
-            other{"Dolar Kepulauan Cayman"}
         }
         KZT{
             other{"Tenge Kazakhstan"}
@@ -845,9 +798,6 @@ ms{
         SAR{
             other{"Riyal Saudi"}
         }
-        SBD{
-            other{"Dolar Kepulauan Solomon"}
-        }
         SDG{
             other{"Paun Sudan"}
         }
@@ -862,15 +812,6 @@ ms{
         }
         SSP{
             other{"Paun Sudan selatan"}
-        }
-        STD{
-            other{"Dobra Sao Tome dan Principe"}
-        }
-        SYP{
-            other{"Paun Syria"}
-        }
-        SZL{
-            other{"Lilangeni Swazi"}
         }
         THB{
             other{"Baht Thai"}
@@ -920,14 +861,8 @@ ms{
         XAF{
             other{"Franc CFA BEAC"}
         }
-        XCD{
-            other{"Dolar Caribbean Timur"}
-        }
         XOF{
             other{"Franc CFA BCEAO"}
-        }
-        XPF{
-            other{"Franc CFP"}
         }
         YER{
             other{"Rial Yaman"}

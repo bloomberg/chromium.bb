@@ -127,14 +127,6 @@ bm{
             "SLL",
             "siyeralewɔni Lewɔni",
         }
-        STD{
-            "STD",
-            "sawotome Dobra",
-        }
-        SZL{
-            "SZL",
-            "swazilandi Lilangeni",
-        }
         TND{
             "TND",
             "tunizi Dinar",

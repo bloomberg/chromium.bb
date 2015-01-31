@@ -127,14 +127,6 @@ ksb{
             "SLL",
             "leoni",
         }
-        STD{
-            "STD",
-            "dobla ya Sao Tome na Plincipe",
-        }
-        SZL{
-            "SZL",
-            "lilangeni",
-        }
         TND{
             "TND",
             "dinali ya Tunisia",

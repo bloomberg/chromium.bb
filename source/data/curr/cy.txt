@@ -135,10 +135,6 @@ cy{
             "€",
             "Ewro",
         }
-        FKP{
-            "FKP",
-            "Punt Ynysoedd Falkland/Malvinas",
-        }
         GBP{
             "£",
             "Punt Sterling Prydain",
@@ -227,10 +223,6 @@ cy{
             "KHR",
             "Riel Cambodia",
         }
-        KPW{
-            "KPW",
-            "Won Gogledd Corea",
-        }
         KRW{
             "₩",
             "Won De Korea",
@@ -238,10 +230,6 @@ cy{
         KWD{
             "KWD",
             "Dinar Kuwait",
-        }
-        KYD{
-            "KYD",
-            "Doler Ynysoedd Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ cy{
             "SAR",
             "Riyal Saudi Arabia",
         }
-        SBD{
-            "SBD",
-            "Doler Ynysoedd Solomon",
-        }
         SDG{
             "SDG",
             "Punt Sudan",
@@ -414,18 +398,6 @@ cy{
         SSP{
             "SSP",
             "Punt De Sudan",
-        }
-        STD{
-            "STD",
-            "Dobra São Tomé a Príncipe",
-        }
-        SYP{
-            "SYP",
-            "Punt Syria",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni Gwlad Swazi",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ cy{
             "FCFA",
             "Ffranc CFA y BEAC",
         }
-        XCD{
-            "EC$",
-            "Doler Dwyrain y Caribî",
-        }
         XOF{
             "CFA",
             "Ffranc CFA y BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Ffranc CPF",
         }
         YER{
             "YER",
@@ -765,14 +729,6 @@ cy{
             two{"Ewro"}
             zero{"Ewro"}
         }
-        FKP{
-            few{"Punt Ynysoedd Falkland/Malvinas"}
-            many{"Punt Ynysoedd Falkland/Malvinas"}
-            one{"Punt Ynysoedd Falkland/Malvinas"}
-            other{"Punt Ynysoedd Falkland/Malvinas"}
-            two{"Punt Ynysoedd Falkland/Malvinas"}
-            zero{"Punt Ynysoedd Falkland/Malvinas"}
-        }
         GBP{
             few{"Punt Sterling Prydain"}
             many{"Punt Sterling Prydain"}
@@ -949,14 +905,6 @@ cy{
             two{"Riel Cambodia"}
             zero{"Riel Cambodia"}
         }
-        KPW{
-            few{"Won Gogledd Corea"}
-            many{"Won Gogledd Corea"}
-            one{"Won Gogledd Corea"}
-            other{"Won Gogledd Corea"}
-            two{"Won Gogledd Corea"}
-            zero{"Won Gogledd Corea"}
-        }
         KRW{
             few{"Won De Korea"}
             many{"Won De Korea"}
@@ -972,14 +920,6 @@ cy{
             other{"Dinar Kuwait"}
             two{"Dinar Kuwait"}
             zero{"Dinar Kuwait"}
-        }
-        KYD{
-            few{"Doler Ynysoedd Cayman"}
-            many{"Doler Ynysoedd Cayman"}
-            one{"Doler Ynysoedd Cayman"}
-            other{"Doler Ynysoedd Cayman"}
-            two{"Doler Ynysoedd Cayman"}
-            zero{"Doler Ynysoedd Cayman"}
         }
         KZT{
             few{"Tenge Kazakstan"}
@@ -1277,14 +1217,6 @@ cy{
             two{"Riyal Saudi Arabia"}
             zero{"Riyal Saudi Arabia"}
         }
-        SBD{
-            few{"Doler Ynysoedd Solomon"}
-            many{"Doler Ynysoedd Solomon"}
-            one{"Doler Ynysoedd Solomon"}
-            other{"Doler Ynysoedd Solomon"}
-            two{"Doler Ynysoedd Solomon"}
-            zero{"Doler Ynysoedd Solomon"}
-        }
         SDG{
             few{"Punt Sudan"}
             many{"Punt Sudan"}
@@ -1324,30 +1256,6 @@ cy{
             other{"Punt De Sudan"}
             two{"Punt De Sudan"}
             zero{"Punt De Sudan"}
-        }
-        STD{
-            few{"Dobra São Tomé a Príncipe"}
-            many{"Dobra São Tomé a Príncipe"}
-            one{"Dobra São Tomé a Príncipe"}
-            other{"Dobra São Tomé a Príncipe"}
-            two{"Dobra São Tomé a Príncipe"}
-            zero{"Dobra São Tomé a Príncipe"}
-        }
-        SYP{
-            few{"Punt Syria"}
-            many{"Punt Syria"}
-            one{"Punt Syria"}
-            other{"Punt Syria"}
-            two{"Punt Syria"}
-            zero{"Punt Syria"}
-        }
-        SZL{
-            few{"Lilangeni Gwlad Swazi"}
-            many{"Lilangeni Gwlad Swazi"}
-            one{"Lilangeni Gwlad Swazi"}
-            other{"Lilangeni Gwlad Swazi"}
-            two{"Lilangeni Gwlad Swazi"}
-            zero{"Lilangeni Gwlad Swazi"}
         }
         THB{
             few{"Baht Gwlad Thai"}
@@ -1477,14 +1385,6 @@ cy{
             two{"Ffranc CFA y BEAC"}
             zero{"Ffranc CFA y BEAC"}
         }
-        XCD{
-            few{"Doler Dwyrain y Caribî"}
-            many{"Doler Dwyrain y Caribî"}
-            one{"Doler Dwyrain y Caribî"}
-            other{"Doler Dwyrain y Caribî"}
-            two{"Doler Dwyrain y Caribî"}
-            zero{"Doler Dwyrain y Caribî"}
-        }
         XOF{
             few{"Ffranc CFA y BCEAO"}
             many{"Ffranc CFA y BCEAO"}
@@ -1492,14 +1392,6 @@ cy{
             other{"Ffranc CFA y BCEAO"}
             two{"Ffranc CFA y BCEAO"}
             zero{"Ffranc CFA y BCEAO"}
-        }
-        XPF{
-            few{"Ffranc CPF"}
-            many{"Ffranc CPF"}
-            one{"Ffranc CPF"}
-            other{"Ffranc CPF"}
-            two{"Ffranc CPF"}
-            zero{"Ffranc CPF"}
         }
         YER{
             few{"Rial Yemen"}

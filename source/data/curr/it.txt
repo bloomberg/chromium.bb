@@ -135,10 +135,6 @@ it{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Sterlina delle Falkland",
-        }
         GBP{
             "£",
             "Sterlina Inglese",
@@ -227,10 +223,6 @@ it{
             "KHR",
             "Riel Cambogiano",
         }
-        KPW{
-            "KPW",
-            "Won Nordcoreano",
-        }
         KRW{
             "KRW",
             "Won Sudcoreano",
@@ -238,10 +230,6 @@ it{
         KWD{
             "KWD",
             "Dinaro kuwaitiano",
-        }
-        KYD{
-            "KYD",
-            "Dollaro delle Isole Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ it{
             "SAR",
             "Riyal saudita",
         }
-        SBD{
-            "SBD",
-            "Dollaro delle Isole Solomon",
-        }
         SDG{
             "SDG",
             "Sterlina Sudanese",
@@ -414,18 +398,6 @@ it{
         SSP{
             "SSP",
             "Sterlina sudsudanese",
-        }
-        STD{
-            "STD",
-            "Dobra di Sao Tomé e Principe",
-        }
-        SYP{
-            "SYP",
-            "Lira siriana",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni dello Swaziland",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ it{
             "FCFA",
             "Franco CFA BEAC",
         }
-        XCD{
-            "EC$",
-            "Dollaro dei Caraibi Orientali",
-        }
         XDR{
             "XDR",
             "Diritti Speciali di Incasso",
@@ -502,10 +470,6 @@ it{
         XOF{
             "CFA",
             "Franco CFA BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "Franco CFP",
         }
         YER{
             "YER",
@@ -539,7 +503,6 @@ it{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -680,10 +643,6 @@ it{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"sterlina delle Falkland"}
-            other{"sterline delle Falkland"}
-        }
         GBP{
             one{"sterlina britannica"}
             other{"sterline britanniche"}
@@ -772,10 +731,6 @@ it{
             one{"riel cambogiano"}
             other{"riel cambogiani"}
         }
-        KPW{
-            one{"won nordcoreano"}
-            other{"won nordcoreani"}
-        }
         KRW{
             one{"won sudcoreano"}
             other{"won sudcoreani"}
@@ -783,10 +738,6 @@ it{
         KWD{
             one{"dinaro kuwaitiano"}
             other{"dinari kuwaitiani"}
-        }
-        KYD{
-            one{"dollaro delle Isole Cayman"}
-            other{"dollari delle Isole Cayman"}
         }
         KZT{
             one{"tenge kazaco"}
@@ -936,10 +887,6 @@ it{
             one{"riyal saudita"}
             other{"riyal sauditi"}
         }
-        SBD{
-            one{"dollaro delle Isole Solomon"}
-            other{"dollari delle Isole Solomon"}
-        }
         SDG{
             one{"sterlina sudanese"}
             other{"sterline sudanesi"}
@@ -959,18 +906,6 @@ it{
         SSP{
             one{"sterlina sudsudanese"}
             other{"sterline sudsudanesi"}
-        }
-        STD{
-            one{"dobra di Sao Tomé e Principe"}
-            other{"dobra di Sao Tomé e Principe"}
-        }
-        SYP{
-            one{"lira siriana"}
-            other{"lire siriane"}
-        }
-        SZL{
-            one{"lilangeni dello Swaziland"}
-            other{"lilangeni dello Swaziland"}
         }
         THB{
             one{"baht thailandese"}
@@ -1036,17 +971,9 @@ it{
             one{"franco CFA BEAC"}
             other{"franchi CFA BEAC"}
         }
-        XCD{
-            one{"dollaro dei Caraibi orientali"}
-            other{"dollari dei Caraibi orientali"}
-        }
         XOF{
             one{"franco CFA BCEAO"}
             other{"franchi CFA BCEAO"}
-        }
-        XPF{
-            one{"franco CFP"}
-            other{"franchi CFP"}
         }
         YER{
             one{"rial yemenita"}

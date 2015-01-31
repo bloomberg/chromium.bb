@@ -127,14 +127,6 @@ lu{
             "SLL",
             "Leone",
         }
-        STD{
-            "STD",
-            "Dobra wa Sao Tome ne Presipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Ndina wa Tinizi",

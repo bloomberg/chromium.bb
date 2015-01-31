@@ -135,10 +135,6 @@ ee{
             "€",
             "euro",
         }
-        FKP{
-            "FKP",
-            "falklanɖ ƒudomekpo dukɔwo ƒe ga pound",
-        }
         GBP{
             "£",
             "britainga pound sterling",
@@ -227,10 +223,6 @@ ee{
             "KHR",
             "kambodiaga riel",
         }
-        KPW{
-            "KPW",
-            "dziehe koreaga won",
-        }
         KRW{
             "₩",
             "anyiehe koreaga won",
@@ -238,10 +230,6 @@ ee{
         KWD{
             "KWD",
             "kuwaitga dinar",
-        }
-        KYD{
-            "KYD",
-            "kayman ƒudomekpoga dollar",
         }
         KZT{
             "KZT",
@@ -379,10 +367,6 @@ ee{
             "SAR",
             "saudiga riyal",
         }
-        SBD{
-            "SBD",
-            "solomon ƒudomekpo dukɔwo ƒe ga dollar",
-        }
         SDG{
             "SDG",
             "sudanga pound",
@@ -398,18 +382,6 @@ ee{
         SLL{
             "SLL",
             "sierra leonega leone",
-        }
-        STD{
-            "STD",
-            "são tomé kple príncipega dobra",
-        }
-        SYP{
-            "SYP",
-            "syriaga pound",
-        }
-        SZL{
-            "SZL",
-            "swaziga lilangeni",
         }
         THB{
             "THB",
@@ -475,10 +447,6 @@ ee{
             "FCFA",
             "ɣetoɖofe afrikaga CFA franc BEAC",
         }
-        XCD{
-            "EC$",
-            "ɣedzeƒe caribbeaga dollar",
-        }
         XDR{
             "XDR",
             "gaɖuɖu ɖoɖo tɔxɛ",
@@ -486,10 +454,6 @@ ee{
         XOF{
             "CFA",
             "ɣetoɖofe afrikaga CFA franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP ga franc",
         }
         YER{
             "YER",
@@ -629,10 +593,6 @@ ee{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"falkland ƒudomekpo dukɔwo ƒe ga pound"}
-            other{"falkland ƒudomekpo dukɔwo ƒe ga pound"}
-        }
         GBP{
             one{"britainga pound sterling"}
             other{"britainga pound sterling"}
@@ -721,10 +681,6 @@ ee{
             one{"kambodiaga riel"}
             other{"kambodiaga riel"}
         }
-        KPW{
-            one{"dziehe koreaga won"}
-            other{"dziehe koreaga won"}
-        }
         KRW{
             one{"anyiehe koreaga won"}
             other{"anyiehe koreaga won"}
@@ -732,10 +688,6 @@ ee{
         KWD{
             one{"kuwaitga dinar"}
             other{"kuwaitga dinar"}
-        }
-        KYD{
-            one{"kayman ƒudomekpoga dollar"}
-            other{"kayman ƒudomekpoga dollar"}
         }
         KZT{
             one{"kazakhstanga tenge"}
@@ -873,10 +825,6 @@ ee{
             one{"saudiga riyal"}
             other{"saudiga riyal"}
         }
-        SBD{
-            one{"solomon ƒudomekpo dukɔwo ƒe ga dollar"}
-            other{"solomon ƒudomekpo dukɔwo ƒe ga dollar"}
-        }
         SDG{
             one{"sudanga pound"}
             other{"sudanga pound"}
@@ -892,18 +840,6 @@ ee{
         SLL{
             one{"sierra leonega leone"}
             other{"sierra leonega leone"}
-        }
-        STD{
-            one{"são tomé kple príncipega dobra"}
-            other{"são tomé kple príncipega dobra"}
-        }
-        SYP{
-            one{"syriaga pound"}
-            other{"syriaga pound"}
-        }
-        SZL{
-            one{"swaziga lilangeni"}
-            other{"swaziga lilangeni"}
         }
         THB{
             one{"thaiga baht"}
@@ -969,10 +905,6 @@ ee{
             one{"ɣetoɖofe afrikaga CFA franc BEAC"}
             other{"ɣetoɖofe afrikaga CFA franc BEAC"}
         }
-        XCD{
-            one{"ɣedzeƒe karibbeaga dollar"}
-            other{"ɣedzeƒe karibbeaga dollar"}
-        }
         XDR{
             one{"gaɖuɖu ɖoɖo tɔxɛ"}
             other{"gaɖuɖu ɖoɖo tɔxɛ"}
@@ -980,10 +912,6 @@ ee{
         XOF{
             one{"ɣetoɖofe afrikaga CFA franc BCEAO"}
             other{"ɣetoɖofe afrikaga CFA franc BCEAO"}
-        }
-        XPF{
-            one{"CFP ga franc"}
-            other{"CFP ga franc"}
         }
         YER{
             one{"yemeniga rial"}

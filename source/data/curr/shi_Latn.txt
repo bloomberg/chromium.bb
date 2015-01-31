@@ -128,14 +128,6 @@ shi_Latn{
             "SLL",
             "liyun",
         }
-        STD{
-            "STD",
-            "adubra n sanṭumi",
-        }
-        SZL{
-            "SZL",
-            "lilanjini",
-        }
         TND{
             "TND",
             "adinar n tuns",

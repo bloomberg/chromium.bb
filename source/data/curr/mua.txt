@@ -127,14 +127,6 @@ mua{
             "SLL",
             "solai Sierra leonǝ",
         }
-        STD{
-            "STD",
-            "Solai Sao Tome",
-        }
-        SZL{
-            "SZL",
-            "solai Swaziland",
-        }
         TND{
             "TND",
             "Solai Tunisiya",

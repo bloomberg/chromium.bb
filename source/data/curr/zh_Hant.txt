@@ -136,10 +136,6 @@ zh_Hant{
             "€",
             "歐元",
         }
-        FKP{
-            "FKP",
-            "福克蘭群島鎊",
-        }
         GBP{
             "£",
             "英鎊",
@@ -228,10 +224,6 @@ zh_Hant{
             "KHR",
             "柬埔寨瑞爾",
         }
-        KPW{
-            "KPW",
-            "北韓圓",
-        }
         KRW{
             "￦",
             "韓圓",
@@ -239,10 +231,6 @@ zh_Hant{
         KWD{
             "KWD",
             "科威特第納爾",
-        }
-        KYD{
-            "KYD",
-            "開曼群島元",
         }
         KZT{
             "KZT",
@@ -392,10 +380,6 @@ zh_Hant{
             "SAR",
             "沙烏地里雅",
         }
-        SBD{
-            "SBD",
-            "索羅門群島元",
-        }
         SDG{
             "SDG",
             "蘇丹鎊",
@@ -415,18 +399,6 @@ zh_Hant{
         SSP{
             "SSP",
             "南蘇丹鎊",
-        }
-        STD{
-            "STD",
-            "聖多美島和普林西比島多布拉",
-        }
-        SYP{
-            "SYP",
-            "敘利亞鎊",
-        }
-        SZL{
-            "SZL",
-            "史瓦濟蘭里朗吉尼",
         }
         THB{
             "฿",
@@ -492,10 +464,6 @@ zh_Hant{
             "FCFA",
             "法郎 (CFA–BEAC)",
         }
-        XCD{
-            "EC$",
-            "格瑞那達元",
-        }
         XDR{
             "XDR",
             "特殊提款權",
@@ -503,10 +471,6 @@ zh_Hant{
         XOF{
             "CFA",
             "法郎 (CFA–BCEAO)",
-        }
-        XPF{
-            "CFPF",
-            "法郎 (CFP)",
         }
         YER{
             "YER",
@@ -543,7 +507,6 @@ zh_Hant{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -553,7 +516,6 @@ zh_Hant{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -658,9 +620,6 @@ zh_Hant{
         EUR{
             other{"歐元"}
         }
-        FKP{
-            other{"福克蘭群島鎊"}
-        }
         GBP{
             other{"英鎊"}
         }
@@ -727,17 +686,11 @@ zh_Hant{
         KHR{
             other{"柬埔寨瑞爾"}
         }
-        KPW{
-            other{"北韓圓"}
-        }
         KRW{
             other{"韓圓"}
         }
         KWD{
             other{"科威特第納爾"}
-        }
-        KYD{
-            other{"開曼群島元"}
         }
         KZT{
             other{"卡扎克斯坦坦吉"}
@@ -850,9 +803,6 @@ zh_Hant{
         SAR{
             other{"沙烏地里雅"}
         }
-        SBD{
-            other{"索羅門群島元"}
-        }
         SDG{
             other{"蘇丹鎊"}
         }
@@ -867,15 +817,6 @@ zh_Hant{
         }
         SSP{
             other{"南蘇丹鎊"}
-        }
-        STD{
-            other{"聖多美島和普林西比島多布拉"}
-        }
-        SYP{
-            other{"敘利亞鎊"}
-        }
-        SZL{
-            other{"史瓦濟蘭里朗吉尼"}
         }
         THB{
             other{"泰銖"}
@@ -925,17 +866,11 @@ zh_Hant{
         XAF{
             other{"法郎 (CFA–BEAC)"}
         }
-        XCD{
-            other{"格瑞那達元"}
-        }
         XDR{
             other{"特殊提款權"}
         }
         XOF{
             other{"法郎 (CFA–BCEAO)"}
-        }
-        XPF{
-            other{"法郎 (CFP)"}
         }
         YER{
             other{"葉門里雅"}

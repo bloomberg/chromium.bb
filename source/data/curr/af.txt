@@ -135,10 +135,6 @@ af{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland-eilande pond",
-        }
         GBP{
             "£",
             "Britse pond",
@@ -227,10 +223,6 @@ af{
             "KHR",
             "Kambodjaanse riel",
         }
-        KPW{
-            "KPW",
-            "Noord-Koreaanse won",
-        }
         KRW{
             "₩",
             "Suid-Koreaanse won",
@@ -238,10 +230,6 @@ af{
         KWD{
             "KWD",
             "Koeweitse dinar",
-        }
-        KYD{
-            "KYD",
-            "Cayman-eilande dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ af{
             "SAR",
             "Saoedi-Arabiese riyal",
         }
-        SBD{
-            "SBD",
-            "Salomonseilande dollar",
-        }
         SDG{
             "SDG",
             "Soedannese pond",
@@ -414,18 +398,6 @@ af{
         SSP{
             "SSP",
             "Suid-Soedanese pond",
-        }
-        STD{
-            "STD",
-            "São Tomé en Príncipe dobra",
-        }
-        SYP{
-            "SYP",
-            "Siriese pond",
-        }
-        SZL{
-            "SZL",
-            "Swazilandse lilangeni",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ af{
             "FCFA",
             "CFA frank BEAC",
         }
-        XCD{
-            "EC$",
-            "Oos-Karibbiese dollar",
-        }
         XOF{
             "CFA",
             "CFA frank BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP-frank",
         }
         YER{
             "YER",
@@ -538,7 +502,6 @@ af{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -548,7 +511,6 @@ af{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -684,10 +646,6 @@ af{
             one{"euro"}
             other{"euro"}
         }
-        FKP{
-            one{"Falkland-eilande pond"}
-            other{"Falkland-eilande pond"}
-        }
         GBP{
             one{"Britse pond"}
             other{"Britse pond"}
@@ -776,10 +734,6 @@ af{
             one{"Kambodjaanse riel"}
             other{"Kambodjaanse riel"}
         }
-        KPW{
-            one{"Noord-Koreaanse won"}
-            other{"Noord-Koreaanse won"}
-        }
         KRW{
             one{"Suid-Koreaanse won"}
             other{"Suid-Koreaanse won"}
@@ -787,10 +741,6 @@ af{
         KWD{
             one{"Koeweitse dinar"}
             other{"Koeweitse dinar"}
-        }
-        KYD{
-            one{"Cayman-eilande dollar"}
-            other{"Cayman-eilande dollar"}
         }
         KZT{
             one{"Kazakse tenge"}
@@ -940,10 +890,6 @@ af{
             one{"Saoedi-Arabiese riyal"}
             other{"Saoedi-Arabiese riyal"}
         }
-        SBD{
-            one{"Salomonseilande dollar"}
-            other{"Salomonseilande dollar"}
-        }
         SDG{
             one{"Soedannese pond"}
             other{"Soedannese pond"}
@@ -963,18 +909,6 @@ af{
         SSP{
             one{"Suid-Soedanese pond"}
             other{"Suid-Soedanese pond"}
-        }
-        STD{
-            one{"São Tomé en Príncipe dobra"}
-            other{"São Tomé en Príncipe dobra"}
-        }
-        SYP{
-            one{"Siriese pond"}
-            other{"Siriese pond"}
-        }
-        SZL{
-            one{"Swazilandse lilangeni"}
-            other{"Swazilandse lilangeni"}
         }
         THB{
             one{"Thaise baht"}
@@ -1040,17 +974,9 @@ af{
             one{"CFA frank BEAC"}
             other{"CFA frank BEAC"}
         }
-        XCD{
-            one{"Oos-Karibbiese dollar"}
-            other{"Oos-Karibbiese dollar"}
-        }
         XOF{
             one{"CFA frank BCEAO"}
             other{"CFA frank BCEAO"}
-        }
-        XPF{
-            one{"CFP-frank"}
-            other{"CFP-frank"}
         }
         YER{
             one{"Jemenitiese rial"}

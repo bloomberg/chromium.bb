@@ -127,14 +127,6 @@ kln{
             "SLL",
             "Leonit",
         }
-        STD{
-            "STD",
-            "Rabisiekab Sao Tome ak Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangenit",
-        }
         TND{
             "TND",
             "RabisiekabTunisia",

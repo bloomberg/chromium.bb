@@ -127,14 +127,6 @@ nyn{
             "SLL",
             "Leone",
         }
-        STD{
-            "STD",
-            "Dobra ya Sao Tome na Purinsipo",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinari ya Tunisia",

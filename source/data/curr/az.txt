@@ -135,10 +135,6 @@ az{
             "€",
             "Avro",
         }
-        FKP{
-            "FKP",
-            "Folklend Adaları Funtu",
-        }
         GBP{
             "£",
             "Britaniya Funt Sterlinqi",
@@ -227,10 +223,6 @@ az{
             "KHR",
             "Kamboca Rieli",
         }
-        KPW{
-            "KPW",
-            "Şimali Koreya Vonu",
-        }
         KRW{
             "₩",
             "Cənubi Koreya Vonu",
@@ -238,10 +230,6 @@ az{
         KWD{
             "KWD",
             "Küveyt Dinarı",
-        }
-        KYD{
-            "KYD",
-            "Kayman Adaları Dolları",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ az{
             "SAR",
             "Səudiyyə Riyalı",
         }
-        SBD{
-            "SBD",
-            "Solomon Adaları Dolları",
-        }
         SDG{
             "SDG",
             "Sudan Funtu",
@@ -414,18 +398,6 @@ az{
         SSP{
             "SSP",
             "Cənubi Sudan Funtu",
-        }
-        STD{
-            "STD",
-            "San Tom və Prinsip Dobrası",
-        }
-        SYP{
-            "SYP",
-            "Suriya Funtu",
-        }
-        SZL{
-            "SZL",
-            "Svazilend Lilangenini",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ az{
             "FCFA",
             "Kamerun Frankı",
         }
-        XCD{
-            "EC$",
-            "Şərqi Karib Dolları",
-        }
         XOF{
             "CFA",
             "Fil Dişi Sahili Frankı",
-        }
-        XPF{
-            "CFPF",
-            "Fransız Polineziyası Frankı",
         }
         YER{
             "YER",
@@ -538,7 +502,6 @@ az{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -548,7 +511,6 @@ az{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -684,10 +646,6 @@ az{
             one{"Avro"}
             other{"Avro"}
         }
-        FKP{
-            one{"Folklend Adaları funtu"}
-            other{"Folklend Adaları funtu"}
-        }
         GBP{
             one{"Britaniya funt sterlinqi"}
             other{"Britaniya funt sterlinqi"}
@@ -776,10 +734,6 @@ az{
             one{"Kamboca rieli"}
             other{"Kamboca rieli"}
         }
-        KPW{
-            one{"Şimali Koreya vonu"}
-            other{"Şimali Koreya vonu"}
-        }
         KRW{
             one{"Cənubi Koreya vonu"}
             other{"Cənubi Koreya vonu"}
@@ -787,10 +741,6 @@ az{
         KWD{
             one{"Küveyt dinarı"}
             other{"Küveyt dinarı"}
-        }
-        KYD{
-            one{"Kayman Adaları dolları"}
-            other{"Kayman Adaları dolları"}
         }
         KZT{
             one{"Qazaxıstan tengesi"}
@@ -940,10 +890,6 @@ az{
             one{"Səudiyyə riyalı"}
             other{"Səudiyyə riyalı"}
         }
-        SBD{
-            one{"Solomon Adaları dolları"}
-            other{"Solomon Adaları dolları"}
-        }
         SDG{
             one{"Sudan funtu"}
             other{"Sudan funtu"}
@@ -963,18 +909,6 @@ az{
         SSP{
             one{"Cənubi Sudan funtu"}
             other{"Cənubi Sudan funtu"}
-        }
-        STD{
-            one{"San Tom və Prinsip dobrası"}
-            other{"San Tom və Prinsip dobrası"}
-        }
-        SYP{
-            one{"Suriya funtu"}
-            other{"Suriya funtu"}
-        }
-        SZL{
-            one{"Svazilend lilangenini"}
-            other{"Svazilend emalangenini"}
         }
         THB{
             one{"Tayland batı"}
@@ -1040,17 +974,9 @@ az{
             one{"Kamerun frankı"}
             other{"Kamerun frankı"}
         }
-        XCD{
-            one{"Şərqi Karib dolları"}
-            other{"Şərqi Karib dolları"}
-        }
         XOF{
             one{"Fil Dişi Sahili frankı"}
             other{"Fil Dişi Sahili frankı"}
-        }
-        XPF{
-            one{"Fransız Polineziyası frankı"}
-            other{"Fransız Polineziyası frankı"}
         }
         YER{
             one{"Yəmən rialı"}

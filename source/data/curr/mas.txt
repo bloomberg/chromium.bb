@@ -127,14 +127,6 @@ mas{
             "SLL",
             "Iropiyianí e leoni",
         }
-        STD{
-            "STD",
-            "Iropiyianí e Saotome",
-        }
-        SZL{
-            "SZL",
-            "Iropiyianí e lilangeni",
-        }
         TND{
             "TND",
             "Iropiyianí e Tunisia",

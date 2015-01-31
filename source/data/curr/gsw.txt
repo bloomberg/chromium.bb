@@ -135,10 +135,6 @@ gsw{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland-Pfund",
-        }
         GBP{
             "£",
             "Pfund Schtörling",
@@ -227,10 +223,6 @@ gsw{
             "KHR",
             "Riel",
         }
-        KPW{
-            "KPW",
-            "Nordkoreanische Won",
-        }
         KRW{
             "₩",
             "Süüdkoreanische Won",
@@ -238,10 +230,6 @@ gsw{
         KWD{
             "KWD",
             "Kuwait-Dinar",
-        }
-        KYD{
-            "KYD",
-            "Kaiman-Dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ gsw{
             "SAR",
             "Saudi-Riyal",
         }
-        SBD{
-            "SBD",
-            "Salomone-Dollar",
-        }
         SDG{
             "SDG",
             "Sudaneesischs Pfund",
@@ -414,18 +398,6 @@ gsw{
         SSP{
             "SSP",
             "Süüdsudaneesischs Pfund",
-        }
-        STD{
-            "STD",
-            "Dobra",
-        }
-        SYP{
-            "SYP",
-            "Süürischs Pfund",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
         }
         THB{
             "THB",
@@ -487,10 +459,6 @@ gsw{
             "FCFA",
             "CFA-Franc (Äquatoriaal)",
         }
-        XCD{
-            "EC$",
-            "Oschtkaribische Dollar",
-        }
         XDR{
             "XDR",
             "Sunderziäigsrächt",
@@ -498,10 +466,6 @@ gsw{
         XOF{
             "CFA",
             "CFA-Franc (Wescht)",
-        }
-        XPF{
-            "CFPF",
-            "CFP-Franc",
         }
         YER{
             "YER",
@@ -629,10 +593,6 @@ gsw{
             one{"Euro"}
             other{"Euro"}
         }
-        FKP{
-            one{"Falkland-Pfund"}
-            other{"Falkland-Pfund"}
-        }
         GBP{
             one{"Pfund Schtörling"}
             other{"Pfund Schtörling"}
@@ -721,10 +681,6 @@ gsw{
             one{"Riel"}
             other{"Riel"}
         }
-        KPW{
-            one{"Nordkoreanische Won"}
-            other{"Nordkoreanischi Won"}
-        }
         KRW{
             one{"Süüdkoreanische Won"}
             other{"Süüdkoreanischi Won"}
@@ -732,10 +688,6 @@ gsw{
         KWD{
             one{"Kuwait-Dinar"}
             other{"Kuwait-Dinar"}
-        }
-        KYD{
-            one{"Kaiman-Dollar"}
-            other{"Kaiman-Dollar"}
         }
         KZT{
             one{"Tenge"}
@@ -885,10 +837,6 @@ gsw{
             one{"Saudi-Riyal"}
             other{"Saudi-Riyal"}
         }
-        SBD{
-            one{"Salomone-Dollar"}
-            other{"Salomone-Dollar"}
-        }
         SDG{
             one{"Sudaneesische Pfund"}
             other{"Sudaneesischi Pfund"}
@@ -908,18 +856,6 @@ gsw{
         SSP{
             one{"Süüdsudaneesische Pfund"}
             other{"Süüdsudaneesischi Pfund"}
-        }
-        STD{
-            one{"Dobra"}
-            other{"Dobra"}
-        }
-        SYP{
-            one{"Süürischs Pfund"}
-            other{"Süürischi Pfund"}
-        }
-        SZL{
-            one{"Lilangeni"}
-            other{"Lilangeni"}
         }
         THB{
             one{"Baht"}
@@ -977,10 +913,6 @@ gsw{
             one{"CFA-Franc (Äquatoriaal)"}
             other{"CFA-Franc (Äquatoriaal)"}
         }
-        XCD{
-            one{"Oschtkaribische Dollar"}
-            other{"Oschtkaribischi Dollar"}
-        }
         XDR{
             one{"Sunderziäigsrächt"}
             other{"Sunderziäigsrächt"}
@@ -988,10 +920,6 @@ gsw{
         XOF{
             one{"CFA-Franc (Wescht)"}
             other{"CFA-Franc (Wescht)"}
-        }
-        XPF{
-            one{"CFP-Franc"}
-            other{"CFP-Franc"}
         }
         YER{
             one{"Jeme-Rial"}

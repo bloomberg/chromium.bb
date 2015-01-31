@@ -127,14 +127,6 @@ sbp{
             "SLL",
             "Ihela ya Siela Liyoni",
         }
-        STD{
-            "STD",
-            "Ihela ya Sao Tome ni Pilinsipe",
-        }
-        SZL{
-            "SZL",
-            "Ihela ya Uswasi",
-        }
         TND{
             "TND",
             "Ihela ya Tunisiya",

@@ -135,10 +135,6 @@ zu{
             "€",
             "i-Euro",
         }
-        FKP{
-            "FKP",
-            "i-Falkland Islands Pound",
-        }
         GBP{
             "£",
             "i-British Pound Sterling",
@@ -227,10 +223,6 @@ zu{
             "KHR",
             "i-Cambodian Riel",
         }
-        KPW{
-            "KPW",
-            "i-North Korean Won",
-        }
         KRW{
             "₩",
             "i-South Korean Won",
@@ -238,10 +230,6 @@ zu{
         KWD{
             "KWD",
             "i-Kuwaiti Dinar",
-        }
-        KYD{
-            "KYD",
-            "i-Cayman Islands Dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ zu{
             "SAR",
             "i-Saudi Riyal",
         }
-        SBD{
-            "SBD",
-            "i-Solomon Islands Dollar",
-        }
         SDG{
             "SDG",
             "i-Sudanese Pound",
@@ -414,18 +398,6 @@ zu{
         SSP{
             "SSP",
             "Upondo waseNingizimu Sudan",
-        }
-        STD{
-            "STD",
-            "i-São Tomé kanye ne-Príncipe Dobra",
-        }
-        SYP{
-            "SYP",
-            "i-Syrian Pound",
-        }
-        SZL{
-            "SZL",
-            "i-Swazi Lilangeni",
         }
         THB{
             "฿",
@@ -491,17 +463,9 @@ zu{
             "FCFA",
             "i-CFA Franc BCEA",
         }
-        XCD{
-            "EC$",
-            "i-East Caribbean Dollar",
-        }
         XOF{
             "CFA",
             "i-CFA Franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "i-CFP Franc",
         }
         YER{
             "YER",
@@ -530,7 +494,6 @@ zu{
         JMD{"$"}
         JPY{"¥"}
         KRW{"₩"}
-        KYD{"$"}
         MXN{"$"}
         TRY{"₺"}
         TTD{"$"}
@@ -614,10 +577,6 @@ zu{
             one{"i-South Korean Won"}
             other{"i-South Korean Won"}
         }
-        KYD{
-            one{"i-Cayman Islands Dollar"}
-            other{"i-Cayman Islands Dollar"}
-        }
         MXN{
             one{"i-Mexican Peso"}
             other{"i-Mexican Peso"}
@@ -669,10 +628,6 @@ zu{
         USD{
             one{"i-US Dollar"}
             other{"i-US Dollar"}
-        }
-        XCD{
-            one{"i-East Caribbean Dollar"}
-            other{"i-East Caribbean Dollar"}
         }
         ZAR{
             one{"i-South African Rand"}

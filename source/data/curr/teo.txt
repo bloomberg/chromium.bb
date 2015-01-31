@@ -127,14 +127,6 @@ teo{
             "SLL",
             "Leoni",
         }
-        STD{
-            "STD",
-            "Ango’otol lok’ Sao Tome na Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Ango’otol lok’ Tunisia",

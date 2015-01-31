@@ -127,14 +127,6 @@ sn{
             "SLL",
             "Leoni",
         }
-        STD{
-            "STD",
-            "Dobra re Sao Tome ne Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinari re Tunisia",

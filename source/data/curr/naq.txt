@@ -127,14 +127,6 @@ naq{
             "SLL",
             "Leone",
         }
-        STD{
-            "STD",
-            "Sao Tome and Principe Dobra",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Tunisian Dinar",

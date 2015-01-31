@@ -1450,7 +1450,7 @@ DecimalFormat::_format(int64_t number,
         // Slide the number to the start of the output str
     U_ASSERT(destIdx >= 0);
     int32_t length = MAX_IDX - destIdx -1;
-    /*int32_t prefixLen = */ appendAffix(appendTo, number, handler, number<0, TRUE);
+    /*int32_t prefixLen = */ appendAffix(appendTo, static_cast<double>(number), handler, number<0, TRUE);
     int32_t maxIntDig = getMaximumIntegerDigits();
     int32_t destlength = length<=maxIntDig?length:maxIntDig; // dest length pinned to max int digits
 
@@ -1474,7 +1474,7 @@ DecimalFormat::_format(int64_t number,
                     destlength);
     handler.addAttribute(kIntegerField, intBegin, appendTo.length());
 
-    /*int32_t suffixLen =*/ appendAffix(appendTo, number, handler, number<0, FALSE);
+    /*int32_t suffixLen =*/ appendAffix(appendTo, static_cast<double>(number), handler, number<0, FALSE);
 
     //outputStr[length]=0;
     

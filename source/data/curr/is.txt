@@ -135,10 +135,6 @@ is{
             "EUR",
             "Evra",
         }
-        FKP{
-            "FKP",
-            "Falklenskt pund",
-        }
         GBP{
             "GBP",
             "Sterlingspund",
@@ -227,10 +223,6 @@ is{
             "KHR",
             "Kambódískt ríal",
         }
-        KPW{
-            "KPW",
-            "Norðurkóreskt vonn",
-        }
         KRW{
             "KRW",
             "Suðurkóreskt vonn",
@@ -238,10 +230,6 @@ is{
         KWD{
             "KWD",
             "Kúveiskur denari",
-        }
-        KYD{
-            "KYD",
-            "Caymaneyskur dalur",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ is{
             "SAR",
             "Sádiarabískt ríal",
         }
-        SBD{
-            "SBD",
-            "Salómonseyskur dalur",
-        }
         SDG{
             "SDG",
             "Súdanskt pund",
@@ -414,18 +398,6 @@ is{
         SSP{
             "SSP",
             "Suðursúdanskt pund",
-        }
-        STD{
-            "STD",
-            "Saó Tóme og Prinsípe-dóbra",
-        }
-        SYP{
-            "SYP",
-            "Sýrlenskt pund",
-        }
-        SZL{
-            "SZL",
-            "Svasílenskur lílangeni",
         }
         THB{
             "THB",
@@ -491,10 +463,6 @@ is{
             "FCFA",
             "Miðafrískur franki",
         }
-        XCD{
-            "EC$",
-            "Austurkarabískur dalur",
-        }
         XDR{
             "XDR",
             "Sérstök dráttarréttindi",
@@ -502,10 +470,6 @@ is{
         XOF{
             "CFA",
             "Vesturafrískur franki",
-        }
-        XPF{
-            "CFPF",
-            "Pólinesískur franki",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ is{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ is{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ is{
             one{"evra"}
             other{"evrur"}
         }
-        FKP{
-            one{"falklenskt pund"}
-            other{"falklensk pund"}
-        }
         GBP{
             one{"sterlingspund"}
             other{"sterlingspund"}
@@ -780,10 +738,6 @@ is{
             one{"kambódískt ríal"}
             other{"kambódísk ríöl"}
         }
-        KPW{
-            one{"norðurkóreskt vonn"}
-            other{"norðurkóresk vonn"}
-        }
         KRW{
             one{"suðurkóreskt vonn"}
             other{"suðurkóresk vonn"}
@@ -791,10 +745,6 @@ is{
         KWD{
             one{"kúveiskur denari"}
             other{"kúveiskir denarar"}
-        }
-        KYD{
-            one{"caymaneyskur dalur"}
-            other{"caymaneyskir dalir"}
         }
         KZT{
             one{"kasakst tengi"}
@@ -944,10 +894,6 @@ is{
             one{"sádiarabískt ríal"}
             other{"sádiarabísk ríöl"}
         }
-        SBD{
-            one{"salómonseyskur dalur"}
-            other{"salómonseyskir dalir"}
-        }
         SDG{
             one{"súdanskt pund"}
             other{"súdönsk pund"}
@@ -967,18 +913,6 @@ is{
         SSP{
             one{"suðursúdanskt pund"}
             other{"suðursúdönsk pund"}
-        }
-        STD{
-            one{"Saó Tóme og Prinsípe-dóbra"}
-            other{"Saó Tóme og Prinsípe-dóbrur"}
-        }
-        SYP{
-            one{"sýrlenskt pund"}
-            other{"sýrlensk pund"}
-        }
-        SZL{
-            one{"svasílenskur lílangeni"}
-            other{"svasílenskir lílangenar"}
         }
         THB{
             one{"taílenskt bat"}
@@ -1044,17 +978,9 @@ is{
             one{"miðafrískur franki"}
             other{"miðafrískir frankar"}
         }
-        XCD{
-            one{"austurkarabískur dalur"}
-            other{"austurkarabískir dalir"}
-        }
         XOF{
             one{"vesturafrískur franki"}
             other{"vesturafrískir frankar"}
-        }
-        XPF{
-            one{"pólinesískur franki"}
-            other{"pólinesískir frankar"}
         }
         YER{
             one{"jemenskt ríal"}

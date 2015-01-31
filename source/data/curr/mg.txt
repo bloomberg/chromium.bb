@@ -127,14 +127,6 @@ mg{
             "SLL",
             "Leone",
         }
-        STD{
-            "STD",
-            "Dobra",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinar tonizianina",

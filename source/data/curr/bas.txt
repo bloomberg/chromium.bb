@@ -127,14 +127,6 @@ bas{
             "SLL",
             "Lèonɛ̀",
         }
-        STD{
-            "STD",
-            "Dobrà sàotòme",
-        }
-        SZL{
-            "SZL",
-            "Lìlàŋgeni swàzì",
-        }
         TND{
             "TND",
             "Dìnâr tùnîs",

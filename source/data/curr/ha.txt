@@ -127,14 +127,6 @@ ha{
             "SLL",
             "Kuɗin Salewo",
         }
-        STD{
-            "STD",
-            "Kuɗin Sawo Tome da Paransip",
-        }
-        SZL{
-            "SZL",
-            "Kuɗin Lilangeni",
-        }
         TND{
             "TND",
             "Kuɗin Tunisiya",

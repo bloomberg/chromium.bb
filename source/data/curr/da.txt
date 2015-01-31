@@ -135,10 +135,6 @@ da{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Pund fra Falklandsøerne",
-        }
         GBP{
             "£",
             "Britisk pund",
@@ -227,10 +223,6 @@ da{
             "KHR",
             "Cambodjansk riel",
         }
-        KPW{
-            "KPW",
-            "Nordkoreansk won",
-        }
         KRW{
             "₩",
             "Sydkoreansk won",
@@ -238,10 +230,6 @@ da{
         KWD{
             "KWD",
             "Kuwaitisk dinar",
-        }
-        KYD{
-            "KYD",
-            "Caymansk dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ da{
             "SAR",
             "Saudiarabisk riyal",
         }
-        SBD{
-            "SBD",
-            "Salomonsk dollar",
-        }
         SDG{
             "SDG",
             "Sudansk pund",
@@ -414,18 +398,6 @@ da{
         SSP{
             "SSP",
             "Sydsudanske pund",
-        }
-        STD{
-            "STD",
-            "Dobra fra Sao Tome og Principe",
-        }
-        SYP{
-            "SYP",
-            "Syrisk pund",
-        }
-        SZL{
-            "SZL",
-            "Swazilandsk lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ da{
             "FCFA",
             "CFA-franc (BEAC)",
         }
-        XCD{
-            "EC$",
-            "Østkaribisk dollar",
-        }
         XDR{
             "XDR",
             "SDR",
@@ -502,10 +470,6 @@ da{
         XOF{
             "CFA",
             "CFA-franc BCEAO",
-        }
-        XPF{
-            "CFPF",
-            "CFP-franc",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ da{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ da{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -688,10 +650,6 @@ da{
             one{"Euro"}
             other{"Euro"}
         }
-        FKP{
-            one{"Pund fra Falklandsøerne"}
-            other{"Pund fra Falklandsøerne"}
-        }
         GBP{
             one{"Britisk pund"}
             other{"Britiske pund"}
@@ -780,10 +738,6 @@ da{
             one{"Cambodjansk riel"}
             other{"Cambodjanske riel"}
         }
-        KPW{
-            one{"Nordkoreansk won"}
-            other{"Nordkoreanske won"}
-        }
         KRW{
             one{"Sydkoreansk won"}
             other{"Sydkoreanske won"}
@@ -791,10 +745,6 @@ da{
         KWD{
             one{"Kuwaitisk dinar"}
             other{"Kuwaitiske dinarer"}
-        }
-        KYD{
-            one{"Caymansk dollar"}
-            other{"Caymansk dollar"}
         }
         KZT{
             one{"Kasakhisk tenge"}
@@ -944,10 +894,6 @@ da{
             one{"Saudiarabisk riyal"}
             other{"Saudiarabiske riyal"}
         }
-        SBD{
-            one{"Salomonsk dollar"}
-            other{"Salomonske dollar"}
-        }
         SDG{
             one{"Sudanske pund"}
             other{"Sudanske pund"}
@@ -967,18 +913,6 @@ da{
         SSP{
             one{"Sydsudansk pund"}
             other{"Sydsudanske pund"}
-        }
-        STD{
-            one{"Dobra fra Sao Tome og Principe"}
-            other{"Dobra fra Sao Tome og Principe"}
-        }
-        SYP{
-            one{"Syrisk pund"}
-            other{"Syriske pund"}
-        }
-        SZL{
-            one{"Swazilandsk lilangeni"}
-            other{"Swazilandske lilangeni"}
         }
         THB{
             one{"Thailandsk baht"}
@@ -1044,17 +978,9 @@ da{
             one{"Beninsk CFA-franc"}
             other{"CFA-franc (BEAC)"}
         }
-        XCD{
-            one{"Østkaribisk dollar"}
-            other{"Østkaribiske dollar"}
-        }
         XOF{
             one{"CFA-franc BCEAO"}
             other{"CFA-franc BCEAO"}
-        }
-        XPF{
-            one{"CFP-franc"}
-            other{"CFP-franc"}
         }
         YER{
             one{"Yemenitisk rial"}

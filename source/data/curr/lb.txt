@@ -135,10 +135,6 @@ lb{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Falkland-Pond",
-        }
         GBP{
             "£",
             "Britescht Pond Sterling",
@@ -227,10 +223,6 @@ lb{
             "KHR",
             "Kambodschanesche Riel",
         }
-        KPW{
-            "KPW",
-            "Nordkoreanesche Won",
-        }
         KRW{
             "₩",
             "Südkoreanesche Won",
@@ -238,10 +230,6 @@ lb{
         KWD{
             "KWD",
             "Kuwait-Dinar",
-        }
-        KYD{
-            "KYD",
-            "Kaiman-Dollar",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ lb{
             "SAR",
             "Saudi-Rial",
         }
-        SBD{
-            "SBD",
-            "Salomonen-Dollar",
-        }
         SDG{
             "SDG",
             "Sudanesescht Pond",
@@ -414,18 +398,6 @@ lb{
         SSP{
             "SSP",
             "Südsudanesescht Pond",
-        }
-        STD{
-            "STD",
-            "São-toméeschen Dobra",
-        }
-        SYP{
-            "SYP",
-            "Syrescht Pond",
-        }
-        SZL{
-            "SZL",
-            "Swasilännesche Lilangeni",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ lb{
             "FCFA",
             "CFA-Frang (BEAC)",
         }
-        XCD{
-            "EC$",
-            "Ostkaribeschen Dollar",
-        }
         XDR{
             "XDR",
             "Sonnerzéiungsrecht",
@@ -502,10 +470,6 @@ lb{
         XOF{
             "CFA",
             "CFA-Frang (BCEAO)",
-        }
-        XPF{
-            "CFPF",
-            "CFP-Frang",
         }
         YER{
             "YER",
@@ -661,10 +625,6 @@ lb{
             one{"Euro"}
             other{"Euro"}
         }
-        FKP{
-            one{"Falkland-Pond"}
-            other{"Falkland-Pond"}
-        }
         GBP{
             one{"Britescht Pond Sterling"}
             other{"Britesch Pond Sterling"}
@@ -753,10 +713,6 @@ lb{
             one{"Kambodschanesche Riel"}
             other{"Kambodschanesch Riel"}
         }
-        KPW{
-            one{"Nordkoreanesche Won"}
-            other{"Nordkoreanesch Won"}
-        }
         KRW{
             one{"Südkoreanesche Won"}
             other{"Südkoreanesch Won"}
@@ -764,10 +720,6 @@ lb{
         KWD{
             one{"Kuwait-Dinar"}
             other{"Kuwait-Dinaren"}
-        }
-        KYD{
-            one{"Kaiman-Dollar"}
-            other{"Kaiman-Dollar"}
         }
         KZT{
             one{"Kasacheschen Tenge"}
@@ -917,10 +869,6 @@ lb{
             one{"Saudi-Rial"}
             other{"Saudi-Rial"}
         }
-        SBD{
-            one{"Salomonen-Dollar"}
-            other{"Salomonen-Dollar"}
-        }
         SDG{
             one{"Sudanesescht Pond"}
             other{"Sudanesesch Pond"}
@@ -940,18 +888,6 @@ lb{
         SSP{
             one{"Südsudanesescht Pond"}
             other{"Südsudanesesch Pond"}
-        }
-        STD{
-            one{"São-toméeschen Dobra"}
-            other{"São-toméesch Dobra"}
-        }
-        SYP{
-            one{"Syrescht Pond"}
-            other{"Syresch Pond"}
-        }
-        SZL{
-            one{"Swasilännesche Lilangeni"}
-            other{"Swasilännesch Lilangeni"}
         }
         THB{
             one{"Thailännesche Baht"}
@@ -1017,10 +953,6 @@ lb{
             one{"CFA-Frang (BEAC)"}
             other{"CFA-Frang (BEAC)"}
         }
-        XCD{
-            one{"Ostkaribeschen Dollar"}
-            other{"Ostkaribesch Dollar"}
-        }
         XDR{
             one{"Sonnerzéiungsrecht"}
             other{"Sonnerzéiungsrechter"}
@@ -1028,10 +960,6 @@ lb{
         XOF{
             one{"CFA-Frang (BCEAO)"}
             other{"CFA-Frang (BCEAO)"}
-        }
-        XPF{
-            one{"CFP-Frang"}
-            other{"CFP-Frang"}
         }
         YER{
             one{"Jemen-Rial"}

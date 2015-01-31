@@ -127,14 +127,6 @@ nd{
             "SLL",
             "Leyoni",
         }
-        STD{
-            "STD",
-            "Dobra yase Sao Tome lo Principe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Dinari yase Tunisiya",

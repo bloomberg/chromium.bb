@@ -127,10 +127,6 @@ cgg{
             "SLL",
             "Leone",
         }
-        STD{
-            "STD",
-            "Dobra ya Sao Tome na Purinsipo",
-        }
         TND{
             "TND",
             "Dinari ya Tunisia",

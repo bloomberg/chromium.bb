@@ -135,10 +135,6 @@ ga{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Punt Oileáin Fháclainne",
-        }
         GBP{
             "£",
             "Punt Steirling",
@@ -227,10 +223,6 @@ ga{
             "KHR",
             "Riel na Cambóide",
         }
-        KPW{
-            "KPW",
-            "Won na Cóiré Thuaidh",
-        }
         KRW{
             "₩",
             "Won na Cóiré Theas",
@@ -238,10 +230,6 @@ ga{
         KWD{
             "KWD",
             "Dinar Chuáit",
-        }
-        KYD{
-            "KYD",
-            "Dollar Oileáin Cayman",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ ga{
             "SAR",
             "Riyal na hAraibe Sádaí",
         }
-        SBD{
-            "SBD",
-            "Dollar Oileáin Sholomón",
-        }
         SDG{
             "SDG",
             "Punt na Súdáine",
@@ -414,18 +398,6 @@ ga{
         SSP{
             "SSP",
             "Punt na Súdáine Theas",
-        }
-        STD{
-            "STD",
-            "Dobra São Tomé agus Príncipe",
-        }
-        SYP{
-            "SYP",
-            "Punt na Siria",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni na Suasalainne",
         }
         THB{
             "฿",
@@ -491,10 +463,6 @@ ga{
             "FCFA",
             "Franc CFA na hAfraice Láir",
         }
-        XCD{
-            "EC$",
-            "Dollar na Cairibe Thoir",
-        }
         XDR{
             "XDR",
             "Cearta Speisialta Tarraingthe",
@@ -502,10 +470,6 @@ ga{
         XOF{
             "CFA",
             "Franc CFA Iarthar na hAfraice",
-        }
-        XPF{
-            "CFPF",
-            "Franc CFP",
         }
         YER{
             "YER",
@@ -542,7 +506,6 @@ ga{
         JPY{"¥"}
         KHR{"៛"}
         KRW{"₩"}
-        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         MNT{"₮"}
@@ -552,7 +515,6 @@ ga{
         NZD{"$"}
         PHP{"₱"}
         PYG{"₲"}
-        SBD{"$"}
         SGD{"$"}
         SSP{"£"}
         TRY{"₺"}
@@ -781,13 +743,6 @@ ga{
             other{"euro"}
             two{"euro"}
         }
-        FKP{
-            few{"phunt Oileáin Fháclainne"}
-            many{"bpunt Oileáin Fháclainne"}
-            one{"phunt Oileáin Fháclainne"}
-            other{"punt Oileáin Fháclainne"}
-            two{"phunt Oileáin Fháclainne"}
-        }
         GBP{
             few{"phunt steirling"}
             many{"bpunt steirling"}
@@ -942,13 +897,6 @@ ga{
             other{"riel na Cambóide"}
             two{"riel na Cambóide"}
         }
-        KPW{
-            few{"won na Cóiré Thuaidh"}
-            many{"won na Cóiré Thuaidh"}
-            one{"won na Cóiré Thuaidh"}
-            other{"won na Cóiré Thuaidh"}
-            two{"won na Cóiré Thuaidh"}
-        }
         KRW{
             few{"won na Cóiré Theas"}
             many{"won na Cóiré Theas"}
@@ -962,13 +910,6 @@ ga{
             one{"dinar Chuáit"}
             other{"dinar Chuáit"}
             two{"dhinar Chuáit"}
-        }
-        KYD{
-            few{"dhollar Oileáin Cayman"}
-            many{"ndollar Oileáin Cayman"}
-            one{"dollar Oileáin Cayman"}
-            other{"dollar Oileáin Cayman"}
-            two{"dhollar Oileáin Cayman"}
         }
         KZT{
             few{"thenge na Casacstáine"}
@@ -1229,13 +1170,6 @@ ga{
             other{"riyal na hAraibe Sádaí"}
             two{"riyal na hAraibe Sádaí"}
         }
-        SBD{
-            few{"dhollar Oileáin Sholomón"}
-            many{"ndollar Oileáin Sholomón"}
-            one{"dollar Oileáin Sholomón"}
-            other{"dollar Oileáin Sholomón"}
-            two{"dhollar Oileáin Sholomón"}
-        }
         SDG{
             few{"phunt na Súdáine"}
             many{"bpunt na Súdáine"}
@@ -1270,27 +1204,6 @@ ga{
             one{"phunt na Súdáine Theas"}
             other{"punt na Súdáine Theas"}
             two{"phunt na Súdáine Theas"}
-        }
-        STD{
-            few{"dhobra São Tomé agus Príncipe"}
-            many{"ndobra São Tomé agus Príncipe"}
-            one{"dobra São Tomé agus Príncipe"}
-            other{"dobra São Tomé agus Príncipe"}
-            two{"dhobra São Tomé agus Príncipe"}
-        }
-        SYP{
-            few{"phunt na Siria"}
-            many{"bpunt na Siria"}
-            one{"phunt na Siria"}
-            other{"punt na Siria"}
-            two{"phunt na Siria"}
-        }
-        SZL{
-            few{"lilangeni na Suasalainne"}
-            many{"lilangeni na Suasalainne"}
-            one{"lilangeni na Suasalainne"}
-            other{"lilangeni na Suasalainne"}
-            two{"lilangeni na Suasalainne"}
         }
         THB{
             few{"bhaht na Téalainne"}
@@ -1404,26 +1317,12 @@ ga{
             other{"franc CFA na hAfraice Láir"}
             two{"fhranc CFA na hAfraice Láir"}
         }
-        XCD{
-            few{"dhollar na Cairibe Thoir"}
-            many{"ndollar na Cairibe Thoir"}
-            one{"dollar na Cairibe Thoir"}
-            other{"dollar na Cairibe Thoir"}
-            two{"dhollar na Cairibe Thoir"}
-        }
         XOF{
             few{"fhranc CFA Iarthar na hAfraice"}
             many{"bhfranc CFA Iarthar na hAfraice"}
             one{"fhranc CFA Iarthar na hAfraice"}
             other{"franc CFA Iarthar na hAfraice"}
             two{"fhranc CFA Iarthar na hAfraice"}
-        }
-        XPF{
-            few{"fhranc CFP"}
-            many{"bhfranc CFP"}
-            one{"fhranc CFP"}
-            other{"franc CFP"}
-            two{"fhranc CFP"}
         }
         YER{
             few{"rial Éimin"}

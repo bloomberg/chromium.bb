@@ -39,10 +39,10 @@ CollationFastLatin::getOptions(const CollationData *data, const CollationSetting
         uint32_t v1 = settings.variableTop >> 24;
         int32_t headerLength = *table & 0xff;
         int32_t i = headerLength - 1;
-        if(i <= 0 || v1 > (table[i] & 0x7f)) {
+        if(i <= 0 || v1 > (table[i] & 0x7fu)) {
             return -1;  // variableTop >= digits, should not occur
         }
-        while(i > 1 && v1 <= (table[i - 1] & 0x7f)) { --i; }
+        while(i > 1 && v1 <= (table[i - 1] & 0x7fu)) { --i; }
         // In the table header, the miniVarTop is in bits 15..7, with 4 zero bits 19..16 implied.
         // Shift right to make it comparable with long mini primaries in bits 15..3.
         miniVarTop = (table[i] & 0xff80) >> 4;

@@ -135,10 +135,6 @@ ksh{
             "€",
             "Euro",
         }
-        FKP{
-            "FKP",
-            "Pongk vun de Falkland-Enselle",
-        }
         GBP{
             "£",
             "brittesche £",
@@ -227,10 +223,6 @@ ksh{
             "KHR",
             "kambodschaanesche Riel",
         }
-        KPW{
-            "KPW",
-            "noodkorejaansche Won",
-        }
         KRW{
             "₩",
             "söödkorejaansche Won",
@@ -238,10 +230,6 @@ ksh{
         KWD{
             "KWD",
             "kuwaitesche Denaa",
-        }
-        KYD{
-            "KYD",
-            "Kaimann-Dollaa",
         }
         KZT{
             "KZT",
@@ -391,10 +379,6 @@ ksh{
             "SAR",
             "saudesche Rijal",
         }
-        SBD{
-            "SBD",
-            "solomonesche Dollaa",
-        }
         SDG{
             "SDG",
             "sudaneesesche Pongk",
@@ -414,18 +398,6 @@ ksh{
         SSP{
             "SSP",
             "södsudaneesesche Pongk",
-        }
-        STD{
-            "STD",
-            "Dobra vun São Tomé un Príncipe",
-        }
-        SYP{
-            "SYP",
-            "süüresche Pund",
-        }
-        SZL{
-            "SZL",
-            "swasiländesche Lilangeni",
         }
         THB{
             "THB",
@@ -491,17 +463,9 @@ ksh{
             "FCFA",
             "Kmmeruhner Frang",
         }
-        XCD{
-            "EC$",
-            "oß-karribbesche Dollaa",
-        }
         XOF{
             "CFA",
             "Frang uß de Älfebeinköß",
-        }
-        XPF{
-            "CFPF",
-            "polineesesche Frang",
         }
         YER{
             "YER",
@@ -637,11 +601,6 @@ ksh{
             other{"södsudaneesesche Pongk"}
             zero{"södsudaneesesche Pongk"}
         }
-        STD{
-            one{"Dobra vun São Tomé un Príncipe"}
-            other{"Dobra vun São Tomé un Príncipe"}
-            zero{"Dobra vun São Tomé un Príncipe"}
-        }
         TMT{
             one{"turkmeneßtaanesche Manat"}
             other{"turkmeneßtaanesche Manat"}
@@ -666,11 +625,6 @@ ksh{
             one{"urrujuwaische Peeso"}
             other{"urrujuwaische Peeso"}
             zero{"urrujuwaische Peeso"}
-        }
-        XPF{
-            one{"polineesesche Frang"}
-            other{"polineesesche Frang"}
-            zero{"polineesesche Frang"}
         }
     }
     CurrencyUnitPatterns{

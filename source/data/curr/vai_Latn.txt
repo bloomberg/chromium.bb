@@ -128,14 +128,6 @@ vai_Latn{
             "SLL",
             "Liyɔɔ̀",
         }
-        STD{
-            "STD",
-            "Sawo Tombe ɓɛ a Gbawo Dobura",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
-        }
         TND{
             "TND",
             "Tunisiya Dina",

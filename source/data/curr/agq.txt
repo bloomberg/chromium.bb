@@ -127,14 +127,6 @@ agq{
             "SLL",
             "Lyɔ̂ŋ",
         }
-        STD{
-            "STD",
-            "Dɔbàlà è Sàwu Tɔ̀me à Pèlènsipè",
-        }
-        SZL{
-            "SZL",
-            "Lèlàŋgenè",
-        }
         TND{
             "TND",
             "Dinà è Tùwneshìa",
