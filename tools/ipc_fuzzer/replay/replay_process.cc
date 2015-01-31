@@ -63,6 +63,9 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   settings.log_file = FILE_PATH_LITERAL("ipc_replay.log");
   logging::InitLogging(settings);
 
+  // Make sure to initialize Mojo before starting the IO thread.
+  InitializeMojo();
+
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
@@ -71,8 +74,6 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   g_fds->Set(kPrimaryIPCChannel,
              kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif
-
-  InitializeMojo();
 
   return true;
 }
