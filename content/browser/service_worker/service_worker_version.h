@@ -36,14 +36,13 @@ struct WebCircularGeofencingRegion;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+struct NavigatorConnectClient;
+struct PlatformNotificationData;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
 class ServiceWorkerVersionInfo;
-struct NavigatorConnectClient;
-struct PlatformNotificationData;
-struct ServiceWorkerClientInfo;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -60,6 +59,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode,
+                              const ServiceWorkerClientInfo&)>
+      GetClientInfoCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode, bool)>
       CrossOriginConnectCallback;
 
@@ -333,6 +335,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message handlers.
   void OnGetClientDocuments(int request_id);
+  void OnGetClientInfoSuccess(int request_id,
+                              const ServiceWorkerClientInfo& info);
+  void OnGetClientInfoError(int request_id);
   void OnActivateEventFinished(int request_id,
                                blink::WebServiceWorkerEventResult result);
   void OnInstallEventFinished(int request_id,
@@ -357,6 +362,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DidSkipWaiting(int request_id);
   void DidGetClientInfo(int client_id,
                         scoped_refptr<GetClientDocumentsCallback> callback,
+                        ServiceWorkerStatusCode status,
                         const ServiceWorkerClientInfo& info);
   void ScheduleStopWorker();
   void StopWorkerIfIdle();
@@ -387,6 +393,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<StatusCallback, IDMapOwnPointer> notification_click_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> geofencing_callbacks_;
+  IDMap<GetClientInfoCallback, IDMapOwnPointer> get_client_info_callbacks_;
   IDMap<CrossOriginConnectCallback, IDMapOwnPointer>
       cross_origin_connect_callbacks_;
 

@@ -45,9 +45,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
-  using FocusCallback = base::Callback<void(bool)>;
-  using GetClientInfoCallback =
-      base::Callback<void(const ServiceWorkerClientInfo&)>;
+  typedef base::Callback<void(bool)> FocusCallback;
 
   // If |render_frame_id| is MSG_ROUTING_NONE, this provider host works for the
   // worker context.
@@ -148,7 +146,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void Focus(const FocusCallback& callback);
 
   // Asks the renderer to send back the document information.
-  void GetClientInfo(const GetClientInfoCallback& callback);
+  void GetClientInfo(int embedded_worker_id, int request_id);
 
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.
