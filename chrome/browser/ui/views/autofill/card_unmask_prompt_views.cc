@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "grit/theme_resources.h"
@@ -16,7 +17,6 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -72,6 +72,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
           base::TimeDelta::FromSeconds(1));
     } else {
       SetInputsEnabled(true);
+      cvc_input_->SetInvalid(true);
       message_label_->SetText(base::ASCIIToUTF16("Verification error."));
       GetDialogClientView()->UpdateDialogButtons();
     }
@@ -200,10 +201,10 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
       input_row->AddChildView(year_input_);
     }
 
-    cvc_input_ = new views::Textfield();
-    cvc_input_->set_controller(this);
-    cvc_input_->set_placeholder_text(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
+    cvc_input_ = new DecoratedTextfield(
+        base::string16(),
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC),
+        this);
     cvc_input_->set_default_width_in_chars(10);
     input_row->AddChildView(cvc_input_);
 
@@ -223,7 +224,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   CardUnmaskPromptController* controller_;
 
-  views::Textfield* cvc_input_;
+  DecoratedTextfield* cvc_input_;
 
   // These will be null when expiration date is not required.
   views::Combobox* month_input_;
