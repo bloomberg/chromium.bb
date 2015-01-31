@@ -186,6 +186,7 @@
       'browser/prefs/proxy_policy_unittest.cc',
       'browser/prefs/proxy_prefs_unittest.cc',
       'browser/prefs/session_startup_pref_unittest.cc',
+      'browser/prefs/tracked/device_id_unittest.cc',
       'browser/prefs/tracked/mock_validation_delegate.cc',
       'browser/prefs/tracked/mock_validation_delegate.h',
       'browser/prefs/tracked/pref_hash_calculator_unittest.cc',

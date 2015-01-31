@@ -1084,6 +1084,7 @@
       'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     'chrome_browser_non_win_sources': [
+      'browser/prefs/tracked/device_id_stub.cc',
       'browser/profiles/profile_shortcut_manager_stub.cc',
     ],
     # Sources (generally "desktop OS importers") used only on Mac & Windows.
@@ -2063,6 +2064,8 @@
       'browser/prefs/synced_pref_change_registrar.cc',
       'browser/prefs/synced_pref_change_registrar.h',
       'browser/prefs/synced_pref_observer.h',
+      'browser/prefs/tracked/device_id_win.cc',
+      'browser/prefs/tracked/device_id.h',
       'browser/prefs/tracked/dictionary_hash_store_contents.cc',
       'browser/prefs/tracked/dictionary_hash_store_contents.h',
       'browser/prefs/tracked/hash_store_contents.h',
