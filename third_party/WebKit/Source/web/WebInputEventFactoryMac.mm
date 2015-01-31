@@ -1142,12 +1142,18 @@ WebGestureEvent WebInputEventFactory::gestureEvent(NSEvent *event, NSView *view)
     result.modifiers = modifiersFromEvent(event);
     result.timeStampSeconds = [event timestamp];
 
-    // MacOS X gestures are used only for pinch support.
     result.sourceDevice = WebGestureDeviceTouchpad;
     switch ([event type]) {
     case NSEventTypeMagnify:
         result.type = WebInputEvent::GesturePinchUpdate;
         result.data.pinchUpdate.scale = [event magnification] + 1.0;
+        break;
+    case NSEventTypeBeginGesture:
+    case NSEventTypeEndGesture:
+        // The specific type of a gesture is not defined when the gesture begin
+        // and end NSEvents come in. Leave them undefined. The caller will need
+        // to specify them when the gesture is differentiated.
+        result.type = WebInputEvent::Undefined;
         break;
     default:
         ASSERT_NOT_REACHED();
