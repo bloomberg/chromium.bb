@@ -127,6 +127,7 @@ void AudioManagerImpl::StopPlaying(AudioType type) {
   // If we were only recording to hear our own played tokens, stop.
   if (!should_be_recording_[AUDIBLE] && !should_be_recording_[INAUDIBLE])
     recorder_->Stop();
+  playing_token_[type] = std::string();
 }
 
 void AudioManagerImpl::StartRecording(AudioType type) {
@@ -153,7 +154,7 @@ void AudioManagerImpl::SetToken(AudioType type,
 }
 
 const std::string AudioManagerImpl::GetToken(AudioType type) {
-  return should_be_playing_[type] ? playing_token_[type] : "";
+  return playing_token_[type];
 }
 
 bool AudioManagerImpl::IsPlayingTokenHeard(AudioType type) {
