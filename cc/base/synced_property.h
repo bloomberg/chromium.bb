@@ -97,12 +97,17 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
     sent_delta_ = T::Identity();
   }
 
- private:
+  // Values as last pushed to the pending or active tree respectively, with no
+  // impl-thread delta applied.
+  typename T::ValueType PendingBase() const { return pending_base_.get(); }
+  typename T::ValueType ActiveBase() const { return active_base_.get(); }
+
   // The new delta we would use if we decide to activate now.  This delta
   // excludes the amount that we expect the main thread to reflect back at the
   // impl thread during the commit.
   T PendingDelta() const { return active_delta_.InverseCombine(sent_delta_); }
 
+ private:
   // Value last committed to the pending tree.
   T pending_base_;
   // Value last committed to the active tree (on the last activation).

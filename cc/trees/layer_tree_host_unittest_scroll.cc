@@ -830,7 +830,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
           EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
           EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll1_);
-          EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
           PostSetNeedsCommitToMainThread();
 
           // CommitCompleteOnThread will trigger this function again
@@ -844,8 +843,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
           EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(),
                            impl_thread_scroll1_ + impl_thread_scroll2_);
-          EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(),
-                           impl_thread_scroll1_);
 
           LayerImpl* pending_scroll_layer = pending_root->children()[0];
           EXPECT_VECTOR_EQ(
@@ -854,8 +851,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
                   initial_scroll_, main_thread_scroll_ + impl_thread_scroll1_));
           EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(),
                            impl_thread_scroll2_);
-          EXPECT_VECTOR_EQ(pending_scroll_layer->sent_scroll_delta(),
-                           gfx::Vector2d());
         }
         break;
       case 1:
@@ -865,7 +860,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
             gfx::ScrollOffsetWithDelta(
                 initial_scroll_, main_thread_scroll_ + impl_thread_scroll1_));
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll2_);
-        EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
         EndTest();
         break;
     }
@@ -963,8 +957,6 @@ class ImplSidePaintingScrollTestImplOnlyScroll
         EXPECT_VECTOR_EQ(pending_scroll_layer->scroll_offset(),
                          initial_scroll_);
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(), gfx::Vector2d());
-        EXPECT_VECTOR_EQ(pending_scroll_layer->sent_scroll_delta(),
-                         gfx::Vector2d());
         EXPECT_FALSE(active_root);
         break;
       case 1:
@@ -974,14 +966,10 @@ class ImplSidePaintingScrollTestImplOnlyScroll
                          initial_scroll_);
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(),
                          impl_thread_scroll_);
-        EXPECT_VECTOR_EQ(pending_scroll_layer->sent_scroll_delta(),
-                         gfx::Vector2d());
         ASSERT_TRUE(active_root);
         EXPECT_VECTOR_EQ(active_scroll_layer->scroll_offset(), initial_scroll_);
         EXPECT_VECTOR_EQ(active_scroll_layer->ScrollDelta(),
                          impl_thread_scroll_);
-        EXPECT_VECTOR_EQ(active_scroll_layer->sent_scroll_delta(),
-                         gfx::Vector2d());
         break;
       case 2:
         // On the next commit, this delta should have been sent and applied.
@@ -989,8 +977,6 @@ class ImplSidePaintingScrollTestImplOnlyScroll
                          gfx::ScrollOffsetWithDelta(initial_scroll_,
                                                     impl_thread_scroll_));
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(), gfx::Vector2d());
-        EXPECT_VECTOR_EQ(pending_scroll_layer->sent_scroll_delta(),
-                         gfx::Vector2d());
         break;
     }
   }
@@ -1005,7 +991,6 @@ class ImplSidePaintingScrollTestImplOnlyScroll
       case 0:
         EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d());
-        EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
         EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
         EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
         PostSetNeedsCommitToMainThread();
@@ -1013,7 +998,6 @@ class ImplSidePaintingScrollTestImplOnlyScroll
       case 1:
         EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll_);
-        EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
         EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
         EXPECT_EQ(impl_scale_,
                   impl->active_tree()->current_page_scale_factor());

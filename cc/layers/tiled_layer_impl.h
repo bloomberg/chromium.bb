@@ -18,7 +18,15 @@ class DrawableTile;
 class CC_EXPORT TiledLayerImpl : public LayerImpl {
  public:
   static scoped_ptr<TiledLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new TiledLayerImpl(tree_impl, id));
+    return make_scoped_ptr(
+        new TiledLayerImpl(tree_impl, id, new LayerImpl::SyncedScrollOffset));
+  }
+  static scoped_ptr<TiledLayerImpl> Create(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset) {
+    return make_scoped_ptr(
+        new TiledLayerImpl(tree_impl, id, synced_scroll_offset));
   }
   ~TiledLayerImpl() override;
 
@@ -51,6 +59,10 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
 
  protected:
   TiledLayerImpl(LayerTreeImpl* tree_impl, int id);
+  TiledLayerImpl(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset);
   // Exposed for testing.
   bool HasTileAt(int i, int j) const;
   bool HasResourceIdForTileAt(int i, int j) const;

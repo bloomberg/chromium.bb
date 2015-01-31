@@ -34,7 +34,13 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
+LayerImpl::LayerImpl(LayerTreeImpl* layer_impl, int id)
+    : LayerImpl(layer_impl, id, new LayerImpl::SyncedScrollOffset) {
+}
+
+LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
+                     int id,
+                     scoped_refptr<SyncedScrollOffset> scroll_offset)
     : parent_(nullptr),
       scroll_parent_(nullptr),
       clip_parent_(nullptr),
@@ -42,6 +48,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       replica_layer_id_(-1),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
+      scroll_offset_(scroll_offset),
       scroll_offset_delegate_(nullptr),
       scroll_clip_layer_(nullptr),
       should_scroll_on_main_thread_(false),
@@ -348,18 +355,10 @@ void LayerImpl::GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
   *resource_id = 0;
 }
 
-void LayerImpl::SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta) {
-  // Pending tree never has sent scroll deltas
-  DCHECK(layer_tree_impl()->IsActiveTree());
-
-  if (sent_scroll_delta_ == sent_scroll_delta)
-    return;
-
-  sent_scroll_delta_ = sent_scroll_delta;
-}
-
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
-  gfx::Vector2dF adjusted_scroll = scroll;
+  RefreshFromScrollDelegate();
+
+  gfx::ScrollOffset adjusted_scroll(scroll);
   if (layer_tree_impl()->settings().use_pinch_virtual_viewport) {
     if (!user_scrollable_horizontal_)
       adjusted_scroll.set_x(0);
@@ -367,17 +366,14 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
       adjusted_scroll.set_y(0);
   }
   DCHECK(scrollable());
-  gfx::Vector2dF min_delta = -ScrollOffsetToVector2dF(scroll_offset_);
-  gfx::Vector2dF max_delta = MaxScrollOffset().DeltaFrom(scroll_offset_);
-  // Clamp new_delta so that position + delta stays within scroll bounds.
-  gfx::Vector2dF new_delta = (ScrollDelta() + adjusted_scroll);
-  new_delta.SetToMax(min_delta);
-  new_delta.SetToMin(max_delta);
-  gfx::Vector2dF unscrolled =
-      ScrollDelta() + scroll - new_delta;
-  SetScrollDelta(new_delta);
+  gfx::ScrollOffset old_offset = CurrentScrollOffset();
+  gfx::ScrollOffset new_offset =
+      ClampScrollOffsetToLimits(old_offset + adjusted_scroll);
+  SetCurrentScrollOffset(new_offset);
 
-  return unscrolled;
+  gfx::ScrollOffset unscrolled =
+      old_offset + gfx::ScrollOffset(scroll) - new_offset;
+  return gfx::Vector2dF(unscrolled.x(), unscrolled.y());
 }
 
 void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
@@ -390,41 +386,8 @@ bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
 }
 
 void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
-  if (sent_scroll_delta_.IsZero())
-    return;
-
-  // Pending tree never has sent scroll deltas
   DCHECK(layer_tree_impl()->IsActiveTree());
-
-  // The combination of pending tree and aborted commits with impl scrolls
-  // shouldn't happen; we don't know how to update its deltas correctly.
-  DCHECK(!layer_tree_impl()->FindPendingTreeLayerById(id()));
-
-  // Apply sent scroll deltas to scroll position / scroll delta as if the
-  // main thread had applied them and then committed those values.
-  SetScrollOffsetAndDelta(
-      scroll_offset_ + gfx::ScrollOffset(sent_scroll_delta_),
-      ScrollDelta() - sent_scroll_delta_);
-  SetSentScrollDelta(gfx::Vector2dF());
-}
-
-void LayerImpl::ApplyScrollDeltasSinceBeginMainFrame() {
-  // Only the pending tree can have missing scrolls.
-  DCHECK(layer_tree_impl()->IsPendingTree());
-  if (!scrollable())
-    return;
-
-  // Pending tree should never have sent scroll deltas.
-  DCHECK(sent_scroll_delta().IsZero());
-
-  LayerImpl* active_twin = layer_tree_impl()->FindActiveTreeLayerById(id());
-  if (active_twin) {
-    // Scrolls that happens after begin frame (where the sent scroll delta
-    // comes from) and commit need to be applied to the pending tree
-    // so that it is up to date with the total scroll.
-    SetScrollDelta(active_twin->ScrollDelta() -
-                   active_twin->sent_scroll_delta());
-  }
+  scroll_offset_->AbortCommit();
 }
 
 InputHandler::ScrollStatus LayerImpl::TryScroll(
@@ -503,7 +466,7 @@ skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
 }
 
 scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return LayerImpl::Create(tree_impl, layer_id_);
+  return LayerImpl::Create(tree_impl, layer_id_, scroll_offset_);
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
@@ -543,16 +506,9 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
 
-  // Save the difference but clear the sent delta so that we don't subtract
-  // it again in SetScrollOffsetAndDelta's pending twin mirroring logic.
-  gfx::Vector2dF remaining_delta =
-      layer_animation_controller_->scroll_offset_animation_was_interrupted()
-          ? gfx::Vector2dF()
-          : layer->ScrollDelta() - layer->sent_scroll_delta();
-
-  layer->SetSentScrollDelta(gfx::Vector2dF());
-  layer->SetScrollOffsetAndDelta(scroll_offset_, remaining_delta);
   layer->SetScrollCompensationAdjustment(scroll_compensation_adjustment_);
+
+  layer->PushScrollOffset(nullptr);
 
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
@@ -764,7 +720,7 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
 }
 
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
-  return TotalScrollOffset();
+  return CurrentScrollOffset();
 }
 
 void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
@@ -782,11 +738,11 @@ void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   // Only layers in the active tree should need to do anything here, since
   // layers in the pending tree will find out about these changes as a
-  // result of the call to SetScrollDelta.
+  // result of the shared SyncedProperty.
   if (!IsActive())
     return;
 
-  SetScrollDelta(scroll_offset.DeltaFrom(scroll_offset_));
+  SetCurrentScrollOffset(scroll_offset);
 
   layer_tree_impl_->DidAnimateScrollOffset();
 }
@@ -1102,14 +1058,10 @@ void LayerImpl::SetScrollOffsetDelegate(
     ScrollOffsetDelegate* scroll_offset_delegate) {
   // Having both a scroll parent and a scroll offset delegate is unsupported.
   DCHECK(!scroll_parent_);
-  if (!scroll_offset_delegate && scroll_offset_delegate_) {
-    scroll_delta_ = scroll_offset_delegate_->GetTotalScrollOffset().DeltaFrom(
-        scroll_offset_);
-  }
-  gfx::ScrollOffset total_offset = TotalScrollOffset();
+  RefreshFromScrollDelegate();
   scroll_offset_delegate_ = scroll_offset_delegate;
   if (scroll_offset_delegate_)
-    scroll_offset_delegate_->SetTotalScrollOffset(total_offset);
+    scroll_offset_delegate_->SetCurrentScrollOffset(CurrentScrollOffset());
 }
 
 bool LayerImpl::IsExternalFlingActive() const {
@@ -1117,74 +1069,89 @@ bool LayerImpl::IsExternalFlingActive() const {
          scroll_offset_delegate_->IsExternalFlingActive();
 }
 
-void LayerImpl::DidScroll() {
-  NoteLayerPropertyChangedForSubtree();
-  ScrollbarParametersDidChange(false);
+void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
+  DCHECK(IsActive());
+  if (scroll_offset_->SetCurrent(scroll_offset))
+    DidUpdateScrollOffset();
 }
 
-void LayerImpl::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
-  SetScrollOffsetAndDelta(scroll_offset, ScrollDelta());
+void LayerImpl::PushScrollOffsetFromMainThread(
+    const gfx::ScrollOffset& scroll_offset) {
+  PushScrollOffset(&scroll_offset);
 }
 
-void LayerImpl::SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
-                                        const gfx::Vector2dF& scroll_delta) {
-  bool changed = false;
+gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
+  RefreshFromScrollDelegate();
 
-  last_scroll_offset_ = scroll_offset;
+  // TODO(aelias): Remove all this temporary flooring machinery when Blink
+  // fully supports fractional scrolls.
+  gfx::ScrollOffset current = CurrentScrollOffset();
+  gfx::ScrollOffset floored(floor(current.x()), floor(current.y()));
+  scroll_offset_->SetCurrent(floored);
+  gfx::ScrollOffset delta = scroll_offset_->PullDeltaForMainThread();
+  scroll_offset_->SetCurrent(current);
+  return delta;
+}
 
-  if (scroll_offset_ != scroll_offset) {
-    changed = true;
-    scroll_offset_ = scroll_offset;
-
-    if (scroll_offset_delegate_)
-      scroll_offset_delegate_->SetTotalScrollOffset(TotalScrollOffset());
+void LayerImpl::RefreshFromScrollDelegate() {
+  if (scroll_offset_delegate_) {
+    SetCurrentScrollOffset(
+        gfx::ScrollOffset(scroll_offset_delegate_->GetCurrentScrollOffset()));
   }
+}
 
-  if (ScrollDelta() != scroll_delta) {
-    changed = true;
-    if (layer_tree_impl()->IsActiveTree()) {
-      LayerImpl* pending_twin =
-          layer_tree_impl()->FindPendingTreeLayerById(id());
-      if (pending_twin) {
-        // The pending twin can't mirror the scroll delta of the active
-        // layer.  Although the delta - sent scroll delta difference is
-        // identical for both twins, the sent scroll delta for the pending
-        // layer is zero, as anything that has been sent has been baked
-        // into the layer's position/scroll offset as a part of commit.
-        DCHECK(pending_twin->sent_scroll_delta().IsZero());
-        pending_twin->SetScrollDelta(scroll_delta - sent_scroll_delta());
-      }
-    }
-
-    if (scroll_offset_delegate_) {
-      scroll_offset_delegate_->SetTotalScrollOffset(
-          ScrollOffsetWithDelta(scroll_offset_, scroll_delta));
-    } else {
-      scroll_delta_ = scroll_delta;
-    }
-  }
-
-  if (changed) {
-    if (scroll_offset_delegate_)
-      scroll_offset_delegate_->Update();
-    DidScroll();
-  }
+gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
+  return scroll_offset_->Current(IsActive());
 }
 
 gfx::Vector2dF LayerImpl::ScrollDelta() const {
-  if (scroll_offset_delegate_) {
-    return scroll_offset_delegate_->GetTotalScrollOffset().DeltaFrom(
-        scroll_offset_);
+  if (IsActive())
+    return gfx::Vector2dF(scroll_offset_->Delta().x(),
+                          scroll_offset_->Delta().y());
+  else
+    return gfx::Vector2dF(scroll_offset_->PendingDelta().get().x(),
+                          scroll_offset_->PendingDelta().get().y());
+}
+
+void LayerImpl::SetScrollDelta(const gfx::Vector2dF& delta) {
+  DCHECK(IsActive());
+  SetCurrentScrollOffset(scroll_offset_->ActiveBase() +
+                         gfx::ScrollOffset(delta));
+}
+
+gfx::ScrollOffset LayerImpl::BaseScrollOffset() const {
+  if (IsActive())
+    return scroll_offset_->ActiveBase();
+  else
+    return scroll_offset_->PendingBase();
+}
+
+void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
+  DCHECK(scroll_offset || IsActive());
+  bool changed = false;
+  if (scroll_offset) {
+    DCHECK(!IsActive() || !layer_tree_impl_->FindPendingTreeLayerById(id()));
+    changed |= scroll_offset_->PushFromMainThread(*scroll_offset);
   }
-  return scroll_delta_;
+  if (IsActive()) {
+    changed |= scroll_offset_->PushPendingToActive();
+    if (layer_animation_controller_->scroll_offset_animation_was_interrupted())
+      SetScrollDelta(gfx::Vector2dF());
+  }
+
+  if (changed)
+    DidUpdateScrollOffset();
 }
 
-void LayerImpl::SetScrollDelta(const gfx::Vector2dF& scroll_delta) {
-  SetScrollOffsetAndDelta(scroll_offset_, scroll_delta);
-}
+void LayerImpl::DidUpdateScrollOffset() {
+  if (scroll_offset_delegate_) {
+    scroll_offset_delegate_->SetCurrentScrollOffset(CurrentScrollOffset());
+    scroll_offset_delegate_->Update();
+    RefreshFromScrollDelegate();
+  }
 
-gfx::ScrollOffset LayerImpl::TotalScrollOffset() const {
-  return ScrollOffsetWithDelta(scroll_offset_, ScrollDelta());
+  NoteLayerPropertyChangedForSubtree();
+  ScrollbarParametersDidChange(false);
 }
 
 void LayerImpl::SetDoubleSided(bool double_sided) {
@@ -1214,39 +1181,16 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
          IsContainerForFixedPositionLayers());
 
-  gfx::SizeF scaled_scroll_bounds(BoundsForScrolling());
-
   float scale_factor = 1.f;
   for (LayerImpl const* current_layer = this;
-       current_layer != scroll_clip_layer_;
+       current_layer != scroll_clip_layer_->parent();
        current_layer = current_layer->parent()) {
-    DCHECK(current_layer);
-    float current_layer_scale = 1.f;
-
-    const gfx::Transform& layer_transform = current_layer->transform();
-    if (current_layer == page_scale_layer) {
-      DCHECK(layer_transform.IsIdentity());
-      current_layer_scale = layer_tree_impl()->current_page_scale_factor();
-    } else {
-      // TODO(wjmaclean) Should we allow for translation too?
-      DCHECK(layer_transform.IsScale2d());
-      gfx::Vector2dF layer_scale = layer_transform.Scale2d();
-      // TODO(wjmaclean) Allow for non-isotropic scales.
-      DCHECK(layer_scale.x() == layer_scale.y());
-      current_layer_scale = layer_scale.x();
-    }
-
-    scale_factor *= current_layer_scale;
+    if (current_layer == page_scale_layer)
+      scale_factor = layer_tree_impl()->current_page_scale_factor();
   }
-  // TODO(wjmaclean) Once we move to a model where the two-viewport model is
-  // turned on in all builds, remove the next two lines. For now however, the
-  // page scale layer may coincide with the clip layer, and so this is
-  // necessary.
-  if (page_scale_layer == scroll_clip_layer_)
-    scale_factor *= layer_tree_impl()->current_page_scale_factor();
 
-  scaled_scroll_bounds.SetSize(scale_factor * scaled_scroll_bounds.width(),
-                               scale_factor * scaled_scroll_bounds.height());
+  gfx::SizeF scaled_scroll_bounds =
+      gfx::ToFlooredSize(gfx::ScaleSize(BoundsForScrolling(), scale_factor));
   scaled_scroll_bounds = gfx::ToFlooredSize(scaled_scroll_bounds);
 
   gfx::ScrollOffset max_offset(
@@ -1258,17 +1202,19 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   return max_offset;
 }
 
-gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
-  gfx::ScrollOffset max_offset = MaxScrollOffset();
-  gfx::ScrollOffset old_offset = TotalScrollOffset();
-  gfx::ScrollOffset clamped_offset = old_offset;
+gfx::ScrollOffset LayerImpl::ClampScrollOffsetToLimits(
+    gfx::ScrollOffset offset) const {
+  offset.SetToMin(MaxScrollOffset());
+  offset.SetToMax(gfx::ScrollOffset());
+  return offset;
+}
 
-  clamped_offset.SetToMin(max_offset);
-  clamped_offset.SetToMax(gfx::ScrollOffset());
+gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
+  gfx::ScrollOffset old_offset = CurrentScrollOffset();
+  gfx::ScrollOffset clamped_offset = ClampScrollOffsetToLimits(old_offset);
   gfx::Vector2dF delta = clamped_offset.DeltaFrom(old_offset);
   if (!delta.IsZero())
     ScrollBy(delta);
-
   return delta;
 }
 
@@ -1290,36 +1236,16 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   if (scroll_rect.size().IsEmpty())
     return;
 
-  // TODO(wjmaclean) This computation is nearly identical to the one in
-  // MaxScrollOffset. Find some way to combine these.
   gfx::ScrollOffset current_offset;
   for (LayerImpl const* current_layer = this;
-       current_layer != scrollbar_clip_layer;
+       current_layer != scrollbar_clip_layer->parent();
        current_layer = current_layer->parent()) {
-    DCHECK(current_layer);
-    const gfx::Transform& layer_transform = current_layer->transform();
+    current_offset += current_layer->CurrentScrollOffset();
     if (current_layer == page_scale_layer) {
-      DCHECK(layer_transform.IsIdentity());
       float scale_factor = layer_tree_impl()->current_page_scale_factor();
       current_offset.Scale(scale_factor);
       scroll_rect.Scale(scale_factor);
-    } else {
-      DCHECK(layer_transform.IsScale2d());
-      gfx::Vector2dF layer_scale = layer_transform.Scale2d();
-      DCHECK(layer_scale.x() == layer_scale.y());
-      gfx::ScrollOffset new_offset = ScrollOffsetWithDelta(
-          current_layer->scroll_offset(), current_layer->ScrollDelta());
-      new_offset.Scale(layer_scale.x(), layer_scale.y());
-      current_offset += new_offset;
     }
-  }
-  // TODO(wjmaclean) Once we move to a model where the two-viewport model is
-  // turned on in all builds, remove the next two lines. For now however, the
-  // page scale layer may coincide with the clip layer, and so this is
-  // necessary.
-  if (page_scale_layer == scrollbar_clip_layer) {
-    scroll_rect.Scale(layer_tree_impl()->current_page_scale_factor());
-    current_offset.Scale(layer_tree_impl()->current_page_scale_factor());
   }
 
   bool scrollbar_needs_animation = false;
@@ -1472,7 +1398,11 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 
-  MathUtil::AddToTracedValue("scroll_offset", scroll_offset_, state);
+  MathUtil::AddToTracedValue(
+      "scroll_offset", scroll_offset_ ? scroll_offset_->Current(IsActive())
+                                      : gfx::ScrollOffset(),
+      state);
+
   MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 
   bool clipped;

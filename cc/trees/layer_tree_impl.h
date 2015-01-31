@@ -135,7 +135,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* OuterViewportScrollLayer() const;
   gfx::ScrollOffset TotalScrollOffset() const;
   gfx::ScrollOffset TotalMaxScrollOffset() const;
-  gfx::Vector2dF TotalScrollDelta() const;
 
   LayerImpl* InnerViewportContainerLayer() const;
   LayerImpl* OuterViewportContainerLayer() const;
@@ -153,7 +152,6 @@ class CC_EXPORT LayerTreeImpl {
   }
   LayerImpl* page_scale_layer() { return page_scale_layer_; }
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
-  void ApplyScrollDeltasSinceBeginMainFrame();
 
   SkColor background_color() const { return background_color_; }
   void set_background_color(SkColor color) { background_color_ = color; }

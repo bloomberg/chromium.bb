@@ -15,7 +15,10 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     int id,
     scoped_refptr<RasterSource> raster_source,
     bool is_mask)
-    : PictureLayerImpl(tree_impl, id, is_mask),
+    : PictureLayerImpl(tree_impl,
+                       id,
+                       is_mask,
+                       new LayerImpl::SyncedScrollOffset),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
@@ -32,7 +35,10 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     scoped_refptr<RasterSource> raster_source,
     bool is_mask,
     const gfx::Size& layer_bounds)
-    : PictureLayerImpl(tree_impl, id, is_mask),
+    : PictureLayerImpl(tree_impl,
+                       id,
+                       is_mask,
+                       new LayerImpl::SyncedScrollOffset),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
@@ -46,7 +52,18 @@ FakePictureLayerImpl::FakePictureLayerImpl(
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                                            int id,
                                            bool is_mask)
-    : PictureLayerImpl(tree_impl, id, is_mask),
+    : FakePictureLayerImpl(tree_impl,
+                           id,
+                           is_mask,
+                           new LayerImpl::SyncedScrollOffset) {
+}
+
+FakePictureLayerImpl::FakePictureLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    bool is_mask,
+    scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset)
+    : PictureLayerImpl(tree_impl, id, is_mask, synced_scroll_offset),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
@@ -56,7 +73,8 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id(), is_mask_));
+  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id(), is_mask_,
+                                                  synced_scroll_offset()));
 }
 
 void FakePictureLayerImpl::PushPropertiesTo(LayerImpl* layer_impl) {

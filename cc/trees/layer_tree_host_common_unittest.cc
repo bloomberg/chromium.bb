@@ -7819,7 +7819,8 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(fixed.get(), identity_transform, gfx::Point3F(),
                                gfx::PointF(3.0f, 4.0f), gfx::Size(50, 50), true,
                                false, false);
-  scroll_layer->SetScrollOffsetAndDelta(scroll_offset, scroll_delta);
+  scroll_layer->SetScrollOffset(scroll_offset);
+  scroll_layer->SetScrollDelta(scroll_delta);
   scroll_layer->SetScrollCompensationAdjustment(main_scroll_fractional_part);
 
   scroller->AddChild(fixed.Pass());

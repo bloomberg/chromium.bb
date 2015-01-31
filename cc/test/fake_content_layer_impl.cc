@@ -6,15 +6,19 @@
 
 namespace cc {
 
-FakeContentLayerImpl::FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : TiledLayerImpl(tree_impl, id), lost_output_surface_count_(0) {
+FakeContentLayerImpl::FakeContentLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset)
+    : TiledLayerImpl(tree_impl, id, synced_scroll_offset),
+      lost_output_surface_count_(0) {
 }
 
 FakeContentLayerImpl::~FakeContentLayerImpl() {}
 
 scoped_ptr<LayerImpl> FakeContentLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeContentLayerImpl::Create(tree_impl, id());
+  return FakeContentLayerImpl::Create(tree_impl, id(), synced_scroll_offset());
 }
 
 bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {

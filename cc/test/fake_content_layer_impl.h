@@ -14,7 +14,15 @@ class FakeContentLayerImpl : public TiledLayerImpl {
  public:
   static scoped_ptr<FakeContentLayerImpl> Create(
       LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new FakeContentLayerImpl(tree_impl, id));
+    return make_scoped_ptr(new FakeContentLayerImpl(
+        tree_impl, id, new LayerImpl::SyncedScrollOffset));
+  }
+  static scoped_ptr<FakeContentLayerImpl> Create(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset) {
+    return make_scoped_ptr(
+        new FakeContentLayerImpl(tree_impl, id, synced_scroll_offset));
   }
   ~FakeContentLayerImpl() override;
 
@@ -30,7 +38,10 @@ class FakeContentLayerImpl : public TiledLayerImpl {
   void ReleaseResources() override;
 
  private:
-  explicit FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id);
+  explicit FakeContentLayerImpl(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset);
 
   size_t lost_output_surface_count_;
 };

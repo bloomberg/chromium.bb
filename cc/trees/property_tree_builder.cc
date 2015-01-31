@@ -194,8 +194,8 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   // record, the slight difference should be inconsequential).
   gfx::Vector2dF position = layer->position().OffsetFromOrigin();
   if (!layer->scroll_parent()) {
-    position -= gfx::Vector2dF(layer->TotalScrollOffset().x(),
-        layer->TotalScrollOffset().y());
+    position -= gfx::Vector2dF(layer->CurrentScrollOffset().x(),
+                               layer->CurrentScrollOffset().y());
   }
 
   position += parent_offset;

@@ -483,19 +483,17 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
 
   scroll_info = host_impl_->ProcessScrollDeltas();
   ASSERT_EQ(scroll_info->scrolls.size(), 1u);
-  EXPECT_VECTOR_EQ(root->sent_scroll_delta(), scroll_delta);
   ExpectContains(*scroll_info, root->id(), scroll_delta);
 
   gfx::Vector2d scroll_delta2(-5, 27);
   root->ScrollBy(scroll_delta2);
   scroll_info = host_impl_->ProcessScrollDeltas();
   ASSERT_EQ(scroll_info->scrolls.size(), 1u);
-  EXPECT_VECTOR_EQ(root->sent_scroll_delta(), scroll_delta + scroll_delta2);
   ExpectContains(*scroll_info, root->id(), scroll_delta + scroll_delta2);
 
   root->ScrollBy(gfx::Vector2d());
   scroll_info = host_impl_->ProcessScrollDeltas();
-  EXPECT_EQ(root->sent_scroll_delta(), scroll_delta + scroll_delta2);
+  ExpectContains(*scroll_info, root->id(), scroll_delta + scroll_delta2);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
@@ -1031,6 +1029,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
+    scroll_layer->PullDeltaForMainThread();
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
 
     float page_scale_delta = 0.1f;
@@ -1052,6 +1051,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
+    scroll_layer->PullDeltaForMainThread();
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(20, 20));
 
     float page_scale_delta = 1.f;
@@ -1073,6 +1073,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
+    scroll_layer->PullDeltaForMainThread();
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(20, 20));
 
     float page_scale_delta = 1.f;
@@ -1094,6 +1095,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(0.5f, 0.5f, 4.f);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
+    scroll_layer->PullDeltaForMainThread();
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
 
     host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::Gesture);
@@ -3741,6 +3743,8 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     page_scale_factor_ = page_scale_factor;
     min_page_scale_factor_ = min_page_scale_factor;
     max_page_scale_factor_ = max_page_scale_factor;
+
+    set_getter_return_value(last_set_scroll_offset_);
   }
 
   gfx::ScrollOffset last_set_scroll_offset() {
@@ -7881,7 +7885,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   host_impl_->CreatePendingTree();
 
   scoped_ptr<PictureLayerImpl> layer =
-      PictureLayerImpl::Create(host_impl_->pending_tree(), 10, false);
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 10);
   layer->SetBounds(gfx::Size(10, 10));
 
   scoped_refptr<RasterSource> pile(FakePicturePileImpl::CreateEmptyPile(
@@ -7931,7 +7935,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   // should get two pairs.
   host_impl_->CreatePendingTree();
   host_impl_->pending_tree()->root_layer()->AddChild(
-      PictureLayerImpl::Create(host_impl_->pending_tree(), 11, false));
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 11));
 
   LayerImpl* new_pending_layer = pending_tree->root_layer()->children()[0];
 

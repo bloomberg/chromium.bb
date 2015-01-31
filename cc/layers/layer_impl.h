@@ -19,6 +19,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/base/synced_property.h"
 #include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar.h"
@@ -81,17 +82,25 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // of the layer.
   class ScrollOffsetDelegate {
    public:
-    virtual void SetTotalScrollOffset(const gfx::ScrollOffset& new_value) = 0;
-    virtual gfx::ScrollOffset GetTotalScrollOffset() = 0;
+    virtual void SetCurrentScrollOffset(const gfx::ScrollOffset& new_value) = 0;
+    virtual gfx::ScrollOffset GetCurrentScrollOffset() = 0;
     virtual bool IsExternalFlingActive() const = 0;
     virtual void Update() const = 0;
   };
 
+  typedef SyncedProperty<AdditionGroup<gfx::ScrollOffset>> SyncedScrollOffset;
   typedef LayerImplList RenderSurfaceListType;
   typedef LayerImplList LayerListType;
   typedef RenderSurfaceImpl RenderSurfaceType;
 
   enum RenderingContextConstants { NO_RENDERING_CONTEXT = 0 };
+
+  static scoped_ptr<LayerImpl> Create(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<SyncedScrollOffset> scroll_offset) {
+    return make_scoped_ptr(new LayerImpl(tree_impl, id, scroll_offset));
+  }
 
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
@@ -385,22 +394,23 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetContentsScale(float contents_scale_x, float contents_scale_y);
 
   void SetScrollOffsetDelegate(ScrollOffsetDelegate* scroll_offset_delegate);
-  void DidScroll();
+  void RefreshFromScrollDelegate();
   bool IsExternalFlingActive() const;
 
-  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  void SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
-                               const gfx::Vector2dF& scroll_delta);
-  gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
+  void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
+  void PushScrollOffsetFromMainThread(const gfx::ScrollOffset& scroll_offset);
+  gfx::ScrollOffset PullDeltaForMainThread();
+  gfx::ScrollOffset CurrentScrollOffset() const;
+  gfx::ScrollOffset BaseScrollOffset() const;
+  gfx::Vector2dF ScrollDelta() const;
+  void SetScrollDelta(const gfx::Vector2dF& delta);
 
   gfx::ScrollOffset MaxScrollOffset() const;
+  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
   void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
                             LayerImpl* scrollbar_clip_layer,
                             bool on_resize) const;
-  void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
-  gfx::Vector2dF ScrollDelta() const;
-
   void SetScrollCompensationAdjustment(const gfx::Vector2dF& scroll_offset) {
     scroll_compensation_adjustment_ = scroll_offset;
   }
@@ -408,14 +418,17 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return scroll_compensation_adjustment_;
   }
 
-  gfx::ScrollOffset TotalScrollOffset() const;
-
-  void SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta);
-  gfx::Vector2dF sent_scroll_delta() const { return sent_scroll_delta_; }
-
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
+
+  // TODO(aelias): Delete these three methods after doing a mass rename in
+  // tests.
+  gfx::ScrollOffset TotalScrollOffset() const { return CurrentScrollOffset(); }
+  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
+    PushScrollOffsetFromMainThread(scroll_offset);
+  }
+  gfx::ScrollOffset scroll_offset() const { return BaseScrollOffset(); }
 
   void SetScrollClipLayer(int scroll_clip_layer_id);
   LayerImpl* scroll_clip_layer() const { return scroll_clip_layer_; }
@@ -435,7 +448,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool user_scrollable(ScrollbarOrientation orientation) const;
 
   void ApplySentScrollDeltasFromAbortedCommit();
-  void ApplyScrollDeltasSinceBeginMainFrame();
 
   void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
     should_scroll_on_main_thread_ = should_scroll_on_main_thread;
@@ -581,7 +593,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return frame_timing_requests_;
   }
 
+  SyncedScrollOffset* synced_scroll_offset() { return scroll_offset_.get(); }
+
  protected:
+  LayerImpl(LayerTreeImpl* layer_impl,
+            int id,
+            scoped_refptr<SyncedScrollOffset> scroll_offset);
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 
   // Get the color and size of the layer's debug border.
@@ -605,6 +622,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void NoteLayerPropertyChangedForDescendants();
 
  private:
+  void PushScrollOffset(const gfx::ScrollOffset* scroll_offset);
+  void DidUpdateScrollOffset();
   void NoteLayerPropertyChangedForDescendantsInternal();
 
   virtual const char* LayerTypeAsString() const;
@@ -633,11 +652,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;
 
+  // Properties dynamically changeable on active tree.
+  scoped_refptr<SyncedScrollOffset> scroll_offset_;
+  gfx::Vector2dF bounds_delta_;
+
   // Properties synchronized from the associated Layer.
   gfx::Point3F transform_origin_;
   gfx::Size bounds_;
-  gfx::Vector2dF bounds_delta_;
-  gfx::ScrollOffset scroll_offset_;
   ScrollOffsetDelegate* scroll_offset_delegate_;
   LayerImpl* scroll_clip_layer_;
   bool scrollable_ : 1;
@@ -677,10 +698,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Transform transform_;
 
   LayerPositionConstraint position_constraint_;
-
-  gfx::Vector2dF scroll_delta_;
-  gfx::Vector2dF sent_scroll_delta_;
-  gfx::ScrollOffset last_scroll_offset_;
 
   gfx::Vector2dF scroll_compensation_adjustment_;
 

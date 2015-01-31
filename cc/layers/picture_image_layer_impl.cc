@@ -14,7 +14,10 @@ namespace cc {
 PictureImageLayerImpl::PictureImageLayerImpl(LayerTreeImpl* tree_impl,
                                              int id,
                                              bool is_mask)
-    : PictureLayerImpl(tree_impl, id, is_mask) {
+    : PictureLayerImpl(tree_impl,
+                       id,
+                       is_mask,
+                       new LayerImpl::SyncedScrollOffset) {
 }
 
 PictureImageLayerImpl::~PictureImageLayerImpl() {

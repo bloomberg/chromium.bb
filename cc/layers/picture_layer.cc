@@ -38,7 +38,8 @@ PictureLayer::~PictureLayer() {
 }
 
 scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
+  return PictureLayerImpl::Create(tree_impl, id(), is_mask_,
+                                  new LayerImpl::SyncedScrollOffset);
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {

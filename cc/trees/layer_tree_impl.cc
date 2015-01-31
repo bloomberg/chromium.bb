@@ -50,11 +50,11 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
   }
 
   // LayerScrollOffsetDelegate implementation.
-  void SetTotalScrollOffset(const gfx::ScrollOffset& new_offset) override {
+  void SetCurrentScrollOffset(const gfx::ScrollOffset& new_offset) override {
     last_set_scroll_offset_ = new_offset;
   }
 
-  gfx::ScrollOffset GetTotalScrollOffset() override {
+  gfx::ScrollOffset GetCurrentScrollOffset() override {
     return layer_tree_impl_->GetDelegatedScrollOffset(layer_);
   }
 
@@ -154,10 +154,10 @@ gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
 
   if (inner_viewport_scroll_layer_)
-    offset += inner_viewport_scroll_layer_->TotalScrollOffset();
+    offset += inner_viewport_scroll_layer_->CurrentScrollOffset();
 
   if (outer_viewport_scroll_layer_)
-    offset += outer_viewport_scroll_layer_->TotalScrollOffset();
+    offset += outer_viewport_scroll_layer_->CurrentScrollOffset();
 
   return offset;
 }
@@ -172,15 +172,6 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
     offset += outer_viewport_scroll_layer_->MaxScrollOffset();
 
   return offset;
-}
-gfx::Vector2dF LayerTreeImpl::TotalScrollDelta() const {
-  DCHECK(inner_viewport_scroll_layer_);
-  gfx::Vector2dF delta = inner_viewport_scroll_layer_->ScrollDelta();
-
-  if (outer_viewport_scroll_layer_)
-    delta += outer_viewport_scroll_layer_->ScrollDelta();
-
-  return delta;
 }
 
 scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
@@ -466,19 +457,6 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
 
   LayerTreeHostCommon::CallFunctionForSubtree(
       root_layer(), base::Bind(&ApplySentScrollDeltasFromAbortedCommitTo));
-}
-
-static void ApplyScrollDeltasSinceBeginMainFrameTo(LayerImpl* layer) {
-  layer->ApplyScrollDeltasSinceBeginMainFrame();
-}
-
-void LayerTreeImpl::ApplyScrollDeltasSinceBeginMainFrame() {
-  DCHECK(IsPendingTree());
-  if (!root_layer())
-    return;
-
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginMainFrameTo));
 }
 
 void LayerTreeImpl::SetViewportLayersFromIds(
@@ -997,6 +975,11 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
     }
 
     if (inner_viewport_scroll_layer_)
+      inner_viewport_scroll_layer_->RefreshFromScrollDelegate();
+    if (outer_viewport_scroll_layer_)
+      outer_viewport_scroll_layer_->RefreshFromScrollDelegate();
+
+    if (inner_viewport_scroll_layer_)
       UpdateScrollOffsetDelegate();
   }
 }
@@ -1004,10 +987,10 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
 void LayerTreeImpl::OnRootLayerDelegatedScrollOffsetChanged() {
   DCHECK(root_layer_scroll_offset_delegate_);
   if (inner_viewport_scroll_layer_) {
-    inner_viewport_scroll_layer_->DidScroll();
+    inner_viewport_scroll_layer_->RefreshFromScrollDelegate();
   }
   if (outer_viewport_scroll_layer_) {
-    outer_viewport_scroll_layer_->DidScroll();
+    outer_viewport_scroll_layer_->RefreshFromScrollDelegate();
   }
 }
 

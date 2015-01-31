@@ -149,6 +149,11 @@ class FakePictureLayerImpl : public PictureLayerImpl {
                        bool is_mask,
                        const gfx::Size& layer_bounds);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
+  FakePictureLayerImpl(
+      LayerTreeImpl* tree_impl,
+      int id,
+      bool is_mask,
+      scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset);
 
  private:
   gfx::Size fixed_tile_size_;

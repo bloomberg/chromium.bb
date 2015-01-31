@@ -48,7 +48,15 @@ class DrawableTile : public LayerTilingData::Tile {
 };
 
 TiledLayerImpl::TiledLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id), skips_draw_(true) {}
+    : TiledLayerImpl(tree_impl, id, new LayerImpl::SyncedScrollOffset) {
+}
+
+TiledLayerImpl::TiledLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    scoped_refptr<LayerImpl::SyncedScrollOffset> synced_scroll_offset)
+    : LayerImpl(tree_impl, id, synced_scroll_offset), skips_draw_(true) {
+}
 
 TiledLayerImpl::~TiledLayerImpl() {
 }
@@ -102,7 +110,7 @@ void TiledLayerImpl::GetDebugBorderProperties(SkColor* color,
 
 scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return TiledLayerImpl::Create(tree_impl, id());
+  return TiledLayerImpl::Create(tree_impl, id(), synced_scroll_offset());
 }
 
 void TiledLayerImpl::AsValueInto(base::debug::TracedValue* state) const {

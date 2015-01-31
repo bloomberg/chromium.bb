@@ -66,8 +66,8 @@ static gfx::Vector2dF GetEffectiveScrollDelta(LayerType* layer) {
 }
 
 template <typename LayerType>
-static gfx::ScrollOffset GetEffectiveTotalScrollOffset(LayerType* layer) {
-  gfx::ScrollOffset offset = layer->TotalScrollOffset();
+static gfx::ScrollOffset GetEffectiveCurrentScrollOffset(LayerType* layer) {
+  gfx::ScrollOffset offset = layer->CurrentScrollOffset();
   // The scroll parent's total scroll offset (scroll offset + scroll delta)
   // can't be used because its scroll offset has already been applied to the
   // scroll children's positions by the main thread layer positioning code.
@@ -1675,7 +1675,7 @@ static void CalculateDrawPropertiesInternal(
         layer->parent()->screen_space_transform_is_animating();
   }
   gfx::Point3F transform_origin = layer->transform_origin();
-  gfx::ScrollOffset scroll_offset = GetEffectiveTotalScrollOffset(layer);
+  gfx::ScrollOffset scroll_offset = GetEffectiveCurrentScrollOffset(layer);
   gfx::PointF position =
       layer->position() - ScrollOffsetToVector2dF(scroll_offset);
   gfx::Transform combined_transform = data_from_ancestor.parent_matrix;

@@ -88,10 +88,10 @@ class ViewportAnchor {
   ViewportAnchor(LayerImpl* inner_scroll, LayerImpl* outer_scroll)
   : inner_(inner_scroll),
     outer_(outer_scroll) {
-    viewport_in_content_coordinates_ = inner_->TotalScrollOffset();
+    viewport_in_content_coordinates_ = inner_->CurrentScrollOffset();
 
     if (outer_)
-      viewport_in_content_coordinates_ += outer_->TotalScrollOffset();
+      viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
   }
 
   void ResetViewportToAnchoredPosition() {
@@ -100,8 +100,8 @@ class ViewportAnchor {
     inner_->ClampScrollToMaxScrollOffset();
     outer_->ClampScrollToMaxScrollOffset();
 
-    gfx::ScrollOffset viewport_location = inner_->TotalScrollOffset() +
-                                          outer_->TotalScrollOffset();
+    gfx::ScrollOffset viewport_location =
+        inner_->CurrentScrollOffset() + outer_->CurrentScrollOffset();
 
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
@@ -305,8 +305,6 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
-  if (pending_tree_)
-    pending_tree_->ApplyScrollDeltasSinceBeginMainFrame();
   sync_tree()->set_needs_update_draw_properties();
 
   if (settings_.impl_side_painting) {
@@ -2406,7 +2404,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       if (!layer_impl->scrollable())
         continue;
 
-      gfx::ScrollOffset current_offset = layer_impl->TotalScrollOffset();
+      gfx::ScrollOffset current_offset = layer_impl->CurrentScrollOffset();
       gfx::ScrollOffset target_offset =
           ScrollOffsetWithDelta(current_offset, pending_delta);
       target_offset.SetToMax(gfx::ScrollOffset());
@@ -2496,14 +2494,15 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   local_end_point.Scale(width_scale, height_scale);
 
   // Apply the scroll delta.
-  gfx::Vector2dF previous_delta = layer_impl->ScrollDelta();
+  gfx::ScrollOffset previous_offset = layer_impl->CurrentScrollOffset();
   layer_impl->ScrollBy(local_end_point - local_start_point);
+  gfx::ScrollOffset scrolled =
+      layer_impl->CurrentScrollOffset() - previous_offset;
 
   // Get the end point in the layer's content space so we can apply its
   // ScreenSpaceTransform.
-  gfx::PointF actual_local_end_point = local_start_point +
-                                       layer_impl->ScrollDelta() -
-                                       previous_delta;
+  gfx::PointF actual_local_end_point =
+      local_start_point + gfx::Vector2dF(scrolled.x(), scrolled.y());
   gfx::PointF actual_local_content_end_point =
       gfx::ScalePoint(actual_local_end_point,
                       1.f / width_scale,
@@ -2527,11 +2526,13 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
     LayerImpl* layer_impl,
     const gfx::Vector2dF& local_delta,
     float page_scale_factor) {
-  gfx::Vector2dF previous_delta(layer_impl->ScrollDelta());
+  gfx::ScrollOffset previous_offset = layer_impl->CurrentScrollOffset();
   gfx::Vector2dF delta = local_delta;
   delta.Scale(1.f / page_scale_factor);
   layer_impl->ScrollBy(delta);
-  return layer_impl->ScrollDelta() - previous_delta;
+  gfx::ScrollOffset scrolled =
+      layer_impl->CurrentScrollOffset() - previous_offset;
+  return gfx::Vector2dF(scrolled.x(), scrolled.y());
 }
 
 bool LayerTreeHostImpl::ShouldTopControlsConsumeScroll(
@@ -2981,14 +2982,13 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
   if (!layer_impl)
     return;
 
-  gfx::Vector2d scroll_delta =
-      gfx::ToFlooredVector2d(layer_impl->ScrollDelta());
+  gfx::ScrollOffset scroll_delta = layer_impl->PullDeltaForMainThread();
+
   if (!scroll_delta.IsZero()) {
     LayerTreeHostCommon::ScrollUpdateInfo scroll;
     scroll.layer_id = layer_impl->id();
-    scroll.scroll_delta = scroll_delta;
+    scroll.scroll_delta = gfx::Vector2d(scroll_delta.x(), scroll_delta.y());
     scroll_info->scrolls.push_back(scroll);
-    layer_impl->SetSentScrollDelta(scroll_delta);
   }
 
   for (size_t i = 0; i < layer_impl->children().size(); ++i)
