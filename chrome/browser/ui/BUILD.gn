@@ -98,6 +98,7 @@ static_library("ui") {
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/power",
+      "//components/suggestions/proto",
       "//device/nfc",
       "//media",
       "//net:net_with_v8",
