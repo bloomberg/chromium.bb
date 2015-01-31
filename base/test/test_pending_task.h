@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/location.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 

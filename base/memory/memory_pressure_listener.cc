@@ -4,9 +4,9 @@
 
 #include "base/memory/memory_pressure_listener.h"
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/trace_event/trace_event.h"
 
 namespace {
 

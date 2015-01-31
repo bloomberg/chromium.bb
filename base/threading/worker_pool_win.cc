@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 
 namespace base {

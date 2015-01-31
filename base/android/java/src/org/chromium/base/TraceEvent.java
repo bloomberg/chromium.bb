@@ -10,9 +10,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Printer;
 /**
- * Java mirror of Chrome trace event API. See base/debug/trace_event.h.  Unlike the native version,
- * Java does not have stack objects, so a TRACE_EVENT() which does both TRACE_EVENT_BEGIN() and
- * TRACE_EVENT_END() in ctor/dtor is not possible.
+ * Java mirror of Chrome trace event API. See base/trace_event/trace_event.h. Unlike the native
+ * version, Java does not have stack objects, so a TRACE_EVENT() which does both TRACE_EVENT_BEGIN()
+ * and TRACE_EVENT_END() in ctor/dtor is not possible.
  * It is OK to use tracing before the native library has loaded, but such traces will
  * be ignored. (Perhaps we could devise to buffer them up in future?).
  */

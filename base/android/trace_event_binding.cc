@@ -8,9 +8,9 @@
 
 #include <set>
 
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/lazy_instance.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "jni/TraceEvent_jni.h"
 
 namespace base {

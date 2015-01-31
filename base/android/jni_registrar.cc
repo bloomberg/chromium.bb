@@ -4,9 +4,9 @@
 
 #include "base/android/jni_registrar.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/android/jni_android.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace android {

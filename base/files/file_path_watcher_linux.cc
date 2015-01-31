@@ -19,7 +19,6 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,6 +31,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 

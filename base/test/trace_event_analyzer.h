@@ -78,8 +78,8 @@
 
 #include <map>
 
-#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 class Value;
