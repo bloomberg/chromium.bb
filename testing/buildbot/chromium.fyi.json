@@ -719,7 +719,7 @@
       "installer_util_unittests"
     ]
   },
-  "CrWinClang(asan) tester": {
+  "CrWinAsan tester": {
     "gtest_tests": [
       {
         "test": "base_unittests",
