@@ -57,9 +57,6 @@ public:
 
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
-#ifndef NDEBUG
-    virtual const char* name() const override final { return "Test"; }
-#endif
 };
 
 #ifndef NDEBUG

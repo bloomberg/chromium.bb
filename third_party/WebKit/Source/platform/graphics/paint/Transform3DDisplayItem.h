@@ -27,10 +27,6 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "BeginTransform3D"; }
-#endif
-
     const TransformationMatrix m_transform;
     FloatPoint3D m_transformOrigin;
 };
@@ -48,11 +44,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndTransform3D"; }
-#endif
 };
 
 } // namespace blink

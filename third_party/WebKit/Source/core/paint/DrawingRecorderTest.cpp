@@ -63,9 +63,6 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Nothing)
     drawNothing(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
-#ifndef NDEBUG
-    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
-#endif
 }
 
 TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
@@ -75,9 +72,7 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
-#ifndef NDEBUG
-    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[0]->name());
-#endif
+    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 }
 
 TEST_F(DrawingRecorderTest, DrawingRecorderTest_Cached)
@@ -88,19 +83,13 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Cached)
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
-#ifndef NDEBUG
-    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
-    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[1]->name());
-#endif
+    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
 
     drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
-#ifndef NDEBUG
-    EXPECT_STREQ("Dummy", rootDisplayItemList().paintList()[0]->name());
-    EXPECT_STREQ("Drawing", rootDisplayItemList().paintList()[1]->name());
-#endif
+    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
 }
 
 }

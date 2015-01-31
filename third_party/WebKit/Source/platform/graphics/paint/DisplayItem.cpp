@@ -42,17 +42,18 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(Drawing);
 
     switch (type) {
-    case DisplayItem::ColumnRules: return "ColumnRules";
-    case DisplayItem::DragImage: return "DragImage";
-    case DisplayItem::LinkHighlight: return "LinkHighlight";
-    case DisplayItem::PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
-    case DisplayItem::Resizer: return "Resizer";
-    case DisplayItem::ScrollbarCorner: return "ScrollbarCorner";
-    case DisplayItem::ScrollbarHorizontal: return "ScrollbarHorizontal";
-    case DisplayItem::ScrollbarTickMark: return "ScrollbarTickMark";
-    case DisplayItem::ScrollbarVertical: return "ScrollbarVertical";
-    case DisplayItem::VideoBitmap: return "VideoBitmap";
-    case DisplayItem::ViewBackground: return "ViewBackground";
+    case DisplayItem::ColumnRules: return "DrawingColumnRules";
+    case DisplayItem::DragImage: return "DrawingDragImage";
+    case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";
+    case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";
+    case DisplayItem::Resizer: return "DrawingResizer";
+    case DisplayItem::SVGFilter: return "DrawingSVGFilter";
+    case DisplayItem::ScrollbarCorner: return "DrawingScrollbarCorner";
+    case DisplayItem::ScrollbarHorizontal: return "DrawingScrollbarHorizontal";
+    case DisplayItem::ScrollbarTickMark: return "DrawingScrollbarTickMark";
+    case DisplayItem::ScrollbarVertical: return "DrawingScrollbarVertical";
+    case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
+    case DisplayItem::ViewBackground: return "DrawingViewBackground";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";
@@ -104,7 +105,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndClipPath: return "EndClipPath";
     case BeginScroll: return "BeginScroll";
     case EndScroll: return "EndScroll";
-    case SVGFilter: return "SVGFilter";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";
@@ -122,9 +122,6 @@ WTF::String DisplayItem::asDebugString() const
 
 void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    stringBuilder.append("name: \"");
-    stringBuilder.append(name());
-    stringBuilder.append("\", ");
     stringBuilder.append(String::format("client: \"%p\", ", client()));
     if (!clientDebugString().isEmpty()) {
         stringBuilder.append(clientDebugString());

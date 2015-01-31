@@ -38,7 +38,6 @@ public:
 
 private:
 #ifndef NDEBUG
-    virtual const char* name() const override { return "Clip"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
     IntRect m_clipRect;
@@ -62,11 +61,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndClip"; }
-#endif
 };
 
 } // namespace blink

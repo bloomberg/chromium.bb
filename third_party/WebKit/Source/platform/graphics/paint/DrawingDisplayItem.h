@@ -35,7 +35,6 @@ protected:
 
 private:
 #ifndef NDEBUG
-    virtual const char* name() const override { return "Drawing"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 

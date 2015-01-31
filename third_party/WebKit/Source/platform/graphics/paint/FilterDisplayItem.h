@@ -39,7 +39,6 @@ private:
     BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds, const FilterOperations&);
 
 #ifndef NDEBUG
-    virtual const char* name() const override { return "BeginFilter"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
@@ -62,11 +61,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndFilter"; }
-#endif
 };
 
 }

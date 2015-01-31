@@ -175,7 +175,6 @@ public:
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
 
     WTF::String asDebugString() const;
-    virtual const char* name() const { return "Dummy"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
 

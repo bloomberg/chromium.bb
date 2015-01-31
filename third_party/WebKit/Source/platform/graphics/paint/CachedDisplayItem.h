@@ -31,10 +31,6 @@ private:
     // CachedDisplayItem is never replayed or appended to WebDisplayItemList.
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
-
-#ifndef NDEBUG
-    virtual const char* name() const override { return "Cached"; }
-#endif
 };
 
 } // namespace blink

@@ -33,11 +33,11 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-    FloatRect m_clipRect;
 #ifndef NDEBUG
-    virtual const char* name() const override { return "FloatClip"; }
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
+
+    FloatRect m_clipRect;
 };
 
 class PLATFORM_EXPORT EndFloatClipDisplayItem : public DisplayItem {
@@ -56,11 +56,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndFloatClip"; }
-#endif
 };
 
 } // namespace blink

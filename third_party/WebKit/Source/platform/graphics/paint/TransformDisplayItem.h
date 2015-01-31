@@ -27,10 +27,6 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "BeginTransform"; }
-#endif
-
     const AffineTransform m_transform;
 };
 
@@ -47,11 +43,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndTransform"; }
-#endif
 };
 
 } // namespace blink

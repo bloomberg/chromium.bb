@@ -28,10 +28,6 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "BeginScroll"; }
-#endif
-
     const IntSize m_currentOffset;
 };
 
@@ -48,11 +44,6 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-private:
-#ifndef NDEBUG
-    virtual const char* name() const override { return "EndScroll"; }
-#endif
 };
 
 } // namespace blink
