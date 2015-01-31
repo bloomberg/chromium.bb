@@ -81,11 +81,6 @@ public:
 
         void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
-#ifndef NDEBUG
-        // Prints debugging information.
-        void show();
-#endif
-
     private:
         FloatSize m_topLeft;
         FloatSize m_topRight;
@@ -145,11 +140,6 @@ public:
 
     void adjustRadii();
     bool isRenderable() const;
-
-#ifndef NDEBUG
-    // Prints debugging information.
-    void show();
-#endif
 
 private:
     FloatRect m_rect;
