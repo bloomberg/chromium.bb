@@ -136,6 +136,11 @@ public:
         scrollToOffset(DoubleSize(scrollXOffset(), y), clamp, scrollBehavior);
     }
 
+    virtual void setScrollPosition(const DoublePoint& position, ScrollBehavior scrollBehavior = ScrollBehaviorInstant) override
+    {
+        scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior);
+    }
+
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
     void updateAfterOverflowRecalc();

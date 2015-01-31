@@ -65,6 +65,7 @@ public:
     virtual HostWindow* hostWindow() const { return 0; };
 
     bool scroll(ScrollDirection, ScrollGranularity, float delta = 1);
+    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
     void scrollToOffsetWithoutAnimation(const FloatPoint&, bool cancelProgrammaticAnimations = true);
     void scrollToOffsetWithoutAnimation(ScrollbarOrientation, float offset);
 

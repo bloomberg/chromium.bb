@@ -159,6 +159,12 @@ bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granula
     return scrollAnimator()->scroll(orientation, granularity, step, delta);
 }
 
+void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollBehavior behavior)
+{
+    // FIXME(417782): This should be unified with RenderLayerScrollableArea::scrollToOffset.
+    ASSERT_NOT_REACHED();
+}
+
 void ScrollableArea::scrollToOffsetWithoutAnimation(const FloatPoint& offset, bool cancelProgrammaticAnimations)
 {
     if (cancelProgrammaticAnimations)

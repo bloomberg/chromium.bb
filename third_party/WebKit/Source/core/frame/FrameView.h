@@ -164,7 +164,7 @@ public:
     IntSize inputEventsOffsetForEmulation() const;
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
-    void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
+    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
     virtual bool isRubberBandInProgress() const override;
     virtual bool rubberBandingOnCompositorThread() const override;
     void setScrollPositionNonProgrammatically(const IntPoint&);

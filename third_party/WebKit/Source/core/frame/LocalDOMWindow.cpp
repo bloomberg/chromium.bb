@@ -1165,7 +1165,7 @@ double LocalDOMWindow::scrollX() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    double viewportX = view->scrollPositionDouble().x();
+    double viewportX = view->scrollableArea()->scrollPositionDouble().x();
 
     if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
         viewportX += host->pinchViewport().location().x();
@@ -1188,7 +1188,7 @@ double LocalDOMWindow::scrollY() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    double viewportY = view->scrollPositionDouble().y();
+    double viewportY = view->scrollableArea()->scrollPositionDouble().y();
 
     if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
         viewportY += host->pinchViewport().location().y();
@@ -1300,7 +1300,7 @@ static void scrollViewportTo(LocalFrame* frame, DoublePoint offset, ScrollBehavi
     if (!host)
         return;
 
-    view->setScrollPosition(offset, scrollBehavior);
+    view->scrollableArea()->setScrollPosition(offset, scrollBehavior);
 
     if (host->settings().pinchVirtualViewportEnabled() && frame->isMainFrame()) {
         PinchViewport& pinchViewport = frame->host()->pinchViewport();
@@ -1329,7 +1329,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
 
     DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
         ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
-        : view->scrollPositionDouble();
+        : view->scrollableArea()->scrollPositionDouble();
 
     DoubleSize scaledOffset(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
     scrollViewportTo(frame(), currentOffset + scaledOffset, scrollBehavior);
@@ -1382,7 +1382,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
 
     DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
         ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
-        : view->scrollPositionDouble();
+        : view->scrollableArea()->scrollPositionDouble();
     scaledX = currentOffset.x();
     scaledY = currentOffset.y();
 
