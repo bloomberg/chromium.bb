@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkDraw.h"
 #include "third_party/skia/include/core/SkRRect.h"
