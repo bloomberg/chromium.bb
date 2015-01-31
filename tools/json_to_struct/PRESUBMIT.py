@@ -5,7 +5,7 @@
 """Presubmit script for changes affecting tools/json_to_struct/
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details about the presubmit API built into gcl.
+for more details about the presubmit API built into depot_tools.
 """
 
 WHITELIST = [ r'.+_test.py$' ]

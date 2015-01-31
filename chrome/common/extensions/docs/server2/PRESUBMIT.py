@@ -5,7 +5,7 @@
 """Presubmit script for changes affecting extensions docs server
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details about the presubmit API built into gcl.
+for more details about the presubmit API built into depot_tools.
 """
 
 # Run build_server so that files needed by tests are copied to the local

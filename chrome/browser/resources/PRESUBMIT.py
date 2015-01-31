@@ -5,7 +5,7 @@
 """Presubmit script for HTML files in chrome/browser/resources.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details about the presubmit API built into gcl.
+for more details about the presubmit API built into depot_tools.
 """
 
 ACTION_XML_PATH = '../../../tools/metrics/actions/actions.xml'

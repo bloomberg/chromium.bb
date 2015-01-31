@@ -5,7 +5,7 @@
 """Presubmit script for changes affecting tools/perf/.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details about the presubmit API built into gcl (and git-cl).
+for more details about the presubmit API built into depot_tools.
 """
 
 import os

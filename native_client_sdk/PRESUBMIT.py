@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Top-level presubmit script for isolate.
+"""Top-level presubmit script for native_client_sdk.
 
-See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
-details on the presubmit API built into gcl.
+See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+for more details on the presubmit API built into depot_tools.
 """
 
 

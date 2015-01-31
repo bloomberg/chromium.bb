@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details on the presubmit API built into gcl.
+for more details on the presubmit API built into depot_tools.
 """
 
 

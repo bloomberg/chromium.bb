@@ -5,7 +5,7 @@
 """Presubmit script for android buildbot.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
-details on the presubmit API built into gcl.
+details on the presubmit API built into depot_tools.
 """
 
 _DELETIONS_ONLY_FILES = (

@@ -7,7 +7,7 @@ import os
 """Chromium presubmit script for src/tools/ios.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details on the presubmit API built into gcl.
+for more details on the presubmit API built into depot_tools.
 """
 
 WHITELIST_FILE = 'build/ios/grit_whitelist.txt'
