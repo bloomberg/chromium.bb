@@ -382,7 +382,7 @@ static const struct SuggestedSaveNameTestCase {
   // A URL-like title that does not match the title is respected in full.
   { "http://foo.com",
     base::ASCIIToUTF16("http://www.foo.com/path/title.txt"),
-    FPL("http   www.foo.com path title.txt"),
+    FPL("http___www.foo.com_path_title.txt"),
     false
   },
 };

@@ -30,12 +30,19 @@ class IllegalCharacters {
     return Singleton<IllegalCharacters>::get();
   }
 
-  bool contains(UChar32 ucs4) {
-    return !!set->contains(ucs4);
+  bool DisallowedEverywhere(UChar32 ucs4) {
+    return !!illegal_anywhere_->contains(ucs4);
   }
 
-  bool containsNone(const string16 &s) {
-    return !!set->containsNone(icu::UnicodeString(s.c_str(), s.size()));
+  bool DisallowedLeadingOrTrailing(UChar32 ucs4) {
+    return !!illegal_at_ends_->contains(ucs4);
+  }
+
+  bool IsAllowedName(const string16& s) {
+    return s.empty() || (!!illegal_anywhere_->containsNone(
+                             icu::UnicodeString(s.c_str(), s.size())) &&
+                         !illegal_at_ends_->contains(*s.begin()) &&
+                         !illegal_at_ends_->contains(*s.rbegin()));
   }
 
  private:
@@ -45,60 +52,61 @@ class IllegalCharacters {
   IllegalCharacters();
   ~IllegalCharacters() { }
 
-  scoped_ptr<icu::UnicodeSet> set;
+  // set of characters considered invalid anywhere inside a filename.
+  scoped_ptr<icu::UnicodeSet> illegal_anywhere_;
+
+  // set of characters considered invalid at either end of a filename.
+  scoped_ptr<icu::UnicodeSet> illegal_at_ends_;
 
   DISALLOW_COPY_AND_ASSIGN(IllegalCharacters);
 };
 
 IllegalCharacters::IllegalCharacters() {
-  UErrorCode status = U_ZERO_ERROR;
-  // Control characters, formatting characters, non-characters, and
-  // some printable ASCII characters regarded as dangerous ('"*/:<>?\\').
+  UErrorCode everywhere_status = U_ZERO_ERROR;
+  UErrorCode ends_status = U_ZERO_ERROR;
+  // Control characters, formatting characters, non-characters, path separators,
+  // and some printable ASCII characters regarded as dangerous ('"*/:<>?\\').
   // See  http://blogs.msdn.com/michkap/archive/2006/11/03/941420.aspx
   // and http://msdn2.microsoft.com/en-us/library/Aa365247.aspx
-  // TODO(jungshik): Revisit the set. ZWJ and ZWNJ are excluded because they
-  // are legitimate in Arabic and some S/SE Asian scripts. However, when used
-  // elsewhere, they can be confusing/problematic.
-  // Also, consider wrapping the set with our Singleton class to create and
-  // freeze it only once. Note that there's a trade-off between memory and
-  // speed.
-#if defined(WCHAR_T_IS_UTF16)
-  set.reset(new icu::UnicodeSet(icu::UnicodeString(
-      L"[[\"*/:<>?\\\\|][:Cc:][:Cf:] - [\u200c\u200d]]"), status));
-#else
-  set.reset(new icu::UnicodeSet(UNICODE_STRING_SIMPLE(
-      "[[\"*/:<>?\\\\|][:Cc:][:Cf:] - [\\u200c\\u200d]]").unescape(),
-      status));
-#endif
-  DCHECK(U_SUCCESS(status));
+  // Note that code points in the "Other, Format" (Cf) category are ignored on
+  // HFS+ despite the ZERO_WIDTH_JOINER and ZERO_WIDTH_NON-JOINER being
+  // legitimate in Arabic and some S/SE Asian scripts. In addition tilde (~) is
+  // also excluded due to the possibility of interacting poorly with short
+  // filenames on VFAT. (Related to CVE-2014-9390)
+  illegal_anywhere_.reset(new icu::UnicodeSet(
+      UNICODE_STRING_SIMPLE("[[\"~*/:<>?\\\\|][:Cc:][:Cf:]]"),
+      everywhere_status));
+  illegal_at_ends_.reset(new icu::UnicodeSet(
+      UNICODE_STRING_SIMPLE("[[:WSpace:][.]]"), ends_status));
+  DCHECK(U_SUCCESS(everywhere_status));
+  DCHECK(U_SUCCESS(ends_status));
+
   // Add non-characters. If this becomes a performance bottleneck by
   // any chance, do not add these to |set| and change IsFilenameLegal()
   // to check |ucs4 & 0xFFFEu == 0xFFFEu|, in addiition to calling
-  // containsNone().
-  set->add(0xFDD0, 0xFDEF);
+  // IsAllowedName().
+  illegal_anywhere_->add(0xFDD0, 0xFDEF);
   for (int i = 0; i <= 0x10; ++i) {
     int plane_base = 0x10000 * i;
-    set->add(plane_base + 0xFFFE, plane_base + 0xFFFF);
+    illegal_anywhere_->add(plane_base + 0xFFFE, plane_base + 0xFFFF);
   }
-  set->freeze();
+  illegal_anywhere_->freeze();
+  illegal_at_ends_->freeze();
 }
 
 }  // namespace
 
 bool IsFilenameLegal(const string16& file_name) {
-  return IllegalCharacters::GetInstance()->containsNone(file_name);
+  return IllegalCharacters::GetInstance()->IsAllowedName(file_name);
 }
 
 void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
                                     char replace_char) {
-  DCHECK(file_name);
-
-  DCHECK(!(IllegalCharacters::GetInstance()->contains(replace_char)));
-
-  // Remove leading and trailing whitespace.
-  TrimWhitespace(*file_name, TRIM_ALL, file_name);
-
   IllegalCharacters* illegal = IllegalCharacters::GetInstance();
+
+  DCHECK(!(illegal->DisallowedEverywhere(replace_char)));
+  DCHECK(!(illegal->DisallowedLeadingOrTrailing(replace_char)));
+
   int cursor = 0;  // The ICU macros expect an int.
   while (cursor < static_cast<int>(file_name->size())) {
     int char_begin = cursor;
@@ -122,7 +130,9 @@ void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
     NOTREACHED();
 #endif
 
-    if (illegal->contains(code_point)) {
+    if (illegal->DisallowedEverywhere(code_point) ||
+        ((char_begin == 0 || cursor == static_cast<int>(file_name->length())) &&
+         illegal->DisallowedLeadingOrTrailing(code_point))) {
       file_name->replace(char_begin, cursor - char_begin, 1, replace_char);
       // We just made the potentially multi-byte/word char into one that only
       // takes one byte/word, so need to adjust the cursor to point to the next

@@ -1242,7 +1242,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
     name_with_proper_ext = EnsureHtmlExtension(name_with_proper_ext);
 
   base::FilePath::StringType file_name = name_with_proper_ext.value();
-  base::i18n::ReplaceIllegalCharactersInPath(&file_name, ' ');
+  base::i18n::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
 }
 
