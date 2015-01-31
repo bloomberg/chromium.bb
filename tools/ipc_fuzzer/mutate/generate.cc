@@ -952,17 +952,6 @@ struct GenerateTraits<content::PageState> {
 };
 
 template <>
-struct GenerateTraits<dns_prefetch::LookupRequest> {
-  static bool Generate(dns_prefetch::LookupRequest* p, Generator* generator) {
-    dns_prefetch::LookupRequest request;
-    if (!GenerateParam(&request.hostname_list, generator))
-      return false;
-    *p = request;
-    return true;
-  }
-};
-
-template <>
 struct GenerateTraits<extensions::URLPatternSet> {
   static bool Generate(extensions::URLPatternSet* p, Generator* generator) {
     std::set<URLPattern> patterns;
@@ -1139,6 +1128,17 @@ struct GenerateTraits<net::IPEndPoint> {
       return false;
     net::IPEndPoint ip_endpoint(address, port);
     *p = ip_endpoint;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<network_hints::LookupRequest> {
+  static bool Generate(network_hints::LookupRequest* p, Generator* generator) {
+    network_hints::LookupRequest request;
+    if (!GenerateParam(&request.hostname_list, generator))
+      return false;
+    *p = request;
     return true;
   }
 };
