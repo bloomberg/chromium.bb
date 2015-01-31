@@ -35,9 +35,14 @@ To make a release of Weston and/or Wayland, follow these steps.
       http://lists.freedesktop.org/archives/wayland-devel/
 
   6.  Update releases.html in wayland-web with links to tarballs and
-      the release email URL
+      the release email URL.
+
+      $ git commit releases.html -m "Add x.y.z release"
+      $ git push
+      $ rsync -avz * wayland.freedesktop.org:/srv/wayland.freedesktop.org/www/
 
   7.  Update topic in #wayland to point to the release announcement URL
+
 
 For x.y.0 releases, also create the x.y branch.  The x.y branch is for
 bug fixes and conservative changes to the x.y.0 release, and is where
