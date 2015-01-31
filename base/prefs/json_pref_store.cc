@@ -91,6 +91,22 @@ PersistentPrefStore::PrefReadError HandleReadErrors(
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
+// Records a sample for |size| in the Settings.JsonDataReadSizeKilobytes
+// histogram suffixed with the base name of the JSON file under |path|.
+void RecordJsonDataSizeHistogram(const base::FilePath& path, size_t size) {
+  std::string spaceless_basename;
+  base::ReplaceChars(path.BaseName().MaybeAsASCII(), " ", "_",
+                     &spaceless_basename);
+
+  // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      "Settings.JsonDataReadSizeKilobytes." + spaceless_basename, 1, 10000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(static_cast<int>(size) / 1024);
+}
+
 scoped_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
     const base::FilePath& path,
     const base::FilePath& alternate_path) {
@@ -108,6 +124,10 @@ scoped_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
   read_result->error =
       HandleReadErrors(read_result->value.get(), path, error_code, error_msg);
   read_result->no_dir = !base::PathExists(path.DirName());
+
+  if (read_result->error == PersistentPrefStore::PREF_READ_ERROR_NONE)
+    RecordJsonDataSizeHistogram(path, serializer.get_last_read_size());
+
   return read_result.Pass();
 }
 
@@ -379,27 +399,7 @@ bool JsonPrefStore::SerializeData(std::string* output) {
 
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
-  bool result = serializer.Serialize(*prefs_);
-
-  if (result) {
-    std::string spaceless_basename;
-    base::ReplaceChars(path_.BaseName().MaybeAsASCII(), " ", "_",
-                       &spaceless_basename);
-
-    // The histogram below is an expansion of the UMA_HISTOGRAM_COUNTS_10000
-    // macro adapted to allow for a dynamically suffixed histogram name.
-    // Note: The factory creates and owns the histogram.
-    base::HistogramBase* histogram =
-        base::LinearHistogram::FactoryGet(
-            "Settings.JsonDataSizeKilobytes." + spaceless_basename,
-            1,
-            10000,
-            50,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(static_cast<int>(output->size()) / 1024);
-  }
-
-  return result;
+  return serializer.Serialize(*prefs_);
 }
 
 void JsonPrefStore::FinalizeFileRead(bool initialization_successful,

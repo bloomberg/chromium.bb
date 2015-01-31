@@ -15,6 +15,16 @@ const char JSONFileValueSerializer::kCannotReadFile[] = "Can't read file.";
 const char JSONFileValueSerializer::kFileLocked[] = "File locked.";
 const char JSONFileValueSerializer::kNoSuchFile[] = "File doesn't exist.";
 
+JSONFileValueSerializer::JSONFileValueSerializer(
+    const base::FilePath& json_file_path)
+    : json_file_path_(json_file_path),
+      allow_trailing_comma_(false),
+      last_read_size_(0U) {
+}
+
+JSONFileValueSerializer::~JSONFileValueSerializer() {
+}
+
 bool JSONFileValueSerializer::Serialize(const base::Value& root) {
   return SerializeInternal(root, false);
 }
@@ -59,6 +69,8 @@ int JSONFileValueSerializer::ReadFileToString(std::string* json_string) {
     else
       return JSON_CANNOT_READ_FILE;
   }
+
+  last_read_size_ = json_string->size();
   return JSON_NO_ERROR;
 }
 

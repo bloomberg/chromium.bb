@@ -32684,7 +32684,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.JsonDataReadSizeKilobytes" units="KB">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The size (in kilobytes) of the JSON settings read from disk on startup.
+    Suffixed with the name of the corresponding JSON file.
+  </summary>
+</histogram>
+
 <histogram name="Settings.JsonDataSizeKilobytes" units="KB">
+  <obsolete>
+    Deprecated 02/2015. Replaced by Settings.JsonDataReadSizeKilobytes.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     The size of the JSON settings content about to be written to disk in
@@ -62192,6 +62203,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Local_State" label="Local State file"/>
   <suffix name="Preferences" label="Preferences file"/>
   <suffix name="Secure_Preferences" label="Secure Preferences file"/>
+  <affected-histogram name="Settings.JsonDataReadSizeKilobytes"/>
   <affected-histogram name="Settings.JsonDataSizeKilobytes"/>
 </histogram_suffixes>
 
