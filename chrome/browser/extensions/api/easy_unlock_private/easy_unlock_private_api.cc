@@ -134,8 +134,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   // Setup notification strings.
   strings->SetString(
       "setupNotificationTitle",
-      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE,
-                                 device_type));
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE));
   strings->SetString(
       "setupNotificationMessage",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
