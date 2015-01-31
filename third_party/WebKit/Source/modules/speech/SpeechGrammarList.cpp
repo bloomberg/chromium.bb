@@ -39,9 +39,9 @@ SpeechGrammarList* SpeechGrammarList::create()
 SpeechGrammar* SpeechGrammarList::item(unsigned index) const
 {
     if (index >= m_grammars.size())
-        return 0;
+        return nullptr;
 
-    return m_grammars[index].get();
+    return m_grammars[index];
 }
 
 void SpeechGrammarList::addFromUri(ExecutionContext* executionContext, const String& src, double weight)

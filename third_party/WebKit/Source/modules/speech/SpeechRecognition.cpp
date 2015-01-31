@@ -54,7 +54,7 @@ void SpeechRecognition::start(ExceptionState& exceptionState)
     }
 
     m_finalResults.clear();
-    m_controller->start(this, m_grammars.get(), m_lang, m_continuous, m_interimResults, m_maxAlternatives, m_audioTrack);
+    m_controller->start(this, m_grammars, m_lang, m_continuous, m_interimResults, m_maxAlternatives, m_audioTrack);
     m_started = true;
 }
 

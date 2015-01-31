@@ -56,7 +56,7 @@ const AtomicString& SpeechSynthesisUtterance::interfaceName() const
 
 SpeechSynthesisVoice* SpeechSynthesisUtterance::voice() const
 {
-    return m_voice.get();
+    return m_voice;
 }
 
 void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice)

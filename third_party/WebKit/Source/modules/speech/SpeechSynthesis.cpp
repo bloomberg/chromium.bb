@@ -72,7 +72,7 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices()
     const HeapVector<Member<PlatformSpeechSynthesisVoice>>& platformVoices = m_platformSpeechSynthesizer->voiceList();
     size_t voiceCount = platformVoices.size();
     for (size_t k = 0; k < voiceCount; k++)
-        m_voiceList.append(SpeechSynthesisVoice::create(platformVoices[k].get()));
+        m_voiceList.append(SpeechSynthesisVoice::create(platformVoices[k]));
 
     return m_voiceList;
 }
@@ -222,9 +222,10 @@ void SpeechSynthesis::speakingErrorOccurred(PlatformSpeechSynthesisUtterance* ut
 
 SpeechSynthesisUtterance* SpeechSynthesis::currentSpeechUtterance() const
 {
-    if (!m_utteranceQueue.isEmpty())
-        return m_utteranceQueue.first().get();
-    return 0;
+    if (m_utteranceQueue.isEmpty())
+        return nullptr;
+
+    return m_utteranceQueue.first();
 }
 
 const AtomicString& SpeechSynthesis::interfaceName() const

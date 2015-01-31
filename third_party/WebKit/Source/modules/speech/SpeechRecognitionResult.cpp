@@ -37,9 +37,9 @@ SpeechRecognitionResult* SpeechRecognitionResult::create(const HeapVector<Member
 SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned index)
 {
     if (index >= m_alternatives.size())
-        return 0;
+        return nullptr;
 
-    return m_alternatives[index].get();
+    return m_alternatives[index];
 }
 
 SpeechRecognitionResult::SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative>>& alternatives, bool final)

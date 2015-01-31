@@ -37,9 +37,9 @@ SpeechRecognitionResultList* SpeechRecognitionResultList::create(const HeapVecto
 SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned index)
 {
     if (index >= m_results.size())
-        return 0;
+        return nullptr;
 
-    return m_results[index].get();
+    return m_results[index];
 }
 
 SpeechRecognitionResultList::SpeechRecognitionResultList(const HeapVector<Member<SpeechRecognitionResult>>& results)
