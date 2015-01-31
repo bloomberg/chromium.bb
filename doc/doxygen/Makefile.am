@@ -24,7 +24,7 @@ scanned_src_files_man =					\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h
 
-diagramsdir := dot
+diagramsdir := $(srcdir)/dot
 diagramssrc := $(wildcard $(diagramsdir)/*.gv)
 diagrams := $(patsubst $(diagramsdir)/%,xml/%,$(diagramssrc:.gv=.png))
 diagram_maps := $(patsubst $(diagramsdir)/%,xml/%,$(diagramssrc:.gv=.map))
@@ -72,3 +72,5 @@ all-local: man/man3/wl_display.3
 clean-local:
 	rm -rf xml/
 	rm -rf man/
+
+EXTRA_DIST = $(diagramssrc)

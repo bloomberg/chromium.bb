@@ -158,4 +158,9 @@ uninstall-local:
 endif
 endif
 
-EXTRA_DIST = $(publican_sources) $(css_sources) $(img_sources) protocol-to-docbook.xsl protocol-interfaces-to-docbook.xsl doxygen-to-publican.xsl
+EXTRA_DIST = \
+	$(publican_sources) $(processed_sources) $(css_sources) $(img_sources) \
+	protocol-to-docbook.xsl \
+	protocol-interfaces-to-docbook.xsl \
+	doxygen-to-publican.xsl \
+	merge-mapcoords.xsl
