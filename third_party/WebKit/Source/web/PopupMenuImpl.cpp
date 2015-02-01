@@ -33,16 +33,27 @@ public:
     // only worked with fonts loaded when opening the popup.
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
 
+    virtual void trace(Visitor*) override;
+
 private:
     PopupMenuCSSFontSelector(Document* document, CSSFontSelector* ownerFontSelector)
         : CSSFontSelector(document)
-        , m_ownerFontSelector(ownerFontSelector) { }
+        , m_ownerFontSelector(ownerFontSelector)
+    {
+    }
+
     RefPtrWillBeMember<CSSFontSelector> m_ownerFontSelector;
 };
 
 PassRefPtr<FontData> PopupMenuCSSFontSelector::getFontData(const FontDescription& description, const AtomicString& name)
 {
     return m_ownerFontSelector->getFontData(description, name);
+}
+
+void PopupMenuCSSFontSelector::trace(Visitor* visitor)
+{
+    visitor->trace(m_ownerFontSelector);
+    CSSFontSelector::trace(visitor);
 }
 
 PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, PopupMenuClient* client)
