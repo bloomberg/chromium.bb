@@ -15,15 +15,19 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/sdch_manager.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace net {
 
+class BoundNetLog;
 class URLRequest;
 class URLRequestThrottlerEntryInterface;
 
@@ -61,17 +65,19 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
  private:
   enum State {
     STATE_NONE,
-    STATE_IDLE,
-    STATE_REQUEST_STARTED,
-    STATE_REQUEST_READING,
+    STATE_SEND_REQUEST,
+    STATE_SEND_REQUEST_COMPLETE,
+    STATE_READ_BODY,
+    STATE_READ_BODY_COMPLETE,
     STATE_REQUEST_COMPLETE,
   };
 
   // State machine implementation.
   int DoLoop(int rv);
-  int DoDispatchRequest(int rv);
-  int DoRequestStarted(int rv);
-  int DoRead(int rv);
+  int DoSendRequest(int rv);
+  int DoSendRequestComplete(int rv);
+  int DoReadBody(int rv);
+  int DoReadBodyComplete(int rv);
   int DoCompleteRequest(int rv);
 
   State next_state_;

@@ -13,18 +13,35 @@
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_log.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
+namespace net {
+
 namespace {
 
 const int kBufferSize = 4096;
 
-}  // namespace
+// Map the bytes_read result from a read attempt and a URLRequest's
+// status into a single net return value.
+int GetReadResult(int bytes_read, const URLRequest* request) {
+  int rv = request->status().error();
+  if (request->status().is_success() && bytes_read < 0) {
+    rv = ERR_FAILED;
+    request->net_log().AddEventWithNetErrorCode(
+        NetLog::TYPE_SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, rv);
+  }
 
-namespace net {
+  if (rv == OK)
+    rv = bytes_read;
+
+  return rv;
+}
+
+}  // namespace
 
 SdchDictionaryFetcher::SdchDictionaryFetcher(
     URLRequestContext* context,
@@ -65,7 +82,7 @@ void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   if (next_state_ != STATE_NONE)
     return;
 
-  next_state_ = STATE_IDLE;
+  next_state_ = STATE_SEND_REQUEST;
 
   // There are no callbacks to user code from the dictionary fetcher,
   // and Schedule() is only called from user code, so this call to DoLoop()
@@ -95,16 +112,8 @@ void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
 
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
-  DCHECK_EQ(next_state_, STATE_REQUEST_STARTED);
-
-  // The response has started, so the stream can be read from.
-  next_state_ = STATE_REQUEST_READING;
-
-  // If this function was synchronously called, the containing
-  // state machine loop will handle the state transition. Otherwise,
-  // restart the state machine loop.
-  if (in_loop_)
-    return;
+  DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
+  DCHECK(!in_loop_);
 
   DoLoop(request->status().error());
 }
@@ -118,21 +127,10 @@ void SdchDictionaryFetcher::OnReadCompleted(URLRequest* request,
 
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
-  DCHECK_EQ(next_state_, STATE_REQUEST_READING);
+  DCHECK_EQ(next_state_, STATE_READ_BODY_COMPLETE);
+  DCHECK(!in_loop_);
 
-  // No state transition is required in this function; the
-  // completion of the request is detected in DoRead().
-
-  if (request->status().is_success())
-    dictionary_.append(buffer_->data(), bytes_read);
-
-  // If this function was synchronously called, the containing
-  // state machine loop will handle the state transition. Otherwise,
-  // restart the state machine loop.
-  if (in_loop_)
-    return;
-
-  DoLoop(request->status().error());
+  DoLoop(GetReadResult(bytes_read, current_request_.get()));
 }
 
 int SdchDictionaryFetcher::DoLoop(int rv) {
@@ -143,14 +141,17 @@ int SdchDictionaryFetcher::DoLoop(int rv) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
-      case STATE_IDLE:
-        rv = DoDispatchRequest(rv);
+      case STATE_SEND_REQUEST:
+        rv = DoSendRequest(rv);
         break;
-      case STATE_REQUEST_STARTED:
-        rv = DoRequestStarted(rv);
+      case STATE_SEND_REQUEST_COMPLETE:
+        rv = DoSendRequestComplete(rv);
         break;
-      case STATE_REQUEST_READING:
-        rv = DoRead(rv);
+      case STATE_READ_BODY:
+        rv = DoReadBody(rv);
+        break;
+      case STATE_READ_BODY_COMPLETE:
+        rv = DoReadBodyComplete(rv);
         break;
       case STATE_REQUEST_COMPLETE:
         rv = DoCompleteRequest(rv);
@@ -163,7 +164,7 @@ int SdchDictionaryFetcher::DoLoop(int rv) {
   return rv;
 }
 
-int SdchDictionaryFetcher::DoDispatchRequest(int rv) {
+int SdchDictionaryFetcher::DoSendRequest(int rv) {
   DCHECK(CalledOnValidThread());
 
   // |rv| is ignored, as the result from the previous request doesn't
@@ -174,6 +175,8 @@ int SdchDictionaryFetcher::DoDispatchRequest(int rv) {
     return OK;
   }
 
+  next_state_ = STATE_SEND_REQUEST_COMPLETE;
+
   current_request_ =
       context_->CreateRequest(fetch_queue_.front(), IDLE, this, NULL);
   current_request_->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES |
@@ -181,82 +184,88 @@ int SdchDictionaryFetcher::DoDispatchRequest(int rv) {
   buffer_ = new IOBuffer(kBufferSize);
   fetch_queue_.pop();
 
-  next_state_ = STATE_REQUEST_STARTED;
   current_request_->Start();
   current_request_->net_log().AddEvent(NetLog::TYPE_SDCH_DICTIONARY_FETCH);
 
-  return OK;
-}
-
-int SdchDictionaryFetcher::DoRequestStarted(int rv) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(rv, OK);  // Can only come straight from above function.
-
-  // The transition to STATE_REQUEST_READING occurs in the
-  // OnResponseStarted() callback triggered by URLRequest::Start()
-  // (called in DoDispatchRequest(), above). If that callback did not
-  // occur synchronously, this routine is executed; it returns ERR_IO_PENDING,
-  // indicating to the controlling loop that no further work should be done
-  // until the callback occurs (which will re-invoke DoLoop()).
-  next_state_ = STATE_REQUEST_STARTED;
   return ERR_IO_PENDING;
 }
 
-int SdchDictionaryFetcher::DoRead(int rv) {
+int SdchDictionaryFetcher::DoSendRequestComplete(int rv) {
   DCHECK(CalledOnValidThread());
 
   // If there's been an error, abort the current request.
   if (rv != OK) {
     current_request_.reset();
     buffer_ = NULL;
-    next_state_ = STATE_IDLE;
+    next_state_ = STATE_SEND_REQUEST;
 
     return OK;
   }
 
-  next_state_ = STATE_REQUEST_READING;
+  next_state_ = STATE_READ_BODY;
+  return OK;
+}
+
+int SdchDictionaryFetcher::DoReadBody(int rv) {
+  DCHECK(CalledOnValidThread());
+
+  // If there's been an error, abort the current request.
+  if (rv != OK) {
+    current_request_.reset();
+    buffer_ = NULL;
+    next_state_ = STATE_SEND_REQUEST;
+
+    return OK;
+  }
+
+  next_state_ = STATE_READ_BODY_COMPLETE;
   int bytes_read = 0;
   current_request_->Read(buffer_.get(), kBufferSize, &bytes_read);
   if (current_request_->status().is_io_pending())
     return ERR_IO_PENDING;
 
-  if (bytes_read < 0 || !current_request_->status().is_success()) {
-    if (current_request_->status().error() != OK)
-      return current_request_->status().error();
+  return GetReadResult(bytes_read, current_request_.get());
+}
 
-    // An error with request status of OK should not happen,
-    // but there's enough machinery underneath URLRequest::Read()
-    // that this routine checks for that case.
-    net::Error error =
-        current_request_->status().status() == URLRequestStatus::CANCELED ?
-        ERR_ABORTED : ERR_FAILED;
-    current_request_->net_log().AddEventWithNetErrorCode(
-        NetLog::TYPE_SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, error);
-    return error;
+int SdchDictionaryFetcher::DoReadBodyComplete(int rv) {
+  DCHECK(CalledOnValidThread());
+
+  // An error; abort the current request.
+  if (rv < 0) {
+    current_request_.reset();
+    buffer_ = NULL;
+    next_state_ = STATE_SEND_REQUEST;
+    return OK;
   }
 
-  if (bytes_read == 0)
-    next_state_ = STATE_REQUEST_COMPLETE;
-  else
-    dictionary_.append(buffer_->data(), bytes_read);
+  DCHECK(current_request_->status().is_success());
 
+  // Data; append to the dictionary and look for more data.
+  if (rv > 0) {
+    dictionary_.append(buffer_->data(), rv);
+    next_state_ = STATE_READ_BODY;
+    return OK;
+  }
+
+  // End of file; complete the request.
+  next_state_ = STATE_REQUEST_COMPLETE;
   return OK;
 }
 
 int SdchDictionaryFetcher::DoCompleteRequest(int rv) {
   DCHECK(CalledOnValidThread());
 
-  // If the dictionary was successfully fetched, add it to the manager.
-  if (rv == OK) {
-    dictionary_fetched_callback_.Run(dictionary_, current_request_->url(),
-                                     current_request_->net_log());
-  }
+  // DoReadBodyComplete() only transitions to this state
+  // on success.
+  DCHECK_EQ(OK, rv);
 
+  dictionary_fetched_callback_.Run(dictionary_, current_request_->url(),
+                                   current_request_->net_log());
   current_request_.reset();
   buffer_ = NULL;
   dictionary_.clear();
 
-  next_state_ = STATE_IDLE;
+  next_state_ = STATE_SEND_REQUEST;
 
   return OK;
 }
