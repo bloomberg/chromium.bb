@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 44: Uncaught TypeError: Cannot read property 'addEventListener' of null
+FAIL Unexpected error: Uncaught TypeError: Cannot read property 'addEventListener' of null
+FAIL successfullyParsed should be true. Was false.
+
+TEST COMPLETE
+
