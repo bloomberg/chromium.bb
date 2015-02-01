@@ -14,15 +14,14 @@ namespace content {
 // See also PresentationServiceDelegate.
 class PresentationScreenAvailabilityListener {
  public:
+  virtual ~PresentationScreenAvailabilityListener() {}
+
   // Returns the Presentation URL associated with this listener.
-  virtual std::string GetPresentationUrl() = 0;
+  virtual std::string GetPresentationUrl() const = 0;
 
   // Called when screen availability for the associated Presentation URL has
   // changed to |available|.
   virtual void OnScreenAvailabilityChanged(bool available) = 0;
-
- protected:
-  virtual ~ScreenAvailabilityListener() {}
 };
 
 }  // namespace content
