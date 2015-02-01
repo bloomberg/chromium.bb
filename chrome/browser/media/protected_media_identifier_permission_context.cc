@@ -12,16 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/suggest_permission_util.h"
-#include "extensions/browser/view_type_utils.h"
-#include "extensions/common/extension.h"
-
-using extensions::APIPermission;
-#endif
-
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -39,21 +29,6 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-#if defined(ENABLE_EXTENSIONS)
-  if (extensions::GetViewType(web_contents) !=
-      extensions::VIEW_TYPE_TAB_CONTENTS) {
-    // The tab may have gone away, or the request may not be from a tab at all.
-    DVLOG(1)
-        << "Attempt to use protected media identifier in tabless renderer: "
-        << id.ToString()
-        << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, requesting_frame_origin,
-                        web_contents->GetLastCommittedURL().GetOrigin(),
-                        callback, false, false);
-    return;
-  }
-#endif
 
 #if defined(OS_ANDROID)
   // Check if the protected media identifier master switch is disabled.
