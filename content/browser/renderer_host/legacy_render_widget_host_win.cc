@@ -124,6 +124,10 @@ bool LegacyRenderWidgetHostHWND::Init() {
                    CHILDID_SELF);
   }
 
+  // http://crbug.com/440579 TODO(dmazzoni): remove this logging when
+  // flakiness is fixed.
+  LOG(INFO) << "LegacyRenderWidgetHostHWND::Init hwnd=" << hwnd();
+
   return !!SUCCEEDED(hr);
 }
 

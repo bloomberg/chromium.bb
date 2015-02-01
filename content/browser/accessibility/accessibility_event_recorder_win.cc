@@ -176,6 +176,9 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     // don't care about, so it's safe to just ignore these failures.
     // Same below for other HRESULT checks.
     LOG(INFO) << "Ignoring result " << hr << " from AccessibleObjectFromWindow";
+    TCHAR name[MAX_PATH];
+    GetClassName(hwnd, name, _countof(name));
+    LOG(INFO) << "Hwnd " << hwnd << " class is " << name;
     return;
   }
 

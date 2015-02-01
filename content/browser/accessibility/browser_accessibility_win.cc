@@ -3215,8 +3215,12 @@ void BrowserAccessibilityWin::OnUpdateFinished() {
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_HELPCHANGE, this);
     if (value != old_win_attributes_->value)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_VALUECHANGE, this);
-    if (ia_state() != old_win_attributes_->ia_state)
+    if (ia_state() != old_win_attributes_->ia_state) {
+      LOG(INFO) << "State change:"
+                << " from " << old_win_attributes_->ia_state
+                << " to " << ia_state();
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_STATECHANGE, this);
+    }
 
     // Normally focus events are handled elsewhere, however
     // focus for managed descendants is platform-specific.
