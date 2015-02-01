@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/gpu_control.h"
@@ -1238,6 +1239,14 @@ void GLES2Implementation::BufferDataHelper(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
   if (!ValidateSize("glBufferData", size))
     return;
+
+#if defined(MEMORY_SANITIZER) && !defined(OS_NACL)
+  // Do not upload uninitialized data. Even if it's not a bug, it can cause a
+  // bogus MSan report during a readback later. This is because MSan doesn't
+  // understand shared memory and would assume we were reading back the same
+  // unintialized data.
+  if (data) __msan_check_mem_is_initialized(data, size);
+#endif
 
   GLuint buffer_id;
   if (GetBoundPixelTransferBuffer(target, "glBufferData", &buffer_id)) {
