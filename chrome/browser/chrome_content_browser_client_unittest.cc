@@ -32,6 +32,8 @@ TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   EXPECT_TRUE(client.ShouldAssignSiteForURL(GURL("https://www.google.com")));
 }
 
+#if defined(ENABLE_WEBRTC)
+
 // NOTE: Any updates to the expectations in these tests should also be done in
 // the browser test WebRtcDisableEncryptionFlagBrowserTest.
 class DisableWebRtcEncryptionFlagTest : public testing::Test {
@@ -86,6 +88,8 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
   MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_STABLE);
   EXPECT_FALSE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
+
+#endif  // ENABLE_WEBRTC
 
 }  // namespace chrome
 

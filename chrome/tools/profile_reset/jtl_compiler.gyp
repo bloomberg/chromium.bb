@@ -4,6 +4,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/tools/profile_reset:jtl_compiler
       'target_name': 'jtl_compiler',
       'type': 'executable',
       'dependencies': [
@@ -18,6 +19,7 @@
       ],
     },
     {
+      # GN version: //chrome/tools/profile_reset:jtl_compiler_lib
       'target_name': 'jtl_compiler_lib',
       'type': 'static_library',
       'product_name': 'jtl_compiler',

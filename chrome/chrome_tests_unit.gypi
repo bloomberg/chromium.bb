@@ -12,7 +12,6 @@
       # dependency is needed to make commit bots run unit_tests on
       # histograms.xml changes.
       '../tools/metrics/histograms/histograms.xml',
-      'app/chrome_dll.rc',
       # All unittests in browser, common, renderer and service.
       'browser/about_flags_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
@@ -157,7 +156,6 @@
       'browser/net/predictor_unittest.cc',
       'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
       'browser/net/probe_message_unittest.cc',
-      'browser/net/proxy_policy_handler_unittest.cc',
       'browser/net/quota_policy_channel_id_store_unittest.cc',
       'browser/net/safe_search_util_unittest.cc',
       'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
@@ -183,7 +181,6 @@
       'browser/prefs/prefs_syncable_service_unittest.cc',
       'browser/prefs/profile_pref_store_manager_unittest.cc',
       'browser/prefs/proxy_config_dictionary_unittest.cc',
-      'browser/prefs/proxy_policy_unittest.cc',
       'browser/prefs/proxy_prefs_unittest.cc',
       'browser/prefs/session_startup_pref_unittest.cc',
       'browser/prefs/tracked/device_id_unittest.cc',
@@ -202,7 +199,6 @@
       'browser/process_info_snapshot_mac_unittest.cc',
       'browser/profiles/file_path_verifier_win_unittest.cc',
       'browser/profiles/gaia_info_update_service_unittest.cc',
-      'browser/profiles/incognito_mode_policy_handler_unittest.cc',
       'browser/profiles/profile_downloader_unittest.cc',
       'browser/profiles/profile_info_cache_unittest.cc',
       'browser/profiles/profile_info_cache_unittest.h',
@@ -235,7 +231,6 @@
       'browser/search/search_android_unittest.cc',
       'browser/search_engines/default_search_pref_migration_unittest.cc',
       'browser/search_engines/search_provider_install_data_unittest.cc',
-      'browser/search_engines/template_url_scraper_unittest.cc',
       'browser/service_process/service_process_control_mac_unittest.mm',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',
@@ -244,7 +239,6 @@
       'browser/services/gcm/gcm_account_tracker_unittest.cc',
       'browser/services/gcm/push_messaging_application_id_unittest.cc',
       'browser/services/gcm/push_messaging_permission_context_unittest.cc',
-      'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/account_service_flag_fetcher_unittest.cc',
@@ -296,7 +290,6 @@
       'browser/sync/sessions/session_data_type_controller_unittest.cc',
       'browser/sync/sessions/tab_node_pool_unittest.cc',
       'browser/sync/startup_controller_unittest.cc',
-      'browser/sync/sync_policy_handler_unittest.cc',
       'browser/sync/sync_startup_tracker_unittest.cc',
       'browser/sync/test/test_http_bridge_factory.cc',
       'browser/sync/test/test_http_bridge_factory.h',
@@ -571,7 +564,6 @@
       'test/base/menu_model_test.h',
       'test/base/v8_unit_test.cc',
       'test/base/v8_unit_test.h',
-      'test/data/resource.rc',
       'test/data/unit/framework_unittest.gtestjs',
       'test/logging/win/mof_data_parser_unittest.cc',
       'utility/chrome_content_utility_client_unittest.cc',
@@ -1188,7 +1180,6 @@
       'browser/chromeos/file_system_provider/mount_path_util_unittest.cc',
       'browser/chromeos/file_system_provider/operations/abort_unittest.cc',
       'browser/chromeos/file_system_provider/operations/add_watcher_unittest.cc',
-      'browser/chromeos/file_system_provider/operations/add_watcher_unittest.cc',
       'browser/chromeos/file_system_provider/operations/close_file_unittest.cc',
       'browser/chromeos/file_system_provider/operations/copy_entry_unittest.cc',
       'browser/chromeos/file_system_provider/operations/create_directory_unittest.cc',
@@ -1328,7 +1319,6 @@
       'browser/ui/views/confirm_bubble_views_unittest.cc',
       'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
       'browser/ui/views/desktop_media_picker_views_unittest.cc',
-      'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
       'browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc',
       'browser/ui/views/first_run_bubble_unittest.cc',
       'browser/ui/views/frame/browser_view_layout_unittest.cc',
@@ -1349,6 +1339,11 @@
       'browser/ui/views/translate/translate_bubble_view_unittest.cc',
       'browser/ui/views/validation_message_bubble_delegate_unittest.cc',
     ],
+    'chrome_unit_tests_win_sources': [
+      'app/chrome_dll.rc',
+      'browser/search_engines/template_url_scraper_unittest.cc',
+      'test/data/resource.rc',
+    ],
     'chrome_unit_tests_mac_sources': [
       'browser/media_galleries/fileapi/iphoto_file_util_unittest.cc',
       'utility/media_galleries/iphoto_library_parser_unittest.cc',
@@ -1356,7 +1351,6 @@
     'chrome_unit_tests_win_mac_sources': [
       'browser/media_galleries/fileapi/itunes_file_util_unittest.cc',
       'browser/media_galleries/fileapi/picasa_file_util_unittest.cc',
-      'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
       'utility/media_galleries/itunes_library_parser_unittest.cc',
       'utility/media_galleries/picasa_album_table_reader_unittest.cc',
       'utility/media_galleries/picasa_albums_indexer_unittest.cc',
@@ -1795,6 +1789,7 @@
             '../chromeos/chromeos.gyp:chromeos_test_support',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'browser/chromeos/app_mode/fake_cws.cc',
             'browser/chromeos/app_mode/fake_cws.h',
             'browser/chromeos/file_manager/fake_disk_mount_manager.cc',
@@ -2001,6 +1996,7 @@
       ],
     },
     {
+      # GN version: //chrome/test:test_support_unit
       'target_name': 'test_support_unit',
       'type': 'static_library',
       'dependencies': [
@@ -2027,6 +2023,7 @@
       ],
     },
     {
+      # GN version: //chrome/test:unit_tests
       'target_name': 'unit_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -2203,9 +2200,6 @@
             '../ui/aura/aura.gyp:aura_test_support',
             '../ui/views/views.gyp:views_test_support',
           ],
-          'sources!': [
-            'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
-          ],
           'sources': [
             '../ui/views/controls/webview/webview_unittest.cc',
           ],
@@ -2256,6 +2250,16 @@
             ['OS=="android"', {
               'sources!': [
                 'browser/policy/policy_path_parser_unittest.cc',
+              ],
+            }],
+            ['OS!="android" and OS!="ios" and chromeos==0', {
+              'sources': [
+                'browser/net/disk_cache_dir_policy_handler_unittest.cc',
+              ],
+            }],
+            ['OS!="android" and OS!="ios"', {
+              'sources': [
+                'browser/download/download_dir_policy_handler_unittest.cc'
               ],
             }],
           ],
@@ -2464,6 +2468,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
+            '<@(chrome_unit_tests_win_sources)',
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
             # their various targets (net.gyp:net_resources, etc.),
@@ -2482,13 +2487,6 @@
               '-lwinmm.lib',
             ],
           },
-        }, { # else: OS != "win"
-          'sources!': [
-            'app/chrome_dll.rc',
-            'browser/search_engines/template_url_scraper_unittest.cc',
-            'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
-            'test/data/resource.rc',
-          ],
         }],
         ['OS=="android" or OS=="ios"', {
           'sources!': [
@@ -2501,8 +2499,6 @@
           ],
           'sources!': [
             'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
-            'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',
-            'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h',
             'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
         }],
@@ -2523,16 +2519,6 @@
           ],
         }, {  # Not Android.
           'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],
-        }],
-        ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
-          'sources': [
-            'browser/net/disk_cache_dir_policy_handler_unittest.cc',
-          ],
-        }],
-        ['OS!="android" and OS!="ios" and configuration_policy==1', {
-          'sources': [
-            'browser/download/download_dir_policy_handler_unittest.cc'
-          ],
         }],
         ['enable_themes == 1', {
           'sources': [ '<@(chrome_unit_tests_themes_sources)' ],
@@ -2597,6 +2583,7 @@
             'browser/plugins/plugin_installer_unittest.cc',
           ],
         }],
+        # Adding more conditions? Don't forget to update the GN build.
       ],
     },
     {

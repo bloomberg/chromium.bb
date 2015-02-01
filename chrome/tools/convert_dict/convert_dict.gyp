@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/tools/convert_dict:lib
       'target_name': 'convert_dict_lib',
       'product_name': 'convert_dict',
       'type': 'static_library',

@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //tools/json_schema_compiler:test
       'target_name': 'json_schema_compiler_tests',
       'type': 'static_library',
       'variables': {

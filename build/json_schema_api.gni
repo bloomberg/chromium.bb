@@ -113,10 +113,7 @@ template("json_schema_api") {
 
       if (defined(invoker.visibility)) {
         # If visibility is restricted, add our own target to it.
-        visibility = [
-          invoker.visibility,
-          target_visibility,
-        ]
+        visibility = invoker.visibility + target_visibility
       }
     }
   }

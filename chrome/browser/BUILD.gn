@@ -28,8 +28,24 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ "../chrome_browser.gypi" ])
 
 if (is_desktop_linux) {
+  # Gnome-keyring is normally dynamically loaded. The gnome_keyring config
+  # will set this up.
   pkg_config("gnome_keyring") {
     packages = [ "gnome-keyring-1" ]
+    defines = [
+      "USE_GNOME_KEYRING",
+      "DLOPEN_GNOME_KEYRING",
+    ]
+    ignore_libs = true
+  }
+
+  # If you want to link gnome-keyring directly (use only for unit tests)
+  # ADDITIONALLY add this config on top of ":gnome_keyring". pkg-config is a
+  # bit slow, so prefer not to run it again. In practice, gnome-keyring's libs
+  # are just itself and common gnome ones we link already, so we can get away
+  # with additionally just coding the library name here.
+  config("gnome_keyring_direct") {
+    libs = [ "gnome-keyring" ]
   }
 }
 
@@ -1012,8 +1028,12 @@ source_set("test_support") {
       "chromeos/policy/cloud_external_data_manager_base_test_util.h",
       "chromeos/policy/device_policy_builder.cc",
       "chromeos/policy/device_policy_builder.h",
+      "chromeos/policy/fake_consumer_management_service.cc",
+      "chromeos/policy/fake_consumer_management_service.h",
       "chromeos/policy/fake_device_cloud_policy_initializer.cc",
       "chromeos/policy/fake_device_cloud_policy_initializer.h",
+      "chromeos/policy/fake_device_cloud_policy_manager.cc",
+      "chromeos/policy/fake_device_cloud_policy_manager.h",
       "chromeos/policy/stub_enterprise_install_attributes.cc",
       "chromeos/policy/stub_enterprise_install_attributes.h",
       "chromeos/settings/device_settings_test_helper.cc",

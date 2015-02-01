@@ -349,6 +349,8 @@ component("base") {
       "ime/chromeos/input_method_manager.h",
       "ime/chromeos/input_method_whitelist.cc",
       "ime/chromeos/input_method_whitelist.h",
+      "ime/chromeos/mock_component_extension_ime_manager_delegate.cc",
+      "ime/chromeos/mock_component_extension_ime_manager_delegate.h",
       "ime/chromeos/mock_ime_candidate_window_handler.cc",
       "ime/chromeos/mock_ime_candidate_window_handler.h",
       "ime/chromeos/mock_ime_engine_handler.cc",
