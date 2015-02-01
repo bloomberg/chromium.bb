@@ -122,6 +122,9 @@ public:
     virtual bool itemIsSelected(unsigned listIndex) const { return listIndex == m_selectIndex; }
     virtual bool valueShouldChangeOnHotTrack() const { return false; }
     virtual void setTextFromItem(unsigned listIndex) { }
+    virtual IntRect elementRectRelativeToRootView() const override { return IntRect(); }
+    virtual Element& ownerElement() const override { return *toElement(m_node); }
+    virtual RenderStyle* renderStyleForItem(Element& element) const override { return nullptr; }
 
     virtual FontSelector* fontSelector() const { return 0; }
     virtual HostWindow* hostWindow() const { return 0; }
@@ -596,6 +599,7 @@ TEST_F(SelectPopupMenuStyleTest, DISABLED_PopupListBoxRTLRowWidth)
 TEST_F(SelectPopupMenuStyleTest, PopupListBoxRTLRowWidth)
 #endif
 {
+    RuntimeEnabledFeatures::setHTMLPopupMenuEnabled(false);
     registerMockedURLLoad("select_rtl_width.html");
     loadFrame(mainFrame(), "select_rtl_width.html");
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->focusedElement());

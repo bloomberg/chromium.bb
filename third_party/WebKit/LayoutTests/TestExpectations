@@ -73,6 +73,8 @@ crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.h
 
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
 
+crbug.com/346582 fast/forms/select/listbox-appearance-separator.html [ NeedsRebaseline ]
+
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
@@ -1492,6 +1494,21 @@ crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.ht
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
+crbug.com/346582 fast/forms/select/popup-menu-appearance-empty.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-appearance-many.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-appearance-single-option.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-appearance-transform.html [ NeedsRebaseline ]
+
+crbug.com/346582 fast/forms/select/popup-menu-ax.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-key-operations.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-mouse-operations.html [ NeedsRebaseline ]
+crbug.com/346582 fast/forms/select/popup-menu-position.html [ NeedsRebaseline ]
+
+crbug.com/346582 virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Failure NeedsRebaseline ]
+crbug.com/346582 compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
+
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
@@ -1615,8 +1632,6 @@ crbug.com/438888 http/tests/misc/acid3.html [ NeedsManualRebaseline ]
 crbug.com/438888 virtual/slimmingpaint/fast/block/positioning/055.html [ NeedsManualRebaseline ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
-
-crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html  [ Failure ]
 
 # Bug(fmalita): re-enable after crbug.com/449873
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]

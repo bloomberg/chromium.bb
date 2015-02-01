@@ -41,7 +41,7 @@ class CSSFontSelectorClient;
 class Document;
 class FontDescription;
 
-class CSSFontSelector final : public FontSelector {
+class CSSFontSelector : public FontSelector {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontSelector> create(Document* document)
     {
@@ -78,8 +78,10 @@ public:
 
     virtual void trace(Visitor*) override;
 
-private:
+protected:
     explicit CSSFontSelector(Document*);
+
+private:
 
     void dispatchInvalidationCallbacks();
 

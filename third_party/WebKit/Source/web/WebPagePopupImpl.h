@@ -67,6 +67,7 @@ public:
     LocalDOMWindow* window();
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     virtual WebPoint positionRelativeToOwner() override;
+    virtual void postMessage(const String& message) override;
 
 private:
     // WebWidget functions

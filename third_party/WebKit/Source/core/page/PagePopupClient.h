@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class Document;
 class Element;
 class Locale;
 
@@ -51,6 +52,9 @@ public:
     //  - No <select> popups
     //  - window.setValueAndClosePopup(number, string).
     virtual void writeDocument(SharedBuffer*) = 0;
+
+    // This is called after the document is ready to do additionary setup.
+    virtual void didWriteDocument(Document&) = 0;
 
     virtual Element& ownerElement() = 0;
     // Returns a Locale object associated to the client.

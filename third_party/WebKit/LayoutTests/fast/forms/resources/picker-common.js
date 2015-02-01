@@ -19,14 +19,18 @@ function sendKey(input, keyName, ctrlKey, altKey) {
     input.dispatchEvent(event);
 }
 
-function openPicker(input, callback) {
+function openPicker(element, callback) {
     window.moveTo();
-    input.offsetTop; // Force to lay out
-    if (input.type === "color") {
-        input.focus();
-        eventSender.keyDown(" ");
-    } else {
-        sendKey(input, "Down", false, true);
+    element.offsetTop; // Force to lay out
+    if (element.tagName === "SELECT") {
+        sendKey(element, "Down", false, true);
+    } else if (element.tagName === "INPUT") {
+        if (element.type === "color") {
+            element.focus();
+            eventSender.keyDown(" ");
+        } else {
+            sendKey(element, "Down", false, true);
+        }
     }
     popupWindow = window.internals.pagePopupWindow;
     if (typeof callback === "function") {

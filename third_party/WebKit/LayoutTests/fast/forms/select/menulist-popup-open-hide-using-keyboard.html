@@ -8,6 +8,8 @@
 <option value="two">Two</option>
 </select>
 <script>
+window.jsTestIsAsync = true;
+
 function test()
 {
     description('Test for opening select popup and closing.');
@@ -21,6 +23,11 @@ function test()
     eventSender.keyDown('downArrow', ['altKey']);
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
     eventSender.keyDown('downArrow', ['altKey']);
+    // We need this delay because in ListPicker._handleKeyDown we hide the
+    // popup with a delay to avoid reopening the popup.
+    setTimeout(test2, 0);
+}
+function test2() {
     shouldBeFalse('internals.isSelectPopupVisible(popup)');
 
     debug('Test opening and closing of popup using alt and up arrow key');
@@ -28,6 +35,11 @@ function test()
     eventSender.keyDown('upArrow', ['altKey']);
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
     eventSender.keyDown('upArrow', ['altKey']);
+    // We need this delay because in ListPicker._handleKeyDown we hide the
+    // popup with a delay to avoid reopening the popup.
+    setTimeout(test3, 0);
+}
+function test3() {
     shouldBeFalse('internals.isSelectPopupVisible(popup)');
     popup.blur();
 
@@ -59,6 +71,7 @@ function test()
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
     popup.blur();
 
+    finishJSTest();
 }
 test();
 </script>

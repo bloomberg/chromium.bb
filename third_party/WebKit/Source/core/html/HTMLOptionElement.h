@@ -69,6 +69,9 @@ public:
     bool spatialNavigationFocused() const;
 
     bool isDisplayNone() const;
+
+    int listIndex() const;
+
 private:
     explicit HTMLOptionElement(Document&);
 

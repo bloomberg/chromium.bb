@@ -155,6 +155,8 @@ public:
     void clearMasterResolver();
 
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
+    void setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector>);
+
     void removeFontFaceRules(const WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >&);
     void clearFontCache();
     // updateGenericFontFamilySettings is used from WebSettingsImpl.
