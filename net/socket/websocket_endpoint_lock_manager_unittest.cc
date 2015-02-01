@@ -292,6 +292,13 @@ TEST_F(WebSocketEndpointLockManagerTest, UnlockEndpointIsAsynchronous) {
 TEST_F(WebSocketEndpointLockManagerTest, UnlockEndpointIsDelayed) {
   using base::TimeTicks;
 
+  // This 1ms delay is too short for very slow environments (usually those
+  // running memory checkers). In those environments, the code takes >1ms to run
+  // and no delay is needed. Rather than increase the delay and slow down the
+  // test everywhere, the test doesn't explicitly verify that a delay has been
+  // applied. Instead it just verifies that the whole thing took >=1ms. 1ms is
+  // easily enough for normal compiles even on Android, so the fact that there
+  // is a delay is still checked on every platform.
   const base::TimeDelta unlock_delay = base::TimeDelta::FromMilliseconds(1);
   instance()->SetUnlockDelayForTesting(unlock_delay);
   FakeWaiter fake_waiter;
@@ -302,8 +309,6 @@ TEST_F(WebSocketEndpointLockManagerTest, UnlockEndpointIsDelayed) {
 
   TimeTicks before_unlock = TimeTicks::Now();
   instance()->UnlockEndpoint(DummyEndpoint());
-  RunUntilIdle();
-  EXPECT_FALSE(blocking_waiter.called());
   blocking_waiter.WaitForLock();
   TimeTicks after_unlock = TimeTicks::Now();
   EXPECT_GE(after_unlock - before_unlock, unlock_delay);

@@ -15,6 +15,3 @@ SimpleIndexFileTest.WriteThenLoadIndex
 # Flaky. http://crbug.com/237450
 DiskCacheBackendTest.SimpleCacheAppCacheOnlyDoomAll
 DiskCacheBackendTest.SimpleCacheDoomAll
-
-# Flaky. crbug.com/451999
-WebSocketEndpointLockManagerTest.UnlockEndpointIsDelayed
