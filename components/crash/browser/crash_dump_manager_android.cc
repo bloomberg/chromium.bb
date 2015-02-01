@@ -29,6 +29,7 @@ CrashDumpManager* CrashDumpManager::instance_ = NULL;
 
 // static
 CrashDumpManager* CrashDumpManager::GetInstance() {
+  CHECK(instance_);
   return instance_;
 }
 
@@ -83,6 +84,7 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
 void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
                                        base::ProcessHandle pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  CHECK(instance_);
   int64 file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
