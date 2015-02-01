@@ -69,7 +69,6 @@ public:
     // WebDevToolsAgentPrivate implementation.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) override;
     virtual bool handleInputEvent(Page*, const WebInputEvent&) override;
-    virtual void willLayout() override;
 
     // WebDevToolsAgent implementation.
     virtual void attach(const WebString& hostId) override;
@@ -132,8 +131,6 @@ private:
     WebViewImpl* m_webViewImpl;
     bool m_attached;
     bool m_generatingEvent;
-
-    bool m_webViewDidLayoutOnceAfterLoad;
 
     bool m_deviceMetricsEnabled;
     bool m_emulateMobileEnabled;

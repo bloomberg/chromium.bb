@@ -207,7 +207,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
     , m_generatingEvent(false)
-    , m_webViewDidLayoutOnceAfterLoad(false)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
     , m_originalViewportEnabled(false)
@@ -299,10 +298,6 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, i
 {
     if (LocalFrame* frame = webframe->frame())
         frame->script().setWorldDebugId(worldId, m_debuggerId);
-    // Skip non main world contexts.
-    if (worldId)
-        return;
-    m_webViewDidLayoutOnceAfterLoad = false;
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
@@ -359,11 +354,6 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
         return ic->handleKeyboardEvent(page->deprecatedLocalMainFrame(), keyboardEvent);
     }
     return false;
-}
-
-void WebDevToolsAgentImpl::willLayout()
-{
-    m_webViewDidLayoutOnceAfterLoad = true;
 }
 
 void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
@@ -534,10 +524,6 @@ void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
 
 void WebDevToolsAgentImpl::highlight()
 {
-    if (!m_webViewDidLayoutOnceAfterLoad) {
-        m_webViewDidLayoutOnceAfterLoad = true;
-        m_webViewImpl->layout();
-    }
     m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }
 

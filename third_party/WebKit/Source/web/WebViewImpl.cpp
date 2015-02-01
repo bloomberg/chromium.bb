@@ -1911,9 +1911,6 @@ void WebViewImpl::layout()
     if (!localFrameRootTemporary())
         return;
 
-    if (m_devToolsAgent)
-        m_devToolsAgent->willLayout();
-
     PageWidgetDelegate::layout(*m_page, *localFrameRootTemporary()->frame());
     updateLayerTreeBackgroundColor();
 
