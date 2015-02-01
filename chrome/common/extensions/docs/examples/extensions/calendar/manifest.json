@@ -4,19 +4,28 @@
   "manifest_version": 2,
   "default_locale":"en",
   "options_page": "views/options.html",
-  "version": "1.5.0",
+  "options_ui": {
+    "page": "views/options.html",
+    "chrome_style": true
+  },
+  "version": "2.0.0",
   "background": {
-    "page": "views/background.html",
+    "scripts": ["javascript/background.js"],
     "persistent": false
-    },
+  },
   "permissions": [
-    "alarms", "tabs", "webNavigation", "http://*.google.com/", "https://*.google.com/"
-   ],
+    "notifications"
+  ],
   "browser_action": {
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    },
     "default_title": "__MSG_title__"
   },
   "icons": {
-    "128": "images/icon-128.gif",
-    "16":"images/icon-16.gif"
+    "128": "images/icon-128.png",
+    "48": "images/icon-48.png",
+    "16":"images/icon-16.png"
   }
 }
