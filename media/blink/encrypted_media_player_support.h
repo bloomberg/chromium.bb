@@ -27,6 +27,7 @@ class WebString;
 
 namespace media {
 
+class MediaPermission;
 class WebContentDecryptionModuleImpl;
 
 // Provides support to prefixed EME implementation.
@@ -40,6 +41,7 @@ class EncryptedMediaPlayerSupport
 
   EncryptedMediaPlayerSupport(scoped_ptr<CdmFactory> cdm_factory,
                               blink::WebMediaPlayerClient* client,
+                              MediaPermission* media_permission,
                               const SetCdmContextCB& set_cdm_context_cb);
   ~EncryptedMediaPlayerSupport();
 
@@ -95,6 +97,8 @@ class EncryptedMediaPlayerSupport
   scoped_ptr<CdmFactory> cdm_factory_;
 
   blink::WebMediaPlayerClient* client_;
+
+  MediaPermission* media_permission_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

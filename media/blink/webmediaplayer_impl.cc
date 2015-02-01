@@ -144,6 +144,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       encrypted_media_support_(
           cdm_factory.Pass(),
           client,
+          params.media_permission(),
           base::Bind(&WebMediaPlayerImpl::SetCdm, AsWeakPtr())),
       renderer_factory_(renderer_factory.Pass()) {
   // Threaded compositing isn't enabled universally yet.

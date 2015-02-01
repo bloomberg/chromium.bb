@@ -188,10 +188,11 @@ class WebEncryptedMediaClientImpl::Reporter {
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     scoped_ptr<CdmFactory> cdm_factory,
-    MediaPermission* /* media_permission */)
+    MediaPermission* media_permission)
     : cdm_factory_(cdm_factory.Pass()) {
   // TODO(sandersd): Use |media_permission| to check for media permissions in
   // this class.
+  DCHECK(media_permission);
 }
 
 WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {

@@ -438,6 +438,8 @@
         'filters/decrypting_video_decoder.h',
         'filters/default_renderer_factory.cc',
         'filters/default_renderer_factory.h',
+        'filters/default_media_permission.cc',
+        'filters/default_media_permission.h',
         'filters/ffmpeg_audio_decoder.cc',
         'filters/ffmpeg_audio_decoder.h',
         'filters/ffmpeg_bitstream_converter.h',

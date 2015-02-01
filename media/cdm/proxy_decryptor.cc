@@ -14,6 +14,7 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_permission.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
@@ -24,7 +25,8 @@ namespace media {
 // EME API.
 const int kSessionClosedSystemCode = 29127;
 
-ProxyDecryptor::ProxyDecryptor(const KeyAddedCB& key_added_cb,
+ProxyDecryptor::ProxyDecryptor(MediaPermission* media_permission,
+                               const KeyAddedCB& key_added_cb,
                                const KeyErrorCB& key_error_cb,
                                const KeyMessageCB& key_message_cb)
     : key_added_cb_(key_added_cb),
@@ -32,6 +34,7 @@ ProxyDecryptor::ProxyDecryptor(const KeyAddedCB& key_added_cb,
       key_message_cb_(key_message_cb),
       is_clear_key_(false),
       weak_ptr_factory_(this) {
+  DCHECK(media_permission);
   DCHECK(!key_added_cb_.is_null());
   DCHECK(!key_error_cb_.is_null());
   DCHECK(!key_message_cb_.is_null());

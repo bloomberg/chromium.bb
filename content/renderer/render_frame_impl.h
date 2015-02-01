@@ -68,6 +68,7 @@ class Rect;
 }
 
 namespace media {
+class MediaPermission;
 class WebEncryptedMediaClientImpl;
 }
 
@@ -720,6 +721,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
+      media::MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm);
 
   RendererMediaPlayerManager* GetMediaPlayerManager();

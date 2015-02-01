@@ -1911,10 +1911,15 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(url, client);
 
+  if (!media_permission_dispatcher_)
+    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
+
 #if defined(OS_ANDROID)
-  return CreateAndroidWebMediaPlayer(url, client, initial_cdm);
+  return CreateAndroidWebMediaPlayer(url, client, media_permission_dispatcher_,
+                                     initial_cdm);
 #else
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
+
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   media::WebMediaPlayerParams params(
@@ -1925,7 +1930,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
           render_view_->routing_id_, routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->compositor_message_loop_proxy(),
-      base::Bind(&GetSharedMainThreadContext3D), initial_cdm);
+      base::Bind(&GetSharedMainThreadContext3D), media_permission_dispatcher_,
+      initial_cdm);
 
 #if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::CdmFactory> cdm_factory(
@@ -3414,8 +3420,8 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
     scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
 
-    DCHECK(!media_permission_dispatcher_);
-    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
+    if (!media_permission_dispatcher_)
+      media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
 
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
         cdm_factory.Pass(), media_permission_dispatcher_));
@@ -4421,6 +4427,7 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     const blink::WebURL& url,
     WebMediaPlayerClient* client,
+    media::MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm) {
   GpuChannelHost* gpu_channel_host =
       RenderThreadImpl::current()->EstablishGpuChannelSync(
@@ -4453,6 +4460,7 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
       weak_factory_.GetWeakPtr(),
       GetMediaPlayerManager(),
       GetCdmManager(),
+      media_permission,
       initial_cdm,
       stream_texture_factory,
       RenderThreadImpl::current()->GetMediaThreadTaskRunner(),

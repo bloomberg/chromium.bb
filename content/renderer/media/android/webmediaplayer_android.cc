@@ -147,6 +147,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* player_manager,
     RendererCdmManager* cdm_manager,
+    media::MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm,
     scoped_refptr<StreamTextureFactory> factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -163,6 +164,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       did_loading_progress_(false),
       player_manager_(player_manager),
       cdm_manager_(cdm_manager),
+      media_permission_(media_permission),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
@@ -1510,6 +1512,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new media::ProxyDecryptor(
+          media_permission_,
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyError,

@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/cdm/default_cdm_factory.h"
+#include "media/filters/default_media_permission.h"
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/services/html_viewer/weblayertreeview_impl.h"
@@ -207,8 +208,11 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  return web_media_player_factory_->CreateMediaPlayer(frame, url, client,
-                                                      initial_cdm, shell_);
+  if (!media_permission_)
+    media_permission_.reset(new media::DefaultMediaPermission(true));
+
+  return web_media_player_factory_->CreateMediaPlayer(
+      frame, url, client, media_permission_.get(), initial_cdm, shell_);
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(
@@ -270,10 +274,11 @@ void HTMLDocument::didNavigateWithinPage(
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
-    // TODO(xhwang): Hook up permission services and add a MediaPermission
-    // implementation for HTMLDocument.
+    if (!media_permission_)
+      media_permission_.reset(new media::DefaultMediaPermission(true));
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        make_scoped_ptr(new media::DefaultCdmFactory()), nullptr));
+        make_scoped_ptr(new media::DefaultCdmFactory()),
+        media_permission_.get()));
   }
   return web_encrypted_media_client_.get();
 }

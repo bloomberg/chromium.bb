@@ -23,6 +23,7 @@ namespace media {
 
 class AudioRendererSink;
 class MediaLog;
+class MediaPermission;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
 // to plumb arguments through various abstraction layers.
@@ -40,6 +41,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const Context3DCB& context_3d,
+      MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm);
 
   ~WebMediaPlayerParams();
@@ -63,11 +65,14 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return compositor_task_runner_;
   }
 
+  Context3DCB context_3d_cb() const { return context_3d_cb_; }
+
+  MediaPermission* media_permission() const { return media_permission_; }
+
   blink::WebContentDecryptionModule* initial_cdm() const {
     return initial_cdm_;
   }
 
-  Context3DCB context_3d_cb() const { return context_3d_cb_; }
 
  private:
   DeferLoadCB defer_load_cb_;
@@ -76,6 +81,9 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   Context3DCB context_3d_cb_;
+
+  // TODO(xhwang): Remove after prefixed EME API support is removed.
+  MediaPermission* media_permission_;
   blink::WebContentDecryptionModule* initial_cdm_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

@@ -17,6 +17,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const Context3DCB& context_3d_cb,
+    MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
@@ -24,6 +25,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       media_task_runner_(media_task_runner),
       compositor_task_runner_(compositor_task_runner),
       context_3d_cb_(context_3d_cb),
+      media_permission_(media_permission),
       initial_cdm_(initial_cdm) {
 }
 

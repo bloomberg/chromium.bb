@@ -21,6 +21,7 @@ class GURL;
 namespace media {
 
 class CdmFactory;
+class MediaPermission;
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
@@ -41,7 +42,8 @@ class MEDIA_EXPORT ProxyDecryptor {
                               const std::vector<uint8>& message,
                               const GURL& destination_url)> KeyMessageCB;
 
-  ProxyDecryptor(const KeyAddedCB& key_added_cb,
+  ProxyDecryptor(MediaPermission* media_permission,
+                 const KeyAddedCB& key_added_cb,
                  const KeyErrorCB& key_error_cb,
                  const KeyMessageCB& key_message_cb);
   virtual ~ProxyDecryptor();

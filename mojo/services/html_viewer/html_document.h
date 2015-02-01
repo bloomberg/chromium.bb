@@ -30,6 +30,7 @@ class MessageLoopProxy;
 }
 
 namespace media {
+class MediaPermission;
 class WebEncryptedMediaClientImpl;
 }
 
@@ -139,6 +140,7 @@ class HTMLDocument : public blink::WebViewClient,
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
+  scoped_ptr<media::MediaPermission> media_permission_;
 
   // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;
