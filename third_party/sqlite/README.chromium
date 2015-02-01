@@ -145,9 +145,10 @@ git add -f sqlite-src-${VERSION}/
 # OSX and Linux and fixes those files, but double-check the results before
 # committing:
 egrep --exclude="*.eps" --exclude="*.ico" --exclude="*.jpg" \
-      --exclude="*.gif" --exclude="*.tiff" -URl '\r' . | \
+      --exclude="*.gif" --exclude="*.tiff" --exclude="*.vsix" -URl '\r' . | \
     LANG=C xargs sed -i~ -e $'s/\r$//'
-git commit -m "Begin import of sqlite-src-${VERSION}" sqlite-src-${VERSION}
+git commit -m "Begin import of sqlite-src-${VERSION}"es
+sqlite-src-${VERSION}
 rm -rf src
 cp -a sqlite-src-${VERSION} src
 # -f includes ignored files, of which there are a couple.
