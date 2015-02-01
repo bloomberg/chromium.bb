@@ -132,7 +132,6 @@ struct weston_wm_window {
 	uint32_t surface_id;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
-	struct weston_view *view;
 	struct wl_listener surface_destroy_listener;
 	struct wl_event_source *repaint_source;
 	struct wl_event_source *configure_source;
@@ -816,18 +815,27 @@ weston_wm_window_transform(struct wl_listener *listener, void *data)
 	struct weston_wm_window *window = get_wm_window(surface);
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, transform_listener);
+	struct weston_view *view;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
 	uint32_t mask, values[2];
 
-	if (!window || !wm)
+	if (!window || !wm || !window->shsurf)
 		return;
 
-	if (!window->view || !weston_view_is_mapped(window->view))
+	if (!shell_interface->get_primary_view)
 		return;
 
-	if (window->x != window->view->geometry.x ||
-	    window->y != window->view->geometry.y) {
-		values[0] = window->view->geometry.x;
-		values[1] = window->view->geometry.y;
+	view = shell_interface->get_primary_view(shell_interface->shell,
+	                                         window->shsurf);
+
+	if (!view || !weston_view_is_mapped(view))
+		return;
+
+	if (window->x != view->geometry.x ||
+	    window->y != view->geometry.y) {
+		values[0] = view->geometry.x;
+		values[1] = view->geometry.y;
 		mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
 
 		xcb_configure_window(wm->conn, window->frame_id, mask, values);
@@ -1049,7 +1057,6 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	window->surface = NULL;
 	window->shsurf = NULL;
-	window->view = NULL;
 
 	weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
 	weston_wm_window_set_virtual_desktop(window, -1);
@@ -1069,6 +1076,7 @@ weston_wm_window_draw_decoration(void *data)
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	uint32_t flags = 0;
+	struct weston_view *view;
 
 	weston_wm_window_read_properties(window);
 
@@ -1110,8 +1118,8 @@ weston_wm_window_draw_decoration(void *data)
 						  window->width + 2,
 						  window->height + 2);
 		}
-		if (window->view)
-			weston_view_geometry_dirty(window->view);
+		wl_list_for_each(view, &window->surface->views, surface_link)
+			weston_view_geometry_dirty(view);
 
 		pixman_region32_fini(&window->surface->pending.input);
 
@@ -1137,6 +1145,7 @@ static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
+	struct weston_view *view;
 	int width, height;
 
 	if (window->frame_id == XCB_WINDOW_NONE) {
@@ -1149,8 +1158,8 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
 							  width, height);
 			}
-			if (window->view)
-				weston_view_geometry_dirty(window->view);
+			wl_list_for_each(view, &window->surface->views, surface_link)
+				weston_view_geometry_dirty(view);
 		}
 		return;
 	}
@@ -1517,7 +1526,6 @@ surface_destroy(struct wl_listener *listener, void *data)
 	 * Don't try to use it later. */
 	window->shsurf = NULL;
 	window->surface = NULL;
-	window->view = NULL;
 }
 
 static void
@@ -2524,9 +2532,6 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	if (!shell_interface->create_shell_surface)
 		return;
 
-	if (!shell_interface->get_primary_view)
-		return;
-
 	if (window->surface->configure) {
 		weston_log("warning, unexpected in %s: "
 			   "surface's configure hook is already set.\n",
@@ -2538,8 +2543,6 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		shell_interface->create_shell_surface(shell_interface->shell,
 						      window->surface,
 						      &shell_client);
-	window->view = shell_interface->get_primary_view(shell_interface->shell,
-							 window->shsurf);
 
 	if (window->name)
 		shell_interface->set_title(window->shsurf, window->name);
