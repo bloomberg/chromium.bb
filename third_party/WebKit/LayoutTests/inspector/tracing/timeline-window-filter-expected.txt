@@ -5,7 +5,7 @@ It applies different ranges to the OverviewGrid and expects that current view re
 Also it detects that after switching to another view it gets the proper time range.
 
 OverviewPane:
-divider offsets: [500, 1000]. We are expecting round numbers.
+divider offsets: [0, 500, 1000, 1500]. We are expecting round numbers.
 
 mode = Events
 range = 0 - 1
