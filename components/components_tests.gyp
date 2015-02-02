@@ -369,8 +369,6 @@
             'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
             'components.gyp:history_core_test_support',
-
-            # Dependencies of invalidation
             'components.gyp:invalidation',
             'components.gyp:invalidation_test_support',
             'components.gyp:json_schema',
@@ -556,21 +554,13 @@
                 ['include', '^webp_transcode/'],
               ],
               'dependencies': [
-                # Dependencies of sessions
-                'components.gyp:sessions_ios',
-
-                # Dependencies of signin
-                'components.gyp:signin_ios_browser',
-
-                # Dependencies of translate
-                'components.gyp:translate_ios_browser',
-
-                # Dependencies of webp_transcode
-                'components.gyp:webp_transcode',
-
                 '../ios/ios_tests.gyp:test_support_ios',
                 '../ios/web/ios_web.gyp:test_support_ios_web',
                 '../third_party/ocmock/ocmock.gyp:ocmock',
+                'components.gyp:sessions_ios',
+                'components.gyp:signin_ios_browser',
+                'components.gyp:translate_ios_browser',
+                'components.gyp:webp_transcode',
               ],
               'actions': [
                 {
