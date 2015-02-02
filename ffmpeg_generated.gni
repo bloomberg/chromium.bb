@@ -351,6 +351,12 @@ if ((cpu_arch == "arm" || (cpu_arch == "arm" && arm_use_neon)) && (ffmpeg_brandi
   ]
 }
 
+if (cpu_arch == "mipsel") {
+  ffmpeg_c_sources += [
+    "libavutil/mips/float_dsp_mips.c",
+  ]
+}
+
 if (ffmpeg_branding == "ChromeOS") {
   ffmpeg_c_sources += [
     "libavcodec/acelp_filters.c",
@@ -415,6 +421,15 @@ if ((cpu_arch == "x86" || cpu_arch == "x64") && (ffmpeg_branding == "Chrome" || 
   ffmpeg_c_sources += [
     "compat/msvcrt/snprintf.c",
     "compat/strtod.c",
+  ]
+}
+
+if ((cpu_arch == "mipsel") && (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS")) {
+  ffmpeg_c_sources += [
+    "libavcodec/mips/aacdec_mips.c",
+    "libavcodec/mips/aacpsdsp_mips.c",
+    "libavcodec/mips/aacsbr_mips.c",
+    "libavcodec/mips/sbrdsp_mips.c",
   ]
 }
 
