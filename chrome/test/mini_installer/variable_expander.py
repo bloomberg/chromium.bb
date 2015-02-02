@@ -76,7 +76,7 @@ class VariableExpander:
         * $USER_SPECIFIC_REGISTRY_SUFFIX: the output from the function
             _GetUserSpecificRegistrySuffix().
         * $WINDOWS_VERSION: a 2-tuple representing the current Windows version.
-        * $VERSION_[XP/SERVER_2003/VISTA/WIN7/WIN8/WIN8_1]: a 2-tuple
+        * $VERSION_[XP/SERVER_2003/VISTA/WIN7/WIN8/WIN8_1/WIN10]: a 2-tuple
             representing the version of the corresponding OS.
 
     Args:
@@ -129,6 +129,7 @@ class VariableExpander:
         'VERSION_WIN7': '(6, 1)',
         'VERSION_WIN8': '(6, 2)',
         'VERSION_WIN8_1': '(6, 3)',
+        'VERSION_WIN10': '(10, 0)',
     }
 
   def Expand(self, str):

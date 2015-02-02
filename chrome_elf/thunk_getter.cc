@@ -20,6 +20,7 @@ enum Version {
   VERSION_WIN7,         // Also includes Windows Server 2008 R2.
   VERSION_WIN8,         // Also includes Windows Server 2012.
   VERSION_WIN8_1,
+  VERSION_WIN10,
   VERSION_WIN_LAST,  // Indicates error condition.
 };
 
@@ -85,6 +86,8 @@ class OSInfo {
           version_ = VERSION_WIN8_1;
           break;
       }
+    } else if (version_number_.major == 10) {
+      version_ = VERSION_WIN10;
     } else if (version_number_.major > 6) {
       version_ = VERSION_WIN_LAST;
     } else {
