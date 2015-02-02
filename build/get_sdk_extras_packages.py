@@ -7,7 +7,7 @@ import json
 import os
 import sys
 
-SDK_EXTRAS_JSON_FILE = os.path.join(os.path.dirname(sys.argv[0]),
+SDK_EXTRAS_JSON_FILE = os.path.join(os.path.dirname(__file__),
                                     'android_sdk_extras.json')
 
 def main():
