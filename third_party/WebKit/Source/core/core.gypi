@@ -1846,8 +1846,6 @@
             'rendering/TextRunConstructor.h',
             'rendering/TrailingFloatsRootInlineBox.h',
             'rendering/VerticalPositionCache.h',
-            'rendering/break_lines.cpp',
-            'rendering/break_lines.h',
             'rendering/compositing/CompositedLayerMapping.cpp',
             'rendering/compositing/CompositedLayerMapping.h',
             'rendering/compositing/CompositingInputsUpdater.cpp',

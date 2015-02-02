@@ -39,8 +39,8 @@
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/TextRunConstructor.h"
-#include "core/rendering/break_lines.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 
@@ -622,7 +622,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         int nextBreakablePosition = m_current.nextBreakablePosition();
-        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && isBreakable(m_renderTextInfo.m_lineBreakIterator, m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : LineBreakType::Normal));
+        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && m_renderTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : LineBreakType::Normal));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         if (betweenWords || midWordBreak) {

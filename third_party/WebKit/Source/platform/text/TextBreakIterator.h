@@ -51,6 +51,11 @@ PLATFORM_EXPORT bool isWordTextBreak(TextBreakIterator*);
 
 const int TextBreakDone = -1;
 
+enum class LineBreakType {
+    Normal,
+    BreakAll, // word-break:break-all allows breaks between letters/numbers
+};
+
 class PLATFORM_EXPORT LazyLineBreakIterator {
 public:
     LazyLineBreakIterator()
@@ -157,7 +162,20 @@ public:
         m_cachedPriorContextLength = 0;
     }
 
+    inline bool isBreakable(int pos, int& nextBreakable, LineBreakType lineBreakType = LineBreakType::Normal)
+    {
+        if (pos > nextBreakable) {
+            nextBreakable = lineBreakType == LineBreakType::BreakAll
+                ? nextBreakablePositionBreakAll(pos)
+                : nextBreakablePositionIgnoringNBSP(pos);
+        }
+        return pos == nextBreakable;
+    }
+
 private:
+    int nextBreakablePositionIgnoringNBSP(int pos);
+    int nextBreakablePositionBreakAll(int pos);
+
     static const unsigned priorContextCapacity = 2;
     String m_string;
     AtomicString m_locale;
