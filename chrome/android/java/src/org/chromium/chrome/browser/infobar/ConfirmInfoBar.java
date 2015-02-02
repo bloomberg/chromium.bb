@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.graphics.Bitmap;
+
 /**
  * An infobar that presents the user with several buttons.
  *
@@ -23,9 +25,9 @@ public class ConfirmInfoBar extends InfoBar {
     private final InfoBarListeners.Confirm mConfirmListener;
 
     public ConfirmInfoBar(long nativeInfoBar, InfoBarListeners.Confirm confirmListener,
-            int iconDrawableId, String message, String linkText, String primaryButtonText,
-            String secondaryButtonText) {
-        super(confirmListener, iconDrawableId, message);
+            int iconDrawableId, Bitmap iconBitmap, String message, String linkText,
+            String primaryButtonText, String secondaryButtonText) {
+        super(confirmListener, iconDrawableId, iconBitmap, message);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
         mTertiaryButtonText = linkText;

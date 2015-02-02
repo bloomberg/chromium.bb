@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -140,10 +141,11 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * @param context The context used to render.
      * @param infoBarView InfoBarView that listens to events.
      * @param iconResourceId ID of the icon to use for the InfoBar.
+     * @param iconBitmap Bitmap for the icon to use, if the resource ID wasn't passed through.
      * @param message The message to show in the infobar.
      */
     public InfoBarLayout(Context context, InfoBarView infoBarView, int iconResourceId,
-            CharSequence message) {
+            Bitmap iconBitmap, CharSequence message) {
         super(context);
         mInfoBarView = infoBarView;
 
@@ -170,13 +172,17 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         addView(mCloseButton);
 
         // Set up the icon.
-        if (iconResourceId != 0) {
+        if (iconResourceId != 0 || iconBitmap != null) {
             mIconView = new ImageView(context);
-            mIconView.setImageResource(iconResourceId);
-            mIconView.setFocusable(false);
+            if (iconResourceId != 0) {
+                mIconView.setImageResource(iconResourceId);
+            } else if (iconBitmap != null) {
+                mIconView.setImageBitmap(iconBitmap);
+            }
             mIconView.setLayoutParams(new LayoutParams(0, 0, mMargin / 2, 0));
             mIconView.getLayoutParams().width = mIconSize;
             mIconView.getLayoutParams().height = mIconSize;
+            mIconView.setFocusable(false);
         }
 
         // Set up the message view.
@@ -186,10 +192,10 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         mMessageView.setLinkTextColor(mAccentColor);
         mMessageView.setLayoutParams(new LayoutParams(0, mMargin / 4, 0, 0));
 
-        if (mIconView != null) {
-            mMainGroup = addGroup(mIconView, mMessageView);
-        } else {
+        if (mIconView == null) {
             mMainGroup = addGroup(mMessageView);
+        } else {
+            mMainGroup = addGroup(mIconView, mMessageView);
         }
     }
 

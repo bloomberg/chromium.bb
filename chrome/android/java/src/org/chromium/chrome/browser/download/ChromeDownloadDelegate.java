@@ -287,7 +287,7 @@ public class ChromeDownloadDelegate
         final String cancelButtonText = mContext.getResources().getString(R.string.cancel);
 
         mTab.getInfoBarContainer().addInfoBar(new ConfirmInfoBar(0,
-                this, drawableId, titleText, null, okButtonText, cancelButtonText));
+                this, drawableId, null, titleText, null, okButtonText, cancelButtonText));
     }
 
     /**

@@ -11,6 +11,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "jni/ConfirmInfoBarDelegate_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 
 // InfoBarService -------------------------------------------------------------
 
@@ -46,10 +48,15 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
       base::android::ConvertUTF16ToJavaString(
           env, delegate->GetLinkText());
 
+  ScopedJavaLocalRef<jobject> java_bitmap;
+  if (!delegate->GetIcon().IsEmpty()) {
+    java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
+  }
+
   return Java_ConfirmInfoBarDelegate_showConfirmInfoBar(
       env, java_confirm_delegate_.obj(), reinterpret_cast<intptr_t>(this),
-      GetEnumeratedIconId(), message_text.obj(), link_text.obj(),
-      ok_button_text.obj(), cancel_button_text.obj());
+      GetEnumeratedIconId(), java_bitmap.obj(), message_text.obj(),
+      link_text.obj(), ok_button_text.obj(), cancel_button_text.obj());
 }
 
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {

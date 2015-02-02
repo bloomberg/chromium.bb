@@ -30,7 +30,7 @@ public class MessageInfoBar extends InfoBar {
      */
     public MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
             CharSequence title) {
-        super(listener, iconResourceId, title);
+        super(listener, iconResourceId, null, title);
     }
 
     @Override
