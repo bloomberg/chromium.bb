@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/resources/compiled.js"></script>
+<script>
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.showScriptSource("source1.js", step2);
+    }
+
+    function step2(sourceFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", didSetBreakpointInDebugger, true);
+
+        InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
+        InspectorTest.setBreakpoint(sourceFrame, 15, "", true);
+
+        var counter = 2;
+
+        function didSetBreakpointInDebugger()
+        {
+            counter--;
+            if (!counter) {
+                //Both breakpoints are resolved before reload
+                InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
+                InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", onSourceMapLoaded);
+                InspectorTest.reloadPage();
+            }
+        }
+    }
+
+    function onSourceMapLoaded()
+    {
+        InspectorTest.dumpBreakpointSidebarPane("Breakpoints after reload:");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests "reload" from within inspector window while on pause.
+</p>
+
+</body>
+</html>
