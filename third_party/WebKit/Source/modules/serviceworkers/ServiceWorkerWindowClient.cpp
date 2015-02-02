@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -66,7 +67,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
 
     if (!scriptState->executionContext()->isWindowFocusAllowed()) {
-        resolver->resolve(false);
+        resolver->reject(DOMException::create(InvalidAccessError, "Not allowed to focus a window."));
         return promise;
     }
     scriptState->executionContext()->consumeWindowFocus();

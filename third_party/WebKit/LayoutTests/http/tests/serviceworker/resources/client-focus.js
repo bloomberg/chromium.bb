@@ -6,6 +6,9 @@ self.onmessage = function(e) {
       client.focus().then(function(result) {
         client.postMessage('focus() succeeded with ' + result);
         client.postMessage('quit');
+      }, function(e) {
+        client.postMessage('focus() failed with ' + e.name);
+        client.postMessage('quit');
       });
     });
   });

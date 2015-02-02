@@ -21,7 +21,8 @@ t.step(function() {
       .catch(unreached_rejection(t));
 
     var result = [];
-    var expected = ['focus() is present', 'focus() succeeded with false'];
+    var expected = ['focus() is present',
+                    'focus() failed with InvalidAccessError'];
 
     function onMessage(e) {
       var message = e.data;
