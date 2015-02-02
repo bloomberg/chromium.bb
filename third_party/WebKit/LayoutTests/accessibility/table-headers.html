@@ -132,7 +132,23 @@
     <th>row head</td>
   </tr>
 </table>
-
+<div id="table7" role="grid">
+  <div role="row">
+    <div role="columnheader">col head</div>
+    <div role="columnheader">col head</div>
+    <div role="columnheader">col head</div>
+  </div>
+  <div role="row">
+    <div role="rowheader">row head</div>
+    <div role="gridcell">data</div>
+    <div role="rowheader">row head</div>
+  </div>
+  <div role="row">
+    <div role="rowheader">row head</div>
+    <div role="rowheader">row head</div>
+    <div role="columnheader">col head</div>
+  </div>
+</div>
 <p id="description"></p>
 <div id="console"></div>
 
@@ -210,6 +226,21 @@
         shouldBeTrue("table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(2, 0))");
         shouldBeTrue("table6.columnHeaderAtIndex(4).isEqual(table6.cellForColumnAndRow(2, 2))");
         shouldBe("table6.columnHeadersCount", "5");
+
+        //Aria tables
+        var table7 = accessibilityController.accessibleElementById("table7");
+        // Row headers
+        shouldBeTrue("table7.rowHeaderAtIndex(0).isEqual(table7.cellForColumnAndRow(0, 1))");
+        shouldBeTrue("table7.rowHeaderAtIndex(1).isEqual(table7.cellForColumnAndRow(2, 1))");
+        shouldBeTrue("table7.rowHeaderAtIndex(2).isEqual(table7.cellForColumnAndRow(0, 2))");
+        shouldBeTrue("table7.rowHeaderAtIndex(3).isEqual(table7.cellForColumnAndRow(1, 2))");
+        shouldBe("table7.rowHeadersCount", "4");
+        // Column headers
+        shouldBeTrue("table7.columnHeaderAtIndex(0).isEqual(table7.cellForColumnAndRow(0, 0))");
+        shouldBeTrue("table7.columnHeaderAtIndex(1).isEqual(table7.cellForColumnAndRow(1, 0))");
+        shouldBeTrue("table7.columnHeaderAtIndex(2).isEqual(table7.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table7.columnHeaderAtIndex(3).isEqual(table7.cellForColumnAndRow(2, 2))");
+        shouldBe("table7.columnHeadersCount", "4");
     }
 
 </script>

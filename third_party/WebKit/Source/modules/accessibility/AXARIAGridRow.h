@@ -45,6 +45,7 @@ public:
     virtual ~AXARIAGridRow();
 
     virtual AXObject* headerObject() override;
+    virtual void headerObjectsForRow(AccessibilityChildrenVector&) override;
 
 private:
     virtual bool isARIATreeGridRow() const override;

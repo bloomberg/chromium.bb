@@ -72,7 +72,24 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
         return;
 
     RenderObject* renderer = m_parent->renderer();
-    if (!renderer || !renderer->isTable())
+    if (!renderer)
+        return;
+
+    if (!m_parent->isAXTable())
+        return;
+
+    if (toAXTable(m_parent)->isAriaTable()) {
+        AccessibilityChildrenVector columnChildren = children();
+        unsigned childrenCount = columnChildren.size();
+        for (unsigned i = 0; i < childrenCount; i++) {
+            AXObject* cell = columnChildren[i].get();
+            if (cell->roleValue() == ColumnHeaderRole)
+                headers.append(cell);
+        }
+        return;
+    }
+
+    if (!renderer->isTable())
         return;
 
     LayoutTable* table = toLayoutTable(renderer);

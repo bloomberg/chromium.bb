@@ -22,6 +22,15 @@ col head	col head	col head
 data	data	data
 col head	col head
 data	data	row head
+col head
+col head
+col head
+row head
+data
+row head
+row head
+row head
+col head
 Check whether column and row headers are reported correctly
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -73,6 +82,16 @@ PASS table6.columnHeaderAtIndex(2).isEqual(table6.cellForColumnAndRow(1, 0)) is 
 PASS table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(2, 0)) is true
 PASS table6.columnHeaderAtIndex(4).isEqual(table6.cellForColumnAndRow(2, 2)) is true
 PASS table6.columnHeadersCount is 5
+PASS table7.rowHeaderAtIndex(0).isEqual(table7.cellForColumnAndRow(0, 1)) is true
+PASS table7.rowHeaderAtIndex(1).isEqual(table7.cellForColumnAndRow(2, 1)) is true
+PASS table7.rowHeaderAtIndex(2).isEqual(table7.cellForColumnAndRow(0, 2)) is true
+PASS table7.rowHeaderAtIndex(3).isEqual(table7.cellForColumnAndRow(1, 2)) is true
+PASS table7.rowHeadersCount is 4
+PASS table7.columnHeaderAtIndex(0).isEqual(table7.cellForColumnAndRow(0, 0)) is true
+PASS table7.columnHeaderAtIndex(1).isEqual(table7.cellForColumnAndRow(1, 0)) is true
+PASS table7.columnHeaderAtIndex(2).isEqual(table7.cellForColumnAndRow(2, 0)) is true
+PASS table7.columnHeaderAtIndex(3).isEqual(table7.cellForColumnAndRow(2, 2)) is true
+PASS table7.columnHeadersCount is 4
 PASS successfullyParsed is true
 
 TEST COMPLETE
