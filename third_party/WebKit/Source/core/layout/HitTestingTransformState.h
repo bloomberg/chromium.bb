@@ -26,8 +26,8 @@
 #ifndef HitTestingTransformState_h
 #define HitTestingTransformState_h
 
-#include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"

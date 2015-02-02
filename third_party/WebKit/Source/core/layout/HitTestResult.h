@@ -22,8 +22,8 @@
 #ifndef HitTestResult_h
 #define HitTestResult_h
 
-#include "core/rendering/HitTestLocation.h"
-#include "core/rendering/HitTestRequest.h"
+#include "core/layout/HitTestLocation.h"
+#include "core/layout/HitTestRequest.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -49,7 +49,7 @@ class Scrollbar;
 class HitTestResult {
     DISALLOW_ALLOCATION();
 public:
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node> > NodeSet;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;
 
     HitTestResult();
     HitTestResult(const LayoutPoint&);
@@ -143,7 +143,7 @@ private:
     // FIXME: Nothing changes this to a value different from m_hitTestLocation!
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
     LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
-                              // determine where inside the renderer we hit on subsequent operations.
+        // determine where inside the renderer we hit on subsequent operations.
     RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderPart for example).

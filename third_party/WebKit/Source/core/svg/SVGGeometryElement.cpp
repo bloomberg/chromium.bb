@@ -32,7 +32,7 @@
 #include "core/svg/SVGGeometryElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/HitTestRequest.h"
+#include "core/layout/HitTestRequest.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGPointTearOff.h"

@@ -41,7 +41,7 @@
 #include "core/events/NodeEventContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/storage/StorageArea.h"
 #include "platform/network/FormData.h"

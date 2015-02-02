@@ -20,7 +20,7 @@
 #ifndef PointerEventsHitRules_h
 #define PointerEventsHitRules_h
 
-#include "core/rendering/HitTestRequest.h"
+#include "core/layout/HitTestRequest.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace blink {

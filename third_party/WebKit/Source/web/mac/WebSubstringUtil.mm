@@ -45,7 +45,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/fonts/Font.h"

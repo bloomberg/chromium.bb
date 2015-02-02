@@ -20,8 +20,8 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/paint/EllipsisBoxPainter.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"

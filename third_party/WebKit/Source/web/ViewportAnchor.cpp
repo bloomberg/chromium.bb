@@ -34,8 +34,8 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
+#include "core/layout/HitTestResult.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/HitTestResult.h"
 
 namespace blink {
 

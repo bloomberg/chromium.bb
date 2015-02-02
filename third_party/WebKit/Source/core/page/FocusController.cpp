@@ -54,8 +54,8 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/layout/HitTestResult.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include <limits>
 

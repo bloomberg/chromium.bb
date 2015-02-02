@@ -46,9 +46,9 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
+#include "core/layout/HitTestResult.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/Vector.h"
 

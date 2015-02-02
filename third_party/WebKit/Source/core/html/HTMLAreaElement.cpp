@@ -25,7 +25,7 @@
 #include "core/HTMLNames.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"

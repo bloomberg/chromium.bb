@@ -22,12 +22,12 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutRubyBase.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlineFlowBoxPainter.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"

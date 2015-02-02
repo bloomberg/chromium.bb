@@ -26,8 +26,8 @@
 #include "core/rendering/svg/RenderSVGRoot.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/layout/HitTestResult.h"
 #include "core/paint/SVGRootPainter.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"

@@ -26,11 +26,11 @@
 #include "config.h"
 #include "core/layout/LayoutTableSection.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/paint/TableSectionPainter.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"

@@ -23,7 +23,7 @@
 #include "core/rendering/RenderTextControlMultiLine.h"
 
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 
 namespace blink {
 

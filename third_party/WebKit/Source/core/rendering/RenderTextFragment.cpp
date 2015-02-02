@@ -27,7 +27,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace blink {

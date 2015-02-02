@@ -21,7 +21,7 @@
 #ifndef EventWithHitTestResults_h
 #define EventWithHitTestResults_h
 
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"

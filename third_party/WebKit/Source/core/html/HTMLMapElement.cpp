@@ -30,7 +30,7 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "core/fetch/ImageResourceClient.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/rendering/HitTestRequest.h"
+#include "core/layout/HitTestRequest.h"
 #include "core/rendering/PaintInvalidationState.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"

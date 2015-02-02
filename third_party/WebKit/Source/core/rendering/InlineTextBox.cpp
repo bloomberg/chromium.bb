@@ -23,12 +23,12 @@
 #include "config.h"
 #include "core/rendering/InlineTextBox.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/EllipsisBox.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderBlock.h"

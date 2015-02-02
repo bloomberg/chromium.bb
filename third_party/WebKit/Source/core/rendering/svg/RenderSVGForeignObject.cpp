@@ -23,8 +23,8 @@
 
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/paint/SVGForeignObjectPainter.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

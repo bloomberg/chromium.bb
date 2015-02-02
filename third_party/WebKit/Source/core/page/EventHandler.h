@@ -28,9 +28,9 @@
 
 #include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
+#include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
-#include "core/rendering/HitTestRequest.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformMouseEvent.h"

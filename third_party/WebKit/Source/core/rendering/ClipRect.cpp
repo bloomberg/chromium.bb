@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/ClipRect.h"
 
-#include "core/rendering/HitTestLocation.h"
+#include "core/layout/HitTestLocation.h"
 
 namespace blink {
 

@@ -20,7 +20,7 @@
 */
 
 #include "config.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -287,11 +287,11 @@ KURL HitTestResult::absoluteImageURL() const
         || isHTMLImageElement(*m_innerNonSharedNode)
         || isHTMLInputElement(*m_innerNonSharedNode)
         || isHTMLObjectElement(*m_innerNonSharedNode)
-        || isSVGImageElement(*m_innerNonSharedNode)
-       ) {
+        || isSVGImageElement(*m_innerNonSharedNode)) {
         urlString = toElement(*m_innerNonSharedNode).imageSourceURL();
-    } else
+    } else {
         return KURL();
+    }
 
     return m_innerNonSharedNode->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }

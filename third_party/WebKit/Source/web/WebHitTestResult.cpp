@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebPoint.h"

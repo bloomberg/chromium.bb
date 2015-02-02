@@ -29,9 +29,9 @@
 #include "core/rendering/svg/RenderSVGText.h"
 
 #include "core/editing/PositionWithAffinity.h"
+#include "core/layout/HitTestRequest.h"
+#include "core/layout/HitTestResult.h"
 #include "core/paint/SVGTextPainter.h"
-#include "core/rendering/HitTestRequest.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/style/ShadowList.h"

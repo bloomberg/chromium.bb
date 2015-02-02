@@ -39,8 +39,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/layout/HitTestResult.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 #include <algorithm>
 #include <cmath>

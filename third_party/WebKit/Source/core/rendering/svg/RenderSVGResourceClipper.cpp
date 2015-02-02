@@ -25,7 +25,7 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/HitTestResult.h"
+#include "core/layout/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
