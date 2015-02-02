@@ -18,8 +18,8 @@ namespace blink {
 void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
 {
     RefPtrWillBeRawPtr<SuspendableScriptExecutor> executor = adoptRefWillBeNoop(new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback));
-    executor->run();
     executor->ref();
+    executor->run();
 }
 
 void SuspendableScriptExecutor::resume()
