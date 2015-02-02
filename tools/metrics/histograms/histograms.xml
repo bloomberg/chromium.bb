@@ -28810,6 +28810,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Renderer.LayoutMs" units="milliseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    Duration of the FrameView::performLayout trace event, which occurs at most
+    once per frame.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PixelIncreaseFromTransitions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
