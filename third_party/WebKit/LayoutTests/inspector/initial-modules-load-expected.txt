@@ -37,6 +37,7 @@ Loaded modules:
     bindings
     common
     components
+    components_lazy
     elements
     extensions
     host
@@ -48,6 +49,7 @@ Loaded modules:
     source_frame
     toolbox
     ui
+    ui_lazy
     workspace
 
 Running: testShowSourcesPanel
@@ -55,6 +57,7 @@ Loaded modules:
     bindings
     common
     components
+    components_lazy
     elements
     extensions
     host
@@ -67,6 +70,7 @@ Loaded modules:
     sources
     toolbox
     ui
+    ui_lazy
     workspace
 
 Running: testOpenUISourceCode
@@ -74,6 +78,7 @@ Loaded modules:
     bindings
     common
     components
+    components_lazy
     elements
     extensions
     host
@@ -86,5 +91,6 @@ Loaded modules:
     sources
     toolbox
     ui
+    ui_lazy
     workspace
 
