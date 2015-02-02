@@ -405,11 +405,16 @@ void ShelfButton::Layout() {
       icon_width = button_bounds.width() - (x_offset + kBarSize);
   }
 
-  icon_view_->SetBoundsRect(gfx::Rect(
-      button_bounds.x() + x_offset,
-      button_bounds.y() + y_offset,
-      icon_width,
-      icon_height));
+  // Expand bounds to include shadows.
+  gfx::Insets insets_shadows = gfx::ShadowValue::GetMargin(icon_shadows_);
+  // Adjust offsets to center icon, not icon + shadow.
+  x_offset += (insets_shadows.left() - insets_shadows.right()) / 2;
+  y_offset += (insets_shadows.top() - insets_shadows.bottom()) / 2;
+  gfx::Rect icon_view_bounds =
+      gfx::Rect(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
+                icon_width, icon_height);
+  icon_view_bounds.Inset(insets_shadows);
+  icon_view_->SetBoundsRect(icon_view_bounds);
 
   // Icon size has been incorrect when running
   // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
