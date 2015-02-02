@@ -29,9 +29,19 @@ class CONTENT_EXPORT PlatformNotificationService {
  public:
   virtual ~PlatformNotificationService() {}
 
+  // Checks if |origin| has permission to display Web Notifications.
+  // This method must only be called on the UI thread.
+  virtual blink::WebNotificationPermission CheckPermissionOnUIThread(
+      BrowserContext* browser_context,
+      const GURL& origin,
+      int render_process_id) = 0;
+
   // Checks if |origin| has permission to display Web Notifications. This method
-  // must be called on the IO thread.
-  virtual blink::WebNotificationPermission CheckPermission(
+  // exists to serve the synchronous IPC required by the Notification.permission
+  // JavaScript getter, and should not be used for other purposes. See
+  // https://crbug.com/446497 for the plan to deprecate this method.
+  // This method must only be called on the IO thread.
+  virtual blink::WebNotificationPermission CheckPermissionOnIOThread(
       ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) = 0;

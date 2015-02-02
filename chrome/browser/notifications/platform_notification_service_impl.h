@@ -46,7 +46,11 @@ class PlatformNotificationServiceImpl
   NotificationUIManager* GetNotificationUIManager() const;
 
   // content::PlatformNotificationService implementation.
-  blink::WebNotificationPermission CheckPermission(
+  blink::WebNotificationPermission CheckPermissionOnUIThread(
+      content::BrowserContext* browser_context,
+      const GURL& origin,
+      int render_process_id) override;
+  blink::WebNotificationPermission CheckPermissionOnIOThread(
       content::ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;
