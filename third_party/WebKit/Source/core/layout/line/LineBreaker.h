@@ -23,8 +23,8 @@
 #ifndef LineBreaker_h
 #define LineBreaker_h
 
+#include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/LineInfo.h"
-#include "core/rendering/InlineIterator.h"
 #include "wtf/Vector.h"
 
 namespace blink {

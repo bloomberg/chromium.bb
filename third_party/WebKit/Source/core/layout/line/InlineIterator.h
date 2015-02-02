@@ -291,9 +291,9 @@ static inline RenderObject* bidiFirstSkippingEmptyInlines(RenderBlockFlow* root,
 
     if (o->isRenderInline()) {
         notifyObserverEnteredObject(resolver, o);
-        if (!isEmptyInline(o))
+        if (!isEmptyInline(o)) {
             o = bidiNextSkippingEmptyInlines(root, o, resolver);
-        else {
+        } else {
             // Never skip empty inlines.
             if (resolver)
                 resolver->commitExplicitEmbedding(runs);

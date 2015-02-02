@@ -37,7 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTableElement.h"
-#include "core/rendering/InlineIterator.h"
+#include "core/layout/line/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"

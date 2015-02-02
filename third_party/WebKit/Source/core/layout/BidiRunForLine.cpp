@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/layout/BidiRunForLine.h"
 
-#include "core/rendering/InlineIterator.h"
+#include "core/layout/line/InlineIterator.h"
 
 namespace blink {
 

@@ -25,13 +25,13 @@
 #define BreakingContextInlineHeaders_h
 
 #include "core/layout/LayoutRubyRun.h"
+#include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/LayoutTextInfo.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineInfo.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
-#include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"

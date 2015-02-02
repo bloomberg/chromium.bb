@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/layout/line/TrailingObjects.h"
 
-#include "core/rendering/InlineIterator.h"
+#include "core/layout/line/InlineIterator.h"
 
 namespace blink {
 
