@@ -103,7 +103,7 @@ void SigninManagerFactory::RegisterProfilePrefs(
       prefs::kSignedInTime,
       base::Time().ToInternalValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  chrome::RegisterLocalAuthPrefs(registry);
+  LocalAuth::RegisterLocalAuthPrefs(registry);
 }
 
 // static

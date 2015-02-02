@@ -140,7 +140,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       switches::IsNewProfileManagement() &&
       !password_.empty() &&
       profiles::IsLockAvailable(profile_)) {
-    chrome::SetLocalAuthCredentials(profile_, password_);
+    LocalAuth::SetLocalAuthCredentials(profile_, password_);
   }
 
   if (source == signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
