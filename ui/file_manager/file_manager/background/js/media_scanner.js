@@ -135,20 +135,22 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
   }
 
   var scanResult = this.createScanResult_();
-  var watcher = this.watcherFactory_(function() {
-    scanResult.invalidateScan();
-    this.observers_.forEach(
-        /** @param {!importer.ScanObserver} observer */
-        function(observer) {
-          observer(importer.ScanEvent.INVALIDATED, scanResult);
-        });
-  }.bind(this));
+  var watcher = this.watcherFactory_(
+      /** @this {importer.DefaultMediaScanner} */
+      function() {
+        scanResult.invalidateScan();
+        this.observers_.forEach(
+            /** @param {!importer.ScanObserver} observer */
+            function(observer) {
+              observer(importer.ScanEvent.INVALIDATED, scanResult);
+            });
+      }.bind(this));
   var scanPromises = entries.map(
       this.scanEntry_.bind(this, scanResult, watcher));
 
   Promise.all(scanPromises)
-      .then(scanResult.resolveScan.bind(scanResult))
-      .catch(scanResult.rejectScan.bind(scanResult));
+      .then(scanResult.resolve)
+      .catch(scanResult.reject);
 
   scanResult.whenFinal()
       .then(
@@ -279,33 +281,23 @@ importer.DefaultScanResult = function(hashGenerator, historyLoader) {
    */
   this.lastScanActivity_ = this.scanStarted_;
 
-  /** @private {boolean} */
-  this.settled_ = false;
+  /** @private {!importer.Resolver.<!importer.ScanResult>} */
+  this.resolver_ = new importer.Resolver();
+};
 
-  /** @type {function()} */
-  this.resolveScan;
+/** @struct */
+importer.DefaultScanResult.prototype = {
 
-  /** @type {function(*)} */
-  this.rejectScan;
+  /** @return {function()} */
+  get resolve() { return this.resolver_.resolve.bind(null, this); },
 
-  /** @private {!Promise.<!importer.ScanResult>} */
-  this.finishedPromise_ = new Promise(
-      function(resolve, reject) {
-        this.resolveScan = function() {
-          this.settled_ = true;
-          resolve(this);
-        }.bind(this);
-
-        this.rejectScan = function() {
-          this.settled_ = true;
-          reject();
-        };
-      }.bind(this));
+  /** @return {function(*=)} */
+  get reject() { return this.resolver_.reject; }
 };
 
 /** @override */
 importer.DefaultScanResult.prototype.isFinal = function() {
-  return this.settled_;
+  return this.resolver_.settled;
 };
 
 importer.DefaultScanResult.prototype.isInvalidated = function() {
@@ -329,7 +321,7 @@ importer.DefaultScanResult.prototype.getScanDurationMs = function() {
 
 /** @override */
 importer.DefaultScanResult.prototype.whenFinal = function() {
-  return this.finishedPromise_;
+  return this.resolver_.promise;
 };
 
 /**

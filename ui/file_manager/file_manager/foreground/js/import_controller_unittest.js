@@ -23,8 +23,10 @@ var destinationVolume;
 /** @type {!importer.TestCommandWidget} */
 var widget;
 
-// Set up string assets.
-loadTimeData.data = {
+/**
+ * @enum {string}
+ */
+var MESSAGES = {
   CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
   CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL: 'Already importing!',
   CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL: 'No new media',
@@ -33,6 +35,9 @@ loadTimeData.data = {
   DRIVE_DIRECTORY_LABEL: 'My Drive',
   DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
 };
+
+// Set up string assets.
+loadTimeData.data = MESSAGES;
 
 function setUp() {
   // Stub out metrics support.
@@ -118,9 +123,12 @@ function testGetCommandUpdate_InitiatesScan(callback) {
       function(response) {
         assertTrue(response.visible);
         assertFalse(response.executable);
-
+        assertEquals(
+            response.label,
+            MESSAGES.CLOUD_IMPORT_SCANNING_BUTTON_LABEL);
         mediaScanner.assertScanCount(1);
       });
+
   reportPromise(promise, callback);
 }
 
@@ -153,6 +161,50 @@ function testGetCommandUpdate_CanExecuteAfterScanIsFinalized(callback) {
           function(response) {
             assertTrue(response.visible);
             assertTrue(response.executable);
+            assertEquals(
+                response.label,
+                MESSAGES.CLOUD_IMPORT_BUTTON_LABEL);
+          });
+
+  reportPromise(promise, callback);
+}
+
+function testGetCommandUpdate_DisabledForInsufficientLocalStorage(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  var fileSystem = new MockFileSystem('testFs');
+  mediaScanner.fileEntries.push(
+      new MockFileEntry(
+          fileSystem,
+          '/DCIM/photos0/IMG00001.jpg',
+          {size: 1000000}));
+
+  environment.freeStorageSpace = 100;
+  environment.directoryChangedListener_();  // initiates a scan.
+  var promise = widget.updatePromise.then(
+      function() {
+        widget.resetPromise();
+        mediaScanner.finalizeScans();
+        return widget.updatePromise;
+      }).then(
+          function(response) {
+            assertTrue(response.visible);
+            assertFalse(response.executable);
+            assertEquals(
+                response.label,
+                MESSAGES.CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL);
           });
 
   reportPromise(promise, callback);
@@ -173,14 +225,55 @@ function testGetCommandUpdate_CannotExecuteEmptyScanResult(callback) {
       ],
       '/DCIM');
 
-  controller.getCommandUpdate();
-  mediaScanner.finalizeScans();
-
   var promise = controller.getCommandUpdate().then(
-      function(response) {
-        assertTrue(response.visible);
-        assertFalse(response.executable);
+      function() {
+        mediaScanner.finalizeScans();
+
+        return controller.getCommandUpdate().then(
+            function(response) {
+              assertTrue(response.visible);
+              assertFalse(response.executable);
+              assertEquals(
+                  response.label,
+                  MESSAGES.CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL);
+            });
       });
+
+  reportPromise(promise, callback);
+}
+
+function testGetCommandUpdate_DisabledWhileImporting(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+      ],
+      '/DCIM');
+
+// First we need to force the controller into a scanning state.
+environment.directoryChangedListener_();
+
+var promise = widget.updatePromise.then(
+    function() {
+      widget.resetPromise();
+      widget.executeListener();
+      mediaImporter.assertImportsStarted(1);
+      // return the reset promise so as to allow execution
+      // to complete before the test is finished...even though
+      // we're not waiting on anything in particular.
+      return controller.getCommandUpdate();
+    }).then(
+        function(response) {
+          assertTrue(response.visible);
+          assertFalse(response.executable);
+          assertEquals(
+              response.label,
+              MESSAGES.CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL);
+        });
 
   reportPromise(promise, callback);
 }
@@ -262,6 +355,21 @@ function testDirectoryChange_TriggersUpdate(callback) {
       '/DCIM');
 
   environment.directoryChangedListener_();
+  reportPromise(widget.updatePromise, callback);
+}
+
+function testSelectionChange_TriggersUpdate(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  environment.selectionChangedListener_();
   reportPromise(widget.updatePromise, callback);
 }
 
@@ -506,7 +614,10 @@ TestControllerEnvironment = function(volumeInfo, directory) {
   /** @private {function()} */
   this.directoryChangedListener_;
 
-  /** @public {!DirectoryEntry} */
+  /** @private {function()} */
+  this.selectionChangedListener_;
+
+  /** @public {!Entry} */
   this.selection = [];
 
   /** @public {boolean} */
@@ -570,6 +681,12 @@ TestControllerEnvironment.prototype.addVolumeUnmountListener =
 TestControllerEnvironment.prototype.addDirectoryChangedListener =
     function(listener) {
   this.directoryChangedListener_ = listener;
+};
+
+/** @override */
+TestControllerEnvironment.prototype.addSelectionChangedListener =
+    function(listener) {
+  this.selectionChangedListener_ = listener;
 };
 
 /**

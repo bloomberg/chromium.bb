@@ -416,6 +416,21 @@ FileManager.prototype = /** @struct */ {
         this.directoryModel_,
         this.commandHandler);
 
+    importer.importEnabled().then(
+        function(enabled) {
+          if (enabled) {
+            this.importController_ = new importer.ImportController(
+                new importer.RuntimeControllerEnvironment(
+                    this,
+                    this.selectionHandler_),
+                /** @type {!importer.MediaScanner} */ (
+                    this.mediaScanner_),
+                /** @type {!importer.ImportRunner} */ (
+                    this.mediaImportHandler_),
+                new importer.RuntimeCommandWidget());
+          }
+        }.bind(this));
+
     assert(this.fileFilter_);
     assert(this.namingController_);
     assert(this.appStateController_);
@@ -478,22 +493,6 @@ FileManager.prototype = /** @struct */ {
     assert(this.ui_.textContextMenu);
 
     this.commandHandler = new CommandHandler(this);
-
-    // Kick the import enabled promise to be sure it is loaded
-    // (and cached) for use by code that requires synchronous
-    // access (e.g. Commands).
-    importer.importEnabled().then(
-        function(enabled) {
-          if (enabled) {
-            this.importController_ = new importer.ImportController(
-                new importer.RuntimeControllerEnvironment(this),
-                /** @type {!importer.MediaScanner} */ (
-                    this.mediaScanner_),
-                /** @type {!importer.ImportRunner} */ (
-                    this.mediaImportHandler_),
-                new importer.RuntimeCommandWidget());
-          }
-        }.bind(this));
 
     // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
