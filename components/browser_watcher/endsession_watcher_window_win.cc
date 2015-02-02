@@ -17,8 +17,8 @@ const wchar_t kWindowClassName[] = L"Chrome_BrowserWatcherWindow";
 }  // namespace
 
 EndSessionWatcherWindow::EndSessionWatcherWindow(
-    const EndSessionCallback& on_end_session) :
-        on_end_session_(on_end_session) {
+    const EndSessionMessageCallback& on_end_session_message) :
+        on_end_session_message_(on_end_session_message) {
   WNDCLASSEX window_class = {0};
   base::win::InitializeWindowClass(
       kWindowClassName,
@@ -44,8 +44,10 @@ EndSessionWatcherWindow::~EndSessionWatcherWindow() {
   }
 }
 
-LRESULT EndSessionWatcherWindow::OnEndSession(WPARAM wparam, LPARAM lparam) {
-  on_end_session_.Run(lparam);
+LRESULT EndSessionWatcherWindow::OnEndSessionMessage(UINT message,
+                                                     WPARAM wparam,
+                                                     LPARAM lparam) {
+  on_end_session_message_.Run(message, lparam);
   return 0;
 }
 
@@ -73,7 +75,8 @@ LRESULT EndSessionWatcherWindow::WndProc(HWND hwnd,
                                          LPARAM lparam) {
   switch (message) {
     case WM_ENDSESSION:
-      return OnEndSession(wparam, lparam);
+    case WM_QUERYENDSESSION:
+      return OnEndSessionMessage(message, wparam, lparam);
     default:
       break;
   }

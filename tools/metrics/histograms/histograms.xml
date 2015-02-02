@@ -60081,7 +60081,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="SessionEnding"/>
   <suffix name="TraybarEndSession"/>
   <suffix name="TraybarExit"/>
+  <suffix name="WatcherEndSession"/>
   <suffix name="WatcherLogoff"/>
+  <suffix name="WatcherQueryEndSession"/>
   <suffix name="WM_ENDSESSION"/>
   <affected-histogram name="Stability.ExitFunnel"/>
 </histogram_suffixes>

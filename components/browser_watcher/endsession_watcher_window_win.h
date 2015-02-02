@@ -14,16 +14,17 @@ namespace browser_watcher {
 
 class EndSessionWatcherWindow {
  public:
-  typedef base::Callback<void(LPARAM)> EndSessionCallback;
+  typedef base::Callback<void(UINT, LPARAM)> EndSessionMessageCallback;
 
-  explicit EndSessionWatcherWindow(const EndSessionCallback& on_end_session);
+  explicit EndSessionWatcherWindow(
+      const EndSessionMessageCallback& on_end_session_message);
   virtual ~EndSessionWatcherWindow();
 
   // Exposed for testing.
   HWND window() const { return window_; }
 
  private:
-  LRESULT OnEndSession(WPARAM wparam, LPARAM lparam);
+  LRESULT OnEndSessionMessage(UINT message, WPARAM wparam, LPARAM lparam);
 
   LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
@@ -35,7 +36,7 @@ class EndSessionWatcherWindow {
   HMODULE instance_;
   HWND window_;
 
-  EndSessionCallback on_end_session_;
+  EndSessionMessageCallback on_end_session_message_;
 
   DISALLOW_COPY_AND_ASSIGN(EndSessionWatcherWindow);
 };

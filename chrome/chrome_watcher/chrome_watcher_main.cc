@@ -46,8 +46,8 @@ class BrowserMonitor {
                      base::Process process);
 
  private:
-  // Called from EndSessionWatcherWindow on a WM_ENDSESSION message.
-  void OnEndSession(LPARAM lparam);
+  // Called from EndSessionWatcherWindow on a end session messages.
+  void OnEndSessionMessage(UINT message, LPARAM lparam);
 
   // Blocking function that runs on |background_thread_|.
   void Watch();
@@ -79,7 +79,8 @@ BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
     browser_exited_(false),
     exit_code_watcher_(registry_path),
     end_session_watcher_window_(
-        base::Bind(&BrowserMonitor::OnEndSession, base::Unretained(this))),
+        base::Bind(&BrowserMonitor::OnEndSessionMessage,
+                   base::Unretained(this))),
     background_thread_("BrowserWatcherThread"),
     run_loop_(run_loop),
     main_thread_(base::MessageLoopProxy::current()) {
@@ -112,10 +113,14 @@ bool BrowserMonitor::StartWatching(const base::char16* registry_path,
   return true;
 }
 
-void BrowserMonitor::OnEndSession(LPARAM lparam) {
+void BrowserMonitor::OnEndSessionMessage(UINT message, LPARAM lparam) {
   DCHECK_EQ(main_thread_, base::MessageLoopProxy::current());
 
-  exit_funnel_.RecordEvent(L"WatcherLogoff");
+  if (message == WM_QUERYENDSESSION) {
+    exit_funnel_.RecordEvent(L"WatcherQueryEndSession");
+  } else if (message == WM_ENDSESSION) {
+    exit_funnel_.RecordEvent(L"WatcherEndSession");
+  }
   if (lparam & ENDSESSION_CLOSEAPP)
     exit_funnel_.RecordEvent(L"ES_CloseApp");
   if (lparam & ENDSESSION_CRITICAL)

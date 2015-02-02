@@ -5,6 +5,7 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 
 #include <windows.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,37 +14,54 @@ namespace browser_watcher {
 
 namespace {
 
-void OnEndSession(bool* called, LPARAM* out_lparam, LPARAM lparam) {
-  *called = true;
-  *out_lparam = lparam;
-}
+class EndSessionWatcherWindowTest : public testing::Test {
+ public:
+  EndSessionWatcherWindowTest()
+      : num_callbacks_(0), last_message_(0), last_lparam_(0) {
+  }
+
+  void OnEndSessionMessage(UINT message, LPARAM lparam) {
+    ++num_callbacks_;
+    last_message_ = message;
+    last_lparam_ = lparam;
+  }
+
+  size_t num_callbacks_;
+  UINT last_message_;
+  UINT last_lparam_;
+};
 
 }  // namespace browser_watcher
 
-TEST(EndSessionWatcherWindowTest, NoCallbackOnDestruction) {
-  LPARAM lparam = 0;
-  bool was_called = false;
-
+TEST_F(EndSessionWatcherWindowTest, NoCallbackOnDestruction) {
   {
     EndSessionWatcherWindow watcher_window(
-        base::Bind(&OnEndSession, &was_called, &lparam));
+        base::Bind(&EndSessionWatcherWindowTest::OnEndSessionMessage,
+                   base::Unretained(this)));
   }
 
-  EXPECT_FALSE(was_called);
-  EXPECT_EQ(lparam, 0);
+  EXPECT_EQ(num_callbacks_, 0);
+  EXPECT_EQ(last_lparam_, 0);
 }
 
-TEST(EndSessionWatcherWindowTest, IssuesCallbackOnMessage) {
-  LPARAM lparam = 0;
-  bool was_called = false;
-
+TEST_F(EndSessionWatcherWindowTest, IssuesCallbackOnMessage) {
   EndSessionWatcherWindow watcher_window(
-      base::Bind(&OnEndSession, &was_called, &lparam));
+      base::Bind(&EndSessionWatcherWindowTest::OnEndSessionMessage,
+                 base::Unretained(this)));
 
-  ::SendMessage(watcher_window.window(), WM_ENDSESSION, TRUE, 0xCAFEBABE);
+  ::SendMessage(watcher_window.window(), WM_QUERYENDSESSION, TRUE, 0xCAFEBABE);
+  EXPECT_EQ(num_callbacks_, 1);
+  EXPECT_EQ(last_message_, WM_QUERYENDSESSION);
+  EXPECT_EQ(last_lparam_, 0xCAFEBABE);
 
-  EXPECT_TRUE(was_called);
-  EXPECT_EQ(lparam, 0xCAFEBABE);
+  ::SendMessage(watcher_window.window(), WM_ENDSESSION, TRUE, 0xCAFE);
+  EXPECT_EQ(num_callbacks_, 2);
+  EXPECT_EQ(last_message_, WM_ENDSESSION);
+  EXPECT_EQ(last_lparam_, 0xCAFE);
+
+  // Verify that other messages don't pass through.
+  ::SendMessage(watcher_window.window(), WM_CLOSE, TRUE, 0xCAFE);
+  EXPECT_EQ(num_callbacks_, 2);
 }
 
 }  // namespace browser_watcher
