@@ -56,6 +56,8 @@ struct ToolbarButtonInfo {
   PP_ResourceImage pressed;
 };
 
+const uint32 kBackgroundColor = 0xFFCCCCCC;
+
 namespace {
 
 // Uncomment following #define to enable thumbnails.
@@ -364,6 +366,8 @@ bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     return false;
 
   CreatePageIndicator(IsPrintPreviewUrl(url));
+
+  engine_->SetBackgroundColor(kBackgroundColor);
 
   if (!full_) {
     // For PDFs embedded in a frame, we don't get the data automatically like we

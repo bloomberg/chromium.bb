@@ -52,6 +52,10 @@ const char kAccessibleNumberOfPages[] = "numberOfPages";
 const char kAccessibleLoaded[] = "loaded";
 const char kAccessibleCopyable[] = "copyable";
 
+// PDF background colors.
+const uint32 kBackgroundColor = 0xFFCCCCCC;
+const uint32 kBackgroundColorMaterial = 0xFFEEEEEE;
+
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";
 // Viewport message arguments. (Page -> Plugin).
@@ -331,6 +335,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   const char* stream_url = NULL;
   const char* original_url = NULL;
   const char* headers = NULL;
+  bool is_material = false;
   for (uint32_t i = 0; i < argc; ++i) {
     if (strcmp(argn[i], "src") == 0)
       original_url = argv[i];
@@ -338,7 +343,15 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       stream_url = argv[i];
     else if (strcmp(argn[i], "headers") == 0)
       headers = argv[i];
+    else if (strcmp(argn[i], "is-material") == 0)
+      is_material = true;
   }
+
+  if (is_material)
+      engine_->SetBackgroundColor(kBackgroundColorMaterial);
+  else
+      engine_->SetBackgroundColor(kBackgroundColor);
+
 
   // TODO(raymes): This is a hack to ensure that if no headers are passed in
   // then we get the right MIME type. When the in process plugin is removed we
@@ -662,7 +675,7 @@ void OutOfProcessInstance::OnPaint(
   if (first_paint_) {
     first_paint_ = false;
     pp::Rect rect = pp::Rect(pp::Point(), image_data_.size());
-    FillRect(rect, kBackgroundColor);
+    FillRect(rect, engine_->GetBackgroundColor());
     ready->push_back(PaintManager::ReadyRect(rect, image_data_, true));
   }
 
@@ -755,7 +768,7 @@ void OutOfProcessInstance::CalculateBackgroundParts() {
   // horizontal centering.
   BackgroundPart part = {
     pp::Rect(0, 0, left_width, bottom),
-    kBackgroundColor
+    engine_->GetBackgroundColor()
   };
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);

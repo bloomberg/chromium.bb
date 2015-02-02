@@ -80,6 +80,8 @@ class PDFiumEngine : public PDFEngine,
   virtual bool HasPermission(DocumentPermission permission) const;
   virtual void SelectAll();
   virtual int GetNumberOfPages();
+  virtual uint32 GetBackgroundColor();
+  virtual void SetBackgroundColor(uint32 backgroundColor);
   virtual pp::VarArray GetBookmarks();
   virtual int GetNamedDestinationPage(const std::string& destination);
   virtual pp::VarDictionary GetNamedDestinations();
@@ -680,6 +682,9 @@ class PDFiumEngine : public PDFEngine,
 
   // Whether to render in grayscale or in color.
   bool render_grayscale_;
+
+  // Background color of the PDF.
+  uint32 background_color_;
 
   // The link currently under the cursor.
   std::string link_under_cursor_;

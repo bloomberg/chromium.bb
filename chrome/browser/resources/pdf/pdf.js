@@ -91,6 +91,9 @@ function PDFViewer(streamDetails) {
         (window.innerHeight - this.toolbarHeight_) + 'px';
   this.plugin_.style.width = window.innerWidth + 'px';
 
+  if (this.isMaterial_)
+    this.plugin_.setAttribute('is-material', '');
+
   // Handle scripting messages from outside the extension that wish to interact
   // with it. We also send a message indicating that extension has loaded and
   // is ready to receive messages.
