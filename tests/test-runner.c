@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 		if (pid == 0)
 			run_test(t); /* never returns */
 
-		if (waitid(P_ALL, 0, &info, WEXITED)) {
+		if (waitid(P_PID, pid, &info, WEXITED)) {
 			stderr_set_color(RED);
 			fprintf(stderr, "waitid failed: %m\n");
 			stderr_reset_color();
