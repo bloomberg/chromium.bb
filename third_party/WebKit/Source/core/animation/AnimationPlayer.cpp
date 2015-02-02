@@ -217,13 +217,6 @@ double AnimationPlayer::currentTimeInternal() const
 
 void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
 {
-    if (m_compositorState && m_compositorState->pendingAction == Start) {
-        // Still waiting for a start time.
-        return;
-    }
-
-    ASSERT(!m_compositorState || !std::isnan(m_compositorState->startTime));
-
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, DoNotSetCompositorPending);
 
     bool softChange = m_compositorState && (paused() || m_compositorState->playbackRate != m_playbackRate);
@@ -240,6 +233,13 @@ void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
         cancelAnimationOnCompositor();
         m_compositorState = nullptr;
     }
+
+    if (m_compositorState && m_compositorState->pendingAction == Start) {
+        // Still waiting for a start time.
+        return;
+    }
+
+    ASSERT(!m_compositorState || !std::isnan(m_compositorState->startTime));
 
     if (!shouldStart) {
         m_currentTimePending = false;
