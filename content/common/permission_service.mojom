@@ -21,4 +21,6 @@ interface PermissionService {
     => (PermissionStatus status);
   RequestPermission(PermissionName permission, string origin, bool user_gesture)
     => (PermissionStatus status);
+  RevokePermission(PermissionName permission, string origin)
+    => (PermissionStatus status);
 };

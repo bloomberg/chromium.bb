@@ -69,6 +69,10 @@ class PermissionContextBase : public KeyedService {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 
+  // Resets the permission to its default value.
+  virtual void ResetPermission(const GURL& requesting_origin,
+                               const GURL& embedding_origin);
+
   // Withdraw an existing permission request, no op if the permission request
   // was already cancelled by some other means.
   virtual void CancelPermissionRequest(content::WebContents* web_contents,

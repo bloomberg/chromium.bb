@@ -52,6 +52,10 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
       const mojo::String& origin,
       bool user_gesture,
       const mojo::Callback<void(PermissionStatus)>& callback) override;
+  void RevokePermission(
+      PermissionName permission,
+      const mojo::String& origin,
+      const mojo::Callback<void(PermissionStatus)>& callback) override;
 
   // mojo::InterfaceImpl.
   void OnConnectionError() override;
@@ -60,6 +64,9 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
     const mojo::Callback<void(PermissionStatus)>& callback,
     int request_id,
     bool allowed);
+
+  PermissionStatus GetPermissionStatus(PermissionType type, GURL origin);
+  void ResetPermissionStatus(PermissionType type, GURL origin);
 
   RequestsMap pending_requests_;
   // context_ owns |this|.

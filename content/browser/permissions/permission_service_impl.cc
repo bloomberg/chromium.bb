@@ -114,14 +114,42 @@ void PermissionServiceImpl::HasPermission(
     const mojo::Callback<void(PermissionStatus)>& callback) {
   DCHECK(context_->GetBrowserContext());
 
+  callback.Run(GetPermissionStatus(PermissionNameToPermissionType(permission),
+                                   GURL(origin)));
+}
+
+void PermissionServiceImpl::RevokePermission(
+    PermissionName permission,
+    const mojo::String& origin,
+    const mojo::Callback<void(PermissionStatus)>& callback) {
+  GURL origin_url(origin);
+  PermissionType permission_type = PermissionNameToPermissionType(permission);
+  PermissionStatus status = GetPermissionStatus(permission_type, origin_url);
+
+  if (status != PERMISSION_STATUS_GRANTED)
+    callback.Run(status);
+
+  ResetPermissionStatus(permission_type, origin_url);
+
+  callback.Run(GetPermissionStatus(permission_type, origin_url));
+}
+
+PermissionStatus PermissionServiceImpl::GetPermissionStatus(PermissionType type,
+                                                            GURL origin) {
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
+  return GetContentClient()->browser()->GetPermissionStatus(
+      type, context_->GetBrowserContext(), origin,
+      embedding_origin.is_empty() ? origin : embedding_origin);
+}
 
-  callback.Run(GetContentClient()->browser()->GetPermissionStatus(
-      PermissionNameToPermissionType(permission),
-      context_->GetBrowserContext(),
-      GURL(origin),
-      embedding_origin.is_empty() ? GURL(origin) : embedding_origin));
+void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
+                                                  GURL origin) {
+  // If the embedding_origin is empty we'll use |origin| instead.
+  GURL embedding_origin = context_->GetEmbeddingOrigin();
+  GetContentClient()->browser()->ResetPermission(
+      type, context_->GetBrowserContext(), origin,
+      embedding_origin.is_empty() ? origin : embedding_origin);
 }
 
 }  // namespace content

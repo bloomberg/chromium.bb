@@ -121,7 +121,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         profile()->GetHostContentSettingsMap()->GetContentSetting(
             url.GetOrigin(), url.GetOrigin(),
             CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
-    EXPECT_EQ(CONTENT_SETTING_ALLOW , setting);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
   }
 
   void TestAskAndDismiss_TestContent() {
@@ -149,7 +149,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         profile()->GetHostContentSettingsMap()->GetContentSetting(
             url.GetOrigin(), url.GetOrigin(),
             CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
-    EXPECT_EQ(CONTENT_SETTING_ASK , setting);
+    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
   void TestRequestPermissionInvalidUrl(ContentSettingsType type) {
@@ -176,6 +176,45 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         profile()->GetHostContentSettingsMap()->GetContentSetting(
             url.GetOrigin(), url.GetOrigin(), type, std::string());
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  }
+
+  void TestGrantAndRevoke_TestContent(ContentSettingsType type,
+                                      ContentSetting expected_default) {
+    TestPermissionContext permission_context(profile(), type);
+    GURL url("http://www.google.com");
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        -1, GURL());
+    permission_context.RequestPermission(
+        web_contents(),
+        id, url, true,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
+
+    RespondToPermission(&permission_context, id, url, true);
+    EXPECT_TRUE(permission_context.permission_set());
+    EXPECT_TRUE(permission_context.permission_granted());
+    EXPECT_TRUE(permission_context.tab_context_updated());
+
+    ContentSetting setting =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(),
+            type, std::string());
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+
+    // Try to reset permission.
+    permission_context.ResetPermission(url.GetOrigin(), url.GetOrigin());
+    ContentSetting setting_after_reset =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(),
+            type, std::string());
+    ContentSetting default_setting =
+        profile()->GetHostContentSettingsMap()->GetDefaultContentSetting(
+            type, nullptr);
+    EXPECT_EQ(default_setting, setting_after_reset);
   }
 
  private:
@@ -215,5 +254,42 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestRequestPermissionInvalidUrl(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
+#endif
+}
+
+// Simulates granting and revoking of permissions.
+TEST_F(PermissionContextBaseTests, TestGrantAndRevoke) {
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                 CONTENT_SETTING_ASK);
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                 CONTENT_SETTING_ASK);
+#if defined(OS_ANDROID)
+  TestGrantAndRevoke_TestContent(
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
+#endif
+  // TODO(timvolodine): currently no test for
+  // CONTENT_SETTINGS_TYPE_NOTIFICATIONS because notification permissions work
+  // differently with infobars as compared to bubbles (crbug.com/453784).
+  // TODO(timvolodine): currently no test for
+  // CONTENT_SETTINGS_TYPE_PUSH_MESSAGING because infobars do not implement push
+  // messaging permissions (crbug.com/453788).
+}
+
+// Simulates granting and revoking of permissions using permission bubbles.
+TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
+  StartUsingPermissionBubble();
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                 CONTENT_SETTING_ASK);
+#if defined(ENABLE_NOTIFICATIONS)
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                 CONTENT_SETTING_ASK);
+#endif
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                 CONTENT_SETTING_ASK);
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                 CONTENT_SETTING_ASK);
+#if defined(OS_ANDROID)
+  TestGrantAndRevoke_TestContent(
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
 #endif
 }

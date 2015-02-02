@@ -620,6 +620,36 @@ ContentSettingToPermissionStatus(ContentSetting setting) {
   return content::PERMISSION_STATUS_DENIED;
 }
 
+PermissionContextBase* GetPermissionContext(Profile* profile,
+    content::PermissionType permission) {
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      return MidiPermissionContextFactory::GetForProfile(profile);
+    case content::PERMISSION_NOTIFICATIONS:
+#if defined(ENABLE_NOTIFICATIONS)
+      return DesktopNotificationServiceFactory::GetForProfile(profile);
+#else
+      NOTIMPLEMENTED();
+#endif
+    case content::PERMISSION_GEOLOCATION:
+      return GeolocationPermissionContextFactory::GetForProfile(profile);
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+#if defined(OS_ANDROID)
+      return ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
+          profile);
+#else
+      NOTIMPLEMENTED();
+      break;
+#endif
+    case content::PERMISSION_PUSH_MESSAGING:
+      return gcm::PushMessagingPermissionContextFactory::GetForProfile(profile);
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid RequestPermission for " << permission;
+      break;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -1946,45 +1976,30 @@ content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
     const GURL& embedding_origin) {
   DCHECK(browser_context);
   Profile* profile = Profile::FromBrowserContext(browser_context);
+  PermissionContextBase* context = GetPermissionContext(profile, permission);
 
-  PermissionContextBase* context = nullptr;
-  switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
-      context = MidiPermissionContextFactory::GetForProfile(profile);
-      break;
-    case content::PERMISSION_NOTIFICATIONS:
-#if defined(ENABLE_NOTIFICATIONS)
-      context = DesktopNotificationServiceFactory::GetForProfile(profile);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_GEOLOCATION:
-      context = GeolocationPermissionContextFactory::GetForProfile(profile);
-      break;
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID)
-      context = ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
-          profile);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_PUSH_MESSAGING:
-      context = gcm::PushMessagingPermissionContextFactory::GetForProfile(
-          profile);
-      break;
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid RequestPermission for " << permission;
-      break;
-  }
+  if (!context)
+    return content::PERMISSION_STATUS_ASK;
 
-  ContentSetting result = context
-      ? context->GetPermissionStatus(requesting_origin.GetOrigin(),
-                                     embedding_origin.GetOrigin())
-      : CONTENT_SETTING_DEFAULT;
+  return ContentSettingToPermissionStatus(
+      context->GetPermissionStatus(requesting_origin.GetOrigin(),
+                                   embedding_origin.GetOrigin()));
+}
 
-  return ContentSettingToPermissionStatus(result);
+void ChromeContentBrowserClient::ResetPermission(
+    content::PermissionType permission,
+    content::BrowserContext* browser_context,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  DCHECK(browser_context);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  PermissionContextBase* context = GetPermissionContext(profile, permission);
+
+  if (!context)
+    return;
+
+  context->ResetPermission(requesting_origin.GetOrigin(),
+                           embedding_origin.GetOrigin());
 }
 
 void ChromeContentBrowserClient::CancelPermissionRequest(

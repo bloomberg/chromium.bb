@@ -55,6 +55,15 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
       requesting_origin, embedding_origin, permission_type_, std::string());
 }
 
+void PermissionContextBase::ResetPermission(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  profile_->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
+      ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
+      permission_type_, std::string(), CONTENT_SETTING_DEFAULT);
+}
+
 void PermissionContextBase::CancelPermissionRequest(
     content::WebContents* web_contents,
     const PermissionRequestID& id) {

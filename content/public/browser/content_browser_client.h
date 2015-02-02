@@ -450,6 +450,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& requesting_origin,
       const GURL& embedding_origin);
 
+  virtual void ResetPermission(PermissionType permission,
+                               BrowserContext* browser_context,
+                               const GURL& requesting_origin,
+                               const GURL& embedding_origin) {}
+
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
