@@ -169,6 +169,7 @@ void HttpStreamFactoryImpl::Job::MarkAsAlternate(
     AlternateProtocolInfo alternate) {
   DCHECK(!original_url_.get());
   original_url_.reset(new GURL(original_url));
+  alternate_protocol_ = alternate;
   if (alternate.protocol == QUIC) {
     DCHECK(session_->params().enable_quic);
     using_quic_ = true;
@@ -1454,6 +1455,7 @@ void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
 void HttpStreamFactoryImpl::Job::MarkOtherJobComplete(const Job& job) {
   DCHECK_EQ(STATUS_RUNNING, other_job_status_);
   other_job_status_ = job.job_status_;
+  other_job_alternate_protocol_ = job.alternate_protocol_;
   MaybeMarkAlternateProtocolBroken();
 }
 

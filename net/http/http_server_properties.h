@@ -86,6 +86,12 @@ NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
     NextProto next_proto);
 
 struct NET_EXPORT AlternateProtocolInfo {
+  AlternateProtocolInfo()
+      : port(0),
+        protocol(UNINITIALIZED_ALTERNATE_PROTOCOL),
+        probability(0),
+        is_broken(false) {}
+
   AlternateProtocolInfo(uint16 port,
                         AlternateProtocol protocol,
                         double probability)

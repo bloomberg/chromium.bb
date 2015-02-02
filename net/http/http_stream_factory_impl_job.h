@@ -275,6 +275,12 @@ class HttpStreamFactoryImpl::Job {
   // and will specify the original URL.
   scoped_ptr<GURL> original_url_;
 
+  // AlternateProtocol for this job if this is an alternate job.
+  AlternateProtocolInfo alternate_protocol_;
+
+  // AlternateProtocol for the other job if this is not an alternate job.
+  AlternateProtocolInfo other_job_alternate_protocol_;
+
   // This is the Job we're dependent on. It will notify us if/when it's OK to
   // proceed.
   Job* blocking_job_;
