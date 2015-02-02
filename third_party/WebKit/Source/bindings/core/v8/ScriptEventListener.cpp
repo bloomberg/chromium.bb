@@ -106,26 +106,6 @@ static v8::Handle<v8::Function> eventListenerEffectiveFunction(v8::Isolate* isol
     return function;
 }
 
-String eventListenerHandlerBody(Document* document, EventListener* listener)
-{
-    if (listener->type() != EventListener::JSEventListenerType)
-        return "";
-
-    v8::HandleScope scope(toIsolate(document));
-    V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
-    v8::Context::Scope contextScope(context);
-    v8::Handle<v8::Object> object = v8Listener->getListenerObject(document);
-    if (object.IsEmpty())
-        return "";
-    v8::Handle<v8::Function> function = eventListenerEffectiveFunction(scope.GetIsolate(), object);
-    if (function.IsEmpty())
-        return "";
-
-    TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, functionString, function, "");
-    return functionString;
-}
-
 ScriptValue eventListenerHandler(Document* document, EventListener* listener)
 {
     if (listener->type() != EventListener::JSEventListenerType)
@@ -152,7 +132,7 @@ ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* l
     return ScriptState::from(v8Context);
 }
 
-bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& sourceName, String& scriptId, int& lineNumber, int& columnNumber)
+bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& scriptId, int& lineNumber, int& columnNumber)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return false;
@@ -170,11 +150,6 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     v8::Handle<v8::Function> originalFunction = getBoundFunction(function);
     int scriptIdValue = originalFunction->ScriptId();
     scriptId = String::number(scriptIdValue);
-    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
-    if (!origin.ResourceName().IsEmpty() && origin.ResourceName()->IsString())
-        sourceName = toCoreString(origin.ResourceName().As<v8::String>());
-    else
-        sourceName = "";
     lineNumber = originalFunction->GetScriptLineNumber();
     columnNumber = originalFunction->GetScriptColumnNumber();
     return true;

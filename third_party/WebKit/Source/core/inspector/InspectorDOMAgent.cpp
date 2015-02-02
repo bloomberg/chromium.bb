@@ -1797,11 +1797,10 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
 PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, Node* node, const String* objectGroupId)
 {
     RefPtr<EventListener> eventListener = registeredEventListener.listener;
-    String sourceName;
     String scriptId;
     int lineNumber;
     int columnNumber;
-    if (!eventListenerHandlerLocation(&node->document(), eventListener.get(), sourceName, scriptId, lineNumber, columnNumber))
+    if (!eventListenerHandlerLocation(&node->document(), eventListener.get(), scriptId, lineNumber, columnNumber))
         return nullptr;
 
     Document& document = node->document();
@@ -1814,7 +1813,6 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
         .setUseCapture(registeredEventListener.useCapture)
         .setIsAttribute(eventListener->isAttribute())
         .setNodeId(pushNodePathToFrontend(node))
-        .setHandlerBody(eventListenerHandlerBody(&document, eventListener.get()))
         .setLocation(location);
     if (objectGroupId) {
         ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
@@ -1832,8 +1830,6 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
             }
         }
     }
-    if (!sourceName.isEmpty())
-        value->setSourceName(sourceName);
     return value.release();
 }
 

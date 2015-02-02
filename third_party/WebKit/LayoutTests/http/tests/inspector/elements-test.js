@@ -351,17 +351,10 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
             var listenerItems = listenerTypes[i].children;
             for (var j = 0; j < listenerItems.length; ++j) {
                 var objectPropertiesSection = listenerItems[j].listItemElement.firstChild._section;
-                InspectorTest.dumpObjectPropertySection(objectPropertiesSection, {
-                    sourceName: formatSourceNameProperty
-                });
+                InspectorTest.dumpObjectPropertySection(objectPropertiesSection, {});
             }
         }
         callback();
-    }
-
-    function formatSourceNameProperty(value)
-    {
-        return "[clipped-for-test]/" + value.replace(/(.*?\/)LayoutTests/, "LayoutTests");
     }
 }
 
