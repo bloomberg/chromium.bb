@@ -47,6 +47,7 @@
 #include "public/platform/WebWaitableEvent.h"
 #include "public/platform/WebWorkerRunLoop.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 #include <utility>
@@ -95,21 +96,26 @@ public:
         return adoptPtr(new WorkerThreadCancelableTask(closure));
     }
 
+    virtual ~WorkerThreadCancelableTask() { }
+
     virtual void performTask(ExecutionContext*) override
     {
         if (!m_taskCanceled)
             (*m_closure)();
     }
 
+    WeakPtr<WorkerThreadCancelableTask> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
     void cancelTask() { m_taskCanceled = true; }
 
 private:
     explicit WorkerThreadCancelableTask(PassOwnPtr<Closure> closure)
-    : m_closure(closure)
-    , m_taskCanceled(false)
+        : m_closure(closure)
+        , m_weakFactory(this)
+        , m_taskCanceled(false)
     { }
 
     OwnPtr<Closure> m_closure;
+    WeakPtrFactory<WorkerThreadCancelableTask> m_weakFactory;
     bool m_taskCanceled;
 };
 
@@ -119,7 +125,6 @@ public:
         : m_workerThread(workerThread)
         , m_nextFireTime(0.0)
         , m_running(false)
-        , m_lastQueuedTask(nullptr)
     { }
 
     typedef void (*SharedTimerFunction)();
@@ -146,18 +151,19 @@ public:
         m_running = true;
         m_nextFireTime = currentTime() + interval;
 
-        if (m_lastQueuedTask)
+        if (m_lastQueuedTask.get())
             m_lastQueuedTask->cancelTask();
 
         // Now queue the task as a cancellable one.
-        m_lastQueuedTask = WorkerThreadCancelableTask::create(bind(&WorkerSharedTimer::OnTimeout, this)).leakPtr();
-        m_workerThread->postDelayedTask(adoptPtr(m_lastQueuedTask), delay);
+        OwnPtr<WorkerThreadCancelableTask> task = WorkerThreadCancelableTask::create(bind(&WorkerSharedTimer::OnTimeout, this));
+        m_lastQueuedTask = task->createWeakPtr();
+        m_workerThread->postDelayedTask(task.release(), delay);
     }
 
     virtual void stop()
     {
         m_running = false;
-        m_lastQueuedTask = 0;
+        m_lastQueuedTask = nullptr;
     }
 
     double nextFireTime() { return m_nextFireTime; }
@@ -167,7 +173,7 @@ private:
     {
         ASSERT(m_workerThread->workerGlobalScope());
 
-        m_lastQueuedTask = 0;
+        m_lastQueuedTask = nullptr;
 
         if (m_sharedTimerFunction && m_running && !m_workerThread->workerGlobalScope()->isClosing())
             m_sharedTimerFunction();
@@ -177,7 +183,11 @@ private:
     SharedTimerFunction m_sharedTimerFunction;
     double m_nextFireTime;
     bool m_running;
-    WorkerThreadCancelableTask* m_lastQueuedTask;
+
+    // The task to run OnTimeout, if any. While OnTimeout resets
+    // m_lastQueuedTask, this must be a weak pointer because the
+    // worker runloop may delete the task as it is shutting down.
+    WeakPtr<WorkerThreadCancelableTask> m_lastQueuedTask;
 };
 
 class WorkerThreadTask : public blink::WebThread::Task {
