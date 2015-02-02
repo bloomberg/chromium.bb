@@ -223,6 +223,7 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
   # Now move the contents of the temporary destdir to their final place.
   run_shell_commands([
       'cp %s/* %s/ -rd' % (destdir, install_prefix),
+      'mkdir -p %s/lib/' % install_prefix,
       'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
       'ln -sf libpci.so.%s %s/lib/libpci.so.3' % (version, install_prefix)],
                      parsed_arguments.verbose, environment)
