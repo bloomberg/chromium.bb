@@ -266,9 +266,8 @@ AudioBufferSourceNode* AudioContext::createBufferSource()
     ASSERT(isMainThread());
     AudioBufferSourceNode* node = AudioBufferSourceNode::create(this, m_destinationNode->sampleRate());
 
-    // Because this is an AudioScheduledSourceNode, the context keeps a reference until it has finished playing.
-    // When this happens, AudioScheduledSourceNode::finish() calls AudioContext::notifyNodeFinishedProcessing().
-    refNode(node);
+    // Do not add a reference to this source node now. The reference will be added when start() is
+    // called.
 
     return node;
 }
@@ -505,9 +504,8 @@ OscillatorNode* AudioContext::createOscillator()
 
     OscillatorNode* node = OscillatorNode::create(this, m_destinationNode->sampleRate());
 
-    // Because this is an AudioScheduledSourceNode, the context keeps a reference until it has finished playing.
-    // When this happens, AudioScheduledSourceNode::finish() calls AudioContext::notifyNodeFinishedProcessing().
-    refNode(node);
+    // Do not add a reference to this source node now. The reference will be added when start() is
+    // called.
 
     return node;
 }
@@ -760,6 +758,20 @@ void AudioContext::addDeferredBreakConnection(AudioNode& node)
     m_deferredBreakConnectionList.append(&node);
 }
 
+void AudioContext::handleStoppableSourceNodes()
+{
+    ASSERT(isGraphOwner());
+
+    // Find AudioBufferSourceNodes to see if we can stop playing them.
+    for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
+        AudioNode* node = m_referencedNodes.at(i).get();
+
+        if (node->nodeType() == AudioNode::NodeTypeAudioBufferSource) {
+            AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
+            sourceNode->handleStoppableSourceNode();
+        }
+    }
+}
 void AudioContext::handlePreRenderTasks()
 {
     ASSERT(isAudioThread());
@@ -776,6 +788,9 @@ void AudioContext::handlePreRenderTasks()
 
         updateAutomaticPullNodes();
         resolvePromisesForResume();
+
+        // Check to see if source nodes can be stopped because the end time has passed.
+        handleStoppableSourceNodes();
 
         // Update the cached sample frame value.
         m_cachedSampleFrame = currentSampleFrame();

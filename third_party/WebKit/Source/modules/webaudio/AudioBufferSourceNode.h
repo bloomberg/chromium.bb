@@ -91,6 +91,8 @@ public:
     // AudioScheduledSourceNode
     virtual void finish() override;
 
+    void handleStoppableSourceNode();
+
     virtual void trace(Visitor*) override;
 
 private:

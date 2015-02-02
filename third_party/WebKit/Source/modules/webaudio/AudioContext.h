@@ -259,6 +259,12 @@ public:
     void fireCompletionEvent();
     void notifyStateChange();
 
+    // The context itself keeps a reference to all source nodes.  The source nodes, then reference all nodes they're connected to.
+    // In turn, these nodes reference all nodes they're connected to.  All nodes are ultimately connected to the AudioDestinationNode.
+    // When the context dereferences a source node, it will be deactivated from the rendering graph along with all other nodes it is
+    // uniquely connected to.  See the AudioNode::ref() and AudioNode::deref() methods for more details.
+    void refNode(AudioNode*);
+
     static unsigned s_hardwareContextCount;
 
 protected:
@@ -279,11 +285,6 @@ private:
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
 
-    // The context itself keeps a reference to all source nodes.  The source nodes, then reference all nodes they're connected to.
-    // In turn, these nodes reference all nodes they're connected to.  All nodes are ultimately connected to the AudioDestinationNode.
-    // When the context dereferences a source node, it will be deactivated from the rendering graph along with all other nodes it is
-    // uniquely connected to.  See the AudioNode::ref() and AudioNode::deref() methods for more details.
-    void refNode(AudioNode*);
     void derefNode(AudioNode*);
 
     // When the context goes away, there might still be some sources which haven't finished playing.
@@ -405,6 +406,11 @@ private:
 
     // Follows the destination's currentSampleFrame, but might be slightly behind due to locking.
     size_t m_cachedSampleFrame;
+
+    // Tries to handle AudioBufferSourceNodes that were started but became disconnected or was never
+    // connected. Because these never get pulled anymore, they will stay around forever. So if we
+    // can, try to stop them so they can be collected.
+    void handleStoppableSourceNodes();
 
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.

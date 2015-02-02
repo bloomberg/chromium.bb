@@ -82,7 +82,11 @@ protected:
                               size_t& quantumFrameOffset,
                               size_t& nonSilentFramesToProcess);
 
-    // Called when we have no more sound to play or the noteOff() time has been reached.
+    // Called when we have no more sound to play or the stop() time has been reached. No onEnded
+    // event is called.
+    virtual void finishWithoutOnEnded();
+
+    // Like finishWithoutOnEnded(), but an onEnded (if specified) is called.
     virtual void finish();
 
     void notifyEnded();

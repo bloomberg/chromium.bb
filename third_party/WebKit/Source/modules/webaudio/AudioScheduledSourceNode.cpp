@@ -152,6 +152,11 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState
         return;
     }
 
+    // The node is started. Add a reference to keep us alive so that audio will eventually get
+    // played even if Javascript should drop all references to this node. The reference will get
+    // dropped when the source has finished playing.
+    context()->refNode(this);
+
     m_startTime = when;
     m_playbackState = SCHEDULED_STATE;
 }
@@ -187,13 +192,17 @@ void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
     setAttributeEventListener(EventTypeNames::ended, listener);
 }
 
-void AudioScheduledSourceNode::finish()
+void AudioScheduledSourceNode::finishWithoutOnEnded()
 {
     if (m_playbackState != FINISHED_STATE) {
         // Let the context dereference this AudioNode.
         context()->notifyNodeFinishedProcessing(this);
         m_playbackState = FINISHED_STATE;
     }
+}
+void AudioScheduledSourceNode::finish()
+{
+    finishWithoutOnEnded();
 
     if (m_hasEndedListener && context()->executionContext()) {
         context()->executionContext()->postTask(createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, this));

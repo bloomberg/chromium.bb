@@ -521,6 +521,21 @@ void AudioBufferSourceNode::clearPannerNode()
     }
 }
 
+void AudioBufferSourceNode::handleStoppableSourceNode()
+{
+    // If the source node is not looping, and we have a buffer, we can determine when the
+    // source would stop playing.
+    if (!loop() && buffer() && isPlayingOrScheduled()) {
+        double stopTime = m_startTime + buffer()->duration();
+        if (context()->currentTime() > stopTime) {
+            // The context time has passed the time when the source nodes should have stopped
+            // playing. Stop the node now and deref it. (But don't run the onEnded event because the
+            // source never actually played.)
+            finishWithoutOnEnded();
+        }
+    }
+}
+
 void AudioBufferSourceNode::finish()
 {
     clearPannerNode();
