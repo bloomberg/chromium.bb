@@ -50,4 +50,11 @@ component("views_content_client") {
 
     deps += [ "//ui/aura" ]
   }
+
+  if (is_chromeos) {
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/wm:test_support",
+    ]
+  }
 }

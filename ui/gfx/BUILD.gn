@@ -222,6 +222,7 @@ component("gfx") {
 
   deps = [
     ":gfx_export",
+    "//base",
     "//base:i18n",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",

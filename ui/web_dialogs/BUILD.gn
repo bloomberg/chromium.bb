@@ -23,6 +23,7 @@ component("web_dialogs") {
     "//skia",
     "//ui/base",
     "//url",
+    "//third_party/WebKit/public:blink_minimal",
   ]
 }
 
@@ -41,6 +42,7 @@ static_library("test_support") {
     "//base",
     "//content/public/browser",
     "//skia",
+    "//ui/gfx/geometry",
     "//url",
   ]
 }

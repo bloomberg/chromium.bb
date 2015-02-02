@@ -17,5 +17,6 @@ component("ipc") {
     "//ipc",
     "//skia",
     "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }

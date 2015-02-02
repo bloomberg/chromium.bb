@@ -67,6 +67,7 @@ test("snapshot_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
+    "//ui/compositor:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

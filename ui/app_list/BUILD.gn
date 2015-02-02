@@ -243,6 +243,7 @@ test("app_list_unittests") {
     "//ui/base",
     "//ui/compositor",
     "//ui/events",
+    "//ui/events:test_support",
     "//ui/gl",
     "//ui/resources",
     "//ui/resources:ui_test_pak",

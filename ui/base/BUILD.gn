@@ -26,7 +26,6 @@ component("base") {
     "accelerators/platform_accelerator.h",
     "accelerators/platform_accelerator_cocoa.h",
     "accelerators/platform_accelerator_cocoa.mm",
-    "android/system_ui_resource_type.h",
     "android/ui_base_jni_registrar.cc",
     "android/ui_base_jni_registrar.h",
     "android/view_android.cc",
@@ -307,6 +306,7 @@ component("base") {
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
     "//base:i18n",
+    "//cc",
     "//net",
     "//third_party/icu",
     "//ui/events",
@@ -425,7 +425,10 @@ component("base") {
     }
 
     if (is_chromeos) {
-      deps += [ "//chromeos" ]
+      deps += [
+        "//chromeos",
+        "//chromeos/ime:gencode",
+      ]
       if (!use_ozone) {
         sources -= [
           "ime/chromeos/ime_keyboard_ozone.cc",
@@ -925,7 +928,10 @@ test("ui_base_unittests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//ui/events:dom4_keycode_converter",
+    ]
   }
 }
 # TODO(GYP) Mac (ui_base_tests_bundle)
