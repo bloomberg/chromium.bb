@@ -16,5 +16,7 @@ nameservice_test_nexe = env.ComponentProgram(
                                         '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
-    nameservice_test_nexe)
+    nameservice_test_nexe,
+    # Pass '-a' to enable imc_connect().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nameservice_test')

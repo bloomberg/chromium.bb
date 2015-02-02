@@ -106,6 +106,11 @@ int32_t NaClSysImcConnect(struct NaClAppThread *natp,
   NaClLog(3, "Entered NaClSysImcConnectAddr(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, d);
 
+  /* This syscall is not used in Chromium so is disabled by default. */
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
   ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
