@@ -349,46 +349,48 @@ test("ash_unittests") {
   }
 }
 
-executable("ash_shell") {
-  testonly = true
-  sources = [
-    "shell/shell_main.cc",
-  ]
+if (!is_win || link_chrome_on_windows) {
+  executable("ash_shell") {
+    testonly = true
+    sources = [
+      "shell/shell_main.cc",
+    ]
 
-  deps = [
-    ":ash_shell_lib",
-    "//components/user_manager",
-  ]
+    deps = [
+      ":ash_shell_lib",
+      "//components/user_manager",
+    ]
 
-  if (is_win) {
-    configs -= [ "//build/config/win:console" ]
-    configs += [ "//build/config/win:windowed" ]
-    deps += [ "//sandbox" ]
+    if (is_win) {
+      configs -= [ "//build/config/win:console" ]
+      configs += [ "//build/config/win:windowed" ]
+      deps += [ "//sandbox" ]
+    }
+
+    if (is_chromeos) {
+      deps += [ "//device/bluetooth" ]
+    }
   }
 
-  if (is_chromeos) {
-    deps += [ "//device/bluetooth" ]
-  }
-}
+  test("ash_shell_unittests") {
+    sources = [
+      "shell/window_watcher_unittest.cc",
+      "test/ash_unittests.cc",
+    ]
 
-test("ash_shell_unittests") {
-  sources = [
-    "shell/window_watcher_unittest.cc",
-    "test/ash_unittests.cc",
-  ]
+    deps = [
+      ":ash_shell_lib",
+      ":test_support",
+      "//base/test:test_support",
+      "//components/user_manager",
+      "//content/test:test_support",
+      "//skia",
+      "//testing/gtest",
+      "//ui/accessibility",
+    ]
 
-  deps = [
-    ":ash_shell_lib",
-    ":test_support",
-    "//base/test:test_support",
-    "//components/user_manager",
-    "//content/test:test_support",
-    "//skia",
-    "//testing/gtest",
-    "//ui/accessibility",
-  ]
-
-  if (is_chromeos) {
-    deps += [ "//ui/display" ]
+    if (is_chromeos) {
+      deps += [ "//ui/display" ]
+    }
   }
 }
