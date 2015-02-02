@@ -58,7 +58,7 @@ component("shell_dialogs") {
     libs = [ "jnigraphics" ]
 
     if (!is_android_webview_build) {
-      #deps += [ '../android/ui_android.gyp:ui_java' ]  TODO(GYP)
+      deps += [ "//ui/android:ui_java" ]
     }
   }
 

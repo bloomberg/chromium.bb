@@ -287,10 +287,9 @@ component("gfx") {
       sources -= [ "path.cc" ]
     }
 
-    # TODO(GYP) re-enable when base_java exists.
-    #if (!is_android_webview_build) {
-    #  deps += [ "//base:base_java" ]
-    #}
+    if (!is_android_webview_build) {
+      deps += [ "//base:base_java" ]
+    }
 
     if (!is_debug) {
       configs -= [ "//build/config/compiler:optimize" ]
@@ -514,10 +513,6 @@ test("gfx_unittests") {
       # Do not run display_change_notifier_unittest.cc on Android because it
       # does not compile display_observer.cc
       "display_change_notifier_unittest.cc",
-    ]
-
-    deps += [
-      #'../../testing/android/native_test.gyp:native_test_native_code', TODO(GYP)
     ]
   }
 
