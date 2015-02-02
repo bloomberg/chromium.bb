@@ -384,7 +384,7 @@ function fail_if_not_installed {
 # Check pngcrush version and exit if the version is in bad range.
 # See crbug.com/404893.
 function exit_if_bad_pngcrush_version {
-  local version=$(pngcrush -v | awk "/pngcrush 1.7./ {print \$3}")
+  local version=$(pngcrush -v 2>&1 | awk "/pngcrush 1.7./ {print \$3}")
   local version_num=$(echo $version | sed "s/\.//g")
   if [[ (1748 -lt $version_num && $version_num -lt 1773) ]] ; then
     echo "Your pngcrush ($version) has a bug that exists from " \
