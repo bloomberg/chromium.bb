@@ -57,6 +57,7 @@ public:
         DrawingFirst,
         DrawingPaintPhaseFirst = DrawingFirst,
         DrawingPaintPhaseLast = DrawingFirst + PaintPhaseMax,
+        BoxDecorationBackground,
         ColumnRules,
         DragImage,
         LinkHighlight,

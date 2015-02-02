@@ -213,7 +213,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(paintRect));
+    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())
         return;
 

@@ -506,7 +506,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div->focus();
@@ -515,7 +515,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseCaret)));
 }

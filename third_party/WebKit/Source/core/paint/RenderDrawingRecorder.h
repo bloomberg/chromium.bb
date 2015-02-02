@@ -18,6 +18,7 @@ class RenderObject;
 class RenderDrawingRecorder {
 public:
     RenderDrawingRecorder(GraphicsContext*, const RenderObject&, PaintPhase, const FloatRect&);
+    RenderDrawingRecorder(GraphicsContext*, const RenderObject&, DisplayItem::Type, const FloatRect&);
 
     ~RenderDrawingRecorder();
 

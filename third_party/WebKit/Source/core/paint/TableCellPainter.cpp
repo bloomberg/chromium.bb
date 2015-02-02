@@ -225,7 +225,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
+    RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())
         return;
 

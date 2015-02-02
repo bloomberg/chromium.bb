@@ -42,6 +42,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(Drawing);
 
     switch (type) {
+    case DisplayItem::BoxDecorationBackground: return "DrawingBoxDecorationBackground";
     case DisplayItem::ColumnRules: return "DrawingColumnRules";
     case DisplayItem::DragImage: return "DrawingDragImage";
     case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";

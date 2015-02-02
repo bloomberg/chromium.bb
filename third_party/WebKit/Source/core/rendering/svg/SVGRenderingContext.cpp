@@ -26,6 +26,7 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
@@ -34,7 +35,6 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -44,8 +44,9 @@ SVGRenderingContext::~SVGRenderingContext()
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
 
-        DrawingRecorder recorder(m_originalPaintInfo->context, m_object->displayItemClient(), DisplayItem::SVGFilter, LayoutRect::infiniteRect());
-        m_filter->finishEffect(m_object, m_originalPaintInfo->context);
+        RenderDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteRect());
+        if (!recorder.canUseCachedDrawing())
+            m_filter->finishEffect(m_object, m_originalPaintInfo->context);
 
         // Reset the paint info after the filter effect has been completed.
         // This isn't strictly required (e.g., m_paintInfo.rect is not used

@@ -12,7 +12,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -31,8 +30,9 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_renderView.viewRect();
 
-        DrawingRecorder recorder(paintInfo.context, m_renderView.displayItemClient(), DisplayItem::ViewBackground, paintRect);
-        paintInfo.context->fillRect(paintRect, m_renderView.frameView()->baseBackgroundColor());
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, DisplayItem::ViewBackground, paintRect);
+        if (!recorder.canUseCachedDrawing())
+            paintInfo.context->fillRect(paintRect, m_renderView.frameView()->baseBackgroundColor());
     }
 
     m_renderView.paintObject(paintInfo, paintOffset);
@@ -85,15 +85,17 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_renderView.viewRect();
 
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, paintInfo.phase, m_renderView.viewRect());
-        Color baseColor = m_renderView.frameView()->baseBackgroundColor();
-        if (baseColor.alpha()) {
-            SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
-            paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
-            paintInfo.context->fillRect(paintRect, baseColor);
-            paintInfo.context->setCompositeOperation(previousOperation);
-        } else {
-            paintInfo.context->clearRect(paintRect);
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, DisplayItem::BoxDecorationBackground, m_renderView.viewRect());
+        if (!recorder.canUseCachedDrawing()) {
+            Color baseColor = m_renderView.frameView()->baseBackgroundColor();
+            if (baseColor.alpha()) {
+                SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
+                paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
+                paintInfo.context->fillRect(paintRect, baseColor);
+                paintInfo.context->setCompositeOperation(previousOperation);
+            } else {
+                paintInfo.context->clearRect(paintRect);
+            }
         }
     }
 }

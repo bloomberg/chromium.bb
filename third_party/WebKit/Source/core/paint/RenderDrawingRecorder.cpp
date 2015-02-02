@@ -18,6 +18,13 @@ RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const Ren
 #endif
 { }
 
+RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const RenderObject& renderer, DisplayItem::Type displayItemType, const FloatRect& clip)
+    : m_drawingRecorder(context, renderer.displayItemClient(), displayItemType, clip)
+#ifndef NDEBUG
+    , m_renderer(renderer)
+#endif
+{ }
+
 RenderDrawingRecorder::~RenderDrawingRecorder()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())

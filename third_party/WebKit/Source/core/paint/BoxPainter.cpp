@@ -77,7 +77,7 @@ LayoutRect BoxPainter::scrolledBackgroundRect()
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
-    RenderDrawingRecorder recorder(paintInfo.context, m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
+    RenderDrawingRecorder recorder(paintInfo.context, m_renderBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
     if (recorder.canUseCachedDrawing())
         return;
 

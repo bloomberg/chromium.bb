@@ -208,8 +208,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             && m_renderBlock.style()->visibility() == VISIBLE
             && m_renderBlock.hasColumns()
             && !paintInfo.paintRootBackgroundOnly()) {
-            DrawingRecorder drawingRecorder(paintInfo.context, m_renderBlock.displayItemClient(), DisplayItem::ColumnRules, bounds);
-            paintColumnRules(paintInfo, scrolledOffset);
+            RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, DisplayItem::ColumnRules, bounds);
+            if (!recorder.canUseCachedDrawing())
+                paintColumnRules(paintInfo, scrolledOffset);
         }
 
         // We're done. We don't bother painting any children.
