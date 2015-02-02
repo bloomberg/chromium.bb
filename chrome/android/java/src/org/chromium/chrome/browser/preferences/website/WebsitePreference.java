@@ -116,7 +116,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     @Override
     public int compareTo(Preference preference) {
         if (!(preference instanceof WebsitePreference)) {
-            return 1;
+            return super.compareTo(preference);
         }
         WebsitePreference other = (WebsitePreference) preference;
         if (mFilter.showStorageSites(mCategoryFilter)) {
