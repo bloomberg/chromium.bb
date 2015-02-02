@@ -8031,6 +8031,76 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The time for a dialog-hosted extension to load.</summary>
 </histogram>
 
+<histogram name="Extensions.DidCreateScriptContext_Blessed"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per blessed
+    extension context (chrome-extension://... origins within Extension
+    processes, like background pages, options pages, popups).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_BlessedWebPage"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per blessed web page
+    context (hosted apps).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_ContentScript"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per content script
+    context.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_Unblessed"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per unblessed
+    extension context (chrome-extension://... origins hosted in iframes).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_Unspecified"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings in an unknown type
+    of context (this should never happen other than in bizarre circumstances).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_WebPage"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per web page context
+    (just the chrome.app, chrome.webstore, and possibly chrome.runtime APIs).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DidCreateScriptContext_WebUI" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per WebUI context
+    (chrome://extensions and so forth).
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Disabled">
   <owner>kalman@chromium.org</owner>
   <summary>

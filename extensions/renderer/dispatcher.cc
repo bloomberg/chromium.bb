@@ -9,10 +9,12 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_switches.h"
@@ -263,6 +265,8 @@ void Dispatcher::DidCreateScriptContext(
     const v8::Handle<v8::Context>& v8_context,
     int extension_group,
     int world_id) {
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
   const Extension* extension =
       GetExtensionFromFrameAndWorld(frame, world_id, false);
   const Extension* effective_extension =
@@ -354,6 +358,35 @@ void Dispatcher::DidCreateScriptContext(
   }
 
   delegate_->RequireAdditionalModules(context, is_within_platform_app);
+
+  const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  switch (context_type) {
+    case Feature::UNSPECIFIED_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Unspecified",
+                          elapsed);
+      break;
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Blessed", elapsed);
+      break;
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Unblessed",
+                          elapsed);
+      break;
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_ContentScript",
+                          elapsed);
+      break;
+    case Feature::WEB_PAGE_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebPage", elapsed);
+      break;
+    case Feature::BLESSED_WEB_PAGE_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_BlessedWebPage",
+                          elapsed);
+      break;
+    case Feature::WEBUI_CONTEXT:
+      UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
+      break;
+  }
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
