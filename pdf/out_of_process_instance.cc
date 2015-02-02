@@ -282,7 +282,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
 
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
-  RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
 }
 
 OutOfProcessInstance::~OutOfProcessInstance() {
