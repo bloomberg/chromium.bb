@@ -36,6 +36,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/Logging.h"
@@ -43,6 +44,7 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/transforms/AffineTransform.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageOverlayList.h"
 #include "web/WebInputEventConversion.h"
@@ -82,8 +84,12 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     // be used within Blink paint code.
     graphicsContext->setCertainlyOpaque(background == Opaque);
     float scaleFactor = page.deviceScaleFactor();
-    graphicsContext->scale(scaleFactor, scaleFactor);
     graphicsContext->setDeviceScaleFactor(scaleFactor);
+
+    AffineTransform scale;
+    scale.scale(scaleFactor);
+    TransformRecorder scaleRecorder(*graphicsContext, root.displayItemClient(), scale);
+
     IntRect dirtyRect(rect);
     FrameView* view = root.view();
     if (view) {
