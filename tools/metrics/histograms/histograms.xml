@@ -23276,6 +23276,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.EmptyUsernames.CountInDatabase">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Number of password forms with empty username in the Login Database. This is
+    recorded on startup.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.EmptyUsernames.OfferedToSave"
+    enum="PasswordManagerShowEmptyUsername">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    When offering to save a password, whether the username is empty.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.Enabled" enum="BooleanEnabled">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -53914,6 +53930,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Matching not used"/>
   <int value="1" label="No match"/>
   <int value="2" label="Match"/>
+</enum>
+
+<enum name="PasswordManagerShowEmptyUsername" type="int">
+  <int value="0" label="Non-empty username"/>
+  <int value="1" label="Empty username"/>
 </enum>
 
 <enum name="PasswordManagerSyncingAccountState" type="int">

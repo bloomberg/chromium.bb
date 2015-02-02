@@ -454,6 +454,15 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.SyncingAccountState",
                             2 * sync_username.empty() + syncing_account_saved,
                             4);
+
+  sql::Statement empty_usernames_statement(db_.GetCachedStatement(
+      SQL_FROM_HERE, "SELECT COUNT(*) FROM logins "
+                     "WHERE blacklisted_by_user=0 AND username_value=''"));
+  if (empty_usernames_statement.Step()) {
+    int empty_forms = empty_usernames_statement.ColumnInt(0);
+    UMA_HISTOGRAM_COUNTS_100("PasswordManager.EmptyUsernames.CountInDatabase",
+                             empty_forms);
+  }
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {

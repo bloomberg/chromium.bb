@@ -596,6 +596,10 @@ void PasswordManager::AskUserOrSavePassword() {
   RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
 
   if (ShouldPromptUserToSavePassword()) {
+    bool empty_password =
+        provisional_save_manager_->pending_credentials().username_value.empty();
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.OfferedToSave",
+                          empty_password);
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
     if (client_->PromptUserToSavePassword(provisional_save_manager_.Pass())) {
