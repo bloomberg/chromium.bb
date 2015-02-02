@@ -2,16 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO: Benchmark is failing; see crbug.com/452257. Comment out instead of
-# disabling because the failure happens before the Disabled check.
-#from page_sets import inbox
-#from telemetry import benchmark
-#from telemetry.web_perf import timeline_based_measurement
-#
-#@benchmark.Disabled('android')
-#class Inbox(benchmark.Benchmark):
-#  """Runs the timeline based measurement against inbox pageset."""
-#  test = timeline_based_measurement.TimelineBasedMeasurement
-#
-#  def CreatePageSet(self, options):
-#    return inbox.InboxPageSet()
+from page_sets import inbox
+from telemetry import benchmark
+from telemetry.web_perf import timeline_based_measurement
+
+@benchmark.Disabled('android')
+class Inbox(benchmark.Benchmark):
+  """Runs the timeline based measurement against inbox pageset."""
+  test = timeline_based_measurement.TimelineBasedMeasurement
+
+  def CreatePageSet(self, options):
+    return inbox.InboxPageSet()
