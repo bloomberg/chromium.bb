@@ -1936,7 +1936,7 @@ function load() {
       searchField.blur();  // Dismiss the keyboard.
   };
 
-  var removeMenu = $('remove-visit');
+  var removeMenu = getRequiredElement('remove-visit');
   // Decorate remove-visit before disabling/hiding because the values are
   // overwritten when decorating a MenuItem that has a Command.
   cr.ui.decorate(removeMenu, MenuItem);
