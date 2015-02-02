@@ -299,10 +299,8 @@ _settings = dict(
 
 # health_alert_recipients -- List of email addresses to send health alerts to
 #                            for this builder. It supports automatic email
-#                            adderss lookup for the following sheriff types:
+#                            address lookup for the following sheriff types:
 #                                'tree': tree sheriffs
-#                                'build': build deputies
-#                                'lab': lab sheriffs
 #                                'chrome': chrome gardeners
   health_alert_recipients=[],
 
@@ -1925,7 +1923,7 @@ pre_cq = paladin.derive(
   description='Verifies compilation, building an image, and vm/unit tests '
               'if supported.',
   doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ',
-  health_alert_recipients=['chromeos-build-alerts@google.com', 'build'],
+  health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
 )
 
 # Pre-CQ targets that only check compilation and unit tests.
@@ -2004,8 +2002,8 @@ internal_paladin.add_config('master-paladin',
   # TODO(mtennant): Fix this.  There should be some amount of auto-
   # configuration in the board_config.py code.
   health_threshold=3,
-  health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build', 'lab'],
+  health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                           'tree'],
   sanity_check_slaves=['wolf-tot-paladin'],
   trybot_list=False,
 )
@@ -2300,8 +2298,8 @@ internal_paladin.add_config('pre-cq-launcher',
   manifest_version=False,
   # Every Pre-CQ launch failure should send out an alert.
   health_threshold=1,
-  health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build'],
+  health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                           'tree'],
 )
 
 
@@ -2370,8 +2368,8 @@ _release.add_config('master-release',
   master=True,
   sync_chrome=False,
   chrome_sdk=False,
-  health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build', 'lab'],
+  health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                           'tree'],
   afdo_use=False,
 )
 

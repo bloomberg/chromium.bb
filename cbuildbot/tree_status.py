@@ -330,8 +330,6 @@ def GetSheriffEmailAddresses(sheriff_type):
     sheriff_type: Type of the sheriff to look for. See the keys in
     constants.SHERIFF_TYPE_TO_URL.
       - 'tree': tree sheriffs
-      - 'build': build deputy
-      - 'lab' : lab sheriff
       - 'chrome': chrome gardener
 
   Returns:

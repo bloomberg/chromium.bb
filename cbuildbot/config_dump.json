@@ -231,8 +231,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -293,8 +292,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -360,8 +358,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -485,8 +482,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -536,8 +532,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -577,8 +572,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -662,8 +656,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -717,8 +710,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -763,8 +755,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -845,8 +836,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -900,8 +890,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -945,8 +934,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -1014,8 +1002,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -1069,8 +1056,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -1114,8 +1100,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -1374,8 +1359,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -1631,8 +1615,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -1702,8 +1685,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2229,8 +2211,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2288,8 +2269,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2358,8 +2338,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2725,8 +2704,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2784,8 +2762,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -2854,8 +2831,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -3219,8 +3195,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -3382,8 +3357,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -3452,8 +3426,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -3827,8 +3800,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -3990,8 +3962,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -4060,8 +4031,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -5089,8 +5059,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -5606,8 +5575,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -5676,8 +5644,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6043,8 +6010,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6103,8 +6069,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6160,8 +6125,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6555,8 +6519,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6650,8 +6613,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -6722,8 +6684,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7097,8 +7058,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7260,8 +7220,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7330,8 +7289,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7732,8 +7690,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7791,8 +7748,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -7861,8 +7817,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -8226,8 +8181,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -8389,8 +8343,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -8459,8 +8412,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -8891,8 +8843,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -8949,8 +8900,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -9019,8 +8969,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -9429,8 +9378,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -9683,8 +9631,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -9761,8 +9708,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -10328,8 +10274,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -10390,8 +10335,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -10464,8 +10408,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -10840,8 +10783,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -10940,8 +10882,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11014,8 +10955,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11385,8 +11325,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11485,8 +11424,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11561,8 +11499,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11935,8 +11872,7 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -11999,8 +11935,7 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -12075,8 +12010,7 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -12443,8 +12377,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -12606,8 +12539,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -12676,8 +12608,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13051,8 +12982,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13214,8 +13144,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13284,8 +13213,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13619,8 +13547,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "manifest_version": true,
@@ -13645,8 +13572,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "manifest_version": true,
@@ -13721,8 +13647,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13844,8 +13769,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -13915,8 +13839,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -14290,8 +14213,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -14348,8 +14270,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -14418,8 +14339,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -14772,8 +14692,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -14825,8 +14744,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -14868,8 +14786,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -15002,8 +14919,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -15165,8 +15081,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -15235,8 +15150,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -15610,8 +15524,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -15773,8 +15686,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -15843,8 +15755,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -16220,8 +16131,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -16279,8 +16189,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -16349,8 +16258,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -17034,8 +16942,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -17321,8 +17228,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -17391,8 +17297,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -17988,8 +17893,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "images": [
             "base"
@@ -18058,8 +17962,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "images": [
             "base"
@@ -18131,8 +18034,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "images": [
             "base"
@@ -18505,8 +18407,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -18668,8 +18569,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -18738,8 +18638,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19115,8 +19014,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19175,8 +19073,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19231,8 +19128,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19590,8 +19486,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19753,8 +19648,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -19824,8 +19718,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20201,8 +20094,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20365,8 +20257,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20440,8 +20331,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20834,8 +20724,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20893,8 +20782,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -20963,8 +20851,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -21330,8 +21217,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -21389,8 +21275,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -21459,8 +21344,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -21858,8 +21742,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -21979,8 +21862,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -22053,8 +21935,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -22458,10 +22339,8 @@
         "description": "Commit Queue master (all others are slaves)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "tree",
-            "build",
-            "lab"
+            "chromeos-infra-eng@grotations.appspotmail.com",
+            "tree"
         ],
         "health_threshold": 3,
         "important": true,
@@ -22496,10 +22375,8 @@
         "dev_installer_prebuilts": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "tree",
-            "build",
-            "lab"
+            "chromeos-infra-eng@grotations.appspotmail.com",
+            "tree"
         ],
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
@@ -22598,8 +22475,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -22657,8 +22533,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -22727,8 +22602,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -23094,8 +22968,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -23153,8 +23026,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -23223,8 +23095,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -23570,8 +23441,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23627,8 +23497,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23674,8 +23543,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23746,8 +23614,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23803,8 +23670,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23850,8 +23716,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23922,8 +23787,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -23979,8 +23843,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24026,8 +23889,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24098,8 +23960,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24155,8 +24016,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24202,8 +24062,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24274,8 +24133,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24331,8 +24189,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24378,8 +24235,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24450,8 +24306,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24505,8 +24360,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24566,8 +24420,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -24659,8 +24512,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -24695,8 +24547,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -24735,8 +24586,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -24771,8 +24621,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -24811,8 +24660,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -24894,8 +24742,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -24990,8 +24837,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -25061,8 +24907,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -25428,8 +25273,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -25487,8 +25331,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -25557,8 +25400,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -25928,8 +25770,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -26147,8 +25988,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -26222,8 +26062,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -26810,8 +26649,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -26872,8 +26710,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -26946,8 +26783,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27317,8 +27153,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27379,8 +27214,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27453,8 +27287,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27824,8 +27657,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27886,8 +27718,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -27960,8 +27791,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -28331,8 +28161,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -28393,8 +28222,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -28467,8 +28295,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -28834,8 +28661,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -28930,8 +28756,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29001,8 +28826,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29436,8 +29260,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29495,8 +29318,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29565,8 +29387,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29932,8 +29753,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -29991,8 +29811,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -30062,8 +29881,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -30451,8 +30269,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -30546,8 +30363,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -30619,8 +30435,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31105,8 +30920,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31163,8 +30977,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31233,8 +31046,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31606,8 +31418,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31769,8 +31580,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -31839,8 +31649,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -32397,8 +32206,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -32497,8 +32305,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -32571,8 +32378,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -32946,8 +32752,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -33046,8 +32851,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -33124,8 +32928,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -33492,8 +33295,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -33588,8 +33390,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -33662,8 +33463,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -34030,8 +33830,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -34089,8 +33888,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -34160,8 +33958,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -34893,8 +34690,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -34929,8 +34725,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -34964,8 +34759,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -35001,8 +34795,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -35036,8 +34829,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -35071,8 +34863,7 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
                 "health_alert_recipients": [
-                    "chromeos-build-alerts@google.com",
-                    "build"
+                    "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "important": true,
                 "internal": true,
@@ -35102,9 +34893,8 @@
         "description": "Launcher for Pre-CQ builders",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "tree",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com",
+            "tree"
         ],
         "health_threshold": 1,
         "important": true,
@@ -35183,8 +34973,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -35246,8 +35035,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -35321,8 +35109,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -35683,8 +35470,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -35846,8 +35632,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -35916,8 +35701,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -37305,8 +37089,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -37723,8 +37506,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -37796,8 +37578,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38182,8 +37963,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38346,8 +38126,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38416,8 +38195,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38787,8 +38565,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38849,8 +38626,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -38908,8 +38684,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -39272,8 +39047,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -39334,8 +39108,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -39409,8 +39182,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -39770,8 +39542,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -39934,8 +39705,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -40005,8 +39775,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -40711,8 +40480,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -40927,8 +40695,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -40997,8 +40764,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -41588,8 +41354,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -41751,8 +41516,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -41821,8 +41585,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42202,8 +41965,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42303,8 +42065,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42379,8 +42140,7 @@
         "description": "Verifies compilation and unit tests only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42740,8 +42500,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42835,8 +42594,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -42908,8 +42666,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -43285,8 +43042,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -43449,8 +43205,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -43519,8 +43274,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -43884,8 +43638,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -43979,8 +43732,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -44053,8 +43805,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -44442,8 +44193,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -44501,8 +44251,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -44572,8 +44321,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -44936,8 +44684,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -45099,8 +44846,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -45169,8 +44915,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -45577,8 +45322,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -45636,8 +45380,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -45706,8 +45449,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46123,8 +45865,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46182,8 +45923,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46252,8 +45992,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46619,8 +46358,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46678,8 +46416,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -46748,8 +46485,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -47119,8 +46855,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -47182,8 +46917,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -47242,8 +46976,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -48470,8 +48203,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -48532,8 +48264,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -48606,8 +48337,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -48977,8 +48707,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49039,8 +48768,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49113,8 +48841,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49484,8 +49211,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49546,8 +49272,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49620,8 +49345,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -49991,8 +49715,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -50053,8 +49776,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -50127,8 +49849,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -50498,8 +50219,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -50560,8 +50280,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -50634,8 +50353,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51005,8 +50723,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51067,8 +50784,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51141,8 +50857,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51512,8 +51227,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51574,8 +51288,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -51648,8 +51361,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52020,8 +51732,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52082,8 +51793,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52157,8 +51867,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52528,8 +52237,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52590,8 +52298,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -52664,8 +52371,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53035,8 +52741,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53097,8 +52802,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53171,8 +52875,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53542,8 +53245,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53605,8 +53307,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -53680,8 +53381,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54043,8 +53743,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54206,8 +53905,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54276,8 +53974,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54651,8 +54348,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54746,8 +54442,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -54820,8 +54515,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -55204,8 +54898,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -55269,8 +54962,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -55311,8 +55003,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -55416,8 +55107,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -55474,8 +55164,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -55548,8 +55237,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -56028,8 +55716,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -56086,8 +55773,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -56156,8 +55842,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -56542,8 +56227,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -56603,8 +56287,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -56670,8 +56353,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -56817,8 +56499,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -56955,8 +56636,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -57052,8 +56732,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -57405,8 +57084,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -57456,8 +57134,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -57497,8 +57174,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "manifest_version": true,
@@ -57601,8 +57277,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -57659,8 +57334,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -57733,8 +57407,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58213,8 +57886,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58271,8 +57943,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58341,8 +58012,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58712,8 +58382,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58876,8 +58545,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -58946,8 +58614,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -59313,8 +58980,7 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -59372,8 +59038,7 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,
@@ -59442,8 +59107,7 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com",
-            "build"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "important": true,
         "internal": true,

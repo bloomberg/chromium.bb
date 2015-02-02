@@ -762,22 +762,16 @@ GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 
 # Valid sherrif types.
 TREE_SHERIFF = 'tree'
-BUILD_DEPUTY = 'build'
-LAB_SHERIFF = 'lab'
 CHROME_GARDENER = 'chrome'
 
 # URLs to retrieve sheriff names from the waterfall.
 TREE_SHERIFF_URL = '%s/sheriff.js' % (BUILD_DASHBOARD)
 TREE_SHERIFF2_URL = '%s/sheriff2.js' % (BUILD_DASHBOARD)
-BUILD_DEPUTY_URL = '%s/chromeos_build_deputy.js' % (BUILD_DASHBOARD)
-LAB_SHERIFF_URL = '%s/sheriff_cros_lab.js' % (BUILD_DASHBOARD)
 CHROME_GARDENER_URL = '%s/sheriff_cr_cros_gardeners.js' % (BUILD_DASHBOARD)
 
 SHERIFF_TYPE_TO_URL = {
     TREE_SHERIFF: (TREE_SHERIFF_URL, TREE_SHERIFF2_URL),
-    BUILD_DEPUTY: (BUILD_DEPUTY_URL,),
-    LAB_SHERIFF: (LAB_SHERIFF_URL,),
-    CHROME_GARDENER: (CHROME_GARDENER_URL)
+    CHROME_GARDENER: (CHROME_GARDENER_URL,)
 }
 
 

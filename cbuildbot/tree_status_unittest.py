@@ -252,16 +252,16 @@ class TestGettingSheriffEmails(cros_test_lib.MockTestCase):
     # Test parsing when there is only one sheriff.
     raw_line = "document.write('taco')"
     self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('build'),
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'),
                      ['taco@google.com'])
 
     # Test parsing when there are multiple sheriffs.
     raw_line = "document.write('taco, burrito')"
     self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('build'),
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'),
                      ['taco@google.com', 'burrito@google.com'])
 
     # Test parsing when sheriff is None.
     raw_line = "document.write('None (channel is sheriff)')"
     self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('lab'), [])
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'), [])

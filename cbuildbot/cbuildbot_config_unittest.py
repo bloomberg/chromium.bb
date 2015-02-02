@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import mock
 import os
+import re
 import cPickle
 
 from chromite.cbuildbot import cbuildbot_config
@@ -607,6 +608,16 @@ class CBuildBotTest(cros_test_lib.TestCase):
         if not flag.startswith('-'):
           self.assertFalse('-' + flag in useflag_set,
                            msg % (build_name, flag, flag))
+
+  def testHealthCheckEmails(self):
+    """Configs should only have valid email addresses or aliases"""
+    msg = ('%s contains an invalid tree alias or email address: %s')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      health_alert_recipients = config['health_alert_recipients']
+      for recipient in health_alert_recipients:
+        self.assertTrue(re.match(r'[^@]+@[^@]+\.[^@]+', recipient) or
+                        recipient in constants.SHERIFF_TYPE_TO_URL.keys(),
+                        msg % (build_name, recipient))
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
