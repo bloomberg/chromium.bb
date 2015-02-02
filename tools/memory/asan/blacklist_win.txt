@@ -4,6 +4,11 @@
 #
 # Please think twice before you add or remove these rules.
 
+# Stack buffer overflow in VC/INCLUDE/xlocnum, see http://goo.gl/L4qqUG
+# This really belongs in the ASan default blacklist, but that's not enough due
+# to a bug/misfeature in the compiler driver: http://llvm.org/PR22431
+fun:*_Find_elem@*@std*
+
 ################################################################################
 # Sandbox executes some of its code before the ASan RTL gets initialized and
 # maps shadow memory.  As a result, instrmented code tries to access unavailable
