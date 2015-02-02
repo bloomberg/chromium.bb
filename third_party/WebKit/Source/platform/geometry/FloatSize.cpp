@@ -43,7 +43,7 @@ FloatSize::FloatSize(const LayoutSize& size)
 
 float FloatSize::diagonalLength() const
 {
-    return sqrtf(diagonalLengthSquared());
+    return hypotf(m_width, m_height);
 }
 
 bool FloatSize::isZero() const

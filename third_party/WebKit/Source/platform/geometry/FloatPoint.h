@@ -106,8 +106,6 @@ public:
         m_y *= sy;
     }
 
-    void normalize();
-
     float dot(const FloatPoint& a) const
     {
         return m_x * a.x() + m_y * a.y();

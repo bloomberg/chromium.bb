@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "platform/geometry/FloatBoxTestHelpers.h"
+#include "platform/geometry/GeometryTestHelpers.h"
 
 #include "platform/geometry/FloatBox.h"
 const static float kTestEpsilon = 1e-6;
@@ -41,16 +42,7 @@ void blink::PrintTo(const FloatBox& box, ::std::ostream* os)
 
 bool blink::FloatBoxTest::ApproximatelyEqual(const float& a, const float& b)
 {
-    float absA = ::fabs(a);
-    float absB = ::fabs(b);
-    float absErr = ::fabs(a - b);
-    if (a == b)
-        return true;
-
-    if (a == 0 || b == 0 || absErr < std::numeric_limits<float>::min())
-        return absErr < (kTestEpsilon * std::numeric_limits<float>::min());
-
-    return ((absErr / (absA + absB)) < kTestEpsilon);
+    return blink::GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
 }
 
 bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
