@@ -593,15 +593,15 @@ const GCInfo* ThreadState::findGCInfo(Address address)
 #endif
 
 #if ENABLE(GC_PROFILE_HEAP)
-size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcinfo)
+size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcInfo)
 {
-    HashMap<const GCInfo*, size_t>::AddResult result = classTags.add(gcinfo, classTags.size());
+    ClassTagMap::AddResult result = classTags.add(gcInfo, classTags.size());
     if (result.isNewEntry) {
         liveCount.append(0);
         deadCount.append(0);
         liveSize.append(0);
         deadSize.append(0);
-        generations.append(Vector<int, 8>());
+        generations.append(GenerationCountsVector());
         generations.last().fill(0, 8);
     }
     return result.storedValue->value;
@@ -634,7 +634,7 @@ void ThreadState::snapshot()
     json->setInteger("freeSize", info.freeSize);
 
     Vector<String> classNameVector(info.classTags.size());
-    for (HashMap<const GCInfo*, size_t>::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
+    for (SnapshotInfo::ClassTagMap::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
         classNameVector[it->value] = it->key->m_className;
 
     size_t liveSize = 0;
@@ -651,7 +651,7 @@ void ThreadState::snapshot()
         deadSize += info.deadSize[i];
 
         json->beginArray("generations");
-        for (size_t j = 0; j < heapObjectGenerations; ++j)
+        for (size_t j = 0; j < numberOfGenerationsToTrack; ++j)
             json->pushInteger(info.generations[i][j]);
         json->endArray();
         json->endDictionary();

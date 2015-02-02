@@ -125,9 +125,6 @@ const size_t headerPromptlyFreedBitMask = headerFreedBitMask | headerDeadBitMask
 const size_t largeObjectSizeInHeader = 0;
 const size_t gcInfoIndexForFreeListHeader = 0;
 const size_t nonLargeObjectSizeMax = 1 << 17;
-#if ENABLE(GC_PROFILE_HEAP)
-const size_t maxHeapObjectAge = 7;
-#endif
 
 static_assert(nonLargeObjectSizeMax >= blinkPageSize, "max size supported by HeapObjectHeader must at least be blinkPageSize");
 
@@ -202,7 +199,7 @@ public:
     size_t age() const { return m_age; }
 
     NO_SANITIZE_ADDRESS
-    void incAge()
+    void incrementAge()
     {
         if (m_age < maxHeapObjectAge)
             m_age++;

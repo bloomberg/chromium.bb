@@ -189,6 +189,11 @@ enum TypedHeaps {
     NumberOfHeaps,
 };
 
+#if ENABLE(GC_PROFILE_HEAP)
+const size_t numberOfGenerationsToTrack = 8;
+const size_t maxHeapObjectAge = numberOfGenerationsToTrack - 1;
+#endif
+
 class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
@@ -505,7 +510,8 @@ public:
         size_t pageCount;
 
         // Map from base-classes to a snapshot class-ids (used as index below).
-        HashMap<const GCInfo*, size_t> classTags;
+        using ClassTagMap = HashMap<const GCInfo*, size_t>;
+        ClassTagMap classTags;
 
         // Map from class-id (index) to count/size.
         Vector<int> liveCount;
@@ -516,7 +522,8 @@ public:
         // Map from class-id (index) to a vector of generation counts.
         // For i < 7, the count is the number of objects that died after surviving |i| GCs.
         // For i == 7, the count is the number of objects that survived at least 7 GCs.
-        Vector<Vector<int, 8>> generations;
+        using GenerationCountsVector = Vector<int, numberOfGenerationsToTrack>;
+        Vector<GenerationCountsVector> generations;
 
         explicit SnapshotInfo(ThreadState* state) : state(state), freeSize(0), pageCount(0) { }
 
