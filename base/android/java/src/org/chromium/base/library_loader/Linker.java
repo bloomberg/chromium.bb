@@ -846,15 +846,6 @@ public class Linker {
     public static boolean checkMapExecSupport(String apkFile) {
         assert apkFile != null;
 
-        // https://code.google.com/p/chromium/issues/detail?id=448084
-        // Do not check if the device is Samsung Mega.
-        final String model = android.os.Build.MODEL;
-        if (model != null && model.equals("GT-I9205")) {
-            if (DEBUG) Log.i(TAG, "checkMapExecSupport: model is '" + model
-                             + "', returning false");
-            return false;
-        }
-
         synchronized (Linker.class) {
             ensureInitializedLocked();
 
