@@ -213,7 +213,7 @@ function testGetLocationInfo(callback) {
         '/foo/bar/bla.zip');
     var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
     assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
-        downloadLocationInfo.rootType)
+        downloadLocationInfo.rootType);
     assertFalse(downloadLocationInfo.isReadOnly);
     assertFalse(downloadLocationInfo.isRootEntry);
 
@@ -222,8 +222,32 @@ function testGetLocationInfo(callback) {
         '/root');
     var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
     assertEquals(VolumeManagerCommon.VolumeType.DRIVE,
-        driveLocationInfo.rootType)
+        driveLocationInfo.rootType);
     assertFalse(driveLocationInfo.isReadOnly);
     assertTrue(driveLocationInfo.isRootEntry);
   }), callback);
+}
+
+function testVolumeInfoListWhenReady(callback) {
+  var list = new VolumeInfoList();
+  var promiseBeforeAdd = list.whenVolumeInfoReady('volumeId');
+  var volumeInfo = new VolumeInfo(
+      /* volumeType */ null,
+      'volumeId',
+      /* fileSystem */ null,
+      /* error */ null,
+      /* deviceType */ null,
+      /* devicePath */ null,
+      /* isReadOnly */ false,
+      /* profile */ {},
+      /* label */ null,
+      /* extensionid */ null,
+      /* hasMedia */ false);
+  list.add(volumeInfo);
+  var promiseAfterAdd = list.whenVolumeInfoReady('volumeId');
+  reportPromise(Promise.all([promiseBeforeAdd, promiseAfterAdd]).then(
+      function(volumes) {
+        assertEquals(volumeInfo, volumes[0]);
+        assertEquals(volumeInfo, volumes[1]);
+      }), callback);
 }

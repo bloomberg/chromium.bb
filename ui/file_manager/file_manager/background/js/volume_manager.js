@@ -355,9 +355,6 @@ function VolumeInfoList() {
                                  (volumeManagerUtil.compareVolumeInfo_));
   this.model_.sort(field, 'asc');
 
-  /** @private {!Object.<string, !importer.Resolver.<!VolumeInfo>>} */
-  this.volumeInfoResolvers_ = {};
-
   Object.freeze(this);
 }
 
@@ -394,14 +391,6 @@ VolumeInfoList.prototype.add = function(volumeInfo) {
     this.model_.splice(index, 1, volumeInfo);
   else
     this.model_.push(volumeInfo);
-
-  // Some folks might be expecting this volume to be initialized soon.
-  // In that case there'll be a resolver function (associated with a promise)
-  // waiting for us here.
-  var resolver = this.volumeInfoResolvers_[volumeInfo.volumeId];
-  if (resolver) {
-    resolver.resolve(volumeInfo);
-  }
 };
 
 /**
@@ -412,9 +401,6 @@ VolumeInfoList.prototype.remove = function(volumeId) {
   var index = this.findIndex(volumeId);
   if (index !== -1)
     this.model_.splice(index, 1);
-
-  // Remove any associated resolvers.
-  delete this.volumeInfoResolvers_[volumeId];
 };
 
 /**
@@ -491,18 +477,17 @@ VolumeInfoList.prototype.findByVolumeId_ = function(volumeId) {
  *     if the volume is never mounted.
  */
 VolumeInfoList.prototype.whenVolumeInfoReady = function(volumeId) {
-  var info = this.findByVolumeId_(volumeId);
-  if (!!info) {
-    return Promise.resolve(info);
-  }
-
-  var resolver = this.volumeInfoResolvers_[volumeId];
-  if (!resolver) {
-    resolver = new importer.Resolver();
-    this.volumeInfoResolvers_[volumeId] = resolver;
-  }
-
-  return resolver.promise;
+  return new Promise(function(fulfill) {
+    var handler = function() {
+      var info = this.findByVolumeId_(volumeId);
+      if (info) {
+        fulfill(info);
+        this.model_.removeEventListener('splice', handler);
+      }
+    }.bind(this);
+    this.model_.addEventListener('splice', handler);
+    handler();
+  }.bind(this));
 };
 
 /**
