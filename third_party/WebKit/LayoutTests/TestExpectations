@@ -157,6 +157,25 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
+crbug.com/452814 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
+crbug.com/452814 fast/borders/border-radius-constraints.html [ NeedsRebaseline ]
+crbug.com/452814 fast/borders/border-radius-mask-canvas-border.html [ NeedsRebaseline ]
+crbug.com/452814 fast/borders/border-radius-with-box-shadow.html [ NeedsRebaseline ]
+crbug.com/452814 fast/borders/mixed-border-styles-radius.html [ NeedsRebaseline ]
+crbug.com/452814 fast/css/background-clip-radius-values.html [ NeedsRebaseline ]
+crbug.com/452814 fast/replaced/border-radius-clip-content-edge.html [ NeedsRebaseline ]
+crbug.com/452814 ietestcenter/css3/bordersbackgrounds/border-radius-not-inherited-001.htm [ NeedsRebaseline ]
+crbug.com/452814 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm [ NeedsRebaseline ]
+crbug.com/452814 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/borders/border-radius-constraints.html [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-border.html [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/borders/border-radius-with-box-shadow.html [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/borders/mixed-border-styles-radius.html [ NeedsRebaseline ]
+crbug.com/452814 virtual/slimmingpaint/fast/css/background-clip-radius-values.html [ NeedsRebaseline ]
+crbug.com/452814 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsRebaseline ]
+crbug.com/452814 fast/forms/search/search-appearance-basic.html [ NeedsRebaseline ]
+
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]

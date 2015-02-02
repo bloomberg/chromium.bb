@@ -235,8 +235,10 @@ void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
         floatSizeForLengthSize(m_topRightRadius, boundingBox),
         floatSizeForLengthSize(m_bottomLeftRadius, boundingBox),
         floatSizeForLengthSize(m_bottomRightRadius, boundingBox));
-    radii.scale(calcBorderRadiiConstraintScaleFor(rect, radii));
-    path.addRoundedRect(FloatRoundedRect(rect, radii));
+
+    FloatRoundedRect finalRect(rect, radii);
+    finalRect.constrainRadii();
+    path.addRoundedRect(finalRect);
 }
 
 static inline LengthSize blendLengthSize(const LengthSize& to, const LengthSize& from, double progress)

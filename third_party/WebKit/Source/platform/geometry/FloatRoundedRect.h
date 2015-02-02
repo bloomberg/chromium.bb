@@ -70,14 +70,14 @@ public:
         bool isZero() const;
 
         void scale(float factor);
+        // Multiply all radii by |factor| and floor the result to the nearest integer.
+        void scaleAndFloor(float factor);
 
         void expand(float topWidth, float bottomWidth, float leftWidth, float rightWidth);
         void expand(float size) { expand(size, size, size, size); }
 
         void shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth);
         void shrink(float size) { shrink(size, size, size, size); }
-
-        void roundToInt();
 
         void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
@@ -140,6 +140,13 @@ public:
 
     void adjustRadii();
     bool isRenderable() const;
+
+    // Constrains the radii to be no more than the size of rect(); radii outside of this range are not
+    // defined.
+    // In addition, the radii of the corners are floored to the nearest integer.
+    // FIXME: the flooring should not be necessary. At the moment it causes background bleed in some cases.
+    // FIXME: this code is almost the same as adjustRadii()/isRenderable(). Get rid of one of them.
+    void constrainRadii();
 
 private:
     FloatRect m_rect;

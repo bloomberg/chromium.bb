@@ -76,16 +76,28 @@ void FloatRoundedRect::Radii::scale(float factor)
     m_bottomRight.scale(factor);
     if (!m_bottomRight.width() || !m_bottomRight.height())
         m_bottomRight = FloatSize();
-
 }
 
-void FloatRoundedRect::Radii::roundToInt()
+void FloatRoundedRect::Radii::scaleAndFloor(float factor)
 {
-    m_topLeft = FloatSize(roundedIntSize(m_topLeft));
-    m_topRight = FloatSize(roundedIntSize(m_topRight));
-    m_bottomLeft = FloatSize(roundedIntSize(m_bottomLeft));
-    m_bottomRight = FloatSize(roundedIntSize(m_bottomRight));
+    if (factor == 1)
+        return;
+
+    // If either radius on a corner becomes zero, reset both radii on that corner.
+    m_topLeft.scaleAndFloor(factor);
+    if (!m_topLeft.width() || !m_topLeft.height())
+        m_topLeft = FloatSize();
+    m_topRight.scaleAndFloor(factor);
+    if (!m_topRight.width() || !m_topRight.height())
+        m_topRight = FloatSize();
+    m_bottomLeft.scaleAndFloor(factor);
+    if (!m_bottomLeft.width() || !m_bottomLeft.height())
+        m_bottomLeft = FloatSize();
+    m_bottomRight.scaleAndFloor(factor);
+    if (!m_bottomRight.width() || !m_bottomRight.height())
+        m_bottomRight = FloatSize();
 }
+
 
 void FloatRoundedRect::Radii::shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth)
 {
@@ -259,6 +271,40 @@ void FloatRoundedRect::Radii::includeLogicalEdges(const FloatRoundedRect::Radii&
             m_bottomLeft = edges.bottomLeft();
         m_bottomRight = edges.bottomRight();
     }
+}
+
+float calcBorderRadiiConstraintScaleFor(const FloatRect& rect, const FloatRoundedRect::Radii& radii)
+{
+    float factor = 1;
+    float radiiSum;
+
+    // top
+    radiiSum = radii.topLeft().width() + radii.topRight().width(); // Casts to avoid integer overflow.
+    if (radiiSum > rect.width())
+        factor = std::min(rect.width() / radiiSum, factor);
+
+    // bottom
+    radiiSum = radii.bottomLeft().width() + radii.bottomRight().width();
+    if (radiiSum > rect.width())
+        factor = std::min(rect.width() / radiiSum, factor);
+
+    // left
+    radiiSum = radii.topLeft().height() + radii.bottomLeft().height();
+    if (radiiSum > rect.height())
+        factor = std::min(rect.height() / radiiSum, factor);
+
+    // right
+    radiiSum = radii.topRight().height() + radii.bottomRight().height();
+    if (radiiSum > rect.height())
+        factor = std::min(rect.height() / radiiSum, factor);
+
+    ASSERT(factor <= 1);
+    return factor;
+}
+
+void FloatRoundedRect::constrainRadii()
+{
+    m_radii.scaleAndFloor(calcBorderRadiiConstraintScaleFor(rect(), radii()));
 }
 
 void FloatRoundedRect::includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)

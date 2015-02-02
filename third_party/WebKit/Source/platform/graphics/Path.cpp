@@ -431,6 +431,10 @@ void Path::addRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius,
             || rect.height() < topLeftRadius.height() + bottomLeftRadius.height()
             || rect.height() < topRightRadius.height() + bottomRightRadius.height()) {
         // If all the radii cannot be accommodated, return a rect.
+        // FIXME: is this an error scenario, given that it appears the code in FloatRoundedRect::constrainRadii()
+        // should be always called first? Should we assert that this code is not reached?
+        // This fallback is very bad, since it means that radii that are just barely too big due to rounding or snapping
+        // will get completely ignored.
         addRect(rect);
         return;
     }

@@ -951,10 +951,8 @@ FloatRoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, 
     FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
         FloatRoundedRect::Radii radii = calcRadiiFor(surround->border, borderRect.size());
-        radii.scale(calcBorderRadiiConstraintScaleFor(roundedRect.rect(), radii));
-        // Radii currently must be pixel-sized.
-        radii.roundToInt();
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
+        roundedRect.constrainRadii();
     }
     return roundedRect;
 }
@@ -1607,38 +1605,6 @@ void RenderStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
     if (surround->border.m_image.outset() == outset)
         return;
     surround.access()->border.m_image.setOutset(outset);
-}
-
-float calcBorderRadiiConstraintScaleFor(const FloatRect& rect, const FloatRoundedRect::Radii& radii)
-{
-    // Constrain corner radii using CSS3 rules:
-    // http://www.w3.org/TR/css3-background/#the-border-radius
-
-    float factor = 1;
-    float radiiSum;
-
-    // top
-    radiiSum = radii.topLeft().width() + radii.topRight().width(); // Casts to avoid integer overflow.
-    if (radiiSum > rect.width())
-        factor = std::min(rect.width() / radiiSum, factor);
-
-    // bottom
-    radiiSum = radii.bottomLeft().width() + radii.bottomRight().width();
-    if (radiiSum > rect.width())
-        factor = std::min(rect.width() / radiiSum, factor);
-
-    // left
-    radiiSum = radii.topLeft().height() + radii.bottomLeft().height();
-    if (radiiSum > rect.height())
-        factor = std::min(rect.height() / radiiSum, factor);
-
-    // right
-    radiiSum = radii.topRight().height() + radii.bottomRight().height();
-    if (radiiSum > rect.height())
-        factor = std::min(rect.height() / radiiSum, factor);
-
-    ASSERT(factor <= 1);
-    return factor;
 }
 
 bool RenderStyle::borderObscuresBackground() const

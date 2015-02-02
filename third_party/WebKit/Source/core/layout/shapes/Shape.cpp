@@ -164,9 +164,10 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         FloatSize bottomRightRadius = physicalSizeToLogical(floatSizeForLengthSize(inset.bottomRightRadius(), boxSize), writingMode);
         FloatRoundedRect::Radii cornerRadii(topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
 
-        cornerRadii.scale(calcBorderRadiiConstraintScaleFor(logicalRect, cornerRadii));
+        FloatRoundedRect finalRect(logicalRect, cornerRadii);
+        finalRect.constrainRadii();
 
-        shape = createInsetShape(FloatRoundedRect(logicalRect, cornerRadii));
+        shape = createInsetShape(finalRect);
         break;
     }
 

@@ -79,6 +79,12 @@ public:
         m_height *= scaleY;
     }
 
+    void scaleAndFloor(float scale)
+    {
+        m_width = floorf(m_width * scale);
+        m_height = floorf(m_height * scale);
+    }
+
     FloatSize expandedTo(const FloatSize& other) const
     {
         return FloatSize(m_width > other.m_width ? m_width : other.m_width,
