@@ -34,6 +34,8 @@ namespace {
 
 const char kNoDocumentURLErrorMessage[] =
     "No URL is associated with the caller's document.";
+const char kDisallowedURLErrorMessage[] =
+    "The URL is not supported.";
 const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
 const char kUserDeniedPermissionMessage[] =
@@ -53,7 +55,8 @@ bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
 // consistent with Blink's
 // SecurityOrigin::canAccessFeatureRequiringSecureOrigin.
 bool OriginCanAccessServiceWorkers(const GURL& url) {
-  return url.SchemeIsSecure() || net::IsLocalhost(url.host());
+  return url.SchemeIsHTTPOrHTTPS() &&
+      (url.SchemeIsSecure() || net::IsLocalhost(url.host()));
 }
 
 bool CanRegisterServiceWorker(const GURL& document_url,
@@ -63,7 +66,9 @@ bool CanRegisterServiceWorker(const GURL& document_url,
   DCHECK(pattern.is_valid());
   DCHECK(script_url.is_valid());
   return AllOriginsMatch(document_url, pattern, script_url) &&
-         OriginCanAccessServiceWorkers(document_url);
+         OriginCanAccessServiceWorkers(document_url) &&
+         OriginCanAccessServiceWorkers(pattern) &&
+         OriginCanAccessServiceWorkers(script_url);
 }
 
 bool CanUnregisterServiceWorker(const GURL& document_url,
@@ -71,7 +76,8 @@ bool CanUnregisterServiceWorker(const GURL& document_url,
   DCHECK(document_url.is_valid());
   DCHECK(pattern.is_valid());
   return document_url.GetOrigin() == pattern.GetOrigin() &&
-         OriginCanAccessServiceWorkers(document_url);
+         OriginCanAccessServiceWorkers(document_url) &&
+         OriginCanAccessServiceWorkers(pattern);
 }
 
 bool CanGetRegistration(const GURL& document_url,
@@ -79,7 +85,8 @@ bool CanGetRegistration(const GURL& document_url,
   DCHECK(document_url.is_valid());
   DCHECK(given_document_url.is_valid());
   return document_url.GetOrigin() == given_document_url.GetOrigin() &&
-         OriginCanAccessServiceWorkers(document_url);
+         OriginCanAccessServiceWorkers(document_url) &&
+         OriginCanAccessServiceWorkers(given_document_url);
 }
 
 }  // namespace
@@ -294,7 +301,12 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   if (!CanRegisterServiceWorker(
       provider_host->document_url(), pattern, script_url)) {
-    BadMessageReceived();
+    // TODO(kinuko): Change this back to BadMessageReceived() once we start
+    // to check these in the renderer too. (http://crbug.com/453982)
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
     return;
   }
 
@@ -379,7 +391,12 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   }
 
   if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
-    BadMessageReceived();
+    // TODO(kinuko): Change this back to BadMessageReceived() once we start
+    // to check these in the renderer too. (http://crbug.com/453982)
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
+            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
     return;
   }
 
@@ -449,7 +466,12 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
   }
 
   if (!CanGetRegistration(provider_host->document_url(), document_url)) {
-    BadMessageReceived();
+    // TODO(kinuko): Change this back to BadMessageReceived() once we start
+    // to check these in the renderer too. (http://crbug.com/453982)
+    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
     return;
   }
 
