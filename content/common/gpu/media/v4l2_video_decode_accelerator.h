@@ -242,11 +242,18 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   void StartResolutionChangeIfNeeded();
   void FinishResolutionChange();
 
-  // Try to get output format, detected after parsing the beginning
-  // of the stream. Sets |again| to true if more parsing is needed.
-  bool GetFormatInfo(struct v4l2_format* format, bool* again);
-  // Create output buffers for the given |format|.
-  bool CreateBuffersForFormat(const struct v4l2_format& format);
+  // Try to get output format and visible size, detected after parsing the
+  // beginning of the stream. Sets |again| to true if more parsing is needed.
+  bool GetFormatInfo(struct v4l2_format* format,
+                     gfx::Size* visible_size,
+                     bool* again);
+  // Create output buffers for the given |format| and |visible_size|.
+  bool CreateBuffersForFormat(const struct v4l2_format& format,
+                              const gfx::Size& visible_size);
+
+  // Try to get |visible_size|. Return false if cropping is not supported or the
+  // crop size is not inside |coded_size|.
+  bool GetVisibleSize(const gfx::Size& coded_size, gfx::Size* visible_size);
 
   //
   // Device tasks, to be run on device_poll_thread_.
@@ -415,8 +422,11 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // to avoid races with potential Reset requests.
   base::WaitableEvent pictures_assigned_;
 
-  // Output picture size.
-  gfx::Size frame_buffer_size_;
+  // Output picture coded size.
+  gfx::Size coded_size_;
+
+  // Output picture visible size.
+  gfx::Size visible_size_;
 
   //
   // The device polling thread handles notifications of V4L2 device changes.
