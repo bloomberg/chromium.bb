@@ -74,7 +74,8 @@ public class ChildProcessLauncher {
 
         public ChildProcessConnection allocate(
                 Context context, ChildProcessConnection.DeathCallback deathCallback,
-                ChromiumLinkerParams chromiumLinkerParams) {
+                ChromiumLinkerParams chromiumLinkerParams,
+                boolean alwaysInForeground) {
             synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
                     Log.d(TAG, "Ran out of services to allocate.");
@@ -83,7 +84,8 @@ public class ChildProcessLauncher {
                 int slot = mFreeConnectionIndices.remove(0);
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
-                        mInSandbox, deathCallback, mChildClass, chromiumLinkerParams);
+                        mInSandbox, deathCallback, mChildClass, chromiumLinkerParams,
+                        alwaysInForeground);
                 Log.d(TAG, "Allocator allocated a connection, sandbox: " + mInSandbox
                         + ", slot: " + slot);
                 return mChildProcessConnections[slot];
@@ -245,8 +247,8 @@ public class ChildProcessLauncher {
                 ? sSandboxedChildConnectionAllocator : sPrivilegedChildConnectionAllocator;
     }
 
-    private static ChildProcessConnection allocateConnection(Context context,
-            boolean inSandbox, ChromiumLinkerParams chromiumLinkerParams) {
+    private static ChildProcessConnection allocateConnection(Context context, boolean inSandbox,
+            ChromiumLinkerParams chromiumLinkerParams, boolean alwaysInForeground) {
         ChildProcessConnection.DeathCallback deathCallback =
                 new ChildProcessConnection.DeathCallback() {
                     @Override
@@ -260,7 +262,7 @@ public class ChildProcessLauncher {
                 };
         initConnectionAllocatorsIfNecessary(context);
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
-                chromiumLinkerParams);
+                chromiumLinkerParams, alwaysInForeground);
     }
 
     private static boolean sLinkerInitialized = false;
@@ -288,10 +290,10 @@ public class ChildProcessLauncher {
     }
 
     private static ChildProcessConnection allocateBoundConnection(Context context,
-            String[] commandLine, boolean inSandbox) {
+            String[] commandLine, boolean inSandbox, boolean alwaysInForeground) {
         ChromiumLinkerParams chromiumLinkerParams = getLinkerParamsForNewConnection();
         ChildProcessConnection connection =
-                allocateConnection(context, inSandbox, chromiumLinkerParams);
+                allocateConnection(context, inSandbox, chromiumLinkerParams, alwaysInForeground);
         if (connection != null) {
             connection.start(commandLine);
         }
@@ -451,7 +453,7 @@ public class ChildProcessLauncher {
         synchronized (ChildProcessLauncher.class) {
             assert !ThreadUtils.runningOnUiThread();
             if (sSpareSandboxedConnection == null) {
-                sSpareSandboxedConnection = allocateBoundConnection(context, null, true);
+                sSpareSandboxedConnection = allocateBoundConnection(context, null, true, false);
             }
         }
     }
@@ -539,7 +541,10 @@ public class ChildProcessLauncher {
                 }
             }
             if (allocatedConnection == null) {
-                allocatedConnection = allocateBoundConnection(context, commandLine, inSandbox);
+                boolean alwaysInForeground = false;
+                if (callbackType == CALLBACK_FOR_GPU_PROCESS) alwaysInForeground = true;
+                allocatedConnection = allocateBoundConnection(
+                        context, commandLine, inSandbox, alwaysInForeground);
                 if (allocatedConnection == null) {
                     Log.d(TAG, "Allocation of new service failed. Queuing up pending spawn.");
                     sPendingSpawnQueue.enqueue(new PendingSpawnData(context, commandLine,
@@ -697,7 +702,7 @@ public class ChildProcessLauncher {
 
     @VisibleForTesting
     static ChildProcessConnection allocateBoundConnectionForTesting(Context context) {
-        return allocateBoundConnection(context, null, true);
+        return allocateBoundConnection(context, null, true, false);
     }
 
     /**

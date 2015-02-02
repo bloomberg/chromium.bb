@@ -22,7 +22,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
-import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
@@ -68,6 +67,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
     // Linker-related parameters.
     private ChromiumLinkerParams mLinkerParams = null;
+
+    private final boolean mAlwaysInForeground;
 
     private static final String TAG = "ChildProcessConnection";
 
@@ -195,14 +196,18 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     ChildProcessConnectionImpl(Context context, int number, boolean inSandbox,
             ChildProcessConnection.DeathCallback deathCallback,
             Class<? extends ChildProcessService> serviceClass,
-            ChromiumLinkerParams chromiumLinkerParams) {
+            ChromiumLinkerParams chromiumLinkerParams,
+            boolean alwaysInForeground) {
         mContext = context;
         mServiceNumber = number;
         mInSandbox = inSandbox;
         mDeathCallback = deathCallback;
         mServiceClass = serviceClass;
         mLinkerParams = chromiumLinkerParams;
-        mInitialBinding = new ChildServiceConnection(Context.BIND_AUTO_CREATE);
+        mAlwaysInForeground = alwaysInForeground;
+        int initialFlags = Context.BIND_AUTO_CREATE;
+        if (mAlwaysInForeground) initialFlags |= Context.BIND_IMPORTANT;
+        mInitialBinding = new ChildServiceConnection(initialFlags);
         mStrongBinding = new ChildServiceConnection(
                 Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT);
         mWaivedBinding = new ChildServiceConnection(
@@ -391,6 +396,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     @Override
     public void removeInitialBinding() {
         synchronized (mLock) {
+            assert !mAlwaysInForeground;
             mInitialBinding.unbind();
         }
     }
@@ -409,7 +415,6 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     @Override
     public void dropOomBindings() {
         synchronized (mLock) {
-            assert mServiceClass != PrivilegedProcessService.class;
             mInitialBinding.unbind();
 
             mStrongBindingCount = 0;
