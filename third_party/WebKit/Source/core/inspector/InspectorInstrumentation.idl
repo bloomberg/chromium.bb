@@ -212,8 +212,8 @@ interface InspectorInstrumentation {
     [Debugger, Timeline, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
-    [PageRuntime, Inline=FastReturn]
-    void didCreateScriptContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*, bool isMainWorldContext);
+    [PageRuntime]
+    void didCreateScriptContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
 
     [PageRuntime, Inline=FastReturn]
     void willReleaseScriptContext([Keep] LocalFrame*, ScriptState*);

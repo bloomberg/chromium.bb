@@ -208,7 +208,7 @@
 #include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
 #include "web/WebDataSourceImpl.h"
-#include "web/WebDevToolsAgentPrivate.h"
+#include "web/WebDevToolsAgentImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"

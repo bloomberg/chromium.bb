@@ -74,7 +74,7 @@ class PopupContainer;
 class RenderLayerCompositor;
 class UserGestureToken;
 class WebActiveGestureAnimation;
-class WebDevToolsAgentPrivate;
+class WebDevToolsAgentImpl;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebImage;
@@ -295,7 +295,6 @@ public:
     void setIgnoreInputEvents(bool newValue);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
-    WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
 
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
@@ -708,7 +707,7 @@ private:
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
-    OwnPtr<WebDevToolsAgentPrivate> m_devToolsAgent;
+    OwnPtr<WebDevToolsAgentImpl> m_devToolsAgent;
     OwnPtr<PageOverlayList> m_pageOverlays;
 
     // Whether the webview is rendering transparently.

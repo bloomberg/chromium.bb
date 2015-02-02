@@ -143,7 +143,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
         return;
     v8::Local<v8::Context> context = windowProxy->context();
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
-    v8::Handle<v8::Value> argv[] = { context->GetEmbedderData(0) };
+    v8::Handle<v8::Value> argv[] = { V8PerContextDebugData::contextDebugData(context) };
     v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
     if (value.IsEmpty())
         return;

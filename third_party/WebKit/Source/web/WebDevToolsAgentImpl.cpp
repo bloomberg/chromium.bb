@@ -82,8 +82,6 @@ static const int highlight = 99;
 
 namespace blink {
 
-static int s_nextDebuggerId = 1;
-
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
     static void ensureClientMessageLoopCreated(WebDevToolsAgentClient* client)
@@ -201,8 +199,7 @@ private:
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
-    : m_debuggerId(s_nextDebuggerId++)
-    , m_layerTreeId(0)
+    : m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
@@ -221,7 +218,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     ASSERT(processId > 0);
     inspectorController()->setProcessId(processId);
 
-    ASSERT(m_debuggerId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
 
@@ -292,12 +288,6 @@ void WebDevToolsAgentImpl::didComposite()
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers");
     if (InspectorController* ic = inspectorController())
         ic->didComposite();
-}
-
-void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, int worldId)
-{
-    if (LocalFrame* frame = webframe->frame())
-        frame->script().setWorldDebugId(worldId, m_debuggerId);
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)

@@ -136,55 +136,16 @@ void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definiti
     m_customElementBindings.append(binding);
 }
 
-static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId, v8::Isolate* isolate)
-{
-    char buffer[32];
-    unsigned wanted;
-    if (debugId == -1)
-        wanted = snprintf(buffer, sizeof(buffer), "%s", worldName);
-    else
-        wanted = snprintf(buffer, sizeof(buffer), "%s,%d", worldName, debugId);
-
-    if (wanted < sizeof(buffer))
-        return v8AtomicString(isolate, buffer);
-
-    return v8::Undefined(isolate);
-}
-
-static v8::Handle<v8::Value> debugData(v8::Handle<v8::Context> context)
-{
-    v8::Context::Scope contextScope(context);
-    return context->GetEmbedderData(v8ContextDebugIdIndex);
-}
-
-static void setDebugData(v8::Handle<v8::Context> context, v8::Handle<v8::Value> value)
-{
-    v8::Context::Scope contextScope(context);
-    context->SetEmbedderData(v8ContextDebugIdIndex, value);
-}
-
-bool V8PerContextDebugData::setContextDebugData(v8::Handle<v8::Context> context, const char* worldName, int debugId)
-{
-    if (!debugData(context)->IsUndefined())
-        return false;
-    v8::HandleScope scope(context->GetIsolate());
-    v8::Handle<v8::Value> debugData = createDebugData(worldName, debugId, context->GetIsolate());
-    setDebugData(context, debugData);
-    return true;
-}
-
-int V8PerContextDebugData::contextDebugId(v8::Handle<v8::Context> context)
+void V8PerContextDebugData::setContextDebugData(v8::Handle<v8::Context> context, const String& data)
 {
     v8::HandleScope scope(context->GetIsolate());
-    v8::Handle<v8::Value> data = debugData(context);
+    v8::Context::Scope contextScope(context);
+    context->SetEmbedderData(static_cast<int>(gin::kDebugIdIndex), v8String(context->GetIsolate(), data));
+}
 
-    if (!data->IsString())
-        return -1;
-    v8::String::Utf8Value utf8(data);
-    char* comma = strnstr(*utf8, ",", utf8.length());
-    if (!comma)
-        return -1;
-    return atoi(comma + 1);
+v8::Handle<v8::Value> V8PerContextDebugData::contextDebugData(v8::Handle<v8::Context> context)
+{
+    return context->GetEmbedderData(static_cast<int>(gin::kDebugIdIndex));
 }
 
 v8::Handle<v8::Value> V8PerContextData::compiledPrivateScript(String className)

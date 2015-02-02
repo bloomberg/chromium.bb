@@ -83,26 +83,6 @@ void WindowProxyManager::collectIsolatedContexts(Vector<std::pair<ScriptState*, 
     }
 }
 
-void WindowProxyManager::setWorldDebugId(int worldId, int debuggerId)
-{
-    ASSERT(debuggerId > 0);
-    bool isMainWorld = worldId == MainWorldId;
-    WindowProxy* windowProxy = nullptr;
-    if (isMainWorld) {
-        windowProxy = m_windowProxy.get();
-    } else {
-        IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(worldId);
-        if (iter != m_isolatedWorlds.end())
-            windowProxy = iter->value.get();
-    }
-    if (!windowProxy || !windowProxy->isContextInitialized())
-        return;
-    v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = windowProxy->context();
-    const char* worldName = isMainWorld ? "page" : "injected";
-    V8PerContextDebugData::setContextDebugData(context, worldName, debuggerId);
-}
-
 WindowProxyManager::WindowProxyManager(Frame& frame)
     : m_frame(&frame)
     , m_isolate(v8::Isolate::GetCurrent())

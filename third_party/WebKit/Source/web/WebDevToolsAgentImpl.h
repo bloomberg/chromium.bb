@@ -36,8 +36,8 @@
 
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
+#include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebPageOverlay.h"
-#include "web/WebDevToolsAgentPrivate.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -50,12 +50,13 @@ class InspectorController;
 class Page;
 class PlatformKeyboardEvent;
 class WebDevToolsAgentClient;
+class WebInputEvent;
 class WebLocalFrameImpl;
 class WebString;
 class WebViewImpl;
 
 class WebDevToolsAgentImpl final
-    : public WebDevToolsAgentPrivate
+    : public WebDevToolsAgent
     , public InspectorClient
     , public InspectorFrontendChannel
     , public WebPageOverlay
@@ -66,9 +67,7 @@ public:
 
     WebDevToolsAgentClient* client() { return m_client; }
 
-    // WebDevToolsAgentPrivate implementation.
-    virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) override;
-    virtual bool handleInputEvent(Page*, const WebInputEvent&) override;
+    bool handleInputEvent(Page*, const WebInputEvent&);
 
     // WebDevToolsAgent implementation.
     virtual void attach(const WebString& hostId) override;
@@ -125,7 +124,6 @@ private:
     InspectorController* inspectorController();
     LocalFrame* mainFrame();
 
-    int m_debuggerId;
     int m_layerTreeId;
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;

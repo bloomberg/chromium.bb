@@ -54,7 +54,6 @@ typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
 typedef WTF::HashMap<int, V8NPObjectVector> V8NPObjectMap;
 
 enum V8ContextEmbedderDataField {
-    v8ContextDebugIdIndex = static_cast<int>(gin::kDebugIdIndex),
     v8ContextPerContextDataIndex = static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
 };
 
@@ -129,8 +128,8 @@ private:
 
 class V8PerContextDebugData {
 public:
-    static bool setContextDebugData(v8::Handle<v8::Context>, const char* worldName, int debugId);
-    static int contextDebugId(v8::Handle<v8::Context>);
+    static void setContextDebugData(v8::Handle<v8::Context>, const String& data);
+    static v8::Handle<v8::Value> contextDebugData(v8::Handle<v8::Context>);
 };
 
 } // namespace blink

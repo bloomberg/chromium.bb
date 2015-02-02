@@ -150,8 +150,6 @@ public:
     static void registerExtensionIfNeeded(v8::Extension*);
     static V8Extensions& registeredExtensions();
 
-    void setWorldDebugId(int worldId, int debuggerId);
-
     v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
 
 private:

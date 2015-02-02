@@ -55,7 +55,7 @@ public:
     virtual void run(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, bool isMainWorldContext);
+    void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
     void willReleaseScriptContext(LocalFrame*, ScriptState*);
 
 private:
@@ -70,6 +70,7 @@ private:
     RawPtrWillBeMember<Page> m_inspectedPage;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     bool m_mainWorldContextCreated;
+    int m_debuggerId;
 };
 
 } // namespace blink

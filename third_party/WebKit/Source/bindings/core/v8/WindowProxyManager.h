@@ -37,7 +37,6 @@ public:
     // For devtools:
     WindowProxy* existingWindowProxy(DOMWrapperWorld&);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
-    void setWorldDebugId(int worldId, int debuggerId);
 
 private:
     typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<WindowProxy> > IsolatedWorldMap;

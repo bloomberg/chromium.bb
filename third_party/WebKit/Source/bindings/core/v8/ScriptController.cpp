@@ -428,11 +428,6 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
     m_windowProxyManager->collectIsolatedContexts(result);
 }
 
-void ScriptController::setWorldDebugId(int worldId, int debuggerId)
-{
-    m_windowProxyManager->setWorldDebugId(worldId, debuggerId);
-}
-
 void ScriptController::updateDocument()
 {
     // For an uninitialized main window windowProxy, do not incur the cost of context initialization.
