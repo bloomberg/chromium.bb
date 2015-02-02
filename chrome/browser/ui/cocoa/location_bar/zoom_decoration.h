@@ -33,6 +33,7 @@ class ZoomDecoration : public ImageDecoration,
 
   // Shows the zoom bubble for this decoration. If |auto_close| is YES, then
   // the bubble will automatically close after a fixed period of time.
+  // If a bubble is already showing, the |auto_close| timer is reset.
   void ShowBubble(BOOL auto_close);
 
   // Closes the zoom bubble.

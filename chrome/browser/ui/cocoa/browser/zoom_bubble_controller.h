@@ -48,6 +48,8 @@ class ZoomBubbleControllerDelegate {
   ui::ScopedCrTrackingArea trackingArea_;
 }
 
+@property(nonatomic) ZoomBubbleControllerDelegate* delegate;
+
 // Creates the bubble for a parent window but does not show it.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                   delegate:(ZoomBubbleControllerDelegate*)delegate;
