@@ -54,7 +54,7 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
-    ASSERT(!node.document().childNeedsDistributionRecalc());
+    ASSERT(node.inDocument() ? !node.document().childNeedsDistributionRecalc() : !node.childNeedsDistributionRecalc());
     ASSERT(!node.isShadowRoot());
     if (isActiveInsertionPoint(node))
         return 0;

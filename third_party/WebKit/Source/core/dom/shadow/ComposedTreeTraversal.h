@@ -63,7 +63,7 @@ private:
     static void assertPrecondition(const Node& node)
     {
 #if ENABLE(ASSERT)
-        ASSERT(!node.document().childNeedsDistributionRecalc());
+        ASSERT(node.inDocument() ? !node.document().childNeedsDistributionRecalc() : !node.childNeedsDistributionRecalc());
         ASSERT(node.canParticipateInComposedTree());
 #endif
     }
