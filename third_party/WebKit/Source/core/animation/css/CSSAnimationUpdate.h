@@ -40,6 +40,7 @@ public:
         void trace(Visitor* visitor)
         {
             visitor->trace(animation);
+            visitor->trace(styleRule);
         }
 
         AtomicString name;

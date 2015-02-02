@@ -69,7 +69,7 @@ public:
     void trace(Visitor*);
 
 private:
-    class RunningAnimation final : public RefCountedWillBeGarbageCollected<RunningAnimation>  {
+    class RunningAnimation final : public RefCountedWillBeGarbageCollectedFinalized<RunningAnimation>  {
     public:
         RunningAnimation(PassRefPtrWillBeRawPtr<AnimationPlayer> player, CSSAnimationUpdate::NewAnimation animation)
             : player(player)
