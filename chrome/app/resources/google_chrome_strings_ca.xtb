@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="110877069173485804">Aquest és el vostre Chrome</translation>
 <translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
-<translation id="2896252579017640304">Inicia les aplicacions de Chrome</translation>
 <translation id="5620765574781326016">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina.</translation>
 <translation id="2721687379934343312">En un Mac, les contrasenyes es desen a Keychain i altres usuaris de Chrome que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
 <translation id="683440813066116847">Regla d'entrada de Google Chrome Canary per permetre el trànsit de mDNS.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">(cal <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">Després de suprimir el vostre compte de Chrome, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
-<translation id="5775197990071433230">Aquest equip ja disposa d'una versió més recent dels components de Google Chrome. Feu servir un instal·lador més recent.</translation>
 <translation id="4987308747895123092">Tanqueu totes les finestres de Google Chrome (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="568643307450491754">Trobareu les adreces d'interès al menú de Chrome o a la barra d'adreces d'interès.</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
@@ -80,7 +78,6 @@
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="5037239767309817516">Tanqueu totes les finestres de Google Chrome i torneu a iniciar el programa perquè aquest canvi tingui efecte.</translation>
-<translation id="345168553362876363">El menú d'aplicacions de Google Chrome és una plataforma independent per a les aplicacions de Chrome.</translation>
 <translation id="225614027745146050">Benvingut</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
@@ -166,7 +163,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
-<translation id="5788838254726722945">Desinstal·la el menú d'aplicacions de Google Chrome</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
 <translation id="2665296953892887393">Ajudeu a millorar Google Chrome; envieu informes d'error i <ph name="UMA_LINK"/> a Google.</translation>
 <translation id="7761834446675418963">Feu clic al vostre nom per obrir Chrome i començar a navegar.</translation>
@@ -191,10 +187,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8669527147644353129">Aplicació auxiliar de Google Chrome</translation>
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>
 <translation id="130631256467250065">Els canvis es faran efectius la propera vegada que reinicieu el dispositiu.</translation>
-<translation id="1546593779121993896">Aneu al Menú de Chrome &gt; Configuració &gt; (Avançada) Privadesa
-          i desmarqueu &quot;Prediccions d'accions de la xarxa&quot;.
-          Si això no resol el problema, us recomanem que torneu a activar
-          aquesta opció per obtenir un rendiment millorat.</translation>
 <translation id="163860049029591106">Introducció a Chrome OS</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
@@ -241,7 +233,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5334545119300433702">Se sap que aquest mòdul entra en conflicte amb Google Chrome.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome està actualitzat.</translation>
-<translation id="4120075327926916474">Voleu que Chrome desi la informació d'aquesta targeta de crèdit per completar formularis web?</translation>
 <translation id="3037838751736561277">Google Chrome està en mode de segon pla.</translation>
 <translation id="2084710999043359739">Afegeix a Chrome</translation>
 <translation id="4692614041509923516">El vostre ordinador funciona amb una versió antiga de Microsoft Windows que no pot processar el certificat de seguretat d'aquest lloc web. A causa d'aquest problema, Google Chrome no pot saber si el certificat prové del lloc <ph name="SITE"/> o d'algú de la vostra xarxa que es fa passar per <ph name="SITE"/>. Feu l'actualització de l'ordinador a una versió més recent de Windows.</translation>

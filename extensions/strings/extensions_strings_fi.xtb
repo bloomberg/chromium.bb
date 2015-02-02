@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Lukea kopioimiasi ja liittämiäsi tietoja</translation>
 <translation id="2350172092385603347">Lokalisaatiota käytetään, mutta default_locale ei ole määritetty luettelossa.</translation>
 <translation id="3759933321830434300">Estä joitain verkkosivujen osia</translation>
+<translation id="6143635259298204954">Laajennuksen purkaminen epäonnistui. Voit purkaa laajennuksen määrittämällä polun profiilihakemistoon, joka ei sisällä symlink-määritettä. Profiilissasi ei ole kyseistä polkua.</translation>
 <translation id="149347756975725155">Laajennuskuvakkeen <ph name="ICON"/> lataaminen ei onnistunut.</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME"/>, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME"/>) kanssa.</translation>
 <translation id="7495493006406536234">Tuote <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Valitse USB-laitteita</translation>
+<translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH"/> laajennuksen purkamista varten:</translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE"/> lataus epäonnistui.</translation>
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE"/> lataaminen epäonnistui.</translation>
+<translation id="5127881134400491887">hallinnoida verkkoyhteyksiä</translation>
 <translation id="6344170822609224263">Pääsy verkkoyhteysluetteloon</translation>
 <translation id="7039326228527141150">Käyttää myyjän <ph name="VENDOR_NAME"/> USB-laitteita</translation>
 <translation id="2616366145935564096">lukea ja muuttaa tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">myyjän <ph name="VENDOR_NAME"/> tuntemattomat laitteet</translation>
 <translation id="4968399700653439437">Vaihda tietoja minkä tahansa seuraavia verkkotunnuksia käyttävän tietokoneen kanssa: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Verkkonäkymä: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Luvaton polku (absoluuttinen tai kohteeseen '..' liittyvä): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">kaikki verkkotunnuksen <ph name="WEBSITE_1"/> sivustot</translation>
 <translation id="8662911384982557515">Vaihda aloitussivuksi <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Tämä laajennus ei voinut muuttaa verkkopyyntöä, koska muutos on ristiriidassa toisen laajennuksen kanssa.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Tämä laajennus ei antanut käyttöoikeustietoja verkkopyynnölle, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) antoi toiset käyttöoikeustiedot.</translation>
 <translation id="5627523580512561598">laajennus <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">käyttää valokuvia, musiikkia ja muuta tietokoneesi mediaa</translation>
+<translation id="3369521687965833290">Laajennuksen purkaminen epäonnistui. Voit purkaa laajennuksen määrittämällä polun profiilihakemistoon, joka alkaa kiintolevyn kirjaimella eikä sisällä liitos- tai liityntäkohtaa tai symlink-määritettä. Profiilissasi ei ole kyseistä polkua.</translation>
+<translation id="4811956658694082538">Pakettia ei voi asentaa, koska apuohjelmaprosessi kaatui. Käynnistä Chrome uudelleen ja yritä uudelleen.</translation>
+<translation id="641087317769093025">Laajennuksen purkaminen epäonnistui</translation>
 <translation id="4761104368405085019">Käyttää mikrofonia</translation>
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME"/> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Käyttää kaikkia näitä USB-laitteita</translation>
 <translation id="2677911863018634147">Sovellus <ph name="APP_NAME"/> pyytää käyttölupaa yhteen tai useampaan laitteeseesi.</translation>
 <translation id="6698810901424468597">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Kuvan koodin purkaminen epäonnistui: <ph name="IMAGE_NAME"/></translation>
 <translation id="5544884907028850012">Myyjä <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Käyttää verkkoliikennettäsi</translation>
 <translation id="5972529113578162692">Tämän laitteen järjestelmänvalvoja on määrittänyt, että laitteessa täytyy olla <ph name="EXTENSION_NAME"/>. Laajennusta ei voi poistaa.</translation>
+<translation id="1135328998467923690">Paketti on virheellinen: <ph name="ERROR_CODE"/>.</translation>
 <translation id="7131040479572660648">Lukea tietojasi sivuistoissa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Käyttää kohdetta <ph name="PRODUCT_NAME_AND_VENDOR"/> USB:n kautta.</translation>
 <translation id="1803557475693955505">Taustasivun <ph name="BACKGROUND_PAGE"/> lataaminen ei onnistunut.</translation>
+<translation id="2988488679308982380">Paketin <ph name="ERROR_CODE"/> asentaminen epäonnistui.</translation>
 <translation id="5751530153776468604">Sovellus <ph name="APP_NAME"/> pyytää käyttöoikeutta yhteen laitteistasi.</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE"/>.</translation>
 <translation id="344630545793878684">Lukea tietojasi useissa sivustoissa</translation>
 </translationbundle>

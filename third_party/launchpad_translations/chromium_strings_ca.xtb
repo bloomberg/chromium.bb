@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="6373523479360886564">Esteu segur que voleu desinstal·lar Chromium?</translation>
-<translation id="5065199687811594072">Voleu que Chromium desi la informació d'aquesta targeta de crèdit per completar formularis web?</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="2615699638672665509">Aquest ordinador aviat deixarà de rebre actualitzacions de Chromium perquè el seu maquinari ja no s'admet.</translation>
 <translation id="5532301346661895910">Chromium la desarà a les |contrasenyes desades de Google| i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
-<translation id="1550579416447684632">Inicia les aplicacions de Chromium</translation>
 <translation id="2732467638532545152">El vostre ordinador funciona amb una versió antiga de Microsoft Windows que no pot processar el certificat de seguretat d'aquest lloc web. A causa d'aquest problema, Chromium no pot saber si el certificat prové del lloc <ph name="SITE"/> o d'algú de la vostra xarxa que es fa passar per <ph name="SITE"/>. Feu l'actualització de l'ordinador a una versió més recent de Windows.</translation>
-<translation id="4267347018362241535">El menú d'aplicacions de Chromium és una plataforma independent per a aplicacions de Chromium.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="6613594504749178791">Els canvis s'aplicaran la propera vegada que reinicieu Chromium.</translation>
 <translation id="9089354809943900324">Chromium no està actualitzat</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Si compartiu aquest ordinador amb <ph name="PROFILE_NAME"/>, afegiu el vostre usuari a Chromium per navegar per separat. Si no, també podeu desconnectar el seu compte de Google.</translation>
 <translation id="1480489203462860648">Prova'l, ja està instal·lat</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
-<translation id="4831257561365056138">Desinstal·la el menú d'aplicacions de Chromium</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertiment:<ph name="END_BOLD"/> Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Chromium s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="8843170958047978824">Suprimeix de Chromium</translation>
 <translation id="3068515742935458733">Ajudeu a millorar Chromium; envieu informes d'error i <ph name="UMA_LINK"/> a Google.</translation>
-<translation id="1609700857210121286">Aneu al menú de Chromium &gt; Configuració &gt; (Avançada) Privadesa
-          i desmarqueu &quot;Prediccions d'accions de la xarxa&quot;.
-          Si això no resol el problema, us recomanem que torneu a activar
-          aquesta opció per obtenir un rendiment millorat.</translation>
 <translation id="734373864078049451">El vostre web, les adreces d'interès i altres coses de Chromium resideixen aquí.</translation>
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="3065280201209294872">El lloc fa servir una configuració de seguretat obsoleta que pot evitar que les futures versions de Chromium puguin accedir-hi amb seguretat.</translation>
@@ -251,7 +243,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8704119203788522458">Aquest és el vostre Chromium</translation>
 <translation id="8269379391216269538">Ajudeu a millorar Chromium</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>
-<translation id="374481098568514319">Aquest equip ja disposa d'una versió més recent dels components de Chromium. Feu servir un instal·lador més recent.</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="7318036098707714271">El fitxer de preferències està malmès o no és vàlid.
 

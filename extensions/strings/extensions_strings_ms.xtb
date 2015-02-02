@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
 <translation id="2350172092385603347">Penempatan digunakan, tetapi default_locale tidak dinyatakan dalam ketara.</translation>
 <translation id="3759933321830434300">Sekat sebahagian halaman web</translation>
+<translation id="6143635259298204954">Tidak dapat menyahpek sambungan.  Untuk menyahpek sambungan dengan selamat, perlu ada laluan ke direktori profil anda yang tidak mengandungi symlink.  Tiada laluan tersebut wujud untuk profil anda.</translation>
 <translation id="149347756975725155">Tidak dapat memuatkan ikon sambungan '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Sambungan ini gagal mengubah suai pengatas permintaan &quot;<ph name="HEADER_NAME"/>&quot; untuk permintaan rangkaian kerana ubah suai tersebut bercanggah dengan sambungan lain (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produk <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Pilih peranti USB</translation>
+<translation id="6731255991101203740">Tidak dapat mencipta direktori untuk menyahzip: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Tidak dapat memuatkan halaman perihal '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Tidak dapat memuatkan halaman pilihan '<ph name="OPTIONS_PAGE"/>'.</translation>
+<translation id="5127881134400491887">Urus sambungan rangkaian</translation>
 <translation id="6344170822609224263">Akses senarai sambungan rangkaian</translation>
 <translation id="7039326228527141150">Akses peranti USB daripada <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Baca dan tukar data anda di <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">peranti yang tidak diketahui daripada <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Bertukar data dengan mana-mana komputer dalam domain: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Paparan Web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Laluan tidak sah (mutlak atau berkaitan dengan '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">semua tapak <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Tukar halaman utama anda kepada: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Sambungan ini gagal mengubah suai permintaan rangkaian kerana pengubahsuaian itu bercanggah dengan sambungan lain.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Sambungan ini gagal memberikan bukti kelayakan kepada permintaan rangkaian kerana sambungan lain (<ph name="EXTENSION_NAME"/>) memberikan bukti kelayakan yang berbeza.</translation>
 <translation id="5627523580512561598">sambungan <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Akses foto, muzik dan media lain dari komputer anda</translation>
+<translation id="3369521687965833290">Tidak dapat menyahpek sambungan.  Untuk menyahpek sambungan dengan selamat, perlu ada laluan ke direktori profil anda yang bermula dengan huruf pemacu dan tidak  mengandungi simpang, titik peletakan atau symlink.  Laluan tersebut tidak wujud untuk profil anda.</translation>
+<translation id="4811956658694082538">Tidak dapat memasang pakej kerana proses utiliti telah ranap. Cuba mulakan semula Chrome dan cuba lagi.</translation>
+<translation id="641087317769093025">Tidak boleh menyahzip sambungan</translation>
 <translation id="4761104368405085019">Gunakan mikrofon anda</translation>
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> daripada <ph name="VENDOR_NAME"/> (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Akses mana-mana peranti USB ini</translation>
 <translation id="2677911863018634147">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses kepada satu atau lebih peranti anda.</translation>
 <translation id="6698810901424468597">Baca dan tukar data anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Tidak dapat menyahkod imej: ' <ph name="IMAGE_NAME"/> '</translation>
 <translation id="5544884907028850012">Penjual <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Akses trafik rangkaian anda</translation>
 <translation id="5972529113578162692">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> dipasang. Sambungan ini tidak boleh dinyahpasang.</translation>
+<translation id="1135328998467923690">Pakej adalah tidak sah: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Baca data anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> dan <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Akses mana-mana <ph name="PRODUCT_NAME_AND_VENDOR"/> melalui USB</translation>
 <translation id="1803557475693955505">Tidak dapat memuatkan halaman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="2988488679308982380">Tidak dapat memasang pakej: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses kepada salah satu peranti anda.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Pakej adalah tidak sah. Butiran: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Baca data anda di beberapa tapak web</translation>
 </translationbundle>

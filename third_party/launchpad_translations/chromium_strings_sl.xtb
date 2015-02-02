@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="6373523479360886564">Ali ste prepričani, da želite odstraniti Chromiuma?</translation>
-<translation id="5065199687811594072">Ali želite, da Chromium shrani podatke o tej kreditni kartici za izpolnjevanje spletnih obrazcev?</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
 <translation id="2615699638672665509">Ta računalnik bo kmalu prenehal prejemati posodobitve za Chromium, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="5532301346661895910">Chromium bo shranil to tukaj: |gesla, ki jih shranil Google| in priklical, ko to naslednjič potrebujete.</translation>
 <translation id="6893813176749746474">Chromium je posodobljen, vendar ga niste uporabljali najmanj 30 dni.</translation>
-<translation id="1550579416447684632">Zagon aplikacij za Chromium</translation>
 <translation id="2732467638532545152">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Chromium ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE"/> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE"/>. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
-<translation id="4267347018362241535">Chromium App Launcher je samostojno okolje za aplikacije za Chromium.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="6613594504749178791">Spremembe bodo začele veljati ob naslednjem zagonu Chromiuma.</translation>
 <translation id="9089354809943900324">Chromium je zastarel</translation>
@@ -64,7 +61,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME"/>, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
 <translation id="1480489203462860648">Preskusite ga, je že nameščen.</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
-<translation id="4831257561365056138">Odstrani Chromium App Launcher</translation>
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Opozorilo:<ph name="END_BOLD"/> Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>
@@ -78,10 +74,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3190315855212034486">Opa! Chromium se je zrušil. Ga želite znova zagnati?</translation>
 <translation id="8843170958047978824">Odstranitev iz Chromiuma</translation>
 <translation id="3068515742935458733">Pomagajte izboljšati Chromium – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK"/>.</translation>
-<translation id="1609700857210121286">Odprite meni Chromiuma &gt; Nastavitve &gt; (Dodatna) Zasebnost
-          in onemogočite »Predvidevanje omrežnih dejanj«.
-          Če s tem težave ne odpravite, priporočamo, da to možnost
-          zaradi izboljšanja delovanja znova izberete.</translation>
 <translation id="734373864078049451">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromiumu.</translation>
 <translation id="3197823471738295152">Naprava ima najnovejšo različico.</translation>
 <translation id="3065280201209294872">Spletno mesto uporablja zastarele varnostne nastavitve, ki bodo prihodnjim različicam Chromiuma morda preprečile varen dostop do spletnega mesta.</translation>
@@ -254,7 +246,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="8704119203788522458">To je vaš Chromium</translation>
 <translation id="8269379391216269538">Pomagajte izboljšati Chromium</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
-<translation id="374481098568514319">Ta računalnik že ima novejšo različico Chromiumovih komponent. Uporabite novejši namestitveni program.</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
 <translation id="7318036098707714271">Datoteka z nastavitvami je poškodovana ali neveljavna.
 

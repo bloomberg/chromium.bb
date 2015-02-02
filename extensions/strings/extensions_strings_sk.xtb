@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Čítať údaje, ktoré kopírujete a prilepujete</translation>
 <translation id="2350172092385603347">Lokalizácia sa použila, parameter default_locale však nebol v manifeste určený.</translation>
 <translation id="3759933321830434300">Blokovať časti webových stránok</translation>
+<translation id="6143635259298204954">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá neobsahuje žiadny odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
 <translation id="149347756975725155">Nepodarilo sa načítať ikonu rozšírenia „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Tomuto rozšíreniu sa nepodarilo upraviť hlavičku <ph name="HEADER_NAME"/> žiadosti o sieť, pretože táto úprava kolidovala s iným rozšírením (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Výber zariadení USB</translation>
+<translation id="6731255991101203740">Nepodarilo sa vytvoriť adresár na rozbalenie: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Informačnú stránku <ph name="ABOUT_PAGE"/> sa nepodarilo načítať.</translation>
 <translation id="388442998277590542">Nepodarilo sa načítať stránku s možnosťami „<ph name="OPTIONS_PAGE"/>“.</translation>
+<translation id="5127881134400491887">Spravovať sieťové pripojenia</translation>
 <translation id="6344170822609224263">Pristupovať k zoznamu sieťových pripojení</translation>
 <translation id="7039326228527141150">Pristupovať k zariadením USB od dodávateľa <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Čítať a meniť údaje na: <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">neznáme zariadenia od dodávateľa <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Vymieňať si dáta s ktorýmkoľvek počítačom v doménach <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Neplatná cesta (absolútna alebo relatívna s '..'): <ph name="IMAGE_PATH"/></translation>
 <translation id="8284279544186306258">všetky weby <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Zmeniť domovskú stránku na: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Tomuto rozšíreniu sa nepodarilo upraviť žiadosť siete, pretože úprava bola v rozpore s ďalším rozšírením.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Tomuto rozšíreniu sa nepodarilo poskytnúť poverenia žiadosti o sieť, pretože iné rozšírenie (<ph name="EXTENSION_NAME"/>) poskytlo odlišné poverenia.</translation>
 <translation id="5627523580512561598">rozšírenie <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Mať prístup k fotkám, hudbe a ďalším médiám z vášho počítača</translation>
+<translation id="3369521687965833290">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá začína písmenom jednotky a neobsahuje žiadny styčný bod, bod prepojenia ani odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
+<translation id="4811956658694082538">Balík sa nepodarilo nainštalovať z dôvodu zlyhania procesu nástroja. Reštartujte prehliadač Chrome a skúste to znova.</translation>
+<translation id="641087317769093025">Rozšírenie sa nepodarilo rozbaliť</translation>
 <translation id="4761104368405085019">Používať mikrofón</translation>
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME"/>. Nemôže byť odstránené alebo upravené.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> od dodávateľa <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Prístup ku ktorýmkoľvek z týchto zariadení USB</translation>
 <translation id="2677911863018634147">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému alebo viacerým vašim zariadeniam.</translation>
 <translation id="6698810901424468597">Čítanie a úprava údajov na weboch <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Nepodarilo sa dekódovať obrázok: <ph name="IMAGE_NAME"/></translation>
 <translation id="5544884907028850012">Dodávateľ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Prístup k dátam prenášaným v sieti</translation>
 <translation id="5972529113578162692">Správca tohto počítača vyžaduje, aby bolo nainštalované rozšírenie <ph name="EXTENSION_NAME"/>. Nedá sa odinštalovať.</translation>
+<translation id="1135328998467923690">Balík je neplatný: „<ph name="ERROR_CODE"/>“</translation>
 <translation id="7131040479572660648">Čítať vaše údaje na weboch <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Prístup k ľubovoľnému zariadeniu <ph name="PRODUCT_NAME_AND_VENDOR"/> prostredníctvom USB</translation>
 <translation id="1803557475693955505">Nepodarilo sa načítať stránku na pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="2988488679308982380">Nepodarilo sa nainštalovať balík: <ph name="ERROR_CODE"/></translation>
 <translation id="5751530153776468604">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému z vašich zariadení.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Čítať vaše údaje na viacerých webových stránkach</translation>
 </translationbundle>

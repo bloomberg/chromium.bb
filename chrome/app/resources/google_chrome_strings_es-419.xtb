@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="8406086379114794905">Ayudar a mejorar Chrome</translation>
-<translation id="2896252579017640304">Iniciar aplicaciones de Chrome</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="2721687379934343312">En dispositivos Mac, las contraseñas se guardan en la aplicación Keychain. Los usuarios de Chrome con los que compartes esta cuenta del sistema operativo X pueden acceder a las contraseñas o sincronizarlas.</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">(Es necesario <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chrome).</translation>
 <translation id="8030318113982266900">Actualizando el dispositivo al canal <ph name="CHANNEL_NAME"/>…</translation>
 <translation id="8032142183999901390">Luego de eliminar la cuenta de Chrome, es posible que debas volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
-<translation id="5775197990071433230">Esta computadora ya cuenta con una versión más reciente de los componentes de Google Chrome. Utiliza un archivo de instalación más reciente.</translation>
 <translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible, y es más rápida que nunca.</translation>
@@ -80,7 +78,6 @@
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="5037239767309817516">Cierra todas las ventanas de Google Chrome y reinicia el navegador para que se aplique el cambio.</translation>
-<translation id="345168553362876363">El selector de aplicaciones de Google Chrome es una plataforma independiente para aplicaciones de Chrome.</translation>
 <translation id="225614027745146050">Bienvenido</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
@@ -166,7 +163,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="8568392309447938879">Para usar las aplicaciones, tienes que acceder a Chrome. De este modo, Chrome puede sincronizar las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
 <translation id="4990567037958725628">Google Chrome Canario</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la web y ¡llamarlo por Skype!</translation>
-<translation id="5788838254726722945">Desinstalar selector de aplicaciones de Google Chrome</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK"/> para ayudar a mejorar Google Chrome.</translation>
 <translation id="7761834446675418963">Haz clic en tu nombre para abrir Chrome y empezar a navegar.</translation>
@@ -191,10 +187,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
 <translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
-<translation id="1546593779121993896">Ve al menú de Chrome &gt; Configuración &gt; (Avanzada) Privacidad
-          e inhabilita &quot;Predicciones de acciones de red&quot;.
-          Si esto no resuelve el problema, vuelve a habilitar esta opción
-          para obtener un mejor desempeño.</translation>
 <translation id="163860049029591106">Introducción al Sistema operativo de Chrome</translation>
 <translation id="1587223624401073077">Google Chrome está usando tu cámara.</translation>
 <translation id="1399397803214730675">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y descárgalo nuevamente.</translation>
@@ -241,7 +233,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5334545119300433702">Se sabe que este módulo es conflictivo con Google Chrome.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome está actualizado.</translation>
-<translation id="4120075327926916474">¿Deseas que Chrome guarde esta información de tarjeta de crédito para completar formularios web?</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="2084710999043359739">Agregar a Chrome</translation>
 <translation id="4692614041509923516">La computadora utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Google Chrome no puede saber si el certificado procede de <ph name="SITE"/> o de un atacante de tu red que quiere hacerse pasar por <ph name="SITE"/>. Instala una versión más reciente de Windows en la computadora.</translation>

@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="8588878054171169263">Tallenna kuva</translation>
 <translation id="7998918019931843664">Avaa suljettu välilehti uudelleen</translation>
+<translation id="8425213833346101688">Vaihda</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="6292937202013477045">Hyökkääjät voivat yrittää varastaa tietojasi (kuten kuvia, salasanoja, viestejä ja luottokorttien tietoja) verkkotunnuksesta <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Hakukone</translation>
 <translation id="346339498574870680">Kopioi kuvan URL-osoite</translation>
+<translation id="5063480226653192405">Käyttö</translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
+<translation id="9189669987942139609">Tt</translation>
+<translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="6458785801851713928">Synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2731700343119398978">Odota...</translation>
 <translation id="6846298663435243399">Ladataan…</translation>
@@ -39,6 +43,8 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="1966710179511230534">Päivitä kirjautumistietosi.</translation>
 <translation id="3410346880900521918">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK"/>ehdotuksia<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
+<translation id="7375125077091615385">Tyyppi:</translation>
+<translation id="2498359688066513246">Ohjeet ja palaute</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
@@ -53,13 +59,12 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
-<translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="552553974213252141">Noudettiinko teksti oikein?</translation>
-<translation id="5317780077021120954">Tallenna</translation>
 <translation id="1151972924205500581">Salasana vaaditaan</translation>
+<translation id="2870560284913253234">Sivusto</translation>
 <translation id="2718352093833049315">Vain Wi-Fillä</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="2414886740292270097">Tumma</translation>
@@ -79,28 +84,38 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="4807098396393229769">Kortissa oleva nimi</translation>
 <translation id="656628257199996201">Käännä aina <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Tekstin skaalaus</translation>
+<translation id="6447842834002726250">Evästeet</translation>
 <translation id="2748463065602559597">Katselet suojattua Google Chrome -sivua.</translation>
+<translation id="1383876407941801731">Haku</translation>
 <translation id="5626370437647899551">Lisää Google-tili</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="4543661749405994812">Kopioi sähköpostiosoite</translation>
+<translation id="5646376287012673985">Sijainti</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
+<translation id="3123243061080120667">kt</translation>
 <translation id="7987073022710626672">Chromen käyttöehdot</translation>
 <translation id="5668404140385795438">Ohita sivuston zoomauksen estämispyyntö</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
+<translation id="1987317783729300807">Tilit</translation>
 <translation id="6064211167623632605">Suoritettavan tiedoston polku</translation>
 <translation id="10614374240317010">Ei tallenneta</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
 <translation id="8503813439785031346">Käyttäjänimi</translation>
 <translation id="4827948050554950725">Lisää luottokortti</translation>
+<translation id="4278390842282768270">Sallittu</translation>
 <translation id="7817177303494746697">Blink-versio</translation>
 <translation id="2532336938189706096">Verkkonäkymä</translation>
 <translation id="6571070086367343653">Luottokortin muokkaus</translation>
 <translation id="7080851568148064063">Lisää aloitusruutuun</translation>
+<translation id="6192792657125177640">Poikkeukset</translation>
 <translation id="4619298195800598081">Avaa alkup. uudella välilehd.</translation>
+<translation id="8798099450830957504">Oletus</translation>
 <translation id="4002066346123236978">Nimi</translation>
+<translation id="885701979325669005">Tallennus</translation>
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="907015151729920253">Älykortti</translation>
+<translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Kortin vanhentumiskuukausi</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
@@ -114,6 +129,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="4148957013307229264">Asennetaan...</translation>
 <translation id="3992315671621218278">Tallenna linkki</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Muokkaa tallennettua nimeä/salasanaa tai poikkeusta</translation>
 <translation id="2476578072172137802">Sivuston asetukset</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
@@ -130,8 +146,9 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="654446541061731451">Valitse siirrettävä välilehti</translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="2359808026110333948">Jatka</translation>
+<translation id="977224059380370527">Mt</translation>
 <translation id="2512222046227390255">Lomakkeiden automaattinen täyttö</translation>
-<translation id="8261506727792406068">Poista</translation>
+<translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="1080790410959514870">Olet kirjautumassa ulos tilistä, jota hallinnoi <ph name="DOMAIN_NAME"/>. Laitteelle tallennetut Chrome-tiedot poistetaan, mutta ne säilytetään Google-tililläsi.</translation>
 <translation id="4510973599275542560">Älä päivitä</translation>
 <translation id="1206892813135768548">Kopioi linkin teksti</translation>
@@ -140,15 +157,19 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="4271185234001491831">Älä koskaan käännä kieltä <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopioi kuva</translation>
+<translation id="5804241973901381774">Käyttöluvat</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="8941248009481596111">Sivustoon on muodostettu salattu yhteys.</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
+<translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="5164482624172255778">Haluatko Google Chromen ehdottavan sivuston kielellä <ph name="LANGUAGE"/> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="8528538445849828817">Sivun kieli: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
+<translation id="3414952576877147120">Koko:</translation>
+<translation id="5626134646977739690">Nimi:</translation>
 <translation id="5565871407246142825">Luottokortit</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="2612676031748830579">Kortin numero</translation>
@@ -163,7 +184,6 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 Jos suojattu sisältö EI OLE KÄYTÖSSÄ, et välttämättä voi toistaa premium-videoita tällä laitteella.</translation>
 <translation id="8928220460877261598">Olet nyt kirjautunut Chromeen.</translation>
 <translation id="5032574515228824816">Kehote</translation>
-<translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="862875433388403934">Muissa sov. ladattua sisältöä (esim. elokuvia, musiikkia) ei ehkä voi toistaa ennen käyttöoik. myöntämistä sovellukselle uudell. uusien laitteen kirjautumistiet. perust.
 
 Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisältö.</translation>
@@ -177,10 +197,12 @@ Palaa vetämällä ylälaidasta.</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="7634554953375732414">Sivustoon ei ole muodostettu salattua yhteyttä.</translation>
+<translation id="6409731863280057959">Ponnahdusikkunat</translation>
+<translation id="8776285424728638733">Gt</translation>
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="1742134235943978220">Käännetty kielelle <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Käytössä</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
+<translation id="5677928146339483299">Estetty</translation>
 <translation id="7561196759112975576">Aina</translation>
 </translationbundle>

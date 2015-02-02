@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Accéder aux données que vous copiez et collez</translation>
 <translation id="2350172092385603347">Localisation utilisée, mais les paramètres régionaux par défaut (default_locale) n'ont pas été indiqués dans le manifeste. </translation>
 <translation id="3759933321830434300">Bloquer des parties de pages Web</translation>
+<translation id="6143635259298204954">Impossible d'extraire les fichiers de l'extension. Pour effectuer cette opération en toute sécurité, vous devez disposer d'un chemin d'accès à votre répertoire de profils ne contenant pas de lien symbolique. Aucun chemin de ce type n'existe pour votre profil.</translation>
 <translation id="149347756975725155">Impossible de charger l'icône de l'extension &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Le titre de demande d'une requête réseau (&quot;<ph name="HEADER_NAME"/>&quot;) n'a pas pu être modifié à partir de cette extension, car la modification demandée était en conflit avec une autre extension (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produit <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Sélectionner des appareils USB</translation>
+<translation id="6731255991101203740">Impossible de créer le répertoire de décompression : &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Impossible de charger la page &quot;À propos&quot; <ph name="ABOUT_PAGE"/>.</translation>
 <translation id="388442998277590542">Impossible de charger la page d'options &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">Gérer les connexions réseau</translation>
 <translation id="6344170822609224263">Accéder à la liste des connexions réseau</translation>
 <translation id="7039326228527141150">Accéder aux appareils USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Accéder aux données du site <ph name="WEBSITE_1"/> et les modifier</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">appareils inconnus de <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Échanger des données avec les ordinateurs dans les domaines suivants : <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Affichage du site Web : <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Chemin (absolu ou par rapport à &quot;..&quot;) non valide : &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">tous les sites <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Utiliser <ph name="HOME_PAGE"/> comme page d'accueil ?</translation>
 <translation id="27822970480436970">Cette extension n'a pas réussi à modifier une requête réseau, car la modification était en conflit avec une autre extension.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Des certificats n'ont pas pu être fournis à la requête réseau par cette extension, car des certificats différents ont été fournis par une autre extension (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="5627523580512561598">Extension <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">accéder aux photos, titres et autres médias de votre ordinateur ;</translation>
+<translation id="3369521687965833290">Impossible d'extraire les fichiers de l'extension. Pour effectuer cette opération en toute sécurité, vous devez disposer d'un chemin d'accès à votre répertoire de profils commençant par une lettre de lecteur et ne contenant ni jonction, ni point de montage, ni lien symbolique. Aucun chemin de ce type n'existe pour votre profil.</translation>
+<translation id="4811956658694082538">Impossible d'installer le package en raison du plantage d'un processus associé à un utilitaire. Veuillez redémarrer Chrome, puis réessayer.</translation>
+<translation id="641087317769093025">Impossible de décompresser l'extension.</translation>
 <translation id="4761104368405085019">Utiliser votre micro</translation>
 <translation id="7217838517480956708">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME"/> soit installée. Celle-ci ne peut pas être supprimée ni modifiée.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (numéro de série <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Accéder à n'importe lequel de ces appareils USB</translation>
 <translation id="2677911863018634147">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à un ou plusieurs de vos appareils.</translation>
 <translation id="6698810901424468597">Accéder aux données des sites <ph name="WEBSITE_1"/> et <ph name="WEBSITE_2"/>, et les modifier</translation>
+<translation id="2159915644201199628">Impossible de décoder l'image : &quot;<ph name="IMAGE_NAME"/>&quot;.</translation>
 <translation id="5544884907028850012">Fournisseur <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Accéder au trafic de votre réseau</translation>
 <translation id="5972529113578162692">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME"/> soit installée. Cette extension ne pourra pas être désinstallée.</translation>
+<translation id="1135328998467923690">Package incorrect : &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Lire vos données sur <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> et <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Accéder à tous les <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Impossible de charger la page d'arrière-plan &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Impossible d'installer le package : &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à l'un de vos appareils.</translation>
 <translation id="7972881773422714442">Options : <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Package incorrect. Détails : &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Lire vos données sur plusieurs sites web</translation>
 </translationbundle>

@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="5172758083709347301">મશીન</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
+<translation id="8208216423136871611">સાચવશો નહીં</translation>
 <translation id="777702478322588152">પ્રીફેચર</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="4058922952496707368">કી &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript ચેતવણી</translation>
+<translation id="4081383687659939437">માહિતી સાચવો </translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> શોધ</translation>
 <translation id="2498091847651709837">નવું કાર્ડ સ્કૅન કરો</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">અમાન્ય શોધ URL.</translation>
 <translation id="5509780412636533143">સંચાલિત બુકમાર્ક્સ</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
+<translation id="4120075327926916474">શું તમે ઇચ્છો છો કે વેબ ફોર્મ્સ પૂર્ણ કરવા માટે આ ક્રેડિટ કાર્ડ માહિતી Chrome સાચવી રાખે?</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> પરનું પૃષ્ઠ કહે છે:</translation>
 <translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>

@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Questo tipo di carta non è supportato da Google Wallet. Seleziona un'altra carta.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
+<translation id="8208216423136871611">Non salvare</translation>
 <translation id="777702478322588152">Prefettura</translation>
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Consigliate</translation>
 <translation id="4058922952496707368">Chiave &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Avviso JavaScript</translation>
+<translation id="4081383687659939437">Salva informazioni</translation>
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Esegui scansione nuova carta</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL ricerca non valido.</translation>
 <translation id="5509780412636533143">Preferiti gestiti</translation>
 <translation id="8866481888320382733">Errore durante l'analisi delle impostazioni criterio</translation>
+<translation id="4120075327926916474">Desideri che Google Chrome salvi le informazioni della carta di credito per completare i moduli sul Web?</translation>
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="1693754753824026215">La pagina all'indirizzo <ph name="SITE"/> dice:</translation>
 <translation id="4269787794583293679">(Nessun nome utente)</translation>

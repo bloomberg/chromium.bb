@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Den här korttypen stöds inte i Google Wallet. Välj ett annat kort.</translation>
 <translation id="5172758083709347301">Dator</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
+<translation id="8208216423136871611">Spara inte</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP-fel</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Rekommenderas</translation>
 <translation id="4058922952496707368">Nyckel <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript-varning</translation>
+<translation id="4081383687659939437">Spara info</translation>
 <translation id="5299298092464848405">Det uppstod ett fel när policyn analyserades</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Sök</translation>
 <translation id="2498091847651709837">Läs in ett nytt kort</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Ogiltig sökadress.</translation>
 <translation id="5509780412636533143">Hanterade bokmärken</translation>
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
+<translation id="4120075327926916474">Vill du att Chrome ska spara kreditkortsuppgifterna vid automatisk ifyllning av webbformulär?</translation>
 <translation id="6644283850729428850">Policyn är föråldrad.</translation>
 <translation id="1693754753824026215">Sidan på <ph name="SITE"/> säger:</translation>
 <translation id="4269787794583293679">(Inget användarnamn)</translation>

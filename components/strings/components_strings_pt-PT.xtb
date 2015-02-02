@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">O Google Wallet não suporta este tipo de cartão. Selecione outro cartão.</translation>
 <translation id="5172758083709347301">Equipamento</translation>
 <translation id="7180611975245234373">Atualizar</translation>
+<translation id="8208216423136871611">Não guardar</translation>
 <translation id="777702478322588152">Prefeitura</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Recomendado</translation>
 <translation id="4058922952496707368">Chave &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerta de JavaScript</translation>
+<translation id="4081383687659939437">Guardar informações</translation>
 <translation id="5299298092464848405">Erro ao analisar a política</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Pesquisar</translation>
 <translation id="2498091847651709837">Digitalizar novo cartão</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
 <translation id="5509780412636533143">Marcadores geridos</translation>
 <translation id="8866481888320382733">Erro ao analisar as definições da política</translation>
+<translation id="4120075327926916474">Quer que o Chrome guarde estas informações de cartão de crédito para preenchimento de formulários Web?</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="1693754753824026215">A página em <ph name="SITE"/> indica:</translation>
 <translation id="4269787794583293679">(Sem nome de utilizador)</translation>

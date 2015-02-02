@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
 <translation id="5172758083709347301">Máy</translation>
 <translation id="7180611975245234373">Làm mới</translation>
+<translation id="8208216423136871611">Không lưu</translation>
 <translation id="777702478322588152">Quận</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Lỗi HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="4058922952496707368">Khóa &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Cảnh báo JavaScript</translation>
+<translation id="4081383687659939437">Lưu thông tin</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Quét thẻ mới</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
 <translation id="5509780412636533143">Dấu trang được quản lý</translation>
 <translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
+<translation id="4120075327926916474">Bạn có muốn Chrome lưu thông tin thẻ tín dụng này để hoàn thành các biểu mẫu web không?</translation>
 <translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
 <translation id="1693754753824026215">Trang trên <ph name="SITE"/> cho biết:</translation>
 <translation id="4269787794583293679">(Không có tên người dùng)</translation>

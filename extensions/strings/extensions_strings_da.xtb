@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Læs de data, du kopierer og indsætter</translation>
 <translation id="2350172092385603347">Lokalisering anvendt, men default_locale blev ikke angivet i manifestet.</translation>
 <translation id="3759933321830434300">Blokere dele af websiderne</translation>
+<translation id="6143635259298204954">Udvidelsen kunne ikke pakkes ud. Hvis du vil udpakke en udvidelse korrekt, skal der angives en sti til din profilmappe, som ikke indeholder et symlink. Der findes ingen sådan sti for din profil.</translation>
 <translation id="149347756975725155">Udvidelsesikonet '<ph name="ICON"/>' kunne ikke indlæses.</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Vælg USB-enheder</translation>
+<translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Siden &quot;<ph name="ABOUT_PAGE"/>&quot; kunne ikke indlæses.</translation>
 <translation id="388442998277590542">Siden med valgmuligheder '<ph name="OPTIONS_PAGE"/>' kunne ikke indlæses.</translation>
+<translation id="5127881134400491887">Administrere netværksforbindelser</translation>
 <translation id="6344170822609224263">Få adgang til listen over netværksforbindelser</translation>
 <translation id="7039326228527141150">Få adgang til USB-enheder fra <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Læs og rediger dine data på <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">ukendte enheder fra <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Udveksle data med en computer på domænerne: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webvisning: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Ugyldig sti (absolut eller relativ med '..'): '<ph name="IMAGE_PATH"/> '</translation>
 <translation id="8284279544186306258">alle websites på <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Skifte din startside til: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Denne udvidelse kunne ikke ændre en netværksanmodning, fordi ændringen var i strid med en anden udvidelse.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Denne udvidelse kunne ikke angive legitimationsoplysninger til en netværksanmodning, fordi en anden udvidelse (<ph name="EXTENSION_NAME"/>) angav andre legitimationsoplysninger.</translation>
 <translation id="5627523580512561598">udvidelse <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Få adgang til billeder, musik og andre medier fra din computer</translation>
+<translation id="3369521687965833290">Udvidelsen kunne ikke pakkes ud. Hvis du vil udpakke en udvidelse korrekt, skal der angives en sti til din profilmappe. Denne sti skal starte med et drevbogstav, og den må ikke indeholde et forbindelsespunkt, monteringspunkt eller symlink. Der findes ingen sådan sti for din profil.</translation>
+<translation id="4811956658694082538">Pakken kunne ikke installeres, da et hjælpeprogram gik ned. Prøv at genstarte Chrome, og prøv igen.</translation>
+<translation id="641087317769093025">Udvidelsen kunne ikke udpakkes</translation>
 <translation id="4761104368405085019">Bruge din mikrofon</translation>
 <translation id="7217838517480956708">Administratoren af denne computer kræver, at <ph name="EXTENSION_NAME"/> skal installeres. Den kan ikke fjernes eller ændres.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Få adgang til alle disse USB-enheder</translation>
 <translation id="2677911863018634147">Applikationen &quot;<ph name="APP_NAME"/>&quot; anmoder om adgang til en eller flere af dine enheder.</translation>
 <translation id="6698810901424468597">Læs og rediger dine data på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Billedet kunne afkodes: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">Leverandør <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Få adgang til din netværkstrafik</translation>
 <translation id="5972529113578162692">Administratoren af denne maskine kræver, at <ph name="EXTENSION_NAME"/> er installeret. Denne kan ikke afinstalleres.</translation>
+<translation id="1135328998467923690">Pakken er ugyldig: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Læs dine data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Få adgang til alle <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Baggrundssiden '<ph name="BACKGROUND_PAGE"/>' kunne ikke indlæses.</translation>
+<translation id="2988488679308982380">Pakken kunne ikke installeres: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">Applikationen &quot;<ph name="APP_NAME"/>&quot; anmoder om adgang til en af dine enheder.</translation>
 <translation id="7972881773422714442">Valgmuligheder: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Læs dine data på en række websites</translation>
 </translationbundle>

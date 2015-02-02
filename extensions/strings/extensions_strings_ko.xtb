@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">복사하여 붙여넣은 데이터 조회</translation>
 <translation id="2350172092385603347">번역한 언어를 이용하였지만 매니페스트에 기본 언어(default_locale)를 지정하지 않았습니다.</translation>
 <translation id="3759933321830434300">웹페이지의 일부 차단</translation>
+<translation id="6143635259298204954">확장 프로그램을 압축해제할 수 없습니다. 확장 프로그램을 안전하게 압축해제하려면 심볼릭 링크가 포함되지 않은 프로필 디렉토리 경로가 있어야 합니다. 프로필에 해당 경로가 없습니다.</translation>
 <translation id="149347756975725155">확장 프로그램 아이콘('<ph name="ICON"/>')을 로드하지 못했습니다.</translation>
 <translation id="8825366169884721447">이 확장프로그램이 네트워크 요청의 요청 헤더 '<ph name="HEADER_NAME"/>을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)와(과) 충돌했습니다.</translation>
 <translation id="7495493006406536234">제품 <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB 기기 선택</translation>
+<translation id="6731255991101203740">'<ph name="DIRECTORY_PATH"/>'의 압축을 해제하기 위한 디렉토리를 만들지 못했습니다.</translation>
 <translation id="4233778200880751280">정보 페이지 '<ph name="ABOUT_PAGE"/>'을(를) 로드할 수 없습니다.</translation>
 <translation id="388442998277590542">옵션 페이지('<ph name="OPTIONS_PAGE"/>')를 로드하지 못했습니다.</translation>
+<translation id="5127881134400491887">네트워크 연결 관리</translation>
 <translation id="6344170822609224263">네트워크 연결 목록에 액세스</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/>의 USB 기기에 액세스</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>의 데이터를 읽고 변경</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/>의 알 수 없는 기기</translation>
 <translation id="4968399700653439437">도메인 <ph name="DOMAINS"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">불법 경로(절대 또는 상대): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">모든 <ph name="WEBSITE_1"/> 사이트</translation>
 <translation id="8662911384982557515">다음으로 홈페이지 변경: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">수정 내용이 다른 확장 프로그램과 충돌하여 이 확장 프로그램이 네트워크 요청을 수정하지 못했습니다.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">이 확장 프로그램이 네트워크 요청에 자격 증명을 제공하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)이 다른 자격 증명을 제공했습니다.</translation>
 <translation id="5627523580512561598">확장 프로그램 <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">컴퓨터에서 사진, 음악, 기타 미디어에 액세스</translation>
+<translation id="3369521687965833290">확장 프로그램을 압축해제할 수 없습니다. 확장 프로그램을 안전하게 압축해제하려면 드라이브 문자로 시작되고 정션(junction), 마운트 포인트(mount point) 또는 심볼릭 링크가 포함되지 않은 프로필 디렉토리 경로가 있어야 합니다. 프로필에 해당 경로가 없습니다.</translation>
+<translation id="4811956658694082538">유틸리티 프로세스가 충돌하여 패키지를 설정하지 못했습니다. Chrome을 다시 시작하고 다시 설치해 보세요.</translation>
+<translation id="641087317769093025">확장 프로그램의 압축을 해제하지 못했습니다.</translation>
 <translation id="4761104368405085019">마이크 사용</translation>
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME"/>을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/>의 제품 <ph name="PRODUCT_NAME"/>(일련 번호 <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">이 USB 기기에 액세스</translation>
 <translation id="2677911863018634147">애플리케이션 '<ph name="APP_NAME"/>'이(가) 사용자의 기기 하나 이상에 대한 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>의 데이터를 읽고 변경</translation>
+<translation id="2159915644201199628">'<ph name="IMAGE_NAME"/>' 이미지를 디코딩하지 못했습니다.</translation>
 <translation id="5544884907028850012">공급업체 <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">네트워크 트래픽에 액세스</translation>
 <translation id="5972529113578162692">이 시스템의 관리자가 <ph name="EXTENSION_NAME"/>의 설치를 요구합니다. 이 확장 프로그램은 제거할 수 없습니다.</translation>
+<translation id="1135328998467923690">패키지가 잘못되었습니다. '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/>에서 데이터 읽기</translation>
 <translation id="2087653731648927289">USB를 통해 <ph name="PRODUCT_NAME_AND_VENDOR"/>에 액세스</translation>
 <translation id="1803557475693955505">배경 페이지('<ph name="BACKGROUND_PAGE"/>')를 로드하지 못했습니다.</translation>
+<translation id="2988488679308982380">패키지를 설치할 수 없습니다. '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">애플리케이션 '<ph name="APP_NAME"/>'이(가) 사용자의 기기 중 하나에 대한 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="7972881773422714442">옵션: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">패키지가 잘못되었습니다. 세부정보: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">다수의 웹사이트에서 데이터 읽기</translation>
 </translationbundle>

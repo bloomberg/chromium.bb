@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR"/> Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
-<translation id="5065199687811594072">Adakah anda mahu Chromium menyimpan maklumat kad kredit ini untuk melengkapkan borang web?</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="2615699638672665509">Komputer ini akan berhenti menerima kemas kini Chromium kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="5532301346661895910">Chromium akan menyimpan maklumat ini di |kata laluan disimpan Google| dan mengingatinya apabila anda memerlukannya nanti.</translation>
 <translation id="6893813176749746474">Chromium telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
-<translation id="1550579416447684632">Lancarkan apl Chromium</translation>
 <translation id="2732467638532545152">Komputer anda menjalankan versi lama Microsoft Windows yang tidak dapat memproses sijil keselamatan tapak web ini. Disebabkan masalah ini, Chromium tidak dapat memberitahu sama ada sijil berasal dari <ph name="SITE"/> atau daripada seseorang pada rangkaian anda yang berpura-pura menjadi <ph name="SITE"/>. Sila kemas kini komputer anda kepada versi Windows yang lebih baharu.</translation>
-<translation id="4267347018362241535">Pelancar Apl Chromium ialah platform tersendiri untuk apl Chromium.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="6613594504749178791">Perubahan anda akan dilaksanakan apabila anda melancarkan semula Chromium pada masa hadapan.</translation>
 <translation id="9089354809943900324">Chromium sudah usang</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Jika anda berkongsi komputer ini dengan <ph name="PROFILE_NAME"/> , tambahkan diri anda pada Chromium menyemak imbas secara berasingan. Jika tidak, putuskan sambungan Akaun Googlenya.</translation>
 <translation id="1480489203462860648">Cubalah, ia sudah dipasang</translation>
 <translation id="3032787606318309379">Menambah ke Chromium...</translation>
-<translation id="4831257561365056138">Nyahpasang Pelancar Apl Chromium</translation>
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Amaran:<ph name="END_BOLD"/> Chromium tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Alamak! Chromium mengalami ranap sistem. Lancarkan semula sekarang?</translation>
 <translation id="8843170958047978824">Alih Keluar Daripada Chromium</translation>
 <translation id="3068515742935458733">Bantu jadikan Chromium lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK"/> kepada Google.</translation>
-<translation id="1609700857210121286">Pergi ke menu Chromium &gt; Tetapan &gt; (Lanjutan) Privasi
-          dan lumpuhkan &quot;Ramalan tindakan rangkaian&quot;.
-          Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar memilih pilihan ini
-          sekali lagi untuk prestasi yang dipertingkatkan.</translation>
 <translation id="734373864078049451">Web, penanda halaman dan barangan Chromium anda yang lain tinggal di sini.</translation>
 <translation id="3197823471738295152">Peranti anda telah dikemas kini.</translation>
 <translation id="3065280201209294872">Tapak ini menggunakan tetapan keselamatan yang sudah lapuk yang mungkin menghalang versi Chromium kelak daripada mengaksesnya dengan selamat.</translation>
@@ -252,7 +244,6 @@ Meneruskan juga log masuk akan menggabungkan maklumat Chromium seperti penanda h
 <translation id="8704119203788522458">Ini Chromium anda</translation>
 <translation id="8269379391216269538">Bantu menjadikan Chromium lebih baik</translation>
 <translation id="4224199872375172890">Chromium telah dikemas kini</translation>
-<translation id="374481098568514319">Komputer ini sudah mempunyai versi komponen Chromium yang lebih baharu. Sila gunakan pemasang yang lebih baharu.</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
 <translation id="7318036098707714271">Fail pilihan anda rosak atau tidak sah.
 

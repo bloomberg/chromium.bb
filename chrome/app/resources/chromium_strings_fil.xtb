@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Ang Mga May-akda ng Chromium. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="6373523479360886564">Sigurado ka bang nais mong i-uninstall ang Chromium?</translation>
-<translation id="5065199687811594072">Gusto mo bang i-save ng Chromium ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form sa web?</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
 <translation id="2615699638672665509">Malapit nang hindi makatanggap ng mga update sa Chromium ang computer na ito dahil hindi na sinusuportahan ang hardware nito.</translation>
 <translation id="5532301346661895910">Iiimbak ito ng Chromium sa iyong |mga naka-save na password sa Google| at tatandaan ito sa susunod na kakailanganin mo ito.</translation>
 <translation id="6893813176749746474">Na-update na ang Chromium, ngunit hindi mo pa ito nagagamit sa loob ng hindi bababa sa 30 araw.</translation>
-<translation id="1550579416447684632">Ilunsad ang apps ng Chromium</translation>
 <translation id="2732467638532545152">Nagpapagana ang iyong computer ng lumang bersyon ng Microsoft Windows na hindi mapoproseso ang certificate ng seguridad ng website na ito. Dahil sa problemang ito, hindi masasabi ng Chromium kung ang certificate ay nagmula sa <ph name="SITE"/> o mula sa isang tao sa iyong network na nagpapanggap na <ph name="SITE"/>. Mangyaring i-update ang iyong computer patungo sa mas kamakailang bersyon ng Windows.</translation>
-<translation id="4267347018362241535">Isang standalone na platform ang Chromium App Launcher para sa apps ng Chromium.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="6613594504749178791">Magkakabisa ang iyong mga pagbabago sa susunod na ilunsad mong muli ang Chromium.</translation>
 <translation id="9089354809943900324">Luma na ang Chromium</translation>
@@ -64,7 +61,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8134284582177628525">Kung ibabahagi mo ang computer na ito kay <ph name="PROFILE_NAME"/>, idagdag ang iyong sarili sa Chromium upang mag-browse nang hiwalay. Kung hindi naman, idiskonekta ang kanilang Google Account.</translation>
 <translation id="1480489203462860648">Subukan mo ito, naka-install na ito</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
-<translation id="4831257561365056138">I-uninstall ang Chromium App Launcher</translation>
 <translation id="4222580632002216401">Naka-sign in ka na ngayon sa Chromium! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Babala:<ph name="END_BOLD"/> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong kasaysayan sa pagba-browse. Upang huwag paganahin ang extension na ito sa mode na incognito, alisin ang pagkakapili sa opsyong ito.</translation>
 <translation id="985602178874221306">Ang Mga May-akda ng Chromium</translation>
@@ -78,10 +74,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3190315855212034486">Whoa! Nag-crash ang Chromium. Muling ilunsad ngayon?</translation>
 <translation id="8843170958047978824">Alisin Sa Chromium</translation>
 <translation id="3068515742935458733">Tumulong na gawing mas mahusay ang Chromium sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK"/> sa Google</translation>
-<translation id="1609700857210121286">Pumunta sa menu ng Chromium &gt; Mga Setting &gt; (Advanced) Privacy
-          at i-disable ang &quot;Mga hula sa pagkilos ng network.&quot;
-          Kung hindi nito malulutas ang isyu, inirerekomenda naming muling i-enable ang opsyong ito
-          para sa pinahusay na pagganap.</translation>
 <translation id="734373864078049451">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chromium.</translation>
 <translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
 <translation id="3065280201209294872">Gumagamit ang site ng mga hindi napapanahong setting ng seguridad na maaaring makapigil sa mga magiging bersyon sa hinaharap ng Chromium na ligtas na ma-access ito.</translation>
@@ -255,7 +247,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="8704119203788522458">Ito ang iyong Chromium</translation>
 <translation id="8269379391216269538">Tumulong sa pagpapahusay ng Chromium</translation>
 <translation id="4224199872375172890">Napapanahon ang Chromium.</translation>
-<translation id="374481098568514319">Mayroon nang mas bagong bersyon ng mga component ng Chromium ang computer na ito. Mangyaring gumamit ng mas bagong installer.</translation>
 <translation id="5862307444128926510">Maligayang Pagdating sa Chromium</translation>
 <translation id="7318036098707714271">Sira o di-wasto ang file ng iyong mga kagustuhan.
 

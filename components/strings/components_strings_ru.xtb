@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Этот тип карт не поддерживается в Google Кошельке. Выберите другую карту.</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
 <translation id="7180611975245234373">Обновить</translation>
+<translation id="8208216423136871611">Не сохранять</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Ошибка HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="4058922952496707368">Ключ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Оповещение JavaScript</translation>
+<translation id="4081383687659939437">Сохранить сведения</translation>
 <translation id="5299298092464848405">Не удалось выполнить анализ политики</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Сканировать новую карту</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Недействительный URL поисковой системы.</translation>
 <translation id="5509780412636533143">Управляемые закладки</translation>
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
+<translation id="4120075327926916474">Хотите сохранить в Chrome данные банковской карты для заполнения веб-форм?</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="1693754753824026215">Подтвердите действие на <ph name="SITE"/></translation>
 <translation id="4269787794583293679">(Не указано)</translation>

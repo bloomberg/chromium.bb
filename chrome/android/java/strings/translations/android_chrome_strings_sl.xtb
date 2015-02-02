@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
 <translation id="8588878054171169263">Shrani sliko</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
+<translation id="8425213833346101688">Spremeni</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
 <translation id="6292937202013477045">Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Iskalnik</translation>
 <translation id="346339498574870680">Kopiraj URL slike</translation>
+<translation id="5063480226653192405">Uporaba</translation>
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="5578795271662203820">Uporabi <ph name="SEARCH_ENGINE"/> za to sliko</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Izbriši vse</translation>
 <translation id="6458785801851713928">Sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="2731700343119398978">Počakajte ...</translation>
 <translation id="6846298663435243399">Nalaganje ...</translation>
@@ -39,6 +43,8 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="3410346880900521918">Če se to pogosto pokaže, poskusite te <ph name="BEGIN_LINK"/>predloge<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Tej strani prepreči, da bi ustvarila dodatna pogovorna okna</translation>
+<translation id="7375125077091615385">Vrsta:</translation>
+<translation id="2498359688066513246">Pomoč in povratne informacije</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
@@ -53,13 +59,12 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="2321958826496381788">Drsnik povlecite do želene velikosti pisave. Besedilo naj bo po dvakratnem dotiku odstavka videti vsaj tolikšno.</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
-<translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Vse pravice pridržane.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="552553974213252141">Ali je bilo besedilo pravilno izvlečeno?</translation>
-<translation id="5317780077021120954">Shrani</translation>
 <translation id="1151972924205500581">Potrebno je geslo</translation>
+<translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2718352093833049315">Samo v omrežju Wi-Fi</translation>
 <translation id="7029809446516969842">Gesla</translation>
 <translation id="2414886740292270097">Temno</translation>
@@ -79,28 +84,38 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4807098396393229769">Ime na kartici</translation>
 <translation id="656628257199996201">Vedno prevedi ta jezik: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Prilagajanje besedila</translation>
+<translation id="6447842834002726250">Piškotki</translation>
 <translation id="2748463065602559597">Ogledujete si varno stran Google Chrome.</translation>
+<translation id="1383876407941801731">Išči</translation>
 <translation id="5626370437647899551">Dodajanje Google Računa</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="4543661749405994812">Kopiraj e-poštni naslov</translation>
+<translation id="5646376287012673985">Lokacija</translation>
 <translation id="5659593005791499971">E-pošta</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="5668404140385795438">Preglasi zahtevo spletnega mesta za preprečevanje povečave</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
+<translation id="1987317783729300807">Računi</translation>
 <translation id="6064211167623632605">Pot do izvedljive datoteke</translation>
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="2903493209154104877">Naslovi</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
+<translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="7817177303494746697">Različica Blinka</translation>
 <translation id="2532336938189706096">Spletni pogled</translation>
 <translation id="6571070086367343653">Urejanje kreditne kartice</translation>
 <translation id="7080851568148064063">Dodajanje na začetni zaslon</translation>
+<translation id="6192792657125177640">Izjeme</translation>
 <translation id="4619298195800598081">Izvirna slika na novem zavihku</translation>
+<translation id="8798099450830957504">Privzeto</translation>
 <translation id="4002066346123236978">Naslov</translation>
+<translation id="885701979325669005">Shramba</translation>
 <translation id="3254409185687681395">Zaznamujte to stran</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
+<translation id="2482878487686419369">Obvestila</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Mesec poteka kartice</translation>
 <translation id="3063601790762993062">Shrani videoposnetek</translation>
@@ -114,6 +129,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4148957013307229264">Nameščanje ...</translation>
 <translation id="3992315671621218278">Shrani povezavo</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Urejanje shranjenega imena/gesla ali izjeme</translation>
 <translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
@@ -130,8 +146,9 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="654446541061731451">Izberite zavihek za prenos</translation>
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Obrazci s samodejnim izpolnjevanjem</translation>
-<translation id="8261506727792406068">Izbriši</translation>
+<translation id="5765780083710877561">Opis:</translation>
 <translation id="1080790410959514870">Odjavljate se iz računa, ki ga upravlja <ph name="DOMAIN_NAME"/>. S tem bodo izbrisani podatki, ki jih je Chrome shranil v tej napravi, vendar bodo podatki ostali v vašem Google Računu.</translation>
 <translation id="4510973599275542560">Ne naloži znova</translation>
 <translation id="1206892813135768548">Kopiraj besedilo povezave</translation>
@@ -140,15 +157,19 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
 <translation id="4271185234001491831">Nikoli ne prevedi iz jezika <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiraj sliko</translation>
+<translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="8209050860603202033">Odpri sliko</translation>
 <translation id="2501278716633472235">Nazaj</translation>
 <translation id="8941248009481596111">Povezava s tem mestom je zasebna.</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
+<translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="5164482624172255778">Želite, da Google Chrome naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE"/> s tega spletnega mesta?</translation>
 <translation id="4062305924942672200">Pravne informacije</translation>
 <translation id="8528538445849828817">Jezik strani: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="6512448926095770873">Zapusti to stran</translation>
+<translation id="3414952576877147120">Velikost:</translation>
+<translation id="5626134646977739690">Ime:</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="2612676031748830579">Številka kartice</translation>
@@ -163,7 +184,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 Če je izklopljena, v tej napravi morda ne boste mogli predvajati plačljivih videoposnetkov.</translation>
 <translation id="8928220460877261598">Zdaj ste prijavljeni v Chrome.</translation>
 <translation id="5032574515228824816">Poziv</translation>
-<translation id="6165508094623778733">Več o tem</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
@@ -177,10 +197,12 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="411254640334432676">Prenos ni uspel.</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="7634554953375732414">Povezava s tem mestom ni zasebna.</translation>
+<translation id="6409731863280057959">Pojavna okna</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="1742134235943978220">Prevedeno v ta jezik: <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="7437998757836447326">Odjava iz Google Chroma</translation>
+<translation id="5677928146339483299">Blokirano</translation>
 <translation id="7561196759112975576">Vedno</translation>
 </translationbundle>

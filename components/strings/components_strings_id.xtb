@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Kartu kredit jenis ini tidak didukung oleh Google Wallet. Mohon pilih kartu kredit yang lain.</translation>
 <translation id="5172758083709347301">Mesin</translation>
 <translation id="7180611975245234373">Segarkan</translation>
+<translation id="8208216423136871611">Jangan simpan</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="4058922952496707368">Kunci &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Lansiran JavaScript</translation>
+<translation id="4081383687659939437">Simpan info</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Penelusuran</translation>
 <translation id="2498091847651709837">Pindai kartu baru</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL penelusuran tidak valid.</translation>
 <translation id="5509780412636533143">Mengelola bookmark</translation>
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
+<translation id="4120075327926916474">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="1693754753824026215">Laman di <ph name="SITE"/> menyatakan:</translation>
 <translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>

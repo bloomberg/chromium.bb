@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="8586442755830160949">Copyright Auteurs de Chromium <ph name="YEAR"/>. Tous droits réservés.</translation>
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
-<translation id="5065199687811594072">Voulez-vous que les informations de carte de paiement soient enregistrées dans Chromium pour le remplissage de formulaires Web ?</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="2615699638672665509">Cet ordinateur ne recevra bientôt plus les mises à jour de Chromium, car ses composants matériels ne sont plus compatibles.</translation>
 <translation id="5532301346661895910">Chromium stockera ce mot de passe avec vos mots de passe Google enregistrés et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
-<translation id="1550579416447684632">Lancer des applications Chromium</translation>
 <translation id="2732467638532545152">La version de Microsoft Windows installée sur votre ordinateur ne permet pas d'analyser le certificat de sécurité de ce site Web. Par conséquent, il est impossible de déterminer dans Chromium si le certificat provient du site <ph name="SITE"/> ou d'un membre de votre réseau se faisant passer pour le site <ph name="SITE"/>. Veuillez installer une version de Windows plus récente.</translation>
-<translation id="4267347018362241535">Le lanceur d'applications Chromium est une plate-forme autonome pour les applications Chromium.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="6613594504749178791">Vos modifications seront prises en compte au prochain redémarrage de Chromium.</translation>
 <translation id="9089354809943900324">Version de Chromium obsolète</translation>
@@ -63,7 +60,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME"/>, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
-<translation id="4831257561365056138">Désinstaller le lanceur d'applications Chromium</translation>
 <translation id="4222580632002216401">Vous êtes maintenant connecté à Chromium. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Avertissement<ph name="END_BOLD"/> : Chromium ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
@@ -77,10 +73,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3190315855212034486">Chromium est bloqué. Voulez-vous le relancer maintenant ?</translation>
 <translation id="8843170958047978824">Supprimer de Chromium</translation>
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK"/>.</translation>
-<translation id="1609700857210121286">Accédez au menu Chromium &gt; Paramètres &gt; (Avancés) Confidentialité,
-          puis désélectionnez &quot;Prédictions relatives aux actions du réseau&quot;.
-          Si le problème persiste, nous vous conseillons de
-          réactiver cette option pour des performances optimales.</translation>
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données Chromium sont conservés ici.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
 <translation id="3065280201209294872">En raison des paramètres de sécurité obsolètes du site, il se peut que les prochaines versions de Chromium ne puissent pas y accéder en toute sécurité.</translation>
@@ -253,7 +245,6 @@ Si vous vous connectez quand même, toutes les informations Chromium, comme les
 <translation id="8704119203788522458">Voici votre Chromium</translation>
 <translation id="8269379391216269538">Aidez-nous à améliorer Chromium</translation>
 <translation id="4224199872375172890">Chromium est à jour.</translation>
-<translation id="374481098568514319">Cet ordinateur possède déjà une version plus récente des composants Chromium. Veuillez utiliser un programme d'installation plus récent.</translation>
 <translation id="5862307444128926510">Bienvenue dans Chromium</translation>
 <translation id="7318036098707714271">Le fichier des préférences est corrompu ou n'est pas valide. 
 

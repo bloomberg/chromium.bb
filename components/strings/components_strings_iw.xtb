@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">‏סוג כרטיס זה אינו נתמך על ידי ארנק Google. בחר כרטיס אחר.</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="7180611975245234373">רענן</translation>
+<translation id="8208216423136871611">אל תשמור</translation>
 <translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">‏שגיאת HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="4058922952496707368">מפתח &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">‏התראת JavaScript</translation>
+<translation id="4081383687659939437">שמור מידע</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> חיפוש</translation>
 <translation id="2498091847651709837">סרוק כרטיס חדש</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">כתובת אתר לא חוקית של חיפוש</translation>
 <translation id="5509780412636533143">סימניות מנוהלות</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
+<translation id="4120075327926916474">‏האם ברצונך ש-Chrome ישמור פרטים אלה של כרטיס אשראי להשלמת טופסי אינטרנט?</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="1693754753824026215">הדף ב-<ph name="SITE"/> אומר:</translation>
 <translation id="4269787794583293679">(אין שם משתמש)</translation>

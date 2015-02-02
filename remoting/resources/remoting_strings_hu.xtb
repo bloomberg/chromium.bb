@@ -9,7 +9,6 @@ gazdagép</translation>
 <translation id="5619148062500147964">Ehhez a számítógéphez</translation>
 <translation id="4068946408131579958">Minden kapcsolat</translation>
 <translation id="2208514473086078157">Az irányelv-beállítások értelmében a Chrome távoliasztal-szolgáltatásban nem oszthatja meg számítógépét gazdaszámítógépként. Segítségért lépjen kapcsolatba a rendszergazdával.</translation>
-<translation id="2801119484858626560">A Chrome távoliasztal-szolgáltatás egy nem kompatibilis verziója található a számítógépen. Kérjük, ellenőrizze, hogy mindkét számítógépen a Chrome és a Chrome távoliasztal-szolgáltatás legfrissebb verziói futnak-e, majd próbálja újra.</translation>
 <translation id="6998989275928107238">Ide:</translation>
 <translation id="406849768426631008">Szeretne segíteni valakinek, miközben egyúttal videocsevegést is folytatnak? Próbálja ki a <ph name="LINK_BEGIN"/>Google Hangouts távoliasztal-szolgáltatását<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Ablak teljes méretre állítása</translation>
@@ -31,13 +30,11 @@ gazdagép</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7782471917492991422">Kérjük, ellenőrizze a számítógép energiagazdálkodási beállításait, és győződjön meg róla, hogy az tétlenség esetén nincs alvó üzemmódra állítva.</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
-<translation id="2707879711568641861">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
 <translation id="3027681561976217984">Érintő mód</translation>
 <translation id="1779766957982586368">Ablak bezárása</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="7868137160098754906">Kérjük, adja meg a PIN kódot a távoli számítógéphez.</translation>
 <translation id="677755392401385740">Gazdagép elindítva a következő felhasználó számára: <ph name="HOST_USERNAME"/>.</translation>
-<translation id="8864965950780407789">A Chromoting használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="3197730452537982411">Távoli asztal</translation>
 <translation id="8355326866731426344">Ez az elérési kód lejár a következő időtartamon belül: <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
@@ -66,7 +63,7 @@ gazdagép</translation>
 <translation id="8073845705237259513">A Chrome távoliasztal-szolgáltatás használatához adjon hozzá eszközéhez egy Google-fiókot.</translation>
 <translation id="1199593201721843963">Távoli kapcsolatok letiltása</translation>
 <translation id="5379087427956679853">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatás alkalmazásnak, amely itt található: <ph name="URL"/>.</translation>
-<translation id="1409991159633941777">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy a Chrome legfrissebb verzióját használja-e, majd próbálja újra.</translation>
+<translation id="2220529011494928058">Probléma bejelentése</translation>
 <translation id="174018511426417793">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Ne kérje újra a PIN kódot, amikor erről az eszközről csatlakozom a szerverhez.</translation>
 <translation id="1300633907480909701">Számítógépek biztonságos elérése androidos eszközéről
@@ -87,9 +84,9 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="8509907436388546015">Asztalintegrációs folyamat</translation>
 <translation id="4736223761657662401">Kapcsolatelőzmények</translation>
 <translation id="5285241842433869526">Tudja meg, hogyan állíthat be számítógépet a távoli hozzáféréshez.</translation>
+<translation id="8759753423332885148">További információ.</translation>
 <translation id="4430915108080446161">Hozzáférési kód létrehozása...</translation>
 <translation id="2013996867038862849">Minden párosított kliens törölve.</translation>
-<translation id="8228265668171617545">A rendszer a Chromoting nem kompatibilis verzióját észlelte. Győződjön meg róla, hogy a Chrome és a Chromoting legfrissebb verzióját futtatja mindkét számítógépen, majd próbálkozzon újra.</translation>
 <translation id="6985691951107243942">Biztosan le szeretné tiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME"/> gazdagéppel? Ha meggondolja magát, akkor azon a számítógépen kell majd újból engedélyeznie a kapcsolatokat.</translation>
 <translation id="6944854424004126054">Ablak visszaállítása</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (utolsó online tevékenység: <ph name="DATE"/>)</translation>
@@ -119,9 +116,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="7948001860594368197">Képernyő-beállítások</translation>
 <translation id="8172070902751707422">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chrome távoliasztal-szolgáltatásba.</translation>
 <translation id="5254120496627797685">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
-<translation id="173559734173571936">A Chrome távoliasztal-szolgáltatás használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="712467900648340229">Nem sikerült csatlakozni a Cast-eszközhöz.</translation>
-<translation id="9032136467203159543">A Chromoting egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
 <translation id="1342297293546459414">Megosztott számítógép megtekintése és irányítása.</translation>
 <translation id="1520828917794284345">Az asztal átméretezése, hogy illeszkedjen</translation>
 <translation id="701976023053394610">Távsegítség</translation>
@@ -134,9 +129,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2647232381348739934">Chromoting szolgáltatás</translation>
 <translation id="579702532610384533">Újrakapcsolódás</translation>
 <translation id="4867841927763172006">PrtScn küldése</translation>
-<translation id="4211066471404647515">A Chromoting egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy a Chrome legfrissebb verzióját használja-e, majd próbálja újra.</translation>
 <translation id="5773590752998175013">Párosítási dátum</translation>
-<translation id="5265129178187621741">(Ez a funkció még nem érhető el Chromebookok számára... látogasson vissza később)</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
 <translation id="2118549242412205620">Számítógépek biztonságos elérése androidos eszközéről
 
@@ -154,7 +147,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="5625493749705183369">Más számítógépek elérése vagy annak engedélyezése, hogy más biztonságosan elérje a számítógépet az interneten keresztül.</translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
-<translation id="1469044015499620521">Nincs jogosultsága az alkalmazáshoz való hozzáféréshez.</translation>
 <translation id="4812684235631257312">Gazdagép</translation>
 <translation id="6178645564515549384">Natív üzenetváltási szerver távoli segítségnyújtáshoz</translation>
 <translation id="1738759452976856405">Felvétel leállítása</translation>

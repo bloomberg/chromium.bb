@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
 <translation id="8588878054171169263">Zapisz grafikę</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="8425213833346101688">Zmień</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="6292937202013477045">Osoby dokonujące ataków mogą próbować wykraść Twoje dane z <ph name="DOMAIN_NAME"/> (np. zdjęcia, hasła, wiadomości lub dane karty kredytowej).</translation>
 <translation id="1506061864768559482">Wyszukiwarka</translation>
 <translation id="346339498574870680">Kopiuj adres obrazka</translation>
+<translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Wyczyść wszystko</translation>
 <translation id="6458785801851713928">Synchronizacja nie jest dostępna w Twojej domenie.</translation>
 <translation id="2731700343119398978">Czekaj...</translation>
 <translation id="6846298663435243399">Wczytywanie…</translation>
@@ -39,6 +43,8 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="1966710179511230534">Zaktualizuj swoje dane logowania.</translation>
 <translation id="3410346880900521918">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK"/>wskazówki<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
+<translation id="7375125077091615385">Typ:</translation>
+<translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
@@ -53,13 +59,12 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
-<translation id="5860033963881614850">Wyłączone</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
-<translation id="5317780077021120954">Zapisz</translation>
 <translation id="1151972924205500581">Wymagane hasło</translation>
+<translation id="2870560284913253234">Witryna</translation>
 <translation id="2718352093833049315">Tylko przez Wi-Fi</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="2414886740292270097">Ciemny</translation>
@@ -79,28 +84,38 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
 <translation id="656628257199996201">Zawsze tłumacz z języka: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
+<translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
+<translation id="1383876407941801731">Szukaj</translation>
 <translation id="5626370437647899551">Dodaj konto Google</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="4543661749405994812">Kopiuj adres e-mail</translation>
+<translation id="5646376287012673985">Lokalizacja</translation>
 <translation id="5659593005791499971">E-mail</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
+<translation id="1987317783729300807">Konta</translation>
 <translation id="6064211167623632605">Ścieżka do pliku wykonywalnego</translation>
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="4827948050554950725">Dodaj kartę kredytową</translation>
+<translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="7817177303494746697">Wersja Blink</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
 <translation id="6571070086367343653">Edytuj kartę kredytową</translation>
 <translation id="7080851568148064063">Dodaj do ekranu głównego</translation>
+<translation id="6192792657125177640">Wyjątki</translation>
 <translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
+<translation id="8798099450830957504">Domyślny</translation>
 <translation id="4002066346123236978">Tytuł</translation>
+<translation id="885701979325669005">Pamięć</translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="907015151729920253">Karta inteligentna</translation>
+<translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="2600241144430299006">Miesiąc utraty ważności karty</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
@@ -114,6 +129,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="4148957013307229264">Trwa instalowanie...</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Edytuj zapisaną nazwę/hasło lub wyjątek</translation>
 <translation id="2476578072172137802">Ustawienia witryny</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
@@ -130,8 +146,9 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="654446541061731451">Wybierz kartę do przesłania</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="2359808026110333948">Kontynuuj</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Autouzupełnianie formularzy</translation>
-<translation id="8261506727792406068">Usuń</translation>
+<translation id="5765780083710877561">Opis:</translation>
 <translation id="1080790410959514870">Wylogowujesz się z konta zarządzanego przez <ph name="DOMAIN_NAME"/>. Spowoduje to usunięcie danych Chrome zapisanych na tym urządzeniu, jednak pozostaną one na Twoim koncie Google.</translation>
 <translation id="4510973599275542560">Nie ładuj ponownie</translation>
 <translation id="1206892813135768548">Kopiuj tekst linku</translation>
@@ -140,15 +157,19 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="4271185234001491831">Nigdy nie tłumacz z języka: <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiuj grafikę</translation>
+<translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="8941248009481596111">Twoje połączenie z tą witryną jest prywatne.</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
+<translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="8528538445849828817">Język strony: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
+<translation id="3414952576877147120">Rozmiar:</translation>
+<translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5565871407246142825">Karty kredytowe</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="2612676031748830579">Numer karty</translation>
@@ -163,7 +184,6 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 Gdy jest WYŁĄCZONA, odtwarzanie płatnych filmów na tym urządzeniu może być niemożliwe.</translation>
 <translation id="8928220460877261598">Jesteś zalogowany w Chrome.</translation>
 <translation id="5032574515228824816">Monit</translation>
-<translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="862875433388403934">Odtwarzanie pobranych treści (filmów, muzyki itp.) w innych aplikacjach może wymagać uzyskania licencji na podstawie nowych danych logowania urządzenia.
 
 Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
@@ -177,10 +197,12 @@ Aby go zamknąć, przeciągnij od góry.</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="7634554953375732414">Twoje połączenie z tą witryną nie jest prywatne.</translation>
+<translation id="6409731863280057959">Wyskakujące okienka</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="1742134235943978220">Przetłumaczone na <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Włącz</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
+<translation id="5677928146339483299">Zablokowane</translation>
 <translation id="7561196759112975576">Zawsze</translation>
 </translationbundle>

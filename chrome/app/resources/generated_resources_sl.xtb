@@ -71,11 +71,9 @@
 <translation id="7428534988046001922">Nameščeni so ti programi:</translation>
 <translation id="787386463582943251">Dodajte e-poštni naslov</translation>
 <translation id="2833791489321462313">Zahtevaj geslo za prehod iz stanja pripravljenosti</translation>
-<translation id="8208216423136871611">Ne shrani</translation>
 <translation id="4405141258442788789">Časovna omejitev operacije je potekla.</translation>
 <translation id="5048179823246820836">Nordijsko</translation>
 <translation id="1160536908808547677">Pri povečavi so elementi z nespremenljivim položajem in povečanimi drsniki pripeti temu začetnemu prikazu.</translation>
-<translation id="7880929200318491232">Uvozi fotografije in videoposnetke v Google Drive</translation>
 <translation id="7180735793221405711">Omogoči metaoznako za vidno polje.</translation>
 <translation id="1763046204212875858">Ustvari bližnjice do &amp;programov ...</translation>
 <translation id="2105006017282194539">Še ni naložen</translation>
@@ -148,7 +146,6 @@
 <translation id="4367782753568896354">Teh ni bilo mogoče namestiti:</translation>
 <translation id="1589055389569595240">Pokaži črkovanje in slovnico</translation>
 <translation id="7017587484910029005">Vnesite znake, ki jih vidite na spodnji sliki</translation>
-<translation id="4778893827845258304">Omogočanje seznama blokiranih gostiteljev za zaščitene uporabnike</translation>
 <translation id="9013589315497579992">Napačno potrdilo preverjanja pristnosti odjemalca SSL.</translation>
 <translation id="5410992958511618392">Način z vlečenjem</translation>
 <translation id="2278098630001018905">Uporabi drug naslov za pošiljanje</translation>
@@ -162,7 +159,6 @@
 <translation id="7282353081473341772">Preskusi aplikacijo brez nameščanja</translation>
 <translation id="3384773155383850738">Največje število predlogov</translation>
 <translation id="1014321050861012327">Samodejno shranjevanje gesel.</translation>
-<translation id="3606271085912431278">Onemogočanje pogovornega okna s podatki o aplikaciji. Če ni onemogočeno, lahko uporabnik v zaganjalniku aplikacij izbere kontekstni meni »Podatki o aplikaciji«, da za izbrano aplikacijo prikaže pogovorno okno s podatki o aplikaciji.</translation>
 <translation id="8677212948402625567">Strni vse ...</translation>
 <translation id="2056996954182910740">Omogoči zaganjalnik aplikacij.</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE"/></translation>
@@ -183,7 +179,6 @@
 <translation id="6723354935081862304">Tiskajte v Google Dokumentih in drugih ciljih v oblaku. Če želite tiskati z Google Tiskanjem v oblaku, <ph name="BEGIN_LINK"/>se prijavite<ph name="END_LINK"/>.</translation>
 <translation id="7115051913071512405">Preskusite</translation>
 <translation id="6877915058841987164">Dodeljevalnik imen: <ph name="NAME_ASSIGNER"/></translation>
-<translation id="109809774633752983">Vašega telefona s sistemom Android ni bilo mogoče povezati z napravo <ph name="DEVICE_TYPE"/>. Obe napravi morata imeti vklopljen Bluetooth.</translation>
 <translation id="8561096986926824116">Povezava z gostiteljem
         <ph name="HOST_NAME"/>
         je bila prekinjena zaradi spremembe v omrežni povezavi.</translation>
@@ -264,7 +259,6 @@
 <translation id="558170650521898289">Preverjanje gonilnikov strojne opreme za sistem Microsoft Windows</translation>
 <translation id="4395129973926795186"><ph name="START_DATE"/>–<ph name="END_DATE"/></translation>
 <translation id="98515147261107953">Ležeče</translation>
-<translation id="1024631832052850226">Omogočanje filtriranje s funkcijo »SafeSites« za zaščitene uporabnike.</translation>
 <translation id="7334190995941642545">Funkcija Smart Lock trenutno ni na voljo. Poskusite znova pozneje.</translation>
 <translation id="1303101771013849280">Datoteka HTML z zaznamki</translation>
 <translation id="8974161578568356045">Samodejno zaznavanje</translation>
@@ -326,7 +320,6 @@
 <translation id="7931071620596053769">Naslednje strani so se nehale odzivati. Lahko počakate, da se začnejo odzivati ali pa jih prekličete.</translation>
 <translation id="7938958445268990899">Potrdilo strežnika še ni veljavno.</translation>
 <translation id="4569998400745857585">Meni s skritimi razširitvami</translation>
-<translation id="4081383687659939437">Shrani podatke</translation>
 <translation id="1801827354178857021">Obdobje</translation>
 <translation id="238526402387145295">Spletnega mesta <ph name="SITE"/> trenutno ni mogoče obiskati, saj <ph name="BEGIN_LINK"/>uporablja protokol HSTS<ph name="END_LINK"/>. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="4560332071395409256">Kliknite
@@ -674,7 +667,6 @@
 <translation id="7214227951029819508">Svetlost:</translation>
 <translation id="3704726585584668805">Omogočanje vtičnika za PDF zunaj postopka.</translation>
 <translation id="5486326529110362464">Obstajati mora vrednost vnosa za zasebni ključ.</translation>
-<translation id="753483501570174025">potisna obvestila</translation>
 <translation id="6824725898506587159">Upravljanje jezikov</translation>
 <translation id="8190907767443402387">Pošljite povratne informacije in nam pomagajte izboljšati Google Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -719,7 +711,6 @@
 <translation id="8628085465172583869">Ime gostitelja strežnika</translation>
 <translation id="3633586230741134985">Nastavitve zaganjalnika aplikacij</translation>
 <translation id="1992397118740194946">Ni nastavljeno</translation>
-<translation id="1302266607673321769">Omogočanje poskusa uporabe pisave Roboto v uporabniškem vmesniku.</translation>
 <translation id="6867678160199975333">Preklop na <ph name="NEW_PROFILE_NAME"/></translation>
 <translation id="3718720264653688555">Navidezna tipkovnica</translation>
 <translation id="7760004034676677601">Ali je to začetna stran, ki ste jo pričakovali?</translation>
@@ -818,7 +809,6 @@
 <translation id="5524517123096967210">Datoteke ni bilo mogoče prebrati.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="5548207786079516019">To je sekundarna namestitev brskalnika <ph name="PRODUCT_NAME"/> in ga ni mogoče nastaviti kot privzeti brskalnik.</translation>
-<translation id="2341970829213454584">Vzpostavitev povezave z omrežjem</translation>
 <translation id="3984413272403535372">Med podpisovanjem razširitve je prišlo do napake.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">Čeprav ste s tega spletnega mesta že prenašali datoteke, je na spletnem mestu morda prišlo do vdora. Datoteke ne obnavljajte, ampak jo pozneje poskusite prenesti znova.</translation>
@@ -967,7 +957,6 @@
 <translation id="7986039047000333986">Pravkar ste namestili posebno varnostno posodobitev za <ph name="PRODUCT_NAME"/>. Zdaj znova zaženite računalnik, da začne veljati (vaše zavihke bomo obnovili).</translation>
 <translation id="2787591391657537328">Omogočanje nadaljevanja ali vnovičnega začetka prenosov, ki so bili prekinjeni, z možnostjo »Nadaljuj« v priročnem meniju.</translation>
 <translation id="3926862159284741883">Omogoči osnutek razširitev WebGL</translation>
-<translation id="7684540948112007255">prenesti več datotek.</translation>
 <translation id="451101589066313380">Omogočanje varčevanja z energijo za vtičnike.</translation>
 <translation id="2537271621194795300">Zagoni</translation>
 <translation id="3636096452488277381">Zdravo, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1168,7 +1157,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="8744641000906923997">Romadži</translation>
 <translation id="5451561500892538488">Skrij ikono za obvestila</translation>
 <translation id="8784626084144195648">Kvantizacijsko povprečje</translation>
-<translation id="1624222566970728082">Telefona ni mogoče najti. Poskrbite, da bo v bližini.</translation>
 <translation id="4276796043975446927">Pozdravljeni v Chromeboxu za sestanke</translation>
 <translation id="5457459357461771897">Branje in izbris fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="348620396154188443">Dovoli vsem mestom, da pokažejo namizna obvestila</translation>
@@ -1248,7 +1236,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="6871690136546646783">Onemogoči podporo za prilagajanje dotika.  Prilagajanje dotika je postopek podrobnejšega določanja položaja poteze dotika za izboljšanje učinkovitosti dotikov s slabo ločljivostjo v primerjavi z miško.</translation>
 <translation id="7518003948725431193">Za ta spletni naslov in bilo mogoče najti nobene spletne strani:<ph name="URL"/></translation>
 <translation id="6503521261542448765">Ste že naveličani vnašanja gesel? Napravo <ph name="DEVICE_TYPE"/> lahko odklenete s telefonom – brez gesla.</translation>
-<translation id="4611931061048022376">To spletno mesto ne sme biti blokirano.</translation>
 <translation id="7484645889979462775">Nikoli za to spletno mesto</translation>
 <translation id="9086455579313502267">Dostop do omrežja ni mogoč</translation>
 <translation id="8833566263911081574">Ustvarjeno geslo shranjeno. S katerim koli brskalnikom lahko dostopate do tega gesla in teh: <ph name="SAVED_PASSWORDS_LINK"/>.</translation>
@@ -1424,7 +1411,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="1221825588892235038">Samo izbor</translation>
 <translation id="2379007896477690480">Vnesite trimestno kodo za preverjanje na hrbtni strani kreditne kartice</translation>
 <translation id="2227939492629426903">Omogoči novi meni za avatar. Pri upravljanju novega profila se prikaže meni za avatar. V nasprotnem primeru se prikaže preurejeni meni za avatar z enakimi funkcijami, kot jih je imel prejšnji, in z dodatno kartico z vadnico na vrhu, ki uporabnika poziva k preskusu novega uporabniškega vmesnika za upravljanje profila.</translation>
-<translation id="8713979477561846077">Omogočanje samodejnega popravljanja za fizično angleško tipkovnico (Združene države), ki ponuja takšne predloge, kot bi tipkali na fizično tipkovnico.</translation>
 <translation id="7201354769043018523">Zaklepaj </translation>
 <translation id="7517569744831774757">Ponastavitev nastavitev na privzete nastavitve.</translation>
 <translation id="4974733135013075877">Izhod in zaklepanje pred otroki</translation>
@@ -1576,7 +1562,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6853388645642883916">Orodje za posodabljanje je v stanju pripravljenosti</translation>
 <translation id="5299109548848736476">Ne sledi</translation>
 <translation id="4421932782753506458">Puhek</translation>
-<translation id="962520199903263026">Preskus pošiljanja povratnih informacij storitvi za črkovanje.</translation>
 <translation id="6051086608691487286">Prekrivni drsni trakovi</translation>
 <translation id="6132509723755265994">Ta trgovec ne podpira Google Denarnice.</translation>
 <translation id="4886021172213954916">Tipkovnica za tamilščino (pisalni stroj)</translation>
@@ -1718,7 +1703,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6022526133015258832">Odpri v celozaslonskem načinu</translation>
 <translation id="8933960630081805351">&amp;Pokaži v Finderju</translation>
 <translation id="3009779501245596802">Indeksirane zbirke podatkov</translation>
-<translation id="1404301347395550388">Omogoči razširitve za šifrirane predstavnosti.</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
 <translation id="5023943178135355362">Avstralsko pomikanje <ph name="BEGIN_LINK"/>Več o tem<ph name="END_LINK"/></translation>
 <translation id="7378810950367401542">/</translation>
@@ -1781,7 +1765,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1346104802985271895">Vietnamski način vnosa (TELEX)</translation>
 <translation id="7896906914454843592">Razširjena tipkovnica za angleščino (Združene države)</translation>
 <translation id="2242603986093373032">Ni naprav</translation>
-<translation id="7713873128508426081">Vedno dovoljeno</translation>
 <translation id="5889282057229379085">Največje število posrednih overiteljev potrdil: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="3180365125572747493">Vnesite geslo za šifriranje te datoteke s potrdilom.</translation>
 <translation id="8663625831674359823">OPOMBA: Deluje samo v različici za razvijalce in delovni različici. Vklopi predloge v naslovni vrstici, ki so pred vnašanjem prikazani v ospredju.</translation>
@@ -1878,7 +1861,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1120026268649657149">Ključna beseda mora biti prazna ali edinstvena</translation>
 <translation id="542318722822983047">Samodejni premakni kazalec na naslednji znak</translation>
 <translation id="8872155268274985541">Najdena je bila neveljavna zunanja datoteka manifesta za posodobitev za kiosk. Posodobitev aplikacije za kiosk ni uspela. Odstranite ključek USB.</translation>
-<translation id="7293829658948450872">Omogočanje samodejnega uvajanja navidezne tipkovnice.</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="8152091997436726702">Časovna omejitev za registracijo tiskalnika je potekla. Če želite tiskalnik registrirati, potrdite registracijo v tiskalniku.</translation>
 <translation id="651942933739530207">Ali želite, da <ph name="APP_NAME"/> souporablja vaš zaslon in zvočni izhod?</translation>
@@ -1895,7 +1877,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="3351996846267264603">Zapomni si za tri dni</translation>
 <translation id="8337399713761067085">Trenutno ste brez povezave</translation>
 <translation id="5199729219167945352">Poskusi</translation>
-<translation id="3730227913294943590">Funkcije Googlovih naprav v oblaku so omogočene.</translation>
 <translation id="6499143127267478107">Razreševanje gostitelja v skriptu proxy ...</translation>
 <translation id="8069615408251337349">Google Tiskanje v oblaku</translation>
 <translation id="5055518462594137986">Zapomni si mojo izbiro za vse povezave te vrste.</translation>
@@ -1909,7 +1890,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5649053991847567735">Samodejni prenosi</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="8016174103774548813">Strežnik SSL je verjetno zastarel.</translation>
-<translation id="7801756833809084928">Vašega telefona s sistemom Android ni mogoče najti. Naprava <ph name="DEVICE_TYPE"/> mora imeti internetno povezavo.</translation>
 <translation id="7792012425874949788">Nekaj je šlo narobe pri prijavi</translation>
 <translation id="5819442873484330149">Trodelni hangulski način (dokončni)</translation>
 <translation id="4105563239298244027">Zagotovite si 1 TB brezplačnega prostora za shranjevanje v storitvi Google Drive</translation>
@@ -1917,10 +1897,8 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8456681095658380701">Neveljavno ime</translation>
 <translation id="1000780401262271049">Omogočanje novega korejskega UNV-ja.</translation>
 <translation id="3518086201899641494">Obvestila o portalih za preverjanje pristnosti</translation>
-<translation id="5733229149470633800">Omogočanje kanala IPC za upodabljalnike na podlagi mehanizma Mojo</translation>
 <translation id="1976150099241323601">Prijava v varnostno napravo</translation>
 <translation id="4120817667028078560">Pot je predolga</translation>
-<translation id="3621964575310131989">Omogočanje Googlovih naprav v oblaku</translation>
 <translation id="4938972461544498524">Nastavitve sledilne ploščice</translation>
 <translation id="1307559529304613120">Ojoj, sistem za to napravo ni shranil žetona za dolgoročni dostop do API-ja.</translation>
 <translation id="4988526792673242964">Strani</translation>
@@ -1969,7 +1947,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="6075731018162044558">Ojoj, sistem za to napravo ni prejel žetona za dolgoročni dostop do API-ja.</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1335588927966684346">Orodje:</translation>
-<translation id="6182418440401923218">Omogoči preskus, v katerem uporabnik pošilja povratne informacije storitvi za črkovanje.</translation>
 <translation id="2220529011494928058">Prijavite težavo</translation>
 <translation id="7857823885309308051">To lahko traja minutko ...</translation>
 <translation id="370665806235115550">Nalagam ...</translation>
@@ -1997,7 +1974,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="4749157430980974800">Gruzijska tipkovnica</translation>
 <translation id="6365411474437319296">Dodajte sorodnike in prijatelje</translation>
 <translation id="2135787500304447609">&amp;Nadaljuj</translation>
-<translation id="6143635259298204954">Razširitve ni mogoče odpakirati. Če želite varno odpakirati razširitev, pot do imenika vašega profila ne sme vsebovati simbolne povezave. Takšne poti ni za vaš profil.</translation>
 <translation id="5647553909023151171">Pri ustvarjanju gostujoče aplikacije omogoči ustvarjanje začasnih aplikacij v računalniku s sistemom Mac OS.</translation>
 <translation id="3326821416087822643">Stiskanje datoteke <ph name="FILE_NAME"/> ...</translation>
 <translation id="3081104028562135154">Povečaj</translation>
@@ -2129,7 +2105,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5972017421290582825">Upravljanje nastavitev za MIDI ...</translation>
 <translation id="8642947597466641025">Povečaj besedilo</translation>
 <translation id="2633212996805280240">Želite odstraniti »<ph name="EXTENSION_NAME"/>«?</translation>
-<translation id="9163820358631985792">Storitev trenutno ni na voljo. Poskusite znova pozneje.</translation>
 <translation id="9084064520949870008">Odpri v oknu</translation>
 <translation id="4075084141581903552">Samodejna prijava je na voljo za <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="1293556467332435079">Datoteke</translation>
@@ -2182,7 +2157,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7965010376480416255">Pomnilnik za skupno rabo</translation>
 <translation id="6248988683584659830">Iskanje nastavitev</translation>
 <translation id="8786030250256226288">Iskalne poizvedbe bodo povezane z Google Računom. V <ph name="BEGIN_LINK"/>zgodovini računa<ph name="END_LINK"/> si jih lahko ogledate in jih izbrišete.</translation>
-<translation id="4071455357575500271">Kamera in mikrofon</translation>
 <translation id="7273110280511444812">nazadnje priključeno <ph name="DATE"/></translation>
 <translation id="6588399906604251380">Omogoči preverjanje črkovanja</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE"/></translation>
@@ -2249,7 +2223,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5399158067281117682">Kodi PIN se ne ujemata.</translation>
 <translation id="6277105963844135994">Potek časovne omejitve omrežja</translation>
 <translation id="874420130893181774">Način vnosa tradicionalni pinjin</translation>
-<translation id="6731255991101203740">Imenika za odpakiranje ni bilo mogoče ustvariti: »<ph name="DIRECTORY_PATH"/>«</translation>
 <translation id="3816846830151612068">Ali tej razširitvi zaupate, da bo varno uporabila pravice?</translation>
 <translation id="7885253890047913815">Nedavni cilji</translation>
 <translation id="3646789916214779970">Ponastavi na privzeto temo</translation>
@@ -2427,7 +2400,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8898786835233784856">Izberi naslednji zavihek</translation>
 <translation id="8759753423332885148">Več o tem</translation>
 <translation id="4011708746171704399">Omogoči animirane prehode v vadnici za prvi zagon.</translation>
-<translation id="9061819860932378834">Omogočanje kanala IPC za na podlagi mehanizma Mojo za komunikacijo med postopkom brskalnika in postopki upodabljalnika.</translation>
 <translation id="304826556400666995">Vklop zvoka zavihkov</translation>
 <translation id="9111102763498581341">Odkleni</translation>
 <translation id="5975792506968920132">Napolnjenost akumulatorja</translation>
@@ -2449,7 +2421,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8449008133205184768">Prilepite in uskladite slog</translation>
 <translation id="5258266922137542658">PPAPI (v procesu)</translation>
 <translation id="2208311832613497869">Ojoj! Vprašaj starše, ali smeš obiskati to stran.</translation>
-<translation id="5127881134400491887">Upravljanje omrežnih povezav</translation>
 <translation id="8028993641010258682">Velikost</translation>
 <translation id="5846929185714966548">Zavihek 4</translation>
 <translation id="8329978297633540474">Golo besedilo</translation>
@@ -2457,7 +2428,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5299682071747318445">Vsi podatki so šifrirani z vašim geslom</translation>
 <translation id="7556242789364317684"><ph name="SHORT_PRODUCT_NAME"/> ne more obnoviti vaših nastavitev. <ph name="SHORT_PRODUCT_NAME"/> lahko napako popravi tako, da napravo ponastavi s funkcijo Powerwash.</translation>
 <translation id="1383876407941801731">Išči</translation>
-<translation id="6581304841712695137">Vtičnikov ne izvajaj privzeto</translation>
 <translation id="3270965368676314374">Branje, spreminjanje in izbris fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="409579654357498729">Dodaj v Google Tiskanje v oblaku</translation>
 <translation id="2120316813730635488">Dogodki, ko je bila razširitev nameščena</translation>
@@ -2606,7 +2576,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8216278935161109887">Odjavite se in znova prijavite</translation>
 <translation id="6254503684448816922">Ključ ni več varen</translation>
 <translation id="6555432686520421228">Odstrani vse uporabniške račune in ponastavi napravo <ph name="IDS_SHORT_PRODUCT_NAME"/> na nastavitve kot pri novi.</translation>
-<translation id="8215006357356267795">Omogoči izboljšanje upravljanja obremenitve pomnilnika v sistemu ChromeOS.</translation>
 <translation id="1346748346194534595">V desno</translation>
 <translation id="7756363132985736290">Potrdilo že obstaja.</translation>
 <translation id="1181037720776840403">Odstrani</translation>
@@ -2680,6 +2649,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5196117515621749903">Znova naloži in prezre medpomnilnik</translation>
 <translation id="2527591341887670429">Uporaba baterije: <ph name="PRECENTAGE"/> %</translation>
 <translation id="2435248616906486374">Povezava z omrežjem je prekinjena</translation>
+<translation id="7603592958332467761">Onemogočanje pametno uvajanje navidezne tipkovnice.</translation>
 <translation id="960987915827980018">Še približno ena ura</translation>
 <translation id="3112378005171663295">Strni</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
@@ -2852,7 +2822,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="6307722552931206656">Googlovi imenski strežniki – <ph name="BEGIN_LINK"/>Več o tem<ph name="END_LINK"/></translation>
 <translation id="6628328486509726751">Preneseno: <ph name="WEBRTC_LOG_UPLOAD_TIME"/></translation>
 <translation id="1047726139967079566">Zaznamek za to stran ...</translation>
-<translation id="4543179323670137131">Omogočanja filtra »SafeSites« za zaščitene uporabnike</translation>
 <translation id="9020142588544155172">Strežnik je zavrnil povezavo.</translation>
 <translation id="5234320766290789922">Onemogoči polici, da bi ob kliku elementa na polici, s katerim je povezano samo eno, že dejavno okno, pomanjšala okno.</translation>
 <translation id="1800987794509850828">Posrednik za vtičnik: <ph name="PLUGIN_NAME"/></translation>
@@ -3105,7 +3074,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7839580021124293374">3</translation>
 <translation id="2350182423316644347">Inicializiranje aplikacije ...</translation>
 <translation id="132101382710394432">Prednostna omrežja ...</translation>
-<translation id="3669978261190414172">Vašega telefona s sistemom Android ni bilo mogoče povezati z napravo <ph name="DEVICE_TYPE"/>. Uporabljati morate združljiv telefon s sistemom Android, ki je zraven vas in ima internetno povezavo.</translation>
 <translation id="4316363078957068868">Omogočanje podpore za zaslone na dotik, ki podpirajo izbiranje s kazanjem.</translation>
 <translation id="532360961509278431">Ni mogoče odpreti »$1«: $2</translation>
 <translation id="324056286105023296">Niste <ph name="PROFILE_NAME"/>?</translation>
@@ -3346,6 +3314,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8599675288025166194">Omogoči poskusne kratkotrajne aplikacije, ki jih je mogoče zagnati prek povezave.</translation>
 <translation id="5677503058916217575">Jezik strani:</translation>
 <translation id="6739254200873843030">Kartica je potekla. Preverite datum ali vnesite novo kartico.</translation>
+<translation id="8793043992023823866">Uvažanje ...</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
 <translation id="9159562891634783594">Omogoči registriranje neregistriranih tiskalnikov v oblaku v predogledu tiskanja.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Ustvarite nadzorovanega uporabnika<ph name="LINK_END"/> za to napravo.</translation>
@@ -3439,7 +3408,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="6659213950629089752">To stran je povečala razširitev »<ph name="NAME"/>«</translation>
 <translation id="2128691215891724419">Napaka pri sinhronizaciji: Posodobite geslo za sinhronizacijo ...</translation>
 <translation id="2351266942280602854">Jezik in vnos</translation>
-<translation id="291359987907040930">Vašega telefona s sistemom Android ni mogoče najti. Morate ga imeti pri sebi in imeti mora internetno povezavo.</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="7816975051619137001">Samodejno popravi črkovanje</translation>
 <translation id="4608500690299898628">&amp;Iskanje ...</translation>
@@ -3604,7 +3572,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1936203913596858450">Upravljanje zmogljivosti</translation>
 <translation id="3927932062596804919">Ne dovoli</translation>
 <translation id="9066075624350113914">Nekaterih delov tega dokumenta PDF ni bilo mogoče prikazati.</translation>
-<translation id="2753617847762399167">Neveljavna pot (absolutna ali v povezavi z »..«): »<ph name="IMAGE_PATH"/>«</translation>
 <translation id="3187212781151025377">Hebrejska tipkovnica</translation>
 <translation id="4690462567478992370">Prenehaj uporabljati neveljavno potrdilo</translation>
 <translation id="1142012852508714031">Ime profila</translation>
@@ -3750,7 +3717,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="2882943222317434580">Izdelek <ph name="IDS_SHORT_PRODUCT_NAME"/> se bo v kratkem znova zagnal in ponastavil</translation>
 <translation id="5085414586179562346">Spremeni način delovanja dogodkov dotika pri pomikanju po zaslonu. Način, ki ga je v preteklosti uporabljal Chrome, je »touchcancel«, »async-touchmove« pa je novi prednostni način.</translation>
 <translation id="2890624088306605051">Prenesi samo sinhronizirane nastavitve in podatke</translation>
-<translation id="5675225387922096989">Onemogočanje pogovornega okna s podatki o aplikaciji.</translation>
 <translation id="4779083564647765204">Povečaj</translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6957703620025723294">Omogočanje poskusnih funkcij platna</translation>
@@ -3770,7 +3736,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1834560242799653253">Usmerjenost</translation>
 <translation id="6150853954427645995">Če želite to datoteko shraniti za uporabo brez povezave, vzpostavite povezavo, z desnim gumbom miške kliknite datoteko in izberite možnost <ph name="OFFLINE_CHECKBOX_NAME"/>.</translation>
 <translation id="6440616190620341629">Privzeto omogoči dekodiranje brez sestavljanja v MediaDrm za razširitve za šifrirane predstavnosti.</translation>
-<translation id="2501921478111875330">Omogočanje seznama blokiranih gostiteljev za uporabo zaščitenih uporabnikov</translation>
 <translation id="8353683614194668312">Lahko:</translation>
 <translation id="1047956942837015229">Brisanje toliko elementov: <ph name="COUNT"/> ...</translation>
 <translation id="2059334576206320859">Omogočanje sinhronizacije poverilnic za WiFi.</translation>
@@ -3911,7 +3876,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7031962166228839643">TPM se pripravlja, počakajte (to lahko traja nekaj minut) ...</translation>
 <translation id="715118844758971915">Navadni tiskalniki</translation>
 <translation id="5242724311594467048">Ali želite omogočiti »<ph name="EXTENSION_NAME"/>«?</translation>
-<translation id="4446785517224762398">Vašega telefona s sistemom Android ni mogoče najti. Naprava <ph name="DEVICE_TYPE"/> mora imeti vklopljen Bluetooth.</translation>
 <translation id="7877451762676714207">Neznana napaka strežnika. Poskusite znova ali se obrnite na skrbnika strežnika.</translation>
 <translation id="5085162214018721575">Preverjanje, ali so na voljo posodobitve</translation>
 <translation id="5264252276333215551">Če želite aplikacijo zagnati v načinu kioska, se povežite z internetom.</translation>
@@ -3919,7 +3883,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7054808953701320293">Razumem. Tega sporočila ne kaži več.</translation>
 <translation id="144932861331386147">Če želite posodobiti Chromebook, vzpostavite internetno povezavo.</translation>
 <translation id="2938685643439809023">mongolščina</translation>
-<translation id="5737306429639033676">Predvidevaj omrežna dejanja in izboljšaj nalaganje strani</translation>
 <translation id="4530494379350999373">Izvor</translation>
 <translation id="5368720394188453070">Telefon je zaklenjen. Za dostop ga odklenite.</translation>
 <translation id="2070909990982335904">Imena, ki se začnejo s piko, so rezervirana za sistem. Izberite drugo ime.</translation>
@@ -3996,7 +3959,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7372973238305370288">rezultat iskanja</translation>
 <translation id="2101225219012730419">Različica:</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> – <ph name="PAGE_URL"/></translation>
-<translation id="4588173105134911375">Videti je, da želite zagnati običajni program. Poskusite eno od teh novejših spletnih aplikacij.</translation>
 <translation id="1792705092719258158">Omogočanje načina zrcaljenega zaslona.</translation>
 <translation id="8050038245906040378">Microsoftovo komercialno podpisovanje kode</translation>
 <translation id="3031557471081358569">Izberite elemente, ki jih želite uvoziti:</translation>
@@ -4116,7 +4078,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="3915280005470252504">Glasovno iskanje</translation>
 <translation id="3752582316358263300">V redu ...</translation>
 <translation id="6224481128663248237">Formatiranje je uspešno končano.</translation>
-<translation id="2455399605793454000">Omogoči upravljanje obremenitve pomnilnika</translation>
 <translation id="3065140616557457172">Brskate lahko prek funkcije za iskanje ali vnosom URL-ja - prav vse deluje.</translation>
 <translation id="3643454140968246241">Sinhroniziranje toliko datotek: <ph name="COUNT"/> ...</translation>
 <translation id="5801379388827258083">Prenašanje slovarja za preverjanje črkovanja ...</translation>
@@ -4437,13 +4398,10 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5436492226391861498">Čakanje na tunel namestniškega strežnika ...</translation>
 <translation id="3803991353670408298">Preden odstranite način vnosa, dodajte novega.</translation>
 <translation id="4209267054566995313">Ni miške ali sledilne ploščice.</translation>
-<translation id="3369521687965833290">Razširitve ne morete odpakirati. Če želite varno odpakirati razširitev, mora biti navedena pot do imenika vašega profila, ki se začne s črko pogona in ne vsebuje spoja, točke vpenjanja ali simbolne povezave. Za vaš profil ni takšne poti.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> bo nameščen.</translation>
 <translation id="5636996382092289526">Če želite uporabljati omrežje <ph name="NETWORK_ID"/>, morate najprej <ph name="LINK_START"/>obiskati stran za prijavo v omrežje<ph name="LINK_END"/>, ki se bo samodejno odprla čez nekaj sekund. Če se ne odpre, omrežja ne morete uporabljati.</translation>
-<translation id="4811956658694082538">Paketa ni bilo mogoče namestiti, ker se je pomožni proces zrušil. Znova zaženite Chrome in poskusite znova.</translation>
 <translation id="7048141481140415714">Omogoči kombinacijo tipk Ctrl + Alt + Shift + 8 za preklop v način maksimiranja TouchView.</translation>
 <translation id="5139955368427980650">&amp;Odpri</translation>
-<translation id="4176955763200793134">Omogočanje samodejnega popravljanja za fizično tipkovnico.</translation>
 <translation id="8136149669168180907">Preneseno: <ph name="DOWNLOADED_AMOUNT"/> od <ph name="TOTAL_SIZE"/></translation>
 <translation id="4643612240819915418">&amp;Odpri videoposnetek v novem zavihku</translation>
 <translation id="2791952154587244007">Prišlo je do napake. Aplikacija za kiosk se v tej napravi ne bo mogla samodejno zagnati.</translation>
@@ -4461,8 +4419,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="8888432776533519951">Barva:</translation>
 <translation id="5247176778442128277">Onemogočanje funkcije Smart Lock</translation>
 <translation id="5294529402252479912">Posodobi Adobe Reader</translation>
-<translation id="641087317769093025">Razširitve ni bilo mogoče odpakirati</translation>
-<translation id="7461850476009326849">Onemogočanje posameznih vtičnikov ...</translation>
 <translation id="2231990265377706070">Klicaj</translation>
 <translation id="7199540622786492483">Program <ph name="PRODUCT_NAME"/> je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena , takoj ko znova zaženete program.</translation>
 <translation id="2171101176734966184">Poskusili ste dostopati do domene <ph name="DOMAIN"/>, vendar ima strežnik potrdilo, podpisano s šibkim podpisnim algoritmom. To pomeni, da so varnostne poverilnice, ki jih je poslal strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem).</translation>
@@ -4636,7 +4592,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="4919810557098212913"><ph name="HOST"/> želi uporabljati kamero.</translation>
 <translation id="5434706434408777842">F3</translation>
 <translation id="3718288130002896473">Odziv</translation>
-<translation id="2300302924877190394">Onemogoči Google Drive v tej napravi</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="8711402221661888347">Kumarice</translation>
 <translation id="1967178421351654130">Vaša kartica je zaščitena z virtualno kartico Google denarnice (<ph name="FRONTING_CREDIT_CARD"/>) in ta številka bo prikazana na računu. Za nakup bo še vedno bremenjena kartica <ph name="BACKING_CREDIT_CARD"/>.</translation>
@@ -4821,7 +4776,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="3608454375274108141">F10</translation>
 <translation id="444267095790823769">Izjeme za zaščiteno vsebino</translation>
 <translation id="7419106976560586862">Pot profila</translation>
-<translation id="6929214587416566742">namizna obvestila</translation>
 <translation id="5271549068863921519">Shrani geslo</translation>
 <translation id="4613953875836890448">Največje število kitajskih znakov v medpomnilniku za urejanje, vključno z vnosnimi simboli
     zinjin</translation>
@@ -4838,7 +4792,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7372527722222052179">Omogočanje rasterizatorja »zero-copy«</translation>
 <translation id="6929555043669117778">Še naprej blokiraj pojavna okna</translation>
 <translation id="3508920295779105875">Izberite drugo mapo ...</translation>
-<translation id="2159915644201199628">Slike ni bilo mogoče dekodirati: »<ph name="IMAGE_NAME"/>«</translation>
 <translation id="904451693890288097">Vnesite geslo za napravo »<ph name="DEVICE_NAME"/>«:</translation>
 <translation id="2987775926667433828">Tradicionalna kitajščina</translation>
 <translation id="5210496856287228091">Onemogoči animacijo zagona.</translation>
@@ -4862,7 +4815,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="2270484714375784793">Telefonska številka</translation>
 <translation id="7628079021897738671">V redu, razumem</translation>
 <translation id="3603622770190368340">Prejemanje omrežnega potrdila</translation>
-<translation id="3482348256864583836">Gumb profila <ph name="PROFILE_NAME"/></translation>
 <translation id="6196207969502475924">Glasovno iskanje</translation>
 <translation id="359283478042092570">Vnesite</translation>
 <translation id="1639773643001837725">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN"/>; njegovo varnostno potrdilo je poteklo pred toliko dnevi: <ph name="DAYS"/>. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.</translation>
@@ -5010,20 +4962,17 @@ izračun časa do napolnjenosti</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN"/> želi vzpostaviti povezavo z razširitvijo »<ph name="EXTENSION_NAME"/>«</translation>
 <translation id="2089090684895656482">Manj</translation>
-<translation id="2020716932700893720">Uvažanje datotek ($1) ...</translation>
 <translation id="3151551617779652190">Omogočanje zaobidenja strežnika proxy za odobritev prestreznega portala</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
 <translation id="1937256809970138538">Izgovorite »Ok Google«, ko je zaslon vklopljen in odklenjen</translation>
 <translation id="4918241738772068049">Za vzpostavitev povezave je zahtevano ukrepanje</translation>
 <translation id="1949433054743893124">Z uporabo načina brez beleženja zgodovine brskanja ne skrijete pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiščete.</translation>
 <translation id="4193154014135846272">Googlov dokument</translation>
-<translation id="8297988703329826657">Samodejna navidezna tipkovnica</translation>
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="5509914365760201064">Izdajatelj: <ph name="CERTIFICATE_AUTHORITY"/></translation>
 <translation id="4941246025622441835">Uporaba te zahteva za napravo pri včlanjevanju naprave za upravljanje v velikih poslovnih okoljih:</translation>
 <translation id="5449588825071916739">Dodaj vse zavihke med zaznamke</translation>
 <translation id="4888510611625056742">Zavihek 2</translation>
-<translation id="2472195226774696566">Vašega telefona s sistemom Android ni bilo mogoče povezati z napravo <ph name="DEVICE_TYPE"/>. Telefon s sistemom Android morate imeti pri sebi in imeti mora internetno povezavo.</translation>
 <translation id="7842062217214609161">Brez bližnjice</translation>
 <translation id="6898699227549475383">Organizacija (O)</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 s šifriranjem RSA</translation>
@@ -5057,7 +5006,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="6308937455967653460">Shrani povezav&amp;o kot ...</translation>
 <translation id="741689768643916402">Pri tem trgovcu lahko Google Denarnico uporabljajo samo kupci z naslovom v Združenih državah. Če prebivate v Združenih državah, |spremenite domači naslov z Google Denarnico| ali plačajte, ne da bi uporabili Google Denarnico.</translation>
 <translation id="5828633471261496623">Tiskanje ...</translation>
-<translation id="2420698750843121542">Omogoči razširitve za šifrirane predstavnosti za zvočne in video elemente. S tem omogočite najnovejšo različico razširitev za šifrirane predstavnosti.</translation>
 <translation id="3519867315646775981">Prečrkovanje (shalom ← שלום)</translation>
 <translation id="5421136146218899937">Izbriši podatke brskanja ...</translation>
 <translation id="5441100684135434593">Žično omrežje</translation>
@@ -5089,7 +5037,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="6547316139431024316">Ne opozori več za to razširitev</translation>
 <translation id="8007030362289124303">Akumulator je skoraj prazen</translation>
 <translation id="3790909017043401679">Vnos kode PIN za kartico SIM</translation>
-<translation id="1135328998467923690">Paket je neveljaven: »<ph name="ERROR_CODE"/>«.</translation>
 <translation id="2339120501444485379">Vnesite novo ime</translation>
 <translation id="1753682364559456262">Upravljanje blokiranja slik ...</translation>
 <translation id="6550675742724504774">Možnosti</translation>
@@ -5327,6 +5274,7 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="3688526734140524629">Spremeni kanal</translation>
 <translation id="3270847123878663523">&amp;Razveljavi razvrstitev</translation>
 <translation id="4959447747655704388">Če se zavedate varnostnega tveganja, lahko <ph name="BEGIN_LINK"/>obiščete to okuženo spletno mesto<ph name="END_LINK"/>.</translation>
+<translation id="3448964021054693031">Onemogočanje pametne navidezne tipkovnice</translation>
 <translation id="5941153596444580863">Dodaj osebo ...</translation>
 <translation id="4503387275462811823">Opis razširitve</translation>
 <translation id="2157875535253991059">Ta stran je zdaj prikazana na celotnem zaslonu.</translation>
@@ -5446,10 +5394,8 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="475088594373173692">Prvi uporabnik</translation>
 <translation id="1731911755844941020">Pošiljanje zahteve ...</translation>
 <translation id="7885283703487484916">zelo kratka</translation>
-<translation id="4361745360460842907">Odpri kot zavihek</translation>
 <translation id="5238278114306905396">Aplikacija »<ph name="EXTENSION_NAME"/>« je bila samodejno odstranjena.</translation>
 <translation id="4538792345715658285">Nameščeno s pravilnikom podjetja.</translation>
-<translation id="2988488679308982380">Paketa »<ph name="ERROR_CODE"/>« ni bilo mogoče namestiti</translation>
 <translation id="2396249848217231973">&amp;Razveljavi izbris</translation>
 <translation id="6129953537138746214">Presledek</translation>
 <translation id="2626799779920242286">Poskusite ponovno pozneje.</translation>
@@ -5536,7 +5482,6 @@ Ali sprejmete?</translation>
 <translation id="3948633535993872459">povezave za <ph name="PROTOCOL"/></translation>
 <translation id="6492313032770352219">Velikost na disku:</translation>
 <translation id="3225919329040284222">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta.</translation>
-<translation id="8600748102260271062">Uporaba pisave Roboto v uporabniškem vmesniku.</translation>
 <translation id="5233231016133573565">ID procesa</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="1478340334823509079">Podatki: <ph name="FILE_NAME"/></translation>
@@ -5625,7 +5570,6 @@ Ali sprejmete?</translation>
 <translation id="304009983491258911">Sprememba kode PIN za kartico SIM</translation>
 <translation id="7556033326131260574">Funkciji Smart Lock ni uspelo preveriti vašega računa. Vnesite geslo za dostop.</translation>
 <translation id="8600929685092827187">Preklop iz stanja pripravljenosti ob paketih</translation>
-<translation id="8636666366616799973">Paket je neveljaven. Podrobnosti: »<ph name="ERROR_MESSAGE"/>«.</translation>
 <translation id="2045969484888636535">Še naprej blokiraj piškotke</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="7353601530677266744">Ukazna vrstica</translation>

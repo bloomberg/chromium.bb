@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet ഇത്തരം കാർഡിനെ പിന്തുണയ്ക്കുന്നില്ല. മറ്റൊന്ന് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="5172758083709347301">മെഷീൻ</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
+<translation id="8208216423136871611">സംരക്ഷിക്കരുത്</translation>
 <translation id="777702478322588152">പ്രിഫെക്‌ചർ</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="2262243747453050782">HTTP പിശക്</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
 <translation id="4058922952496707368">കീ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript അലേര്‍ട്ട്</translation>
+<translation id="4081383687659939437">വിവരം സംരക്ഷിക്കുക</translation>
 <translation id="5299298092464848405">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> തിരയല്‍</translation>
 <translation id="2498091847651709837">പുതിയ കാർഡ് സ്‌കാൻ ചെയ്യുക</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">തിരയൽ URL അസാധുവാണ്.</translation>
 <translation id="5509780412636533143">നിയന്ത്രിത ബുക്കുമാർക്കുകൾ</translation>
 <translation id="8866481888320382733">നയ ക്രമീകരണങ്ങൾ പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
+<translation id="4120075327926916474">നിങ്ങള്‍ക്ക് വെബ് ഫോമുകള്‍‌ പൂര്‍‌ത്തിയാക്കുന്നതിനായി ഈ ക്രെഡിറ്റ് കാര്‍‌ഡ് വിവരങ്ങള്‍‌ Chrome സംരക്ഷിക്കേണ്ടതുണ്ടോ?</translation>
 <translation id="6644283850729428850">ഈ നയം ഒഴിവാക്കി.</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> ലെ പേജ് പറയുന്നത്:</translation>
 <translation id="4269787794583293679">(ഉപയോക്തൃനാമമില്ല)</translation>

@@ -9,7 +9,6 @@ Chromoting</translation>
 <translation id="5619148062500147964">A este computador</translation>
 <translation id="4068946408131579958">Todas as ligações</translation>
 <translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assistência.</translation>
-<translation id="2801119484858626560">Foi detetada uma versão não compatível do Ambiente de Trabalho Remoto do Chrome. Certifique-se de que tem a versão mais recente do Chrome e do Ambiente de Trabalho Remoto do Chrome em ambos os computadores e tente novamente.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="406849768426631008">Pretende ajudar uma pessoa enquanto conversa com ela no chat de vídeo? Experimente o <ph name="LINK_BEGIN"/> Ambiente de Trabalho Remoto no Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximizar janela</translation>
@@ -31,13 +30,11 @@ Chromoting</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Verifique as definições de gestão de energia do computador e certifique-se de que não está configurado para suspender quando inativo.</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="2707879711568641861">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
 <translation id="3027681561976217984">Modo tátil</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="7868137160098754906">Introduza o PIN para o computador remoto.</translation>
 <translation id="677755392401385740">O anfitrião começou para o utilizador: <ph name="HOST_USERNAME"/>.</translation>
-<translation id="8864965950780407789">Para utilizar o Chromoting, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
 <translation id="3197730452537982411">Ambiente de Trabalho Remoto</translation>
 <translation id="8355326866731426344">Este código de acesso irá expirar em <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Os Autores do Chromium</translation>
@@ -66,7 +63,7 @@ Chromoting</translation>
 <translation id="8073845705237259513">Para utilizar o Ambiente de Trabalho Remoto do Chrome, tem de adicionar uma Conta Google ao seu dispositivo.</translation>
 <translation id="1199593201721843963">Desativar ligações remotas</translation>
 <translation id="5379087427956679853">O Ambiente de Trabalho Remoto do Chrome permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Ambiente de Trabalho Remoto do Chrome, que pode ser encontrada em <ph name="URL"/>.</translation>
-<translation id="1409991159633941777">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
+<translation id="2220529011494928058">Comunicar um problema</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Não voltar a pedir um PIN ao ligar a este anfitrião a partir deste dispositivo.</translation>
 <translation id="1300633907480909701">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.
@@ -87,9 +84,9 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="8509907436388546015">Processo de Integração do Ambiente de Trabalho</translation>
 <translation id="4736223761657662401">Histórico de Ligações</translation>
 <translation id="5285241842433869526">Saiba como configurar um computador para acesso remoto.</translation>
+<translation id="8759753423332885148">Saiba mais.</translation>
 <translation id="4430915108080446161">A gerar código de acesso...</translation>
 <translation id="2013996867038862849">Todos os clientes sincronizados foram eliminados.</translation>
-<translation id="8228265668171617545">Foi detetada uma versão incompatível do Chromoting. Certifique-se de que tem a versão mais recente do Chrome e do Chromoting em ambos os computadores e tente novamente.</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME"/>? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (última vez online em <ph name="DATE"/>)</translation>
@@ -119,9 +116,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="7948001860594368197">Opções de ecrã</translation>
 <translation id="8172070902751707422">Falha na autenticação. Inicie sessão novamente no Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
-<translation id="173559734173571936">Para utilizar o Ambiente de Trabalho Remoto do Chrome, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
 <translation id="712467900648340229">Falha na ligação ao Dispositivo de transmissão.</translation>
-<translation id="9032136467203159543">Faltam alguns componentes necessários ao Chromoting. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
 <translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
 <translation id="1520828917794284345">Redimensionar o ambiente de trabalho para ajustar ao tamanho</translation>
 <translation id="701976023053394610">Assistência Remota</translation>
@@ -134,9 +129,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2647232381348739934">Serviço Chromoting</translation>
 <translation id="579702532610384533">Restabelecer ligação</translation>
 <translation id="4867841927763172006">Enviar PrtScn</translation>
-<translation id="4211066471404647515">Faltam alguns componentes necessários para o Chromoting. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
 <translation id="5773590752998175013">Data da sincronização</translation>
-<translation id="5265129178187621741">(esta funcionalidade ainda não está disponível para Chromebooks... fique atento)</translation>
 <translation id="5156271271724754543">Introduza o mesmo PIN em ambas as caixas.</translation>
 <translation id="2118549242412205620">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.
 
@@ -154,7 +147,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="5625493749705183369">Aceder a outros computadores ou permitir que outro utilizador aceda ao seu computador de forma segura através da Internet.</translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para &quot;Abrir como janela&quot;.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
-<translation id="1469044015499620521">Não está autorizado a aceder a esta aplicação.</translation>
 <translation id="4812684235631257312">Anfitrião</translation>
 <translation id="6178645564515549384">Anfitrião de mensagens nativo para assistência remota</translation>
 <translation id="1738759452976856405">Parar gravação</translation>

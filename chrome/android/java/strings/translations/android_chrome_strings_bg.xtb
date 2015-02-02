@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
 <translation id="8588878054171169263">Запазване на изображението</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
+<translation id="8425213833346101688">Промяна</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="6292937202013477045">Извършители на атаки може да опитат да откраднат информацията ви (например снимки, пароли, съобщения и номера на кредитни карти) от <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="346339498574870680">URL адр. на изображ.: Копиране</translation>
+<translation id="5063480226653192405">Употреба</translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Добавяне на адрес</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
+<translation id="9189669987942139609">ТБ</translation>
+<translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="6458785801851713928">Синхронизирането не е налице за домейна ви.</translation>
 <translation id="2731700343119398978">Моля, изчакайте...</translation>
 <translation id="6846298663435243399">Зарежда се…</translation>
@@ -39,6 +43,8 @@
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="3410346880900521918">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK"/>предложения<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
+<translation id="7375125077091615385">Тип:</translation>
+<translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
@@ -53,13 +59,12 @@
 <translation id="2321958826496381788">Преместете плъзгача, докато можете да четете удобно това. Текстът трябва да изглежда поне толкова голям след двукратно докосване на абзац.</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="8583805026567836021">Данните от профила се изчистват</translation>
-<translation id="5860033963881614850">Изключено</translation>
 <translation id="2960796085439532066">Авторски права <ph name="YEAR"/> Google Inc. Всички права запазени.</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="552553974213252141">Текстът правилно ли бе извлечен?</translation>
-<translation id="5317780077021120954">Запазване</translation>
 <translation id="1151972924205500581">Изисква се парола</translation>
+<translation id="2870560284913253234">Сайт</translation>
 <translation id="2718352093833049315">Само при Wi-Fi</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="2414886740292270097">Тъмно</translation>
@@ -79,28 +84,38 @@
 <translation id="4807098396393229769">Име върху картата</translation>
 <translation id="656628257199996201">Винаги да се превежда от <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
+<translation id="6447842834002726250">„Бисквитки“</translation>
 <translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
+<translation id="1383876407941801731">Търсене</translation>
 <translation id="5626370437647899551">Добавяне на профил в Google</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="4543661749405994812">Копиране на имейл адреса</translation>
+<translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Имейл</translation>
+<translation id="3123243061080120667">КБ</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
+<translation id="1987317783729300807">Профили</translation>
 <translation id="6064211167623632605">Път към изпълнимия файл</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="4827948050554950725">Добавяне на кредитна карта</translation>
+<translation id="4278390842282768270">Разрешено</translation>
 <translation id="7817177303494746697">Версия на Blink</translation>
 <translation id="2532336938189706096">Изглед в мрежата</translation>
 <translation id="6571070086367343653">Редактиране на кредитната карта</translation>
 <translation id="7080851568148064063">Добавяне към началния екран</translation>
+<translation id="6192792657125177640">Изключения</translation>
 <translation id="4619298195800598081">Оригинал: Отв. в нов раздел</translation>
+<translation id="8798099450830957504">По подразбиране</translation>
 <translation id="4002066346123236978">Заглавие</translation>
+<translation id="885701979325669005">Хранилище</translation>
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
 <translation id="907015151729920253">Смарткарта</translation>
+<translation id="2482878487686419369">Известия</translation>
 <translation id="5016205925109358554">Серифен</translation>
 <translation id="2600241144430299006">Месец на валидност на картата</translation>
 <translation id="3063601790762993062">Запазване на видеоклипа</translation>
@@ -114,6 +129,7 @@
 <translation id="4148957013307229264">Инсталира се...</translation>
 <translation id="3992315671621218278">Запазване на връзката</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">Javascript</translation>
 <translation id="5424715742813396254">Редактиране на запазено име/парола или изключение</translation>
 <translation id="2476578072172137802">Настройки за сайта</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
@@ -130,8 +146,9 @@
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
 <translation id="2359808026110333948">Напред</translation>
+<translation id="977224059380370527">МБ</translation>
 <translation id="2512222046227390255">Авт. попълване на формуляри</translation>
-<translation id="8261506727792406068">Изтриване</translation>
+<translation id="5765780083710877561">Описание:</translation>
 <translation id="1080790410959514870">Излизате от профил, управляван от <ph name="DOMAIN_NAME"/>. Съхраняваните на това устройство данни в Chrome ще се изтрият, но ще останат в профила ви в Google.</translation>
 <translation id="4510973599275542560">Без презареждане</translation>
 <translation id="1206892813135768548">Копиране на текста на връзката</translation>
@@ -140,15 +157,19 @@
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
 <translation id="4271185234001491831">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Копиране на изображението</translation>
+<translation id="5804241973901381774">Разрешения</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="8941248009481596111">Връзката ви с този сайт е частна.</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
+<translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="5164482624172255778">Искате ли следващия път Google Chrome да предложи да преведе от <ph name="LANGUAGE"/> страниците от този сайт?</translation>
 <translation id="4062305924942672200">Правна информация</translation>
 <translation id="8528538445849828817">Език на страницата: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="6512448926095770873">Излизане от тази страница</translation>
+<translation id="3414952576877147120">Размер:</translation>
+<translation id="5626134646977739690">Име:</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="2612676031748830579">Номер на картата</translation>
@@ -163,7 +184,6 @@
 Ако съдържанието е изключено, може да не сте в състояние да гледате платени клипове на това устройство.</translation>
 <translation id="8928220460877261598">Вече влязохте в Chrome.</translation>
 <translation id="5032574515228824816">Подкана</translation>
-<translation id="6165508094623778733">Научете повече</translation>
 <translation id="862875433388403934">Възможно е изтегленото в други приложения съдържание (филми, музика и др.) да не се възпроизвежда повече, докато те не придобият отново лицензи въз основа на нови идентификационни данни на устройството.
 
 За да получите нови лицензи, свържете се с интернет и пуснете изтегленото съдържание.</translation>
@@ -177,10 +197,12 @@
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
 <translation id="7634554953375732414">Връзката ви с този сайт не е поверителна.</translation>
+<translation id="6409731863280057959">Изскачащи прозорци</translation>
+<translation id="8776285424728638733">ГБ</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="1742134235943978220">Преведено на <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Включено</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
+<translation id="5677928146339483299">Блокирано</translation>
 <translation id="7561196759112975576">Винаги</translation>
 </translationbundle>

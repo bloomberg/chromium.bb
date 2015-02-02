@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
+<translation id="5895138241574237353">Genstart</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> er roteret til <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
@@ -77,7 +78,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
@@ -159,6 +159,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
 <translation id="2983818520079887040">Indstillinger...</translation>
 <translation id="6452181791372256707">Afvis</translation>
+<translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som &quot;<ph name="NAME"/>&quot; med adressen <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
@@ -190,6 +191,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
+<translation id="1510238584712386396">Applikationsliste</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE"/> %)</translation>

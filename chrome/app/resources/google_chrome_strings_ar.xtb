@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
-<translation id="2896252579017640304">‏تشغيل تطبيقات Chrome</translation>
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chrome مطلوبة)</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">‏بعد إزالة حسابك من Chrome، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
-<translation id="5775197990071433230">‏يوجد على هذا الكمبيوتر إصدارًا أحدث من مكونات Google Chrome. الرجاء استخدام أداة تثبيت أحدث.</translation>
 <translation id="4987308747895123092">‏الرجاء إغلاق جميع نوافذ Google Chrome (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
 <translation id="568643307450491754">‏ابحث عن الإشارات المرجعية في قائمة Chrome أو على شريط الإشارات المرجعية.</translation>
 <translation id="8556340503434111824">‏يتوفر إصدار جديد من Google Chrome، وهو أسرع بكثير من ذي قبل.</translation>
@@ -82,7 +80,6 @@
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3089968997497233615">‏يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="5037239767309817516">‏الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
-<translation id="345168553362876363">‏مشغل تطبيقات Google Chrome هو نظام أساسي مستقل لتطبيقات Chrome.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
@@ -171,7 +168,6 @@
 <translation id="8568392309447938879">‏يلزمك تسجيل الدخول إلى Chrome لتتمكن من استخدام التطبيقات. سيتيح هذا للمتصفح Chrome مزامنة تطبيقاتك والإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات عبر الأجهزة.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
-<translation id="5788838254726722945">‏إلغاء تثبيت مشغل تطبيقات Google Chrome</translation>
 <translation id="3612333635265770873">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
@@ -194,13 +190,6 @@
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
 <translation id="130631256467250065">تسري التغييرات في المرة التالية التي تعيد فيها تشغيل الجهاز.</translation>
-<translation id="1546593779121993896">‏انتقل  إلى قائمة Chrome &gt; الإعدادات&gt; خصوصية (متقدمة)
-
-          وعطّل &quot;تنبؤات إجراءات الشبكة&quot;
-
-          إذا لم يعمل هذا على حل المشكلة، نوصي بإعادة تمكين هذا الخيار
-
-          مرة أخرى من أجل أداء أفضل.</translation>
 <translation id="163860049029591106">‏البدء في استخدام نظام التشغيل Chrome</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
 <translation id="1399397803214730675">‏يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
@@ -248,7 +237,6 @@
 <translation id="5334545119300433702">‏هذه الوحدة معروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="4407807842708586359">‏نظام تشغيل Google Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome محدّث.</translation>
-<translation id="4120075327926916474">‏هل تريد من Chrome حفظ معلومات بطاقة الائتمان لإكمال نماذج الويب؟</translation>
 <translation id="3037838751736561277">‏Google Chrome في وضع الخلفية.</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
 <translation id="4692614041509923516">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Google Chrome أن يخبر ما إذا كانت الشهادة قادمة من <ph name="SITE"/> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE"/>. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>

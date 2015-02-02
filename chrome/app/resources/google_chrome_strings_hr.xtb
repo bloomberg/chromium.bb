@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">Neka Google Chrome radi u pozadini</translation>
 <translation id="110877069173485804">Ovo je vaš Chrome</translation>
 <translation id="8406086379114794905">Pomozite nam da poboljšamo Chrome</translation>
-<translation id="2896252579017640304">Pokreni aplikacije sustava Chrome</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
 <translation id="2721687379934343312">Na Mac računalima, zaporke se spremaju u vaš Keychain, a drugi korisnici preglednika Chrome koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">(potrebno je <ph name="BEGIN_BUTTON"/>ponovo pokrenuti<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">Nakon uklanjanja računa s Chromea možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
-<translation id="5775197990071433230">Ovo računalo već ima noviju verziju komponenti Google Chromea. Upotrijebite noviji instalacijski program.</translation>
 <translation id="4987308747895123092">Zatvorite sve prozore preglednika Google Chrome (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="8556340503434111824">Dostupna je nova verzija preglednika Google Chrome, brža no ikad.</translation>
@@ -80,7 +78,6 @@
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
 <translation id="5037239767309817516">Zatvorite sve prozore preglednika Google Chrome i ponovo ga pokrenite kako bi ova promjena stupila na snagu.</translation>
-<translation id="345168553362876363">Pokretač aplikacija sustava Google Chrome samostalna je platforma za aplikacije sustav Chrome.</translation>
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
@@ -165,7 +162,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="8568392309447938879">Morate se prijaviti na Chrome da biste upotrebljavali aplikacije. To omogućuje Chromeu sinkronizaciju vaših aplikacija, oznaka, povijesti, zaporki i ostalih postavki na različitim uređajima.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
-<translation id="5788838254726722945">Deinstalirajte pokretač aplikacije sustava Google Chrome</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
 <translation id="2665296953892887393">Pomognite nam poboljšati Google Chrome šaljući izvješća o rušenju programa i <ph name="UMA_LINK"/> Googleu</translation>
 <translation id="7761834446675418963">Kliknite svoje ime da biste otvorili Chrome i počeli s pregledavanjem.</translation>
@@ -190,10 +186,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Ažuriranje preglednika Google Chrome</translation>
 <translation id="130631256467250065">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete uređaj.</translation>
-<translation id="1546593779121993896">Otvorite izbornik Chromea &gt; Postavke &gt; (Napredno) Privatnost
-          i onemogućite &quot;Predviđanja mrežnih radnji&quot;.
-          Ako se time ne riješi poteškoća, preporučujemo da ponovo omogućite tu opciju
-          radi bolje izvedbe.</translation>
 <translation id="163860049029591106">Počnite s upotrebom OS-a Chrome</translation>
 <translation id="1587223624401073077">Google Chrome upotrebljava vašu kameru.</translation>
 <translation id="1399397803214730675">Na ovom računalu već postoji novija verzija programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
@@ -240,7 +232,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5334545119300433702">Za taj se modul već zna da je u konfliktu s programom Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome ažuran je.</translation>
-<translation id="4120075327926916474">Želite li da Chrome spremi podatke o ovoj kreditnoj kartici za dovršavanje web-obrazaca?</translation>
 <translation id="3037838751736561277">Google Chrome radi u pozadini.</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
 <translation id="4692614041509923516">Vaše računalo ima staru verziju Microsoft Windowsa koja ne može obraditi sigurnosni certifikat ove web-lokacije. Zbog tog problema Google Chrome ne može odrediti je li certifikat s domene <ph name="SITE"/> ili od nekog u vašoj mreži tko se pretvara da je <ph name="SITE"/>. Ažurirajte Windows na računalu na noviju verziju.</translation>

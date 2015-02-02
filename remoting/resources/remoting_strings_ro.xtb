@@ -9,7 +9,6 @@ Chromoting</translation>
 <translation id="5619148062500147964">La acest computer</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanță Chrome. Contactați administratorul de sistem pentru asistență.</translation>
-<translation id="2801119484858626560">A fost detectată o versiune incompatibilă a aplicației Desktop la distanță Chrome. Asigurați-vă că aveți cea mai recentă versiune Chrome și Desktop la distanță Chrome pe ambele computere și încercați din nou.</translation>
 <translation id="6998989275928107238">La</translation>
 <translation id="406849768426631008">Doriți să ajutați pe cineva, iar în același timp să și discutați pe chatul video? Încercați <ph name="LINK_BEGIN"/>Control desktop la distanță din Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximizați fereastra</translation>
@@ -31,13 +30,11 @@ Chromoting</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7782471917492991422">Verificați setările de gestionare a energiei pentru computerul dvs. și asigurați-vă că nu este configurat să treacă în modul inactiv când este în repaus.</translation>
 <translation id="7665369617277396874">Adăugați un cont</translation>
-<translation id="2707879711568641861">Unele componente necesare pentru Desktop la distanță Chrome lipsesc. Asigurați-vă că ați instalat cea mai recentă versiune a aplicației și încercați din nou.</translation>
 <translation id="3027681561976217984">Modul tactil</translation>
 <translation id="1779766957982586368">Închide fereastra</translation>
 <translation id="2499160551253595098">Ajutați-ne să îmbunătățim Desktop la distanță Chrome, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
 <translation id="7868137160098754906">Introduceți codul PIN pentru computerul la distanță.</translation>
 <translation id="677755392401385740">Gazda a fost inițiată pentru utilizatorul: <ph name="HOST_USERNAME"/>.</translation>
-<translation id="8864965950780407789">Pentru a utiliza Chromoting, trebuie să acordați permisiuni extinse de acces la computer. Este necesar să faceți acest lucru o singură dată.</translation>
 <translation id="3197730452537982411">Desktop la distanță</translation>
 <translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -66,7 +63,7 @@ Chromoting</translation>
 <translation id="8073845705237259513">Pentru a folosi Desktop la distanță Chrome, va trebui să adăugați un Cont Google pe dispozitiv.</translation>
 <translation id="1199593201721843963">Dezactivați conexiunile la distanță</translation>
 <translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
-<translation id="1409991159633941777">Unele componente necesare pentru aplicația Desktop la distanță Chrome lipsesc. Asigurați-vă că rulați cea mai recentă versiune Chrome și încercați din nou.</translation>
+<translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Nu mai solicita un cod PIN când mă conectez la această gazdă de pe acest dispozitiv.</translation>
 <translation id="1300633907480909701">Accesați în siguranță computerele dvs. de pe dispozitivul Android.
@@ -87,9 +84,9 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="8509907436388546015">Proces de integrare desktop</translation>
 <translation id="4736223761657662401">Istoricul conexiunilor</translation>
 <translation id="5285241842433869526">Aflați cum puteți configura un computer pentru acces la distanță.</translation>
+<translation id="8759753423332885148">Aflați mai multe.</translation>
 <translation id="4430915108080446161">Se generează codul de acces...</translation>
 <translation id="2013996867038862849">Toți clienții împerecheați au fost șterși.</translation>
-<translation id="8228265668171617545">A fost detectată o versiune incompatibilă a aplicației Chromoting. Asigurați-vă că aveți cea mai recentă versiune Chrome și Chromoting pe ambele computere și încercați din nou.</translation>
 <translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME"/>? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
 <translation id="6944854424004126054">Restabiliți fereastra</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (disponibil online ultima dată pe <ph name="DATE"/>)</translation>
@@ -119,9 +116,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="7948001860594368197">Opțiuni ecran</translation>
 <translation id="8172070902751707422">Autentificarea nu a reușit. Conectați-vă din nou la Desktop la distanță Chrome.</translation>
 <translation id="5254120496627797685">Părăsind această pagină, veți încheia sesiunea Desktop la distanță Chrome.</translation>
-<translation id="173559734173571936">Pentru a utiliza aplicația Desktop la distanță Chrome, trebuie să acordați permisiuni extinse de acces la computer. Este necesar să faceți acest lucru o singură dată.</translation>
 <translation id="712467900648340229">Nu s-a putut stabili conexiunea la dispozitivul de proiecție.</translation>
-<translation id="9032136467203159543">Unele componente necesare pentru Chromoting lipsesc. Asigurați-vă că ați instalat cea mai recentă versiune a aplicației și încercați din nou.</translation>
 <translation id="1342297293546459414">Vedeți și controlați un computer la care se permite accesul.</translation>
 <translation id="1520828917794284345">Redimensionați desktopul pentru a încăpea</translation>
 <translation id="701976023053394610">Asistență la distanță</translation>
@@ -134,9 +129,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2647232381348739934">Serviciul Chromoting</translation>
 <translation id="579702532610384533">Reconectează-te</translation>
 <translation id="4867841927763172006">Trimite PrtScn</translation>
-<translation id="4211066471404647515">Unele componente necesare pentru aplicația Chromoting lipsesc. Asigurați-vă că rulați cea mai recentă versiune Chrome și încercați din nou.</translation>
 <translation id="5773590752998175013">Data împerecherii</translation>
-<translation id="5265129178187621741">(această funcție nu este încă disponibilă pentru Chromebookuri...urmăriți-ne în continuare)</translation>
 <translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
 <translation id="2118549242412205620">Accesați în siguranță computerele dvs. de pe dispozitivul Android.
 
@@ -154,7 +147,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="5625493749705183369">Accesați alte computere sau permiteți altui utilizator să vă acceseze computerul în siguranță pe internet.</translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
-<translation id="1469044015499620521">Nu ești autorizat(ă) să accesezi această aplicație.</translation>
 <translation id="4812684235631257312">Gazdă</translation>
 <translation id="6178645564515549384">Gazda de mesagerie nativă pentru asistență la distanță</translation>
 <translation id="1738759452976856405">Oprește înregistrarea</translation>

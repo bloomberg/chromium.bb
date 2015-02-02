@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
 <translation id="8588878054171169263">Išsaugoti vaizdą</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
+<translation id="8425213833346101688">Keisti</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
 <translation id="6292937202013477045">Užgrobėjai gali bandyti pavogti jūsų informaciją iš <ph name="DOMAIN_NAME"/> (pvz., nuotraukas, slaptažodžius, pranešimus ar kredito kortelių duomenis).</translation>
 <translation id="1506061864768559482">Paieškos variklis</translation>
 <translation id="346339498574870680">Kopijuoti vaizdo URL</translation>
+<translation id="5063480226653192405">Naudojimas</translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="5578795271662203820">Ieškoti „<ph name="SEARCH_ENGINE"/>“ šio vaizdo</translation>
 <translation id="7764225426217299476">Pridėti adresą</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Valyti viską</translation>
 <translation id="6458785801851713928">Sinchronizavimo paslauga nepasiekiama jūsų domenui.</translation>
 <translation id="2731700343119398978">Palaukite...</translation>
 <translation id="6846298663435243399">Įkeliama…</translation>
@@ -39,6 +43,8 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="1966710179511230534">Atnaujinkite išsamią prisijungimo informaciją.</translation>
 <translation id="3410346880900521918">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK"/>pasiūlymus<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Neleisti šiam puslapiui kurti papildomų dialogo langų</translation>
+<translation id="7375125077091615385">Tipas:</translation>
+<translation id="2498359688066513246">Pagalba ir atsiliepimai</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
@@ -53,13 +59,12 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="8583805026567836021">Valomi paskyros duomenys</translation>
-<translation id="5860033963881614850">Išjungta</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
-<translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="1151972924205500581">Būtinas slaptažodis</translation>
+<translation id="2870560284913253234">Svetainė</translation>
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="2414886740292270097">Tamsi</translation>
@@ -79,28 +84,38 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="4807098396393229769">Kortelėje nurodytas vardas ir pavardė</translation>
 <translation id="656628257199996201">Visada versti iš <ph name="SOURCE_LANGUAGE"/> k.</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
+<translation id="6447842834002726250">Slapukai</translation>
 <translation id="2748463065602559597">Žiūrite saugų „Google Chrome“ puslapį.</translation>
+<translation id="1383876407941801731">Ieškoti</translation>
 <translation id="5626370437647899551">Pridėti „Google“ paskyrą</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="4543661749405994812">Kopijuoti el. pašto adresą</translation>
+<translation id="5646376287012673985">Vietovė</translation>
 <translation id="5659593005791499971">El. paštas</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
+<translation id="1987317783729300807">Paskyros</translation>
 <translation id="6064211167623632605">Vykdomasis kelias</translation>
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="2903493209154104877">Adresai</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
 <translation id="4827948050554950725">Pridėti kredito kortelę</translation>
+<translation id="4278390842282768270">Leidžiama</translation>
 <translation id="7817177303494746697">„Blink“ versija</translation>
 <translation id="2532336938189706096">Žiniatinklio rodinys</translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
 <translation id="7080851568148064063">Pridėti prie pagr. ekrano</translation>
+<translation id="6192792657125177640">Išimtys</translation>
 <translation id="4619298195800598081">At. orig. vaiz. nauj. sk. lap.</translation>
+<translation id="8798099450830957504">Numatytasis</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
+<translation id="885701979325669005">Saugykla</translation>
 <translation id="3254409185687681395">Įtraukti šį puslapį į žymes</translation>
 <translation id="907015151729920253">Išmanioji kortelė</translation>
+<translation id="2482878487686419369">Pranešimai</translation>
 <translation id="5016205925109358554">Su užraitais</translation>
 <translation id="2600241144430299006">Kortelės galiojimo pabaigos mėnuo</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
@@ -114,6 +129,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="4148957013307229264">Diegiama...</translation>
 <translation id="3992315671621218278">Išsaugoti nuorodą</translation>
 <translation id="5435662027590074193">„<ph name="SEARCH_ENGINE_NAME"/>“ (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">„JavaScript“</translation>
 <translation id="5424715742813396254">Išsaugoto vardo / slaptažodžio arba išimties redagavimas</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
@@ -130,8 +146,9 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="654446541061731451">Kad perduotumėte, pasirinkite skirtuką</translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="2359808026110333948">Tęsti</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Automatinis formų pildymas</translation>
-<translation id="8261506727792406068">Panaikinti</translation>
+<translation id="5765780083710877561">Aprašas:</translation>
 <translation id="1080790410959514870">Atsijungiate nuo <ph name="DOMAIN_NAME"/> tvarkomos paskyros. Bus ištrinti šiame įrenginyje saugomi „Chrome“ duomenys, bet jie išliks „Google“ paskyroje.</translation>
 <translation id="4510973599275542560">Neįkelti iš naujo</translation>
 <translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
@@ -140,15 +157,19 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="7063006564040364415">Nepavyko prisijungti prie sinchronizavimo serverio.</translation>
 <translation id="4271185234001491831">Niekada neversti <ph name="LANGUAGE"/> k.</translation>
 <translation id="6671495933530132209">Kopijuoti vaizdą</translation>
+<translation id="5804241973901381774">Leidimai</translation>
 <translation id="8209050860603202033">Atidaryti vaizdą</translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="8941248009481596111">Jūsų ryšys su šia svetaine privatus.</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
+<translation id="4165986682804962316">Svetainės nustatymai</translation>
 <translation id="5164482624172255778">Ar norėtumėte, kad kitą kartą „Google Chrome“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE"/> k.?</translation>
 <translation id="4062305924942672200">Teisinė informacija</translation>
 <translation id="8528538445849828817">Puslapio kalba: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
+<translation id="3414952576877147120">Dydis:</translation>
+<translation id="5626134646977739690">Pavadinimas:</translation>
 <translation id="5565871407246142825">Kredito kortelės</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="2612676031748830579">Kortelės numeris</translation>
@@ -163,7 +184,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 Jei parinktis IŠJUNGTA, gali būti, kad šiame įrenginyje negalėsite leisti aukščiausios kokybės vaizdo įrašų.</translation>
 <translation id="8928220460877261598">Prisijungėte prie „Chrome“.</translation>
 <translation id="5032574515228824816">Raginimas</translation>
-<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="862875433388403934">Nebegalėsite leisti kitose programose atsisiųsto turinio (filmų, muzikos ir pan.), kol tose programose nebus iš naujo gautos licencijos pagal naujus įrenginio prisijungimo duomenis.
 
 Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsisiųsti turinį.</translation>
@@ -177,10 +197,12 @@ Vilkite nuo viršaus, kad išeitumėte.</translation>
 <translation id="411254640334432676">Nepavyko atsisiųsti.</translation>
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
 <translation id="7634554953375732414">Jūsų ryšys su šia svetaine nėra privatus.</translation>
+<translation id="6409731863280057959">Iššokantieji langai</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="1742134235943978220">Išversta į <ph name="TARGET_LANGUAGE"/> k.</translation>
-<translation id="5916664084637901428">Įjungta</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
+<translation id="5677928146339483299">Užblokuota</translation>
 <translation id="7561196759112975576">Visada</translation>
 </translationbundle>

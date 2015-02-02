@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth activat</translation>
+<translation id="5895138241574237353">Reîncepe</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> a fost rotit la <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>.
         Apăsați pe Shift + Alt pentru a comuta.</translation>
 <translation id="2562916301614567480">Rețea privată</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us. (Monitorul respectiv nu este acceptat)</translation>
 <translation id="6426039856985689743">Dezactivați datele mobile</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Setări...</translation>
 <translation id="6452181791372256707">Respingeți</translation>
+<translation id="1330145147221172764">Activați tastatura pe ecran</translation>
 <translation id="1195412055398077112">suprascanare</translation>
 <translation id="607652042414456612">Computerul poate fi detectat de dispozitivele Bluetooth din apropiere și va apărea ca „<ph name="NAME"/>” cu adresa <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
@@ -190,6 +191,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="7097613348211027502">ChromeVox (feedbackul rostit) este activat.
 Apăsați pe Ctrl+Alt+Z pentru dezactivare.</translation>
 <translation id="5045002648206642691">Setări Disc Google...</translation>
+<translation id="1510238584712386396">Lansator</translation>
 <translation id="7209101170223508707">Tasta CAPS LOCK este activată.
 Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8940956008527784070">Baterie slabă (<ph name="PERCENTAGE"/> %)</translation>

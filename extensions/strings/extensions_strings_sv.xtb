@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Läsa data som du kopierar och klistrar in</translation>
 <translation id="2350172092385603347">Lokalisering används, men default_locale specificeras inte i manifestet.</translation>
 <translation id="3759933321830434300">Blockera delar av webbsidor</translation>
+<translation id="6143635259298204954">Det går inte att packa upp tillägget. Ett tillägg kan bara packas upp säkert om det finns en sökväg till din profilkatalog som inte innehåller en symbollänk. Det finns ingen sådan sökväg för din profil.</translation>
 <translation id="149347756975725155">Det gick inte att läsa in tilläggsikonen <ph name="ICON"/>.</translation>
 <translation id="8825366169884721447">Det här tillägget kunde inte ändra begäranderubriken <ph name="HEADER_NAME"/> för ett nätverk eftersom det uppstod en konflikt mellan ändringen och ett annat tillägg (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Välj USB-enheter</translation>
+<translation id="6731255991101203740">Det gick inte att skapa en katalog för uppackning: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Det gick inte att ladda informationssidan <ph name="ABOUT_PAGE"/>.</translation>
 <translation id="388442998277590542">Det gick inte att läsa in alternativsidan <ph name="OPTIONS_PAGE"/>.</translation>
+<translation id="5127881134400491887">Hantera nätverksanslutningar</translation>
 <translation id="6344170822609224263">Få åtkomst till en lista med nätverksanslutningar</translation>
 <translation id="7039326228527141150">Komma åt USB-enheter från <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Läs och ändra dina uppgifter på <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">okända enheter från <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Utväxla data med datorer i domänerna: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Illegal sökväg (absolut eller relativ med &quot;..&quot;): <ph name="IMAGE_PATH"/></translation>
 <translation id="8284279544186306258">alla <ph name="WEBSITE_1"/>-webbplatser</translation>
 <translation id="8662911384982557515">Ändra startsida till: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Tillägget misslyckades att ändra en nätverksbegäran eftersom ändringen står i konflikt med ett annat tillägg.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Det här tillägget kunde inte uppge några användaruppgifter till en nätverksbegäran eftersom ett annat tillägg  (<ph name="EXTENSION_NAME"/>) uppgav andra användaruppgifter.</translation>
 <translation id="5627523580512561598">tillägget <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Få åtkomst till foton, musik och andra medier från datorn</translation>
+<translation id="3369521687965833290">Det går inte att packa upp tillägget. Ett tillägg kan bara packas upp säkert om det finns en sökväg till din profilkatalog som börjar med en enhetsbokstav och inte innehåller en knutpunkt, mount point eller symbollänk.</translation>
+<translation id="4811956658694082538">Det gick inte att installera paketet eftersom en hjälpprocess kraschade. Testa att starta om Chrome och försöka igen.</translation>
+<translation id="641087317769093025">Det gick inte att packa upp tillägget</translation>
 <translation id="4761104368405085019">Använd mikrofonen</translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME"/> ska installeras. Det kan inte tas bort eller ändras.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> från <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Komma åt någon av dessa USB-enheter</translation>
 <translation id="2677911863018634147">Appen <ph name="APP_NAME"/> begär åtkomst till en eller flera av dina enheter.</translation>
 <translation id="6698810901424468597">Läs och ändra dina uppgifter på <ph name="WEBSITE_1"/> och <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Det gick inte att avkoda bilden: <ph name="IMAGE_NAME"/></translation>
 <translation id="5544884907028850012">Leverantör <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Åtkomst till din nätverkstrafik</translation>
 <translation id="5972529113578162692">Administratören för den här datorn kräver att <ph name="EXTENSION_NAME"/> installeras. Det kan inte avinstalleras.</translation>
+<translation id="1135328998467923690">Paketet är ogiltigt: <ph name="ERROR_CODE"/>.</translation>
 <translation id="7131040479572660648">Läsa din data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> och <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Komma åt <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Det gick inte att läsa in bakgrundssidan <ph name="BACKGROUND_PAGE"/>.</translation>
+<translation id="2988488679308982380">Det gick inte att installera paketet <ph name="ERROR_CODE"/></translation>
 <translation id="5751530153776468604">Appen <ph name="APP_NAME"/> begär åtkomst till en av dina enheter.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Paketet är ogiltigt. Information: <ph name="ERROR_MESSAGE"/></translation>
 <translation id="344630545793878684">Läsa din data på ett antal webbplatser</translation>
 </translationbundle>

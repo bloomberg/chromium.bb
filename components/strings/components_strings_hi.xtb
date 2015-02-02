@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">कार्ड का यह प्रकार Google वॉलेट द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
+<translation id="8208216423136871611">न सहेजें</translation>
 <translation id="777702478322588152">प्रशासक प्रांत</translation>
 <translation id="7600965453749440009">कभी भी <ph name="LANGUAGE"/> का अनुवाद न करें</translation>
 <translation id="2262243747453050782">HTTP त्रुटि</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">सुझाए गए</translation>
 <translation id="4058922952496707368">कुंजी &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript अलर्ट</translation>
+<translation id="4081383687659939437">जानकारी सहेजें</translation>
 <translation id="5299298092464848405">नीति पार्स करने में त्रुटि</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> खोज</translation>
 <translation id="2498091847651709837">नया कार्ड स्‍कैन करें</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">अमान्‍य खोज URL.</translation>
 <translation id="5509780412636533143">प्रबंधित बुकमार्क</translation>
 <translation id="8866481888320382733">नीति सेटिंग पार्स करने में त्रुटि</translation>
+<translation id="4120075327926916474">क्या आप चाहते हैं कि Chrome वेब फ़ॉर्म पूरा करने के लिए इस क्रेडिट कार्ड जानकारी को सहेजे?</translation>
 <translation id="6644283850729428850">यह नीति हटा दी गई है.</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> पर मौजूद पृष्ठ कहता है:</translation>
 <translation id="4269787794583293679">(कोई उपयोगकर्ता नाम नहीं)</translation>

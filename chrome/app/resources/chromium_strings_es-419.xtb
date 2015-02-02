@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Acceder a Internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Los autores de Chromium. Todos los derechos reservados.</translation>
 <translation id="6373523479360886564">¿Estás seguro de que deseas desinstalar Chromium?</translation>
-<translation id="5065199687811594072">¿Quieres que Chromium guarde la información de esta tarjeta de crédito para completar formularios web?</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="2615699638672665509">Debido a que ya no se admite su hardware, esta computadora dejará de recibir actualizaciones de Chromium en breve.</translation>
 <translation id="5532301346661895910">Chromium la almacenará en tus |contraseñas guardadas por Google| y la recordará la próxima vez que la necesites.</translation>
 <translation id="6893813176749746474">Chromium fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
-<translation id="1550579416447684632">Iniciar aplicaciones de Chromium</translation>
 <translation id="2732467638532545152">La computadora utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Chromium no puede saber si el certificado procede de <ph name="SITE"/> o de un atacante de tu red que quiere hacerse pasar por <ph name="SITE"/>. Instala una versión más reciente de Windows en la computadora.</translation>
-<translation id="4267347018362241535">El selector de aplicaciones de Chromium es una plataforma independiente para aplicaciones de Chromium.</translation>
 <translation id="2770231113462710648">Cambiar el navegador predeterminado a:</translation>
 <translation id="6613594504749178791">Los cambios se aplicarán la próxima vez que inicies Chromium.</translation>
 <translation id="9089354809943900324">Chromium no actualizado</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Si compartes esta computadora con <ph name="PROFILE_NAME"/>, agrégate a Chromium para navegar de manera independiente. De lo contrario, desconecta la cuenta de Google del otro usuario.</translation>
 <translation id="1480489203462860648">Pruébalo, ya está instalado</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
-<translation id="4831257561365056138">Desinstalar selector de aplicaciones de Chromium</translation>
 <translation id="4222580632002216401">Accediste a Chromium. El administrador inhabilitó la sincronización.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar esta extensión en modo incógnito, desmarca la casilla de esta opción.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">¡Vaya! Se ha producido un bloqueo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8843170958047978824">Eliminar de Chromium</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK"/> para ayudar a mejorar Chromium.</translation>
-<translation id="1609700857210121286">Ve al menú de Chromium &gt; Configuración &gt; (Avanzada) Privacidad
-          e inhabilita &quot;Predicciones de acciones de red&quot;.
-          Si esto no resuelve el problema, vuelve a habilitar esta opción
-          para obtener un mejor desempeño.</translation>
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="3065280201209294872">La configuración de seguridad que utiliza el sitio está desactualizada, por lo que es posible que las versiones futuras de Chromium no puedan acceder a él de forma segura.</translation>
@@ -247,7 +239,6 @@ Si accedes de todos modos, se fusionará la información de Chromium, como los m
 <translation id="8704119203788522458">Este es tu Chromium</translation>
 <translation id="8269379391216269538">Ayudar a mejorar Chromium</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
-<translation id="374481098568514319">Esta computadora ya cuenta con una versión más reciente de los componentes de Chromium. Utiliza un archivo de instalación más reciente.</translation>
 <translation id="5862307444128926510">Bienvenido a Chromium</translation>
 <translation id="7318036098707714271">Tu archivo de preferencias está dañado o no es válido. Chromium no puede recuperar tu configuración.</translation>
 <translation id="918373042641772655">Si desconectas <ph name="USERNAME"/>, se borrará el historial, los marcadores, la configuración y otros datos de Chromium almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK"/>Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
 <translation id="8588878054171169263">Lagre bildet</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
+<translation id="8425213833346101688">Endre</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="6292937202013477045">Det kan hende at angripere prøver å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkort) fra <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="346339498574870680">Kopiér bildenettadressen</translation>
+<translation id="5063480226653192405">Bruk</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Fjern alle</translation>
 <translation id="6458785801851713928">Synkronisering er ikke tilgjengelig for domenet ditt.</translation>
 <translation id="2731700343119398978">Vent litt …</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
@@ -39,6 +43,8 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="3410346880900521918">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="BEGIN_LINK"/>forslagene<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
+<translation id="7375125077091615385">Type:</translation>
+<translation id="2498359688066513246">Hjelp og tilbakemeldinger</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
@@ -53,13 +59,12 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
-<translation id="5860033963881614850">Av</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Med enerett.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
-<translation id="5317780077021120954">Lagre</translation>
 <translation id="1151972924205500581">Passord er påkrevd</translation>
+<translation id="2870560284913253234">Nettsted</translation>
 <translation id="2718352093833049315">Bare på Wi-Fi</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="2414886740292270097">Mørk</translation>
@@ -79,28 +84,38 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
+<translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
+<translation id="1383876407941801731">Søk</translation>
 <translation id="5626370437647899551">Legg til en Google-konto</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="4543661749405994812">Kopiér e-postadressen</translation>
+<translation id="5646376287012673985">Sted</translation>
 <translation id="5659593005791499971">E-post</translation>
+<translation id="3123243061080120667">kB</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="1987317783729300807">Kontoer</translation>
 <translation id="6064211167623632605">Kjørbar bane</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
+<translation id="4278390842282768270">Tillatt</translation>
 <translation id="7817177303494746697">Blink-versjon</translation>
 <translation id="2532336938189706096">Nettvisning</translation>
 <translation id="6571070086367343653">Rediger kredittkort</translation>
 <translation id="7080851568148064063">Legg til på startsiden</translation>
+<translation id="6192792657125177640">Unntak</translation>
 <translation id="4619298195800598081">Åpne det opprinnelige bildet i en ny fane</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="4002066346123236978">Tittel</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="907015151729920253">Smartkort</translation>
+<translation id="2482878487686419369">Varsler</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Kortets utløpsmåned</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
@@ -114,6 +129,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Rediger lagret navn/passord eller unntak</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
@@ -130,8 +146,9 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="2359808026110333948">Fortsett</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Fyll ut skjemaer automatisk</translation>
-<translation id="8261506727792406068">Slett</translation>
+<translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME"/>. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
 <translation id="4510973599275542560">Ikke last inn på nytt</translation>
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
@@ -140,15 +157,19 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiér bildet</translation>
+<translation id="5804241973901381774">Tillatelser</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
 <translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="4165986682804962316">Nettstedsinnstillinger</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="8528538445849828817">Sidespråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="6512448926095770873">Forlat siden</translation>
+<translation id="3414952576877147120">Størrelse:</translation>
+<translation id="5626134646977739690">Navn:</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
@@ -163,7 +184,6 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 Hvis denne funksjonen er AV, kan du sannsynligvis ikke spille av premiumvideoer på denne enheten.</translation>
 <translation id="8928220460877261598">Du er nå logget på Chrome.</translation>
 <translation id="5032574515228824816">Ledetekst</translation>
-<translation id="6165508094623778733">Les mer</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
 
 For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>
@@ -177,10 +197,12 @@ Dra fra toppen for å avslutte.</translation>
 <translation id="411254640334432676">Nedlastingen mislyktes.</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
+<translation id="6409731863280057959">Forgrunnsvinduer</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">På</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
+<translation id="5677928146339483299">Blokkert</translation>
 <translation id="7561196759112975576">Alltid</translation>
 </translationbundle>

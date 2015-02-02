@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
 <translation id="8588878054171169263">Guardar imagem</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
+<translation id="8425213833346101688">Alterar</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="6292937202013477045">É possível que atacantes estejam a tentar roubar as suas informações (por exemplo, fotografias, palavras-passe, mensagens e cartões de crédito) de <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
 <translation id="346339498574870680">Copiar URL da imagem</translation>
+<translation id="5063480226653192405">Utilização</translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Limpar tudo</translation>
 <translation id="6458785801851713928">A sincronização não está disponível para o seu domínio.</translation>
 <translation id="2731700343119398978">Aguarde...</translation>
 <translation id="6846298663435243399">A carregar…</translation>
@@ -39,6 +43,8 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="3410346880900521918">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK"/>sugestões<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
+<translation id="7375125077091615385">Tipo:</translation>
+<translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -53,13 +59,12 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
-<translation id="5860033963881614850">Desligado</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos os direitos reservados.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
-<translation id="5317780077021120954">Guardar</translation>
 <translation id="1151972924205500581">É necessária a palavra-passe</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="2414886740292270097">Escuro</translation>
@@ -79,28 +84,38 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="4807098396393229769">Nome no cartão</translation>
 <translation id="656628257199996201">Traduzir sempre <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Escala do texto</translation>
+<translation id="6447842834002726250">Cookies</translation>
 <translation id="2748463065602559597">Está a ver uma página segura do Google Chrome.</translation>
+<translation id="1383876407941801731">Pesquisar</translation>
 <translation id="5626370437647899551">Adicionar uma Conta Google</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="4543661749405994812">Copiar endereço de email</translation>
+<translation id="5646376287012673985">Localização</translation>
 <translation id="5659593005791499971">Email</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="5684874026226664614">Ups! Não foi possível traduzir esta página.</translation>
+<translation id="1987317783729300807">Contas</translation>
 <translation id="6064211167623632605">Caminho do executável</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
+<translation id="4278390842282768270">Permitidos:</translation>
 <translation id="7817177303494746697">Versão do Blink</translation>
 <translation id="2532336938189706096">Visualização na Web</translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
 <translation id="7080851568148064063">Adicionar ao ecrã principal</translation>
+<translation id="6192792657125177640">Excepções</translation>
 <translation id="4619298195800598081">Abrir imagem orig. novo sep.</translation>
+<translation id="8798099450830957504">Predefinição</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="3254409185687681395">Marcar esta página</translation>
 <translation id="907015151729920253">Smart card</translation>
+<translation id="2482878487686419369">Notificações</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Mês de expiração do cartão</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
@@ -114,6 +129,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="4148957013307229264">A instalar...</translation>
 <translation id="3992315671621218278">Guardar link</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Editar nome/palavra-passe guardada ou exceção</translation>
 <translation id="2476578072172137802">Definições do site</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
@@ -130,8 +146,9 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="2359808026110333948">Continuar</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Preenchimento autom. formulários</translation>
-<translation id="8261506727792406068">Eliminar</translation>
+<translation id="5765780083710877561">Descrição:</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME"/>. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
 <translation id="4510973599275542560">Não atualizar</translation>
 <translation id="1206892813135768548">Copiar texto do link</translation>
@@ -140,15 +157,19 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="4271185234001491831">Nunca traduzir de <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Copiar imagem</translation>
+<translation id="5804241973901381774">Permissões</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="8941248009481596111">A sua ligação a este site é privada.</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
+<translation id="4165986682804962316">Definições de sites</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE"/> deste site da próxima vez?</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="8528538445849828817">Idioma da página: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="6512448926095770873">Sair desta página</translation>
+<translation id="3414952576877147120">Tamanho:</translation>
+<translation id="5626134646977739690">Nome:</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
@@ -163,7 +184,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 Se estiver DESATIVADO, não pode reproduzir vídeos premium neste dispositivo.</translation>
 <translation id="8928220460877261598">Tem agora sessão iniciada no Chrome.</translation>
 <translation id="5032574515228824816">Mensagem</translation>
-<translation id="6165508094623778733">Saiba mais</translation>
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
@@ -177,10 +197,12 @@ Arraste a partir da parte superior para sair.</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="7634554953375732414">A sua ligação a este site não é privada.</translation>
+<translation id="6409731863280057959">Pop-ups</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Ativada</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
+<translation id="5677928146339483299">Bloqueado</translation>
 <translation id="7561196759112975576">Sempre</translation>
 </translationbundle>

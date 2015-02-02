@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet ei toeta seda kaarditüüpi. Valige teistsugune kaart.</translation>
 <translation id="5172758083709347301">Masin</translation>
 <translation id="7180611975245234373">Värskenda</translation>
+<translation id="8208216423136871611">Ära salvesta</translation>
 <translation id="777702478322588152">Prefektuur</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP viga</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Soovitatud</translation>
 <translation id="4058922952496707368">Võti „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScripti märguanne</translation>
+<translation id="4081383687659939437">Salvesta teave</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>'i otsing</translation>
 <translation id="2498091847651709837">Uue kaardi skannimine</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
 <translation id="5509780412636533143">Hallatud järjehoidjad</translation>
 <translation id="8866481888320382733">Reegli seadete sõelumisel ilmnes viga</translation>
+<translation id="4120075327926916474">Kas soovite, et Chrome salvestaks krediitkaarditeabe veebivormide täitmiseks?</translation>
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="1693754753824026215">Teade veebilehelt aadressil <ph name="SITE"/>:</translation>
 <translation id="4269787794583293679">(Kasutajanimi puudub)</translation>

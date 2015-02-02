@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">ನೀವು ನಕಲಿಸಿದ ಮತ್ತು ಅಂಟಿಸಿದ ಡೇಟಾವನ್ನು ಓದಿರಿ</translation>
 <translation id="2350172092385603347">ಲೋಕಲೈಜೇಷನ್ ಬಳಸಲಾಗಿದೆ, ಆದರೆ ಡೀಫಾಲ್ಟ್ _ಲೋಕಲ್ ಅನ್ನು ಮ್ಯಾನಿಫಾಸ್ಟ್‌ನಲ್ಲಿ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="3759933321830434300">ವೆಬ್ ಪುಟಗಳ ಭಾಗಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
+<translation id="6143635259298204954">ವಿಸ್ತರಣೆಯನ್ನು ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ಸುರಕ್ಷಿತವಾಗಿ ವಿಸ್ತರಣೆಯನ್ನು ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಗೆ ಪಾಥ್ ಇರಬೇಕು ಅದು ಡ್ರೈವ್ ಅಕ್ಷರಗಳೊಂದಿಗೆ ಮತ್ತು ಜಂಕ್ಷನ್, ಮೌಂಟ್ ಪಾಯಿಂಟ್, ಅಥವಾ ಸಿಮ್‌ಲಿಂಕ್ ಅನ್ನು ಹೊಂದಿರುವುದಿಲ್ಲ. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ಗಾಗಿ ಯಾವುದೇ ಪಾಥ್ ಅಸ್ತಿತ್ವದಲ್ಲಿಲ್ಲ.</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' ಎಕ್ಸ್‌ಟೆನ್ಷನ್ ಐಕಾನ್  ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ &quot;<ph name="HEADER_NAME"/>&quot; ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="7495493006406536234">ಉತ್ಪನ್ನ <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
+<translation id="6731255991101203740">ಅನ್ ಜಿಪ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಡೈರೆಕ್ಟರಿ ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="388442998277590542">ಆಯ್ಕೆಗಳ ಪುಟ '<ph name="OPTIONS_PAGE"/>' ವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="5127881134400491887">ನೆಟ್‌ವರ್ಕ್‌ ಸಂಪರ್ಕಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="6344170822609224263">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳ ಪಟ್ಟಿಯನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> ರಿಂದ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> ರಿಂದ ಅಜ್ಞಾತ ಸಾಧನಗಳು</translation>
 <translation id="4968399700653439437">ಡೊಮೇನ್‌ಗಳಲ್ಲಿ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">ವೆಬ್‌ವೀಕ್ಷಣೆ: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">ಕಾನೂನು ಬಾಹಿರ ಪಾಥ್ ('..' ರೊಂದಿಗೆ ಸಮಗ್ರ ಅಥವಾ ಸಂಬಂಧಿತ... ): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">ಎಲ್ಲಾ <ph name="WEBSITE_1"/> ಸೈಟ್‌ಗಳು</translation>
 <translation id="8662911384982557515">ನಿಮ್ಮ ಮುಖ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಮತ್ತೊಂದು ವಿಸ್ತರಣೆಯೊಂದಿಗೆ ಸಂಘರ್ಷಗೊಂಡಿದೆ.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME"/>) ವಿಭಿನ್ನ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಗೆ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="5627523580512561598">ವಿಸ್ತರಣೆ<ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ ಮತ್ತು ಇತರೆ ಮಾಧ್ಯಮ ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="3369521687965833290">ವಿಸ್ತರಣೆಯನ್ನು ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ವಿಸ್ತರಣೆಯನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಯಲ್ಲಿ ಪಾಥ್ ಇದ್ದು ಅದು ಡ್ರೈವ್ ಅಕ್ಷರದೊಂದಿಗೆ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ ಮತ್ತು ಜಂಕ್ಷನ್, ಮೌಂಟ್ ಪಾಯಿಂಟ್ ಅಥವಾ ಸಿಮ್‌ಲಿಂಕ್ ಅನ್ನು ಹೊಂದಿರುವುದಿಲ್ಲ. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಯಾವುದೇ ಪಾಥ್ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವುದಿಲ್ಲ.</translation>
+<translation id="4811956658694082538">ಉಪಯುಕ್ತತೆಯ ಪ್ರಕ್ರಿಯೆಯು ಹಾಳಾಗಿರುವ ಕಾರಣ ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. Chrome ಮರುಪ್ರಾರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="641087317769093025">ವಿಸ್ತರಣೆಯನ್ನು ಅನ್ ಜಿಪ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="4761104368405085019">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="7217838517480956708">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME"/> ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ತೆಗೆದುಹಾಕಲು ಅಥವಾ ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> ದಿಂದ <ph name="VENDOR_NAME"/> (ಕ್ರಮಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">ಇವುಗಳಲ್ಲಿನ ಯಾವುದಾದರೂ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದು ಅಥವಾ ಹೆಚ್ಚಿನ ಸಾಧನಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ಮತ್ತು <ph name="WEBSITE_2"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
+<translation id="2159915644201199628">ಚಿತ್ರವನ್ನು ಡಿಕೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">ಮಾರಾಟಗಾರರು <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಟ್ರ್ಯಾಫಿಕ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="5972529113578162692">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME"/> ಸ್ಥಾಪಿಸಲು ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ಅಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
+<translation id="1135328998467923690">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ಮತ್ತು <ph name="WEBSITE_3"/> ನಲ್ಲಿ ಓದಿ</translation>
 <translation id="2087653731648927289">USB ಮೂಲಕ ಯಾವುದೇ <ph name="PRODUCT_NAME_AND_VENDOR"/> ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' ಹಿನ್ನಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="2988488679308982380">ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ. ವಿವರಗಳು: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಲವಾರು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಓದಿ</translation>
 </translationbundle>

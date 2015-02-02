@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Skaityti kopijuojamus ir įklijuojamus duomenis</translation>
 <translation id="2350172092385603347">Naudotas lokalizavimas, bet deklaracijoje nenurodyta numatytoji lokalė.</translation>
 <translation id="3759933321830434300">Blokuoti tinklalapių dalis</translation>
+<translation id="6143635259298204954">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuriame nebūtų virtualiojo katalogo. Nėra tokio tipo jūsų profilio kelio.</translation>
 <translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON"/>“ plėtinio piktogramos.</translation>
 <translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
 <translation id="7495493006406536234"><ph name="PRODUCT_ID"/> produktas</translation>
 <translation id="4776856853352853275">Pasirinkite USB įrenginius</translation>
+<translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH"/>“</translation>
 <translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE"/>“.</translation>
 <translation id="388442998277590542">Nepavyko įkelti parinkčių puslapio „<ph name="OPTIONS_PAGE"/>“.</translation>
+<translation id="5127881134400491887">Valdyti tinklo ryšius</translation>
 <translation id="6344170822609224263">Pasiekti tinklo ryšių sąrašą</translation>
 <translation id="7039326228527141150">Pasiekti „<ph name="VENDOR_NAME"/>“ USB įrenginius</translation>
 <translation id="2616366145935564096">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">nežinomi „<ph name="VENDOR_NAME"/>“ įrenginiai</translation>
 <translation id="4968399700653439437">Keistis duomenimis su bet kuriuo kompiuteriu šiuose domenuose: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Žiniatinklio rodinys: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Netinkamas kelias (absoliutus arba susijęs su „..“): „<ph name="IMAGE_PATH"/>“</translation>
 <translation id="8284279544186306258">visos <ph name="WEBSITE_1"/> svetainės</translation>
 <translation id="8662911384982557515">Pakeisti pagrindinį puslapį į: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Šiam plėtiniui nepavyko pakeisti tinklo užklausos, nes pakeitimas nesuderinamas su kitu plėtiniu.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) pateikė kitokį įgaliojimą.</translation>
 <translation id="5627523580512561598">„<ph name="EXTENSION_NAME"/>“ plėtinys</translation>
 <translation id="7893008570150657497">Pasiekti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
+<translation id="3369521687965833290">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuris turi prasidėti disko vardu ir kuriame negali būti sujungimo, įrengimo taško ar virtualiojo katalogo.</translation>
+<translation id="4811956658694082538">Nepavyko įdiegti paketo, nes užstrigo priemonės procesas. Bandykite iš naujo paleisti „Chrome“ ir bandykite dar kartą.</translation>
+<translation id="641087317769093025">Nepavyko išarchyvuoti plėtinio</translation>
 <translation id="4761104368405085019">Naudoti mikrofoną</translation>
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME"/>“. Jo negalima pašalinti ar pakeisti.</translation>
 <translation id="6580950983454333167">„<ph name="PRODUCT_NAME"/>“, pardavėjas „<ph name="VENDOR_NAME"/>“ (serijos numeris <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Pasiekti bet kurį iš šių USB įrenginių</translation>
 <translation id="2677911863018634147">Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną ar daugiau iš jūsų įrenginių.</translation>
 <translation id="6698810901424468597">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Nepavyko iššifruoti vaizdo: „<ph name="IMAGE_NAME"/>“</translation>
 <translation id="5544884907028850012"><ph name="VENDOR_ID"/> pardavėjas</translation>
 <translation id="2048182445208425546">Pasiekti tinklo srautą</translation>
 <translation id="5972529113578162692">Šio įrenginio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ plėtinys būtų įdiegtas. Jo negalima pašalinti.</translation>
+<translation id="1135328998467923690">Paketas netinkamas: „<ph name="ERROR_CODE"/>“.</translation>
 <translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Pasiekti bet kokį „<ph name="PRODUCT_NAME_AND_VENDOR"/>“ įrenginį per USB</translation>
 <translation id="1803557475693955505">Nepavyko įkelti fono puslapio „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="2988488679308982380">Nepavyko įdiegti paketo: „<ph name="ERROR_CODE"/>“</translation>
 <translation id="5751530153776468604">Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną iš jūsų įrenginių.</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME"/>“</translation>
+<translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE"/>“.</translation>
 <translation id="344630545793878684">Skaityti duomenys daugybėje svetainių</translation>
 </translationbundle>

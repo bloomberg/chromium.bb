@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Ανάγνωση δεδομένων που αντιγράφετε και επικολλάτε</translation>
 <translation id="2350172092385603347">Χρησιμοποιήθηκε τοπική προσαρμογή, όμως δεν καθορίστηκε η τιμή &quot;default_locale&quot; στη δήλωση.</translation>
 <translation id="3759933321830434300">Αποκλεισμός τμημάτων ιστοσελίδων</translation>
+<translation id="6143635259298204954">Δεν είναι δυνατή η αποσυσκευασία της επέκτασης.  Για την ασφαλή αποσυσκευασία μιας επέκτασης πρέπει να υπάρχει στον κατάλογο προφίλ σας μια διαδρομή που δεν περιέχει κάποιο symlink.  Στο προφίλ σας δεν υπάρχει κάποια τέτοια διαδρομή.</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Προϊόν <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Επιλέξτε συσκευές USB</translation>
+<translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">Διαχείριση συνδέσεων δικτύου</translation>
 <translation id="6344170822609224263">Λίστα πρόσβασης για συνδέσεις δικτύου</translation>
 <translation id="7039326228527141150">Πρόσβαση σε συσκευές USB από τον προμηθευτή <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">άγνωστες συσκευές από τον προμηθευτή <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στους τομείς: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Παράνομη διαδρομή (απόλυτη ή σχετική με &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">όλους τους ιστότοπους <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Αλλαγή της αρχικής σελίδας σε: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Η επέκταση αυτή απέτυχε να τροποποιήσει ένα αίτημα δικτύου, επειδή η τροποποίηση ερχόταν σε σύγκρουση με μια άλλη προέκταση.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>
 <translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Πρόσβασης στις φωτογραφίες, στη μουσική και στα άλλα μέσα από τον υπολογιστή σας</translation>
+<translation id="3369521687965833290">Δεν είναι δυνατή η αποσυσκευασία επέκτασης.  Για την ασφαλή αποσυσκευασία μιας επέκτασης, πρέπει να υπάρχει στον κατάλογο προφίλ σας μια διαδρομή που να ξεκινάει με ένα γράμμα μονάδας δίσκου και να μην περιέχει κάποιο σύνδεσμο, σημείο μονταρίσματος ή symlink (συντόμευση).  Δεν υπάρχει τέτοια διαδρομή για το προφίλ σας.</translation>
+<translation id="4811956658694082538">Δεν ήταν δυνατή η εγκατάσταση του πακέτου, επειδή μια διεργασία βοηθητικού προγράμματος παρουσίασε σφάλμα. Επανεκκινήστε το Chrome και προσπαθήστε ξανά.</translation>
+<translation id="641087317769093025">Δεν ήταν δυνατή η αποσυμπίεση της επέκτασης</translation>
 <translation id="4761104368405085019">Χρήση του μικροφώνου σας</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Πρόσβαση σε οποιαδήποτε από αυτές τις συσκευές USB</translation>
 <translation id="2677911863018634147">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία ή περισσότερες συσκευές σας.</translation>
 <translation id="6698810901424468597">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/> και το <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Δεν ήταν δυνατή η αποκωδικοποίηση της εικόνας: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Προμηθευτής <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Πρόσβαση στην επισκεψιμότητά σας δικτύου</translation>
 <translation id="5972529113578162692">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Η εγκατάσταση δεν μπορεί να καταργηθεί.</translation>
+<translation id="1135328998467923690">Μη έγκυρο πακέτο: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Ανάγνωση των δεδομένων σας στο <ph name="WEBSITE_1"/>, στο <ph name="WEBSITE_2"/> και στο <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Πρόσβαση σε οποιοδήποτε <ph name="PRODUCT_NAME_AND_VENDOR"/> μέσω USB</translation>
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία από τις συσκευές σας.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Ανάγνωση των δεδομένων σας σε ορισμένους ιστότοπους</translation>
 </translationbundle>

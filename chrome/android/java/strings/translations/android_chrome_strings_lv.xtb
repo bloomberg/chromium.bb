@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="8588878054171169263">Saglabāt attēlu</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
+<translation id="8425213833346101688">Mainīt</translation>
 <translation id="4996978546172906250">Kopīgošanas veids:</translation>
 <translation id="6292937202013477045">Uzbrucēji var mēģināt nozagt jūsu informāciju (piemēram, fotoattēlus, paroles, ziņojumus vai kredītkaršu datus) no domēna <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Meklētājprogramma</translation>
 <translation id="346339498574870680">Kopēt attēla URL</translation>
+<translation id="5063480226653192405">Lietojums</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="2154710561487035718">Kopēt URL</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="6458785801851713928">Jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2731700343119398978">Lūdzu, uzgaidiet...</translation>
 <translation id="6846298663435243399">Notiek ielāde…</translation>
@@ -39,6 +43,8 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="1966710179511230534">Lūdzu, atjauniniet pierakstīšanās informāciju.</translation>
 <translation id="3410346880900521918">Ja šis ziņojums tiek bieži rādīts, izmēģiniet šos <ph name="BEGIN_LINK"/>ieteikumus<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
+<translation id="7375125077091615385">Veids:</translation>
+<translation id="2498359688066513246">Palīdzība un atsauksmes</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
@@ -53,13 +59,12 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>
-<translation id="5860033963881614850">Izslēgts</translation>
 <translation id="2960796085439532066">Autortiesības <ph name="YEAR"/> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
 <translation id="552553974213252141">Vai iegūtais teksts bija pareizs?</translation>
-<translation id="5317780077021120954">Saglabāt</translation>
 <translation id="1151972924205500581">Nepieciešama parole</translation>
+<translation id="2870560284913253234">Vietne</translation>
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="2414886740292270097">Tumšs</translation>
@@ -79,28 +84,38 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="4807098396393229769">Vārds uz kartes</translation>
 <translation id="656628257199996201">Vienmēr tulkot no šādas valodas: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Teksta mērogošana</translation>
+<translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="2748463065602559597">Jūs skatāt drošu Google Chrome lapu.</translation>
+<translation id="1383876407941801731">Meklēt</translation>
 <translation id="5626370437647899551">Google konta pievienošana</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="4543661749405994812">Kopēt e-pasta adresi</translation>
+<translation id="5646376287012673985">Atrašanās vieta</translation>
 <translation id="5659593005791499971">E-pasts</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Chrome pakalpojumu sniegšanas noteikumi</translation>
 <translation id="5668404140385795438">Ignorēt vietnes pieprasījumu, lai novērstu tuvināšanu</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="5684874026226664614">Hmm... Šo lapu nevarēja iztulkot.</translation>
+<translation id="1987317783729300807">Konti</translation>
 <translation id="6064211167623632605">Izpildāms ceļš</translation>
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="2903493209154104877">Adreses</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
+<translation id="4278390842282768270">Atļauts</translation>
 <translation id="7817177303494746697">Blink versija</translation>
 <translation id="2532336938189706096">Tīmekļa skatījums</translation>
 <translation id="6571070086367343653">Rediģēt kredītkarti</translation>
 <translation id="7080851568148064063">Pievienot sākuma ekrānam</translation>
+<translation id="6192792657125177640">Izņēmumi</translation>
 <translation id="4619298195800598081">Atvērt oriģinālu jaunā cilnē</translation>
+<translation id="8798099450830957504">Noklusējums</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
+<translation id="885701979325669005">Krātuve</translation>
 <translation id="3254409185687681395">Grāmatot šo lapu</translation>
 <translation id="907015151729920253">Viedkarte</translation>
+<translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Kartes derīguma termiņa mēnesis</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
@@ -114,6 +129,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="4148957013307229264">Notiek instalēšana...</translation>
 <translation id="3992315671621218278">Saglabāt saiti</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Saglabātā vārda/paroles vai izņēmuma rediģēšana</translation>
 <translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
@@ -130,8 +146,9 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="654446541061731451">Atlasiet cilni, ko kopīgot.</translation>
 <translation id="4269820728363426813">Kopēt saites adresi</translation>
 <translation id="2359808026110333948">Turpināt</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Veidlapu automātiskā aizpilde</translation>
-<translation id="8261506727792406068">Dzēst</translation>
+<translation id="5765780083710877561">Apraksts:</translation>
 <translation id="1080790410959514870">Jūs izrakstāties no konta, kurš tiek pārvaldīts domēnā <ph name="DOMAIN_NAME"/>. Tādējādi tiks dzēsti šajā ierīcē glabātie Chrome dati, taču tie joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="4510973599275542560">Neielādēt atkārtoti</translation>
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
@@ -140,15 +157,19 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
 <translation id="4271185234001491831">Nekad netulkot šādā valodā: <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopēt attēlu</translation>
+<translation id="5804241973901381774">Atļaujas</translation>
 <translation id="8209050860603202033">Atvērt attēlu</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="8941248009481596111">Jūsu savienojums ar šo vietni ir privāts.</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
+<translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="5164482624172255778">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Juridiskā informācija</translation>
 <translation id="8528538445849828817">Lapas valoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="6512448926095770873">Pamest šo lapu</translation>
+<translation id="3414952576877147120">Lielums:</translation>
+<translation id="5626134646977739690">Nosaukums:</translation>
 <translation id="5565871407246142825">Kredītkartes</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="2612676031748830579">Kartes numurs</translation>
@@ -163,7 +184,6 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 Ja iestatījums ir IZSLĒGTS, iespējams, šajā ierīcē nevarēsiet atskaņot maksas videoklipus.</translation>
 <translation id="8928220460877261598">Tagad esat pierakstījies pakalpojumā Chrome.</translation>
 <translation id="5032574515228824816">Uzvedne</translation>
-<translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="862875433388403934">Citās lietojumprogrammās lejupielādētu saturu (filmas, mūziku), iespējams, nevarēs atskaņot, kamēr šajās lietojumprogrammās netiks iegūtas licences, pamatojoties uz jauniem ierīces akreditācijas datiem.
 
 Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojiet lejupielādēto saturu.</translation>
@@ -177,10 +197,12 @@ Velciet no augšas, lai izietu.</translation>
 <translation id="411254640334432676">Lejupielāde neizdevās.</translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="7634554953375732414">Jūsu savienojums ar šo vietni nav privāts.</translation>
+<translation id="6409731863280057959">Uznirstošie logi</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="1742134235943978220">Tulkots šādā valodā: <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Ieslēgt</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
+<translation id="5677928146339483299">Bloķēts</translation>
 <translation id="7561196759112975576">Vienmēr</translation>
 </translationbundle>

@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Piekļūt internetam</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR"/> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="6373523479360886564">Vai tiešām vēlaties atinstalēt pārlūku Chromium?</translation>
-<translation id="5065199687811594072">Vai vēlaties, lai Chromium saglabātu šo kredītkartes informāciju tīmekļa veidlapu aizpildīšanai?</translation>
 <translation id="6510925080656968729">Atinstalēt Chromium</translation>
 <translation id="2615699638672665509">Šis dators drīz vairs nesaņems Chromium atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="5532301346661895910">Chromium saglabās paroli jūsu |Google saglabāto paroļu| sarakstā un atcerēsies nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
-<translation id="1550579416447684632">Palaist Chromium lietotnes</translation>
 <translation id="2732467638532545152">Jūsu datorā tiek izmantota iepriekšējā Microsoft Windows versija, kurā nevar apstrādāt šīs vietnes drošības sertifikātu. Šīs problēmas dēļ Chromium nevar noteikt, vai sertifikāts tika sūtīts no vietnes <ph name="SITE"/> vai arī to nosūtījusi kāda persona, kas izmanto jūsu tīklu un uzdodas par vietni <ph name="SITE"/>. Lūdzu, atjauniniet datora operētājsistēmu uz jaunāku Windows versiju.</translation>
-<translation id="4267347018362241535">Chromium lietotņu palaidējs ir savrupa platforma, kas paredzēta Chromium lietotnēm.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="6613594504749178791">Izmaiņas stāsies spēkā, kad restartēsiet Chromium.</translation>
 <translation id="9089354809943900324">Chromium versija ir novecojusi.</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Ja izmantojat šo datoru kopā ar lietotāju <ph name="PROFILE_NAME"/>, pievienojiet savu kontu pārlūkā Chromium, lai veiktu pārlūkošanu atsevišķi. Pretējā gadījumā atsaistiet attiecīgā lietotāja Google kontu.</translation>
 <translation id="1480489203462860648">Izmēģināt, tas jau ir instalēts</translation>
 <translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
-<translation id="4831257561365056138">Atinstalēt Chromium lietotņu palaidēju</translation>
 <translation id="4222580632002216401">Jūs esat pierakstījies operētājsistēmā Chromium. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Brīdinājums!<ph name="END_BOLD"/> Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi šai opcijai.</translation>
 <translation id="985602178874221306">Chromium autori</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Eh! Chromium ir avarējis. Vai restartēt to tūlīt?</translation>
 <translation id="8843170958047978824">Noņemt no pārlūka Chromium</translation>
 <translation id="3068515742935458733">Palīdzēt uzlabot Chromium, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK"/></translation>
-<translation id="1609700857210121286">Atveriet Chromium izvēlni &gt; Iestatījumi &gt; (Papildu) Konfidencialitāte
-          un atspējojiet opciju “Tīkla darbības prognozes”.
-          Ja problēmu neizdodas novērst, ieteicams atkal iespējot šo opciju,
-          lai uzlabotu veiktspēju.</translation>
 <translation id="734373864078049451">Šeit atrodas jūsu tīmekļa saturs, grāmatzīmes un cits Chromium saturs.</translation>
 <translation id="3197823471738295152">Ierīce ir atjaunināta.</translation>
 <translation id="3065280201209294872">Šajā vietnē tiek izmantoti novecojuši drošības iestatījumi, kas var liegt turpmākajām Chromium versijām tai droši piekļūt.</translation>
@@ -252,7 +244,6 @@ Ja pierakstīsieties tik un tā, Chromium informācija, piemēram, grāmatzīmes
 <translation id="8704119203788522458">Šis ir jūsu Chromium</translation>
 <translation id="8269379391216269538">Palīdziet uzlabot Chromium</translation>
 <translation id="4224199872375172890">Chromium ir atjaunināts.</translation>
-<translation id="374481098568514319">Šajā datorā jau ir instalēta jaunāka Chromium komponentu versija. Lūdzu, izmantojiet jaunāku instalēšanas programmu.</translation>
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
 <translation id="7318036098707714271">Jūsu preferenču fails ir bojāts vai nederīgs. Chromium nespēj atkopt jūsu iestatījumus.</translation>
 <translation id="918373042641772655">Atvienojot lietotāju <ph name="USERNAME"/>, tiks notīrīta vēsture, grāmatzīmes, iestatījumi un citi Chromium dati, kas ir saglabāti šajā ierīcē. Jūsu Google kontā saglabātie dati netiks notīrīti, un tos var pārvaldīt <ph name="GOOGLE_DASHBOARD_LINK"/>Google informācijas panelī<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Ce type de carte n'est pas compatible avec Google Wallet. Veuillez sélectionner une autre carte.</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
 <translation id="7180611975245234373">Actualiser</translation>
+<translation id="8208216423136871611">Ne pas enregistrer</translation>
 <translation id="777702478322588152">Préfecture</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Recommandé</translation>
 <translation id="4058922952496707368">Clé &quot;<ph name="SUBKEY"/>&quot; : <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerte JavaScript</translation>
+<translation id="4081383687659939437">Enregistrer les infos</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Lire une nouvelle carte</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
 <translation id="5509780412636533143">Favoris gérés</translation>
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
+<translation id="4120075327926916474">Voulez-vous que Google Chrome enregistre ces informations de carte de paiement pour le remplissage de formulaires Web ?</translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="1693754753824026215">La page à l'adresse <ph name="SITE"/> indique :</translation>
 <translation id="4269787794583293679">(aucun nom d'utilisateur)</translation>

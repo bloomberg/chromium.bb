@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
-<translation id="5065199687811594072">このクレジット カード情報を Chromium に保存してウェブ フォームの自動入力に使用しますか？</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="2615699638672665509">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Chromium アップデートの受信を停止します。</translation>
 <translation id="5532301346661895910">Chromium では、このパスワードは |Google で保存したパスワード|の 1 つとして保存されます。次回から再入力は必要ありません。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
-<translation id="1550579416447684632">Chromium アプリを起動</translation>
 <translation id="2732467638532545152">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Chromium では、証明書が <ph name="SITE"/> から発行されたものか、それとも <ph name="SITE"/> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
-<translation id="4267347018362241535">Chromium アプリ ランチャーは、Chromium アプリ用のスタンドアロン プラットフォームです。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
 <translation id="9089354809943900324">Chromium は古いバージョンです</translation>
@@ -61,7 +58,6 @@
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME"/> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
 <translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
 <translation id="3032787606318309379">Chromium に追加...</translation>
-<translation id="4831257561365056138">Chromium アプリ ランチャーをアンインストール</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告:<ph name="END_BOLD"/> 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
@@ -75,10 +71,6 @@
 <translation id="3190315855212034486">エラー: Chromium で問題が発生しました。今すぐ再起動しますか？</translation>
 <translation id="8843170958047978824">Chromium から削除</translation>
 <translation id="3068515742935458733">障害レポートと<ph name="UMA_LINK"/>を Google に自動送信して Chromium の機能向上に役立てる</translation>
-<translation id="1609700857210121286">[Chromium] メニュー &gt; [設定] &gt; [（詳細）プライバシー] の順に移動して、
-          [ネットワークアクション予測] をオフにします。
-          上記を行っても問題が解決しない場合は、パフォーマンス向上のため
-          このオプションを再びオンにすることをおすすめします。</translation>
 <translation id="734373864078049451">ウェブ、ブックマーク、その他の Chromium データを好みに設定できます。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="3065280201209294872">このサイトでは古いセキュリティ設定が使用されており、Chromium の今後のバージョンではこのサイトに安全にアクセスできない可能性があります。</translation>
@@ -251,7 +243,6 @@
 <translation id="8704119203788522458">自分好みに設定</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>
 <translation id="4224199872375172890">Chromium は最新版です。</translation>
-<translation id="374481098568514319">新しいバージョンの Chromium コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="7318036098707714271">ユーザー設定ファイルが壊れているか無効です。
 

@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
-<translation id="5065199687811594072">Doriți ca Chromium să salveze informațiile privind cardul de credit pentru completarea formularelor web?</translation>
 <translation id="6510925080656968729">Dezinstalați Chromium</translation>
 <translation id="2615699638672665509">În curând, acest computer nu va mai primi actualizări Chromium, deoarece hardware-ul său nu mai este acceptat.</translation>
 <translation id="5532301346661895910">Chromium o va stoca în |parolele Google salvate| și o va reține data următoare când ai nevoie.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
-<translation id="1550579416447684632">Lansați aplicații Chromium</translation>
 <translation id="2732467638532545152">Computerul rulează o versiune veche de Microsoft Windows care nu poate procesa certificatul de securitate al acestui site. Din cauza acestei probleme, Chromium nu poate stabili dacă certificatul a provenit de la <ph name="SITE"/> sau de la o entitate din rețeaua ta care pretinde că este <ph name="SITE"/>. Actualizează computerul cu o versiune mai recentă de Windows.</translation>
-<translation id="4267347018362241535">Lansatorul de aplicații Chromium este o platformă autonomă pentru aplicațiile Chromium.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="6613594504749178791">Modificările dvs. vor intra în vigoare următoarea dată când reporniți Chromium.</translation>
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Dacă folosești acest computer în comun cu <ph name="PROFILE_NAME"/>, adaugă-te în Chromium pentru a naviga separat. În caz contrar, deconectează Contul Google al celuilalt utilizator.</translation>
 <translation id="1480489203462860648">Încercați-l, este deja instalat</translation>
 <translation id="3032787606318309379">Se adaugă la Chromium...</translation>
-<translation id="4831257561365056138">Dezinstalați Lansatorul de aplicații Chromium</translation>
 <translation id="4222580632002216401">Acum sunteți conectat(ă) la Chromium! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Avertisment:<ph name="END_BOLD"/> Chromium nu poate împiedica extensiile să înregistreze istoricul navigării. Pentru a dezactiva această extensie în modul incognito, debifați această opțiune.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Hopa! Chromium s-a închis cu eroare. Reporniți acum?</translation>
 <translation id="8843170958047978824">Elimină din Chromium</translation>
 <translation id="3068515742935458733">Contribuie la îmbunătățirea proiectului Chromium trimițând rapoarte de eroare și <ph name="UMA_LINK"/> la Google</translation>
-<translation id="1609700857210121286">Accesează meniul Chromium &gt; Setări &gt; (Avansate) Confidențialitate
-          și dezactivează „Predicțiile privind acțiunile în rețea”.
-          Dacă această acțiune nu rezolvă problema. îți recomandăm să reactivezi această opțiune
-          pentru performanță îmbunătățită.</translation>
 <translation id="734373864078049451">Experiența web personalizată, marcajele și celelalte date Chromium chiar aici.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
 <translation id="3065280201209294872">Acest site utilizează setări de securitate expirate care pot împiedica viitoarele versiuni de Chromium să poată să îl acceseze în siguranță.</translation>
@@ -252,7 +244,6 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 <translation id="8704119203788522458">Acesta este browserul dvs. Chromium</translation>
 <translation id="8269379391216269538">Să îmbunătățim Chromium</translation>
 <translation id="4224199872375172890">Chromium este actualizat.</translation>
-<translation id="374481098568514319">Acest computer are deja o versiune mai recentă a componentelor Chromium. Vă rugăm să folosiți un program de instalare mai recent.</translation>
 <translation id="5862307444128926510">Bun venit la Chromium</translation>
 <translation id="7318036098707714271">Fișierul de preferințe este fie deteriorat, fie nevalid.
 

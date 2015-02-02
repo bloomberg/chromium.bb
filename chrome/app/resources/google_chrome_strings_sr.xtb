@@ -31,7 +31,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="110877069173485804">Ово је ваш Chrome</translation>
 <translation id="8406086379114794905">Помозите нам да побољшамо Chrome</translation>
-<translation id="2896252579017640304">Покрените Chrome апликације</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="2721687379934343312">На Mac-у, лозинке сe чувају у Keychain и други корисници Chrome-а који деле овај ОС X налог могу да им приступе или да их синхронизују.</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
@@ -44,7 +43,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="4309555186815777032">(захтева <ph name="BEGIN_BUTTON"/>поновно покретање<ph name="END_BUTTON"/> Chrome-а)</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">Када уклоните налог из Chrome-а, можда ћете морати поново да учитате отворене картице да би то ступило на снагу.</translation>
-<translation id="5775197990071433230">Овај рачунар већ има новију верзију Google Chrome компоненти. Користите новији инсталациони програм.</translation>
 <translation id="4987308747895123092">Затворите све Google Chrome прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
@@ -86,7 +84,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="5037239767309817516">Затворите све прозоре Google Chrome прегледача и поново га покрените да би ова промена ступила на снагу.</translation>
-<translation id="345168553362876363">Покретач Google Chrome апликација је засебна платформа за Chrome апликације.</translation>
 <translation id="225614027745146050">Добро дошли</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
@@ -175,7 +172,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8568392309447938879">Треба да будете пријављени у Chrome да бисте користили апликације. То омогућава Chrome-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на више уређаја.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
-<translation id="5788838254726722945">Деинсталирај Покретач Google Chrome апликација</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="2665296953892887393">Помозите нам да побољшамо Google Chrome тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Кликните на име да бисте отворили Chrome и почните да прегледате.</translation>
@@ -198,10 +194,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
 <translation id="130631256467250065">Промене ће ступити на снагу када следећи пут поново покренете уређај.</translation>
-<translation id="1546593779121993896">Отворите Chrome мени &gt; Подешавања &gt; (Напредне опције) Приватност
-          и онемогућите „Предвиђање поступака мреже“.
-          Ако вам то не реши проблем, препоручујемо да поново омогућите
-           ову опцију ради бољих перформанси.</translation>
 <translation id="163860049029591106">Почетни кораци за Chrome ОС</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
@@ -249,7 +241,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5334545119300433702">За овај модул је познато да се сукобљава са Google Chrome прегледачем.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome је ажуриран.</translation>
-<translation id="4120075327926916474">Желите ли да Chrome сачува ове информације о кредитној картици за попуњавање веб-образаца?</translation>
 <translation id="3037838751736561277">Google Chrome је у позадинском режиму.</translation>
 <translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="4692614041509923516">Рачунар користи стару верзију Microsoft Windows-а која не може да обради безбедносни сертификат овог веб-сајта. Због тог проблема, Google Chrome не може да одреди да ли сертификат потиче са <ph name="SITE"/> или од неког на мрежи ко се претвара да је <ph name="SITE"/>. Ажурирајте рачунар на новију верзију Windows-а.</translation>

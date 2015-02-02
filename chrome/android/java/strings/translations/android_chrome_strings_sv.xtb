@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="8588878054171169263">Spara bild</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
+<translation id="8425213833346101688">Ändra</translation>
 <translation id="4996978546172906250">Dela via</translation>
 <translation id="6292937202013477045">Hackare kan försöka stjäla din information (exempelvis bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="346339498574870680">Kopiera bildwebbadress</translation>
+<translation id="5063480226653192405">Användning</translation>
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Stäng flik</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Ta bort alla</translation>
 <translation id="6458785801851713928">Synkronisering är inte tillgängligt för din domän.</translation>
 <translation id="2731700343119398978">Vänta ...</translation>
 <translation id="6846298663435243399">Läser in…</translation>
@@ -39,6 +43,8 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="3410346880900521918">Om du ser detta ofta provar du <ph name="BEGIN_LINK"/>de här förslagen<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
+<translation id="7375125077091615385">Typ:</translation>
+<translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
@@ -53,13 +59,12 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
-<translation id="5860033963881614850">Av</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR"/> Google Inc. Med ensamrätt.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
-<translation id="5317780077021120954">Spara</translation>
 <translation id="1151972924205500581">Lösenord krävs</translation>
+<translation id="2870560284913253234">Webbplats</translation>
 <translation id="2718352093833049315">Endast på Wi-Fi</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="2414886740292270097">Mörk</translation>
@@ -79,28 +84,38 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="656628257199996201">Översätt alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Textskalning</translation>
+<translation id="6447842834002726250">Cookies</translation>
 <translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
+<translation id="1383876407941801731">Sök</translation>
 <translation id="5626370437647899551">Lägg till ett Google-konto</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="4543661749405994812">Kopiera e-postadress</translation>
+<translation id="5646376287012673985">Plats</translation>
 <translation id="5659593005791499971">E-post</translation>
+<translation id="3123243061080120667">kB</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
+<translation id="1987317783729300807">Konton</translation>
 <translation id="6064211167623632605">Sökväg till körbar fil</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
+<translation id="4278390842282768270">Tillåtet</translation>
 <translation id="7817177303494746697">Version av Blink</translation>
 <translation id="2532336938189706096">Webbvy</translation>
 <translation id="6571070086367343653">Redigera kreditkort</translation>
 <translation id="7080851568148064063">Lägg till på startskärmen</translation>
+<translation id="6192792657125177640">Undantag</translation>
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="3254409185687681395">Lägg till bokmärke för den här sidan</translation>
 <translation id="907015151729920253">Smartkort</translation>
+<translation id="2482878487686419369">Aviseringar</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Kortets utgångsmånad</translation>
 <translation id="3063601790762993062">Spara video</translation>
@@ -114,6 +129,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="4148957013307229264">Installerar...</translation>
 <translation id="3992315671621218278">Spara länk</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Redigera sparat namn/lösenord eller undantag</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
@@ -130,8 +146,9 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Fyll i formulär automatiskt</translation>
-<translation id="8261506727792406068">Radera</translation>
+<translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME"/>. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
 <translation id="4510973599275542560">Hämta ej sidan igen</translation>
 <translation id="1206892813135768548">Kopiera länktext</translation>
@@ -140,15 +157,19 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiera bild</translation>
+<translation id="5804241973901381774">Behörigheter</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
+<translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE"/> från den här webbplatsen ska visas nästa gång?</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="8528538445849828817">Sidans språk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="6512448926095770873">Lämna denna sida</translation>
+<translation id="3414952576877147120">Storlek:</translation>
+<translation id="5626134646977739690">Namn:</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
@@ -163,7 +184,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 Om skyddat innehåll däremot är AV kan det hända att du inte kan spela upp högkvalitativa videor på enheten.</translation>
 <translation id="8928220460877261598">Du är nu inloggad i Chrome.</translation>
 <translation id="5032574515228824816">Fråga</translation>
-<translation id="6165508094623778733">Läs mer</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det hämtade innehållet.</translation>
@@ -177,10 +197,12 @@ Tryck och dra uppifrån och ned om du vill lämna det.</translation>
 <translation id="411254640334432676">Hämtningen misslyckades.</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="7634554953375732414">Din anslutning till webbplatsen är inte privat.</translation>
+<translation id="6409731863280057959">Popup-fönster</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="1742134235943978220">Översatt till <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">På</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
+<translation id="5677928146339483299">Blockerad</translation>
 <translation id="7561196759112975576">Alltid</translation>
 </translationbundle>

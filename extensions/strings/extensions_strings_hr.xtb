@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Čitanje podataka koje kopirate i lijepite</translation>
 <translation id="2350172092385603347">Lokalizacija je korištena, ali default_locale nije naveden u manifestu.</translation>
 <translation id="3759933321830434300">Blokiraj dijelove web-stranica</translation>
+<translation id="6143635259298204954">Ne mogu otpakirati proširenje. Kako biste sigurno otpakirali proširenje, mora postojati putanja do direktorija vašeg profila koja ne sadrži simboličku vezu. Za vaš profil ne postoji takva putanja.</translation>
 <translation id="149347756975725155">Nije uspjelo učitavanje ikone proširenja &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Ovo proširenje nije uspjelo izmijeniti zaglavlje zahtjeva &quot;<ph name="HEADER_NAME"/>&quot; mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Proizvod <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Odaberite USB uređaje</translation>
+<translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Nije uspjelo učitavanje stranice s informacijama &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Nije uspjelo učitavanje stranice opcija &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">Upravljanje mrežnim vezama</translation>
 <translation id="6344170822609224263">Pristupi popisu mrežnih veza</translation>
 <translation id="7039326228527141150">Pristupi USB uređajima dobavljača <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Čitanje i promjena vaših podataka na <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">nepoznati uređaji dobavljača <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Razmjena podataka s bilo kojim računalom u domenama: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Prikaz web-lokacije: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Neispravna putanja (apsolutna ili relativna u odnosu na &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">sve web-lokacije <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Promijenite svoju početnu stranicu u stranicu: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Ovo proširenje nije uspjelo izmijeniti mrežni zahtjev jer je izmjena u sukobu s drugim proširenjem.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Ovo proširenje nije uspješno dodijelilo vjerodajnice za mrežni zahtjev jer je drugo proširenje (<ph name="EXTENSION_NAME"/>) dodijelilo druge vjerodajnice.</translation>
 <translation id="5627523580512561598">proširenje <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Pristupiti fotografijama, glazbi i drugim medijima s vašeg računala.</translation>
+<translation id="3369521687965833290">Ne mogu otpakirati proširenje. Kako biste sigurno otpakirali proširenje, mora postojati putanja do direktorija vašeg profila koja počinje slovom pogona i ne sadrži spoj, točku povezivanja ili simboličku vezu. Za vaš profil ne postoji takva putanja.</translation>
+<translation id="4811956658694082538">Nije bilo moguće instalirati paket jer se uslužni proces srušio. Ponovo pokrenite Chrome i pokušajte opet.</translation>
+<translation id="641087317769093025">Nije uspjelo raspakiravanje proširenja</translation>
 <translation id="4761104368405085019">upotrijebiti vaš mikrofon</translation>
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME"/>. Ona se ne može ukloniti ni izmijeniti.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> dobavljača <ph name="VENDOR_NAME"/> (serijski broj <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Pristupi bilo kojem od ovih USB uređaja</translation>
 <translation id="2677911863018634147">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja.</translation>
 <translation id="6698810901424468597">Čitanje i promjena vaših podataka na <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Nije uspjelo dekodiranje slike: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Dobavljač <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Pristup vašem mrežnom prometu</translation>
 <translation id="5972529113578162692">Administrator ovog računala zahtijeva instaliranje proširenja <ph name="EXTENSION_NAME"/> i ono se ne može deinstalirati.</translation>
+<translation id="1135328998467923690">Paket je nevažeći: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Čitanje vaših podataka na web-lokacijama <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Pristupi bilo kojem uređaju <ph name="PRODUCT_NAME_AND_VENDOR"/> putem USB-a</translation>
 <translation id="1803557475693955505">Nije uspjelo učitavanje pozadinske stranice &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Nije moguće instaliranje paketa: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup jednom od vaših uređaja.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Paket je nevažeći. Pojedinosti &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Čitanje vaših podataka na velikom broju web-lokacija</translation>
 </translationbundle>

@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">No s'admet aquest tipus de targeta a Google Wallet. Seleccioneu-ne una altra.</translation>
 <translation id="5172758083709347301">Automàtica</translation>
 <translation id="7180611975245234373">Actualitza</translation>
+<translation id="8208216423136871611">No desis</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error d'HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Recomanada</translation>
 <translation id="4058922952496707368">Tecla &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerta de JavaScript</translation>
+<translation id="4081383687659939437">Desa la informació</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Escaneja una targeta nova</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL de cerca no vàlid.</translation>
 <translation id="5509780412636533143">Adreces d'interès gestionades</translation>
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
+<translation id="4120075327926916474">Voleu que Chrome desi la informació d'aquesta targeta de crèdit per completar formularis web?</translation>
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="1693754753824026215">La pàgina de <ph name="SITE"/> diu:</translation>
 <translation id="4269787794583293679">(Sense nom d'usuari)</translation>

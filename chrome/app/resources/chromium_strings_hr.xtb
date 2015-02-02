@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Pristup Internetu</translation>
 <translation id="8586442755830160949">Autorska prava <ph name="YEAR"/>. Autori Chromiuma. Sva prava pridržana.</translation>
 <translation id="6373523479360886564">Jeste li sigurni da želite deinstalirati Chromium?</translation>
-<translation id="5065199687811594072">Želite li da Chromium spremi podatke o toj kreditnoj kartici za dovršavanje web-obrazaca?</translation>
 <translation id="6510925080656968729">Deinstaliranje Chromiuma</translation>
 <translation id="2615699638672665509">Ovo će računalo uskoro prestati primati ažuriranja Chromiuma jer njegov hardver više nije podržan.</translation>
 <translation id="5532301346661895910">Chromium će spremiti tu zaporku u vaše |Google spremljene zaporke| i zapamtiti je za sljedeći put.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
-<translation id="1550579416447684632">Pokreni aplikacije sustava Chromium</translation>
 <translation id="2732467638532545152">Vaše računalo ima staru verziju Microsoft Windowsa koja ne može obraditi sigurnosni certifikat ove web-lokacije. Zbog tog problema Chromium ne može odrediti je li certifikat s domene <ph name="SITE"/> ili od nekog u vašoj mreži tko se pretvara da je <ph name="SITE"/>. Ažurirajte Windows na računalu na noviju verziju.</translation>
-<translation id="4267347018362241535">Pokretač aplikacija sustava Chromium samostalna je platforma za aplikacije sustava Chromium.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="6613594504749178791">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete Chromium.</translation>
 <translation id="9089354809943900324">Chromium je zastario</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Ako dijelite ovo računalo s korisnikom <ph name="PROFILE_NAME"/>, dodajte sebe u Chromium kako biste pregledavali odvojeno. U suprotnom odjavite njegov Google račun.</translation>
 <translation id="1480489203462860648">Pokušajte, već je instaliran</translation>
 <translation id="3032787606318309379">Dodavanje u preglednik Chromium...</translation>
-<translation id="4831257561365056138">Deinstaliraj pokretač aplikacija sustava Chromium</translation>
 <translation id="4222580632002216401">Sada ste prijavljeni na Chromium! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Upozorenje:<ph name="END_BOLD"/> Chromium ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>
 <translation id="985602178874221306">Autori Chromiuma</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Hopa! Chromium je pao. Pokrenuti ponovo sada?</translation>
 <translation id="8843170958047978824">Ukloni iz Chromiuma</translation>
 <translation id="3068515742935458733">Pomognite nam poboljšati Chromium šaljući izvješća o rušenju programa i <ph name="UMA_LINK"/> Googleu</translation>
-<translation id="1609700857210121286">Otvorite izbornik Chromiuma &gt; Postavke &gt; (Napredno) Privatnost
-          i onemogućite &quot;Predviđanja mrežnih radnji&quot;.
-          Ako se time ne riješi poteškoća, preporučujemo da ponovo omogućite tu opciju
-          radi bolje izvedbe.</translation>
 <translation id="734373864078049451">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromiumu.</translation>
 <translation id="3197823471738295152">Uređaj je ažuran.</translation>
 <translation id="3065280201209294872">Ova web-lokacija upotrebljava sigurnosne postavke koje mogu sprječavati buduće verzije Chromiuma da joj sigurno pristupe.</translation>
@@ -251,7 +243,6 @@ Ako se ipak prijavite, podaci sustava Chromium kao što su oznake, povijest i os
 <translation id="8704119203788522458">To je vaš Chromium</translation>
 <translation id="8269379391216269538">Pomognite poboljšati Chromium.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
-<translation id="374481098568514319">Ovo računalo već ima noviju verziju komponenti Chromiuma. Upotrijebite noviji instalacijski program.</translation>
 <translation id="5862307444128926510">Dobro došli u Chromium</translation>
 <translation id="7318036098707714271">Datoteka vaših postavki oštećena je ili nevažeća.
 

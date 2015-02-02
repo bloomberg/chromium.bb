@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="8588878054171169263">保存图片</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
+<translation id="8425213833346101688">更改</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="6292937202013477045">攻击者可能会试图从 <ph name="DOMAIN_NAME"/> 窃取您的信息（例如：照片、密码、邮件或信用卡信息）。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="346339498574870680">复制图片网址</translation>
+<translation id="5063480226653192405">使用情况</translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="7764225426217299476">添加地址</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="2154710561487035718">复制网址</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">全部清除</translation>
 <translation id="6458785801851713928">您的网域不支持同步。</translation>
 <translation id="2731700343119398978">请稍候...</translation>
 <translation id="6846298663435243399">正在加载...</translation>
@@ -39,6 +43,8 @@
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="3410346880900521918">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK"/>建议<ph name="END_LINK"/>操作。</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="7375125077091615385">类型：</translation>
+<translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
@@ -53,13 +59,12 @@
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
-<translation id="5860033963881614850">关闭</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR"/> Google Inc. 保留所有权利。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="552553974213252141">提取的内容是否正确？</translation>
-<translation id="5317780077021120954">保存</translation>
 <translation id="1151972924205500581">需要密码</translation>
+<translation id="2870560284913253234">网站</translation>
 <translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="2414886740292270097">深色调</translation>
@@ -79,28 +84,38 @@
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="656628257199996201">一律翻译<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">文字大小</translation>
+<translation id="6447842834002726250">Cookie</translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
+<translation id="1383876407941801731">搜索</translation>
 <translation id="5626370437647899551">添加 Google 帐户</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
+<translation id="5646376287012673985">位置</translation>
 <translation id="5659593005791499971">电子邮件</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
+<translation id="1987317783729300807">帐户</translation>
 <translation id="6064211167623632605">可执行文件路径</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
+<translation id="4278390842282768270">允许的 Cookie</translation>
 <translation id="7817177303494746697">Blink 版本</translation>
 <translation id="2532336938189706096">网页视图</translation>
 <translation id="6571070086367343653">修改信用卡</translation>
 <translation id="7080851568148064063">添加到主屏幕</translation>
+<translation id="6192792657125177640">例外</translation>
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
+<translation id="8798099450830957504">默认</translation>
 <translation id="4002066346123236978">标题</translation>
+<translation id="885701979325669005">存储</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="907015151729920253">智能卡</translation>
+<translation id="2482878487686419369">通知</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">信用卡到期月份</translation>
 <translation id="3063601790762993062">保存视频</translation>
@@ -114,6 +129,7 @@
 <translation id="4148957013307229264">正在安装...</translation>
 <translation id="3992315671621218278">保存链接</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">修改已保存的名称/密码或例外情况</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
@@ -130,8 +146,9 @@
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="2359808026110333948">继续</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">自动填充表单</translation>
-<translation id="8261506727792406068">删除</translation>
+<translation id="5765780083710877561">说明：</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME"/> 管理的帐户。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐户中。</translation>
 <translation id="4510973599275542560">不重新加载</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
@@ -140,15 +157,19 @@
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">复制图片</translation>
+<translation id="5804241973901381774">权限</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="4165986682804962316">网站设置</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="8528538445849828817">网页语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="6512448926095770873">离开此页</translation>
+<translation id="3414952576877147120">大小：</translation>
+<translation id="5626134646977739690">名字：</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="2612676031748830579">卡号</translation>
@@ -163,7 +184,6 @@
 当“受保护的内容”处于“关闭”状态时，您将无法在此设备上播放付费视频。</translation>
 <translation id="8928220460877261598">现在，您已登录 Chrome。</translation>
 <translation id="5032574515228824816">提示</translation>
-<translation id="6165508094623778733">了解详情</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
@@ -177,10 +197,12 @@
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
+<translation id="6409731863280057959">弹出式窗口</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE"/>。</translation>
-<translation id="5916664084637901428">启用</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
+<translation id="5677928146339483299">已屏蔽</translation>
 <translation id="7561196759112975576">永远</translation>
 </translationbundle>

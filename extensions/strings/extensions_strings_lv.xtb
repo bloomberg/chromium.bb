@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Lasīt datus, ko kopējat un ielīmējat</translation>
 <translation id="2350172092385603347">Lokalizācija ir lietota, tomēr manifestā nav norādīta default_locale.</translation>
 <translation id="3759933321830434300">Bloķēt tīmekļa lapu daļas</translation>
+<translation id="6143635259298204954">Nevar atvērt paplašinājuma pakotni. Lai varētu drošā veidā atvērt paplašinājuma pakotni, jābūt norādītam ceļam uz jūsu profila direktoriju, kas neietver simbolisku saiti. Jūsu profilam nav norādīts šāds ceļš.</translation>
 <translation id="149347756975725155">Nevarēja ielādēt paplašinājuma ikonu “<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Šis paplašinājums nevarēja mainīt tīkla pieprasījuma galveni “<ph name="HEADER_NAME"/>”, jo izmaiņas radīja konfliktu ar citu paplašinājumu (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produkts <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB ierīču atlasīšana</translation>
+<translation id="6731255991101203740">Nevarēja izveidot direktoriju izgūšanai no ZIP arhīva: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Nevarēja ielādēt lapu “Par” (<ph name="ABOUT_PAGE"/>).</translation>
 <translation id="388442998277590542">Nevarēja ielādēt opciju lapu “<ph name="OPTIONS_PAGE"/>”.</translation>
+<translation id="5127881134400491887">Pārvaldīt tīkla savienojumus</translation>
 <translation id="6344170822609224263">Piekļūt tīkla savienojumu sarakstam</translation>
 <translation id="7039326228527141150">Piekļūt USB ierīcēm, ko piedāvā <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Lasīt un mainīt jūsu datus vietnē <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">nezināmas ierīces, ko piedāvā <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Apmainīties datiem ar jebkuru datoru šādos domēnos: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Nederīgs ceļš (pilnais vai relatīvais ar elementu “..”): <ph name="IMAGE_PATH"/></translation>
 <translation id="8284279544186306258">visās <ph name="WEBSITE_1"/> vietnēs</translation>
 <translation id="8662911384982557515">Mainiet savu sākumlapu uz šo: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Šim paplašinājumam neizdevās modificēt tīkla pieprasījumu, jo šī modifikācija bija pretrunā ar citu paplašinājumu.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Šis paplašinājums nevarēja sniegt tīkla pieprasījuma akreditācijas datus, jo cits paplašinājums (<ph name="EXTENSION_NAME"/>) sniedza atšķirīgus akreditācijas datus.</translation>
 <translation id="5627523580512561598">Paplašinājums <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Piekļūt fotoattēliem, mūzikai un citam multivides saturam no sava datora</translation>
+<translation id="3369521687965833290">Nevar atvērt paplašinājuma pakotni. Lai varētu drošā veidā atvērt paplašinājuma pakotni, jābūt norādītam ceļam uz jūsu profila direktoriju, kas sākas ar diska burtu un neietver savienojumu, montēšanas punktu vai simbolisku saiti. Jūsu profilam nav norādīts šāds ceļš.</translation>
+<translation id="4811956658694082538">Nevarēja instalēt pakotni, jo radās avārija utilītprogrammas darbībā. Restartējiet pārlūku Chrome un mēģiniet vēlreiz.</translation>
+<translation id="641087317769093025">Paplašinājumu nevarēja izgūt no ZIP arhīva.</translation>
 <translation id="4761104368405085019">Izmantot jūsu mikrofonu</translation>
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME"/> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>, ko piedāvā <ph name="VENDOR_NAME"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Piekļūt jebkurai no šīm USB ierīcēm</translation>
 <translation id="2677911863018634147">Lietojumprogramma “<ph name="APP_NAME"/>” pieprasa piekļuvi vienai vai vairākām jūsu ierīcēm.</translation>
 <translation id="6698810901424468597">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Nevarēja dekodēt attēlu: <ph name="IMAGE_NAME"/></translation>
 <translation id="5544884907028850012">Pārdevējs <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Piekļūt jūsu tīkla datplūsmai</translation>
 <translation id="5972529113578162692">Šīs ierīces administrators pieprasa, lai būtu instalēts paplašinājums <ph name="EXTENSION_NAME"/>. To nevar atinstalēt.</translation>
+<translation id="1135328998467923690">Pakotne nav derīga: <ph name="ERROR_CODE"/>.</translation>
 <translation id="7131040479572660648">Lasīt jūsu datus vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Piekļūt jebkuram <ph name="PRODUCT_NAME_AND_VENDOR"/> produktam, izmantojot USB</translation>
 <translation id="1803557475693955505">Nevarēja ielādēt fona lapu “<ph name="BACKGROUND_PAGE"/>”.</translation>
+<translation id="2988488679308982380">Nevarēja instalēt pakotni: <ph name="ERROR_CODE"/>.</translation>
 <translation id="5751530153776468604">Lietojumprogramma “<ph name="APP_NAME"/>” pieprasa piekļuvi kādai jūsu ierīcei.</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Pakotne nav derīga. Detaļas: <ph name="ERROR_MESSAGE"/>.</translation>
 <translation id="344630545793878684">Lasīt jūsu datus vairākās vietnēs</translation>
 </translationbundle>

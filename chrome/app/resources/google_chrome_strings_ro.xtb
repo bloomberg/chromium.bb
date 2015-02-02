@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">Permite ca Google Chrome să ruleze în fundal</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="8406086379114794905">Contribuie la îmbunătățirea Chrome</translation>
-<translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON"/>repornirea<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">După eliminarea contului din Chrome, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
-<translation id="5775197990071433230">Acest computer are deja o versiune mai recentă a componentelor Google Chrome. Vă rugăm să folosiți un program de instalare mai recent.</translation>
 <translation id="4987308747895123092">Închideți toate ferestrele Google Chrome (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="568643307450491754">Găsiți marcajele în meniul Chrome sau în bara de marcaje.</translation>
 <translation id="8556340503434111824">Este disponibilă o nouă versiune de Google Chrome, iar aceasta este mai rapidă ca oricând.</translation>
@@ -80,7 +78,6 @@
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="5037239767309817516">Pentru ca această modificare să aibă efect, închide toate ferestrele Google Chrome și repornește-l.</translation>
-<translation id="345168553362876363">Lansatorul de aplicații Google Chrome este o platformă autonomă pentru aplicațiile Chrome.</translation>
 <translation id="225614027745146050">Bun venit</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
@@ -166,7 +163,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8568392309447938879">Trebuie să vă conectați la Chrome pentru a folosi aplicațiile. Astfel, Chrome vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Cu Google Chrome, poți să dai clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
-<translation id="5788838254726722945">Dezinstalați Lansatorul de aplicații Google Chrome</translation>
 <translation id="3612333635265770873">Un modul cu același nume este cunoscut ca având conflicte cu Google Chrome.</translation>
 <translation id="2665296953892887393">Contribuie la îmbunătățirea browserului Google Chrome trimițând rapoarte de blocare și <ph name="UMA_LINK"/> la Google</translation>
 <translation id="7761834446675418963">Dați clic pe numele dvs. pentru a deschide Chrome și a începe să navigați.</translation>
@@ -191,10 +187,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>
 <translation id="130631256467250065">Modificările dvs. se vor aplica următoarea dată când reporniți dispozitivul.</translation>
-<translation id="1546593779121993896">Accesează meniul Chrome &gt; Setări &gt; (Avansate) Confidențialitate
-          și dezactivează „Predicțiile privind acțiunile în rețea”.
-          Dacă această acțiune nu rezolvă problema, îți recomandăm reactivarea acestei opțiuni
-          pentru performanță îmbunătățită.</translation>
 <translation id="163860049029591106">Noțiuni introductive despre sistemul de operare Chrome</translation>
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercați din nou.</translation>
@@ -242,7 +234,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome este actualizat.</translation>
-<translation id="4120075327926916474">Vrei ca browserul Chrome să salveze informațiile privind cardul de credit pentru completarea formularelor web?</translation>
 <translation id="3037838751736561277">Google Chrome este în modul fundal.</translation>
 <translation id="2084710999043359739">Adaugă în Chrome</translation>
 <translation id="4692614041509923516">Computerul rulează o versiune veche de Microsoft Windows care nu poate să proceseze certificatul de securitate al acestui site. Din cauza acestei probleme, Google Chrome nu poate stabili dacă certificatul a provenit de la <ph name="SITE"/> sau de la o entitate din rețeaua ta, care pretinde că este <ph name="SITE"/>. Actualizează computerul cu o versiune mai recentă de Windows.</translation>

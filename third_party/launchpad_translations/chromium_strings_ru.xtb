@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR"/> . Все права защищены.</translation>
 <translation id="6373523479360886564">Вы действительно хотите удалить Chromium?</translation>
-<translation id="5065199687811594072">Сохранить в Chromium данные этой карты для заполнения веб-форм?</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>
 <translation id="2615699638672665509">Обновление Chromium вскоре будет прекращено на этом компьютере, поскольку его аппаратное обеспечение больше не поддерживается.</translation>
 <translation id="5532301346661895910">Chromium добавит его к другим |сохраненным паролям| и запомнит его для следующих визитов.</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
-<translation id="1550579416447684632">Запустить приложения Chromium</translation>
 <translation id="2732467638532545152">На вашем компьютере установлена старая версия Microsoft Windows, которая не может обработать сертификат безопасности сайта. Из-за этого Chromium не удается определить, действительно ли он принадлежит <ph name="SITE"/> или кто-то пытается выдать себя за <ph name="SITE"/>. Обновите операционную систему.</translation>
-<translation id="4267347018362241535">Панель запуска Chromium – это автономная платформа для запуска приложений Chromium.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="6613594504749178791">Изменения вступят в силу при следующем входе в Chromium.</translation>
 <translation id="9089354809943900324">Версия Chromium устарела</translation>
@@ -55,7 +52,6 @@
 <translation id="8134284582177628525">Если вы работаете за одним компьютером с пользователем <ph name="PROFILE_NAME"/>, добавьте свой аккаунт в Chromium для персонального использования браузера. В противном случае выйдите из чужого аккаунта Google.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
-<translation id="4831257561365056138">Удалить Панель запуска Chromium</translation>
 <translation id="4222580632002216401">Добро пожаловать в Chromium! Синхронизация отключена администратором.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Внимание!<ph name="END_BOLD"/> Chromium не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="985602178874221306">Авторы Chromium</translation>
@@ -69,7 +65,6 @@
 <translation id="3190315855212034486">Произошел сбой Chromium. Перезапустить?</translation>
 <translation id="8843170958047978824">Удалить из Chromium</translation>
 <translation id="3068515742935458733">Помочь улучшить Chromium, отправляя в Google отчеты о сбоях и <ph name="UMA_LINK"/></translation>
-<translation id="1609700857210121286">Откройте меню Chromium, нажмите &quot;Настройки&quot; &gt; (&quot;Дополнительно&quot;) &quot;Конфиденциальность&quot; и отключите функцию &quot;Прогнозирование сетевых действий&quot;. Если устранить проблему не удалось, снова установите флажок, чтобы страницы загружались быстрее.</translation>
 <translation id="734373864078049451">Все веб-страницы, закладки и другие данные Chromium можно найти здесь.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="3065280201209294872">На этом сайте используются устаревшие параметры безопасности. Возможно, после обновления Chromium нельзя будет открывать его через защищенное соединение.</translation>
@@ -239,7 +234,6 @@
 <translation id="8704119203788522458">Ваш персональный Chromium</translation>
 <translation id="8269379391216269538">Сделайте Chromium лучше</translation>
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
-<translation id="374481098568514319">На компьютере уже есть более новые компоненты Chromium. Используйте более новую версию установщика.</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="7318036098707714271">Файл настроек поврежден или недействителен. Chromium не может восстановить ваши параметры.</translation>
 <translation id="918373042641772655">Если вы отключите аккаунт <ph name="USERNAME"/>, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chromium будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK"/>Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

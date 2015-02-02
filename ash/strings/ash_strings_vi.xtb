@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
+<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> đã được xoay vòng sang <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
@@ -77,7 +78,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2562916301614567480">Mạng riêng</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4379753398862151997">Rất tiếc, hệ thống không hoạt động giữa hai màn hình. (Màn hình đó không được hỗ trợ)</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
@@ -159,6 +159,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="6452181791372256707">Từ chối</translation>
+<translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
 <translation id="607652042414456612">Máy tính của bạn có thể phát hiện thiết bị Bluetooth gần đó và hiện thị dưới tên &quot;<ph name="NAME"/>&quot; với địa chỉ là <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
@@ -190,6 +191,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="7097613348211027502">Đã bật ChromeVox (phản hồi bằng giọng nói).
 Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="5045002648206642691">Cài đặt Google Drive...</translation>
+<translation id="1510238584712386396">Trình chạy</translation>
 <translation id="7209101170223508707">CAPS LOCK đang bật.
 Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE"/>%)</translation>

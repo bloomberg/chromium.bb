@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Odczyt danych, które kopiujesz i wklejasz</translation>
 <translation id="2350172092385603347">Lokalizacja została użyta, ale nie określono języka default_locale w pliku manifestu.</translation>
 <translation id="3759933321830434300">Blokowanie części stron internetowych</translation>
+<translation id="6143635259298204954">Nie można rozpakować rozszerzenia. Aby bezpiecznie rozpakować rozszerzenie, musi istnieć ścieżka do katalogu profilu, która nie zawiera dowiązania symbolicznego. W przypadku Twojego profilu taka ścieżka nie istnieje.</translation>
 <translation id="149347756975725155">Nie można wczytać ikony rozszerzenia „<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Rozszerzenie nie zmodyfikowało nagłówka żądania „<ph name="HEADER_NAME"/>” żądania sieciowego, bo zmiana powodowałaby konflikt z innym rozszerzeniem (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Usługa <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Wybierz urządzenia USB</translation>
+<translation id="6731255991101203740">Nie można utworzyć katalogu do rozpakowania: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">Nie udało się załadować strony z informacjami: „<ph name="ABOUT_PAGE"/>”.</translation>
 <translation id="388442998277590542">Nie można wczytać strony opcji „<ph name="OPTIONS_PAGE"/>”.</translation>
+<translation id="5127881134400491887">Zarządzać połączeniami sieciowymi</translation>
 <translation id="6344170822609224263">Lista dostępu połączeń sieciowych</translation>
 <translation id="7039326228527141150">Uzyskaj dostęp do urządzeń USB od <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">nieznane urządzenia od <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Wymiana danych z dowolnym komputerem w domenach <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Nieprawidłowa ścieżka (pełna lub względna z przedrostkiem „..”): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="8284279544186306258">wszystkie strony <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Zmień stronę główną na: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">To rozszerzenie nie mogło zmienić żądania sieciowego, ponieważ zmiana wchodziła w konflikt z innym rozszerzeniem.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Rozszerzenie nie podało danych logowania do żądania sieciowego, bo inne rozszerzenie (<ph name="EXTENSION_NAME"/>) podało inne dane.</translation>
 <translation id="5627523580512561598">rozszerzenie <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Uzyskać dostęp do zdjęć, muzyki i innych multimediów na komptuerze</translation>
+<translation id="3369521687965833290">Nie można rozpakować rozszerzenia. Aby bezpiecznie rozpakować rozszerzenie, musi istnieć ścieżka do katalogu profilu, która zaczyna się literą dysku i nie zawiera punktu połączenia, punktu instalacji (montowania) ani dowiązania symbolicznego. W przypadku Twojego profilu taka ścieżka nie istnieje.</translation>
+<translation id="4811956658694082538">Nie udało się zainstalować pakietu, ponieważ nastąpiła awaria procesu narzędzia. Uruchom ponownie Chrome i spróbuj jeszcze raz.</translation>
+<translation id="641087317769093025">Nie można rozpakować rozszerzenia</translation>
 <translation id="4761104368405085019">Korzystać z Twojego mikrofonu</translation>
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME"/>. Nie można go usunąć ani modyfikować.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> firmy <ph name="VENDOR_NAME"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Uzyskaj dostęp do dowolnego z tych urządzeń USB</translation>
 <translation id="2677911863018634147">Aplikacja „<ph name="APP_NAME"/>” żąda dostępu do co najmniej jednego Twojego urządzenia.</translation>
 <translation id="6698810901424468597">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Nie można odkodować obrazu: „<ph name="IMAGE_NAME"/>”</translation>
 <translation id="5544884907028850012">Dostawca <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Dostęp do ruchu sieciowego</translation>
 <translation id="5972529113578162692">Administrator tego urządzenia wymaga, by było na nim zainstalowane rozszerzenie <ph name="EXTENSION_NAME"/>. Nie można go odinstalować.</translation>
+<translation id="1135328998467923690">Pakiet jest nieprawidłowy: „<ph name="ERROR_CODE"/>”.</translation>
 <translation id="7131040479572660648">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Uzyskaj dostęp do <ph name="PRODUCT_NAME_AND_VENDOR"/> przez USB</translation>
 <translation id="1803557475693955505">Nie można wczytać strony w tle „<ph name="BACKGROUND_PAGE"/>”.</translation>
+<translation id="2988488679308982380">Nie można zainstalować pakietu: „<ph name="ERROR_CODE"/>”</translation>
 <translation id="5751530153776468604">Aplikacja „<ph name="APP_NAME"/>” żąda dostępu do jednego z Twoich urządzeń.</translation>
 <translation id="7972881773422714442">Opcje: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Pakiet jest nieprawidłowy. Szczegółowe informacje: „<ph name="ERROR_MESSAGE"/>”.</translation>
 <translation id="344630545793878684">Odczyt Twoich danych na kilku stronach internetowych</translation>
 </translationbundle>

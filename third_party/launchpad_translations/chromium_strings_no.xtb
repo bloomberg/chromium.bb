@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> – The Chromium Authors. Med enerett.</translation>
 <translation id="6373523479360886564">Er du sikker på at du vil avinstallere Chromium?</translation>
-<translation id="5065199687811594072">Vil du at Chromium skal lagre denne kredittkortinformasjonen for utfylling av nettskjemaer?</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="2615699638672665509">Denne datamaskinen slutter snart å motta Chromium-oppdateringer. Dette skjer fordi maskinvaren ikke støttes lenger.</translation>
 <translation id="5532301346661895910">Chromium lagrer dette i de |Google-lagrede passordene| dine og husker det neste gang du trenger det.</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
-<translation id="1550579416447684632">Start Chromium-apper</translation>
 <translation id="2732467638532545152">Datamaskinen din kjører en gammel versjon av Microsoft Windows som ikke kan behandle dette nettstedets sikkerhetssertifikat. På grunn av dette problemet kan ikke Chromium vite om sertifikatet kom fra <ph name="SITE"/> eller fra noen på nettverket ditt som utgir seg for å være <ph name="SITE"/>. Oppdater datamaskinen din til en nyere versjon av Windows.</translation>
-<translation id="4267347018362241535">Chromium App Launcher er en frittstående plattform for Chromium-apper.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="6613594504749178791">Endringene dine trer i kraft neste gang du starter Chromium.</translation>
 <translation id="9089354809943900324">Chromium er utdatert</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME"/>, kan du legge deg selv til i Chromium for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
 <translation id="1480489203462860648">Prøv det – det er allerede installert</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
-<translation id="4831257561365056138">Avinstaller Chromium App Launcher</translation>
 <translation id="4222580632002216401">Du er nå logget på Chromium. Synkronisering er deaktivert av administratoren din.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel:<ph name="END_BOLD"/> Chromium kan ikke forhindre utvidelser fra å registrere nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Chromium har krasjet. Vil du starte den på nytt nå?</translation>
 <translation id="8843170958047978824">Fjern fra Chromium</translation>
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK"/> til Google</translation>
-<translation id="1609700857210121286">Gå til Chromium-menyen &gt; Innstillinger &gt; (Avansert) Personvern
-          og deaktiver «Forslag for nettverkshandlinger».
-          Hvis dette ikke løser problemet, bør du aktivere dette alternativet
-          på nytt for bedre ytelse.</translation>
 <translation id="734373864078049451">Her finner du nettinnholdet, bokmerkene og de andre Chromium-tingene dine.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="3065280201209294872">Dette nettstedet bruker utdaterte sikkerhetsinnstillinger som kan føre til at fremtidige versjoner av Chromium ikke kan opprette sikre tilkoblinger til det.</translation>
@@ -250,7 +242,6 @@ Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, logge
 <translation id="8704119203788522458">Dette er din Chromium</translation>
 <translation id="8269379391216269538">Bidra til å gjøre Chromium bedre</translation>
 <translation id="4224199872375172890">Chromium er oppdatert.</translation>
-<translation id="374481098568514319">Denne datamaskinen har allerede en nyere versjon av Chromium-komponentene. Bruk et nyere installeringsprogram.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="7318036098707714271">Innstillingerfilen din er ødelagt eller ugyldig.
 

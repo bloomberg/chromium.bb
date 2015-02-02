@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google 电子钱包不支持此类型的信用卡，请选择其他信用卡。</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="7180611975245234373">刷新</translation>
+<translation id="8208216423136871611">不保存</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">推荐</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY"/>”键：<ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript 提醒</translation>
+<translation id="4081383687659939437">保存信息</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜索</translation>
 <translation id="2498091847651709837">扫描新的信用卡</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">搜索网址无效。</translation>
 <translation id="5509780412636533143">受管理的书签</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
+<translation id="4120075327926916474">您希望 Chrome 浏览器保存此信用卡信息以便填写网络表单吗？</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> 上的网页显示：</translation>
 <translation id="4269787794583293679">（无用户名）</translation>

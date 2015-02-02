@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth सक्षम</translation>
+<translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/> वर फिरविले होते</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth अक्षम</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/> मध्ये बदलली आहे.
 स्विच करण्यासाठी Shift + Alt दाबा.</translation>
 <translation id="2562916301614567480">खाजगी नेटवर्क</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4379753398862151997">प्रिय मॉनिटर, हे आपल्या दरम्यान कार्य करत नाही. (तो मॉनिटर समर्थित नाही)</translation>
 <translation id="6426039856985689743">मोबाइल डेटा अक्षम करा</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे.</translation>
 <translation id="2983818520079887040">सेटिंग्ज...</translation>
 <translation id="6452181791372256707">नाकारा</translation>
+<translation id="1330145147221172764">ऑन-स्क्रीन कीबोर्ड सक्षम करा</translation>
 <translation id="1195412055398077112">ओव्हरस्कॅन</translation>
 <translation id="607652042414456612">आपला संगणक जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS"/> पत्त्यासह &quot;<ph name="NAME"/>&quot; म्हणून दिसेल</translation>
 <translation id="112308213915226829">शेल्फ स्वयं लपवा</translation>
@@ -189,6 +190,7 @@
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (बोललेला अभिप्राय) सक्षम केलेला आहे. अक्षम करण्यासाठी Ctrl+Alt+Z दाबा.</translation>
 <translation id="5045002648206642691">Google ड्राइव्ह सेटिंग्ज...</translation>
+<translation id="1510238584712386396">लाँचर</translation>
 <translation id="7209101170223508707">CAPS LOCK चालू आहे.
 रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE"/>%)</translation>

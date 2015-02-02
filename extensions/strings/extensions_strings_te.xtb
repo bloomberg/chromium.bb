@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">మీరు కాపీ చేసి అతికించే డేటాను చదవడం</translation>
 <translation id="2350172092385603347">స్థానీకరణ ఉపయోగించబడింది, కానీ మానిఫెస్ట్ లో default_locale పేర్కొనబడలేదు.</translation>
 <translation id="3759933321830434300">వెబ్ పేజీల్లో భాగాలను బ్లాక్ చేయండి</translation>
+<translation id="6143635259298204954">ఎక్స్‌టెన్‌షన్‌ అన్‌ప్యాక్ చేయబడదు.  ఒక ఎక్స్‌టెన్‌షన్‌‌ను సురక్షితంగా అన్‌ప్యాక్ చేయడానికి, మీ ప్రొఫైల్ డైరెక్టరీకి సింలింక్ ఉండని గమ్యమార్గం తప్పనిసరిగా ఉండాలి.  మీ ప్రొఫైల్‌కు అటువంటి గమ్యమార్గం లేదు.</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' పొడిగింపు చిహ్నాన్ని లోడ్ చేయలేకపోయింది.</translation>
 <translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క &quot;<ph name="HEADER_NAME"/>&quot; అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
 <translation id="7495493006406536234">ఉత్పత్తి <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB పరికరాలను ఎంచుకోండి</translation>
+<translation id="6731255991101203740">దీనిలో అన్‌జిప్ చేయడానికి  డైరెక్టరీ సృష్టించబడదు: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="388442998277590542">ఎంపికల పేజీ '<ph name="OPTIONS_PAGE"/>'ని లోడ్ చెయ్యడం సాధ్యం కాలేదు.</translation>
+<translation id="5127881134400491887">నెట్‌వర్క్ కనెక్షన్‌లను నిర్వహించండి</translation>
 <translation id="6344170822609224263">నెట్‌వర్క్ కనెక్షన్‌ల జాబితాను ప్రాప్యత చేయండి</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> అందించిన USB పరికరాలకు ప్రాప్యత</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> అందించిన తెలియని పరికరాలు</translation>
 <translation id="4968399700653439437">ఈ డొమైన్‌ల్లో ఏ కంప్యూటర్‌తో అయినా డేటాను పరస్పరం మార్చుకోండి: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">వెబ్ వీక్షణ: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">చట్టవిరుద్ధ పథం (ఖచ్చితంగా లేదా '..'కు సంబంధిత): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">అన్ని <ph name="WEBSITE_1"/> వెబ్‌సైట్‌లు</translation>
 <translation id="8662911384982557515">మీ హోమ్ పేజీని దీనికి మార్చండి: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">నెట్‌వర్క్ అభ్యర్థనను సవరించడంలో ఈ పొడిగింపు విఫలమైంది ఎందుకంటే సవరణ మరొక పొడిగింపుతో వైరుధ్యంలో ఉంది.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>) వేరే ఆధారాలను అందించినందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థనకు ఆధారాలను అందించడంలో విఫలమైంది.</translation>
 <translation id="5627523580512561598">పొడిగింపు <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">మీ కంప్యూటర్ నుండి ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను ప్రాప్యత చేయండి</translation>
+<translation id="3369521687965833290">ఎక్స్‌టెన్‌షన్ అన్‌ప్యాక్ చేయబడదు.  ఒక ఎక్స్‌టెన్‌షన్‌‌ను సురక్షితంగా అన్‌ప్యాక్ చేయడానికి, మీ ప్రొఫైల్ డైరెక్టరీకి ఒక డ్రైవ్ అక్షరంతో ప్రారంభమయ్యే మరియు జంక్షన్, మౌంట్ పాయింట్ లేదా సింలింక్ ఉండని గమ్యమార్గం తప్పనిసరిగా ఉండాలి.  మీ ప్రొఫైల్‌కు అటువంటి గమ్యమార్గం లేదు.</translation>
+<translation id="4811956658694082538">వినియోగ ప్రాసెస్ క్రాష్ అయినందున ప్యాకేజీని ఇన్‌స్టాల్ చేయలేకపోయింది. Chromeను పునఃప్రారంభించి, మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="641087317769093025">పొడిగింపు అన్‌జిప్ చేయబడదు</translation>
 <translation id="4761104368405085019">మీ మైక్రోఫోన్‌ను ఉపయోగించండి</translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> నుండి <ph name="PRODUCT_NAME"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">ఈ USB పరికరాల్లో వేటికైనా ప్రాప్యత</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> మరియు <ph name="WEBSITE_2"/>లో ఉన్న మీ డేటాను చదవడం మరియు మార్చడం</translation>
+<translation id="2159915644201199628">ఈ చిత్రం డీకోడ్ చేయబడదు: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">విక్రేత <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">మీ నెట్‌వర్క్ ట్రాఫిక్‌ను ప్రాప్యత చేయండి</translation>
 <translation id="5972529113578162692"><ph name="EXTENSION_NAME"/>ని ఇన్‌స్టాల్ చేయడం ఈ మెషీన్ నిర్వాహకుడికి అవసరం. ఇది అన్ఇన్‌స్టాల్ చేయబడదు.</translation>
+<translation id="1135328998467923690">ప్యాకేజీ చెల్లనిది: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> మరియు <ph name="WEBSITE_3"/>లోని మీ డేటాను చదవండి</translation>
 <translation id="2087653731648927289">USB ద్వారా ఏ <ph name="PRODUCT_NAME_AND_VENDOR"/>కి అయినా ప్రాప్యత</translation>
 <translation id="1803557475693955505">నేపథ్య పేజీ '<ph name="BACKGROUND_PAGE"/>' లోడ్ చేయబడలేదు.</translation>
+<translation id="2988488679308982380">ప్యాకేజీని వ్యవస్థాపించడం సాధ్యం కాలేదు: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ పరికరాల్లో ఒకదానికి ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">ప్యాకేజీ చెల్లనిది. వివరాలు: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">అనేక వెబ్‌సైట్‌ల్లోని మీ డేటాను చదవండి</translation>
 </translationbundle>

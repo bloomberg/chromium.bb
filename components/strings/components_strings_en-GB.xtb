@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">This type of card is not supported by Google Wallet. Please select a different card.</translation>
 <translation id="5172758083709347301">Machine</translation>
 <translation id="7180611975245234373">Refresh</translation>
+<translation id="8208216423136871611">Don't save</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP error</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="4058922952496707368">Key &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript Alert</translation>
+<translation id="4081383687659939437">Save info</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Search</translation>
 <translation id="2498091847651709837">Scan new card</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Invalid search URL.</translation>
 <translation id="5509780412636533143">Managed bookmarks</translation>
 <translation id="8866481888320382733">Error parsing policy settings</translation>
+<translation id="4120075327926916474">Do you want Chrome to save this credit card information for completing web forms?</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="1693754753824026215">The page at <ph name="SITE"/> says:</translation>
 <translation id="4269787794583293679">(No username)</translation>

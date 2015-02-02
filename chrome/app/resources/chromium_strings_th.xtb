@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="8586442755830160949">ลิขสิทธิ์ <ph name="YEAR"/> The Chromium Authors สงวนลิขสิทธิ์</translation>
 <translation id="6373523479360886564">คุณแน่ใจหรือไม่ว่าต้องการถอนการติดตั้ง Chromium</translation>
-<translation id="5065199687811594072">คุณต้องการให้ Chromium บันทึกข้อมูลบัตรเครดิตนี้เพื่อใช้กรอกแบบฟอร์มบนเว็บไหม</translation>
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
 <translation id="2615699638672665509">อีกไม่นานคอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Chromium เนื่องจากฮาร์ดแวร์ไม่ได้รับการสนับสนุนอีกต่อไป</translation>
 <translation id="5532301346661895910">Chromium จะเก็บข้อมูลนี้ไว้ใน|รหัสผ่านที่ Google บันทึกไว้| และจดจดไว้ในครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="6893813176749746474">Chromium ได้รับการอัปเดตแล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
-<translation id="1550579416447684632">เปิดแอปพลิเคชัน Chromium</translation>
 <translation id="2732467638532545152">คุณใช้คอมพิวเตอร์ Microsoft Windows เวอร์ชันเก่าที่ไม่สามารถดำเนินการกับใบรับรองความปลอดภัยของเว็บไซต์นี้ได้ ซึ่งปัญหานี้ทำให้ Chromium ไม่สามารถบอกได้ว่าใบรับรองมาจาก <ph name="SITE"/> หรือจากบุคคลอื่นในเครือข่ายของคุณซึ่งตบตาว่าเป็น <ph name="SITE"/> โปรดอัปเดตคอมพิวเตอร์เป็นเวอร์ชัน Windows ที่ใหม่กว่านี้</translation>
-<translation id="4267347018362241535">Chromium App Launcher เป็นแพลตฟอร์มแบบสแตนด์อโลนสำหรับแอปพลิเคชัน Chromium</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="6613594504749178791">การเปลี่ยนแปลงของคุณจะมีผลในครั้งถัดไปที่คุณเปิด Chromium ขึ้นอีก</translation>
 <translation id="9089354809943900324">Chromium ล้าสมัย</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">หากคุณแชร์คอมพิวเตอร์นี้กับ <ph name="PROFILE_NAME"/> ให้เพิ่มตนเองไปยัง Chromium เพื่อแยกการท่องเว็บ มิเช่นนั้น ให้ยกเลิกการเชื่อมต่อบัญชี Google ของเขา</translation>
 <translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
 <translation id="3032787606318309379">กำลังเพิ่มลงใน Chromium...</translation>
-<translation id="4831257561365056138">ถอนการติดตั้ง Chromium App Launcher</translation>
 <translation id="4222580632002216401">ขณะนี้คุณลงชื่อเข้าใช้ Chromium แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>คำเตือน:<ph name="END_BOLD"/> Chromium ไม่สามารถป้องกันส่วนขยายจาการบันทึกประวัติการเรียกดูได้ หากคุณต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">อ้าว! Chromium ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
 <translation id="8843170958047978824">นำออกจาก Chromium</translation>
 <translation id="3068515742935458733">ช่วยทำให้ Chromium ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK"/> ไปยัง Google</translation>
-<translation id="1609700857210121286">ไปที่เมนู Chromium &gt; การตั้งค่า &gt; ความเป็นส่วนตัว (ขั้นสูง)
-          และปิดใช้ &quot;การคาดคะเนการทำงานของเครือข่าย&quot;
-          หากวิธีนี้ไม่ช่วยแก้ปัญหา เราขอแนะนำให้เปิดใช้ตัวเลือกนี้ใหม่
-          อีกครั้งเพื่อให้ประสิทธิภาพการทำงานดียิ่งขึ้น</translation>
 <translation id="734373864078049451">เว็บของคุณ บุ๊กมาร์ก และข้อมูลอื่นๆ ใน Chromium พร้อมใช้แล้วที่นี่</translation>
 <translation id="3197823471738295152">อุปกรณ์ของคุณทันสมัยแล้ว</translation>
 <translation id="3065280201209294872">ไซต์ใช้การตั้งค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจทำให้ Chromium เวอร์ชันใหม่ๆ ในอนาคตไม่สามารถเข้าถึงไซต์ได้อย่างปลอดภัย</translation>
@@ -253,7 +245,6 @@
 <translation id="8704119203788522458">นี่คือ Chromium ของคุณ</translation>
 <translation id="8269379391216269538">ช่วยปรับปรุง Chromium ให้ดีขึ้น</translation>
 <translation id="4224199872375172890">Chromium อัปเดตแล้ว</translation>
-<translation id="374481098568514319">คอมพิวเตอร์เครื่องนี้มีส่วนประกอบของ Chromium รุ่นใหม่กว่าอยู่แล้ว โปรดใช้ตัวติดตั้งรุ่นใหม่กว่า</translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>
 <translation id="7318036098707714271">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง
 

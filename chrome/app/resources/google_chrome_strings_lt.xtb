@@ -31,7 +31,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
 <translation id="8406086379114794905">Padėkite tobulinti „Chrome“</translation>
-<translation id="2896252579017640304">Paleisti „Chrome“ programas</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
 <translation id="2721687379934343312">„Mac“ kompiuteriuose slaptažodžiai saugomi programoje „Keychain“ ir gali būti pasiekiami arba sinchronizuojami kitų „Chrome“ naudotojų, bendrai naudojančių šią „OS X“ paskyrą.</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
@@ -44,7 +43,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4309555186815777032">(„Chrome“ būtina <ph name="BEGIN_BUTTON"/>paleisti iš naujo<ph name="END_BUTTON"/>)</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME"/>“ kanalą...</translation>
 <translation id="8032142183999901390">Pašalinus paskyrą iš „Chrome“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
-<translation id="5775197990071433230">Šiame kompiuteryje jau yra naujesnės versijos „Google Chrome“ komponentų. Naudokite naujesnę diegimo programą.</translation>
 <translation id="4987308747895123092">Uždarykite visus „Google Chrome“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
@@ -86,7 +84,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
 <translation id="3089968997497233615">Galima nauja, saugesnė „Google Chrome“ versija.</translation>
 <translation id="5037239767309817516">Uždarykite visus „Google Chrome“ langus ir paleiskite iš naujo, kad įsigaliotų šis pakeitimas.</translation>
-<translation id="345168553362876363">„Google Chrome“ programų paleidimo priemonė yra autonominė „Chrome“ programų platforma.</translation>
 <translation id="225614027745146050">Sveiki</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="3149510190863420837">„Chrome“ programos</translation>
@@ -177,7 +174,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="8568392309447938879">Jei norite naudoti programas, turite būti prisijungę prie „Chrome“. Tada „Chrome“ galės sinchronizuoti jūsų programas, žymes, istoriją, slaptažodžius ir kitus nustatymus įrenginiuose.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
-<translation id="5788838254726722945">Pašalinti „Google Chrome“ programų paleidimo priemonę</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Spustelėkite savo vardą, kad atidarytumėte „Chrome“ ir pradėtumėte naršyti.</translation>
@@ -202,10 +198,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="8669527147644353129">„Google Chrome“ pagalbos priemonė</translation>
 <translation id="870251953148363156">Atnaujinti „&amp;Google Chrome“</translation>
 <translation id="130631256467250065">Pakeitimai įsigalios kitą kartą iš naujo paleidus įrenginį.</translation>
-<translation id="1546593779121993896">Eikite į „Chrome“ meniu &gt; Nustatymai &gt; (Išplėstiniai) Privatumas
-          ir išjunkite parinktį „Tinklo veiksmų numatymai“.
-          Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
-          kad pagerėtų našumas.</translation>
 <translation id="163860049029591106">Darbo su „Chrome“ OS pradžia</translation>
 <translation id="1587223624401073077">„Google Chrome“ naudoja jūsų fotoaparatą.</translation>
 <translation id="1399397803214730675">Kompiuteryje jau yra naujausia „Google Chrome“ versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ ir bandykite dar kartą.</translation>
@@ -253,7 +245,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="5334545119300433702">Šis modulis žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="6634887557811630702">„Google Chrome“ naujausios versijos.</translation>
-<translation id="4120075327926916474">Ar norite, kad „Chrome“ išsaugotų šią kredito kortelės informaciją ir naudotų ją žiniatinklio formoms užpildyti?</translation>
 <translation id="3037838751736561277">„Google Chrome“ veikia fono režimu.</translation>
 <translation id="2084710999043359739">Pridėti į „Chrome“</translation>
 <translation id="4692614041509923516">Kompiuteryje veikia sena „Microsoft Windows“ versija, kurią naudojant negalima apdoroti šio svetainės saugos sertifikato. Dėl šios problemos „Google Chrome“ negali nustatyti, ar sertifikatas gautas iš <ph name="SITE"/> ar iš kažko, kas jūsų tinkle apsimeta esantis <ph name="SITE"/>. Atnaujinkite kompiuterį į naujesnę „Windows“ versiją.</translation>
@@ -282,7 +273,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="1016765312371154165">„Chrome“ netinkamai išsijungė.</translation>
 <translation id="3836351788193713666">Beveik atnaujinta! Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="884296878221830158">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chrome“ ar spustelėjate pagrindinio puslapio mygtuką.</translation>
-<translation id="7106741999175697885">Užduočių tvarkyklė – „Google Chrome“</translation>
+<translation id="7106741999175697885">Užduočių tvarkytuvė – „Google Chrome“</translation>
 <translation id="3396977131400919238">Diegimo metu įvyko operacinės sistemos klaida. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="8037887340639533879">Nerasta jokių „Google Chrome“ įdiegčių, kurias būtų galima atnaujinti.</translation>
 <translation id="5495581687705680288">Į „Google Chrome“ įkelti moduliai</translation>

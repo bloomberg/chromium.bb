@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">ఈ రకమైన కార్డ్‌కు Google Wallet మద్దతు ఇవ్వదు. దయచేసి మరో కార్డ్‌ని ఎంచుకోండి.</translation>
 <translation id="5172758083709347301">మెషీన్</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
+<translation id="8208216423136871611">సేవ్ చేయవద్దు</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="2262243747453050782">HTTP లోపం</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
 <translation id="4058922952496707368">కీ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript హెచ్చరిక</translation>
+<translation id="4081383687659939437">సమాచారాన్ని సేవ్ చెయ్యి</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> శోధన</translation>
 <translation id="2498091847651709837">కొత్త కార్డ్‌ను స్కాన్ చేయండి</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">చెల్లని శోధన URL.</translation>
 <translation id="5509780412636533143">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="8866481888320382733">విధాన సెట్టింగ్‌లను అన్వయించడంలో లోపం</translation>
+<translation id="4120075327926916474">మీరు వెబ్ ఫారమ్‌లను పూర్తి చేయడానికి Chrome ఈ క్రెడిట్ కార్డ్ సమాచారాన్ని సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> వద్ద గల పేజీ చెప్పింది:</translation>
 <translation id="4269787794583293679">(వినియోగదారు పేరు లేదు)</translation>

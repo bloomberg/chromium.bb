@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Autori Chromium. Všetky práva vyhradené.</translation>
 <translation id="6373523479360886564">Naozaj chcete Chromium odinštalovať?</translation>
-<translation id="5065199687811594072">Má prehliadač Chromium uložiť informácie o tejto kreditnej karte a použiť ich pri vypĺňaní ďalších webových formulárov?</translation>
 <translation id="6510925080656968729">Odinštalovať Chromium</translation>
 <translation id="2615699638672665509">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Chromium, pretože jeho hardvér už nie je podporovaný.</translation>
 <translation id="5532301346661895910">Chromium uloží toto heslo do vašich |uložených hesiel Google| a ponúkne vám ho, keď ho budete najbližšie potrebovať.</translation>
 <translation id="6893813176749746474">Prehliadač Chromium bol aktualizovaný, ale najmenej 30 dní ste ho nepoužili.</translation>
-<translation id="1550579416447684632">Spustiť aplikácie Chromium</translation>
 <translation id="2732467638532545152">Váš počítač používa starú verziu operačného systému Microsoft Windows, ktorá bezpečnostný certifikát tohto webu nedokáže spracovať. Pre tento problém nedokáže Chromium určiť, či certifikát pochádza z webu <ph name="SITE"/> alebo od inej osoby vo vašej sieti, ktorá sa za web <ph name="SITE"/> vydáva. Aktualizujte operačný systém počítača na najnovšiu verziu systému Windows.</translation>
-<translation id="4267347018362241535">Chromium App Launcher je samostatná platforma pre aplikácie Chromium.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="6613594504749178791">Zmeny sa prejavia pri nasledujúcom reštartovaní prehliadača Chromium.</translation>
 <translation id="9089354809943900324">Prehliadač Chromium je zastaraný</translation>
@@ -64,7 +61,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="8134284582177628525">Ak tento počítač zdieľate s používateľom <ph name="PROFILE_NAME"/>, pridajte sa do prehliadača Chromium, aby ste mohli samostatne prehliadať. V inom prípade odpojte účet Google daného používateľa.</translation>
 <translation id="1480489203462860648">Vyskúšať, prehliadač je už nainštalovaný</translation>
 <translation id="3032787606318309379">Pridáva sa do prehliadača Chromium...</translation>
-<translation id="4831257561365056138">Odinštalovať platformu Chromium App Launcher</translation>
 <translation id="4222580632002216401">Prihlásili ste sa do prehliadača Chromium. Synchronizácia je zakázaná administrátorom.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Upozornenie:<ph name="END_BOLD"/> Prehliadač Chromium nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete toto rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
 <translation id="985602178874221306">Autori prehliadača Chromium</translation>
@@ -78,10 +74,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3190315855212034486">Prehliadač Chromium zlyhal. Chcete ho spustiť znova?</translation>
 <translation id="8843170958047978824">Odstrániť z prehliadača Chromium</translation>
 <translation id="3068515742935458733">Pomôcť zlepšiť prehliadač Chromium odosielaním správ o zlyhaní a <ph name="UMA_LINK"/> spoločnosti Google</translation>
-<translation id="1609700857210121286">Prejdite do ponuky prehliadača Chromium &gt; Nastavenia &gt; (Rozšírené) Pravidlá
-          a zakážte „Predpovede akcií siete“.
-          Ak tento postup daný problém nevyrieši, odporúčame vám túto možnosť znova povoliť,
-          aby ste získali lepšiu výkonnosť.</translation>
 <translation id="734373864078049451">Tu nájdete svoj obsah na webe, záložky a ďalšie položky prehliadača Chromium.</translation>
 <translation id="3197823471738295152">Zariadenie bolo aktualizované.</translation>
 <translation id="3065280201209294872">Tieto webové stránky používajú zastarané nastavenia zabezpečenia, ktoré môžu budúcim verziám prehliadača Chromium zabrániť v bezpečnom prístupe.</translation>
@@ -253,7 +245,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chromium, ako
 <translation id="8704119203788522458">Toto je váš prehliadač Chromium</translation>
 <translation id="8269379391216269538">Pomôže zlepšiť Chromium</translation>
 <translation id="4224199872375172890">Prehliadač Chromium bol aktualizovaný.</translation>
-<translation id="374481098568514319">V tomto počítači sa už používa novšia verzia komponentov aplikácie Chromium. Použite novší inštalátor.</translation>
 <translation id="5862307444128926510">Vitajte v prehliadači Chromium</translation>
 <translation id="7318036098707714271">Súbor predvolieb je poškodený alebo neplatný. 
 

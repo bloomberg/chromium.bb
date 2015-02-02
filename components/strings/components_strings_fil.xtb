@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Hindi sinusuportahan ng Google Wallet ang uri ng card na ito. Mangyaring pumili ng iba pang card.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">I-refresh</translation>
+<translation id="8208216423136871611">Huwag mag-save</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error sa HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="4058922952496707368">Key &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerto ng JavaScript</translation>
+<translation id="4081383687659939437">I-save ang impormasyon</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Mag-scan ng bagong card</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Di-wastong URL ng paghahanap.</translation>
 <translation id="5509780412636533143">Mga pinamamahalaang bookmark</translation>
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
+<translation id="4120075327926916474">Gusto mo bang i-save ng Chrome ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form ng web?</translation>
 <translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
 <translation id="1693754753824026215">Isinaad ng pahina sa <ph name="SITE"/> na:</translation>
 <translation id="4269787794583293679">(Walang username)</translation>

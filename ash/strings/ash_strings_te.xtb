@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
+<translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/>కి తిప్పబడింది</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth నిలిపివేయబడింది</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="2562916301614567480">ప్రైవేట్ నెట్‌వర్క్</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4379753398862151997">ప్రియమైన మానిటర్, ఇది మన మధ్య పని చేయడం లేదు. (ఆ మానిటర్‌కు మద్దతు లేదు)</translation>
 <translation id="6426039856985689743">మొబైల్ డేటాను నిలిపివేయి</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">బ్యాటరీ <ph name="PERCENTAGE"/>% నిండింది.</translation>
 <translation id="2983818520079887040">సెట్టింగ్‌లు...</translation>
 <translation id="6452181791372256707">తిరస్కరించు</translation>
+<translation id="1330145147221172764">స్క్రీన్‌లో కీబోర్డ్‌ను ప్రారంభించండి</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
 <translation id="607652042414456612">మీ కంప్యూటర్ సమీప బ్లూటూత్ పరికరాల్లో కనుగొనబడుతుంది మరియు చిరునామా <ph name="ADDRESS"/>తో &quot;<ph name="NAME"/>&quot; వలె కనిపిస్తుంది</translation>
 <translation id="112308213915226829">అరను స్వయంచాలకంగా దాచు</translation>
@@ -190,6 +191,7 @@
 <translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
 నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
+<translation id="1510238584712386396">లాంచర్</translation>
 <translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="8940956008527784070">బ్యాటరీ తక్కువగా ఉంది (<ph name="PERCENTAGE"/>%)</translation>

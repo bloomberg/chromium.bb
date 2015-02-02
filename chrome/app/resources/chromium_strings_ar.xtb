@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR"/> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="6373523479360886564">‏هل تريد بالتأكيد إزالة Chromium؟</translation>
-<translation id="5065199687811594072">‏هل تريد من Chromium حفظ معلومات بطاقة الائتمان لإكمال نماذج الويب؟</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="2615699638672665509">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Chromium نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="5532301346661895910">‏سوف يقوم Chromium بتخزين هذا في |كلمات مرور Google المحفوظة لديك| وتذكرها  عند احتياجك إليها في المرة القادمة.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
-<translation id="1550579416447684632">‏تشغيل تطبيقات Chromium</translation>
 <translation id="2732467638532545152">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Chromium أن يخبر ما إذا كانت الشهادة جاءت من <ph name="SITE"/> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE"/>. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>
-<translation id="4267347018362241535">‏مشغل تطبيقات Chromium عبارة عن نظام أساسي مستقل لتطبيقات Chromium.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="6613594504749178791">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>
 <translation id="9089354809943900324">‏إصدار Chromium قديم</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME"/>، فأضف نفسك إلى Chromium للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
 <translation id="1480489203462860648">يمكنك تجريبه، إنه مثبت من قبل</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
-<translation id="4831257561365056138">‏إلغاء تثبيت مشغل تطبيقات Chromium</translation>
 <translation id="4222580632002216401">‏لقد سجلت الدخول الآن إلى Chromium! عطّل المشرف المزامنة.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>تحذير:<ph name="END_BOLD"/> لا يستطيع منع الإضافات من تسجيل سجل التصفح. لتعطيل هذه الإضافة في وضع التصفح المخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">‏للأسف! تعطل Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8843170958047978824">‏إزالة من Chromium</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
-<translation id="1609700857210121286">‏انتقل  إلى قائمة Chromium &gt; الإعدادات&gt; خصوصية (متقدمة)
-          وعطّل &quot;تنبؤات إجراءات الشبكة&quot;
-          إذا لم يعمل هذا على حل المشكلة، نوصي بإعادة تمكين هذا الخيار
-          مرة أخرى من أجل أداء أفضل.</translation>
 <translation id="734373864078049451">‏الويب والإشارات المرجعية وغيرها من عناصر Chromium توجد هنا.</translation>
 <translation id="3197823471738295152">جهازك محدّث.</translation>
 <translation id="3065280201209294872">‏هذا الموقع يستخدم إعدادات أمان غير محدّثة قد تمنع إصدارات Chromium القادمة من الوصول إليه بأمان.</translation>
@@ -250,7 +242,6 @@
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>
 <translation id="4224199872375172890">‏Chromium محدّث.</translation>
-<translation id="374481098568514319">‏يوجد على هذا الكمبيوتر إصدارًا أحدث من مكونات Chromium. الرجاء استخدام أداة تثبيت أحدث.</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="7318036098707714271">‏ملف التفضيلات تالف أو غير صالح.
 

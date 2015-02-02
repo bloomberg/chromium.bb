@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">आपण कॉपी आणि पेस्ट करता तो डेटा वाचा</translation>
 <translation id="2350172092385603347">अनुवाद वापरले, परंतु मॅनिफेस्टमध्ये डीफॉल्ट_लोकॅल निर्दिष्ट नाही.</translation>
 <translation id="3759933321830434300">वेब पृष्ठांचे भाग अवरोधित करा</translation>
+<translation id="6143635259298204954">विस्तार अनपॅक करू नका. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निदेशिकेत सिमलिंक नसलेला पथ असणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
 <translation id="149347756975725155">विस्तार प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
 <translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
 <translation id="7495493006406536234"><ph name="PRODUCT_ID"/> उत्पादन</translation>
 <translation id="4776856853352853275">USB डिव्हाइसेस निवडा</translation>
+<translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
 <translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE"/>' लोड करणे शक्य नाही.</translation>
+<translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
 <translation id="6344170822609224263">नेटवर्क कनेक्शनच्या सूचीवर प्रवेश करा</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> कडील USB डिव्हाइसेसवर प्रवेश करा</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा आणि बदला</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> कडील अज्ञात डिव्हाइस</translation>
 <translation id="4968399700653439437">डोमेनमध्ये कोणत्याही संगणकासह डेटा अदलाबदल करा: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">बेकायदेशीर पथ ('..' सह अचूक किंवा संबंधित): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">सर्व <ph name="WEBSITE_1"/> साइट</translation>
 <translation id="8662911384982557515">आपले मुख्‍यपृष्‍ठ यावर बदला: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">हा विस्तार नेटवर्क विनंती सुधारण्‍यात अयशस्वी झाला कारण सुधारणेचा दुसर्‍या विस्ताराशी विवाद झाला.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">हा विस्तार एका नेटवर्क विनंतीवर क्रेडेन्शियल प्रदान करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने वेगळी क्रेडेन्शियल प्रदान केली.</translation>
 <translation id="5627523580512561598">विस्तार <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">आपल्या संगणकावरील फोटो, संगीत आणि इतर माध्यमांमध्ये प्रवेश करा</translation>
+<translation id="3369521687965833290">विस्तार अनपॅक करणे शक्य नाही. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निर्देशिकेत ड्राइव्ह अक्षरासह प्रारंभ होणारा पथ असणे आणि जंक्शन, माउंट पॉइंट किंवा सिमलिंक नसणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
+<translation id="4811956658694082538">उपयुक्तता प्रक्रिया क्रॅश झाल्यामुळे पॅकेज स्थापित करू शकलो नाही. Chrome रीस्टार्ट करून पहा आणि पुन्हा प्रयत्न करून पहा.</translation>
+<translation id="641087317769093025">विस्तार अनझिप करणे शक्य झाले नाही</translation>
 <translation id="4761104368405085019">आपला मायक्रोफोन वापरा</translation>
 <translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME"/> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>) कडील <ph name="PRODUCT_NAME"/></translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">यापैकी कोणत्याही USB डिव्हाइसेसवर प्रवेश करा</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका किंवा अधिक डिव्हाइसेसवर प्रवेशाची विनंती करत आहे.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि बदला</translation>
+<translation id="2159915644201199628">प्रतिमा डीकोड करणे शक्य झाले नाही: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012"><ph name="VENDOR_ID"/> विक्रेता</translation>
 <translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
 <translation id="5972529113578162692">या मशीनच्या प्रशासकासाठी <ph name="EXTENSION_NAME"/> स्थापित करणे आवश्यक आहे. हे विस्थापित केले जाऊ शकत नाही.</translation>
+<translation id="1135328998467923690">हे पॅकेज अवैध आहे: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा</translation>
 <translation id="2087653731648927289">USB द्वारे कोणत्याही <ph name="PRODUCT_NAME_AND_VENDOR"/> वर प्रवेश करा</translation>
 <translation id="1803557475693955505">'पार्श्वभूमी पृष्ठ '<ph name="BACKGROUND_PAGE"/>'  लोड करणे शक्य नाही.</translation>
+<translation id="2988488679308982380">हे पॅकेज स्थापित करणे शक्य नाही: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका डिव्हाइसवर प्रवेशाची विनंती करत आहे.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">अनेक वेबसाइटवर आपला डेटा वाचा</translation>
 </translationbundle>

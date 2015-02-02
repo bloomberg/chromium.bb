@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">এই ধরনের কার্ড Google Wallet এর দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
+<translation id="8208216423136871611">সংরক্ষণ করবেন না</translation>
 <translation id="777702478322588152">জেলা</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
 <translation id="4058922952496707368">কী &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript সতর্কতা</translation>
+<translation id="4081383687659939437">তথ্য সংরক্ষণ করুন</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> অনুসন্ধান</translation>
 <translation id="2498091847651709837">নতুন কার্ড স্ক্যান করুন</translation>
@@ -175,6 +177,7 @@
 <translation id="2479410451996844060">অবৈধ অনুসন্ধানের URL৷</translation>
 <translation id="5509780412636533143">পরিচালিত বুকমার্কগুলি</translation>
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
+<translation id="4120075327926916474">আপনি কি চান যে ওয়েব ফর্ম পূরণ করার জন্য Chrome এই ক্রেডিট কার্ড তথ্য পূরণ করুক?</translation>
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> এর পৃষ্ঠাটি জানাচ্ছে:</translation>
 <translation id="4269787794583293679">(কোনো ব্যবহারকারীর নাম নেই)</translation>

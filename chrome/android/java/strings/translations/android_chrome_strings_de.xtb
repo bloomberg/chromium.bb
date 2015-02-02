@@ -1,10 +1,12 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="8588878054171169263">Bild speichern</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
+<translation id="8425213833346101688">Ändern</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="6292937202013477045">Unbefugte Dritte könnten versuchen, Ihre Informationen von <ph name="DOMAIN_NAME"/> zu stehlen, etwa Fotos, Passwörter, Nachrichten oder Kreditkartendaten.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="346339498574870680">Bild-URL kopieren</translation>
+<translation id="5063480226653192405">Verwendung</translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE"/> nach dem Bild suchen</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Tab schließen</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Alle löschen</translation>
 <translation id="6458785801851713928">Die Synchronisierung ist für Ihre Domain nicht verfügbar.</translation>
 <translation id="2731700343119398978">Bitte warten...</translation>
 <translation id="6846298663435243399">Wird geladen…</translation>
@@ -39,6 +43,8 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="1966710179511230534">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
 <translation id="3410346880900521918">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK"/>Empfehlungen<ph name="END_LINK"/> an.</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
+<translation id="7375125077091615385">Typ:</translation>
+<translation id="2498359688066513246">Hilfe und Feedback</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
@@ -53,13 +59,12 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
-<translation id="5860033963881614850">Aus</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
-<translation id="5317780077021120954">Speichern</translation>
 <translation id="1151972924205500581">Passwort erforderlich</translation>
+<translation id="2870560284913253234">Website</translation>
 <translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="2414886740292270097">Dunkel</translation>
@@ -79,28 +84,38 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="4807098396393229769">Name auf Karte</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> immer übersetzen</translation>
 <translation id="2387895666653383613">Text-Skalierung</translation>
+<translation id="6447842834002726250">Cookies</translation>
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
+<translation id="1383876407941801731">Suchen</translation>
 <translation id="5626370437647899551">Google-Konto hinzufügen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="4543661749405994812">E-Mail-Adresse kopieren</translation>
+<translation id="5646376287012673985">Standort</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
+<translation id="1987317783729300807">Konten</translation>
 <translation id="6064211167623632605">Ausführbarer Pfad</translation>
 <translation id="10614374240317010">Nie speichern für...</translation>
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="4827948050554950725">Kreditkarte hinzufügen</translation>
+<translation id="4278390842282768270">Zugelassen</translation>
 <translation id="7817177303494746697">Blink-Version</translation>
 <translation id="2532336938189706096">Web-Ansicht</translation>
 <translation id="6571070086367343653">Kreditkarte bearbeiten</translation>
 <translation id="7080851568148064063">Zum Startbildschirm hinzu</translation>
+<translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="4619298195800598081">Original in neuem Tab öffnen</translation>
+<translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="885701979325669005">Speicher</translation>
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
 <translation id="907015151729920253">Smartcard</translation>
+<translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
 <translation id="2600241144430299006">Ablaufmonat der Karte</translation>
 <translation id="3063601790762993062">Video speichern</translation>
@@ -114,6 +129,7 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="4148957013307229264">Installation wird ausgeführt...</translation>
 <translation id="3992315671621218278">Link speichern</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="5424715742813396254">Gespeicherten Namen/Passwort oder Ausnahme bearbeiten</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
@@ -130,8 +146,9 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
 <translation id="2359808026110333948">Weiter</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">AutoFill-Formulare</translation>
-<translation id="8261506727792406068">Löschen</translation>
+<translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="1080790410959514870">Sie melden sich von einem Konto ab, das von <ph name="DOMAIN_NAME"/> verwaltet wird. Dadurch werden die auf diesem Gerät gespeicherten Chrome-Daten gelöscht. Die Daten verbleiben jedoch weiterhin in Ihrem Google-Konto.</translation>
 <translation id="4510973599275542560">Nicht aktualisieren</translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
@@ -140,15 +157,19 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE"/> nie übersetzen</translation>
 <translation id="6671495933530132209">Bild kopieren</translation>
+<translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="8941248009481596111">Ihre Verbindung zu dieser Website ist privat.</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
+<translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="8528538445849828817">Sprache der Seite: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
+<translation id="3414952576877147120">Größe:</translation>
+<translation id="5626134646977739690">Name:</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="2612676031748830579">Kartennummer</translation>
@@ -163,7 +184,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 Ist die Option deaktiviert, können Sie möglicherweise auf diesem Gerät keine Premium-Videos abspielen.</translation>
 <translation id="8928220460877261598">Sie sind jetzt in Chrome angemeldet.</translation>
 <translation id="5032574515228824816">Eingabeaufforderung</translation>
-<translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
 
 Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>
@@ -177,10 +197,12 @@ Zum Verlassen von oben ziehen</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="7634554953375732414">Die Verbindung zu dieser Website ist nicht sicher.</translation>
+<translation id="6409731863280057959">Pop-ups</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5916664084637901428">An</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
+<translation id="5677928146339483299">Blockiert</translation>
 <translation id="7561196759112975576">Immer</translation>
 </translationbundle>

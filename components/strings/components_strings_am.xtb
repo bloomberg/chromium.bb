@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">ይህ የካርድ አይነት በGoogle Wallet አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
 <translation id="5172758083709347301">ማሽን</translation>
 <translation id="7180611975245234373">አድስ</translation>
+<translation id="8208216423136871611">አታስቀምጥ</translation>
 <translation id="777702478322588152">የፕሪፌክት ስልጣን</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ን በጭራሽ አትተርጉም</translation>
 <translation id="2262243747453050782">የኤች ቲ ቲ ፒ ስህተት</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">የተመከሩ</translation>
 <translation id="4058922952496707368">ቁልፍ «<ph name="SUBKEY"/>»፦ <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">የJavaScript ማንቂያ</translation>
+<translation id="4081383687659939437">መረጃ አስቀምጥ</translation>
 <translation id="5299298092464848405">መምሪያን መተንተን ላይ ስህተት</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ፍለጋ</translation>
 <translation id="2498091847651709837">አዲስ ካርድ ቃኝ</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">ልክ ያልሆነ የፍለጋ ዩአርኤል።</translation>
 <translation id="5509780412636533143">የተዳደሩ እልባቶች</translation>
 <translation id="8866481888320382733">የመምሪያ ቅንብሮችን መተንተን ላይ ስህተት</translation>
+<translation id="4120075327926916474">Chrome የድር ቅጾችን ለማጠናቅቅ ይህን የክሬዲት ካርድ መረጃ እንዲያስቀምጥ ይፈልጋሉ?</translation>
 <translation id="6644283850729428850">ይህ መመሪያ ተቋርጧል።</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> ላይ ያለው ገጽ እንዲህ ይላል፦</translation>
 <translation id="4269787794583293679">(ምንም የተጠቃሚ ስም የለም)</translation>

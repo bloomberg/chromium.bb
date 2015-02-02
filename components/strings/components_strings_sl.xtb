@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Ta vrsta kartice ni podprta v Google Denarnici. Izberite drugo kartico.</translation>
 <translation id="5172758083709347301">Računalnik</translation>
 <translation id="7180611975245234373">Osveži</translation>
+<translation id="8208216423136871611">Ne shrani</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Napaka HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Priporočeni</translation>
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY"/>«: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Opozorilo JavaScript</translation>
+<translation id="4081383687659939437">Shrani podatke</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Iskanje</translation>
 <translation id="2498091847651709837">Optično branje nove kartice</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Neveljaven URL iskanja.</translation>
 <translation id="5509780412636533143">Upravljani zaznamki</translation>
 <translation id="8866481888320382733">Napaka pri razčlenjevanju nastavitev pravilnika</translation>
+<translation id="4120075327926916474">Ali želite, naj Chrome shrani podatke o tej kreditni kartici za izpolnjevanje spletnih obrazcev?</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="1693754753824026215">Na strani na naslovu <ph name="SITE"/> je navedeno:</translation>
 <translation id="4269787794583293679">(Ni uporabniškega imena)</translation>

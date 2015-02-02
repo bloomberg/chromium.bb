@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Fika kwenye wavuti</translation>
 <translation id="8586442755830160949">Hakimiliki <ph name="YEAR"/> Wasanidi wa Chromium. Haki zote zimehifadhiwa.</translation>
 <translation id="6373523479360886564">Je, una hakika unataka kusanidua Chromium?</translation>
-<translation id="5065199687811594072">Je, unataka Chromium ihifadhi maelezo haya ya kadi ya mkopo ya kukamilisha fomu za wavuti?</translation>
 <translation id="6510925080656968729">Sanidua Chromium</translation>
 <translation id="2615699638672665509">Hivi karibuni kompyuta hii itaacha kupokea sasisho za Chromium kwa sababu maunzi yake hayatumiki tena.</translation>
 <translation id="5532301346661895910">Chromium itahifadhi hii katika |manenosiri yako yaliyohifadhiwa kwenye Google na iikumbuke wakati ujao utakapolihitaji.</translation>
 <translation id="6893813176749746474">Chromium imesasishwa, lakini hujaitumia angalau kwa siku 30.</translation>
-<translation id="1550579416447684632">Zindua programu za Chromium</translation>
 <translation id="2732467638532545152">Kompyuta yako inatumia toleo la zamani la Microsoft Windows ambalo haliwezi kuchakata cheti cha usalama cha tovuti. Kwa sababu ya tatizo hili, Chromium haiwezi kutambua ikiwa cheti kilitoka kwenye <ph name="SITE"/> au kwa mtu kwenye mtandao wako anayejifanya kuwa <ph name="SITE"/>. Tafadhali pata toleo jipya sana la Windows kwa kompyuta yako.</translation>
-<translation id="4267347018362241535">Kizinduzi cha Programu ya Chromium ni mfumo wa pekee wa programu za Chromium.</translation>
 <translation id="2770231113462710648">Badilisha kivinjari chaguo msingi kiwe:</translation>
 <translation id="6613594504749178791">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua upya Chromium.</translation>
 <translation id="9089354809943900324">Chromium imepitwa na wakati</translation>
@@ -61,7 +58,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="8134284582177628525">Ukishiriki kompyuta hii na <ph name="PROFILE_NAME"/>, jiongeze kwenye Chromium ili uvinjari tofauti. Vinginevyo ondoa Akaunti yake ya Google.</translation>
 <translation id="1480489203462860648">Ijaribu, tayari imesakinishwa</translation>
 <translation id="3032787606318309379">Inaongeza kwenye Chromium...</translation>
-<translation id="4831257561365056138">Sakinusha Kizinduzi cha Programu ya Chromium</translation>
 <translation id="4222580632002216401">Sasa umeingia kwenye Chromium! Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Ilani:<ph name="END_BOLD"/> Chromium haiwezi kuzuia viendelezi kurekodi historia yako ya kuvinjari. Ili kuzima kiendelezi hiki katika hali fiche, ondoa tiki kwenye chaguo hili.</translation>
 <translation id="985602178874221306">Waandishi wa Chromium</translation>
@@ -75,11 +71,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3190315855212034486">Lo! Chromium imevurugika. Unataka kuzindua upya sasa?</translation>
 <translation id="8843170958047978824">Ondoa Kwenye Chromium</translation>
 <translation id="3068515742935458733">Saidia kuboresha Chromium kwa kutuma ripoti za kuacha kufanya kazi na <ph name="UMA_LINK"/> kwenda Google</translation>
-<translation id="1609700857210121286">Nenda kwenye menyu ya Chromium &gt; Mipangilio &gt; (Mahiri) Faragha
-          na uzime &quot;Utabiri wa vitendo vya mtandao.&quot;
-          Ikiwa hili halitatatua tatizo, tunapendekeza uwashe chaguo hili
-          
-           tena kwa utendaji ulioboreshwa.</translation>
 <translation id="734373864078049451">Wavuti, alamisho, na mambo yako mengine ya Chromium yanapatikana hapa.</translation>
 <translation id="3197823471738295152">Kifaa chako kimesasishwa.</translation>
 <translation id="3065280201209294872">Tovuti inatumia mipangilio ya usalama iliyopitwa na wakati ambayo huenda imezuia matoleo ya baadaye ya Chromium kutokuwa na uwezo wa kuifikia kwa usalama.</translation>
@@ -250,7 +241,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chromium kama vile alamisho, histor
 <translation id="8704119203788522458">Hii ni Chromium yako</translation>
 <translation id="8269379391216269538">Saidia ili kuiboresha Chromium</translation>
 <translation id="4224199872375172890">Chromium imesasishwa.</translation>
-<translation id="374481098568514319">Kompyuta hii tayari ina toleo jipya la hivi karibuni zaidi la vijenzi vya Chromium. Tafadhali tumia kisakinishi cha hivi karibuni zaidi.</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="7318036098707714271">Faili yako ya mapendeleo imeharibika au ni batili. 
 

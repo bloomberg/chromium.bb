@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Ler dados que copia e cola</translation>
 <translation id="2350172092385603347">Localização utilizada, mas não foi especificado default_locale no manifesto.</translation>
 <translation id="3759933321830434300">Bloquear partes de páginas Web</translation>
+<translation id="6143635259298204954">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil sem uma ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
 <translation id="149347756975725155">Não foi possível carregar o ícone de extensão &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Falha desta extensão ao modificar o cabeçalho do pedido &quot;<ph name="HEADER_NAME"/>&quot; de um pedido de rede, porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produto <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Selecionar dispositivos USB</translation>
+<translation id="6731255991101203740">Não foi possível criar um diretório para descomprimir: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página acerca de &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Não foi possível carregar a página de opções &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">Gerir ligações de rede</translation>
 <translation id="6344170822609224263">Lista de acesso de ligações de rede</translation>
 <translation id="7039326228527141150">Aceder a dispositivos USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Ler e alterar os seus dados em <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">dispositivos desconhecidos de <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Trocar dados com com qualquer computador nos domínios <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Vista Web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Caminho ilegal (absoluto ou relativo com &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">todos os sites de <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Alterar a página inicial para: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Esta extensão não conseguiu modificar um pedido de rede, porque a modificação entrou em conflito com outra extensão.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Falha desta extensão ao fornecer credenciais a um pedido de rede, porque outra extensão (<ph name="EXTENSION_NAME"/>) forneceu credenciais diferentes.</translation>
 <translation id="5627523580512561598">extensão <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Aceder a fotografias, música e outros elementos multimédia a partir do seu computador</translation>
+<translation id="3369521687965833290">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil começado por uma letra de unidade e sem uma junção, ponto de montagem ou ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
+<translation id="4811956658694082538">Não foi possível instalar o pacote, porque o processo de um utilitário falhou. Experimente reiniciar o Chrome e tentar novamente.</translation>
+<translation id="641087317769093025">Não foi possível descomprimir a extensão</translation>
 <translation id="4761104368405085019">Utilizar o seu microfone</translation>
 <translation id="7217838517480956708">O administrador desta máquina exige que o <ph name="EXTENSION_NAME"/> seja instalado. Este não pode ser removido ou modificado.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Aceder a qualquer um destes dispositivos USB</translation>
 <translation id="2677911863018634147">A aplicação&quot;<ph name="APP_NAME"/>&quot; está a solicitar acesso a um ou mais dos seus dispositivos.</translation>
 <translation id="6698810901424468597">Ler e alterar os seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Não foi possível descodificar a imagem: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Fornecedor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Aceder ao tráfego da sua rede</translation>
 <translation id="5972529113578162692">O administrador deste computador requer que a extensão <ph name="EXTENSION_NAME"/> esteja instalada. Não é possível desinstalá-la.</translation>
+<translation id="1135328998467923690">O pacote é inválido: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Ler os seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Aceder a qualquer <ph name="PRODUCT_NAME_AND_VENDOR"/> através de USB</translation>
 <translation id="1803557475693955505">Não foi possível carregar a página de fundo &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Não foi possível instalar o pacote: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">A aplicação &quot;<ph name="APP_NAME"/>&quot; está a solicitar acesso a um dos seus dispositivos.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">O pacote é inválido. Detalhes: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Ler os seus dados em vários Websites</translation>
 </translationbundle>

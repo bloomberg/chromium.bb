@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth е активиран</translation>
+<translation id="5895138241574237353">Рестартиране</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME"/>“ на <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth е деактивиран</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>.
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="2562916301614567480">Частна мрежа</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="4379753398862151997">Уважаеми мониторе, нещата между нас не се получават. (Този монитор не се поддържа)</translation>
 <translation id="6426039856985689743">Деактивиране на мобилните данни</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE"/>% пълна.</translation>
 <translation id="2983818520079887040">Настройки...</translation>
 <translation id="6452181791372256707">Отхвърляне</translation>
+<translation id="1330145147221172764">Активиране на екранната клавиатура</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME"/>“ с адрес <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
@@ -190,6 +191,7 @@
 <translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.
 Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
 <translation id="5045002648206642691">Настройки за Google Диск...</translation>
+<translation id="1510238584712386396">Стартов панел</translation>
 <translation id="7209101170223508707">„CAPS LOCK“ е включен.
 Натиснете „Alt + търсене“ или „Shift“, за да анулирате.</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE"/>%)</translation>

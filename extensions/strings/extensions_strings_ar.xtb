@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">قراءة البيانات التي نسختها ولصقتها</translation>
 <translation id="2350172092385603347">‏تم استخدام التعريب، ولكن لم يتم تحديد default_locale في البيان.</translation>
 <translation id="3759933321830434300">الأجزاء المقيدة من صفحات الويب</translation>
+<translation id="6143635259298204954">لا يمكن فك ضغط الإضافة.  لفك ضغط الإضافة بشكل آمن، يجب أن يكون هناك مسار إلى دليل ملفك الشخصي، ولا يحتوي على رابط رمزي.  ليس هناك مثل هذا المسار لملفك الشخصي.</translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">أخفقت الإضافة في تعديل عنوان الطلب &quot;<ph name="HEADER_NAME"/>&quot; لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">منتج <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">‏تحديد أجهزة USB</translation>
+<translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">تعذر تحميل حول الصفحة &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
 <translation id="6344170822609224263">قائمة الدخول لاتصالات الشبكة</translation>
 <translation id="7039326228527141150">‏الدخول إلى أجهزة USB من <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">أجهزة غير معروفة من <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">تبادل البيانات مع أي جهاز كمبيوتر في النطاقات: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">مسار غير قانوني (أساسي أو منتسب مع '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">جميع مواقع <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">تغيير الصفحة الرئيسية إلى: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">أخفقت هذه الإضافة في تعديل طلب الشبكة نظرًا لتعارض التعديل مع إضافة أخرى.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">أخفقت هذه الإضافة في تقديم بيانات الاعتماد لطلب الشبكة، نظرًا لتقديم بيانات اعتماد مختلفة بواسطة إضافة أخرى (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="5627523580512561598">الإضافة <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">الوصول إلى الصور والموسيقى والوسائط الأخرى من جهاز الكمبيوتر</translation>
+<translation id="3369521687965833290">لا يمكن فك ضغط الإضافة.  لفك ضغط الإضافة بشكل آمن، يجب أن يكون هناك مسار إلى دليل ملفك الشخصي، ويبدأ بحرف محرك أقراص ولا يحتوي على وصلة أو نقطة تحميل أو رابط رمزي.  ليس هناك مثل هذا المسار لملفك الشخصي.</translation>
+<translation id="4811956658694082538">‏تعذر تثبيت الحزمة بسبب تعطل معالجة الأداة المساعدة. جرّب إعادة تشغيل Chrome وحاول مرة أخرى.</translation>
+<translation id="641087317769093025">تعذر فك ضغط الإضافة</translation>
 <translation id="4761104368405085019">استخدام الميكروفون</translation>
 <translation id="7217838517480956708">يطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME"/>. لا يمكن إزالتها أو تعديلها.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">‏الدخول إلى أي من أجهزة USB هذه</translation>
 <translation id="2677911863018634147">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد أو أكثر من أجهزتك.</translation>
 <translation id="6698810901424468597">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/>و <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">تعذر فك تشفير الصورة: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">المورّد <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">الدخول إلى عدد زيارات شبكتك</translation>
 <translation id="5972529113578162692">يتطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME"/>. لا يمكن إلغاء تثبيته.</translation>
+<translation id="1135328998467923690">الحزمة غير صالحة: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">قراءة بياناتك على <ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> و<ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">‏الدخول إلى أي <ph name="PRODUCT_NAME_AND_VENDOR"/> عن طريق USB</translation>
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="2988488679308982380">تعذر تثبيت الحزمة: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد من أجهزتك.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">قراءة بياناتك على عدد من مواقع الويب</translation>
 </translationbundle>

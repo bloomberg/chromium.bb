@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Accede a Internet.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="6373523479360886564">¿Seguro que quieres desinstalar Chromium?</translation>
-<translation id="5065199687811594072">¿Quieres que Chromium guarde la información de esta tarjeta de crédito para completar formularios web?</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="2615699638672665509">Este ordenador dejará de recibir actualizaciones de Chromium dentro de poco porque su hardware ya no es compatible.</translation>
 <translation id="5532301346661895910">Chromium almacenará esta contraseña junto a tus |contraseñas guardadas de Google| y la recordará la próxima vez que la necesites.</translation>
 <translation id="6893813176749746474">Chromium se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
-<translation id="1550579416447684632">Iniciar aplicaciones de Chromium</translation>
 <translation id="2732467638532545152">Tu ordenador utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Chromium no puede saber si el certificado procede de <ph name="SITE"/> o de un atacante de tu red que quiera hacerse pasar por <ph name="SITE"/>. Instala una versión más reciente de Windows en el ordenador.</translation>
-<translation id="4267347018362241535">El menú de aplicaciones de Chromium es una plataforma independiente para aplicaciones de Chromium.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
 <translation id="6613594504749178791">Los cambios se aplicarán la próxima vez que reinicies Chromium.</translation>
 <translation id="9089354809943900324">Chromium no está actualizado</translation>
@@ -64,7 +61,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="8134284582177628525">Si compartes este ordenador con <ph name="PROFILE_NAME"/>, añádete a Chromium como usuario para utilizar una sesión de navegación independiente. Si no, desvincula la cuenta de Google del otro usuario.</translation>
 <translation id="1480489203462860648">Probarlo (ya instalado)</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
-<translation id="4831257561365056138">Desinstalar menú de aplicaciones de Chromium</translation>
 <translation id="4222580632002216401">Has iniciado sesión en Chromium. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
@@ -78,10 +74,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3190315855212034486">¡Vaya! Se ha producido un fallo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8843170958047978824">Desinstalar de Chromium</translation>
 <translation id="3068515742935458733">Ayudar a mejorar Chromium enviando informes sobre fallos y <ph name="UMA_LINK"/> a Google</translation>
-<translation id="1609700857210121286">Accede al menú de Chromium &gt; Ajustes &gt; Privacidad (Opciones avanzadas)
-          e inhabilita &quot;Predicciones de acciones de red&quot;.
-          Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción
-          para conseguir un mejor rendimiento.</translation>
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="3065280201209294872">La configuración de seguridad que utiliza el sitio está obsoleta, por lo que es posible que las versiones futuras de Chromium no puedan acceder a él de forma segura.</translation>
@@ -256,7 +248,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="8704119203788522458">Aquí tienes tu navegador Chromium</translation>
 <translation id="8269379391216269538">Ayuda a mejorar Chromium</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
-<translation id="374481098568514319">Este ordenador ya cuenta con una versión más reciente de los componentes de Chromium. Utiliza un archivo de instalación más reciente.</translation>
 <translation id="5862307444128926510">Te damos la bienvenida a Chromium</translation>
 <translation id="7318036098707714271">Tu archivo de preferencias está dañado o no es válido.
 

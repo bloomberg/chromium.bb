@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="8673028979667498656">270 درجة</translation>
 <translation id="5571066253365925590">تم تمكين البلوتوث</translation>
+<translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME"/> إلى <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="2268130516524549846">تم تعطيل البلوتوث</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID"/>.
 اضغط على Shift + Alt للتبديل.</translation>
 <translation id="2562916301614567480">الشبكة الخاصة</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="4379753398862151997">الشاشة لا تعمل. (هذه الشاشة غير متوافقة)</translation>
 <translation id="6426039856985689743">تعطيل بيانات الجوال</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE"/>% من البطارية.</translation>
 <translation id="2983818520079887040">الإعدادات...</translation>
 <translation id="6452181791372256707">رفض</translation>
+<translation id="1330145147221172764">تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ &quot;<ph name="NAME"/>&quot; بالعنوان <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
@@ -188,6 +189,7 @@
 <translation id="8103386449138765447">‏الرسائل القصيرة SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">‏تم تمكين ChromeVox (التعليقات المنطوقة). يمكنك الضغط على Ctrl+Alt+Z لتعطيلها.</translation>
 <translation id="5045002648206642691">‏إعدادات Google Drive...</translation>
+<translation id="1510238584712386396">المشغّل</translation>
 <translation id="7209101170223508707">‏المفتاح CAPS LOCK في وضع التشغيل. اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift لإلغاء التشغيل.</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="4918086044614829423">قبول</translation>

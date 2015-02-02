@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth er aktivert</translation>
+<translation id="5895138241574237353">Start på nytt</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ble rotert til <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth er deaktivert</translation>
@@ -78,7 +79,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="5825747213122829519">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID"/>.
 Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2562916301614567480">Privat nettverk</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4379753398862151997">Kjære skjerm, det går ikke så bra mellom oss. (Skjermen støttes ikke)</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
@@ -160,6 +160,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % fullt</translation>
 <translation id="2983818520079887040">Innstillinger</translation>
 <translation id="6452181791372256707">Avslå</translation>
+<translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME"/>» og adressen <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Skjul hylle automatisk</translation>
@@ -190,6 +191,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="8103386449138765447">SMS-meldinger: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (muntlig tilbakemelding) er aktivert. Trykk på Ctrl+Alt+Z for å deaktivere.</translation>
 <translation id="5045002648206642691">Innstillinger for Google Disk</translation>
+<translation id="1510238584712386396">Appvelger</translation>
 <translation id="7209101170223508707">Caps Lock er på.
 Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE"/> %)</translation>

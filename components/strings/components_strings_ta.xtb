@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">இந்த வகை கார்டு Google Wallet ஆல் ஆதரிக்கப்படாது. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="5172758083709347301">இயந்திரம்</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
+<translation id="8208216423136871611">சேமிக்காதே</translation>
 <translation id="777702478322588152">ப்ரீஃபெக்சர்</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="2262243747453050782">HTTP பிழை</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">பரிந்துரைத்தவை</translation>
 <translation id="4058922952496707368">விசை &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript விழிப்பூட்டல்</translation>
+<translation id="4081383687659939437">தகவலைச் சேமி</translation>
 <translation id="5299298092464848405">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> தேடல்</translation>
 <translation id="2498091847651709837">புதிய கார்டை ஸ்கேன்செய்</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">தவறான தேடல் URL.</translation>
 <translation id="5509780412636533143">நிர்வகிக்கப்படும் புக்மார்க்குகள்</translation>
 <translation id="8866481888320382733">கொள்கை அமைப்புகளை அலசுவதில் பிழை</translation>
+<translation id="4120075327926916474">வலைப் படிவங்களை நிறைவுசெய்வதற்காக இந்தக் கடன் அட்டைத் தகவலை  Chrome சேமிக்க வேண்டும் என்று நீங்கள் விரும்புகிறீர்களா?</translation>
 <translation id="6644283850729428850">இந்தக் கொள்கை தவிர்க்கப்பட்டது.</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> இல் உள்ள பக்கம் கூறுவது:</translation>
 <translation id="4269787794583293679">(பயனர்பெயர் இல்லை)</translation>

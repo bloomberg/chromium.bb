@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für &quot;default_locale&quot; angegeben.</translation>
 <translation id="3759933321830434300">Teile von Webseiten blockieren</translation>
+<translation id="6143635259298204954">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
 <translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-Geräte auswählen</translation>
+<translation id="6731255991101203740">Fehler beim Erstellen von Verzeichnis zum Entpacken: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Infoseite &quot;<ph name="ABOUT_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="388442998277590542">Optionsseite &quot;<ph name="OPTIONS_PAGE"/>&quot; konnte nicht geladen werden.</translation>
+<translation id="5127881134400491887">Netzwerkverbindungen verwalten</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="7039326228527141150">Auf USB-Geräte von <ph name="VENDOR_NAME"/> zugreifen</translation>
 <translation id="2616366145935564096">Eigene Daten auf <ph name="WEBSITE_1"/> lesen und ändern</translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">unbekannte Geräte von <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Daten mit einem beliebigen Computer in den Domains <ph name="DOMAINS"/> austauschen</translation>
 <translation id="5026754133087629784">Web-Ansicht: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Unzulässiger Pfad (absolut oder relativ mit &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">alle <ph name="WEBSITE_1"/>-Websites</translation>
 <translation id="8662911384982557515">Startseite zu <ph name="HOME_PAGE"/> ändern</translation>
 <translation id="27822970480436970">Die Erweiterung konnte eine Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung verursacht.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Die Erweiterung konnte die Anmeldeinformationen für eine Netzwerkanfrage nicht bereitstellen, da eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) andere Anmeldeinformationen übermittelt hat.</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/>-Erweiterung</translation>
 <translation id="7893008570150657497">Auf Fotos, Musik und andere Medien auf Ihrem Computer zugreifen</translation>
+<translation id="3369521687965833290">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der mit einem Laufwerksbuchstaben beginnt und keine Verknüpfung, keinen Bereitstellungspunkt und keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
+<translation id="4811956658694082538">Das Paket konnte nicht installiert werden, da der Prozess eines Dienstprogramms abgestürzt ist. Starten Sie Chrome neu und versuchen Sie es erneut.</translation>
+<translation id="641087317769093025">Erweiterung kann nicht entpackt werden.</translation>
 <translation id="4761104368405085019">Ihr Mikrofon verwenden</translation>
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME"/> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Auf alle diese USB-Geräte zugreifen</translation>
 <translation id="2677911863018634147">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines oder mehrere Ihrer Geräte an.</translation>
 <translation id="6698810901424468597">Eigene Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen und ändern</translation>
+<translation id="2159915644201199628">Bild konnte nicht decodiert werden: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Anbieter <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Auf Ihren Netzwerkverkehr zugreifen</translation>
 <translation id="5972529113578162692">Der Administrator dieses Computers hat die Installation von <ph name="EXTENSION_NAME"/> vorgegeben. Eine Deinstallation ist daher nicht möglich.</translation>
+<translation id="1135328998467923690">Paket ist ungültig: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen</translation>
 <translation id="2087653731648927289">Auf <ph name="PRODUCT_NAME_AND_VENDOR"/> per USB zugreifen</translation>
 <translation id="1803557475693955505">Hintergrundseite &quot;<ph name="BACKGROUND_PAGE"/>&quot; konnte nicht geladen werden.</translation>
+<translation id="2988488679308982380">Paket konnte nicht installiert werden: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="5751530153776468604">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines Ihrer Geräte an.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Paket ist ungültig. Details: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
 <translation id="344630545793878684">Ihre Daten auf verschiedenen Websites lesen</translation>
 </translationbundle>

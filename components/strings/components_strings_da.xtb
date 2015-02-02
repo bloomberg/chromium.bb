@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Denne korttype understøttes ikke af Google Wallet. Vælg et andet kort.</translation>
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="7180611975245234373">Opdater</translation>
+<translation id="8208216423136871611">Gem ikke</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="4058922952496707368">Nøgle &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript-advarsel</translation>
+<translation id="4081383687659939437">Gem oplysninger</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Søg</translation>
 <translation id="2498091847651709837">Scan et nyt kort</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="5509780412636533143">Administrerede bogmærker</translation>
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
+<translation id="4120075327926916474">Er du sikker på, at Chrome skal gemme disse kreditkortoplysninger til udfyldning af webformularer?</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="1693754753824026215">Siden på <ph name="SITE"/> siger:</translation>
 <translation id="4269787794583293679">(Intet brugernavn)</translation>

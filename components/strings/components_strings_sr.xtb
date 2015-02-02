@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google новчаник не подржава овај тип картице. Изаберите неку другу картицу.</translation>
 <translation id="5172758083709347301">Рачунар</translation>
 <translation id="7180611975245234373">Освежи</translation>
+<translation id="8208216423136871611">Не чувај</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Препоручено</translation>
 <translation id="4058922952496707368">Кључ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript обавештење</translation>
+<translation id="4081383687659939437">Сачувај информације</translation>
 <translation id="5299298092464848405">Грешка при рашчлањивању смерница</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> претрага</translation>
 <translation id="2498091847651709837">Скенирајте нову картицу</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
 <translation id="5509780412636533143">Обележивачи којим се управља</translation>
 <translation id="8866481888320382733">Грешка при рашчлањивању подешавања смерница</translation>
+<translation id="4120075327926916474">Желите ли да Chrome сачува ове информације о кредитној картици за попуњавање веб-образаца?</translation>
 <translation id="6644283850729428850">Ове смернице су застареле.</translation>
 <translation id="1693754753824026215">Страница на <ph name="SITE"/> каже:</translation>
 <translation id="4269787794583293679">(Без корисничког имена)</translation>

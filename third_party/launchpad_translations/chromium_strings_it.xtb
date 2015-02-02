@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="6373523479360886564">Vuoi disinstallare Chromium?</translation>
-<translation id="5065199687811594072">Desideri che Chromium salvi i dati della carta di credito per la compilazione dei moduli web?</translation>
 <translation id="6510925080656968729">Disinstalla Chromium</translation>
 <translation id="2615699638672665509">A breve non sarà più possibile ricevere gli aggiornamenti di Chromium, perché l'hardware del computer in uso non è più supportato.</translation>
 <translation id="5532301346661895910">Chromium memorizzerà questa password nelle tue |password salvate di Google| e la ricorderà la prossima volta che ti servirà.</translation>
 <translation id="6893813176749746474">Chromium è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
-<translation id="1550579416447684632">Avvia app Chromium</translation>
 <translation id="2732467638532545152">Sul computer è installata una vecchia versione di Microsoft Windows che non è in grado di elaborare il certificato di sicurezza del sito web. Per questo problema, Chromium non riesce a capire se il certificato proviene da <ph name="SITE"/> o da qualcuno sulla tua rete che si spaccia per il sito <ph name="SITE"/>. Aggiorna il computer a una versione più recente di Windows.</translation>
-<translation id="4267347018362241535">Chromium App Launcher è una piattaforma indipendente per le app Chromium.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="6613594504749178791">Le modifiche verranno applicate al prossimo riavvio di Chromium.</translation>
 <translation id="9089354809943900324">Chromium non è aggiornato</translation>
@@ -56,7 +53,6 @@ Se il problema non si risolve, dovresti riselezionare questa opzione per ottener
 <translation id="8134284582177628525">Se condividi questo computer con <ph name="PROFILE_NAME"/>, aggiungiti a Chromium per navigare separatamente. In caso contrario scollega l'account Google della persona.</translation>
 <translation id="1480489203462860648">Provalo, è già installato</translation>
 <translation id="3032787606318309379">Aggiunta a Chromium in corso...</translation>
-<translation id="4831257561365056138">Distinstalla Chromium App Launcher</translation>
 <translation id="4222580632002216401">Hai eseguito l'accesso a Chromium. La sincronizzazione è stata disattivata dall'amministratore.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Avviso.<ph name="END_BOLD"/> Chromium non è in grado di impedire alle estensioni di registrare la tua cronologia di navigazione. Per disattivare questa estensione in modalità di navigazione in incognito, deseleziona questa opzione.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -70,8 +66,6 @@ Se il problema non si risolve, dovresti riselezionare questa opzione per ottener
 <translation id="3190315855212034486">Spiacenti, si è verificato un arresto anomalo di Chromium. Riavviarlo ora?</translation>
 <translation id="8843170958047978824">Rimuovi da Chromium</translation>
 <translation id="3068515742935458733">Aiutaci a migliorare Chromium inviando a Google rapporti sugli arresti anomali e <ph name="UMA_LINK"/></translation>
-<translation id="1609700857210121286">Seleziona il menu Chromium &gt; Impostazioni &gt; (Avanzate) Privacy e disattiva l'opzione &quot;Previsioni delle azioni di rete&quot;.
-Se il problema non si risolve, dovresti riattivare questa opzione per ottenere prestazioni migliori.</translation>
 <translation id="734373864078049451">I tuoi siti web, i tuoi segnalibri e gli altri contenuti Chromium sempre disponibili e aggiornati qui.</translation>
 <translation id="3197823471738295152">Il dispositivo è aggiornato.</translation>
 <translation id="3065280201209294872">Il sito utilizza impostazioni di sicurezza obsolete che potrebbero impedire l'accesso sicuro alle future versioni di Chromium.</translation>
@@ -244,7 +238,6 @@ Se esegui comunque l'accesso, le informazioni di Chromium come Preferiti, cronol
 <translation id="8704119203788522458">Questo è il tuo account Chromium</translation>
 <translation id="8269379391216269538">Contribuisci a migliorare Chromium</translation>
 <translation id="4224199872375172890">Chromium è aggiornato.</translation>
-<translation id="374481098568514319">Questo computer ha già una versione più recente dei componenti di Chromium. Utilizza un programma di installazione più recente.</translation>
 <translation id="5862307444128926510">Benvenuto in Chromium</translation>
 <translation id="7318036098707714271">Il file delle preferenze è danneggiato o non valido.
 

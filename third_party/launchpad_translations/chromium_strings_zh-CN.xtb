@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR"/> The Chromium Authors。保留所有权利。</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
-<translation id="5065199687811594072">您希望 Chromium 保存该信用卡信息以便填写网络表单吗？</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="2615699638672665509">此计算机很快将停止接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="5532301346661895910">Chromium 会将此密码存储在 |Google 保存的密码|中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
-<translation id="1550579416447684632">启动 Chromium 应用</translation>
 <translation id="2732467638532545152">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Chromium无法确定该证书是来自<ph name="SITE"/>，还是来自您所在的网络中假冒<ph name="SITE"/>的用户。请将您的计算机更新到更高版本的Windows。</translation>
-<translation id="4267347018362241535">Chromium 应用启动器是 Chromium 应用的独立平台。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="6613594504749178791">您所做的更改会在下次重新启动 Chromium 时生效。</translation>
 <translation id="9089354809943900324">Chromium版本太旧</translation>
@@ -48,7 +45,6 @@
 <translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME"/>共用这台计算机，将您的帐户添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
-<translation id="4831257561365056138">卸载 Chromium 应用启动器</translation>
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -62,7 +58,6 @@
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="8843170958047978824">从Chromium中移除</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK"/>发送给Google，帮助我们完善Chromium。</translation>
-<translation id="1609700857210121286">前往 Chromium 菜单 &gt;“设置”&gt;“隐私设置”（高级设置）部分，然后停用“预测网络操作”。如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
 <translation id="734373864078049451">您的上网记录、书签和其他Chromium内容都保存在此处。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="3065280201209294872">该网站使用的安全设置已过期，这可能会导致日后的 Chromium 版本无法安全访问该网站。</translation>
@@ -223,7 +218,6 @@
 <translation id="8704119203788522458">这是您的专属Chromium</translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="4224199872375172890">Chromium 已是最新版本。</translation>
-<translation id="374481098568514319">该计算机已经安装了更高版本的 Chromium 组件。请使用更高版本的安装程序。</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="7318036098707714271">您的偏好设置文件已损坏或无效。
 

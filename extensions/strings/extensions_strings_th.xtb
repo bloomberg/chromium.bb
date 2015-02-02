@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">อ่านข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="2350172092385603347">ใช้การแปลภาษาท้องถิ่นแล้ว แต่ไม่ได้ระบุ default_locale ในมานิเฟสต์</translation>
 <translation id="3759933321830434300">บล็อกส่วนต่างๆ ของหน้าเว็บ</translation>
+<translation id="6143635259298204954">ไม่สามารถแยกส่วนขยาย หากต้องการแยกส่วนขยายอย่างปลอดภัย คุณต้องมีเส้นทางไปยังไดเรกทอรีโปรไฟล์ของคุณซึ่งไม่มีลิงก์สัญลักษณ์ ไม่มีเส้นทางในรูปแบบดังกล่าวอยู่สำหรับโปรไฟล์ของคุณ</translation>
 <translation id="149347756975725155">ไม่สามารถโหลดไอคอนส่วนขยาย &quot;<ph name="ICON"/>&quot;</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ &quot;<ph name="HEADER_NAME"/>&quot; ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="7495493006406536234">ผลิตภัณฑ์ <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">เลือกอุปกรณ์ USB</translation>
+<translation id="6731255991101203740">ไม่สามารถสร้างไดเรกทอรีสำหรับการแตกไฟล์ซิป: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">ไม่สามารถโหลดหน้าเกี่ยวกับ &quot;<ph name="ABOUT_PAGE"/>&quot;</translation>
 <translation id="388442998277590542">ไม่สามารถโหลดหน้าตัวเลือก &quot;<ph name="OPTIONS_PAGE"/>&quot;</translation>
+<translation id="5127881134400491887">จัดการการเชื่อมต่อเครือข่าย</translation>
 <translation id="6344170822609224263">เข้าถึงรายการเชื่อมต่อเครือข่าย</translation>
 <translation id="7039326228527141150">เข้าถึงอุปกรณ์ USB จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">อุปกรณ์ที่ไม่รู้จักจาก <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ในโดเมน: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">มุมมองเว็บ: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">เส้นทางที่ไม่ถูกต้อง (โดยชัดแจ้งหรือเกี่ยวข้องกับ '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">ไซต์ <ph name="WEBSITE_1"/> ทั้งหมด</translation>
 <translation id="8662911384982557515">เปลี่ยนหน้าแรกของคุณเป็น: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">ส่วนขยายนี้ไม่สามารถปรับเปลี่ยนคำขอเครือข่ายได้เนื่องจากการปรับเปลี่ยนมีความขัดแย้งกับส่วนขยายอื่น</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">ส่วนขยายนี้ไม่สามารถให้ข้อมูลรับรองแก่คำขอเครือข่ายได้เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>) ได้ให้ข้อมูลรับรองซึ่งต่างออกไป</translation>
 <translation id="5627523580512561598">ส่วนขยาย <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">เข้าถึงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
+<translation id="3369521687965833290">ไม่สามารถแยกส่วนขยายได้ หากต้องการแยกส่วนขยายอย่างปลอดภัย คุณต้องมีเส้นทางไปยังไดเรกทอรีโปรไฟล์ของคุณซึ่งขึ้นต้นด้วยตัวอักษรของไดรฟ์และจะต้องไม่มีจังก์ชัน จุดต่อเชื่อม หรือลิงก์สัญลักษณ์ ไม่มีเส้นทางในรูปแบบดังกล่าวสำหรับโปรไฟล์ของคุณ</translation>
+<translation id="4811956658694082538">ไม่สามารถติดตั้งแพ็กเกจเนื่องจากกระบวนการอรรถประโยชน์ขัดข้อง ลองรีสตาร์ท Chrome และลองใหม่อีกครั้ง</translation>
+<translation id="641087317769093025">ไม่สามารถแตกไฟล์ซิปส่วนขยาย</translation>
 <translation id="4761104368405085019">ใช้ไมโครโฟนของคุณ</translation>
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME"/> โดยไม่สามารถลบหรือแก้ไขได้</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">เข้าถึงอุปกรณ์ USB ใดๆ ก็ได้เหล่านี้</translation>
 <translation id="2677911863018634147">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง</translation>
 <translation id="6698810901424468597">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">ไม่สามารถถอดรหัสภาพ: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">ผู้ให้บริการ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">เข้าถึงปริมาณการใช้งานเครือข่าย</translation>
 <translation id="5972529113578162692">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้กำหนดให้ติดตั้ง <ph name="EXTENSION_NAME"/> ไม่สามารถถอนการติดตั้งส่วนขยายนี้ได้</translation>
+<translation id="1135328998467923690">แพ็กเกจไม่ถูกต้อง: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="7131040479572660648">อ่านข้อมูลบน <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> และ <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">เข้าถึง <ph name="PRODUCT_NAME_AND_VENDOR"/> ใดๆ ก็ได้ผ่าน USB</translation>
 <translation id="1803557475693955505">ไม่สามารถโหลดหน้าพื้นหลัง &quot;<ph name="BACKGROUND_PAGE"/>&quot;</translation>
+<translation id="2988488679308982380">ไม่สามารถติดตั้งแพ็กเกจ: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
 <translation id="344630545793878684">อ่านข้อมูลบนเว็บไซต์จำนวนมาก</translation>
 </translationbundle>

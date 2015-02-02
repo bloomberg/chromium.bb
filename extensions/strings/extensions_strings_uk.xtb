@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Читати дані, які ви копіюєте та вставляєте</translation>
 <translation id="2350172092385603347">Використано локалізацію, але параметр мови за умовчанням (default_locale) не визначено в маніфесті.</translation>
 <translation id="3759933321830434300">Блокувати частини веб-сторінок</translation>
+<translation id="6143635259298204954">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який не містить символьного посилання. Для вашого профілю такого шляху немає.</translation>
 <translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Продукт <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Вибрати пристрої USB</translation>
+<translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Не вдалося завантажити сторінку параметрів &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="5127881134400491887">Керувати мережевими з’єднаннями</translation>
 <translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
 <translation id="7039326228527141150">Отримувати доступ до пристроїв USB від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Читати та змінювати свої дані на веб-сайті <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">невідомі пристрої від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Обмінюватися даними з будь-яким комп’ютером у доменах <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Заборонений шлях (узагалі або у зв’язку з &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Зробити <ph name="HOME_PAGE"/> домашньою сторінкою</translation>
 <translation id="27822970480436970">Цьому розширенню не вдалося змінити запит мережі, оскільки зміна не сумісна з іншим розширенням.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) надало інші облікові дані.</translation>
 <translation id="5627523580512561598">розширення <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Отримувати доступ до фотографій, музики й інших медіа-файлів із вашого комп’ютера</translation>
+<translation id="3369521687965833290">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який починається буквою диску та не містить точок з’єднання, під’єднання чи символьного посилання. Для вашого профілю такого шляху немає.</translation>
+<translation id="4811956658694082538">Не вдалося встановити пакет, оскільки відбувся збій процесу службової програми. Перезапустіть Chrome і повторіть спробу.</translation>
+<translation id="641087317769093025">Не вдалося розпакувати розширення</translation>
 <translation id="4761104368405085019">Використовувати ваш мікрофон</translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME"/>. Його не можна видаляти чи змінювати.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Отримувтаи доступ до цих пристроїв USB</translation>
 <translation id="2677911863018634147">Додаток <ph name="APP_NAME"/> запитує доступ до одного або кількох ваших пристроїв.</translation>
 <translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Не вдалося декодувати зображення: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Постачальник послуг <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Отримувати доступ до трафіку мережі</translation>
 <translation id="5972529113578162692">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/>. Його неможливо видалити.</translation>
+<translation id="1135328998467923690">Пакет недійсний: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Отримувтаи доступ до продукту <ph name="PRODUCT_NAME_AND_VENDOR"/> через USB</translation>
 <translation id="1803557475693955505">Не вдалося завантажити фонову сторінку &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Неможливо встановити пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">Додаток <ph name="APP_NAME"/> запитує доступ до одного з ваших пристроїв.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Пакет недійсний. Деталі: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Переглядати ваші дані на декількох веб-сайтах</translation>
 </translationbundle>

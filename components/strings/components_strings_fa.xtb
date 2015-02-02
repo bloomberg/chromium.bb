@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">‏Google Wallet این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="5172758083709347301">دستگاه</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
+<translation id="8208216423136871611">ذخیره نشود</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE"/> ترجمه نشود</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="4058922952496707368">کلید &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">هشدار جاوا اسکریپت</translation>
+<translation id="4081383687659939437">ذخیره اطلاعات</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">اسکن کارت جدید</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
 <translation id="5509780412636533143">نشانک‌های مدیریت شده</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط مشی</translation>
+<translation id="4120075327926916474">‏آیا می‌خواهید Chrome این اطلاعات کارت اعتباری را برای تکمیل فرم‌های وب ذخیره کند؟</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="1693754753824026215">صفحه <ph name="SITE"/> نشان می‌دهد:</translation>
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>

@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">புளூடூத் இயக்கப்பட்டது</translation>
+<translation id="5895138241574237353">மறுதொடக்கம்</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="2268130516524549846">புளூடூத் முடக்கப்பட்டது</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID"/> க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="2562916301614567480">தனிப்பட்ட நெட்வொர்க்</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="4379753398862151997">அந்த மானிட்டர் ஆதரிக்கப்படவில்லை.</translation>
 <translation id="6426039856985689743">மொபைல் தரவை முடக்கு</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE"/>% நிரம்பியது.</translation>
 <translation id="2983818520079887040">அமைப்புகள்...</translation>
 <translation id="6452181791372256707">நிராகரி</translation>
+<translation id="1330145147221172764">திரை விசைப்பலகை இயக்கு</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
 <translation id="607652042414456612">உங்கள் கணினி அருகிலுள்ள புளூடூத் சாதனங்களைக் கண்டறியக்கூடியது, மேலும் <ph name="ADDRESS"/> என்ற முகவரியுடன் &quot;<ph name="NAME"/>&quot; என்ற பெயரில் தோன்றும்</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
@@ -190,6 +191,7 @@
 <translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.
 முடக்குவதற்கு, Ctrl+Alt+Z ஐ அழுத்தவும்.</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
+<translation id="1510238584712386396">துவக்கி</translation>
 <translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
 ரத்துசெய்ய Alt+Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="8940956008527784070">பேட்டரி குறைவு (<ph name="PERCENTAGE"/>%)</translation>

@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet no admite este tipo de tarjeta. Selecciona otra tarjeta.</translation>
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="8208216423136871611">No guardar</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="4058922952496707368">Clave &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerta de Javascript</translation>
+<translation id="4081383687659939437">Guardar información</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Búsqueda</translation>
 <translation id="2498091847651709837">Escanear tarjeta nueva</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL de búsqueda no válida</translation>
 <translation id="5509780412636533143">Marcadores administrados</translation>
 <translation id="8866481888320382733">Error al analizar la configuración de la política</translation>
+<translation id="4120075327926916474">¿Deseas que Chrome guarde esta información de tarjeta de crédito para completar formularios web?</translation>
 <translation id="6644283850729428850">Esta política no ha sido aprobada.</translation>
 <translation id="1693754753824026215">La página en <ph name="SITE"/> dice:</translation>
 <translation id="4269787794583293679">(Sin nombre de usuario)</translation>

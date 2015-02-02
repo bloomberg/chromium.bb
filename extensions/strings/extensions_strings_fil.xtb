@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Basahin ang data na iyong kinokopya at pine-paste</translation>
 <translation id="2350172092385603347">Ginamit ang localization , subalit hindi natukoy ang default_locale sa manipesto.</translation>
 <translation id="3759933321830434300">Mag-block ng mga bahagi ng mga web page</translation>
+<translation id="6143635259298204954">Hindi ma-unpack ang extension.  Upang ligtas na ma-unpack ang isang extension, dapat na mayroong daanan patungo sa iyong direktoryo ng profile na walang nilalamang symlink.  Walang naturang daanan ang umiiral para sa iyong profile.</translation>
 <translation id="149347756975725155">Maaaring hindi mai-load ang icon ng extension '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na &quot;<ph name="HEADER_NAME"/>&quot; ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234"><ph name="PRODUCT_ID"/> ng Produkto</translation>
 <translation id="4776856853352853275">Pumili ng mga USB device</translation>
+<translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Hindi ma-load ang pahina ng mga pagpipilian na '<ph name="OPTIONS_PAGE"/>'.</translation>
+<translation id="5127881134400491887">Pamahalaan ang mga koneksyon ng network</translation>
 <translation id="6344170822609224263">I-access ang listahan ng mga koneksyon sa network</translation>
 <translation id="7039326228527141150">Mag-access ng mga USB device mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">mga hindi kilalang device mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Makipagpalitan ng data sa anumang computer sa mga domain na: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Ilegal na daanan (ganap o may kaugnayan sa '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">lahat ng site ng <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Baguhin ang iyong home page sa: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Nabigong bawiin ng extension na ito ang isang kahilingan ng network dahil sumalungat ang pagbabago sa isa pang extension.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Nabigo ang extension na ito na magbigay ng mga kredensyal sa isang kahilingan sa network dahil may isa pang extension (<ph name="EXTENSION_NAME"/>) na nagbigay ng ibang mga kredensyal.</translation>
 <translation id="5627523580512561598">extension na <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Ma-access ang mga larawan, musika, at iba pang media mula sa iyong computer</translation>
+<translation id="3369521687965833290">Hindi ma-unpack ang extension.  Upang ligtas na ma-unpack ang isang extension, dapat na mayroong daanan patungo sa iyong direktoryo ng profile na nagsisimula sa isang drive letter at walang nilalamang junction, mount point, o symlink.  Walang ganoong daanan ang umiiral para sa iyong profile.</translation>
+<translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukang muli.</translation>
+<translation id="641087317769093025">Hindi ma-unzip ang extension</translation>
 <translation id="4761104368405085019">Gamitin ang iyong mikropono</translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> mula sa <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">I-access ang anuman sa mga USB device na ito</translation>
 <translation id="2677911863018634147">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa o higit pa sa iyong mga device.</translation>
 <translation id="6698810901424468597">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Hindi ma-decode ang larawan: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012"><ph name="VENDOR_ID"/> ng Vendor</translation>
 <translation id="2048182445208425546">I-access ang trapiko ng iyong network</translation>
 <translation id="5972529113578162692">Kinakailangan ng administrator ng machine na ito na naka-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring i-uninstall.</translation>
+<translation id="1135328998467923690">Di-wasto ang package: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Basahin ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> at <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">I-access ang anumang <ph name="PRODUCT_NAME_AND_VENDOR"/> sa pamamagitan ng USB</translation>
 <translation id="1803557475693955505">Maaaring hindi mai-load ang pahina ng background '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="2988488679308982380">Hindi ma-install ang package: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa sa iyong mga device.</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Basahin ang iyong data sa ilang website</translation>
 </translationbundle>

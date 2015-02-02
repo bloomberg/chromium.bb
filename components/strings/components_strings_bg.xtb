@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Този тип карта не се поддържа от Google Wallet. Моля, изберете друга.</translation>
 <translation id="5172758083709347301">Машината</translation>
 <translation id="7180611975245234373">Опресняване</translation>
+<translation id="8208216423136871611">Без запазване</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">Препоръчително</translation>
 <translation id="4058922952496707368">Ключ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Уведомление за JavaScript</translation>
+<translation id="4081383687659939437">Запазване на информацията</translation>
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Сканиране на нова карта</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
 <translation id="5509780412636533143">Управлявани отметки</translation>
 <translation id="8866481888320382733">Грешка при синтактичния анализ на настройките за правилото</translation>
+<translation id="4120075327926916474">Искате ли Chrome да запази тази информация за кредитната карта за попълване на уеб формуляри?</translation>
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="1693754753824026215">Страницата на адрес <ph name="SITE"/> показва:</translation>
 <translation id="4269787794583293679">(Няма потребителско име)</translation>

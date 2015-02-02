@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth പ്രാപ്‌തമാക്കി</translation>
+<translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> എന്നതിനെ <ph name="ROTATION"/> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth അപ്രാപ്‌തമാക്കി</translation>
@@ -76,7 +77,6 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID"/> എന്നതിലേയ്‌ക്ക് മാറ്റി. സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="2562916301614567480">സ്വകാര്യ നെറ്റ്‌വർക്ക്</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">ഇല്ല</translation>
 <translation id="4379753398862151997">പ്രിയ മോണിറ്റർ, ഇത് നമുക്കിടയിൽ പ്രവർത്തിക്കുന്നില്ല. (ആ മോണിറ്റർ പിന്തുണയ്‌ക്കുന്നില്ല)</translation>
 <translation id="6426039856985689743">മൊബൈൽ ഡാറ്റ അപ്രാപ്‌തമാക്കുക</translation>
@@ -158,6 +158,7 @@
 <translation id="9201131092683066720">ബാറ്ററി <ph name="PERCENTAGE"/>% നിറഞ്ഞു.</translation>
 <translation id="2983818520079887040">ക്രമീകരണങ്ങള്‍...</translation>
 <translation id="6452181791372256707">നിരസിക്കുക</translation>
+<translation id="1330145147221172764">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
 <translation id="607652042414456612">നിങ്ങളുടെ കമ്പ്യൂട്ടർ സമീപത്തുള്ള Bluetooth ഉപകരണങ്ങൾക്ക് കണ്ടെത്താനാകുന്നതാണ് ഒപ്പം അത് <ph name="ADDRESS"/> എന്ന വിലാസത്തിൽ &quot;<ph name="NAME"/>&quot; എന്നതായി ദൃശ്യമാകും.</translation>
 <translation id="112308213915226829">ഷെൽഫ് യാന്ത്രികമായി മറയ്‌ക്കുക</translation>
@@ -188,6 +189,7 @@
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
 <translation id="5045002648206642691">Google ഡ്രൈവ് ക്രമീകരണങ്ങൾ...</translation>
+<translation id="1510238584712386396">ലോഞ്ചർ</translation>
 <translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
 റദ്ദാക്കുന്നതിന് Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE"/>%)</translation>

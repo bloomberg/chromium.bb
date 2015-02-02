@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Доступ к копируемым и вставляемым данным</translation>
 <translation id="2350172092385603347">Локализация используется, однако в манифесте не указан атрибут default_locale.</translation>
 <translation id="3759933321830434300">Блокировка элементов веб-страниц</translation>
+<translation id="6143635259298204954">Не удается распаковать расширение. Для безопасной распаковки расширения необходим путь к каталогу вашего профиля, не содержащий символьную ссылку. Такого пути для вашего профиля не существует.</translation>
 <translation id="149347756975725155">Не удается загрузить значок расширения &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME"/>) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Устройство <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Выбор USB-устройств</translation>
+<translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Не удалось загрузить страницу <ph name="ABOUT_PAGE"/>.</translation>
 <translation id="388442998277590542">Не удалось загрузить страницу параметров <ph name="OPTIONS_PAGE"/>.</translation>
+<translation id="5127881134400491887">Управление сетевыми подключениями</translation>
 <translation id="6344170822609224263">Доступ к списку сетевых подключений</translation>
 <translation id="7039326228527141150">Доступ к USB-устройствам от <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Просмотр и изменение данных на сайте <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">неизвестные устройства от <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Обмен данными с любыми компьютерами в доменах <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Недопустимый путь (абсолютный или относительный с элементом &quot;..&quot;): <ph name="IMAGE_PATH"/></translation>
 <translation id="8284279544186306258">все сайты <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Смена главной страницы на <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Этому расширению не удалось изменить сетевой запрос, так как при этом возник конфликт с другим расширением.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Это расширение не может предоставить учетные данные для сетевого запроса, поскольку другое расширение (<ph name="EXTENSION_NAME"/>) передало иные учетные данные.</translation>
 <translation id="5627523580512561598">расширение <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере</translation>
+<translation id="3369521687965833290">Не удается распаковать расширение. Для безопасной распаковки расширения необходим путь к каталогу вашего профиля, начинающийся с буквы диска. Он не должен содержать параметр слияния папок, точку монтирования или символьную ссылку. Такого пути для вашего профиля не существует.</translation>
+<translation id="4811956658694082538">Не удалось установить пакет из-за сбоя. Перезагрузите браузер и повторите попытку.</translation>
+<translation id="641087317769093025">Не удалось распаковать расширение</translation>
 <translation id="4761104368405085019">Использование микрофона</translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME"/> на этом компьютере запрещено администратором.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>, поставщик: <ph name="VENDOR_NAME"/> (серийный номер: <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Доступ к этим USB-устройствам</translation>
 <translation id="2677911863018634147">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к нескольким устройствам.</translation>
 <translation id="6698810901424468597">Просмотр и изменение данные на сайтах <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Не удалось декодировать изображение: <ph name="IMAGE_NAME"/></translation>
 <translation id="5544884907028850012">Поставщик <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Доступ к сетевому трафику</translation>
 <translation id="5972529113578162692">Удаление расширения &quot;<ph name="EXTENSION_NAME"/>&quot; на этом компьютере запрещено администратором</translation>
+<translation id="1135328998467923690">Пакет недействителен: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Просмотр данных на сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Доступ ко всем устройствам <ph name="PRODUCT_NAME_AND_VENDOR"/> с помощью USB</translation>
 <translation id="1803557475693955505">Не удалось загрузить страницу фона &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2988488679308982380">Не удается установить пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к устройству.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Просмотр данных на нескольких сайтах</translation>
 </translationbundle>

@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
 <translation id="6373523479360886564">Ar tikrai norite pašalinti „Chromium&quot;?</translation>
-<translation id="5065199687811594072">Ar norite, kad „Chromium“ išsaugotų šią kredito kortelės informaciją ir naudotų ją žiniatinklio formoms užpildyti?</translation>
 <translation id="6510925080656968729">Pašalinti „Chromium“</translation>
 <translation id="2615699638672665509">Šiame kompiuteryje netrukus nebebus gaunami „Chromium“ naujiniai, nes jo aparatinė įranga nebepalaikoma.</translation>
 <translation id="5532301346661895910">„Chromium“ saugos slaptažodį |„Google“ išsaugotų slaptažodžių| skiltyje ir prisimins jį kitą kartą, kai jums jo reikės.</translation>
 <translation id="6893813176749746474">„Chromium“ atnaujinta, bet jos nenaudojote mažiausiai 30 dienų.</translation>
-<translation id="1550579416447684632">Paleisti „Chromium“ programas</translation>
 <translation id="2732467638532545152">Kompiuteryje veikia sena „Microsoft Windows“ versija, kurią naudojant negalima apdoroti šio svetainės saugos sertifikato. Dėl šios problemos „Chromium“ negali nustatyti, ar sertifikatas gautas iš <ph name="SITE"/> ar iš kažko, kas jūsų tinkle apsimeta esantis <ph name="SITE"/>. Atnaujinkite kompiuterį į naujesnę „Windows“ versiją.</translation>
-<translation id="4267347018362241535">„Chromium“ programų paleidimo priemonė yra autonominė „Chromium“ programų platforma.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
 <translation id="6613594504749178791">Pakeitimai įsigalios kitą kartą iš naujo paleidus „Chromium“.</translation>
 <translation id="9089354809943900324">„Chromium“ versija yra pasenusi</translation>
@@ -64,7 +61,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8134284582177628525">Jei bendrinate šį kompiuterį su <ph name="PROFILE_NAME"/>, pridėkite save prie „Chromium“, kad galėtumėte atskirai naršyti. Arba atjunkite to asmens „Google“ paskyrą.</translation>
 <translation id="1480489203462860648">Išbandykite, jau įdiegta</translation>
 <translation id="3032787606318309379">Pridedama prie „Chromium“...</translation>
-<translation id="4831257561365056138">Pašalinti „Chromium“ programų paleidimo priemonę</translation>
 <translation id="4222580632002216401">Dabar esate prisijungę prie „Chromium“. Administratorius neleidžia sinchronizuoti.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Įspėjimas:<ph name="END_BOLD"/> Chromium“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>
 <translation id="985602178874221306">„Chromium“ autoriai</translation>
@@ -78,10 +74,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3190315855212034486">Oi! „Chromium“ užstrigo. Paleisti iš naujo dabar?</translation>
 <translation id="8843170958047978824">Pašalinti iš „Chromium“</translation>
 <translation id="3068515742935458733">Padėkite tobulinti „Chromium“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK"/></translation>
-<translation id="1609700857210121286">Eikite į „Chromium“ meniu &gt; Nustatymai &gt; (Išplėstiniai) Privatumas
-          ir išjunkite parinktį „Tinklo veiksmų numatymai“.
-          Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
-          kad pagerėtų našumas.</translation>
 <translation id="734373864078049451">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chromium“ duomenys.</translation>
 <translation id="3197823471738295152">Įrenginyje naudojate naujausią programinės įrangos versiją.</translation>
 <translation id="3065280201209294872">Svetainėje naudojami pasenę saugos nustatymai, todėl naudojant būsimas „Chromium“ versijas gali nepavykti jos saugiai pasiekti.</translation>
@@ -163,7 +155,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2685838254101182273">„Chromium“ nebeatsinaujina ir nebepalaiko šios operacinės sistemos versijos.</translation>
 <translation id="8684913864886094367">„Chromium“ netinkamai išsijungė.</translation>
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
-<translation id="7223968959479464213">Užduočių tvarkyklė – „Chromium“</translation>
+<translation id="7223968959479464213">Užduočių tvarkytuvė – „Chromium“</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="6638567566961868659">Žymes rasite „Chromium“ meniu arba žymių juostoje.</translation>
 <translation id="2673087257647337101">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
@@ -254,7 +246,6 @@ Prisijungus bet kuriuo būdu, „Chromium“ informacija, pvz., žymės, istorij
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>
 <translation id="8269379391216269538">Padėkite tobulinti „Chromium“</translation>
 <translation id="4224199872375172890">„Chromium“ naujausios versijos.</translation>
-<translation id="374481098568514319">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“ komponentų. Naudokite naujesnę diegimo programą.</translation>
 <translation id="5862307444128926510">Sveiki, tai „Chromium“</translation>
 <translation id="7318036098707714271">Nuostatų failas sugadintas ar netinkamas.
 

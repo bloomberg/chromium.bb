@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">‏هذا النوع من البطاقات غير متوافق مع محفظة Google. يُرجى تحديد بطاقة مختلفة.</translation>
 <translation id="5172758083709347301">الجهاز</translation>
 <translation id="7180611975245234373">تحديث</translation>
+<translation id="8208216423136871611">عدم الحفظ</translation>
 <translation id="777702478322588152">الإدارة الأمنية</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">موصى بها</translation>
 <translation id="4058922952496707368">المفتاح &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">تنبيه جافا سكريبت</translation>
+<translation id="4081383687659939437">حفظ المعلومات</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
 <translation id="5509780412636533143">الإشارات المرجعية المُدارة</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
+<translation id="4120075327926916474">‏هل تريد من Chrome حفظ معلومات بطاقة الائتمان لإكمال نماذج الويب؟</translation>
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="1693754753824026215">تعرض الصفحة في <ph name="SITE"/>:</translation>
 <translation id="4269787794583293679">(اسم المستخدم غير موجود)</translation>

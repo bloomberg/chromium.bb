@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">خواندن اطلاعاتی که کپی و جای‌گذاری می‌کنید</translation>
 <translation id="2350172092385603347">‏بومی سازی استفاده شده است، اما default_locale در اظهارنامه مشخص نشده است.</translation>
 <translation id="3759933321830434300">مسدود کردن بخش‌هایی از صفحات وب</translation>
+<translation id="6143635259298204954">بسته برنامهٔ افزودنی را نمی‌توان باز کرد.  برای باز کردن ایمن بسته برنامهٔ افزودنی، باید یک مسیر در فهرست نمایهٔ شما وجود داشته باشد که فاقد پیوند نمادی باشد.  چنین مسیری برای نمایهٔ شما وجود ندارد.</translation>
 <translation id="149347756975725155">بارکردن نماد پسوند &quot;<ph name="ICON"/>&quot; ممکن نیست.</translation>
 <translation id="8825366169884721447">این فایل افزودنی نتوانست عنوان درخواست «<ph name="HEADER_NAME"/>» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر (<ph name="EXTENSION_NAME"/>) تناقض داشت.</translation>
 <translation id="7495493006406536234">محصول <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">‏انتخاب دستگاه‌های USB</translation>
+<translation id="6731255991101203740">ایجاد دایرکتوری برای خارج کردن «<ph name="DIRECTORY_PATH"/>» از حالت زیپ امکان‌پذیر نیست</translation>
 <translation id="4233778200880751280">صفحه درباره «<ph name="ABOUT_PAGE"/>» بارگیری نشد.</translation>
 <translation id="388442998277590542">صفحه گزینه‌ها &quot;<ph name="OPTIONS_PAGE"/>&quot; بارگیری نشد.</translation>
+<translation id="5127881134400491887">مدیریت اتصالات شبکه</translation>
 <translation id="6344170822609224263">فهرست دسترسی از اتصالات شبکه</translation>
 <translation id="7039326228527141150">‏دسترسی به دستگاه‌های USB از <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">دستگاه‌های ناشناس از <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">تبادل اطلاعات با هر رایانه‌ای در دامنه‌های: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">نمای وب: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">مسیر غیرمجاز (مطلق یا نسبی با «..»): «<ph name="IMAGE_PATH"/>»</translation>
 <translation id="8284279544186306258">همه سایت‌های <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">تغییر صفحه اصلی شما به: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">این برنامهٔ افزودنی قادر به تغییر درخواست شبکه به دلیل تغییری متداخل با یک برنامهٔ افزودنی دیگر نیست.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">این فایل افزودنی نتوانست مدارک صلاحیت درخواست شبکه را ارائه دهد چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME"/>) مدارک صلاحیت دیگری را ارائه کرده است.</translation>
 <translation id="5627523580512561598">برنامهٔ افزودنی <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">دسترسی به عکس‌ها، موسیقی، و دیگر رسانه‌ها از رایانه شما</translation>
+<translation id="3369521687965833290">بسته برنامهٔ افزودنی را نمی‌توان باز کرد.  برای باز کردن ایمن برنامهٔ افزودنی، باید یک مسیر در فهرست نمایهٔ شما وجود داشته باشد که با یک حرف درایو آغاز شود و فاقد یک خط اتصال، نقطه اتصال و پیوند نمادی باشد.  چنین مسیری برای نمایهٔ شما وجود ندارد.</translation>
+<translation id="4811956658694082538">‏بسته نصب نشد چون پردازش برنامه سودمند انجام نشد. سعی کنید chrome را راه‌اندازی مجدد نمایید و دوباره امتحان کنید.</translation>
+<translation id="641087317769093025">برنامه افزودنی از حالت زیپ خارج نشد</translation>
 <translation id="4761104368405085019">استفاده از میکروفون خود</translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME"/> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> از <ph name="VENDOR_NAME"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">‏دسترسی به هر یک از این دستگاه‌های USB</translation>
 <translation id="2677911863018634147">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یک یا چند دستگاه شما را دارد.</translation>
 <translation id="6698810901424468597">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">رمزگشایی تصویر امکان‌پذیر نیست: «<ph name="IMAGE_NAME"/>»</translation>
 <translation id="5544884907028850012">فروشنده <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">دسترسی به ترافیک شبکه شما</translation>
 <translation id="5972529113578162692">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME"/> را لازم می‌داند. این برنامه افزودنی نمی‌تواند حذف نصب شود.</translation>
+<translation id="1135328998467923690">بسته نامعتبر است: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">خواندن داده‌های شما در <ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">‏دسترسی به هر <ph name="PRODUCT_NAME_AND_VENDOR"/> از طریق USB</translation>
 <translation id="1803557475693955505">بارگیری صفحه پس‌زمینه &quot;<ph name="BACKGROUND_PAGE"/>&quot; ممکن نیست.</translation>
+<translation id="2988488679308982380">بسته نصب نشد: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یکی از دستگاه‌هایتان را دارد.</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">بسته نامعتبر است. جزئیات: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
 <translation id="344630545793878684">خواندن داده‌های شما در تعدادی از وب‌سایت‌ها</translation>
 </translationbundle>

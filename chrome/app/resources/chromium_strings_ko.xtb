@@ -2,14 +2,11 @@
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Chromium을 제거하시겠습니까?</translation>
-<translation id="5065199687811594072">웹 양식을 작성하기 위해 Chromium에서 신용카드 정보를 저장해도 되겠습니까?</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
 <translation id="2615699638672665509">이 컴퓨터의 하드웨어가 더 이상 지원되지 않으므로 Chromium 업데이트가 곧 중단됩니다.</translation>
 <translation id="5532301346661895910">Chromium은 비밀번호를 |Google에 저장된 비밀번호|에 저장하여 다음에 필요할 때 제공합니다.</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
-<translation id="1550579416447684632">Chromium 앱 실행</translation>
 <translation id="2732467638532545152">컴퓨터에서 이 웹사이트의 보안 인증서를 처리할 수 없는 이전 버전의 Microsoft Windows를 실행 중입니다. 이 문제로 인해 <ph name="SITE"/>에서 제공한 인증서인지 <ph name="SITE"/>(으)로 위장한 네트워크의 사용자가 제공한 인증서인지 Chromium에서 확인할 수 없습니다. 컴퓨터를 최신 버전의 Windows로 업데이트하시기 바랍니다.</translation>
-<translation id="4267347018362241535">Chromium 앱 실행기는 Chromium 앱을 위한 독립형 플랫폼입니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="6613594504749178791">변경사항은 다음에 Chromium을 다시 시작할 때 적용됩니다.</translation>
 <translation id="9089354809943900324">Chromium이 이전 버전임</translation>
@@ -62,7 +59,6 @@
 <translation id="8134284582177628525"><ph name="PROFILE_NAME"/>님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chromium에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="1480489203462860648">사용해 보세요. 이미 설치되었습니다.</translation>
 <translation id="3032787606318309379">Chromium에 추가하는 중...</translation>
-<translation id="4831257561365056138">Chromium 앱 실행기 제거</translation>
 <translation id="4222580632002216401">Chromium에 로그인했습니다! 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>경고:<ph name="END_BOLD"/> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
@@ -76,10 +72,6 @@
 <translation id="3190315855212034486">Chromium이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8843170958047978824">Chromium에서 제거</translation>
 <translation id="3068515742935458733">오류 보고서와 <ph name="UMA_LINK"/>을(를) Google로 전송하여 Chromium 개선에 참여합니다.</translation>
-<translation id="1609700857210121286">Chromium 메뉴 &gt; 설정 &gt; (고급) 개인정보로 이동하고
-          '네트워크 작업 예상'을 사용 중지합니다.
-          그래도 문제가 해결되지 않으면 이 옵션을 다시 사용 설정하여
-          성능을 개선해 보시기 바랍니다.</translation>
 <translation id="734373864078049451">웹, 북마크 및 기타 Chromium 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="3065280201209294872">사이트에서 오래된 보안 설정을 사용하고 있으므로 향후 Chromium 버전에서 안전하게 액세스하지 못할 수 있습니다.</translation>
@@ -251,7 +243,6 @@
 <translation id="8704119203788522458">나만의 Chromium</translation>
 <translation id="8269379391216269538">Chromium 개선에 참여</translation>
 <translation id="4224199872375172890">Chromium이 최신 버전입니다.</translation>
-<translation id="374481098568514319">컴퓨터에 이미 최신 버전의 Chromium 구성 요소가 있습니다. 좀더 최신 버전의 설치 프로그램을 사용하세요.</translation>
 <translation id="5862307444128926510">Chromium에 오신 것을 환영합니다.</translation>
 <translation id="7318036098707714271">환경설정 파일이 손상되었거나 잘못되었습니다.
 

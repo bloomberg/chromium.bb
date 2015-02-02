@@ -27,7 +27,6 @@
 <translation id="4891791193823137474">A Google Chrome futhat a háttérben</translation>
 <translation id="110877069173485804">Ez az Ön Chrome-ja</translation>
 <translation id="8406086379114794905">Segítsen a Chrome tökéletesítésében</translation>
-<translation id="2896252579017640304">Chrome alkalmazások indítása</translation>
 <translation id="5620765574781326016">Tudjon meg többet a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt.</translation>
 <translation id="2721687379934343312">Mac számítógépen a rendszer a Keychain alkalmazásba menti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chrome-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="683440813066116847">Bejövő szabály a Google Chrome Canaryhoz az mDNS forgalom engedélyezése céljából.</translation>
@@ -40,7 +39,6 @@
 <translation id="4309555186815777032">(a Chrome <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME"/> csatornára...</translation>
 <translation id="8032142183999901390">Fiókjának eltávolítása után a Chrome-ból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
-<translation id="5775197990071433230">Ez a számítógép már rendelkezik a Google Chrome komponensek egy újabb változatával. Kérjük, használjon újabb telepítőt.</translation>
 <translation id="4987308747895123092">Kérjük, zárja be az összes Google Chrome-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
 <translation id="568643307450491754">Könyvjelzőit megtalálhatja a Chrome menüben vagy a könyvjelzősávon.</translation>
 <translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
@@ -80,7 +78,6 @@
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
-<translation id="345168553362876363">A Google Chrome alkalmazásindító a Chrome alkalmazások önálló platformja.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="3149510190863420837">Chrome-alkalmazások</translation>
@@ -166,7 +163,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="8568392309447938879">Be kell jelentkeznie a Chrome-ba az alkalmazások használatához. Ez lehetővé teszi a Chrome számára, hogy szinkronizálja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait a különböző eszközök között.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
-<translation id="5788838254726722945">Google Chrome alkalmazásindító eltávolítása</translation>
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
 <translation id="2665296953892887393">Segítse a Google Chrome fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Kattintson a nevére a Chrome megnyitásához és a böngészés megkezdéséhez.</translation>
@@ -189,10 +185,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="870251953148363156">A &amp;Google Chrome frissítése</translation>
 <translation id="130631256467250065">A módosítások az eszköz következő újraindításakor lépnek életbe.</translation>
-<translation id="1546593779121993896">Nyissa meg a Chrome-menü &gt; Beállítások &gt; (Speciális) Adatvédelem menüelemet,
-          és tiltsa le a „Hálózati műveletekkel kapcsolatos várható kifejezések” beállítást.
-          Ha ettől nem szűnik meg a probléma, javasoljuk, hogy engedélyezze újra ezt a lehetőséget
-          a jobb teljesítmény érdekében.</translation>
 <translation id="163860049029591106">A Chrome OS használatának megkezdése</translation>
 <translation id="1587223624401073077">A Google Chrome használja a kamerát.</translation>
 <translation id="1399397803214730675">A számítógépen már megtalálható a Google Chrome újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome-ot, majd próbálkozzon újra.</translation>
@@ -240,7 +232,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="5334545119300433702">Ismereteink szerint ez a modul ütközik a Google Chrome-mal.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>
-<translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
 <translation id="3037838751736561277">A Google Chrome háttérmódban van.</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="4692614041509923516">Számítógépe a Microsoft Windows régebbi változatát futtatja, amely nem tudja feldolgozni a webhely biztonsági tanúsítványát. A hiba miatt a Google Chrome nem tudja eldönteni, hogy a tanúsítvány a(z) <ph name="SITE"/> webhelytől származik, vagy valakitől az Ön hálózatán, aki a(z) <ph name="SITE"/> webhelynek adja ki magát. Frissítse számítógépén a Windows rendszert egy újabb verzióra.</translation>

@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Gegevens lezen die je kopieert en plakt</translation>
 <translation id="2350172092385603347">Lokalisatie gebruikt, maar er is geen 'default_locale' opgegeven in het manifest.</translation>
 <translation id="3759933321830434300">Delen van webpagina's blokkeren</translation>
+<translation id="6143635259298204954">Kan extensie niet uitpakken. Om een extensie veilig te kunnen uitpakken, moet er een pad naar je profieldirectory verwijzen dat geen symlink bevat. Een dergelijk pad bestaat niet voor je profiel.</translation>
 <translation id="149347756975725155">Kan extensiepictogram '<ph name="ICON"/>' niet laden.</translation>
 <translation id="8825366169884721447">Deze extensie heeft de koptekst voor het verzoek '<ph name="HEADER_NAME"/>' van een netwerkverzoek niet kunnen aanpassen, omdat de aanpassing zorgde voor een conflict met een andere extensie (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Product <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-apparaten selecteren</translation>
+<translation id="6731255991101203740">Kan geen directory maken voor het uitpakken van: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">De informatiepagina '<ph name="ABOUT_PAGE"/>' kan niet worden geladen.</translation>
 <translation id="388442998277590542">Kan optiepagina '<ph name="OPTIONS_PAGE"/>' niet laden.</translation>
+<translation id="5127881134400491887">Netwerkverbindingen beheren</translation>
 <translation id="6344170822609224263">Toegang tot lijst met netwerkverbindingen</translation>
 <translation id="7039326228527141150">Toegang verkrijgen tot USB-apparaten van <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">onbekende apparaten van <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Gegevens uitwisselen met elke computer in de volgende domeinen: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webweergave: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Illegaal pad (absoluut of relatief met '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">alle sites op <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Je startpagina wijzigen in: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Deze extensie heeft een netwerkverzoek niet kunnen aanpassen, omdat de aanpassing zorgde voor een conflict met een andere extensie.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Deze extensie heeft geen identificatie kunnen leveren voor een netwerkverzoek, omdat een andere extensie (<ph name="EXTENSION_NAME"/>) een andere identificatie heeft geleverd.</translation>
 <translation id="5627523580512561598">extensie <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Foto's, muziek en andere media van je computer openen</translation>
+<translation id="3369521687965833290">Kan extensie niet uitpakken. Om een extensie veilig te kunnen uitpakken, moet er een pad naar je profieldirectory verwijzen dat begint met een stationletter en geen koppeling, koppelpunt of symlink bevat. Een dergelijk pad bestaat niet voor je profiel.</translation>
+<translation id="4811956658694082538">Kan pakket niet installeren, omdat het proces van een hulpprogramma is gecrasht. Start Chrome opnieuw en probeer het nogmaals.</translation>
+<translation id="641087317769093025">Kan extensie niet uitpakken</translation>
 <translation id="4761104368405085019">Je microfoon gebruiken</translation>
 <translation id="7217838517480956708">De beheerder van dit apparaat vereist dat <ph name="EXTENSION_NAME"/> is geïnstalleerd. Het kan niet worden verwijderd of gewijzigd.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> van <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Toegang verkrijgen tot een van deze USB-apparaten</translation>
 <translation id="2677911863018634147">De app '<ph name="APP_NAME"/>' vereist toegang tot een of meer van je apparaten.</translation>
 <translation id="6698810901424468597">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1"/> en <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Kan afbeelding niet decoderen: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">Leverancier <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Toegang tot je netwerkverkeer</translation>
 <translation id="5972529113578162692">De beheerder van deze machine vereist dat <ph name="EXTENSION_NAME"/> wordt geïnstalleerd. Deze kan niet worden verwijderd.</translation>
+<translation id="1135328998467923690">Pakket is ongeldig: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Je gegevens voor <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> en <ph name="WEBSITE_3"/> lezen</translation>
 <translation id="2087653731648927289">Toegang verkrijgen tot <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Kan achtergrondpagina '<ph name="BACKGROUND_PAGE"/>' niet laden.</translation>
+<translation id="2988488679308982380">Kan pakket niet installeren: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">De app '<ph name="APP_NAME"/>' vraagt toegang tot een van je apparaten.</translation>
 <translation id="7972881773422714442">Opties: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Pakket is ongeldig. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Je gegevens voor een aantal websites lezen</translation>
 </translationbundle>

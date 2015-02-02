@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
+<translation id="5895138241574237353">다시 시작</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/>(이)가 <ph name="ROTATION"/>(으)로 회전되었습니다.</translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="2268130516524549846">블루투스를 사용 안 함</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="2562916301614567480">사설 네트워크</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/>(HDMI)</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4379753398862151997">확장 데스크톱에 어울리지 않는 모니터네요. (지원되지 않는 모니터입니다.)</translation>
 <translation id="6426039856985689743">모바일 데이터 사용 안함</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE"/>% 남았습니다.</translation>
 <translation id="2983818520079887040">설정...</translation>
 <translation id="6452181791372256707">거부</translation>
+<translation id="1330145147221172764">터치 키보드 사용</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="607652042414456612">내 컴퓨터가 근처 블루투스 기기에서 검색할 수 있도록 설정되어 있으며 주소(<ph name="ADDRESS"/>)와 함께 '<ph name="NAME"/>'(으)로 표시됩니다.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
@@ -190,6 +191,7 @@
 <translation id="7097613348211027502">ChromeVox(음성 피드백)를 사용하도록 설정했습니다.
 사용 중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
+<translation id="1510238584712386396">실행기</translation>
 <translation id="7209101170223508707">CAPS LOCK이 켜져 있습니다.
 취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE"/>%)</translation>

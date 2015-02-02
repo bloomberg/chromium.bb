@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Mengakses data yang Anda salin dan tempel</translation>
 <translation id="2350172092385603347">Lokalisasi digunakan, tetapi default_locale tidak ditentukan dalam manifes.</translation>
 <translation id="3759933321830434300">Blokir bagian laman web</translation>
+<translation id="6143635259298204954">Tidak dapat membuka paket ekstensi. Untuk membuka paket ekstensi dengan aman, harus tersedia jalur ke direktori profil Anda yang tidak berisi tautan simbolik. Tidak ada jalur yang seperti itu untuk profil Anda.</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan &quot;<ph name="HEADER_NAME"/>&quot; dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Produk <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Pilih perangkat USB</translation>
+<translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Tidak dapat memuat laman tentang '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Tidak dapat memuat laman opsi '<ph name="OPTIONS_PAGE"/>'.</translation>
+<translation id="5127881134400491887">Mengelola sambungan jaringan</translation>
 <translation id="6344170822609224263">Mengakses daftar sambungan jaringan</translation>
 <translation id="7039326228527141150">Akses perangkat USB dari <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">perangkat tak dikenal dari <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Tukar data dengan komputer mana saja di domain: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">jalur ilegal (mutlak atau relatif dengan '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">semua situs <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Ubah laman beranda Anda menjadi: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Ekstensi ini gagal memodifikasi permintaan jaringan karena modifikasi bentrok dengan ekstensi lain.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">Ekstensi ini gagal memberikan kredensial ke permintaan jaringan karena ekstensi lain (<ph name="EXTENSION_NAME"/>) telah memberikan kredensial yang berbeda.</translation>
 <translation id="5627523580512561598">ekstensi <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Mengakses foto, musik, dan media lain dari komputer Anda</translation>
+<translation id="3369521687965833290">Tidak dapat membuka paket ekstensi. Untuk membuka paket ekstensi dengan aman, harus tersedia jalur ke direktori profil Anda yang mulai dengan sebuah huruf drive dan tidak berisi junction point, mount point, atau tautan simbolik. Tidak ada jalur yang seperti itu untuk profil Anda.</translation>
+<translation id="4811956658694082538">Tidak dapat memasang paket karena proses utilitas mogok. Mulai ulang Chrome dan coba lagi.</translation>
+<translation id="641087317769093025">Tidak dapat mengekstrak ekstensi</translation>
 <translation id="4761104368405085019">Menggunakan mikrofon Anda</translation>
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME"/> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Akses salah satu perangkat USB ini</translation>
 <translation id="2677911863018634147">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses ke salah satu atau beberapa perangkat Anda.</translation>
 <translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Tidak dapat mendekode gambar: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">Vendor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Mengakses lalu lintas jaringan Anda</translation>
 <translation id="5972529113578162692">Administrator komputer ini mewajibkan agar <ph name="EXTENSION_NAME"/> dipasang. Ekstensi tersebut tidak dapat dicopot pemasangannya.</translation>
+<translation id="1135328998467923690">Paket tidak valid: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Membaca data Anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, dan <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Akses salah satu <ph name="PRODUCT_NAME_AND_VENDOR"/> melalui USB</translation>
 <translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="2988488679308982380">Tidak dapat memasang paket: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses ke salah satu perangkat Anda.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Paket tidak valid. Detail: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Membaca data Anda di sejumlah situs</translation>
 </translationbundle>

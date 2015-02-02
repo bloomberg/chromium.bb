@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">ብሉቱዝ ነቅቷል</translation>
+<translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ወደ <ph name="ROTATION"/> ዞሯል</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="2268130516524549846">ብሉቱዝ ተሰናክሏል</translation>
@@ -77,7 +78,6 @@
 <translation id="5825747213122829519">የግቤት ስልትዎ ወደ <ph name="INPUT_METHOD_ID"/> ተቀይሯል።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="2562916301614567480">የግል አውታረ መረብ</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">አይ</translation>
 <translation id="4379753398862151997">ውድ ማሳያ፣ ልንግባባ አልቻልንም። (ያ ማሳያ አይደገፍም)</translation>
 <translation id="6426039856985689743">የተንቀሳቃሽ ስልክ ውሂብን ያሰናክሉ</translation>
@@ -159,6 +159,7 @@
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ነው።</translation>
 <translation id="2983818520079887040">ቅንብሮች ...</translation>
 <translation id="6452181791372256707">አይቀበሉ</translation>
+<translation id="1330145147221172764">የታይታ የቁልፍ ሰሌዳን አንቃ</translation>
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
 <translation id="607652042414456612">ኮምፒውተርዎ አቅራቢያ ባሉ የብሉቱዝ መሣሪያዎች ሊገኝ የሚችል ነው፣ እና በ<ph name="ADDRESS"/> አድራሻ እንደ «<ph name="NAME"/>» ሆኖ ይታያል</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
@@ -190,6 +191,7 @@
 <translation id="7097613348211027502">ChromeVox (የቃል ግብረመልስ) ነቅቷል። 
 ለማሰናከል Ctrl+Alt+Z ይጫኑ።</translation>
 <translation id="5045002648206642691">የGoogle Drive ቅንብሮች...</translation>
+<translation id="1510238584712386396">ማስጀመሪያ</translation>
 <translation id="7209101170223508707">CAPS LOCK በርቷል።
 ይቅር ለማለት Alt+Search ወይም Shift ይጫኑ።</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE"/>%)</translation>

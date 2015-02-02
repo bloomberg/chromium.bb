@@ -4,6 +4,7 @@
 <translation id="6779575937362063477">Google Wallet ไม่สนับสนุนบัตรประเภทนี้ โปรดเลือกบัตรอื่น</translation>
 <translation id="5172758083709347301">ผู้ใช้คอมพิวเตอร์นี้</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
+<translation id="8208216423136871611">ไม่บันทึก</translation>
 <translation id="777702478322588152">เขตปกครอง</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">ข้อผิดพลาดของ HTTP</translation>
@@ -11,6 +12,7 @@
 <translation id="7298195798382681320">แนะนำ</translation>
 <translation id="4058922952496707368">คีย์ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">แจ้งเตือน JavaScript</translation>
+<translation id="4081383687659939437">บันทึกข้อมูล</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ค้นหา</translation>
 <translation id="2498091847651709837">สแกนบัตรใหม่</translation>
@@ -174,6 +176,7 @@
 <translation id="2479410451996844060">URL ค้นหาไม่ถูกต้อง</translation>
 <translation id="5509780412636533143">บุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="8866481888320382733">ข้อผิดพลาดในการแยกวิเคราะห์การตั้งค่านโยบาย</translation>
+<translation id="4120075327926916474">คุณต้องการให้ Chrome บันทึกข้อมูลบัตรเครดิตนี้เพื่อใช้กรอกแบบฟอร์มบนเว็บหรือไม่</translation>
 <translation id="6644283850729428850">นโยบายนี้ถูกยกเลิกแล้ว</translation>
 <translation id="1693754753824026215">หน้าเว็บที่ <ph name="SITE"/> แจ้งว่า:</translation>
 <translation id="4269787794583293679">(ไม่มีชื่อผู้ใช้)</translation>

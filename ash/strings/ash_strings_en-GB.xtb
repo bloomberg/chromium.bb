@@ -8,6 +8,7 @@
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth enabled</translation>
+<translation id="5895138241574237353">Restart</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> was rotated to <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth disabled</translation>
@@ -77,7 +78,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="5825747213122829519">Your input method has changed to <ph name="INPUT_METHOD_ID"/>.
 Press Shift + Alt to switch.</translation>
 <translation id="2562916301614567480">Private Network</translation>
-<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us. (That monitor is not supported)</translation>
 <translation id="6426039856985689743">Disable mobile data</translation>
@@ -159,6 +159,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE"/>% full.</translation>
 <translation id="2983818520079887040">Settings...</translation>
 <translation id="6452181791372256707">Reject</translation>
+<translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="607652042414456612">Your computer is discoverable to nearby Bluetooth devices and will appear as &quot;<ph name="NAME"/>&quot; with address <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Autohide shelf</translation>
@@ -190,6 +191,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="7097613348211027502">ChromeVox (spoken feedback) is enabled.
 Press Ctrl+Alt+Z to disable.</translation>
 <translation id="5045002648206642691">Google Drive settings</translation>
+<translation id="1510238584712386396">Launcher</translation>
 <translation id="7209101170223508707">CAPS LOCK is on.
 Press Alt+Search or Shift to cancel.</translation>
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE"/>%)</translation>

@@ -1,14 +1,16 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
 <translation id="8588878054171169263">Simpan gambar</translation>
 <translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
+<translation id="8425213833346101688">Ubah</translation>
 <translation id="4996978546172906250">Bagikan melalui</translation>
 <translation id="6292937202013477045">Penyerang mungkin mencoba mencuri informasi Anda (misalnya foto, sandi, pesan, dan kartu kredit) dari <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="1506061864768559482">Mesin telusur</translation>
 <translation id="346339498574870680">Salin URL gambar</translation>
+<translation id="5063480226653192405">Penggunaan</translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE"/> untuk gambar ini</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
-<translation id="8237438615979997762">Data yang tersimpan di perangkat ini, serta data yang tersimpan di Akun Google Anda, akan tetap berada di tempatnya masing-masing. Namun, data baru atau perubahan yang Anda buat pada data tidak akan disinkronkan di antara keduanya.</translation>
+<translation id="8237438615979997762">Data yang tersimpan di perangkat ini, serta data yang tersimpan di Akun Google, akan tetap berada di tempatnya masing-masing. Namun, data baru atau perubahan yang dibuat pada data tidak akan disinkronkan di antara keduanya.</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6504836143156866575">Versi JavaScript</translation>
 <translation id="869891660844655955">Tanggal kedaluwarsa</translation>
@@ -24,6 +26,8 @@
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="2154710561487035718">Salin URL</translation>
+<translation id="9189669987942139609">TB</translation>
+<translation id="119944043368869598">Hapus semua</translation>
 <translation id="6458785801851713928">Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="2731700343119398978">Harap tunggu...</translation>
 <translation id="6846298663435243399">Memuat…</translation>
@@ -39,6 +43,8 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="3410346880900521918">Jika ini sering terjadi, coba <ph name="BEGIN_LINK"/>saran-saran yang ada di sini<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
+<translation id="7375125077091615385">Jenis:</translation>
+<translation id="2498359688066513246">Bantuan &amp; masukan</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
@@ -53,13 +59,12 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
-<translation id="5860033963881614850">Nonaktif</translation>
 <translation id="2960796085439532066">Hak cipta <ph name="YEAR"/> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
-<translation id="5317780077021120954">Simpan</translation>
 <translation id="1151972924205500581">Sandi wajib ada</translation>
+<translation id="2870560284913253234">Situs</translation>
 <translation id="2718352093833049315">Hanya pada Wi-Fi</translation>
 <translation id="7029809446516969842">Sandi</translation>
 <translation id="2414886740292270097">Gelap</translation>
@@ -79,28 +84,38 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4807098396393229769">Nama pada kartu</translation>
 <translation id="656628257199996201">Selalu terjemahkan bahasa <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Penskalaan teks</translation>
+<translation id="6447842834002726250">Cookie</translation>
 <translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
+<translation id="1383876407941801731">Telusuri</translation>
 <translation id="5626370437647899551">Tambahkan Akun Google</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
 <translation id="4543661749405994812">Salin alamat email</translation>
+<translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">Email</translation>
+<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
 <translation id="5668404140385795438">Mengganti permintaan situs web untuk mencegah pembesaran</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="5684874026226664614">Ups. Laman ini tidak dapat diterjemahkan.</translation>
+<translation id="1987317783729300807">Akun</translation>
 <translation id="6064211167623632605">Jalur yang dapat dijalankan</translation>
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="4827948050554950725">Tambahkan kartu kredit</translation>
+<translation id="4278390842282768270">Diizinkan</translation>
 <translation id="7817177303494746697">Versi berkedip</translation>
 <translation id="2532336938189706096">Tampilan Web</translation>
 <translation id="6571070086367343653">Edit kartu kredit</translation>
 <translation id="7080851568148064063">Tambahkan ke beranda</translation>
+<translation id="6192792657125177640">Pengecualian</translation>
 <translation id="4619298195800598081">Buka gambar asli di tab baru</translation>
+<translation id="8798099450830957504">Default</translation>
 <translation id="4002066346123236978">Judul</translation>
+<translation id="885701979325669005">Penyimpanan</translation>
 <translation id="3254409185687681395">Bookmark laman ini</translation>
 <translation id="907015151729920253">Kartu cerdas</translation>
+<translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="2600241144430299006">Bulan habis masa berlaku kartu</translation>
 <translation id="3063601790762993062">Simpan video</translation>
@@ -114,6 +129,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4148957013307229264">Memasang...</translation>
 <translation id="3992315671621218278">Simpan tautan</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="7521387064766892559">Javascript</translation>
 <translation id="5424715742813396254">Edit pengecualian atau nama/sandi yang tersimpan</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
@@ -130,8 +146,9 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
 <translation id="2359808026110333948">Lanjut</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Isi Otomatis formulir</translation>
-<translation id="8261506727792406068">Hapus</translation>
+<translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME"/>. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
 <translation id="4510973599275542560">Jangan muat ulang</translation>
 <translation id="1206892813135768548">Salin teks tautan</translation>
@@ -140,15 +157,19 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="4271185234001491831">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Salin gambar</translation>
+<translation id="5804241973901381774">Izin</translation>
 <translation id="8209050860603202033">Buka gambar</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="8941248009481596111">Sambungan Anda ke situs ini bersifat pribadi.</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
+<translation id="4165986682804962316">Setelan situs</translation>
 <translation id="5164482624172255778">Ingin Google Chrome menawarkan untuk menerjemahkan laman berbahasa <ph name="LANGUAGE"/> dari situs ini saat Anda mengunjunginya lagi?</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="8528538445849828817">Bahasa Laman: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
+<translation id="3414952576877147120">Ukuran:</translation>
+<translation id="5626134646977739690">Nama:</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="2612676031748830579">Nomor kartu kredit</translation>
@@ -163,7 +184,6 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 Jika NONAKTIF, Anda mungkin tidak dapat memutar video premium di perangkat ini.</translation>
 <translation id="8928220460877261598">Sekarang Anda sudah masuk ke Chrome.</translation>
 <translation id="5032574515228824816">Meminta</translation>
-<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang diunduh di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.
 
 Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diunduh.</translation>
@@ -177,10 +197,12 @@ Seret dari atas untuk keluar.</translation>
 <translation id="411254640334432676">Unduhan gagal.</translation>
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="7634554953375732414">Sambungan Anda ke situs ini tidak bersifat pribadi.</translation>
+<translation id="6409731863280057959">Munculan</translation>
+<translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="1742134235943978220">Diterjemahkan ke <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5916664084637901428">Aktif</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>
+<translation id="5677928146339483299">Dicekal</translation>
 <translation id="7561196759112975576">Selalu</translation>
 </translationbundle>

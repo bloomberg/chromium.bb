@@ -27,12 +27,15 @@
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="2350172092385603347">Localisation used, but default_locale wasn't specified in the manifest.</translation>
 <translation id="3759933321830434300">Block parts of web pages</translation>
+<translation id="6143635259298204954">Cannot unpack extension.  To unpack an extension safely, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.</translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">This extension failed to modify the request header &quot;<ph name="HEADER_NAME"/>&quot; of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Product <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Select USB devices</translation>
+<translation id="6731255991101203740">Could not create directory for unzipping: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Could not load about page '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Could not load options page '<ph name="OPTIONS_PAGE"/>'.</translation>
+<translation id="5127881134400491887">Manage network connections</translation>
 <translation id="6344170822609224263">Access list of network connections</translation>
 <translation id="7039326228527141150">Access USB devices from <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Read and change your data on <ph name="WEBSITE_1"/></translation>
@@ -46,6 +49,7 @@
 <translation id="452039078290142656">unknown devices from <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Exchange data with any computer in the domains: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="2753617847762399167">Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">all <ph name="WEBSITE_1"/> sites</translation>
 <translation id="8662911384982557515">Change your home page to: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">This extension failed to modify a network request because the modification conflicted with another extension.</translation>
@@ -58,6 +62,9 @@
 <translation id="8341840687457896278">This extension failed to provide credentials to a network request because another extension (<ph name="EXTENSION_NAME"/>) provided different credentials.</translation>
 <translation id="5627523580512561598">extension <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Access photos, music and other media from your computer</translation>
+<translation id="3369521687965833290">Cannot unpack extension.  To safely unpack an extension, there must be a path to your profile directory that starts with a drive letter and does not contain a junction, mount point or symlink.  No such path exists for your profile.</translation>
+<translation id="4811956658694082538">Could not install package because a utility process crashed. Try restarting Chrome and trying again.</translation>
+<translation id="641087317769093025">Could not unzip extension</translation>
 <translation id="4761104368405085019">Use your microphone</translation>
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to be installed. It cannot be removed or modified.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
@@ -65,13 +72,17 @@
 <translation id="1036511912703768636">Access any of these USB devices</translation>
 <translation id="2677911863018634147">The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one or more of your devices.</translation>
 <translation id="6698810901424468597">Read and change your data on <ph name="WEBSITE_1"/> and <ph name="WEBSITE_2"/></translation>
+<translation id="2159915644201199628">Could not decode image: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">Vendor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Access your network traffic</translation>
 <translation id="5972529113578162692">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to be installed. It cannot be uninstalled.</translation>
+<translation id="1135328998467923690">Package is invalid: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Read your data on <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> and <ph name="WEBSITE_3"/></translation>
 <translation id="2087653731648927289">Access any <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Could not load background page '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="2988488679308982380">Could not install package: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one of your devices.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Read your data on a number of websites</translation>
 </translationbundle>
