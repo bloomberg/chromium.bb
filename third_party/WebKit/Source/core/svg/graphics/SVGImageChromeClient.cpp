@@ -86,8 +86,22 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
     // images can't have any so we assert there's no script.
     ScriptForbiddenScope forbidScript;
+
+    // As neither SVGImage nor this chrome client object are on the Oilpan heap,
+    // this object's reference to the SVGImage will not be traced should a GC
+    // strike below. Hence, we must ensure that they both remain alive for
+    // duration of this call.
+    //
+    // This is cannot arise non-Oilpan as an ImageResource is an owned object
+    // and will be promptly released along with its (SVG)Image..and everything
+    // below, including this object and its timer. For code simplicity, the
+    // object protection isn't made the conditional on Oilpan.
+    //
+    // FIXME: Oilpan: move this and other ChromeClients to the Oilpan heap
+    // to render this protection redundant.
+    RefPtr<SVGImage> protect(m_image);
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
     m_image->frameView()->updateLayoutAndStyleForPainting();
 }
 
-}
+} // namespace blink
