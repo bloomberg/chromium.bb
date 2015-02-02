@@ -112,9 +112,9 @@ PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitive
     return builder.release();
 }
 
-static GraphicsContext* beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
+static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterData* filterData)
 {
-    ASSERT(!filterData->m_needToEndFilter);
+    ASSERT(filterData->m_state == FilterData::Initial);
 
     // For slimming paint we need to create a new context so the contents of the
     // filter can be drawn and cached.
@@ -125,12 +125,14 @@ static GraphicsContext* beginDeferredFilter(GraphicsContext* context, FilterData
     }
 
     context->beginRecording(filterData->boundaries);
-    filterData->m_needToEndFilter = true;
+    filterData->m_state = FilterData::RecordingContent;
     return context;
 }
 
-static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
+static void endRecordingContent(GraphicsContext* context, FilterData* filterData)
 {
+    ASSERT(filterData->m_state == FilterData::RecordingContent);
+
     // FIXME: maybe filterData should just hold onto SourceGraphic after creation?
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
@@ -152,11 +154,14 @@ static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
         filterData->m_context = nullptr;
     }
 
-    filterData->m_needToEndFilter = false;
+    filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
+static void paintFilteredContent(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
 {
+    ASSERT(filterData->m_state == FilterData::ReadyToPaint);
+    filterData->m_state = FilterData::PaintingFilter;
+
     SkiaImageFilterBuilder builder(context);
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
@@ -204,6 +209,8 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
     context->endLayer();
     context->restore();
+
+    filterData->m_state = FilterData::ReadyToPaint;
 }
 
 GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext* context)
@@ -213,8 +220,12 @@ GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, Gr
 
     clearInvalidationMask();
 
-    if (m_filter.contains(object)) {
-        // The filter has already begun or there is a filter cycle.
+    if (FilterData* filterData = m_filter.get(object)) {
+        // If the filterData already exists we do not need to record the content
+        // to be filtered. This can occur if the content was previously recorded
+        // or we are in a cycle.
+        if (filterData->m_state == FilterData::PaintingFilter)
+            filterData->m_state = FilterData::PaintingFilterCycleDetected;
         return nullptr;
     }
 
@@ -245,7 +256,7 @@ GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, Gr
 
     FilterData* data = filterData.get();
     m_filter.set(object, filterData.release());
-    return beginDeferredFilter(context, data);
+    return beginRecordingContent(context, data);
 }
 
 void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext* context)
@@ -257,10 +268,21 @@ void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext
     if (!filterData)
         return;
 
-    if (filterData->m_needToEndFilter)
-        endDeferredFilter(context, filterData);
+    // A painting cycle can occur when an FeImage references a source that makes
+    // use of the FeImage itself. This is the first place we would hit the
+    // cycle so we reset the state and continue.
+    if (filterData->m_state == FilterData::PaintingFilterCycleDetected) {
+        filterData->m_state = FilterData::PaintingFilter;
+        return;
+    }
 
-    drawDeferredFilter(context, filterData, toSVGFilterElement(element()));
+    // Check for RecordingContent here because we may can be re-painting without
+    // re-recording the contents to be filtered.
+    if (filterData->m_state == FilterData::RecordingContent)
+        endRecordingContent(context, filterData);
+
+    if (filterData->m_state == FilterData::ReadyToPaint)
+        paintFilteredContent(context, filterData, toSVGFilterElement(element()));
 }
 
 FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)
@@ -279,7 +301,7 @@ void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, co
 
     for (; it != end; ++it) {
         FilterData* filterData = it->value.get();
-        if (filterData->m_needToEndFilter)
+        if (filterData->m_state != FilterData::ReadyToPaint)
             continue;
 
         SVGFilterBuilder* builder = filterData->builder.get();

@@ -159,10 +159,10 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object->style()->svgStyle().hasFilter())
             return false;
     } else if (RenderSVGResourceFilter* filter = resources->filter()) {
+        m_filter = filter;
         GraphicsContext* filterContext = filter->prepareEffect(m_object, m_paintInfo.context);
         if (!filterContext)
             return false;
-        m_filter = filter;
 
         // Because the filter needs to cache its contents we replace the context
         // during filtering with the filter's context.

@@ -36,6 +36,21 @@ namespace blink {
 class FilterData final : public NoBaseWillBeGarbageCollectedFinalized<FilterData> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
+    /*
+     * The state transitions should follow the following:
+     * Initial -> RecordingContent -> ReadyToPaint -> PaintingFilter -> ReadyToPaint
+     *                                                   |     ^
+     *                                                   v     |
+     *                                              PaintingFilterCycle
+     */
+    enum FilterDataState {
+        Initial,
+        RecordingContent,
+        ReadyToPaint,
+        PaintingFilter,
+        PaintingFilterCycleDetected
+    };
+
     static PassOwnPtrWillBeRawPtr<FilterData> create()
     {
         return adoptPtrWillBeNoop(new FilterData());
@@ -48,11 +63,10 @@ public:
     OwnPtr<DisplayItemList> m_displayItemList;
     OwnPtr<GraphicsContext> m_context;
     FloatRect boundaries;
-    bool m_needToEndFilter;
+    FilterDataState m_state;
 
 private:
-    FilterData() : m_needToEndFilter(false) { }
-
+    FilterData() : m_state(Initial) { }
 };
 
 class RenderSVGResourceFilter final : public RenderSVGResourceContainer {
@@ -72,7 +86,7 @@ public:
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
     // Returns the context that should be used to paint the filter contents, or
-    // null if there is an error.
+    // null if the content should not be recorded.
     GraphicsContext* prepareEffect(RenderObject*, GraphicsContext*);
     void finishEffect(RenderObject*, GraphicsContext*);
 
