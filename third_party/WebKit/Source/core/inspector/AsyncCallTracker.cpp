@@ -188,7 +188,6 @@ bool AsyncCallTracker::willFireTimer(ExecutionContext* context, int timerId)
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ASSERT(timerId > 0);
-    ASSERT(!m_debuggerAgent->currentAsyncCallChain());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         willFireAsyncCall(data->m_timerCallChains.get(timerId));
         if (!data->m_intervalTimerIds.contains(timerId))
@@ -224,7 +223,6 @@ bool AsyncCallTracker::willFireAnimationFrame(ExecutionContext* context, int cal
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ASSERT(callbackId > 0);
-    ASSERT(!m_debuggerAgent->currentAsyncCallChain());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         willFireAsyncCall(data->m_animationFrameCallChains.get(callbackId));
         data->m_animationFrameCallChains.remove(callbackId);

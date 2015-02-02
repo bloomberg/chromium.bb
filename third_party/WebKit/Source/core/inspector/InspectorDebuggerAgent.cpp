@@ -880,9 +880,8 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 
     Vector<ScriptValue> asyncCallStacks;
-    const AsyncCallChain* asyncChain = trackingAsyncCalls() ? currentAsyncCallChain() : nullptr;
-    if (asyncChain) {
-        const AsyncCallStackVector& callStacks = asyncChain->callStacks();
+    if (m_currentAsyncCallChain) {
+        const AsyncCallStackVector& callStacks = m_currentAsyncCallChain->callStacks();
         asyncCallStacks.resize(callStacks.size());
         AsyncCallStackVector::const_iterator it = callStacks.begin();
         for (size_t i = 0; it != callStacks.end(); ++it, ++i)
@@ -1063,11 +1062,6 @@ void InspectorDebuggerAgent::didUpdatePromise(InspectorFrontend::Debugger::Event
 {
     if (m_frontend)
         m_frontend->promiseUpdated(eventType, promise);
-}
-
-const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const
-{
-    return m_currentAsyncCallChain.get();
 }
 
 int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& description)
@@ -1261,7 +1255,7 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
 {
     if (!m_pausedScriptState || !trackingAsyncCalls())
         return nullptr;
-    const AsyncCallChain* chain = currentAsyncCallChain();
+    const AsyncCallChain* chain = m_currentAsyncCallChain.get();
     if (!chain)
         return nullptr;
     const AsyncCallStackVector& callStacks = chain->callStacks();
@@ -1307,7 +1301,7 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
 {
     if (!trackingAsyncCalls())
         return nullptr;
-    const AsyncCallChain* chain = currentAsyncCallChain();
+    const AsyncCallChain* chain = m_currentAsyncCallChain.get();
     if (!chain)
         return nullptr;
     const AsyncCallStackVector& callStacks = chain->callStacks();

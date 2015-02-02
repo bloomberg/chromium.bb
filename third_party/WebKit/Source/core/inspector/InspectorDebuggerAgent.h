@@ -177,7 +177,6 @@ public:
     static const int unknownAsyncOperationId;
     int traceAsyncOperationStarting(const String& description);
     void traceAsyncCallbackStarting(int operationId);
-    const AsyncCallChain* currentAsyncCallChain() const;
     void traceAsyncCallbackCompleted();
     void traceAsyncOperationCompleted(int operationId);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
