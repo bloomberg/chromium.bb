@@ -497,7 +497,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
     if os.path.isdir(dest_package_dir):
       logging.debug('Deleting old package directory: %s', dest_package_dir)
-      pynacl.file_tools.RemoveDir(dest_package_dir)
+      pynacl.file_tools.RemoveDirectoryIfPresent(dest_package_dir)
 
     logging.info('Extracting package (%s) to directory: %s',
                  package_name, dest_package_dir)
@@ -546,7 +546,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
                    (archive_desc.name, index+1, num_archives))
 
       temp_dir = os.path.join(destination_dir, '.tmp')
-      pynacl.file_tools.RemoveDir(temp_dir)
+      pynacl.file_tools.RemoveDirectoryIfPresent(temp_dir)
       os.makedirs(temp_dir)
       tar_output = not quiet
       tar = cygtar.CygTar(archive_file, 'r:*', verbose=tar_output)
@@ -560,7 +560,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
       temp_src_dir = os.path.join(temp_dir, archive_desc.tar_src_dir)
       pynacl.file_tools.MoveAndMergeDirTree(temp_src_dir, destination_dir)
-      pynacl.file_tools.RemoveDir(temp_dir)
+      pynacl.file_tools.RemoveDirectoryIfPresent(temp_dir)
 
     pynacl.file_tools.MakeParentDirectoryIfAbsent(dest_package_file)
     package_desc.SavePackageFile(dest_package_file)
