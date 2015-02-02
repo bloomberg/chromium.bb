@@ -82,7 +82,7 @@
         ],
       },
       'conditions': [
-        ['target_arch=="ia32" and OS=="linux"', {
+        ['(target_arch=="ia32" or target_arch=="x64") and OS=="linux"', {
           # Enable nonsfi testing only on ia32-linux environment.
           # See chrome/test/data/nacl/nacl_test_data.gyp for more info.
           'variables': {

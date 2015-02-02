@@ -41,7 +41,7 @@
         ],
       },
       'conditions': [
-        ['target_arch=="ia32" and OS=="linux"', {
+        ['(target_arch=="ia32" or target_arch=="x64") and OS=="linux"', {
           # Enable nonsfi testing on ia32-linux environment.
           # This flag causes test_files to be copied into nonsfi directory,
           # too.
@@ -540,7 +540,7 @@
         # disabled, but building the binary should work.
         # We cannot disable building, as enable_XXX variables are also used
         # to build newlib linked nexes.
-        ['target_arch=="ia32" and OS=="linux"', {
+        ['(target_arch=="ia32" or target_arch=="x64") and OS=="linux"', {
           # Enable nonsfi testing on ia32-linux environment.
           'variables': {
             'build_pnacl_newlib': 1,
@@ -594,7 +594,7 @@
         'ppapi_test_lib',
       ],
       'conditions': [
-        ['target_arch=="ia32" and OS=="linux"', {
+        ['(target_arch=="ia32" or target_arch=="x64") and OS=="linux"', {
           # Enable nonsfi testing on ia32-linux environment.
           'variables': {
             'enable_x86_32_nonsfi': 1,

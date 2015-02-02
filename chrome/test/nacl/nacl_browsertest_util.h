@@ -219,11 +219,10 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
 #endif
 
-// Similar to MAYBE_TRANSITIONAL_NONSFI, this is available only on x86-32 or
-// ARM.
-// TODO(hidehiko,mazda): Merge this to the MAYBE_PNACL_NONSFI when it is
-// supported on x86-64.
-#if defined(OS_LINUX) && (defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL))
+// Similar to MAYBE_TRANSITIONAL_NONSFI, this is available only on x86-32,
+// x86-64 or ARM linux.
+#if defined(OS_LINUX) && \
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
 #  define MAYBE_PNACL_TRANSITIONAL_NONSFI(test_case) test_case
 #else
 #  define MAYBE_PNACL_TRANSITIONAL_NONSFI(test_case) DISABLED_##test_case

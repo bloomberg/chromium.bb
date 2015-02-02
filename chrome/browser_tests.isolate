@@ -107,7 +107,7 @@
       },
     }],
     [('disable_nacl==0 and OS=="linux" and '
-      '(target_arch=="ia32" or target_arch=="arm")'), {
+      '(target_arch=="ia32" or target_arch=="x64" or target_arch=="arm")'), {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_nonsfi.nmf',
@@ -142,6 +142,14 @@
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
+        ],
+      },
+    }],
+    ['disable_nacl==0 and OS=="linux" and '
+         '(target_arch=="x64" or target_arch=="ia32")', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
         ],
       },
     }],

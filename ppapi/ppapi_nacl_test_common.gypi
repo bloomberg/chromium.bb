@@ -221,11 +221,27 @@
                   '--output=>(nmf_pnacl_newlib_nonsfi)',
                 ],
                 'target_conditions': [
-                  ['enable_x86_32_nonsfi==1', {
+                  ['enable_x86_32_nonsfi==1 and "<(target_arch)"=="ia32"', {
                     'inputs': ['>(out_pnacl_newlib_x86_32_nonsfi_nexe)'],
                     'action': [
                       '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
                       '--arch=x86-32',
+                    ]
+                  }],
+                  ['enable_x86_32_nonsfi==1 and "<(target_arch)"=="x64"', {
+                    'inputs': ['>(out_pnacl_newlib_x86_32_nonsfi_nexe)'],
+                    'action': [
+                      '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                      # This should be used only for nacl_helper_nonsfi test.
+                      # In theory this should be x86-32. However, currently
+                      # fallback logic to x86-32-nonsfi is not implemented,
+                      # and, moreover, it would break the tests for current
+                      # nacl_helper in Non-SFI mode on x64 Chrome.
+                      # So, here we introduce the hack to use "x86-64" in order
+                      # to take the benefit to run nacl_helper_nonsfi tests on
+                      # x64 Chrome.
+                      # TODO(hidehiko): Remove this hack.
+                      '--arch=x86-64',
                     ]
                   }],
                   ['enable_arm_nonsfi==1', {
