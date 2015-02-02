@@ -23,7 +23,7 @@ def CheckScopedPtr(input_api, output_api,
     for line_number, line in f.ChangedContents():
       # Disallow:
       # scoped_ptr<T>()
-      if re.search(r'\bscoped_ptr<.*?>\(\)', line):
+      if input_api.re.search(r'\bscoped_ptr<.*?>\(\)', line):
         errors.append(output_api.PresubmitError(
           '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
           (f.LocalPath(), line_number)))
