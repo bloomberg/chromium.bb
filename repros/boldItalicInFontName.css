@@ -1,0 +1,20 @@
+@font-face {
+    font-family: "BB.Calibri";
+    src: local("Calibri");
+}
+
+@font-face {
+    font-family: "BB.CalibriBold";
+    src: local("Calibri Bold");
+}
+
+@font-face {
+    font-family: "BB.CalibriItalic";
+    src: local("Calibri Italic");
+}
+
+@font-face {
+    font-family: "BB.CalibriBoldItalic";
+    src: local("Calibri Bold Italic");
+}
+

@@ -331,6 +331,21 @@ the mouse away from it, it doesn't move the tooltip to the element where the
 mouse is.</p>
 
 <h3>
+    <a name="feature-boldItalicInFontName">feature/boldItalicInFontName</a>
+    (Shezan Baig)
+    <span class="viewchanges">[<a
+            href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FboldItalicInFontName">view changes</a>]</span>
+</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>In previous versions of WebKit, specifying "font-family: Foo Bold" would
+automatically pick the bold version of the font "Foo", even when font-weight
+was not set.  Unfortunately, we have content out there that took advantage of
+this, and now we need to support that behavior forever.</p>
+<p>Open <a href="repros/boldItalicInFontName.html">this link</a> and make sure
+the bold/italic fonts are displayed correctly.</p>
+
+<h3>
     <a name="feature-blpwtk2">feature/blpwtk2</a>
     (Multiple Authors)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2Fblpwtk2">view changes</a>]</span>
