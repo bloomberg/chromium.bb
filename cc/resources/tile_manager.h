@@ -65,6 +65,11 @@ class CC_EXPORT TileManagerClient {
   virtual scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) = 0;
 
+  // Informs the client that due to the currently rasterizing (or scheduled to
+  // be rasterized) tiles, we will be in a position that will likely require a
+  // draw. This can be used to preemptively start a frame.
+  virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
+
  protected:
   virtual ~TileManagerClient() {}
 };

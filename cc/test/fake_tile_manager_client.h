@@ -25,6 +25,7 @@ class FakeTileManagerClient : public TileManagerClient {
       RasterTilePriorityQueue::Type type) override;
   scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
+  void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override {}
 };
 
 }  // namespace cc

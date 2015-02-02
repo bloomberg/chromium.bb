@@ -249,6 +249,7 @@ class CC_EXPORT LayerTreeHostImpl
       RasterTilePriorityQueue::Type type) override;
   scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
+  void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
 
   // Returns existing picture layers.
   // TODO(vmpstr): Remove this, it's only used in tests.
@@ -728,7 +729,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::vector<PictureLayerImpl::Pair> picture_layer_pairs_;
 
   bool requires_high_res_to_draw_;
-  bool required_for_draw_tile_is_top_of_raster_queue_;
+  bool is_likely_to_require_a_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

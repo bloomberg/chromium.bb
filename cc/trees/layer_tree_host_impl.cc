@@ -229,7 +229,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       id_(id),
       requires_high_res_to_draw_(false),
-      required_for_draw_tile_is_top_of_raster_queue_(false) {
+      is_likely_to_require_a_draw_(false) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -1197,28 +1197,8 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_, true);
-  scoped_ptr<RasterTilePriorityQueue> queue(RasterTilePriorityQueue::Create(
-      picture_layer_pairs_, tree_priority, type));
-
-  // Only check whether the top tile is required for draw if we're not building
-  // a required for activation queue.
-  // TODO(vmpstr): Remove side-effects from this function. crbug.com/451147
-  if (type != RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION) {
-    if (!queue->IsEmpty()) {
-      // Only checking the Top() tile here isn't a definite answer that there is
-      // or isn't something required for draw in this raster queue. It's just a
-      // heuristic to let us hit the common case and proactively tell the
-      // scheduler that we expect to draw within each vsync until we get all the
-      // tiles ready to draw. If we happen to miss a required for draw tile
-      // here, then we will miss telling the scheduler each frame that we intend
-      // to draw so it may make worse scheduling decisions.
-      required_for_draw_tile_is_top_of_raster_queue_ =
-          queue->Top()->required_for_draw();
-    } else {
-      required_for_draw_tile_is_top_of_raster_queue_ = false;
-    }
-  }
-  return queue;
+  return RasterTilePriorityQueue::Create(picture_layer_pairs_, tree_priority,
+                                         type);
 }
 
 scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
@@ -1229,6 +1209,15 @@ scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
   GetPictureLayerImplPairs(&picture_layer_pairs_, false);
   queue->Build(picture_layer_pairs_, tree_priority);
   return queue;
+}
+
+void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
+    bool is_likely_to_require_a_draw) {
+  // Proactively tell the scheduler that we expect to draw within each vsync
+  // until we get all the tiles ready to draw. If we happen to miss a required
+  // for draw tile here, then we will miss telling the scheduler each frame that
+  // we intend to draw so it may make worse scheduling decisions.
+  is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
 const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers()
@@ -1244,7 +1233,7 @@ void LayerTreeHostImpl::NotifyReadyToDraw() {
   // Tiles that are ready will cause NotifyTileStateChanged() to be called so we
   // don't need to schedule a draw here. Just stop WillBeginImplFrame() from
   // causing optimistic requests to draw a frame.
-  required_for_draw_tile_is_top_of_raster_queue_ = false;
+  is_likely_to_require_a_draw_ = false;
 
   client_->NotifyReadyToDraw();
 }
@@ -1614,10 +1603,10 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   // Cache the begin impl frame interval
   begin_impl_frame_interval_ = args.interval;
 
-  if (required_for_draw_tile_is_top_of_raster_queue_) {
-    // Optimistically schedule a draw, as a tile required for draw is at the top
-    // of the current raster queue. This will let us expect the tile to complete
-    // and draw it within the impl frame we are beginning now.
+  if (is_likely_to_require_a_draw_) {
+    // Optimistically schedule a draw. This will let us expect the tile manager
+    // to complete its work so that we can draw new tiles within the impl frame
+    // we are beginning now.
     SetNeedsRedraw();
   }
 }
