@@ -17,7 +17,7 @@ TODO(lizeb): Since the suffix ".clone." is only used with -O3 that we don't
 currently use, simplify the logic by removing the suffix handling.
 
 The general pipeline is:
-1. Get the symbol infos (offset, length, name) from the binary
+1. Get the symbol infos (name, offset, size, section) from the binary
 2. Get the symbol names from the orderfile
 3. Find the orderfile symbol names in the symbols coming from the binary
 4. For each symbol found, get all the symbols at the same address
@@ -122,7 +122,7 @@ def _GetSymbolsFromStream(lines):
   return symbols
 
 
-def _GetSymbolsFromOrderfile(filename):
+def GetSymbolsFromOrderfile(filename):
   """Return the symbols from an orderfile.
 
   Args:
@@ -211,7 +211,7 @@ def main(argv):
   binary_filename = argv[2]
   (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
       binary_filename)
-  profiled_symbols = _GetSymbolsFromOrderfile(orderfile_filename)
+  profiled_symbols = GetSymbolsFromOrderfile(orderfile_filename)
   expanded_symbols = _ExpandSymbols(
       profiled_symbols, name_to_symbol_infos, offset_to_symbol_infos)
   _PrintSymbolsWithPrefixes(expanded_symbols, sys.stdout)
