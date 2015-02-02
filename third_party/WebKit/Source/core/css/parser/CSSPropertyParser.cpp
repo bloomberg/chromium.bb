@@ -258,7 +258,7 @@ bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitfl
 inline bool CSSPropertyParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
 {
     // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
-    return (unitflags & (FLength | FAngle | FTime))
+    return (unitflags & (FLength | FAngle))
         && (!value->fValue // 0 can always be unitless.
             || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
             || (cssParserMode == HTMLQuirksMode && (unitflags & FUnitlessQuirk)));
@@ -274,8 +274,7 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
     case CSSPrimitiveValue::CSS_NUMBER:
         b = (unitflags & FNumber);
         if (!b && shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
-            value->unit = (unitflags & FLength) ? CSSPrimitiveValue::CSS_PX :
-                          ((unitflags & FAngle) ? CSSPrimitiveValue::CSS_DEG : CSSPrimitiveValue::CSS_MS);
+            value->unit = (unitflags & FLength) ? CSSPrimitiveValue::CSS_PX : CSSPrimitiveValue::CSS_DEG;
             b = true;
         }
         if (!b && (unitflags & FInteger) && value->isInt)

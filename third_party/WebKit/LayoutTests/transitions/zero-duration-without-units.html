@@ -7,9 +7,9 @@
       height: 50px;
       width: 100px;
       background-color: blue;
-      -webkit-transition-property: top;
-      -webkit-transition-duration: 1s;
-      -webkit-transition-duration: 0;
+      transition-property: top;
+      transition-duration: 1s;
+      transition-duration: 0;
     }
   </style>
   <script>
@@ -19,8 +19,8 @@
     function test()
     {
         var box = document.getElementById('box');
-        var dur = parseInt(window.getComputedStyle(box).webkitTransitionDuration);
-        document.getElementById('result').innerHTML = "Duration was " + dur + " (should be 0): " + (dur == 0 ? "PASS" : "FAIL");
+        var dur = window.getComputedStyle(box).transitionDuration;
+        document.getElementById('result').innerHTML = "Duration was " + dur + " (should be 1s): " + (dur == "1s" ? "PASS" : "FAIL");
     }
     window.addEventListener('load', test, false)
   </script>

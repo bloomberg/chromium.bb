@@ -10,7 +10,7 @@
       left: 0px;
       top: 0px;
       background-color: blue;
-      -webkit-transition-duration: 0, 0.5s;
+      -webkit-transition-duration: 0s, 0.5s;
       -webkit-transition-timing-function: linear;
       -webkit-transition-property: top, left;
     }
@@ -21,7 +21,7 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [0.25, "box", "left", 50, 10],
-      [0.25, "box", "top", 100, 10],
+      [0.25, "box", "top", 100, 0],
     ];
     
     function setupTest()
