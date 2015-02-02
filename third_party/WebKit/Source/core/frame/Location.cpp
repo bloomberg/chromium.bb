@@ -68,7 +68,7 @@ String Location::href() const
     if (!m_frame)
         return String();
 
-    return url().string();
+    return url().strippedForUseAsHref();
 }
 
 String Location::protocol() const

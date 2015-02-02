@@ -150,6 +150,17 @@ String KURL::strippedForUseAsReferrer() const
     return string();
 }
 
+String KURL::strippedForUseAsHref() const
+{
+    if (m_parsed.username.is_nonempty() || m_parsed.password.is_nonempty()) {
+        KURL href(*this);
+        href.setUser(String());
+        href.setPass(String());
+        return href.string();
+    }
+    return string();
+}
+
 bool KURL::isLocalFile() const
 {
     // Including feed here might be a bad idea since drag and drop uses this check
