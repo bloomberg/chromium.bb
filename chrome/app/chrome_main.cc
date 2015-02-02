@@ -4,8 +4,6 @@
 
 #include "chrome/app/chrome_main_delegate.h"
 
-#include "base/profiler/scoped_tracker.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/app/content_main.h"
 
 #if defined(OS_WIN)
@@ -64,22 +62,6 @@ int ChromeMain(int argc, const char** argv) {
   params.argc = argc;
   params.argv = argv;
 #endif
-
-  // TODO(vadimt): Remove the switch statement below once crbug.com/453640 is
-  // fixed.
-  // Enable profiler instrumentation depending on the channel.
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      tracked_objects::ScopedTracker::Enable();
-      break;
-
-    case chrome::VersionInfo::CHANNEL_DEV:
-    case chrome::VersionInfo::CHANNEL_BETA:
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      // Don't enable instrumentation.
-      break;
-  }
 
   int rv = content::ContentMain(params);
 
