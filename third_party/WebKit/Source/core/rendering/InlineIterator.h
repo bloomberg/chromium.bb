@@ -23,7 +23,7 @@
 #ifndef InlineIterator_h
 #define InlineIterator_h
 
-#include "core/rendering/BidiRun.h"
+#include "core/layout/BidiRun.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"

@@ -25,7 +25,7 @@
 #define BidiRunForLine_h
 
 #include "config.h"
-#include "core/rendering/BidiRunForLine.h"
+#include "core/layout/BidiRunForLine.h"
 
 #include "core/rendering/InlineIterator.h"
 

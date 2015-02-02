@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/layout/BidiRunForLine.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
@@ -30,7 +31,6 @@
 #include "core/layout/line/LineLayoutState.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/line/WordMeasurement.h"
-#include "core/rendering/BidiRunForLine.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
