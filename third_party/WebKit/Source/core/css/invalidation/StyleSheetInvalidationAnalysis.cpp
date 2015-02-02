@@ -121,8 +121,6 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     case StyleRule::Supports: // If we evaluated the supports-clause we could avoid recalc.
     case StyleRule::Viewport: // If the viewport doesn't match, we could avoid recalcing.
     case StyleRule::Keyframes: // If the animation doesn't match an element, we could avoid recalc.
-    // FIXME: Unclear if any of the rest need to cause style recalc:
-    case StyleRule::Filter:
         return true;
 
     // These should all be impossible to reach:

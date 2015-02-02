@@ -959,7 +959,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg));
         break;
 
-    case CSSPropertySrc: // Only used within @font-face and @-webkit-filter, so cannot use inherit | initial or be !important. This is a list of urls or local references.
+    case CSSPropertySrc: // Only used within @font-face so cannot use inherit | initial or be !important. This is a list of urls or local references.
         parsedValue = parseFontFaceSrc();
         break;
 

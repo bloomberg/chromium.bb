@@ -48,7 +48,6 @@ public:
         Namespace,
         Supports,
         Viewport,
-        Filter,
     };
 
     Type type() const { return static_cast<Type>(m_type); }
@@ -63,7 +62,6 @@ public:
     bool isSupportsRule() const { return type() == Supports; }
     bool isViewportRule() const { return type() == Viewport; }
     bool isImportRule() const { return type() == Import; }
-    bool isFilterRule() const { return type() == Filter; }
 
     PassRefPtrWillBeRawPtr<StyleRuleBase> copy() const;
 
@@ -254,31 +252,6 @@ private:
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null
 };
 
-class StyleRuleFilter : public StyleRuleBase {
-public:
-    static PassRefPtrWillBeRawPtr<StyleRuleFilter> create(const String& filterName) { return adoptRefWillBeNoop(new StyleRuleFilter(filterName)); }
-
-    ~StyleRuleFilter();
-
-    const String& filterName() const { return m_filterName; }
-
-    const StylePropertySet& properties() const { return *m_properties; }
-    MutableStylePropertySet& mutableProperties();
-
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
-
-    PassRefPtrWillBeRawPtr<StyleRuleFilter> copy() const { return adoptRefWillBeNoop(new StyleRuleFilter(*this)); }
-
-    void traceAfterDispatch(Visitor*);
-
-private:
-    StyleRuleFilter(const String&);
-    StyleRuleFilter(const StyleRuleFilter&);
-
-    String m_filterName;
-    RefPtrWillBeMember<StylePropertySet> m_properties;
-};
-
 #define DEFINE_STYLE_RULE_TYPE_CASTS(Type) \
     DEFINE_TYPE_CASTS(StyleRule##Type, StyleRuleBase, rule, rule->is##Type##Rule(), rule.is##Type##Rule())
 
@@ -288,7 +261,6 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Page);
 DEFINE_STYLE_RULE_TYPE_CASTS(Media);
 DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
 DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
-DEFINE_STYLE_RULE_TYPE_CASTS(Filter);
 
 } // namespace blink
 

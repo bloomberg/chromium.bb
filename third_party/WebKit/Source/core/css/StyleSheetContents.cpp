@@ -469,7 +469,6 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
         case StyleRuleBase::Keyframe:
         case StyleRuleBase::Supports:
         case StyleRuleBase::Viewport:
-        case StyleRuleBase::Filter:
             break;
         }
     }

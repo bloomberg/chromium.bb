@@ -171,7 +171,6 @@ interface CSSRule
     attribute STYLE_RULE
     attribute SUPPORTS_RULE
     attribute UNKNOWN_RULE
-    attribute WEBKIT_FILTER_RULE
     attribute WEBKIT_KEYFRAMES_RULE
     attribute WEBKIT_KEYFRAME_RULE
     method constructor
@@ -2655,8 +2654,6 @@ interface WebGLTexture
 interface WebGLUniformLocation
     method constructor
 interface WebKitAnimationEvent
-    method constructor
-interface WebKitCSSFilterRule
     method constructor
 interface WebKitCSSMatrix
     method constructor

@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/css/StyleRule.h"
 
-#include "core/css/CSSFilterRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -87,9 +86,6 @@ void StyleRuleBase::trace(Visitor* visitor)
     case Viewport:
         toStyleRuleViewport(this)->traceAfterDispatch(visitor);
         return;
-    case Filter:
-        toStyleRuleFilter(this)->traceAfterDispatch(visitor);
-        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -126,9 +122,6 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
         return;
     case Viewport:
         toStyleRuleViewport(this)->~StyleRuleViewport();
-        return;
-    case Filter:
-        toStyleRuleFilter(this)->~StyleRuleFilter();
         return;
     }
     ASSERT_NOT_REACHED();
@@ -167,9 +160,6 @@ void StyleRuleBase::destroy()
     case Viewport:
         delete toStyleRuleViewport(this);
         return;
-    case Filter:
-        delete toStyleRuleFilter(this);
-        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -195,8 +185,6 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
         return toStyleRuleKeyframes(this)->copy();
     case Viewport:
         return toStyleRuleViewport(this)->copy();
-    case Filter:
-        return toStyleRuleFilter(this)->copy();
     case Keyframe:
     case Namespace:
         ASSERT_NOT_REACHED();
@@ -234,9 +222,6 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
         break;
     case Viewport:
         rule = CSSViewportRule::create(toStyleRuleViewport(self), parentSheet);
-        break;
-    case Filter:
-        rule = CSSFilterRule::create(toStyleRuleFilter(self), parentSheet);
         break;
     case Keyframe:
     case Namespace:
@@ -445,41 +430,6 @@ void StyleRuleViewport::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> p
 }
 
 void StyleRuleViewport::traceAfterDispatch(Visitor* visitor)
-{
-    visitor->trace(m_properties);
-    StyleRuleBase::traceAfterDispatch(visitor);
-}
-
-StyleRuleFilter::StyleRuleFilter(const String& filterName)
-    : StyleRuleBase(Filter)
-    , m_filterName(filterName)
-{
-}
-
-StyleRuleFilter::StyleRuleFilter(const StyleRuleFilter& o)
-    : StyleRuleBase(o)
-    , m_filterName(o.m_filterName)
-    , m_properties(o.m_properties->mutableCopy())
-{
-}
-
-StyleRuleFilter::~StyleRuleFilter()
-{
-}
-
-MutableStylePropertySet& StyleRuleFilter::mutableProperties()
-{
-    if (!m_properties->isMutable())
-        m_properties = m_properties->mutableCopy();
-    return *toMutableStylePropertySet(m_properties);
-}
-
-void StyleRuleFilter::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    m_properties = properties;
-}
-
-void StyleRuleFilter::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);

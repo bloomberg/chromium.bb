@@ -56,7 +56,6 @@ public:
         WEBKIT_KEYFRAME_RULE = KEYFRAME_RULE,
         SUPPORTS_RULE = 12,
         VIEWPORT_RULE = 15,
-        WEBKIT_FILTER_RULE = 17
     };
 
     virtual Type type() const = 0;
