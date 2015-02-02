@@ -297,7 +297,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   if (customization_mode) {
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                        100, views::GridLayout::USE_PREF, 0, 0);
-    button_layout->StartRow(0, 0);
+    button_layout->StartRowWithPadding(0, 0, 0, 4);
     views::LabelButton* ok_button =
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_OK));
     ok_button->SetStyle(views::Button::STYLE_BUTTON);
