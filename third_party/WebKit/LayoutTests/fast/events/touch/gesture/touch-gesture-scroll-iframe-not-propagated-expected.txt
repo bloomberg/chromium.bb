@@ -8,7 +8,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 first gesture
-PASS iframeBody.scrollHeight - iframeDocumentElement.scrollTop is iframe.clientHeight
+PASS iframeBody.scrollHeight - iframeBody.scrollTop is iframe.clientHeight
 PASS movedbox.scrollTop is 0
 PASS movedbox.scrollLeft is 0
 PASS wheelEventsOccurred is 0

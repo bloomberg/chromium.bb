@@ -15,12 +15,12 @@
         iframeStrict = document.getElementById("strict");
         iframeQuirks = document.getElementById("quirks");
 
-        shouldBe("iframeStrict.contentDocument.documentElement.scrollTop", "5000");
-        shouldBe("iframeStrict.contentDocument.documentElement.scrollLeft", "4000");
+        shouldBe("iframeStrict.contentDocument.documentElement.scrollTop", "0");
+        shouldBe("iframeStrict.contentDocument.documentElement.scrollLeft", "0");
         shouldBe("iframeStrict.contentDocument.body.scrollTop", "0");
         shouldBe("iframeStrict.contentDocument.body.scrollLeft", "0");
-        shouldBe("iframeStrict.contentWindow.pageYOffset", "5000");
-        shouldBe("iframeStrict.contentWindow.pageXOffset", "4000");
+        shouldBe("iframeStrict.contentWindow.pageYOffset", "0");
+        shouldBe("iframeStrict.contentWindow.pageXOffset", "0");
 
         shouldBe("iframeQuirks.contentDocument.documentElement.scrollTop", "0");
         shouldBe("iframeQuirks.contentDocument.documentElement.scrollLeft", "0");

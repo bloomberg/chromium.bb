@@ -72,10 +72,10 @@ function firstGestureScroll()
     
     var amountToScroll = iframeBody.scrollHeight - iframe.clientHeight;
 
-    iframeDocumentElement.scrollTop = amountToScroll;
+    iframeBody.scrollTop = amountToScroll;
 
     // Sanity - make sure the iframe is actually fully scrolled
-    shouldBe('iframeBody.scrollHeight - iframeDocumentElement.scrollTop', 'iframe.clientHeight');
+    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
 
     eventSender.gestureScrollBegin(10, 72);
     // Prevent scroll to propagate by passing true for third parameter

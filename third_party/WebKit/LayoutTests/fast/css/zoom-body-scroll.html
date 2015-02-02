@@ -25,24 +25,24 @@
             checkValue('document.body.scrollWidth', 1000);
 
             // Scrolling right to 50.
-            documentElement.scrollLeft = 50;
-            checkValue('document.documentElement.scrollLeft', 50);
+            body.scrollLeft = 50;
+            checkValue('document.body.scrollLeft', 50);
 
             // Zooming in.
             eventSender.zoomPageIn();
             checkValue('document.body.scrollHeight', 1000);
             checkValue('document.body.scrollWidth', 1000);
-            checkValue('document.documentElement.scrollTop', 0);
-            checkValue('document.documentElement.scrollLeft', 50);
+            checkValue('document.body.scrollTop', 0);
+            checkValue('document.body.scrollLeft', 50);
 
             // Scrolling down to 100.
-            documentElement.scrollTop = 100;
-            checkValue('document.documentElement.scrollTop', 100);
+            body.scrollTop = 100;
+            checkValue('document.body.scrollTop', 100);
 
             // Zooming back out.
             eventSender.zoomPageOut();
-            checkValue('document.documentElement.scrollTop', 100);
-            checkValue('document.documentElement.scrollLeft', 50);
+            checkValue('document.body.scrollTop', 100);
+            checkValue('document.body.scrollLeft', 50);
         }
     </script>
 </body>

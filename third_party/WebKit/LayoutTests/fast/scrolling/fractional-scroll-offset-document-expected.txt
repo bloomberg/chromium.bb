@@ -7,21 +7,21 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 set PreferCompositingToLCDTextEnabled true
-PASS document.documentElement.scrollTop is within 0.00001 of 0
-PASS document.documentElement.scrollLeft is within 0.00001 of 0
-PASS document.documentElement.scrollTop is within 0.00001 of 10.2
-PASS document.documentElement.scrollLeft is within 0.00001 of 20.5
-PASS document.documentElement.scrollTop is within 0.00001 of 31.1
-PASS document.documentElement.scrollLeft is within 0.00001 of 9.6
-PASS document.documentElement.scrollTop is within 0.00001 of 0
-PASS document.documentElement.scrollLeft is within 0.00001 of 0
+PASS document.body.scrollTop is within 0.00001 of 0
+PASS document.body.scrollLeft is within 0.00001 of 0
+PASS document.body.scrollTop is within 0.00001 of 10.2
+PASS document.body.scrollLeft is within 0.00001 of 20.5
+PASS document.body.scrollTop is within 0.00001 of 31.1
+PASS document.body.scrollLeft is within 0.00001 of 9.6
+PASS document.body.scrollTop is within 0.00001 of 0
+PASS document.body.scrollLeft is within 0.00001 of 0
 set PreferCompositingToLCDTextEnabled false
-PASS document.documentElement.scrollTop is within 0.00001 of 0
-PASS document.documentElement.scrollLeft is within 0.00001 of 0
-PASS document.documentElement.scrollTop is within 0.00001 of 10
-PASS document.documentElement.scrollLeft is within 0.00001 of 20
-PASS document.documentElement.scrollTop is within 0.00001 of 31
-PASS document.documentElement.scrollLeft is within 0.00001 of 9
-PASS document.documentElement.scrollTop is within 0.00001 of 0
-PASS document.documentElement.scrollLeft is within 0.00001 of 0
+PASS document.body.scrollTop is within 0.00001 of 0
+PASS document.body.scrollLeft is within 0.00001 of 0
+PASS document.body.scrollTop is within 0.00001 of 10
+PASS document.body.scrollLeft is within 0.00001 of 20
+PASS document.body.scrollTop is within 0.00001 of 31
+PASS document.body.scrollLeft is within 0.00001 of 9
+PASS document.body.scrollTop is within 0.00001 of 0
+PASS document.body.scrollLeft is within 0.00001 of 0
 

@@ -4,12 +4,12 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 first gesture
-PASS document.documentElement.scrollTop is 0
-PASS document.documentElement.scrollLeft is 55
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 55
 PASS wheelEventsOccurred is 0
 second gesture
-PASS document.documentElement.scrollTop is 0
-PASS document.documentElement.scrollLeft is 97
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 97
 PASS wheelEventsOccurred is 0
 scroll event 0+> [object HTMLDocument]
 PASS scrollEventsOccurred is 1

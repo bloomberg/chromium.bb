@@ -1,13 +1,13 @@
 PASS document.body.scrollHeight is within 0.00001 of 1000
 PASS document.body.scrollWidth is within 0.00001 of 1000
-PASS document.documentElement.scrollLeft is within 0.00001 of 50
+PASS document.body.scrollLeft is within 0.00001 of 50
 PASS document.body.scrollHeight is within 0.00001 of 1000
 PASS document.body.scrollWidth is within 0.00001 of 1000
-PASS document.documentElement.scrollTop is within 0.00001 of 0
-PASS document.documentElement.scrollLeft is within 0.00001 of 50
-PASS document.documentElement.scrollTop is within 0.00001 of 100
-PASS document.documentElement.scrollTop is within 0.00001 of 100
-PASS document.documentElement.scrollLeft is within 0.00001 of 50
+PASS document.body.scrollTop is within 0.00001 of 0
+PASS document.body.scrollLeft is within 0.00001 of 50
+PASS document.body.scrollTop is within 0.00001 of 100
+PASS document.body.scrollTop is within 0.00001 of 100
+PASS document.body.scrollLeft is within 0.00001 of 50
 PASS successfullyParsed is true
 
 TEST COMPLETE

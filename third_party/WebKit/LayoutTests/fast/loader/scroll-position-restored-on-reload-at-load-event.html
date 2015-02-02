@@ -3,16 +3,16 @@
   <head>
     <script src="../../resources/js-test.js"></script>
     <script>
-    description('Test ensures that documentElement.scrollTop/Left properties are available by the time DOMContentLoaded event fires.');
+    description('Test ensures that body.scrollTop/Left properties are available by the time DOMContentLoaded event fires.');
     // Navigation steps:
     // 1- page gets first loaded and scrolled.
     // 2- reload is performed.
-    // Test: ensure that by the time DOMContenLoaded fires (after a reload navigation), documentElement.scrollTop/Left are set.
+    // Test: ensure that by the time DOMContenLoaded fires (after a reload navigation), body.scrollTop/Left are set.
 
     function init(evt) {
         if (window.name == 'second/load') {
-            shouldBe('document.documentElement.scrollTop', '2000');
-            shouldBe('document.documentElement.scrollLeft', '1000');
+            shouldBe('document.body.scrollTop', '2000');
+            shouldBe('document.body.scrollLeft', '1000');
             window.name = "";
 
             if (window.testRunner)

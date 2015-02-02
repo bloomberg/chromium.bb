@@ -73,12 +73,12 @@
         setTimeout(function() {
             document.getElementById('box').style.background = 'green';
             // The left margin should have rebounded back to 0.
-            if (document.documentElement.scrollLeft != 0) {
+            if (document.body.scrollLeft != 0) {
                 document.getElementById('box').style.background = 'yellow';
             }
             // The content should be scrolled to the bottom.
             var expectedScrollTop = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            if (document.documentElement.scrollTop != expectedScrollTop) {
+            if (document.body.scrollTop != expectedScrollTop) {
                 document.getElementById('box').style.background = 'yellow';
             }
             testRunner.notifyDone();

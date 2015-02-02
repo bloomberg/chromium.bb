@@ -76,6 +76,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled())
     , m_originalImageColorProfilesEnabled(RuntimeEnabledFeatures::imageColorProfilesEnabled())
     , m_originalImageAnimationPolicy(settings->imageAnimationPolicy())
+    , m_originalScrollTopLeftInteropEnabled(RuntimeEnabledFeatures::scrollTopLeftInteropEnabled())
 {
 }
 
@@ -99,6 +100,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled);
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(m_originalImageColorProfilesEnabled);
     settings->setImageAnimationPolicy(m_originalImageAnimationPolicy);
+    RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(m_originalScrollTopLeftInteropEnabled);
 }
 
 #if ENABLE(OILPAN)
@@ -466,5 +468,10 @@ void InternalSettings::setImageAnimationPolicy(const String& policy, ExceptionSt
         settings()->setImageAnimationPolicy(ImageAnimationPolicyNoAnimation);
     else
         exceptionState.throwDOMException(SyntaxError, "The image animation policy provided ('" + policy + "') is invalid.");
+}
+
+void InternalSettings::setScrollTopLeftInteropEnabled(bool enabled)
+{
+    RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(enabled);
 }
 }

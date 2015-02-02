@@ -80,7 +80,7 @@ function firstGestureScroll()
     eventSender.gestureScrollEnd(0, 0);
 
     // Make sure the actual iframe got fully scrolled
-    shouldBe('iframeBody.scrollHeight - iframeDocumentElement.scrollTop', 'iframe.clientHeight');
+    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
 
     // Wait for layout.
     checkScrollOffset();

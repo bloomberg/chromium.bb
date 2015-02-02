@@ -76,6 +76,7 @@ public:
         bool m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled;
         bool m_originalImageColorProfilesEnabled;
         ImageAnimationPolicy m_originalImageAnimationPolicy;
+        bool m_originalScrollTopLeftInteropEnabled;
     };
 
     static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
@@ -121,6 +122,7 @@ public:
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
     void setImageColorProfilesEnabled(bool);
     void setImageAnimationPolicy(const String&, ExceptionState&);
+    void setScrollTopLeftInteropEnabled(bool);
 
     virtual void trace(Visitor*) override;
 

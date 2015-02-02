@@ -14,8 +14,8 @@ function checkScrollOffset(offset_x, offset_y)
         offset_x = Math.floor(offset_x);
         offset_y = Math.floor(offset_y);
     }
-    shouldBeCloseTo('document.documentElement.scrollTop', offset_y, floatPrecision);
-    shouldBeCloseTo('document.documentElement.scrollLeft', offset_x, floatPrecision);
+    shouldBeCloseTo('document.body.scrollTop', offset_y, floatPrecision);
+    shouldBeCloseTo('document.body.scrollLeft', offset_x, floatPrecision);
 }
 
 function scroll()
