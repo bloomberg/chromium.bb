@@ -53,7 +53,7 @@
         ],
       },
     }],
-    ['OS=="win" and component=="shared_library" and (CONFIGURATION_NAME=="Debug" or CONFIGURATION_NAME=="Debug_x64)")', {
+    ['OS=="win" and component=="shared_library" and (CONFIGURATION_NAME=="Debug" or CONFIGURATION_NAME=="Debug_x64")', {
       'variables': {
         'files': [
           # Copy the VS runtime DLLs into the isolate so that they
