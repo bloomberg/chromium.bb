@@ -12,6 +12,8 @@
 namespace chromecast {
 namespace media {
 
+class BrowserCdmCast;
+
 class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
  public:
   CastBrowserCdmFactory() {}
@@ -32,13 +34,8 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
 };
 
 // Allow platform-specific CDMs to be provided.
-scoped_ptr< ::media::BrowserCdm> CreatePlatformBrowserCdm(
-    const CastKeySystem& key_system,
-    const ::media::SessionMessageCB& session_message_cb,
-    const ::media::SessionClosedCB& session_closed_cb,
-    const ::media::SessionErrorCB& session_error_cb,
-    const ::media::SessionKeysChangeCB& session_keys_change_cb,
-    const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
+scoped_ptr<BrowserCdmCast> CreatePlatformBrowserCdm(
+    const CastKeySystem& key_system);
 
 }  // namespace media
 }  // namespace chromecast

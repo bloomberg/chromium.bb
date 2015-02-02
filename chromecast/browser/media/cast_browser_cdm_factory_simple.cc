@@ -4,17 +4,14 @@
 
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
 
+#include "chromecast/media/cdm/browser_cdm_cast.h"
+
 namespace chromecast {
 namespace media {
 
-scoped_ptr< ::media::BrowserCdm> CreatePlatformBrowserCdm(
-    const CastKeySystem& key_system,
-    const ::media::SessionMessageCB& session_message_cb,
-    const ::media::SessionClosedCB& session_closed_cb,
-    const ::media::SessionErrorCB& session_error_cb,
-    const ::media::SessionKeysChangeCB& session_keys_change_cb,
-    const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
-  return scoped_ptr< ::media::BrowserCdm>();
+scoped_ptr<BrowserCdmCast> CreatePlatformBrowserCdm(
+    const CastKeySystem& key_system) {
+  return scoped_ptr<BrowserCdmCast>();
 }
 
 }  // namespace media

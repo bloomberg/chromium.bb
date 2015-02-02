@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/browser_cdm.h"
+#include "media/cdm/json_web_key.h"
 #include "media/cdm/player_tracker_impl.h"
 
 namespace chromecast {
@@ -32,6 +33,13 @@ class BrowserCdmCast : public ::media::BrowserCdm {
   BrowserCdmCast();
   ~BrowserCdmCast() override;
 
+  void SetCallbacks(
+      const ::media::SessionMessageCB& session_message_cb,
+      const ::media::SessionClosedCB& session_closed_cb,
+      const ::media::SessionErrorCB& session_error_cb,
+      const ::media::SessionKeysChangeCB& session_keys_change_cb,
+      const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
+
   // PlayerTracker implementation.
   int RegisterPlayer(const base::Closure& new_key_cb,
                      const base::Closure& cdm_unset_cb) override;
@@ -44,10 +52,20 @@ class BrowserCdmCast : public ::media::BrowserCdm {
       const std::string& key_id) const = 0;
 
  protected:
-  // Notifies all listeners a new key was added.
-  void NotifyKeyAdded();
+  void OnSessionMessage(const std::string& web_session_id,
+                        const std::vector<uint8>& message,
+                        const GURL& destination_url);
+  void OnSessionClosed(const std::string& web_session_id);
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           const ::media::KeyIdAndKeyPairs& keys);
 
  private:
+  ::media::SessionMessageCB session_message_cb_;
+  ::media::SessionClosedCB session_closed_cb_;
+  ::media::SessionErrorCB session_error_cb_;
+  ::media::SessionKeysChangeCB session_keys_change_cb_;
+  ::media::SessionExpirationUpdateCB session_expiration_update_cb_;
+
   ::media::PlayerTrackerImpl player_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCdmCast);
