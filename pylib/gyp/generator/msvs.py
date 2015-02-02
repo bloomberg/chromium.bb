@@ -2105,6 +2105,9 @@ def _MapFileToMsBuildSourceType(source, rule_dependencies,
   elif ext == '.rc':
     group = 'resource'
     element = 'ResourceCompile'
+  elif ext == '.asm':
+    group = 'masm'
+    element = 'MASM'
   elif ext == '.idl':
     group = 'midl'
     element = 'Midl'
@@ -3083,7 +3086,7 @@ def _VerifySourcesExist(sources, root_dir):
 def _GetMSBuildSources(spec, sources, exclusions, rule_dependencies,
                        extension_to_rule_name, actions_spec,
                        sources_handled_by_action, list_excluded):
-  groups = ['none', 'midl', 'include', 'compile', 'resource', 'rule',
+  groups = ['none', 'masm', 'midl', 'include', 'compile', 'resource', 'rule',
             'rule_dependency']
   grouped_sources = {}
   for g in groups:
@@ -3248,6 +3251,12 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
       ['Import', {'Project': r'$(VCTargetsPath)\Microsoft.Cpp.props'}]]
   import_cpp_targets_section = [
       ['Import', {'Project': r'$(VCTargetsPath)\Microsoft.Cpp.targets'}]]
+  import_masm_props_section = [
+      ['Import',
+        {'Project': r'$(VCTargetsPath)\BuildCustomizations\masm.props'}]]
+  import_masm_targets_section = [
+      ['Import',
+        {'Project': r'$(VCTargetsPath)\BuildCustomizations\masm.targets'}]]
   macro_section = [['PropertyGroup', {'Label': 'UserMacros'}]]
 
   content = [
@@ -3266,6 +3275,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   else:
    content += _GetMSBuildLocalProperties(project.msbuild_toolset)
   content += import_cpp_props_section
+  content += import_masm_props_section
   content += _GetMSBuildExtensions(props_files_of_rules)
   content += _GetMSBuildPropertySheets(configurations)
   content += macro_section
@@ -3277,6 +3287,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
       actions_spec, sources_handled_by_action, list_excluded)
   content += _GetMSBuildProjectReferences(project)
   content += import_cpp_targets_section
+  content += import_masm_targets_section
   content += _GetMSBuildExtensionTargets(targets_files_of_rules)
 
   if spec.get('msvs_external_builder'):

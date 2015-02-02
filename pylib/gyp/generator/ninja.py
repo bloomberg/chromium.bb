@@ -396,6 +396,7 @@ class NinjaWriter(object):
       self.ninja.variable('cxx', '$cl_' + arch)
       self.ninja.variable('cc_host', '$cl_' + arch)
       self.ninja.variable('cxx_host', '$cl_' + arch)
+      self.ninja.variable('asm', '$ml_' + arch)
 
     if self.flavor == 'mac':
       self.archs = self.xcode_settings.GetActiveArchs(config_name)
@@ -987,9 +988,7 @@ class NinjaWriter(object):
       elif ext == 's' and self.flavor != 'win':  # Doesn't generate .o.d files.
         command = 'cc_s'
       elif (self.flavor == 'win' and ext == 'asm' and
-            self.msvs_settings.GetArch(config_name) == 'x86' and
             not self.msvs_settings.HasExplicitAsmRules(spec)):
-        # Asm files only get auto assembled for x86 (not x64).
         command = 'asm'
         # Add the _asm suffix as msvs is capable of handling .cc and
         # .asm files of the same name without collision.
@@ -1907,7 +1906,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('idl', 'midl.exe')
     master_ninja.variable('ar', ar)
     master_ninja.variable('rc', 'rc.exe')
-    master_ninja.variable('asm', 'ml.exe')
+    master_ninja.variable('ml_x86', 'ml.exe')
+    master_ninja.variable('ml_x64', 'ml64.exe')
     master_ninja.variable('mt', 'mt.exe')
   else:
     master_ninja.variable('ld', CommandWithWrapper('LINK', wrappers, ld))
