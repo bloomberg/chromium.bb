@@ -71,10 +71,6 @@ bool PasswordManagerClient::IsOffTheRecord() {
   return false;
 }
 
-bool PasswordManagerClient::IsZeroClickEnabled() {
-  return true;
-}
-
 PasswordManager* PasswordManagerClient::GetPasswordManager() {
   return nullptr;
 }

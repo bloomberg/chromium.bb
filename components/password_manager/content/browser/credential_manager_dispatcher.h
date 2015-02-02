@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_member.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -85,6 +86,9 @@ class CredentialManagerDispatcher : public content::WebContentsObserver,
 
   PasswordManagerClient* client_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
+
+  // Set to false to disable automatic signing in.
+  BooleanPrefMember auto_signin_enabled_;
 
   // When 'OnRequestCredential' is called, it in turn calls out to the
   // PasswordStore; we store request details here in order to properly

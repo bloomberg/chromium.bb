@@ -16,6 +16,7 @@
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -43,6 +44,8 @@ CredentialManagerDispatcher::CredentialManagerDispatcher(
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents), client_(client) {
   DCHECK(web_contents);
+  auto_signin_enabled_.Init(prefs::kPasswordManagerAutoSignin,
+                            client_->GetPrefs());
 }
 
 CredentialManagerDispatcher::~CredentialManagerDispatcher() {
@@ -203,7 +206,7 @@ bool CredentialManagerDispatcher::IsSavingEnabledForCurrentPage() const {
 }
 
 bool CredentialManagerDispatcher::IsZeroClickAllowed() const {
-  return !client_->IsOffTheRecord() && client_->IsZeroClickEnabled();
+  return *auto_signin_enabled_ && !client_->IsOffTheRecord();
 }
 
 base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {

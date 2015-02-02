@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +17,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -36,13 +39,17 @@ class TestPasswordManagerClient
       : did_prompt_user_to_save_(false),
         did_prompt_user_to_choose_(false),
         is_off_the_record_(false),
-        is_zero_click_enabled_(true),
-        store_(store) {}
+        store_(store) {
+    prefs_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kPasswordManagerAutoSignin, true);
+  }
   ~TestPasswordManagerClient() override {}
 
   password_manager::PasswordStore* GetPasswordStore() override {
     return store_;
   }
+
+  PrefService* GetPrefs() override { return &prefs_; }
 
   bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> manager) override {
@@ -76,7 +83,6 @@ class TestPasswordManagerClient
   }
 
   bool IsOffTheRecord() override { return is_off_the_record_; }
-  bool IsZeroClickEnabled() override { return is_zero_click_enabled_; }
 
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
   bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }
@@ -90,14 +96,15 @@ class TestPasswordManagerClient
   }
 
   void set_zero_click_enabled(bool zero_click_enabled) {
-    is_zero_click_enabled_ = zero_click_enabled;
+    prefs_.SetBoolean(password_manager::prefs::kPasswordManagerAutoSignin,
+                      zero_click_enabled);
   }
 
  private:
+  TestingPrefServiceSimple prefs_;
   bool did_prompt_user_to_save_;
   bool did_prompt_user_to_choose_;
   bool is_off_the_record_;
-  bool is_zero_click_enabled_;
   password_manager::PasswordStore* store_;
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
@@ -191,9 +198,9 @@ class CredentialManagerDispatcherTest
   autofill::PasswordForm form2_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
-  scoped_ptr<CredentialManagerDispatcher> dispatcher_;
   scoped_ptr<TestPasswordManagerClient> client_;
   StubPasswordManagerDriver stub_driver_;
+  scoped_ptr<CredentialManagerDispatcher> dispatcher_;
 };
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {

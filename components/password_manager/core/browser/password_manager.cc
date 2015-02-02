@@ -120,8 +120,10 @@ void PasswordManager::RegisterProfilePrefs(
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kPasswordManagerAllowShowPasswords,
-      true,
+      prefs::kPasswordManagerAutoSignin, true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPasswordManagerAllowShowPasswords, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

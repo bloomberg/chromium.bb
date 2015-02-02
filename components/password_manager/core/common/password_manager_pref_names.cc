@@ -24,6 +24,8 @@ const char kOsPasswordLastChanged[] =
 
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
+const char kPasswordManagerAutoSignin[] =
+    "profile.password_manager_auto_signin";
 const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerGroupsForDomains[] =
     "profile.password_manager_groups_for_domains";
