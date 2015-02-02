@@ -31,6 +31,27 @@ function getFilenameFromURL(url) {
 }
 
 /**
+ * Called when navigation happens in the current tab.
+ * @param {string} url The url to be opened in the current tab.
+ */
+function onNavigateInCurrentTab(url) {
+  window.location.href = url;
+}
+
+/**
+ * Called when navigation happens in the new tab.
+ * @param {string} url The url to be opened in the new tab.
+ */
+function onNavigateInNewTab(url) {
+  // Prefer the tabs API because it guarantees we can just open a new tab.
+  // window.open doesn't have this guarantee.
+  if (chrome.tabs)
+    chrome.tabs.create({ url: url});
+  else
+    window.open(url);
+}
+
+/**
  * The minimum number of pixels to offset the toolbar by from the bottom and
  * right side of the screen.
  */
@@ -171,7 +192,8 @@ function PDFViewer(streamDetails) {
   // Parse open pdf parameters.
   this.paramsParser_ = new OpenPDFParamsParser();
   this.navigator_ = new Navigator(this.streamDetails_.originalUrl,
-      this.viewport_, this.paramsParser_);
+      this.viewport_, this.paramsParser_, onNavigateInCurrentTab,
+      onNavigateInNewTab);
 }
 
 PDFViewer.prototype = {

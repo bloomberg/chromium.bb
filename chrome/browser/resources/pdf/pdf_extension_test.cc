@@ -73,11 +73,16 @@ class PDFExtensionTest : public ExtensionApiTest {
     PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
     test_data_dir = test_data_dir.Append(
         FILE_PATH_LITERAL("chrome/test/data/pdf"));
-    test_data_dir = test_data_dir.AppendASCII(filename);
+    base::FilePath test_util_path = test_data_dir.AppendASCII("test_util.js");
+    std::string test_util_js;
+    ASSERT_TRUE(base::ReadFileToString(test_util_path, &test_util_js));
 
+    base::FilePath test_file_path = test_data_dir.AppendASCII(filename);
     std::string test_js;
-    ASSERT_TRUE(base::ReadFileToString(test_data_dir, &test_js));
-    ASSERT_TRUE(content::ExecuteScript(contents, test_js));
+    ASSERT_TRUE(base::ReadFileToString(test_file_path, &test_js));
+
+    test_util_js.append(test_js);
+    ASSERT_TRUE(content::ExecuteScript(contents, test_util_js));
 
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
@@ -98,4 +103,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
   RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {
+  RunTestsInFile("navigator_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
+  RunTestsInFile("params_parser_test.js", "test.pdf");
 }

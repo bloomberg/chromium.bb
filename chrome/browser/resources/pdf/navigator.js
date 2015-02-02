@@ -9,11 +9,21 @@
  * @param {string} originalUrl The original page URL.
  * @param {Object} viewport The viewport info of the page.
  * @param {Object} paramsParser The object for URL parsing.
+ * @param {Function} navigateInCurrentTabCallback The Callback function that
+ *    gets called when navigation happens in the current tab.
+ * @param {Function} navigateInNewTabCallback The Callback function that gets
+ *    called when navigation happens in the new tab.
  */
-function Navigator(originalUrl, viewport, paramsParser) {
+function Navigator(originalUrl,
+                   viewport,
+                   paramsParser,
+                   navigateInCurrentTabCallback,
+                   navigateInNewTabCallback) {
   this.originalUrl_ = originalUrl;
   this.viewport_ = viewport;
   this.paramsParser_ = paramsParser;
+  this.navigateInCurrentTabCallback_ = navigateInCurrentTabCallback;
+  this.navigateInNewTabCallback_ = navigateInNewTabCallback;
 }
 
 Navigator.prototype = {
@@ -62,19 +72,14 @@ Navigator.prototype = {
     }
 
     if (newTab) {
-      // Prefer the tabs API because it guarantees we can just open a new tab.
-      // window.open doesn't have this guarantee.
-      if (chrome.tabs)
-        chrome.tabs.create({ url: url });
-      else
-        window.open(url);
+      this.navigateInNewTabCallback_(url);
     } else {
       var pageNumber =
           this.paramsParser_.getViewportFromUrlParams(url).page;
       if (pageNumber != undefined)
         this.viewport_.goToPage(pageNumber);
       else
-        window.location.href = url;
+        this.navigateInCurrentTabCallback_(url);
     }
   }
 };
