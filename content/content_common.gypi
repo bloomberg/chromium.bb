@@ -82,6 +82,8 @@
       'public/common/media_stream_request.h',
       'public/common/menu_item.cc',
       'public/common/menu_item.h',
+      'public/common/mojo_channel_switches.cc',
+      'public/common/mojo_channel_switches.h',
       'public/common/navigator_connect_client.cc',
       'public/common/navigator_connect_client.h',
       'public/common/page_state.cc',

@@ -70,6 +70,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -342,12 +343,6 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
 
 void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
   mojo::BindToRequest(new RenderFrameSetupImpl(), &request);
-}
-
-bool ShouldUseMojoChannel() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableRendererMojoChannel) ||
-         IPC::ChannelMojo::ShouldBeUsed();
 }
 
 blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {

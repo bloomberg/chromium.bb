@@ -373,10 +373,6 @@ const char kV8CacheOptions[] = "v8-cache-options";
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";
 
-// Replaces renderer-browser IPC channel with ChnanelMojo.
-const char kEnableRendererMojoChannel[] =
-    "enable-renderer-mojo-channel";
-
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

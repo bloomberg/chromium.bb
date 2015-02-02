@@ -115,7 +115,6 @@ CONTENT_EXPORT extern const char kEnablePinch[];
 CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
 CONTENT_EXPORT extern const char kEnablePushMessagePayload[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
-CONTENT_EXPORT extern const char kEnableRendererMojoChannel[];
 CONTENT_EXPORT extern const char kEnableSandboxLogging[];
 CONTENT_EXPORT extern const char kEnableSeccompFilterSandbox[];
 extern const char kEnableSkiaBenchmarking[];
