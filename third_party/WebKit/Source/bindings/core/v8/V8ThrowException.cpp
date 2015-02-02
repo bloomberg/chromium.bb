@@ -25,6 +25,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8ThrowException.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "core/dom/DOMException.h"
@@ -62,8 +63,16 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     if (ec == V8ReferenceError)
         return V8ThrowException::createReferenceError(isolate, sanitizedMessage);
 
+    v8::Handle<v8::Object> sanitizedCreationContext = creationContext;
+
+    // FIXME: Is the current context always the right choice?
+    Frame* frame = toFrameIfNotDetached(creationContext->CreationContext());
+    if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, frame, DoNotReportSecurityError))
+        sanitizedCreationContext = isolate->GetCurrentContext()->Global();
+
+
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
-    v8::Handle<v8::Value> exception = toV8(domException.get(), creationContext, isolate);
+    v8::Handle<v8::Value> exception = toV8(domException.get(), sanitizedCreationContext, isolate);
 
     if (exception.IsEmpty())
         return v8Undefined();
