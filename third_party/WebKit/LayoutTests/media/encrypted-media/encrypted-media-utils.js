@@ -109,6 +109,55 @@ function arrayBufferAsString(buffer)
     return String.fromCharCode.apply(null, new Uint8Array(buffer));
 }
 
+function dumpKeyStatuses(keyStatuses)
+{
+    consoleWrite("for (var entry of keyStatuses)");
+    for (var entry of keyStatuses) {
+        consoleWrite(arrayBufferAsString(entry[0]) + ", " + entry[1]);
+    }
+    consoleWrite("for (var key of keyStatuses.keys())");
+    for (var key of keyStatuses.keys()) {
+        consoleWrite(arrayBufferAsString(key));
+    }
+    consoleWrite("for (var value of keyStatuses.values())");
+    for (var value of keyStatuses.values()) {
+        consoleWrite(value);
+    }
+    consoleWrite("for (var entry of keyStatuses.entries())");
+    for (var entry of keyStatuses.entries()) {
+        consoleWrite(arrayBufferAsString(entry[0]) + ", " + entry[1]);
+    }
+    consoleWrite("keyStatuses.forEach()");
+    keyStatuses.forEach(function(value, key, map) {
+        consoleWrite(arrayBufferAsString(key) + ", " + value);
+    });
+}
+
+// Verify that |keyStatuses| contains just the keys in |keys.expected|
+// and none of the keys in |keys.unexpected|. All keys should have status
+// 'usable'. Example call: verifyKeyStatuses(mediaKeySession.keyStatuses,
+// { expected: [key1], unexpected: [key2] });
+function verifyKeyStatuses(keyStatuses, keys)
+{
+    var expected = keys.expected || [];
+    var unexpected = keys.unexpected || [];
+
+    // |keyStatuses| should have same size as number of |keys.expected|.
+    assert_equals(keyStatuses.size, expected.length);
+
+    // All |keys.expected| should be found.
+    expected.map(function(key) {
+        assert_true(keyStatuses.has(key));
+        assert_equals(keyStatuses.get(key), 'usable');
+    });
+
+    // All |keys.unexpected| should not be found.
+    unexpected.map(function(key) {
+        assert_false(keyStatuses.has(key));
+        assert_equals(keyStatuses.get(key), undefined);
+    });
+}
+
 // Encodes data into base64 string without trailing '='.
 function base64Encode(data)
 {

@@ -22,8 +22,5 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
     [TreatReturnedNullStringAs=Undefined] MediaKeyStatus get(BufferSource key);
     boolean has(BufferSource key);
 
-    // FIXME: Implement forEach.
-    // void forEach (ForEachCallback callback);
-
     readonly maplike <BufferSource, MediaKeyStatus>;
 };
