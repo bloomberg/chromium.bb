@@ -111,6 +111,10 @@ TEST_F('ExtensionSettingsCommandsConfigWebUITest', 'testChromeSendHandler',
   assertTrue($('extension-commands-overlay').classList.contains('showing'));
 });
 
+/**
+ * @constructor
+ * @extends {ExtensionSettingsWebUITest}
+ */
 function ExtensionSettingsWebUITestWithExtensionInstalled() {}
 
 ExtensionSettingsWebUITestWithExtensionInstalled.prototype = {
@@ -127,6 +131,28 @@ ExtensionSettingsWebUITestWithExtensionInstalled.prototype = {
 
 TEST_F('ExtensionSettingsWebUITestWithExtensionInstalled',
        'baseAccessibilityIsOk', function() {
+  assertEquals(this.browsePreload, document.location.href);
+  this.runAccessibilityAudit();
+});
+
+/**
+ * @constructor
+ * @extends {ExtensionSettingsWebUITestWithExtensionInstalled}
+ */
+function ManagedExtensionSettingsWebUITest() {}
+
+ManagedExtensionSettingsWebUITest.prototype = {
+  __proto__: ExtensionSettingsWebUITestWithExtensionInstalled.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  AddManagedPolicyProvider();');
+    ExtensionSettingsWebUITestWithExtensionInstalled.prototype.testGenPreamble.
+        call(this);
+  },
+};
+
+TEST_F('ManagedExtensionSettingsWebUITest', 'testAccessibility', function() {
   assertEquals(this.browsePreload, document.location.href);
   this.runAccessibilityAudit();
 });

@@ -369,7 +369,9 @@ cr.define('options', function() {
           var indicator = new cr.ui.ControlledIndicator();
           indicator.classList.add('controlled-extension-indicator');
           indicator.setAttribute('controlled-by', 'policy');
-          indicator.setAttribute('textpolicy', extension.policyText || '');
+          var textPolicy = extension.policyText || '';
+          indicator.setAttribute('textpolicy', textPolicy);
+          indicator.image.setAttribute('aria-label', textPolicy);
           node.querySelector('.enable-controls').appendChild(indicator);
         }
 

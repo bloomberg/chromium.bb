@@ -29,9 +29,13 @@
 #include "extensions/common/extension_set.h"
 
 using extensions::Extension;
+using extensions::TestManagementPolicyProvider;
 
 ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
-    : profile_(NULL) {}
+    : profile_(NULL),
+      policy_provider_(TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
+                       TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
+                       TestManagementPolicyProvider::MUST_REMAIN_INSTALLED) {}
 
 ExtensionSettingsUIBrowserTest::~ExtensionSettingsUIBrowserTest() {}
 
@@ -56,6 +60,11 @@ void ExtensionSettingsUIBrowserTest::InstallGoodExtension() {
   }
   base::FilePath extensions_data_dir = test_data_dir.AppendASCII("extensions");
   InstallExtension(extensions_data_dir.AppendASCII("good.crx"));
+}
+
+void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
+  auto* extension_service = extensions::ExtensionSystem::Get(GetProfile());
+  extension_service->management_policy()->RegisterProvider(&policy_provider_);
 }
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
