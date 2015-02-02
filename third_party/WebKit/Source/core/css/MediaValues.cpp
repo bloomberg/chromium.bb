@@ -15,10 +15,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/PlatformScreen.h"
 

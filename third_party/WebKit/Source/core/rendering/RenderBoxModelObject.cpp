@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
@@ -37,8 +39,6 @@
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/LengthFunctions.h"

@@ -33,8 +33,8 @@
 
 #include "core/dom/Position.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/CompositedSelectionBound.h"
 
 namespace blink {
 

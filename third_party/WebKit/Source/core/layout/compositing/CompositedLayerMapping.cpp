@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 
 #include "core/HTMLNames.h"
 #include "core/fetch/ImageResource.h"
@@ -37,6 +37,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -52,7 +53,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"

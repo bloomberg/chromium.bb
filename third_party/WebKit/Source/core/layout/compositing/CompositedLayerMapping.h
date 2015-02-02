@@ -26,8 +26,8 @@
 #ifndef CompositedLayerMapping_h
 #define CompositedLayerMapping_h
 
+#include "core/layout/compositing/GraphicsLayerUpdater.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"

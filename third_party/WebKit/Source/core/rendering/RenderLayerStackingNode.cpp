@@ -44,9 +44,9 @@
 #include "config.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

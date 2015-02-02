@@ -26,8 +26,8 @@
 #ifndef RenderLayerCompositor_h
 #define RenderLayerCompositor_h
 
+#include "core/layout/compositing/CompositingReasonFinder.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 

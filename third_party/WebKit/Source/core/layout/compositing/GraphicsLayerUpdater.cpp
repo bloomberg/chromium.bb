@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/compositing/GraphicsLayerUpdater.h"
+#include "core/layout/compositing/GraphicsLayerUpdater.h"
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

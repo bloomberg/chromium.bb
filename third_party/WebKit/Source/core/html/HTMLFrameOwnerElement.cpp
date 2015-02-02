@@ -28,12 +28,12 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

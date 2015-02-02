@@ -5,8 +5,8 @@
 #ifndef CompositingReasonFinder_h
 #define CompositingReasonFinder_h
 
+#include "core/layout/compositing/CompositingTriggers.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/CompositingTriggers.h"
 #include "platform/graphics/CompositingReasons.h"
 
 namespace blink {

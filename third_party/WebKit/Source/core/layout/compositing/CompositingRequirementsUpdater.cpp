@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/rendering/compositing/CompositingRequirementsUpdater.h"
+#include "core/layout/compositing/CompositingRequirementsUpdater.h"
 
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

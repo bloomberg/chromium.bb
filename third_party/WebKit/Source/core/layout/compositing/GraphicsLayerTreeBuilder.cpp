@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
+#include "core/layout/compositing/GraphicsLayerTreeBuilder.h"
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 
 namespace blink {
 

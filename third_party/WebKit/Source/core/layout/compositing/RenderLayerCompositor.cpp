@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/Fullscreen.h"
@@ -37,6 +37,12 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositingInputsUpdater.h"
+#include "core/layout/compositing/CompositingLayerAssigner.h"
+#include "core/layout/compositing/CompositingRequirementsUpdater.h"
+#include "core/layout/compositing/GraphicsLayerTreeBuilder.h"
+#include "core/layout/compositing/GraphicsLayerUpdater.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -50,12 +56,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/CompositingInputsUpdater.h"
-#include "core/rendering/compositing/CompositingLayerAssigner.h"
-#include "core/rendering/compositing/CompositingRequirementsUpdater.h"
-#include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
-#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -877,9 +877,10 @@ bool RenderLayerCompositor::isTrackingPaintInvalidations() const
 static bool shouldCompositeOverflowControls(FrameView* view)
 {
     if (Page* page = view->frame().page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
             if (scrollingCoordinator->coordinatesScrollingForFrameView(view))
                 return true;
+        }
     }
 
     return true;
@@ -970,7 +971,7 @@ void RenderLayerCompositor::ensureRootLayer()
 {
     RootLayerAttachment expectedAttachment = m_renderView.frame()->isLocalRoot() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
     if (expectedAttachment == m_rootLayerAttachment)
-         return;
+        return;
 
     Settings* settings = m_renderView.document().settings();
     if (!m_rootContentLayer) {

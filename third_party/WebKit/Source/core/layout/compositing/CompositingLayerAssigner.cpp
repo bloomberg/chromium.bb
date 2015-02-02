@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "core/rendering/compositing/CompositingLayerAssigner.h"
+#include "core/layout/compositing/CompositingLayerAssigner.h"
 
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

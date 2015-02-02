@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/compositing/CompositingInputsUpdater.h"
+#include "core/layout/compositing/CompositingInputsUpdater.h"
 
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

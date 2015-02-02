@@ -27,7 +27,7 @@
 #ifndef CompositingLayerAssigner_h
 #define CompositingLayerAssigner_h
 
-#include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 

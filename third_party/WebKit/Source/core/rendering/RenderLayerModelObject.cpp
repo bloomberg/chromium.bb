@@ -26,9 +26,9 @@
 #include "core/rendering/RenderLayerModelObject.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 namespace blink {
 

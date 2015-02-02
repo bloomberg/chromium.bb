@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/compositing/CompositingReasonFinder.h"
+#include "core/layout/compositing/CompositingReasonFinder.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 
 namespace blink {
 

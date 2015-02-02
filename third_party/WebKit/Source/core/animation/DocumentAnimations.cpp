@@ -39,8 +39,8 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 
 namespace blink {
 

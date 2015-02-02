@@ -4,6 +4,7 @@
 
 #include "config.h"
 
+#include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -11,7 +12,6 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
