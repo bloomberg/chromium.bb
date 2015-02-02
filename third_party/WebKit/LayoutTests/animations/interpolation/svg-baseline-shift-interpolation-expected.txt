@@ -6,6 +6,38 @@ PASS: baseline-shift from [-10px] to [10px] was [0px] at 0.5
 PASS: baseline-shift from [-10px] to [10px] was [5px] at 0.75
 PASS: baseline-shift from [-10px] to [10px] was [10px] at 1
 PASS: baseline-shift from [-10px] to [10px] was [15px] at 1.25
+PASS: baseline-shift from [baseline] to [100px] was [-25px] at -0.25
+PASS: baseline-shift from [baseline] to [100px] was [0px] at 0
+PASS: baseline-shift from [baseline] to [100px] was [25px] at 0.25
+PASS: baseline-shift from [baseline] to [100px] was [50px] at 0.5
+PASS: baseline-shift from [baseline] to [100px] was [75px] at 0.75
+PASS: baseline-shift from [baseline] to [100px] was [100px] at 1
+PASS: baseline-shift from [baseline] to [100px] was [125px] at 1.25
+PASS: baseline-shift from [100px] to [baseline] was [125px] at -0.25
+PASS: baseline-shift from [100px] to [baseline] was [100px] at 0
+PASS: baseline-shift from [100px] to [baseline] was [75px] at 0.25
+PASS: baseline-shift from [100px] to [baseline] was [50px] at 0.5
+PASS: baseline-shift from [100px] to [baseline] was [25px] at 0.75
+PASS: baseline-shift from [100px] to [baseline] was [0px] at 1
+PASS: baseline-shift from [100px] to [baseline] was [-25px] at 1.25
+FAIL: baseline-shift from [sub] to [100px] was [-25px] at -0.25, expected [sub]
+FAIL: baseline-shift from [sub] to [100px] was [0px] at 0, expected [sub]
+FAIL: baseline-shift from [sub] to [100px] was [25px] at 0.25, expected [sub]
+FAIL: baseline-shift from [sub] to [100px] was [75px] at 0.75, expected [100px]
+PASS: baseline-shift from [sub] to [100px] was [100px] at 1
+FAIL: baseline-shift from [sub] to [100px] was [125px] at 1.25, expected [100px]
+FAIL: baseline-shift from [100px] to [super] was [125px] at -0.25, expected [100px]
+PASS: baseline-shift from [100px] to [super] was [100px] at 0
+FAIL: baseline-shift from [100px] to [super] was [75px] at 0.25, expected [100px]
+FAIL: baseline-shift from [100px] to [super] was [25px] at 0.75, expected [super]
+FAIL: baseline-shift from [100px] to [super] was [0px] at 1, expected [super]
+FAIL: baseline-shift from [100px] to [super] was [-25px] at 1.25, expected [super]
+FAIL: baseline-shift from [50mm] to [inherit] was [228.720474243164px] at -0.25, expected [50mm]
+PASS: baseline-shift from [50mm] to [inherit] was [50mm] at 0
+FAIL: baseline-shift from [50mm] to [inherit] was [149.232284545898px] at 0.25, expected [50mm]
+FAIL: baseline-shift from [50mm] to [inherit] was [69.7440948486328px] at 0.75, expected [30px]
+PASS: baseline-shift from [50mm] to [inherit] was [30px] at 1
+FAIL: baseline-shift from [50mm] to [inherit] was [-9.74409484863281px] at 1.25, expected [30px]
 
 Web Animations API:
 PASS: baselineShift from [-10px] to [10px] was [-15px] at -0.25
@@ -15,4 +47,36 @@ PASS: baselineShift from [-10px] to [10px] was [0px] at 0.5
 PASS: baselineShift from [-10px] to [10px] was [5px] at 0.75
 PASS: baselineShift from [-10px] to [10px] was [10px] at 1
 PASS: baselineShift from [-10px] to [10px] was [15px] at 1.25
+PASS: baselineShift from [baseline] to [100px] was [-25px] at -0.25
+PASS: baselineShift from [baseline] to [100px] was [0px] at 0
+PASS: baselineShift from [baseline] to [100px] was [25px] at 0.25
+PASS: baselineShift from [baseline] to [100px] was [50px] at 0.5
+PASS: baselineShift from [baseline] to [100px] was [75px] at 0.75
+PASS: baselineShift from [baseline] to [100px] was [100px] at 1
+PASS: baselineShift from [baseline] to [100px] was [125px] at 1.25
+PASS: baselineShift from [100px] to [baseline] was [125px] at -0.25
+PASS: baselineShift from [100px] to [baseline] was [100px] at 0
+PASS: baselineShift from [100px] to [baseline] was [75px] at 0.25
+PASS: baselineShift from [100px] to [baseline] was [50px] at 0.5
+PASS: baselineShift from [100px] to [baseline] was [25px] at 0.75
+PASS: baselineShift from [100px] to [baseline] was [0px] at 1
+PASS: baselineShift from [100px] to [baseline] was [-25px] at 1.25
+PASS: baselineShift from [sub] to [100px] was [sub] at -0.25
+PASS: baselineShift from [sub] to [100px] was [sub] at 0
+PASS: baselineShift from [sub] to [100px] was [sub] at 0.25
+PASS: baselineShift from [sub] to [100px] was [100px] at 0.75
+PASS: baselineShift from [sub] to [100px] was [100px] at 1
+PASS: baselineShift from [sub] to [100px] was [100px] at 1.25
+PASS: baselineShift from [100px] to [super] was [100px] at -0.25
+PASS: baselineShift from [100px] to [super] was [100px] at 0
+PASS: baselineShift from [100px] to [super] was [100px] at 0.25
+PASS: baselineShift from [100px] to [super] was [super] at 0.75
+PASS: baselineShift from [100px] to [super] was [super] at 1
+PASS: baselineShift from [100px] to [super] was [super] at 1.25
+PASS: baselineShift from [50mm] to [inherit] was [50mm] at -0.25
+PASS: baselineShift from [50mm] to [inherit] was [50mm] at 0
+PASS: baselineShift from [50mm] to [inherit] was [50mm] at 0.25
+PASS: baselineShift from [50mm] to [inherit] was [30px] at 0.75
+PASS: baselineShift from [50mm] to [inherit] was [30px] at 1
+PASS: baselineShift from [50mm] to [inherit] was [30px] at 1.25
 

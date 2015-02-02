@@ -15,6 +15,9 @@
 svg:nth-child(2n) {
   margin-right: 10px;
 }
+svg {
+    baseline-shift: 30px;
+}
 </style>
 <body>
 <template id="target-template">
@@ -43,5 +46,95 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.25, is: '15px'},
 ]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'baseline',
+  to: '100px'
+}, [
+  {at: -0.25, is: '-25px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '25px'},
+  {at: 0.5, is: '50px'},
+  {at: 0.75, is: '75px'},
+  {at: 1, is: '100px'},
+  {at: 1.25, is: '125px'},
+]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: '100px',
+  to: 'baseline'
+}, [
+  {at: -0.25, is: '125px'},
+  {at: 0, is: '100px'},
+  {at: 0.25, is: '75px'},
+  {at: 0.5, is: '50px'},
+  {at: 0.75, is: '25px'},
+  {at: 1, is: '0px'},
+  {at: 1.25, is: '-25px'},
+]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'sub',
+  to: '100px'
+}, [
+  {at: -0.25, is: 'sub'},
+  {at: 0, is: 'sub'},
+  {at: 0.25, is: 'sub'},
+  {at: 0.75, is: '100px'},
+  {at: 1, is: '100px'},
+  {at: 1.25, is: '100px'},
+]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: '100px',
+  to: 'super'
+}, [
+  {at: -0.25, is: '100px'},
+  {at: 0, is: '100px'},
+  {at: 0.25, is: '100px'},
+  {at: 0.75, is: 'super'},
+  {at: 1, is: 'super'},
+  {at: 1.25, is: 'super'},
+]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: '50mm',
+  to: 'inherit'
+}, [
+  {at: -0.25, is: '50mm'},
+  {at: 0, is: '50mm'},
+  {at: 0.25, is: '50mm'},
+  {at: 0.75, is: '30px'},
+  {at: 1, is: '30px'},
+  {at: 1.25, is: '30px'},
+]);
+/*
+// The "Web Animations API" interpolation supports the following tests,
+// but the "CSS Animations" interpolation fails.
+assertInterpolation({
+  property: 'baseline-shift',
+  from: '10px',
+  to: '20em'
+}, [
+  {at: -0.25, is: '10px'},
+  {at: 0, is: '10px'},
+  {at: 0.25, is: '10px'},
+  {at: 0.75, is: '20em'},
+  {at: 1, is: '20em'},
+  {at: 1.25, is: '20em'},
+]);
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'inherit',
+  to: '40em'
+}, [
+  {at: -0.25, is: '30px'},
+  {at: 0, is: '30px'},
+  {at: 0.25, is: '30px'},
+  {at: 0.75, is: '40em'},
+  {at: 1, is: '40em'},
+  {at: 1.25, is: '40em'},
+]);
+*/
 </script>
 </body>

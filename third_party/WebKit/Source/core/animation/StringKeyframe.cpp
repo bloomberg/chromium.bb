@@ -16,6 +16,7 @@
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthPoint3DStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
+#include "core/animation/SVGLengthStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -230,6 +231,20 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return LengthBoxStyleInterpolation::createFromBorderImageSlice(*fromCSSValue, *toCSSValue, property);
 
         break;
+    case CSSPropertyStrokeWidth:
+        range = RangeNonNegative;
+        // Fall through
+    case CSSPropertyBaselineShift:
+    case CSSPropertyStrokeDashoffset: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = SVGLengthStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property, range);
+        if (interpolation)
+            return interpolation.release();
+
+        // We use default interpolation for
+        // baseline-shift keywords 'super', 'sub', and
+        // from and to values with distinct units.
+        return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+    }
     default:
         // Fall back to LegacyStyleInterpolation.
         fallBackToLegacy = true;
