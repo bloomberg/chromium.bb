@@ -50,6 +50,8 @@ namespace net {
 
 namespace {
 
+const char kConnectionErrorStatusLine[] = "HTTP/1.1 503 Connection Error";
+
 // TODO(yhirano): Remove these functions once http://crbug.com/399535 is fixed.
 NOINLINE void RunCallbackWithOk(const CompletionCallback& callback,
                                 int result) {
@@ -654,6 +656,16 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv,
     set_failure_message(std::string("Error during WebSocket handshake: ") +
                         ErrorToString(rv));
     OnFinishOpeningHandshake();
+    // Some error codes (for example ERR_CONNECTION_CLOSED) get changed to OK at
+    // higher levels. To prevent an unvalidated connection getting erroneously
+    // upgraded, don't pass through the status code unchanged if it is
+    // HTTP_SWITCHING_PROTOCOLS.
+    if (http_response_info_->headers &&
+        http_response_info_->headers->response_code() ==
+            HTTP_SWITCHING_PROTOCOLS) {
+      http_response_info_->headers->ReplaceStatusLine(
+          kConnectionErrorStatusLine);
+    }
     return rv;
   }
 }

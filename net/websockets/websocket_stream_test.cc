@@ -1388,5 +1388,29 @@ TEST_F(WebSocketStreamCreateUMATest, Failed) {
   EXPECT_EQ(0, samples->GetCount(FAILED));
 }
 
+TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
+  static const char kTruncatedResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Upgrade: websocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+      "Cache-Control: no-sto";
+
+  std::string request =
+      WebSocketStandardRequest("/", "localhost", "http://localhost", "");
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, 1, kTruncatedResponse),
+      MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 2),
+  };
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, request.c_str())};
+  scoped_ptr<DeterministicSocketData> socket_data(
+      BuildSocketData(reads, writes));
+  socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
+                                  "http://localhost", socket_data.Pass());
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+}
+
 }  // namespace
 }  // namespace net

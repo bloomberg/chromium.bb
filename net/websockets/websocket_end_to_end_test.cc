@@ -365,6 +365,19 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HttpsProxyUsed)) {
   EXPECT_TRUE(info.proxy_info.is_http());
 }
 
+// This is a regression test for crbug.com/408061 Crash in
+// net::WebSocketBasicHandshakeStream::Upgrade.
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(TruncatedResponse)) {
+  SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
+                              SpawnedTestServer::kLocalhost,
+                              GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(ws_server.Start());
+  InitialiseContext();
+
+  GURL ws_url = ws_server.GetURL("truncated-headers");
+  EXPECT_FALSE(ConnectAndWait(ws_url));
+}
+
 }  // namespace
 
 }  // namespace net
