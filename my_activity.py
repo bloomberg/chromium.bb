@@ -95,6 +95,10 @@ gerrit_instances = [
 
 google_code_projects = [
   {
+    'name': 'brillo',
+    'shorturl': 'brbug.com',
+  },
+  {
     'name': 'chromium',
     'shorturl': 'crbug.com',
   },
