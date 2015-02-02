@@ -12,7 +12,6 @@
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/testing/DummyPageHolder.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/PopupMenu.h"
 #include "public/platform/Platform.h"
@@ -63,17 +62,12 @@ public:
     virtual bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
     virtual void setTextFromItem(unsigned listIndex) override { }
     virtual bool multiple() const override { return false; }
-    virtual IntRect elementRectRelativeToRootView() const override { return IntRect(); }
-    virtual Element& ownerElement() const override { return *m_ownerElement; }
-    virtual RenderStyle* renderStyleForItem(Element& element) const override { return nullptr; }
 
     void setListSize(size_t size) { m_listSize = size; }
     void setDisplayNoneIndex(unsigned index) { m_displayNoneIndexSet.insert(index); }
-    void setOwnerElement(PassRefPtrWillBeRawPtr<Element> element) { m_ownerElement = element; }
 private:
     size_t m_listSize;
     std::set<unsigned> m_displayNoneIndexSet;
-    RefPtrWillBePersistent<Element> m_ownerElement;
 };
 
 class ExternalPopupMenuDisplayNoneItemsTest : public testing::Test {
@@ -88,9 +82,6 @@ protected:
         // Set the 4th an 5th items to have "display: none" property
         m_popupMenuClient.setDisplayNoneIndex(3);
         m_popupMenuClient.setDisplayNoneIndex(4);
-
-        OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-        m_popupMenuClient.setOwnerElement(HTMLSelectElement::create(dummyPageHolder->document()));
     }
 
     TestPopupMenuClient m_popupMenuClient;

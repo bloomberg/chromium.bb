@@ -74,8 +74,6 @@
       'PopupListBox.h',
       'PopupMenuChromium.cpp',
       'PopupMenuChromium.h',
-      'PopupMenuImpl.cpp',
-      'PopupMenuImpl.h',
       'PrerendererClientImpl.cpp',
       'PrerendererClientImpl.h',
       'RemoteFrameClientImpl.cpp',

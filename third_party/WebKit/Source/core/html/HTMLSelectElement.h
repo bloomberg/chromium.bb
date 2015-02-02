@@ -126,8 +126,6 @@ public:
     HTMLOptionElement* spatialNavigationFocusedOption();
     void handleMouseRelease();
 
-    int listIndexForOption(const HTMLOptionElement&);
-
     virtual void trace(Visitor*) override;
 
 protected:
@@ -205,6 +203,7 @@ private:
     int lastSelectableListIndex() const;
     int nextSelectableListIndexPageAway(int startIndex, SkipDirection) const;
     int listIndexForEventTargetOption(const Event&);
+    int listIndexForOption(const HTMLOptionElement&);
     AutoscrollController* autoscrollController() const;
 
     virtual void childrenChanged(const ChildrenChange&) override;

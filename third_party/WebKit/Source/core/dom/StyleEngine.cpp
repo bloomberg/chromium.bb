@@ -722,11 +722,6 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
 }
 
-void StyleEngine::setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector> fontSelector)
-{
-    m_fontSelector = fontSelector;
-}
-
 void StyleEngine::platformColorsChanged()
 {
     if (m_resolver)

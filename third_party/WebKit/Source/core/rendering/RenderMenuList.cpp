@@ -386,21 +386,6 @@ bool RenderMenuList::multiple() const
     return selectElement()->multiple();
 }
 
-IntRect RenderMenuList::elementRectRelativeToRootView() const
-{
-    return selectElement()->document().view()->contentsToRootView(pixelSnappedIntRect(absoluteBoundingBoxRect()));
-}
-
-Element& RenderMenuList::ownerElement() const
-{
-    return *selectElement();
-}
-
-RenderStyle* RenderMenuList::renderStyleForItem(Element& element) const
-{
-    return element.renderStyle() ? element.renderStyle() : element.computedStyle();
-}
-
 void RenderMenuList::didSetSelectedIndex(int listIndex)
 {
     didUpdateActiveOption(selectElement()->listToOptionIndex(listIndex));

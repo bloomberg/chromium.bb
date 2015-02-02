@@ -48,7 +48,6 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
@@ -174,12 +173,6 @@ private:
             m_popup->m_webView->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
     }
 
-    virtual void setToolTip(const String& tooltipText, TextDirection dir) override
-    {
-        if (m_popup->m_webView->client())
-            m_popup->m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
-    }
-
     WebPagePopupImpl* m_popup;
 };
 
@@ -262,19 +255,7 @@ bool WebPagePopupImpl::initializePage()
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     m_popupClient->writeDocument(data.get());
     frame->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
-
-    m_popupClient->didWriteDocument(*frame->document());
-
     return true;
-}
-
-void WebPagePopupImpl::postMessage(const String& message)
-{
-    if (!m_page)
-        return;
-    ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    if (LocalDOMWindow* window = toLocalFrame(m_page->mainFrame())->localDOMWindow())
-        window->dispatchEvent(MessageEvent::create(message));
 }
 
 void WebPagePopupImpl::destroyPage()
