@@ -26,7 +26,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -392,7 +392,6 @@ void BlockPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoin
 void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool paintingFloats)
 {
     // We need to do multiple passes, breaking up our child painting into strips.
-    GraphicsContext* context = paintInfo.context;
     ColumnInfo* colInfo = m_renderBlock.columnInfo();
     unsigned colCount = m_renderBlock.columnCount(colInfo);
     if (!colCount)
@@ -416,7 +415,6 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
         info.rect.intersect(enclosingIntRect(colRect));
 
         if (!info.rect.isEmpty()) {
-            GraphicsContextStateSaver stateSaver(*context);
             LayoutRect clipRect(colRect);
 
             if (i < colCount - 1) {
@@ -429,7 +427,8 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
             // like overflow:hidden.
             // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
             // are clipped according to the 'overflow' property.
-            context->clip(enclosingIntRect(clipRect));
+            ClipRecorder clipRecorder(m_renderBlock.displayItemClient(), paintInfo.context,
+                DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), enclosingIntRect(clipRect));
 
             // Adjust our x and y when painting.
             LayoutPoint adjustedPaintOffset = paintOffset + offset;

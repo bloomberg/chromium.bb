@@ -77,6 +77,8 @@ public:
         ClipFirst,
         ClipBoxPaintPhaseFirst = ClipFirst,
         ClipBoxPaintPhaseLast = ClipBoxPaintPhaseFirst + PaintPhaseMax,
+        ClipColumnBoundsPaintPhaseFirst,
+        ClipColumnBoundsPaintPhaseLast = ClipColumnBoundsPaintPhaseFirst + PaintPhaseMax,
         ClipLayerFragmentPaintPhaseFirst,
         ClipLayerFragmentPaintPhaseLast = ClipLayerFragmentPaintPhaseFirst + PaintPhaseMax,
         ClipFrameToVisibleContentRect,
@@ -173,6 +175,7 @@ public:
     DEFINE_PAIRED_CATEGORY_METHODS(Clip, clip)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipLayerFragment)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipBox)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipColumnBounds)
 
     DEFINE_PAIRED_CATEGORY_METHODS(FloatClip, floatClip)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(FloatClip)

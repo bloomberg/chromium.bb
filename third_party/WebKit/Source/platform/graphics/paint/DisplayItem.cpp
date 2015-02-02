@@ -63,6 +63,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
 static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
 {
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipBox);
+    PAINT_PHASE_BASED_DEBUG_STRINGS(ClipColumnBounds);
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
 
     switch (type) {
