@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"
 
@@ -58,7 +60,20 @@ TEST(ServiceProcessControlMac, TestGTMSMJobSubmitRemove) {
 
   // Remove the job.
   ASSERT_TRUE(GTMSMJobRemove(label_cf, &error));
-  pid = base::mac::PIDForJob(label);
+
+  // Wait for the job to be killed.
+  base::TimeDelta timeout_in_ms = TestTimeouts::action_timeout();
+  base::Time start_time = base::Time::Now();
+  while (1) {
+    pid = base::mac::PIDForJob(label);
+    if (pid < 0)
+      break;
+
+    base::Time current_time = base::Time::Now();
+    if (current_time - start_time > timeout_in_ms)
+      break;
+  }
+
   EXPECT_LT(pid, 0);
 
   // Attempting to remove the job again should fail.
