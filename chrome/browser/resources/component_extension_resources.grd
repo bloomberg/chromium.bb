@@ -175,6 +175,11 @@
         <include name="IDR_PDF_PDF_PANE_HTML" file="pdf/elements/pdf-pane/pdf-pane.html" type="BINDATA" />
         <include name="IDR_PDF_PDF_PANE_JS" file="pdf/elements/pdf-pane/pdf-pane.js" type="BINDATA" />
 
+        <include name="IDR_PDF_VIEWER_BOOKMARK_CSS" file="pdf/elements/viewer-bookmark/viewer-bookmark.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark/viewer-bookmark.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark/viewer-bookmark.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BOOKMARKS_PANE_HTML" file="pdf/elements/viewer-bookmarks-pane/viewer-bookmarks-pane.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BOOKMARKS_PANE_JS" file="pdf/elements/viewer-bookmarks-pane/viewer-bookmarks-pane.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/elements/viewer-button/viewer-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/elements/viewer-button/viewer-button.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_JS" file="pdf/elements/viewer-button/viewer-button.js" type="BINDATA" />

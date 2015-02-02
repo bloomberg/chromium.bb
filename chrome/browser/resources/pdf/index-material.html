@@ -2,6 +2,7 @@
 <html i18n-values="dir:textdirection;lang:language">
 <head>
   <meta charset="utf-8">
+  <link rel="import" href="elements/viewer-bookmarks-pane/viewer-bookmarks-pane.html">
   <link rel="import" href="elements/viewer-button/viewer-button.html">
   <link rel="import" href="elements/viewer-error-screen/viewer-error-screen.html">
   <link rel="import" href="elements/viewer-page-selector/viewer-page-selector.html">
@@ -24,10 +25,13 @@
 
     <viewer-page-selector id="page-indicator" flex></viewer-page-selector>
 
+    <paper-icon-button icon="bookmark-outline" id="bookmarks-button"></paper-icon-button>
     <paper-icon-button icon="file-download" id="save-button"></paper-icon-button>
     <paper-icon-button icon="print" id="print-button"></paper-icon-button>
   </core-toolbar>
 </paper-shadow>
+
+<viewer-bookmarks-pane id="bookmarks-pane" heading="Bookmarks"></viewer-bookmarks-pane>
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"></viewer-password-screen>

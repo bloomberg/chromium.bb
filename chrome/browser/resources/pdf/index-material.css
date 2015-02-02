@@ -56,6 +56,10 @@ paper-progress::shadow #progressContainer {
   z-index: 0;
 }
 
+bookmarks-pane {
+  z-index: 2;
+}
+
 viewer-toolbar {
   visibility: hidden;
   white-space: nowrap;

@@ -66,6 +66,7 @@ function PDFViewer(streamDetails) {
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
   this.toolbarHeight_ = this.isMaterial_ ? $('pdf-toolbar').clientHeight : 0;
+  this.bookmarksPane = $('bookmarks-pane');
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -116,6 +117,12 @@ function PDFViewer(streamDetails) {
     this.viewport_.goToPage(e.detail.page);
   }.bind(this));
 
+  if (this.isMaterial_) {
+    this.bookmarksPane.addEventListener('changePage', function(e) {
+      this.viewport_.goToPage(e.detail.page);
+    }.bind(this));
+  }
+
   // Setup the button event listeners.
   $('fit-to-width-button').addEventListener('click',
       this.viewport_.fitToWidth.bind(this.viewport_));
@@ -127,6 +134,11 @@ function PDFViewer(streamDetails) {
       this.viewport_.zoomOut.bind(this.viewport_));
   $('save-button').addEventListener('click', this.save_.bind(this));
   $('print-button').addEventListener('click', this.print_.bind(this));
+  if (this.isMaterial_) {
+    $('bookmarks-button').addEventListener('click', function() {
+      this.bookmarksPane.toggle();
+    }.bind(this));
+  }
 
   // Setup the keyboard event listener.
   document.onkeydown = this.handleKeyEvent_.bind(this);
@@ -449,6 +461,8 @@ PDFViewer.prototype = {
         break;
       case 'bookmarks':
         this.bookmarks_ = message.data.bookmarks;
+        if (this.isMaterial_)
+          this.bookmarksPane.bookmarks = message.data.bookmarks;
         break;
     }
   },
