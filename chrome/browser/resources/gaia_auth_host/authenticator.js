@@ -117,6 +117,8 @@ cr.define('cr.login', function() {
     this.webview_.addEventListener(
         'newwindow', this.onNewWindow_.bind(this));
     this.webview_.addEventListener(
+        'contentload', this.onContentLoad_.bind(this));
+    this.webview_.addEventListener(
         'loadstop', this.onLoadStop_.bind(this));
     this.webview_.request.onCompleted.addListener(
         this.onRequestCompleted_.bind(this),
@@ -197,9 +199,6 @@ cr.define('cr.login', function() {
 
     this.updateHistoryState_(currentUrl);
 
-    // Posts a message to IdP pages to initiate communication.
-    if (currentUrl.lastIndexOf(this.idpOrigin_) == 0)
-      this.webview_.contentWindow.postMessage({}, currentUrl);
   };
 
   /**
@@ -255,12 +254,7 @@ cr.define('cr.login', function() {
           signinDetails[pair[0].trim()] = pair[1].trim();
         });
         // Removes "" around.
-        var email = signinDetails['email'].slice(1, -1);
-        if (this.email_ != email) {
-          this.email_ = email;
-          // Clears the scraped password if the email has changed.
-          this.password_ = null;
-        }
+        this.email_ = signinDetails['email'].slice(1, -1);
         this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
         this.sessionIndex_ = signinDetails['sessionindex'];
       } else if (headerName == SAML_HEADER) {
@@ -321,6 +315,18 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.onNewWindow_ = function(e) {
     this.dispatchEvent(new CustomEvent('newWindow', {detail: e}));
+  };
+
+  /**
+   * Invoked when a new document is loaded.
+   * @private
+   */
+  Authenticator.prototype.onContentLoad_ = function(e) {
+    // Posts a message to IdP pages to initiate communication.
+    var currentUrl = this.webview_.src;
+    if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
+      this.webview_.contentWindow.postMessage({}, currentUrl);
+    }
   };
 
   /**
