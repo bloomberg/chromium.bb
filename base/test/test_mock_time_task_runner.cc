@@ -102,6 +102,11 @@ bool TestMockTimeTaskRunner::HasPendingTask() const {
   return !tasks_.empty();
 }
 
+size_t TestMockTimeTaskRunner::GetPendingTaskCount() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return tasks_.size();
+}
+
 TimeDelta TestMockTimeTaskRunner::NextPendingTaskDelay() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return tasks_.empty() ? TimeDelta::Max() : tasks_.top().GetTimeToRun() - now_;

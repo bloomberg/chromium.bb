@@ -60,6 +60,7 @@ class TestMockTimeTaskRunner : public base::SingleThreadTaskRunner {
   scoped_ptr<TickClock> GetMockTickClock() const;
 
   bool HasPendingTask() const;
+  size_t GetPendingTaskCount() const;
   TimeDelta NextPendingTaskDelay() const;
 
   // SingleThreadTaskRunner:
