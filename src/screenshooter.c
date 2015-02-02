@@ -558,8 +558,7 @@ weston_recorder_destroy(struct weston_recorder *recorder)
 static void
 recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *ec = ws->compositor;
+	struct weston_compositor *ec = seat->compositor;
 	struct weston_output *output;
 	struct wl_listener *listener = NULL;
 	struct weston_recorder *recorder;
