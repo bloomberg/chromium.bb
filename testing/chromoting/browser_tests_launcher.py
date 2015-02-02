@@ -20,24 +20,16 @@ SUCCESS_INDICATOR = 'SUCCESS: all tests passed.'
 NATIVE_MESSAGING_DIR = 'NativeMessagingHosts'
 CRD_ID = 'chrome-remote-desktop'  # Used in a few file/folder names
 CHROMOTING_HOST_PATH = '/opt/google/chrome-remote-desktop/chrome-remote-desktop'
+TEST_FAILURE = False
 
 
 def LaunchBTCommand(command):
-  results, error = RunCommandInSubProcess(command)
+  global TEST_FAILURE
+  results = RunCommandInSubProcess(command)
 
   # Check that the test passed.
   if SUCCESS_INDICATOR not in results:
-    # Obtain contents of Chromoting host logs.
-    log_contents = ''
-    # There should be only 1 log file, as we delete logs on test completion.
-    # Loop through matching files, just in case there are more.
-    for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
-      with open(log_file, 'r') as log:
-        log_contents += '\nHOST LOG %s CONTENTS:\n%s' % (log_file, log.read())
-    print log_contents
-    raise Exception(
-        'Test failed. Command:%s\nResults:%s\nError:%s\n' %
-        (command, results, error))
+    TEST_FAILURE = True
 
 
 def RunCommandInSubProcess(command):
@@ -47,7 +39,6 @@ def RunCommandInSubProcess(command):
     command: The text of command to be executed.
   Returns:
     results: stdout contents of executing the command.
-    error: stderr contents.
   """
 
   cmd_line = [command]
@@ -59,7 +50,7 @@ def RunCommandInSubProcess(command):
                     (e, command, error))
   else:
     print results
-  return results, error
+  return results
 
 
 def TestCleanUp(user_profile_dir):
@@ -88,12 +79,6 @@ def InitialiseTestMachineForLinux(cfg_file):
   $HOME/.config/chrome-remote-desktop
   Its name is expected to have a hash that is specific to a machine.
 
-  TODO(anandc):
-  Once we have Linux machines in the swarming lab already installed with the
-  me2me host, this function should also perform the step of starting the host.
-  That is gated on this CL: https://chromereviews.googleplex.com/123957013/, and
-  then having base images in the chrome-labs be updated with it.
-
   Args:
     cfg_file: location of test account's host-config file.
   """
@@ -119,7 +104,7 @@ def InitialiseTestMachineForLinux(cfg_file):
 
 def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
                         user_profile_dir):
-  """Sets up the Google Chrome user profile directory
+  """Sets up the Google Chrome user profile directory.
 
   Delete the previous user profile directory if exists and create a new one.
   This invalidates any state changes by the previous test so each test can start
@@ -178,6 +163,18 @@ def main():
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       LaunchBTCommand(line)
+
+  # Was there any test failure?
+  if TEST_FAILURE:
+    # Obtain contents of Chromoting host logs.
+    log_contents = ''
+    # There should be only 1 log file, as we delete logs on test completion.
+    # Loop through matching files, just in case there are more.
+    for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
+      with open(log_file, 'r') as log:
+        log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (log_file, log.read())
+    print log_contents
+    raise Exception('At least one test failed.')
 
   # Now, stop host, and cleanup user-profile-dir
   TestCleanUp(args.user_profile_dir)
