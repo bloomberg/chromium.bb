@@ -267,10 +267,10 @@ Client has transitioned from using NPAPI to using Pepper.</p>
 <h3 id="is-npapi-part-of-the-native-client-sdk">Is NPAPI part of the Native Client SDK?</h3>
 <p>NPAPI is not supported by the Native Client SDK, and is <a class="reference external" href="http://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html">deprecated in Chrome</a>.</p>
 <h3 id="does-native-client-support-simd-vector-instructions">Does Native Client support SIMD vector instructions?</h3>
-<p>Native Client currently supports SSE on x86 and NEON on ARM. Support for
-AVX on x86 is under way.</p>
 <p>Portable Native Client supports portable SIMD vectors, as detailed in
 <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#portable-simd-vectors"><em>Portable SIMD Vectors</em></a>.</p>
+<p>Native Client supports SSE, AVX1, FMA3 and AVX2 (except for <cite>VGATHER</cite>) on x86
+and NEON on ARM.</p>
 <h3 id="can-i-use-native-client-for-3d-graphics">Can I use Native Client for 3D graphics?</h3>
 <p>Yes. Native Client supports <a class="reference external" href="https://www.khronos.org/opengles/">OpenGL ES 2.0</a>.</p>
 <p>To alert the user regarding their hardware platform&#8217;s 3D feature set

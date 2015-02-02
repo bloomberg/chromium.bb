@@ -13,7 +13,8 @@ Chrome/Pepper 42 (20 February 2015)
 NaCl
 ----
 
-* The x86 NaCl validators accept instructions from the FMA3 extensions.
+* The x86 NaCl validators accept instructions from the FMA3 extensions, as well
+  as AVX2 instructions (except `VGATHER`).
 
 
 PNaCl

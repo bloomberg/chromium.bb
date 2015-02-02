@@ -271,11 +271,11 @@ NPAPI is not supported by the Native Client SDK, and is `deprecated in Chrome`_.
 Does Native Client support SIMD vector instructions?
 ----------------------------------------------------
 
-Native Client currently supports SSE on x86 and NEON on ARM. Support for
-AVX on x86 is under way.
-
 Portable Native Client supports portable SIMD vectors, as detailed in
 :ref:`Portable SIMD Vectors <portable_simd_vectors>`.
+
+Native Client supports SSE, AVX1, FMA3 and AVX2 (except for `VGATHER`) on x86
+and NEON on ARM.
 
 Can I use Native Client for 3D graphics?
 ----------------------------------------
