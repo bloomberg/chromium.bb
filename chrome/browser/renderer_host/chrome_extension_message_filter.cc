@@ -41,24 +41,17 @@ const uint32 kFilteredMessageClasses[] = {
 void AddActionToExtensionActivityLog(
     Profile* profile,
     scoped_refptr<extensions::Action> action) {
-  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
-  // running on the wrong thread, re-dispatch from the main thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&AddActionToExtensionActivityLog, profile, action));
-  } else {
-    if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-      return;
-    // If the action included a URL, check whether it is for an incognito
-    // profile.  The check is performed here so that it can safely be done from
-    // the UI thread.
-    if (action->page_url().is_valid() || !action->page_title().empty())
-      action->set_page_incognito(profile->IsOffTheRecord());
-    extensions::ActivityLog* activity_log =
-        extensions::ActivityLog::GetInstance(profile);
-    activity_log->LogAction(action);
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+  // If the action included a URL, check whether it is for an incognito
+  // profile.  The check is performed here so that it can safely be done from
+  // the UI thread.
+  if (action->page_url().is_valid() || !action->page_title().empty())
+    action->set_page_incognito(profile->IsOffTheRecord());
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance(profile);
+  activity_log->LogAction(action);
 }
 
 }  // namespace
@@ -112,6 +105,9 @@ void ChromeExtensionMessageFilter::OverrideThreadForMessage(
   switch (message.type()) {
     case ExtensionHostMsg_PostMessage::ID:
     case ExtensionHostMsg_CloseChannel::ID:
+    case ExtensionHostMsg_AddAPIActionToActivityLog::ID:
+    case ExtensionHostMsg_AddDOMActionToActivityLog::ID:
+    case ExtensionHostMsg_AddEventToActivityLog::ID:
       *thread = BrowserThread::UI;
       break;
     default:
