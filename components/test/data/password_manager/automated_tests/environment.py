@@ -189,6 +189,24 @@ class Environment:
     script += "document.querySelector('#clear-browser-data-commit').click();"
     self.driver.execute_script(script)
     time.sleep(2)
+    # Every time we do something to the cache let's enable password saving.
+    # TODO(melandory): We should check why it's off in a first place.
+    # TODO(melandory): Investigate, maybe there is no need to enable it that
+    # often.
+    self.EnablePasswordsSaving()
+
+  def EnablePasswordsSaving(self):
+    logging.info("\nEnablePasswordSaving\n")
+    self.driver.get("chrome://settings")
+    self.driver.switch_to_frame("settings")
+    script = "document.getElementById('advanced-settings-expander').click();"
+    self.driver.execute_script(script)
+    time.sleep(2)
+    script = (
+        "if (!document.querySelector('#password-manager-enabled').checked)"
+        "{ document.querySelector('#password-manager-enabled').click();}")
+    self.driver.execute_script(script)
+    time.sleep(2)
 
   def OpenTabAndGoToInternals(self, url):
     """If there is no |self.website_window|, opens a new tab and navigates to
@@ -375,8 +393,9 @@ class Environment:
         self.ClearCache(True)
       except Exception as e:
         successful = False
+        error = e.message
       self.tests_results.append(TestResult(websitetest.name, "normal",
-          successful, e.message))
+                                           successful, error))
 
 
   def PromptTestList(self, websitetests):
@@ -398,8 +417,9 @@ class Environment:
         websitetest.PromptTest()
       except Exception as e:
         successful = False
+        error = e.message
       self.tests_results.append(TestResult(websitetest.name, "prompt",
-          successful, e.message))
+                                           successful, error))
 
   def Quit(self):
     """Closes the tests."""
