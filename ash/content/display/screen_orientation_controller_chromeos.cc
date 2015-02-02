@@ -66,6 +66,7 @@ ScreenOrientationController::ScreenOrientationController()
     : natural_orientation_(GetDisplayNaturalOrientation()),
       ignore_display_configuration_updates_(false),
       rotation_locked_(false),
+      rotation_locked_orientation_(blink::WebScreenOrientationLockAny),
       user_rotation_(gfx::Display::ROTATE_0),
       current_rotation_(gfx::Display::ROTATE_0) {
   content::ScreenOrientationProvider::SetDelegate(this);
@@ -94,6 +95,8 @@ void ScreenOrientationController::SetRotationLocked(bool rotation_locked) {
   if (rotation_locked_ == rotation_locked)
     return;
   rotation_locked_ = rotation_locked;
+  if (!rotation_locked_)
+    rotation_locked_orientation_ = blink::WebScreenOrientationLockAny;
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnRotationLockChanged(rotation_locked_));
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
@@ -143,7 +146,7 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 
 void ScreenOrientationController::OnAccelerometerUpdated(
     const ui::AccelerometerUpdate& update) {
-  if (rotation_locked_)
+  if (rotation_locked_ && !CanRotateInLockedState())
     return;
   if (!update.has(ui::ACCELEROMETER_SOURCE_SCREEN))
     return;
@@ -234,6 +237,7 @@ void ScreenOrientationController::LockRotation(
 
 void ScreenOrientationController::LockRotationToOrientation(
     blink::WebScreenOrientationLockType lock_orientation) {
+  rotation_locked_orientation_ = lock_orientation;
   switch (lock_orientation) {
     case blink::WebScreenOrientationLockAny:
       SetRotationLocked(false);
@@ -285,9 +289,6 @@ void ScreenOrientationController::LockRotationToSecondaryOrientation(
 
 void ScreenOrientationController::LockToRotationMatchingOrientation(
     blink::WebScreenOrientationLockType lock_orientation) {
-  // TODO(jonross): Update MaximizeModeController to allow rotation between
-  // two angles of an orientation (e.g. from ROTATE_0 to ROTATE_180, and from
-  // ROTATE_90 to ROTATE_270)
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (!display_manager->HasInternalDisplay())
     return;
@@ -357,7 +358,8 @@ void ScreenOrientationController::HandleScreenRotation(
   else if (angle < 270.0f)
     new_rotation = gfx::Display::ROTATE_180;
 
-  if (new_rotation != current_rotation_)
+  if (new_rotation != current_rotation_ &&
+      IsRotationAllowedInLockedState(new_rotation))
     SetDisplayRotation(new_rotation);
 }
 
@@ -388,6 +390,31 @@ void ScreenOrientationController::RemoveLockingWindow(aura::Window* window) {
     Shell::GetInstance()->activation_client()->RemoveObserver(this);
   window->RemoveObserver(this);
   ApplyLockForActiveWindow();
+}
+
+bool ScreenOrientationController::IsRotationAllowedInLockedState(
+    gfx::Display::Rotation rotation) {
+  if (!rotation_locked_)
+    return true;
+
+  if (!CanRotateInLockedState())
+    return false;
+
+  if (natural_orientation_ == rotation_locked_orientation_) {
+    return rotation == gfx::Display::ROTATE_0 ||
+           rotation == gfx::Display::ROTATE_180;
+  } else {
+    return rotation == gfx::Display::ROTATE_90 ||
+           rotation == gfx::Display::ROTATE_270;
+  }
+  return false;
+}
+
+bool ScreenOrientationController::CanRotateInLockedState() {
+  return rotation_locked_orientation_ ==
+             blink::WebScreenOrientationLockLandscape ||
+         rotation_locked_orientation_ ==
+             blink::WebScreenOrientationLockPortrait;
 }
 
 }  // namespace ash

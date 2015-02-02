@@ -139,6 +139,18 @@ class ASH_EXPORT ScreenOrientationController
   // Removes a window and its locking preference.
   void RemoveLockingWindow(aura::Window* window);
 
+  // Both |blink::WebScreenOrientationLockLandscape| and
+  // |blink::WebScreenOrientationLockPortrait| allow for rotation between the
+  // two angles of the same screen orientation
+  // (http://www.w3.org/TR/screen-orientation/). Returns true if |rotation| is
+  // supported for the current |rotation_locked_orientation_|.
+  bool IsRotationAllowedInLockedState(gfx::Display::Rotation rotation);
+
+  // Certain orientation locks allow for rotation between the two angles of the
+  // same screen orientation. Returns true if |rotation_locked_orientation_|
+  // allows rotation.
+  bool CanRotateInLockedState();
+
   // The orientation of the display when at a rotation of 0.
   blink::WebScreenOrientationLockType natural_orientation_;
 
@@ -148,6 +160,9 @@ class ASH_EXPORT ScreenOrientationController
 
   // When true then accelerometer updates should not rotate the display.
   bool rotation_locked_;
+
+  // The orientation to which the current |rotation_locked_| was applied.
+  blink::WebScreenOrientationLockType rotation_locked_orientation_;
 
   // The rotation of the display set by the user. This rotation will be
   // restored upon exiting maximize mode.
