@@ -256,13 +256,23 @@ public:
 
 class RenderObjectProxy : public RenderObject {
 public:
-    explicit RenderObjectProxy(Node* node)
-        : RenderObject(node)
+    static PassOwnPtrWillBeRawPtr<RenderObjectProxy> create(Node* node)
     {
+        return adoptPtrWillBeNoop(new RenderObjectProxy(node));
+    }
+
+    static void dispose(PassOwnPtrWillBeRawPtr<RenderObjectProxy> object)
+    {
+        object.leakPtr()->destroy();
     }
 
     const char* renderName() const override { return nullptr; }
     void layout() override { }
+private:
+    explicit RenderObjectProxy(Node* node)
+        : RenderObject(node)
+    {
+    }
 };
 
 // -----------------------------------------------------------------------
@@ -1190,10 +1200,10 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     WebCompositorSupportMock mockCompositor;
     setCompositorForTesting(mockCompositor);
 
-    RefPtrWillBeRawPtr<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
+    RefPtrWillBePersistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
 
-    RenderObjectProxy* renderer = new RenderObjectProxy(element.get());
-    element->setRenderer(renderer);
+    OwnPtrWillBePersistent<RenderObjectProxy> renderer = RenderObjectProxy::create(element.get());
+    element->setRenderer(renderer.get());
 
     AnimatableValueKeyframeVector keyFrames;
     keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
@@ -1206,7 +1216,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
 
     // The first player for opacity is ok to run on compositor.
     RefPtrWillBeRawPtr<Animation> animation1 = Animation::create(element.get(), animationEffect1, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player1 = m_timeline->play(animation1.get());
+    RefPtrWillBePersistent<AnimationPlayer> player1 = m_timeline->play(animation1.get());
     EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), player1.get(), *animationEffect1.get(), 1));
 
     // simulate Animation::maybeStartAnimationOnCompositor
@@ -1217,7 +1227,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
 
     // The second player for opacity is not ok to run on compositor.
     RefPtrWillBeRawPtr<Animation> animation2 = Animation::create(element.get(), animationEffect2, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player2 = m_timeline->play(animation2.get());
+    RefPtrWillBePersistent<AnimationPlayer> player2 = m_timeline->play(animation2.get());
     EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), player2.get(), *animationEffect2.get(), 1));
     EXPECT_FALSE(player2->hasActiveAnimationsOnCompositor());
 
@@ -1232,8 +1242,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     simulateFrame(1.);
 
     element->setRenderer(nullptr);
-    delete renderer;
-    renderer = nullptr;
+    RenderObjectProxy::dispose(renderer.release());
 
     player1.release();
     player2.release();
