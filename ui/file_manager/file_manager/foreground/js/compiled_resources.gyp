@@ -86,6 +86,7 @@
           './import_controller.js',
           './launch_param.js',
           './metadata/metadata_cache.js',
+          './metadata/metadata_cache_item.js',
           './metadata_update_controller.js',
           './naming_controller.js',
           './navigation_list_model.js',
