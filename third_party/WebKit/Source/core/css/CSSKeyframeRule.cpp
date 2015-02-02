@@ -28,7 +28,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSKeyframesRule.h"
-#include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/KeyframeStyleRuleCSSStyleDeclaration.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace blink {
@@ -52,12 +53,14 @@ void CSSKeyframeRule::setKeyText(const String& keyText, ExceptionState& exceptio
 {
     if (!m_keyframe->setKeyText(keyText))
         exceptionState.throwDOMException(SyntaxError, "The key '" + keyText + "' is invalid and cannot be parsed");
+
+    toCSSKeyframesRule(parentRule())->styleChanged();
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const
 {
     if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_keyframe->mutableProperties(), const_cast<CSSKeyframeRule*>(this));
+        m_propertiesCSSOMWrapper = KeyframeStyleRuleCSSStyleDeclaration::create(m_keyframe->mutableProperties(), const_cast<CSSKeyframeRule*>(this));
     return m_propertiesCSSOMWrapper.get();
 }
 

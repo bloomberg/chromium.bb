@@ -130,7 +130,7 @@ public:
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    const StyleRuleKeyframes* findKeyframesRule(const Element*, const AtomicString& animationName);
+    StyleRuleKeyframes* findKeyframesRule(const Element*, const AtomicString& animationName);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {

@@ -93,7 +93,8 @@ struct Timing {
         return startDelay == other.startDelay && endDelay == other.endDelay
             && fillMode == other.fillMode && iterationStart == other.iterationStart
             && iterationCount == other.iterationCount && iterationDuration == other.iterationDuration
-            && playbackRate == other.playbackRate && direction == other.direction;
+            && playbackRate == other.playbackRate && direction == other.direction
+            && *timingFunction == *other.timingFunction;
     }
 
     bool operator!=(const Timing &other) const

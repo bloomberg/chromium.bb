@@ -66,6 +66,7 @@ public:
     bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     AnimationEffect* effect() { return m_effect.get(); }
+    void setEffect(PassRefPtrWillBeRawPtr<AnimationEffect> effect) { m_effect = effect; }
     Priority priority() const { return m_priority; }
     Element* target() const { return m_target; }
 

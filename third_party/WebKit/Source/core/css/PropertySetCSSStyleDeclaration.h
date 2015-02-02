@@ -26,6 +26,7 @@
 #ifndef PropertySetCSSStyleDeclaration_h
 #define PropertySetCSSStyleDeclaration_h
 
+#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -89,7 +90,7 @@ protected:
     RawPtrWillBeMember<MutableStylePropertySet> m_propertySet; // Cannot be null
 };
 
-class StyleRuleCSSStyleDeclaration final : public PropertySetCSSStyleDeclaration
+class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
 {
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
@@ -108,7 +109,7 @@ public:
 
     virtual void trace(Visitor*) override;
 
-private:
+protected:
     StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
     virtual ~StyleRuleCSSStyleDeclaration();
 

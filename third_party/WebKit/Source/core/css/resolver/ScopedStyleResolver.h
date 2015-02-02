@@ -57,7 +57,7 @@ public:
     ScopedStyleResolver* parent() const;
 
 public:
-    const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
+    StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
     void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
 
     unsigned appendCSSStyleSheet(CSSStyleSheet*);

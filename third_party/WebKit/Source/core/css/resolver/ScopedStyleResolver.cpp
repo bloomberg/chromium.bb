@@ -90,14 +90,14 @@ void ScopedStyleResolver::resetAuthorStyle()
     m_keyframesRuleMap.clear();
 }
 
-const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const StringImpl* animationName)
+StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const StringImpl* animationName)
 {
     if (m_keyframesRuleMap.isEmpty())
-        return 0;
+        return nullptr;
 
     KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(animationName);
     if (it == m_keyframesRuleMap.end())
-        return 0;
+        return nullptr;
 
     return it->value.get();
 }
@@ -105,8 +105,9 @@ const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const 
 void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes> rule)
 {
     AtomicString s(rule->name());
+
     if (rule->isVendorPrefixed()) {
-        KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(rule->name().impl());
+        KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(s.impl());
         if (it == m_keyframesRuleMap.end())
             m_keyframesRuleMap.set(s.impl(), rule);
         else if (it->value->isVendorPrefixed())

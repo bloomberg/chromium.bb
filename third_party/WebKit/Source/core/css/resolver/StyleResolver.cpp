@@ -1015,7 +1015,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     return true;
 }
 
-const StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, const AtomicString& animationName)
+StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, const AtomicString& animationName)
 {
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
     collectScopedResolversForHostedShadowTrees(element, resolvers);
@@ -1023,7 +1023,7 @@ const StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* elemen
         resolvers.append(scopedResolver);
 
     for (size_t i = 0; i < resolvers.size(); ++i) {
-        if (const StyleRuleKeyframes* keyframesRule = resolvers[i]->keyframeStylesForAnimation(animationName.impl()))
+        if (StyleRuleKeyframes* keyframesRule = resolvers[i]->keyframeStylesForAnimation(animationName.impl()))
             return keyframesRule;
     }
     return nullptr;

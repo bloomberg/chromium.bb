@@ -32,7 +32,10 @@
 #define CSSAnimations_h
 
 #include "core/animation/InertAnimation.h"
+#include "core/animation/Interpolation.h"
+#include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "wtf/HashMap.h"
@@ -44,7 +47,6 @@ class CSSTransitionData;
 class Element;
 class StylePropertyShorthand;
 class StyleResolver;
-class StyleRuleKeyframes;
 
 class CSSAnimations final {
     WTF_MAKE_NONCOPYABLE(CSSAnimations);
@@ -67,6 +69,35 @@ public:
     void trace(Visitor*);
 
 private:
+    class RunningAnimation final : public RefCountedWillBeGarbageCollected<RunningAnimation>  {
+    public:
+        RunningAnimation(PassRefPtrWillBeRawPtr<AnimationPlayer> player, CSSAnimationUpdate::NewAnimation animation)
+            : player(player)
+            , specifiedTiming(animation.timing)
+            , styleRule(animation.styleRule)
+            , styleRuleVersion(animation.styleRuleVersion)
+        {
+        }
+
+        void update(CSSAnimationUpdate::UpdatedAnimation update)
+        {
+            styleRule = update.styleRule;
+            styleRuleVersion = update.styleRuleVersion;
+            specifiedTiming = update.specifiedTiming;
+        }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(player);
+            visitor->trace(styleRule);
+        }
+
+        RefPtrWillBeMember<AnimationPlayer> player;
+        Timing specifiedTiming;
+        RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
+        unsigned styleRuleVersion;
+    };
+
     struct RunningTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
@@ -82,7 +113,7 @@ private:
         RawPtrWillBeMember<const AnimatableValue> to;
     };
 
-    using AnimationMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<AnimationPlayer>>;
+    using AnimationMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<RunningAnimation>>;
     AnimationMap m_animations;
 
     using TransitionMap = WillBeHeapHashMap<CSSPropertyID, RunningTransition>;

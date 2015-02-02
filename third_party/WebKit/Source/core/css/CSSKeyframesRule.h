@@ -61,13 +61,17 @@ public:
 
     void traceAfterDispatch(Visitor*);
 
+    void styleChanged() { m_version++; }
+    unsigned version() const { return m_version; }
+
 private:
     StyleRuleKeyframes();
     explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > m_keyframes;
     AtomicString m_name;
-    bool m_isPrefixed;
+    unsigned m_version : 31;
+    unsigned m_isPrefixed : 1;
 };
 
 DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
@@ -100,6 +104,8 @@ public:
 
     bool isVendorPrefixed() const { return m_isPrefixed; }
     void setVendorPrefixed(bool isPrefixed) { m_isPrefixed = isPrefixed; }
+
+    void styleChanged() { m_keyframesRule->styleChanged(); }
 
     virtual void trace(Visitor*) override;
 

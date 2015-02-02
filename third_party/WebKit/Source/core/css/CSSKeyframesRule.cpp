@@ -37,6 +37,7 @@ namespace blink {
 
 StyleRuleKeyframes::StyleRuleKeyframes()
     : StyleRuleBase(Keyframes)
+    , m_version(0)
 {
 }
 
@@ -44,6 +45,7 @@ StyleRuleKeyframes::StyleRuleKeyframes(const StyleRuleKeyframes& o)
     : StyleRuleBase(o)
     , m_keyframes(o.m_keyframes)
     , m_name(o.m_name)
+    , m_version(o.m_version)
     , m_isPrefixed(o.m_isPrefixed)
 {
 }
@@ -62,11 +64,13 @@ void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKe
 void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe)
 {
     m_keyframes.append(keyframe);
+    styleChanged();
 }
 
 void StyleRuleKeyframes::wrapperRemoveKeyframe(unsigned index)
 {
     m_keyframes.remove(index);
+    styleChanged();
 }
 
 int StyleRuleKeyframes::findKeyframeIndex(const String& key) const

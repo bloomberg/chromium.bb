@@ -821,6 +821,8 @@
             'css/FontSize.cpp',
             'css/FontSize.h',
             'css/HashTools.h',
+            'css/KeyframeStyleRuleCSSStyleDeclaration.cpp',
+            'css/KeyframeStyleRuleCSSStyleDeclaration.h',
             'css/LocalFontFaceSource.cpp',
             'css/LocalFontFaceSource.h',
             'css/MediaList.cpp',

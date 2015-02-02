@@ -34,7 +34,7 @@ namespace blink {
 class CSSKeyframesRule;
 class CSSStyleDeclaration;
 class ExceptionState;
-class StyleRuleCSSStyleDeclaration;
+class KeyframeStyleRuleCSSStyleDeclaration;
 
 class CSSKeyframeRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +57,7 @@ private:
     virtual CSSRule::Type type() const override { return KEYFRAME_RULE; }
 
     RefPtrWillBeMember<StyleRuleKeyframe> m_keyframe;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtrWillBeMember<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 
     friend class CSSKeyframesRule;
 };

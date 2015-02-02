@@ -6,6 +6,7 @@
 #define CSSAnimationUpdate_h
 
 #include "core/animation/Interpolation.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -19,13 +20,72 @@ class InertAnimation;
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate final : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
 public:
-    void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation)
+    class NewAnimation {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        NewAnimation()
+            : styleRuleVersion(0)
+        {
+        }
+
+        NewAnimation(AtomicString name, PassRefPtrWillBeRawPtr<InertAnimation> animation, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+            : name(name)
+            , animation(animation)
+            , timing(timing)
+            , styleRule(styleRule)
+            , styleRuleVersion(this->styleRule->version())
+        {
+        }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(animation);
+        }
+
+        AtomicString name;
+        RefPtrWillBeMember<InertAnimation> animation;
+        Timing timing;
+        RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
+        unsigned styleRuleVersion;
+    };
+
+    class UpdatedAnimation {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        UpdatedAnimation()
+            : styleRuleVersion(0)
+        {
+        }
+
+        UpdatedAnimation(AtomicString name, AnimationPlayer* player, PassRefPtrWillBeRawPtr<InertAnimation> animation, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+            : name(name)
+            , player(player)
+            , animation(animation)
+            , specifiedTiming(specifiedTiming)
+            , styleRule(styleRule)
+            , styleRuleVersion(this->styleRule->version())
+        {
+        }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(player);
+            visitor->trace(animation);
+            visitor->trace(styleRule);
+        }
+
+        AtomicString name;
+        RawPtrWillBeMember<AnimationPlayer> player;
+        RefPtrWillBeMember<InertAnimation> animation;
+        Timing specifiedTiming;
+        RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
+        unsigned styleRuleVersion;
+    };
+
+    void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         animation->setName(animationName);
-        NewAnimation newAnimation;
-        newAnimation.name = animationName;
-        newAnimation.animation = animation;
-        m_newAnimations.append(newAnimation);
+        m_newAnimations.append(NewAnimation(animationName, animation, timing, styleRule));
     }
     // Returns whether player has been suppressed and should be filtered during style application.
     bool isSuppressedAnimation(const AnimationPlayer* player) const { return m_suppressedAnimationPlayers.contains(player); }
@@ -38,13 +98,10 @@ public:
     {
         m_animationsWithPauseToggled.append(name);
     }
-    void updateAnimationTiming(AnimationPlayer* player, PassRefPtrWillBeRawPtr<InertAnimation> animation, const Timing& timing)
+    void updateAnimation(const AtomicString& name, AnimationPlayer* player, PassRefPtrWillBeRawPtr<InertAnimation> animation, const Timing& specifiedTiming,
+        PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
-        UpdatedAnimationTiming updatedAnimation;
-        updatedAnimation.player = player;
-        updatedAnimation.animation = animation;
-        updatedAnimation.newTiming = timing;
-        m_animationsWithTimingUpdates.append(updatedAnimation);
+        m_animationsWithUpdates.append(UpdatedAnimation(name, player, animation, specifiedTiming, styleRule));
         m_suppressedAnimationPlayers.add(player);
     }
 
@@ -62,37 +119,11 @@ public:
     bool isCancelledTransition(CSSPropertyID id) const { return m_cancelledTransitions.contains(id); }
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
 
-    struct NewAnimation {
-        ALLOW_ONLY_INLINE_ALLOCATION();
-    public:
-        void trace(Visitor* visitor)
-        {
-            visitor->trace(animation);
-        }
-
-        AtomicString name;
-        RefPtrWillBeMember<InertAnimation> animation;
-    };
-
-    struct UpdatedAnimationTiming {
-        ALLOW_ONLY_INLINE_ALLOCATION();
-    public:
-        void trace(Visitor* visitor)
-        {
-            visitor->trace(player);
-            visitor->trace(animation);
-        }
-
-        RawPtrWillBeMember<AnimationPlayer> player;
-        RefPtrWillBeMember<InertAnimation> animation;
-        Timing newTiming;
-    };
-
     const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
     const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>& suppressedAnimationAnimationPlayers() const { return m_suppressedAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
-    const WillBeHeapVector<UpdatedAnimationTiming>& animationsWithTimingUpdates() const { return m_animationsWithTimingUpdates; }
+    const WillBeHeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
 
     struct NewTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -126,7 +157,7 @@ public:
             && m_cancelledAnimationNames.isEmpty()
             && m_suppressedAnimationPlayers.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
-            && m_animationsWithTimingUpdates.isEmpty()
+            && m_animationsWithUpdates.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
             && m_activeInterpolationsForAnimations.isEmpty()
@@ -144,7 +175,7 @@ private:
     Vector<AtomicString> m_cancelledAnimationNames;
     WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>> m_suppressedAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
-    WillBeHeapVector<UpdatedAnimationTiming> m_animationsWithTimingUpdates;
+    WillBeHeapVector<UpdatedAnimation> m_animationsWithUpdates;
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
@@ -156,6 +187,6 @@ private:
 } // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::NewAnimation);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimationTiming);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimation);
 
 #endif

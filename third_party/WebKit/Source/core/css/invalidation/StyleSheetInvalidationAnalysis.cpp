@@ -113,7 +113,6 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     // the added @rule can't require style recalcs.
     switch (rule->type()) {
     case StyleRule::Import: // Whatever we import should do its own analysis, we don't need to invalidate the document here!
-    case StyleRule::Keyframes: // Keyframes never cause style invalidations and are handled during sheet insertion.
     case StyleRule::Page: // Page rules apply only during printing, we force a full-recalc before printing.
         return false;
 
@@ -121,6 +120,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     case StyleRule::FontFace: // If the fonts aren't in use, we could avoid recalc.
     case StyleRule::Supports: // If we evaluated the supports-clause we could avoid recalc.
     case StyleRule::Viewport: // If the viewport doesn't match, we could avoid recalcing.
+    case StyleRule::Keyframes: // If the animation doesn't match an element, we could avoid recalc.
     // FIXME: Unclear if any of the rest need to cause style recalc:
     case StyleRule::Filter:
         return true;
