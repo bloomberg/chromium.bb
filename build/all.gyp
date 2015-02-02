@@ -239,7 +239,7 @@
         }],
         ['remoting==1', {
           'dependencies': [
-            '../remoting/remoting.gyp:*',
+            '../remoting/remoting_all.gyp:remoting_all',
           ],
         }],
         ['use_openssl==0', {
