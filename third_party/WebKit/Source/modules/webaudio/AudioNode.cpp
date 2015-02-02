@@ -198,13 +198,6 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
 
-    if (!destination) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid destination node.");
-        return;
-    }
-
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
         exceptionState.throwDOMException(
@@ -238,13 +231,6 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
-
-    if (!param) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid AudioParam.");
-        return;
-    }
 
     if (outputIndex >= numberOfOutputs()) {
         exceptionState.throwDOMException(

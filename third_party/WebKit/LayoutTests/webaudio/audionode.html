@@ -52,35 +52,12 @@ function runTest() {
         testFailed("Destination AudioNode should have no outputs.");
 
     // Try calling connect() method with illegal values.
-
-    try {
-        audioNode.connect(0, 0, 0);
-        testFailed("connect() exception should be thrown for illegal destination AudioNode.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal destination AudioNode.");
-    }
-
-    try {
-        audioNode.connect(context.destination, 5, 0);
-        testFailed("connect() exception should be thrown for illegal output index.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal output index.");
-    }
-
-    try {
-        audioNode.connect(context.destination, 0, 5);
-        testFailed("connect() exception should be thrown for illegal input index.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal input index.");
-    }
-
-    // Try calling connect() with proper values.
-    try {
-        audioNode.connect(context.destination, 0, 0);
-        testPassed("audioNode.connect(context.destination) succeeded.");
-    } catch(e) {
-        testFailed("audioNode.connect(context.destination) failed.");
-    }
+    shouldThrow('audioNode.connect(0, 0, 0)');
+    shouldThrow('audioNode.connect(null, 0, 0)');
+    shouldThrow('audioNode.connect(context.destination, 5, 0)');
+    shouldThrow('audioNode.connect(context.destination, 0, 5)');
+    
+    shouldNotThrow('audioNode.connect(context.destination, 0, 0)');
     
     // Create a new context and try to connect the other context's node to this one.
     try {
