@@ -7,7 +7,7 @@
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/platform/WebPresentationController.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 
 namespace content {
 
