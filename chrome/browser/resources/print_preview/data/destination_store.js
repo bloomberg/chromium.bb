@@ -485,6 +485,8 @@ cr.define('print_preview', function() {
         this.nativeLayer_.startGetPrivetDestinations();
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+        if (this.privetDestinationSearchInProgress_)
+          clearTimeout(this.privetSearchTimeout_);
         this.privetSearchTimeout_ = setTimeout(
             this.endPrivetPrinterSearch_.bind(this),
             DestinationStore.PRIVET_SEARCH_DURATION_);
@@ -713,6 +715,7 @@ cr.define('print_preview', function() {
       this.selectDestination(null);
       this.loadedCloudOrigins_ = {};
       this.hasLoadedAllLocalDestinations_ = false;
+      this.hasLoadedAllPrivetDestinations_ = false;
 
       clearTimeout(this.autoSelectTimeout_);
       this.autoSelectTimeout_ = setTimeout(
