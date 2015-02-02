@@ -35,6 +35,7 @@
 #include "core/workers/WorkerClients.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientFocusCallback.h"
+#include "public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
@@ -73,6 +74,7 @@ public:
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
+    virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
     virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) = 0;
 
     static const char* supplementName();

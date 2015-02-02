@@ -73,4 +73,20 @@ ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Clien
     return promise;
 }
 
+ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState)
+{
+    ExecutionContext* executionContext = scriptState->executionContext();
+
+    // FIXME: May be null due to worker termination: http://crbug.coma/413518.
+    if (!executionContext)
+        return ScriptPromise();
+
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    WebServiceWorkerClientsClaimCallbacks* callbacks = new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver);
+    ServiceWorkerGlobalScopeClient::from(executionContext)->claim(callbacks);
+    return promise;
+}
+
 } // namespace blink

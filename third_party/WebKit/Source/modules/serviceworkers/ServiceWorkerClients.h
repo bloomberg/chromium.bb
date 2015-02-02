@@ -22,6 +22,7 @@ public:
 
     // Clients.idl
     ScriptPromise getAll(ScriptState*, const ClientQueryOptions&);
+    ScriptPromise claim(ScriptState*);
 
     void trace(Visitor*) { }
 

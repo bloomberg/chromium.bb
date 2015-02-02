@@ -11,4 +11,5 @@
     ImplementedAs=ServiceWorkerClients,
 ] interface Clients {
     [CallWith=ScriptState] Promise<sequence<Client>?> getAll(optional ClientQueryOptions options);
+    [CallWith=ScriptState] Promise claim();
 };

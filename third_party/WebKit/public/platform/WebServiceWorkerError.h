@@ -44,6 +44,7 @@ struct WebServiceWorkerError {
         ErrorTypeNetwork,
         ErrorTypeNotFound,
         ErrorTypeSecurity,
+        ErrorTypeState,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };

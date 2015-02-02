@@ -34,6 +34,7 @@
 #include "WebWorkerPermissionClientProxy.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientFocusCallback.h"
+#include "public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
@@ -164,6 +165,10 @@ public:
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after run.
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after run.
+    virtual void claim(WebServiceWorkerClientsClaimCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callback after calling either onSuccess or onError.
