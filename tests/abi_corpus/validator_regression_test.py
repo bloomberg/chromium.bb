@@ -142,7 +142,7 @@ def Main():
   try:
     TestValidators(options, work_dir)
   finally:
-    pynacl.file_tools.RemoveDirectoryIfPresent(work_dir)
+    pynacl.file_tools.RemoveDir(work_dir)
 
 
 if __name__ == '__main__':

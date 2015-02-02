@@ -236,7 +236,7 @@ class PackageInfo(object):
     """
     package_name = GetLocalPackageName(package_file)
     archive_dir = os.path.join(os.path.dirname(package_file), package_name)
-    pynacl.file_tools.RemoveDirectoryIfPresent(archive_dir)
+    pynacl.file_tools.RemoveDir(archive_dir)
     os.makedirs(archive_dir)
 
     archive_list = []

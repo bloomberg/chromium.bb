@@ -129,7 +129,7 @@ def RemoveDirectoryIfPresent(path):
       func(path)
 
   if os.path.exists(path):
-    Retry(shutil.rmtree, path, onerror=onerror_readonly)
+    shutil.rmtree(path, onerror=onerror_readonly)
 
 
 def CopyTree(src, dst):
@@ -233,12 +233,17 @@ def Retry(op, *args):
 
 
 def MoveDirCleanly(src, dst):
-  RemoveDirectoryIfPresent(dst)
+  RemoveDir(dst)
   MoveDir(src, dst)
 
 
 def MoveDir(src, dst):
   Retry(shutil.move, src, dst)
+
+
+def RemoveDir(path):
+  if os.path.exists(path):
+    Retry(shutil.rmtree, path)
 
 
 def RemoveFile(path):
