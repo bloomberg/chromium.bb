@@ -394,6 +394,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
   DevToolsWindow* window = FindDevToolsWindow(worker_agent.get());
   if (!window) {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
+    DCHECK(window);
     window->bindings_->AttachTo(worker_agent);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
@@ -445,11 +446,13 @@ void DevToolsWindow::OpenExternalFrontend(
     bool isWorker) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
-    window = Create(profile, GURL(), NULL, isWorker,
-                    DevToolsUI::GetProxyURL(frontend_url).spec(), false, "");
-    window->bindings_->AttachTo(agent_host);
+    window = Create(profile, GURL(), nullptr, isWorker,
+        DevToolsUI::GetProxyURL(frontend_url).spec(), false, std::string());
+    if (window)
+      window->bindings_->AttachTo(agent_host);
   }
-  window->ScheduleShow(DevToolsToggleAction::Show());
+  if (window)
+    window->ScheduleShow(DevToolsToggleAction::Show());
 }
 
 // static
@@ -469,6 +472,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         base::UserMetricsAction("DevTools_InspectRenderer"));
     window = Create(profile, GURL(), inspected_web_contents,
                     false, std::string(), true, settings);
+    DCHECK(window);
     window->bindings_->AttachTo(agent.get());
     do_open = true;
   }
@@ -672,7 +676,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   bindings_ = DevToolsUIBindings::ForWebContents(main_web_contents_);
-  DCHECK(bindings_);
+  if (!bindings_)
+    return;
 
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
@@ -727,7 +732,13 @@ DevToolsWindow* DevToolsWindow::Create(
                           shared_worker_frontend,
                           remote_frontend,
                           can_dock, settings));
-  return new DevToolsWindow(profile, url, inspected_web_contents, can_dock);
+  DevToolsWindow* window =
+      new DevToolsWindow(profile, url, inspected_web_contents, can_dock);
+  if (!window->bindings_) {
+    delete window;
+    window = nullptr;
+  }
+  return window;
 }
 
 // static
