@@ -18,7 +18,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -772,10 +771,7 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onVisibilityChanged(mContainerView, mContainerView.getVisibility());
         awViewMethodsImpl.onWindowVisibilityChanged(mContainerView.getWindowVisibility());
 
-        // We should stop running WebView tests in JellyBean devices, see crbug/161864.
-        // Until then we skip calling isAttachedToWindow() as it has only been introduced in K.
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.KITKAT
-                || mContainerView.isAttachedToWindow()) {
+        if (mContainerView.isAttachedToWindow()) {
             awViewMethodsImpl.onAttachedToWindow();
         } else {
             awViewMethodsImpl.onDetachedFromWindow();
@@ -2152,12 +2148,9 @@ public class AwContents implements SmartClipProvider {
         return mNativeGLDelegate.requestDrawGL(null, waitForCompletion, mContainerView);
     }
 
-    private static final boolean SUPPORTS_ON_ANIMATION =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-
     @CalledByNative
     private void postInvalidateOnAnimation() {
-        if (SUPPORTS_ON_ANIMATION && !mWindowAndroid.isInsideVSync()) {
+        if (!mWindowAndroid.isInsideVSync()) {
             mContainerView.postInvalidateOnAnimation();
         } else {
             mContainerView.invalidate();

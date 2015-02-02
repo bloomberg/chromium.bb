@@ -15,8 +15,7 @@
 #include "ui/gl/android/surface_texture_listener.h"
 #include "ui/gl/gl_bindings.h"
 
-// TODO(boliu): Remove this method when when we move off ICS. See
-// http://crbug.com/161864.
+// TODO(boliu): Remove this method when Chromium stops supporting ICS.
 bool GlContextMethodsAvailable() {
   bool available = base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
   if (!available)

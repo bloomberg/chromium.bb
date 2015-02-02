@@ -10,8 +10,7 @@
     <application android:hardwareAccelerated="false">
         <uses-library android:name="android.test.runner" />
     </application>
-    <!-- TODO(joth): Change minSdkVersion to 16 when crbug/161864 lands. -->
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.android_webview.shell"
         android:label="Tests for org.chromium.android_webview"/>
