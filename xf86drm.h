@@ -712,6 +712,7 @@ extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 				 unsigned long *next_key, void **next_value);
 
 extern int drmOpenOnce(void *unused, const char *BusID, int *newlyopened);
+extern int drmOpenOnceWithType(const char *BusID, int *newlyopened, int type);
 extern void drmCloseOnce(int fd);
 extern void drmMsg(const char *format, ...) DRM_PRINTFLIKE(1, 2);
 
