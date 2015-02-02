@@ -23,20 +23,83 @@
 
 namespace password_manager {
 
-struct CredentialManagerDispatcher::PendingRequestParameters {
-  PendingRequestParameters(int request_id,
-                           bool request_zero_click_only,
-                           GURL request_origin,
-                           const std::vector<GURL>& request_federations)
-      : id(request_id),
-        zero_click_only(request_zero_click_only),
-        origin(request_origin),
-        federations(request_federations) {}
+class CredentialManagerDispatcher::PendingRequestTask
+    : public PasswordStoreConsumer {
+ public:
+  PendingRequestTask(CredentialManagerDispatcher* const dispatcher,
+                     int request_id,
+                     bool request_zero_click_only,
+                     const GURL& request_origin,
+                     const std::vector<GURL>& request_federations)
+      : dispatcher_(dispatcher),
+        id_(request_id),
+        zero_click_only_(request_zero_click_only),
+        origin_(request_origin) {
+    for (const GURL& origin : request_federations)
+      federations_.insert(origin.spec());
+  }
 
-  int id;
-  bool zero_click_only;
-  GURL origin;
-  std::vector<GURL> federations;
+  int id() const { return id_; }
+
+  // PasswordStoreConsumer implementation.
+  void OnGetPasswordStoreResults(
+      const std::vector<autofill::PasswordForm*>& results) override {
+    // We own the PasswordForm instances, so we're responsible for cleaning
+    // up the instances we don't add to |local_results| or |federated_results|.
+    //
+    // TODO(mkwst): Switch this and PromptUserToChooseCredentials() to use
+    // ScopedVector.
+    std::vector<autofill::PasswordForm*> local_results;
+    std::vector<autofill::PasswordForm*> federated_results;
+    for (autofill::PasswordForm* form : results) {
+      if (form->origin == origin_)
+        local_results.push_back(form);
+      else if (federations_.count(form->origin.spec()))
+        federated_results.push_back(form);
+      else
+        delete form;
+    }
+
+    if ((local_results.empty() && federated_results.empty()) ||
+        dispatcher_->web_contents()->GetLastCommittedURL().GetOrigin() !=
+            origin_) {
+      dispatcher_->SendCredential(id_, CredentialInfo());
+      return;
+    }
+    if (local_results.size() == 1 && dispatcher_->IsZeroClickAllowed()) {
+      // TODO(mkwst): Use the `one_time_disable_zero_click` flag on the result
+      // to prevent auto-sign-in, once that flag is implemented.
+      CredentialInfo info(*local_results[0],
+                          local_results[0]->federation_url.is_empty()
+                              ? CredentialType::CREDENTIAL_TYPE_LOCAL
+                              : CredentialType::CREDENTIAL_TYPE_FEDERATED);
+      STLDeleteElements(&local_results);
+      STLDeleteElements(&federated_results);
+      dispatcher_->SendCredential(id_, info);
+      return;
+    }
+
+    if (zero_click_only_ ||
+        !dispatcher_->client()->PromptUserToChooseCredentials(
+            local_results, federated_results,
+            base::Bind(&CredentialManagerDispatcher::SendCredential,
+                       base::Unretained(dispatcher_), id_))) {
+      STLDeleteElements(&local_results);
+      STLDeleteElements(&federated_results);
+      dispatcher_->SendCredential(id_, CredentialInfo());
+    }
+  }
+
+ private:
+  // Backlink to the CredentialManagerDispatcher that owns this object.
+  CredentialManagerDispatcher* const dispatcher_;
+
+  const int id_;
+  const bool zero_click_only_;
+  const GURL origin_;
+  std::set<std::string> federations_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingRequestTask);
 };
 
 CredentialManagerDispatcher::CredentialManagerDispatcher(
@@ -136,64 +199,13 @@ void CredentialManagerDispatcher::OnRequestCredential(
     return;
   }
 
-  pending_request_.reset(new PendingRequestParameters(
-      request_id, zero_click_only,
+  pending_request_.reset(new PendingRequestTask(
+      this, request_id, zero_click_only,
       web_contents()->GetLastCommittedURL().GetOrigin(), federations));
 
-  // This will result in a callback to ::OnGetPasswordStoreResults().
-  store->GetAutofillableLogins(this);
-}
-
-void CredentialManagerDispatcher::OnGetPasswordStoreResults(
-    const std::vector<autofill::PasswordForm*>& results) {
-  DCHECK(pending_request_);
-
-  std::set<std::string> federations;
-  for (const GURL& origin : pending_request_->federations)
-    federations.insert(origin.spec());
-
-  // We own the PasswordForm instances, so we're responsible for cleaning
-  // up the instances we don't add to |local_results| or |federated_results|.
-  std::vector<autofill::PasswordForm*> local_results;
-  std::vector<autofill::PasswordForm*> federated_results;
-  for (autofill::PasswordForm* form : results) {
-    if (form->origin == pending_request_->origin)
-      local_results.push_back(form);
-    else if (federations.count(form->origin.spec()) != 0)
-      federated_results.push_back(form);
-    else
-      delete form;
-  }
-
-  if ((local_results.empty() && federated_results.empty()) ||
-      web_contents()->GetLastCommittedURL().GetOrigin() !=
-          pending_request_->origin) {
-    SendCredential(pending_request_->id, CredentialInfo());
-    return;
-  }
-
-  if (local_results.size() == 1 && IsZeroClickAllowed()) {
-    // TODO(mkwst): Use the `one_time_disable_zero_click` flag on the result
-    // to prevent auto-sign-in, once that flag is implemented.
-    CredentialInfo info(*local_results[0],
-                        local_results[0]->federation_url.is_empty()
-                            ? CredentialType::CREDENTIAL_TYPE_LOCAL
-                            : CredentialType::CREDENTIAL_TYPE_FEDERATED);
-    STLDeleteElements(&local_results);
-    STLDeleteElements(&federated_results);
-    SendCredential(pending_request_->id, info);
-    return;
-  }
-
-  if (pending_request_->zero_click_only ||
-      !client_->PromptUserToChooseCredentials(
-          local_results, federated_results,
-          base::Bind(&CredentialManagerDispatcher::SendCredential,
-                     base::Unretained(this), pending_request_->id))) {
-    STLDeleteElements(&local_results);
-    STLDeleteElements(&federated_results);
-    SendCredential(pending_request_->id, CredentialInfo());
-  }
+  // This will result in a callback to
+  // PendingRequestTask::OnGetPasswordStoreResults().
+  store->GetAutofillableLogins(pending_request_.get());
 }
 
 PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
@@ -221,11 +233,11 @@ base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
 void CredentialManagerDispatcher::SendCredential(int request_id,
                                                  const CredentialInfo& info) {
   DCHECK(pending_request_);
-  DCHECK_EQ(pending_request_->id, request_id);
+  DCHECK_EQ(pending_request_->id(), request_id);
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
-          pending_request_->id, info));
+          pending_request_->id(), info));
   pending_request_.reset();
 }
 

@@ -31,8 +31,7 @@ class PasswordManagerDriver;
 class PasswordStore;
 struct CredentialInfo;
 
-class CredentialManagerDispatcher : public content::WebContentsObserver,
-                                    public PasswordStoreConsumer {
+class CredentialManagerDispatcher : public content::WebContentsObserver {
  public:
   CredentialManagerDispatcher(content::WebContents* web_contents,
                               PasswordManagerClient* client);
@@ -56,6 +55,9 @@ class CredentialManagerDispatcher : public content::WebContentsObserver,
 
   // Called in response to an IPC from the renderer, triggered by a page's call
   // to 'navigator.credentials.request'.
+  //
+  // TODO(vabr): Determine if we can drop the `const` here to save some copies
+  // while processing the request.
   virtual void OnRequestCredential(int request_id,
                                    bool zero_click_only,
                                    const std::vector<GURL>& federations);
@@ -63,15 +65,13 @@ class CredentialManagerDispatcher : public content::WebContentsObserver,
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // PasswordStoreConsumer implementation.
-  void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override;
-
   using CredentialCallback =
       base::Callback<void(const autofill::PasswordForm&)>;
 
+  PasswordManagerClient* client() const { return client_; }
+
  private:
-  struct PendingRequestParameters;
+  class PendingRequestTask;
 
   PasswordStore* GetPasswordStore();
 
@@ -91,9 +91,10 @@ class CredentialManagerDispatcher : public content::WebContentsObserver,
   BooleanPrefMember auto_signin_enabled_;
 
   // When 'OnRequestCredential' is called, it in turn calls out to the
-  // PasswordStore; we store request details here in order to properly
-  // respond to the request once the PasswordStore gives us data.
-  scoped_ptr<PendingRequestParameters> pending_request_;
+  // PasswordStore; we push enough data into Pending*Task objects so that
+  // they can properly respond to the request once the PasswordStore gives
+  // us data.
+  scoped_ptr<PendingRequestTask> pending_request_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };
