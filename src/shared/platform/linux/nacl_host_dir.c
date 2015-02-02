@@ -217,11 +217,7 @@ static ssize_t NaClCopyDirent(struct NaClHostDir *d,
     return -NACL_ABI_EINVAL;  /* result buffer is too small */
   }
 
-#if defined(NACL_MASK_INODES)
-  nadp->nacl_abi_d_ino = NACL_FAKE_INODE_NUM;
-#else
   nadp->nacl_abi_d_ino = ldp->d_ino;
-#endif
   nadp->nacl_abi_d_off = ldp->d_off;
   nadp->nacl_abi_d_reclen = adjusted_size;
   NaClLog(4, "NaClCopyDirent: %s\n", ldp->d_name);

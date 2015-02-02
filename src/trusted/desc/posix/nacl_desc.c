@@ -48,11 +48,7 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
   memset(dst, 0, sizeof *dst);
 
   dst->nacl_abi_st_dev = 0;
-#if defined(NACL_MASK_INODES)
-  dst->nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
-#else
   dst->nacl_abi_st_ino = src->st_ino;
-#endif
 
   switch (src->st_mode & S_IFMT) {
     case S_IFREG:

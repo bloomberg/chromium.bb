@@ -270,7 +270,7 @@ static int NaClDescImcShmFstat(struct NaClDesc         *vself,
   }
 
   stbp->nacl_abi_st_dev = 0;
-  stbp->nacl_abi_st_ino = 0x6c43614e;
+  stbp->nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
   stbp->nacl_abi_st_mode = (NACL_ABI_S_IFSHM |
                             NACL_ABI_S_IRUSR |
                             NACL_ABI_S_IWUSR);

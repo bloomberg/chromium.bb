@@ -43,15 +43,14 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
   }
 
   dst->nacl_abi_st_dev = 0;
-#if defined(NACL_MASK_INODES)
-  dst->nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
-#else
-  dst->nacl_abi_st_ino = src->st_ino;
   /*
    * MSDN says: st_ino has no meaning on most windows file systems,
    * but in case windows mounts a Unix filesystem, we copy it anyway.
    */
-#endif
+  if (src->st_ino != 0)
+    dst->nacl_abi_st_ino = src->st_ino;
+  else
+    dst->nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
 
   switch (src->st_mode & S_IFMT) {
     case S_IFREG:

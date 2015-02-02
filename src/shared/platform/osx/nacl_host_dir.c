@@ -104,8 +104,8 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
       goto done;
     }
     p = (struct nacl_abi_dirent *) (((char *) buf) + i);
-    p->nacl_abi_d_ino = 0x6c43614e;
     p->nacl_abi_d_off = ++d->off;
+    p->nacl_abi_d_ino = d->dp->d_ino;
     memcpy(p->nacl_abi_d_name,
            d->dp->d_name,
            d->dp->d_namlen + 1);

@@ -416,6 +416,9 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
   retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
             Fstat)(ndp, &result);
   if (0 == retval) {
+    if (!NaClAclBypassChecks) {
+      result.nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
+    }
     if (!NaClCopyOutToUser(nap, nasp, &result, sizeof result)) {
       retval = -NACL_ABI_EFAULT;
     }

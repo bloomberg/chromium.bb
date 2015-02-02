@@ -81,8 +81,8 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_getpid_test')
 
-# getpid_disabled test must be run without -a, but glibc requires -a.
-getpid_disabled_is_broken = (
+# some tests need to run without -a, but glibc requires -a.
+secure_tests_broken = (
     'TRUSTED_ENV' in env and
     env['TRUSTED_ENV'].Bit('coverage_enabled') and
     env.Bit('host_mac')) or env.Bit('nacl_glibc')
@@ -95,7 +95,16 @@ node = env.CommandSelLdrTestNacl('getpid_disabled_test.out',
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_getpid_disabled_test',
-                       is_broken=getpid_disabled_is_broken)
+                       is_broken=secure_tests_broken)
+
+syscalls_secure_nexe = env.ComponentProgram('syscalls_secure_test',
+                                            ['syscalls_secure.c'],
+                                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('syscalls_secure.out', syscalls_secure_nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_syscall_secure_test',
+                       is_broken=secure_tests_broken)
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.
