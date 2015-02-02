@@ -21,9 +21,9 @@
  */
 
 #include "config.h"
-#include "core/rendering/line/LineBreaker.h"
+#include "core/layout/line/LineBreaker.h"
 
-#include "core/rendering/line/BreakingContextInlineHeaders.h"
+#include "core/layout/line/BreakingContextInlineHeaders.h"
 
 namespace blink {
 
@@ -61,7 +61,7 @@ void LineBreaker::reset()
 }
 
 InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo,
-    RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine,
+    LayoutTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine,
     WordMeasurements& wordMeasurements)
 {
     reset();

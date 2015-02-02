@@ -23,15 +23,15 @@
 #ifndef LineBreaker_h
 #define LineBreaker_h
 
+#include "core/layout/line/LineInfo.h"
 #include "core/rendering/InlineIterator.h"
-#include "core/rendering/line/LineInfo.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
 
-struct RenderTextInfo;
+struct LayoutTextInfo;
 
 class LineBreaker {
 public:
@@ -42,7 +42,7 @@ public:
         reset();
     }
 
-    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&,
+    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, LayoutTextInfo&,
         FloatingObject* lastFloatFromPreviousLine, WordMeasurements&);
 
     bool lineWasHyphenated() { return m_hyphenated; }

@@ -25,6 +25,12 @@
 #define BreakingContextInlineHeaders_h
 
 #include "core/layout/LayoutRubyRun.h"
+#include "core/layout/line/LayoutTextInfo.h"
+#include "core/layout/line/LineBreaker.h"
+#include "core/layout/line/LineInfo.h"
+#include "core/layout/line/LineWidth.h"
+#include "core/layout/line/TrailingObjects.h"
+#include "core/layout/line/WordMeasurement.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
@@ -34,12 +40,6 @@
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/break_lines.h"
-#include "core/rendering/line/LineBreaker.h"
-#include "core/rendering/line/LineInfo.h"
-#include "core/rendering/line/LineWidth.h"
-#include "core/rendering/line/RenderTextInfo.h"
-#include "core/rendering/line/TrailingObjects.h"
-#include "core/rendering/line/WordMeasurement.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 namespace blink {
@@ -49,7 +49,7 @@ const unsigned cMaxLineDepth = 200;
 
 class BreakingContext {
 public:
-    BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, RenderTextInfo& inRenderTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, RenderBlockFlow* block)
+    BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, LayoutTextInfo& inLayoutTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, RenderBlockFlow* block)
         : m_resolver(resolver)
         , m_current(resolver.position())
         , m_lineBreak(resolver.position())
@@ -59,7 +59,7 @@ public:
         , m_currentStyle(0)
         , m_blockStyle(block->style())
         , m_lineInfo(inLineInfo)
-        , m_renderTextInfo(inRenderTextInfo)
+        , m_renderTextInfo(inLayoutTextInfo)
         , m_lastFloatFromPreviousLine(inLastFloatFromPreviousLine)
         , m_width(lineWidth)
         , m_currWS(NORMAL)
@@ -124,7 +124,7 @@ private:
 
     LineInfo& m_lineInfo;
 
-    RenderTextInfo& m_renderTextInfo;
+    LayoutTextInfo& m_renderTextInfo;
 
     FloatingObject* m_lastFloatFromPreviousLine;
 

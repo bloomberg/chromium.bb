@@ -25,6 +25,11 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutRubyRun.h"
+#include "core/layout/line/BreakingContextInlineHeaders.h"
+#include "core/layout/line/LayoutTextInfo.h"
+#include "core/layout/line/LineLayoutState.h"
+#include "core/layout/line/LineWidth.h"
+#include "core/layout/line/WordMeasurement.h"
 #include "core/rendering/BidiRunForLine.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -35,11 +40,6 @@
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/TrailingFloatsRootInlineBox.h"
 #include "core/rendering/VerticalPositionCache.h"
-#include "core/rendering/line/BreakingContextInlineHeaders.h"
-#include "core/rendering/line/LineLayoutState.h"
-#include "core/rendering/line/LineWidth.h"
-#include "core/rendering/line/RenderTextInfo.h"
-#include "core/rendering/line/WordMeasurement.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 #include "platform/fonts/Character.h"
 #include "platform/text/BidiResolver.h"
@@ -790,7 +790,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     LineMidpointState& lineMidpointState = resolver.midpointState();
     InlineIterator endOfLine = resolver.position();
     bool checkForEndLineMatch = layoutState.endLine();
-    RenderTextInfo renderTextInfo;
+    LayoutTextInfo renderTextInfo;
     VerticalPositionCache verticalPositionCache;
 
     LineBreaker lineBreaker(this);

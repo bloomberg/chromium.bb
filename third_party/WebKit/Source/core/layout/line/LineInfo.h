@@ -24,7 +24,8 @@
 #ifndef LineInfo_h
 #define LineInfo_h
 
-#include "core/rendering/line/LineWidth.h"
+#include "core/layout/line/LineWidth.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 

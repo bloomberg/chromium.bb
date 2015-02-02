@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderTextInfo_h
-#define RenderTextInfo_h
+#ifndef LayoutTextInfo_h
+#define LayoutTextInfo_h
 
 #include "platform/text/TextBreakIterator.h"
 
@@ -30,8 +30,8 @@ namespace blink {
 class Font;
 class RenderText;
 
-struct RenderTextInfo {
-    RenderTextInfo()
+struct LayoutTextInfo {
+    LayoutTextInfo()
         : m_text(0)
         , m_font(0)
     {
@@ -44,4 +44,4 @@ struct RenderTextInfo {
 
 } // namespace blink
 
-#endif // RenderTextInfo_h
+#endif // LayoutTextInfo_h

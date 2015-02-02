@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/line/TrailingObjects.h"
+#include "core/layout/line/TrailingObjects.h"
 
 #include "core/rendering/InlineIterator.h"
 
