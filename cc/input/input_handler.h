@@ -142,6 +142,7 @@ class CC_EXPORT InputHandler {
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
                                            ScrollInputType type) = 0;
 
+  virtual bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) = 0;
   virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_point) = 0;
 
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped

@@ -252,26 +252,41 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     case WebInputEvent::GestureScrollEnd:
       return HandleGestureScrollEnd(static_cast<const WebGestureEvent&>(event));
 
-    case WebInputEvent::GesturePinchBegin:
-      input_handler_->PinchGestureBegin();
+    case WebInputEvent::GesturePinchBegin: {
       DCHECK(!gesture_pinch_on_impl_thread_);
-      gesture_pinch_on_impl_thread_ = true;
-      return DID_HANDLE;
-
-    case WebInputEvent::GesturePinchEnd:
-      DCHECK(gesture_pinch_on_impl_thread_);
-      gesture_pinch_on_impl_thread_ = false;
-      input_handler_->PinchGestureEnd();
-      return DID_HANDLE;
-
-    case WebInputEvent::GesturePinchUpdate: {
-      DCHECK(gesture_pinch_on_impl_thread_);
       const WebGestureEvent& gesture_event =
           static_cast<const WebGestureEvent&>(event);
-      input_handler_->PinchGestureUpdate(
-          gesture_event.data.pinchUpdate.scale,
-          gfx::Point(gesture_event.x, gesture_event.y));
-      return DID_HANDLE;
+      if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
+          input_handler_->HaveWheelEventHandlersAt(
+              gfx::Point(gesture_event.x, gesture_event.y))) {
+        return DID_NOT_HANDLE;
+      } else {
+        input_handler_->PinchGestureBegin();
+        gesture_pinch_on_impl_thread_ = true;
+        return DID_HANDLE;
+      }
+    }
+
+    case WebInputEvent::GesturePinchEnd:
+      if (gesture_pinch_on_impl_thread_) {
+        gesture_pinch_on_impl_thread_ = false;
+        input_handler_->PinchGestureEnd();
+        return DID_HANDLE;
+      } else {
+        return DID_NOT_HANDLE;
+      }
+
+    case WebInputEvent::GesturePinchUpdate: {
+      if (gesture_pinch_on_impl_thread_) {
+        const WebGestureEvent& gesture_event =
+            static_cast<const WebGestureEvent&>(event);
+        input_handler_->PinchGestureUpdate(
+            gesture_event.data.pinchUpdate.scale,
+            gfx::Point(gesture_event.x, gesture_event.y));
+        return DID_HANDLE;
+      } else {
+        return DID_NOT_HANDLE;
+      }
     }
 
     case WebInputEvent::GestureFlingStart:

@@ -116,6 +116,7 @@ class MockInputHandler : public cc::InputHandler {
                bool(const gfx::Point& point,
                     cc::InputHandler::ScrollInputType type));
 
+  MOCK_METHOD1(HaveWheelEventHandlersAt, bool(const gfx::Point& point));
   MOCK_METHOD1(HaveTouchEventHandlersAt, bool(const gfx::Point& point));
 
   virtual void SetRootLayerScrollOffsetDelegate(
@@ -395,6 +396,8 @@ TEST_F(InputHandlerProxyTest, GesturePinch) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+      .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -423,6 +426,38 @@ TEST_F(InputHandlerProxyTest, GesturePinch) {
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
+TEST_F(InputHandlerProxyTest, GesturePinchWithWheelHandler) {
+  // We will send the synthetic wheel event to the widget.
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  gesture_.type = WebInputEvent::GesturePinchBegin;
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+      .WillOnce(testing::Return(true));
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  gesture_.type = WebInputEvent::GesturePinchUpdate;
+  gesture_.data.pinchUpdate.scale = 1.5;
+  gesture_.x = 7;
+  gesture_.y = 13;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  gesture_.type = WebInputEvent::GesturePinchUpdate;
+  gesture_.data.pinchUpdate.scale = 0.5;
+  gesture_.x = 9;
+  gesture_.y = 6;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  gesture_.type = WebInputEvent::GesturePinchEnd;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+}
+
 TEST_F(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   // Scrolls will start by being sent to the main thread.
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
@@ -446,6 +481,8 @@ TEST_F(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+      .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 

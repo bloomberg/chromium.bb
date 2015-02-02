@@ -1414,6 +1414,25 @@ static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
   return true;
 }
 
+struct FindWheelEventLayerFunctor {
+  bool operator()(LayerImpl* layer) const {
+    return layer->have_wheel_event_handlers();
+  }
+};
+
+LayerImpl* LayerTreeImpl::FindLayerWithWheelHandlerThatIsHitByPoint(
+    const gfx::PointF& screen_space_point) {
+  if (!root_layer())
+    return NULL;
+  if (!UpdateDrawProperties())
+    return NULL;
+  FindWheelEventLayerFunctor func;
+  FindClosestMatchingLayerDataForRecursion data_for_recursion;
+  FindClosestMatchingLayer(screen_space_point, root_layer(), func,
+                           &data_for_recursion);
+  return data_for_recursion.closest_match;
+}
+
 struct FindTouchEventLayerFunctor {
   bool operator()(LayerImpl* layer) const {
     return LayerHasTouchEventHandlersAt(screen_space_point, layer);

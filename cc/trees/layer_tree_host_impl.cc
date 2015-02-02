@@ -457,6 +457,18 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   return CurrentlyScrollingLayer() == scrolling_layer_impl;
 }
 
+bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
+    const gfx::Point& viewport_point) {
+  gfx::PointF device_viewport_point =
+      gfx::ScalePoint(viewport_point, device_scale_factor_);
+
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerWithWheelHandlerThatIsHitByPoint(
+          device_viewport_point);
+
+  return layer_impl != NULL;
+}
+
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
     const gfx::Point& viewport_point) {
 
