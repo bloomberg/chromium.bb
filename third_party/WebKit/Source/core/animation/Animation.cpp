@@ -253,7 +253,7 @@ bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) c
         || (m_target->renderStyle() && m_target->renderStyle()->hasMotionPath()))
         return false;
 
-    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect(), playerPlaybackRate);
+    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, player(), *effect(), playerPlaybackRate);
 }
 
 bool Animation::maybeStartAnimationOnCompositor(int group, double startTime, double currentTime, double playerPlaybackRate)
@@ -263,7 +263,7 @@ bool Animation::maybeStartAnimationOnCompositor(int group, double startTime, dou
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), player(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
@@ -298,6 +298,12 @@ void Animation::cancelAnimationOnCompositor()
         CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, compositorAnimationId);
     m_compositorAnimationIds.clear();
     player()->setCompositorPending(true);
+}
+
+void Animation::cancelIncompatibleAnimationsOnCompositor()
+{
+    if (m_target && player() && effect())
+        CompositorAnimations::instance()->cancelIncompatibleAnimationsOnCompositor(*m_target, *player(), *effect());
 }
 
 void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)

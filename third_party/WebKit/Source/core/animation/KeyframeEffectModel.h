@@ -130,7 +130,7 @@ protected:
 
     friend class KeyframeEffectModelTest;
 
-    bool affects(CSSPropertyID property)
+    bool affects(CSSPropertyID property) const override
     {
         ensureKeyframeGroups();
         return m_keyframeGroups->contains(property);

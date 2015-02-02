@@ -32,12 +32,18 @@
 
 #include "core/animation/CompositorAnimations.h"
 
+#include "core/animation/ActiveAnimations.h"
+#include "core/animation/Animation.h"
+#include "core/animation/AnimationPlayer.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorAnimationsTestHelper.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
+#include "core/dom/Document.h"
+#include "core/rendering/RenderObject.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
@@ -75,6 +81,10 @@ protected:
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> m_keyframeVector5;
     RefPtrWillBePersistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
 
+    RefPtrWillBePersistent<Document> m_document;
+    RefPtrWillBePersistent<Element> m_element;
+    RefPtrWillBePersistent<AnimationTimeline> m_timeline;
+
     virtual void SetUp()
     {
         AnimationCompositorAnimationsTestBase::SetUp();
@@ -95,6 +105,11 @@ protected:
 
         m_keyframeVector5 = createCompositableFloatKeyframeVector(5);
         m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
+
+        m_document = Document::create();
+        m_document->animationClock().resetTimeForTesting();
+        m_timeline = AnimationTimeline::create(m_document.get());
+        m_element = m_document->createElement("test", ASSERT_NO_EXCEPTION);
     }
 
 public:
@@ -105,7 +120,7 @@ public:
     }
     bool isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
     {
-        return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, effect, 1);
+        return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *m_element.get(), nullptr, effect, 1);
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
     {
@@ -231,6 +246,23 @@ public:
         return nullptr;
     }
 
+    void simulateFrame(double time)
+    {
+        m_document->animationClock().updateTime(time);
+        m_document->compositorPendingAnimations().update(false);
+        m_timeline->serviceAnimations(TimingUpdateForAnimationFrame);
+    }
+};
+
+class RenderObjectProxy : public RenderObject {
+public:
+    explicit RenderObjectProxy(Node* node)
+        : RenderObject(node)
+    {
+    }
+
+    const char* renderName() const override { return nullptr; }
+    void layout() override { }
 };
 
 // -----------------------------------------------------------------------
@@ -583,7 +615,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
     nonBasicFramesVector[0]->setEasing(m_linearTimingFunction.get());
     nonBasicFramesVector[1]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> nonBasicFrames = AnimatableValueKeyframeEffectModel::create(nonBasicFramesVector).get();
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get(), 1));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get()));
 }
 
 // -----------------------------------------------------------------------
@@ -1151,6 +1183,62 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
+}
+
+TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations)
+{
+    WebCompositorSupportMock mockCompositor;
+    setCompositorForTesting(mockCompositor);
+
+    RefPtrWillBeRawPtr<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
+
+    RenderObjectProxy* renderer = new RenderObjectProxy(element.get());
+    element->setRenderer(renderer);
+
+    AnimatableValueKeyframeVector keyFrames;
+    keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
+    keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
+    RefPtrWillBeRawPtr<AnimationEffect> animationEffect1 = AnimatableValueKeyframeEffectModel::create(keyFrames);
+    RefPtrWillBeRawPtr<AnimationEffect> animationEffect2 = AnimatableValueKeyframeEffectModel::create(keyFrames);
+
+    Timing timing;
+    timing.iterationDuration = 1.f;
+
+    // The first player for opacity is ok to run on compositor.
+    RefPtrWillBeRawPtr<Animation> animation1 = Animation::create(element.get(), animationEffect1, timing);
+    RefPtrWillBeRawPtr<AnimationPlayer> player1 = m_timeline->play(animation1.get());
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), player1.get(), *animationEffect1.get(), 1));
+
+    // simulate Animation::maybeStartAnimationOnCompositor
+    Vector<int> compositorAnimationIds;
+    compositorAnimationIds.append(1);
+    animation1->setCompositorAnimationIdsForTesting(compositorAnimationIds);
+    EXPECT_TRUE(player1->hasActiveAnimationsOnCompositor());
+
+    // The second player for opacity is not ok to run on compositor.
+    RefPtrWillBeRawPtr<Animation> animation2 = Animation::create(element.get(), animationEffect2, timing);
+    RefPtrWillBeRawPtr<AnimationPlayer> player2 = m_timeline->play(animation2.get());
+    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), player2.get(), *animationEffect2.get(), 1));
+    EXPECT_FALSE(player2->hasActiveAnimationsOnCompositor());
+
+    // A fallback to blink implementation needed, so cancel all compositor-side opacity animations for this element.
+    player2->cancelIncompatibleAnimationsOnCompositor();
+
+    EXPECT_FALSE(player1->hasActiveAnimationsOnCompositor());
+    EXPECT_FALSE(player2->hasActiveAnimationsOnCompositor());
+
+    simulateFrame(0);
+    EXPECT_EQ(2U, element->activeAnimations()->players().size());
+    simulateFrame(1.);
+
+    element->setRenderer(nullptr);
+    delete renderer;
+    renderer = nullptr;
+
+    player1.release();
+    player2.release();
+    Heap::collectAllGarbage();
+    EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
 } // namespace blink

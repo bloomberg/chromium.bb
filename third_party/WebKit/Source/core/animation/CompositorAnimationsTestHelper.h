@@ -145,6 +145,12 @@ private:
         PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
 
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
+        const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+        {
+            static const unsigned char tracingIsDisabled = 0;
+            return &tracingIsDisabled;
+        }
+
     private:
         WebCompositorSupportMock** m_compositor;
         virtual WebCompositorSupport* compositorSupport() override { return *m_compositor; }

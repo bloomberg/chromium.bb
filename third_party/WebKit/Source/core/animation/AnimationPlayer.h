@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
+#include "core/CSSPropertyNames.h"
 #include "core/animation/AnimationNode.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
@@ -43,6 +44,7 @@
 namespace blink {
 
 class AnimationTimeline;
+class Element;
 class ExceptionState;
 
 class AnimationPlayer final
@@ -140,11 +142,13 @@ public:
     bool canStartAnimationOnCompositor();
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
+    void cancelIncompatibleAnimationsOnCompositor();
     bool hasActiveAnimationsOnCompositor();
     void setCompositorPending(bool sourceChanged = false);
     void notifyCompositorStartTime(double timelineTime);
     void notifyStartTime(double timelineTime);
 
+    bool affects(const Element&, CSSPropertyID) const;
 
     void preCommit(int compositorGroup, bool startOnCompositor);
     void postCommit(double timelineTime);
@@ -152,7 +156,7 @@ public:
     unsigned sequenceNumber() const { return m_sequenceNumber; }
     int compositorGroup() const { return m_compositorGroup; }
 
-    static bool hasLowerPriority(AnimationPlayer* player1, AnimationPlayer* player2)
+    static bool hasLowerPriority(const AnimationPlayer* player1, const AnimationPlayer* player2)
     {
         return player1->sequenceNumber() < player2->sequenceNumber();
     }

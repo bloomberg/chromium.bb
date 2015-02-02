@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class AnimationPlayer;
 class Element;
 class FloatBox;
 
@@ -46,10 +47,11 @@ public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
 
-    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const AnimationEffect&, double playerPlaybackRate);
+    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const AnimationPlayer*, const AnimationEffect&, double playerPlaybackRate);
+    virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const AnimationPlayer&, const AnimationEffect&);
     virtual bool canStartAnimationOnCompositor(const Element&);
     // FIXME: This should return void. We should know ahead of time whether these animations can be started.
-    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const AnimationEffect&, Vector<int>& startedAnimationIds, double playerPlaybackRate);
+    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const AnimationPlayer*, const AnimationEffect&, Vector<int>& startedAnimationIds, double playerPlaybackRate);
     virtual void cancelAnimationOnCompositor(const Element&, int id);
     virtual void pauseAnimationForTestingOnCompositor(const Element&, int id, double pauseTime);
 

@@ -54,7 +54,7 @@ public:
     virtual ~AnimationEffect() { }
     virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const = 0;
 
-    virtual bool affects(CSSPropertyID) { return false; };
+    virtual bool affects(CSSPropertyID) const { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }
 
     virtual void trace(Visitor*) { }

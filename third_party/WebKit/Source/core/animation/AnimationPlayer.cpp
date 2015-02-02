@@ -247,8 +247,11 @@ void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
 
     if (shouldStart) {
         m_compositorGroup = compositorGroup;
-        if (startOnCompositor && maybeStartAnimationOnCompositor()) {
-            m_compositorState = adoptPtr(new CompositorState(*this));
+        if (startOnCompositor) {
+            if (maybeStartAnimationOnCompositor())
+                m_compositorState = adoptPtr(new CompositorState(*this));
+            else
+                cancelIncompatibleAnimationsOnCompositor();
         }
     }
 }
@@ -330,6 +333,15 @@ void AnimationPlayer::notifyStartTime(double timelineTime)
 
         m_currentTimePending = false;
     }
+}
+
+bool AnimationPlayer::affects(const Element& element, CSSPropertyID property) const
+{
+    if (!m_content || !m_content->isAnimation())
+        return false;
+
+    const Animation* animation = toAnimation(m_content.get());
+    return (animation->target() == &element) && animation->affects(property);
 }
 
 double AnimationPlayer::calculateStartTime(double currentTime) const
@@ -691,18 +703,24 @@ void AnimationPlayer::setCompositorPending(bool sourceChanged)
     }
 }
 
+void AnimationPlayer::cancelAnimationOnCompositor()
+{
+    if (hasActiveAnimationsOnCompositor())
+        toAnimation(m_content.get())->cancelAnimationOnCompositor();
+}
+
+void AnimationPlayer::cancelIncompatibleAnimationsOnCompositor()
+{
+    if (m_content && m_content->isAnimation())
+        toAnimation(m_content.get())->cancelIncompatibleAnimationsOnCompositor();
+}
+
 bool AnimationPlayer::hasActiveAnimationsOnCompositor()
 {
     if (!m_content || !m_content->isAnimation())
         return false;
 
     return toAnimation(m_content.get())->hasActiveAnimationsOnCompositor();
-}
-
-void AnimationPlayer::cancelAnimationOnCompositor()
-{
-    if (hasActiveAnimationsOnCompositor())
-        toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
 bool AnimationPlayer::update(TimingUpdateReason reason)
@@ -807,7 +825,6 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
     if (oldPlayState != newPlayState) {
         bool wasActive = oldPlayState == Pending || oldPlayState == Running;
         bool isActive = newPlayState == Pending || newPlayState == Running;
-
         if (!wasActive && isActive)
             TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Animation", m_player, "data", InspectorAnimationEvent::data(*m_player));
         else if (wasActive && !isActive)

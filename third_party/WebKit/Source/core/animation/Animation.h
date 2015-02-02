@@ -81,7 +81,10 @@ public:
     bool hasActiveAnimationsOnCompositor() const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();
+    void cancelIncompatibleAnimationsOnCompositor();
     void pauseAnimationForTestingOnCompositor(double pauseTime);
+
+    void setCompositorAnimationIdsForTesting(const Vector<int>& compositorAnimationIds) { m_compositorAnimationIds = compositorAnimationIds; }
 
     virtual void trace(Visitor*) override;
 
