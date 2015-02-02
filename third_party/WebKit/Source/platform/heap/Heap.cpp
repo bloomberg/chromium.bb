@@ -2509,15 +2509,16 @@ size_t Heap::objectPayloadSizeForTesting()
 
 void HeapAllocator::backingFree(void* address)
 {
-    ThreadState* state = ThreadState::current();
-    if (!address || state->isInGC())
+    if (!address)
         return;
 
+    ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
         return;
+    ASSERT(!state->isInGC());
 
-    // Don't promptly free large objects because their page is never reused
-    // and don't free backings allocated on other threads.
+    // Don't promptly free large objects because their page is never reused.
+    // Don't free backings allocated on other threads.
     BaseHeapPage* page = pageFromObject(address);
     if (page->isLargeObject() || page->heap()->threadState() != state)
         return;
@@ -2544,14 +2545,17 @@ void HeapAllocator::freeHashTableBacking(void* address)
 
 bool HeapAllocator::backingExpand(void* address, size_t newSize)
 {
-    ThreadState* state = ThreadState::current();
-    if (!address || state->isInGC())
+    if (!address)
         return false;
 
+    ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
         return false;
+    ASSERT(!state->isInGC());
     ASSERT(state->isAllocationAllowed());
 
+    // FIXME: Support expand for large objects.
+    // Don't expand backings allocated on other threads.
     BaseHeapPage* page = pageFromObject(address);
     if (page->isLargeObject() || page->heap()->threadState() != state)
         return false;
@@ -2584,22 +2588,19 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32)
         return;
 
-    ThreadState* state = ThreadState::current();
-    if (!address || state->isInGC())
+    if (!address)
         return;
+
+    ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
         return;
+    ASSERT(!state->isInGC());
     ASSERT(state->isAllocationAllowed());
 
+    // FIXME: Support shrink for large objects.
+    // Don't shrink backings allocated on other threads.
     BaseHeapPage* page = pageFromObject(address);
-    if (page->isLargeObject()) {
-        // We do nothing for large objects.
-        // FIXME: This wastes unused memory.  If this increases memory
-        // consumption, we should reallocate a new large object and shrink the
-        // memory usage.
-        return;
-    }
-    if (page->heap()->threadState() != state)
+    if (page->isLargeObject() || page->heap()->threadState() != state)
         return;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
