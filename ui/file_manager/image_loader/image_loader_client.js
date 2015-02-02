@@ -28,7 +28,8 @@ function ImageLoaderClient() {
 
   /**
    * LRU cache for images.
-   * @type {!LRUCache.<{data: string, timestamp: ?number}>}
+   * @type {!LRUCache.<{
+   *     data: string, width:number, height:number, timestamp: ?number}>}
    * @private
    */
   this.cache_ = new LRUCache(ImageLoaderClient.CACHE_MEMORY_LIMIT);
@@ -117,7 +118,10 @@ ImageLoaderClient.prototype.handleMessage_ = function(message) {
  * which are not valid anymore, which will reduce cpu consumption.
  *
  * @param {string} url Url of the requested image.
- * @param {function(Object)} callback Callback used to return response.
+ * @param {function({status: string, data:string, width:number, height:number})}
+ *     callback Callback used to return response. Width and height in the
+ *     response is the size of image (data), i.e. When the image is resized,
+ *     these values are resized width and height.
  * @param {Object=} opt_options Loader options, such as: scale, maxHeight,
  *     width, height and/or cache.
  * @param {function(): boolean=} opt_isValid Function returning false in case
@@ -164,9 +168,13 @@ ImageLoaderClient.prototype.load = function(
         this.cache_.remove(cacheKey);
         cachedValue = null;
       }
-      if (cachedValue && cachedValue.data) {
+      if (cachedValue && cachedValue.data &&
+          cachedValue.width && cachedValue.height) {
         ImageLoaderClient.recordBinary('Cache.HitMiss', true);
-        callback({status: 'success', data: cachedValue.data});
+        callback({
+          status: 'success', data: cachedValue.data,
+          width: cachedValue.width, height: cachedValue.height
+        });
         return null;
       } else {
         ImageLoaderClient.recordBinary('Cache.HitMiss', false);
@@ -195,7 +203,7 @@ ImageLoaderClient.prototype.load = function(
         if (cacheKey && result.status == 'success' && opt_options.cache) {
           var value = {
             timestamp: opt_options.timestamp ? opt_options.timestamp : null,
-            data: result.data
+            data: result.data, width: result.width, height: result.height
           };
           this.cache_.put(cacheKey, value, result.data.length);
         }

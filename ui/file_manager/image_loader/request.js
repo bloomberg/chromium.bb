@@ -118,8 +118,8 @@ Request.prototype.getPriority = function() {
  */
 Request.prototype.loadFromCacheAndProcess = function(onSuccess, onFailure) {
   this.loadFromCache_(
-      function(data) {  // Found in cache.
-        this.sendImageData_(data);
+      function(data, width, height) {  // Found in cache.
+        this.sendImageData_(data, width, height);
         onSuccess();
       }.bind(this),
       onFailure);  // Not found in cache.
@@ -141,7 +141,7 @@ Request.prototype.downloadAndProcess = function(callback) {
 /**
  * Fetches the image from the persistent cache.
  *
- * @param {function(string)} onSuccess Success callback.
+ * @param {function(string, number, number)} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  * @private
  */
@@ -178,9 +178,11 @@ Request.prototype.loadFromCache_ = function(onSuccess, onFailure) {
  * Saves the image to the persistent cache.
  *
  * @param {string} data The image's data.
+ * @param {number} width Image width.
+ * @param {number} height Image height.
  * @private
  */
-Request.prototype.saveToCache_ = function(data) {
+Request.prototype.saveToCache_ = function(data, width, height) {
   if (!this.request_.cache || !this.request_.timestamp) {
     // Persistent cache is available only when a timestamp is provided.
     return;
@@ -194,6 +196,8 @@ Request.prototype.saveToCache_ = function(data) {
 
   this.cache_.saveImage(cacheKey,
                         data,
+                        width,
+                        height,
                         this.request_.timestamp);
 };
 
@@ -364,13 +368,20 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
  */
 Request.prototype.sendImage_ = function(imageChanged) {
   var imageData;
+  var width;
+  var height;
   if (!imageChanged) {
     // The image hasn't been processed, so the raw data can be directly
     // forwarded for speed (no need to encode the image again).
     imageData = this.image_.src;
+    width = this.image_.width;
+    height = this.image_.height;
   } else {
     // The image has been resized or rotated, therefore the canvas has to be
     // encoded to get the correct compressed image data.
+    width = this.canvas_.width;
+    height = this.canvas_.height;
+
     switch (this.contentType_) {
       case 'image/gif':
       case 'image/png':
@@ -385,18 +396,22 @@ Request.prototype.sendImage_ = function(imageChanged) {
   }
 
   // Send and store in the persistent cache.
-  this.sendImageData_(imageData);
-  this.saveToCache_(imageData);
+  this.sendImageData_(imageData, width, height);
+  this.saveToCache_(imageData, width, height);
 };
 
 /**
  * Sends the resized image via the callback.
  * @param {string} data Compressed image data.
+ * @param {number} width Width.
+ * @param {number} height Height.
  * @private
  */
-Request.prototype.sendImageData_ = function(data) {
-  this.sendResponse_(
-      {status: 'success', data: data, taskId: this.request_.taskId});
+Request.prototype.sendImageData_ = function(data, width, height) {
+  this.sendResponse_({
+    status: 'success', data: data, width: width, height: height,
+    taskId: this.request_.taskId
+  });
 };
 
 /**

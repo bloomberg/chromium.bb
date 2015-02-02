@@ -29,7 +29,7 @@ function loadAndCheckCacheUsed(client, url, options) {
   ImageLoaderClient.sendMessage_ = function(message, callback) {
     cacheUsed = false;
     if (callback)
-      callback({data: 'ImageData', status: 'success'});
+      callback({data: 'ImageData', width: 100, height: 100, status: 'success'});
   };
 
   return new Promise(function(fulfill) {
