@@ -193,7 +193,7 @@ public:
 
     void updateScrollingBlockSelection();
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 private:
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);

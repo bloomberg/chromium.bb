@@ -233,7 +233,7 @@ void WebScrollbarThemeClientImpl::setElasticOverscroll(float elasticOverscroll)
 DisplayItemClient WebScrollbarThemeClientImpl::displayItemClient() const
 {
     ASSERT_NOT_REACHED();
-    return static_cast<DisplayItemClient>((void*)this);
+    return toDisplayItemClient(this);
 }
 
 } // namespace blink

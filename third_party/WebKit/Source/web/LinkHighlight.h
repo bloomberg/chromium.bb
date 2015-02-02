@@ -30,7 +30,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Path.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
@@ -82,7 +82,7 @@ private:
     // size since the last call to this function.
     bool computeHighlightLayerPathAndPosition(const RenderLayerModelObject*);
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     OwnPtr<WebContentLayer> m_contentLayer;
     OwnPtr<WebLayer> m_clipLayer;

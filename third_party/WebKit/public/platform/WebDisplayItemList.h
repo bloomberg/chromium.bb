@@ -50,7 +50,7 @@ public:
 
     // Scroll containers are identified by an opaque pointer.
     // FIXME: Make these pure virtual once the embedder implements them.
-    using ScrollContainerId = void*;
+    using ScrollContainerId = const void*;
     virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId)
     {
         SkMatrix44 matrix;

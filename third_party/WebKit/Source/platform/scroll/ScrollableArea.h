@@ -259,7 +259,7 @@ public:
 
     void cancelProgrammaticScrollAnimation();
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 protected:
     ScrollableArea();

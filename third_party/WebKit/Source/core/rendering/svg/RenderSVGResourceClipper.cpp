@@ -74,7 +74,7 @@ bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, Graph
     return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
-bool RenderSVGResourceClipper::tryPathOnlyClipping(const DisplayItemClient client, GraphicsContext* context,
+bool RenderSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, GraphicsContext* context,
     const AffineTransform& animatedLocalTransform, const FloatRect& objectBoundingBox) {
     // If the current clip-path gets clipped itself, we have to fallback to masking.
     if (!style()->svgStyle().clipperResource().isEmpty())

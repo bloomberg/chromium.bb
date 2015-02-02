@@ -20,7 +20,7 @@ class GraphicsContext;
 
 class PLATFORM_EXPORT DrawingRecorder {
 public:
-    explicit DrawingRecorder(GraphicsContext*, const DisplayItemClient, DisplayItem::Type, const FloatRect& bounds);
+    explicit DrawingRecorder(GraphicsContext*, DisplayItemClient, DisplayItem::Type, const FloatRect& bounds);
 
     ~DrawingRecorder();
 

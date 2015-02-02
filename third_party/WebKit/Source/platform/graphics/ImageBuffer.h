@@ -36,7 +36,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
@@ -144,7 +144,7 @@ public:
 
     PassRefPtr<SkImage> newImageSnapshot() const;
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);

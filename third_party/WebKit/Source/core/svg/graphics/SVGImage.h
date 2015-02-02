@@ -28,7 +28,7 @@
 #define SVGImage_h
 
 #include "platform/graphics/Image.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 
@@ -93,7 +93,7 @@ private:
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() override { return false; }
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     SVGImage(ImageObserver*);
     void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, SkXfermode::Mode, RespectImageOrientationEnum) override;

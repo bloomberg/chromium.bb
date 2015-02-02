@@ -24,7 +24,7 @@
 #include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObjectInlines.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
 namespace blink {
@@ -300,7 +300,7 @@ public:
     bool dirOverride() const { return m_bitfields.dirOverride(); }
     void setDirOverride(bool dirOverride) { m_bitfields.setDirOverride(dirOverride); }
 
-    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
     private:\

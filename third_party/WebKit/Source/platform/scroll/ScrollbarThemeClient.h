@@ -30,7 +30,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"

@@ -643,6 +643,7 @@
       'graphics/paint/ClipRecorderStack.h',
       'graphics/paint/DisplayItem.cpp',
       'graphics/paint/DisplayItem.h',
+      'graphics/paint/DisplayItemClient.h',
       'graphics/paint/DisplayItemList.cpp',
       'graphics/paint/DisplayItemList.h',
       'graphics/paint/DrawingDisplayItem.cpp',

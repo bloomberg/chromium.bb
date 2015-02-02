@@ -39,6 +39,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/BidiTextRun.h"

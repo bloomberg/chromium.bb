@@ -15,7 +15,7 @@
 
 namespace blink {
 
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)

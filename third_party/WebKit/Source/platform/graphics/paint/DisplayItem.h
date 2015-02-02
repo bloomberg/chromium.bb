@@ -6,6 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -19,9 +20,6 @@ namespace blink {
 
 class GraphicsContext;
 class WebDisplayItemList;
-
-class DisplayItemClientInternalVoid;
-typedef DisplayItemClientInternalVoid* DisplayItemClient;
 
 class PLATFORM_EXPORT DisplayItem {
 public:
