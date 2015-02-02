@@ -63,6 +63,7 @@ public:
 
     SharedPersistent<v8::Object>* pluginWrapper();
     NPObject* getNPObject();
+    void setPluginFocus(bool focused);
     bool canProcessDrag() const;
     const String& url() const { return m_url; }
 

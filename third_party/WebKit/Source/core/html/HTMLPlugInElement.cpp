@@ -441,6 +441,14 @@ NPObject* HTMLPlugInElement::getNPObject()
     return m_NPObject;
 }
 
+void HTMLPlugInElement::setPluginFocus(bool focused)
+{
+    Widget* focusedWidget = existingPluginWidget();
+    // NPAPI flash requires to receive messages when web contents focus changes.
+    if (getNPObject() && focusedWidget)
+        focusedWidget->setFocus(focused, WebFocusTypeNone);
+}
+
 bool HTMLPlugInElement::isImageType()
 {
     if (m_serviceType.isEmpty() && protocolIs(m_url, "data"))
