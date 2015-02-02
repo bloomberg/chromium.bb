@@ -60,7 +60,7 @@ goto :END
 if "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" (
   set GIT_VERSION=1.9.5.chromium.6
 ) else (
-  set GIT_VERSION=1.9.5.chromium.5
+  set GIT_VERSION=1.9.5.chromium.6
 )
 for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
 for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
