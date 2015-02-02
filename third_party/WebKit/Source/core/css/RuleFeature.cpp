@@ -251,6 +251,7 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
         case CSSSelector::PseudoEmpty:
         case CSSSelector::PseudoLink:
         case CSSSelector::PseudoVisited:
+        case CSSSelector::PseudoAnyLink:
         case CSSSelector::PseudoAutofill:
         case CSSSelector::PseudoHover:
         case CSSSelector::PseudoFocus:
