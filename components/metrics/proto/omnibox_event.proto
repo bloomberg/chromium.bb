@@ -217,7 +217,9 @@ message OmniboxEventProto {
                                     // used by Android GSA for on-device
                                     // suggestion logging.
       NAVSUGGEST_PERSONALIZED = 21; // A personalized url.
-      SEARCH_SUGGEST_ANSWER   = 22; // A short result for a suggested search.
+      SEARCH_SUGGEST_ANSWER   = 22; // DEPRECATED. Answers no longer have their
+                                    // own type but instead can be attached to
+                                    // suggestions of any type.
     }
     optional ResultType result_type = 2;
 

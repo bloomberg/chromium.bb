@@ -54,9 +54,8 @@ public class OmniboxSuggestion {
         SEARCH_SUGGEST_PROFILE (12), // A personalized suggested search for a
                                      // Google+ profile.
         SEARCH_OTHER_ENGINE   (13),  // A search with a non-default engine.
-        OPEN_HISTORY_PAGE     (17),  // A synthetic result that opens the history page
+        OPEN_HISTORY_PAGE     (17);  // A synthetic result that opens the history page
                                      // to search for the input.
-        SEARCH_SUGGEST_ANSWER (18);  // A short result for a suggested search.
 
         private final int mNativeType;
 

@@ -155,7 +155,6 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
       IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
       IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ANSWER
   };
 #else
   static const int kIcons[] = {
@@ -177,7 +176,6 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
       IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
       IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ANSWER
   };
 #endif
   static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
@@ -353,8 +351,7 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
   return type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
 // static
