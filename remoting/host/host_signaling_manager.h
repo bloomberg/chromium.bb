@@ -90,7 +90,6 @@ class HostSignalingManager {
   HostSignalingManager(
       scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory_for_listener,
       const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
-      scoped_ptr<net::NetworkChangeNotifier> network_change_notifier,
       scoped_ptr<SignalStrategy> signal_strategy,
       scoped_ptr<SignalingConnector> signaling_connector,
       scoped_ptr<HeartbeatSender> heartbeat_sender);
@@ -109,14 +108,9 @@ class HostSignalingManager {
   // host-offline-reason.
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
 
-  // Order of fields below is important for destroying them in the right order.
-  // - |heartbeat_sender_| and |signaling_connector_| have to be destroyed
-  //   before |signal_strategy_| because their destructors need to call
-  //   signal_strategy_->RemoveListener(this)
-  // - |signaling_connector_| has to be destroyed before
-  //   |network_change_notifier_| because its destructor needs to deregister
-  //   network change notifications
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  // |heartbeat_sender_| and |signaling_connector_| have to be destroyed before
+  // |signal_strategy_| because their destructors need to call
+  // signal_strategy_->RemoveListener(this)
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;

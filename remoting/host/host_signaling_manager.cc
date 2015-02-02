@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/logging.h"
@@ -22,13 +21,11 @@ namespace remoting {
 HostSignalingManager::HostSignalingManager(
     scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory_for_listener,
     const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
-    scoped_ptr<net::NetworkChangeNotifier> network_change_notifier,
     scoped_ptr<SignalStrategy> signal_strategy,
     scoped_ptr<SignalingConnector> signaling_connector,
     scoped_ptr<HeartbeatSender> heartbeat_sender)
     : weak_factory_for_listener_(weak_factory_for_listener.Pass()),
       network_task_runner_(network_task_runner),
-      network_change_notifier_(network_change_notifier.Pass()),
       signal_strategy_(signal_strategy.Pass()),
       signaling_connector_(signaling_connector.Pass()),
       heartbeat_sender_(heartbeat_sender.Pass()) {
@@ -49,9 +46,6 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
 
   scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory(
       new base::WeakPtrFactory<Listener>(listener));
-
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
 
   scoped_ptr<XmppSignalStrategy> signal_strategy(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
@@ -77,9 +71,8 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
       host_id, signal_strategy.get(), host_key_pair, directory_bot_jid));
 
   return scoped_ptr<HostSignalingManager>(new HostSignalingManager(
-      weak_factory.Pass(), network_task_runner, network_change_notifier.Pass(),
-      signal_strategy.Pass(), signaling_connector.Pass(),
-      heartbeat_sender.Pass()));
+      weak_factory.Pass(), network_task_runner, signal_strategy.Pass(),
+      signaling_connector.Pass(), heartbeat_sender.Pass()));
 }
 
 HostSignalingManager::~HostSignalingManager() {

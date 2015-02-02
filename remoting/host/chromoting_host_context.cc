@@ -4,11 +4,21 @@
 
 #include "remoting/host/chromoting_host_context.h"
 
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/url_request_context_getter.h"
 
 namespace remoting {
+
+namespace {
+
+void DisallowBlockingOperations() {
+  base::ThreadRestrictions::SetIOAllowed(false);
+  base::ThreadRestrictions::DisallowWaiting();
+}
+
+}  // namespace
 
 ChromotingHostContext::ChromotingHostContext(
     scoped_refptr<AutoThreadTaskRunner> ui_task_runner,
@@ -96,9 +106,12 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
   scoped_refptr<AutoThreadTaskRunner> file_task_runner =
       AutoThread::CreateWithType("ChromotingFileThread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO);
+
   scoped_refptr<AutoThreadTaskRunner> network_task_runner =
       AutoThread::CreateWithType("ChromotingNetworkThread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO);
+  network_task_runner->PostTask(FROM_HERE,
+                                base::Bind(&DisallowBlockingOperations));
 
   return make_scoped_ptr(new ChromotingHostContext(
       ui_task_runner,

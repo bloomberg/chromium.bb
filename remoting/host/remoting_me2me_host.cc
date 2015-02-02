@@ -26,6 +26,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "media/base/media.h"
+#include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_fetcher.h"
@@ -259,6 +260,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   scoped_ptr<HostSignalingManager> CreateHostSignalingManager();
 
+  void StartHostIfReady();
   void StartHost();
 
   // Overrides for HostSignalingManager::Listener interface.
@@ -323,6 +325,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   int64_t frame_recorder_buffer_size_;
 
   scoped_ptr<PolicyWatcher> policy_watcher_;
+  bool policies_loaded_;
   std::string host_domain_;
   bool host_username_match_required_;
   bool allow_nat_traversal_;
@@ -336,7 +339,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   ThirdPartyAuthConfig third_party_auth_config_;
   bool enable_gnubby_auth_;
 
-  // Boolean to change flow, where ncessary, if we're
+  // Boolean to change flow, where necessary, if we're
   // capturing a window instead of the entire desktop.
   bool enable_window_capture_;
 
@@ -378,6 +381,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       use_service_account_(false),
       enable_vp9_(false),
       frame_recorder_buffer_size_(0),
+      policies_loaded_(false),
       host_username_match_required_(false),
       allow_nat_traversal_(true),
       allow_relay_(true),
@@ -548,26 +552,18 @@ void HostProcess::OnConfigUpdated(
   }
 
   if (state_ == HOST_INITIALIZING) {
-    // TODO(sergeyu): Currently OnPolicyUpdate() assumes that host config is
-    // already loaded so PolicyWatcher has to be started here. Separate policy
-    // loading from policy verifications and move |policy_watcher_|
-    // initialization to StartOnNetworkThread().
-    policy_watcher_ =
-        PolicyWatcher::Create(nullptr, context_->file_task_runner());
-    policy_watcher_->StartWatching(
-        base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
-        base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));
-  } else {
+    StartHostIfReady();
+  } else if (state_ == HOST_STARTED) {
+    DCHECK(policies_loaded_);
+
     // Reapply policies that could be affected by a new config.
     ApplyHostDomainPolicy();
     ApplyUsernamePolicy();
 
-    if (state_ == HOST_STARTED) {
-      // TODO(sergeyu): Here we assume that PIN is the only part of the config
-      // that may change while the service is running. Change ApplyConfig() to
-      // detect other changes in the config and restart host if necessary here.
-      CreateAuthenticatorFactory();
-    }
+    // TODO(sergeyu): Here we assume that PIN is the only part of the config
+    // that may change while the service is running. Change ApplyConfig() to
+    // detect other changes in the config and restart host if necessary here.
+    CreateAuthenticatorFactory();
   }
 }
 
@@ -724,6 +720,12 @@ void HostProcess::StartOnUiThread() {
     return;
   }
 
+  policy_watcher_ =
+      PolicyWatcher::Create(nullptr, context_->file_task_runner());
+  policy_watcher_->StartWatching(
+      base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
+      base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));
+
 #if defined(OS_LINUX)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
@@ -783,6 +785,8 @@ void HostProcess::ShutdownOnUiThread() {
   // Tear down resources that need to be torn down on the UI thread.
   daemon_channel_.reset();
   desktop_environment_factory_.reset();
+
+  policy_watcher_.reset();
 
   // It is now safe for the HostProcess to be deleted.
   self_ = nullptr;
@@ -956,7 +960,12 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
 }
 
 void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+    context_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&HostProcess::OnPolicyUpdate, this,
+                              base::Passed(&policies)));
+    return;
+  }
 
   bool restart_required = false;
   restart_required |= OnHostDomainPolicyUpdate(policies.get());
@@ -971,20 +980,30 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   restart_required |= OnPairingPolicyUpdate(policies.get());
   restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
 
+  policies_loaded_ = true;
+
   if (state_ == HOST_INITIALIZING) {
-    StartHost();
-  } else if (state_ == HOST_STARTED && restart_required) {
-    RestartHost();
+    StartHostIfReady();
+  } else if (state_ == HOST_STARTED) {
+    if (restart_required)
+      RestartHost();
   }
 }
 
 void HostProcess::OnPolicyError() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+    context_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&HostProcess::OnPolicyError, this));
+    return;
+  }
 
   ShutdownHost(kInvalidHostConfigurationExitCode);
 }
 
 void HostProcess::ApplyHostDomainPolicy() {
+  if (state_ != HOST_STARTED)
+    return;
+
   HOST_LOG << "Policy sets host domain: " << host_domain_;
 
   if (!host_domain_.empty()) {
@@ -1019,6 +1038,9 @@ bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
 }
 
 void HostProcess::ApplyUsernamePolicy() {
+  if (state_ != HOST_STARTED)
+    return;
+
   if (host_username_match_required_) {
     HOST_LOG << "Policy requires host username match.";
 
@@ -1284,6 +1306,15 @@ scoped_ptr<HostSignalingManager> HostProcess::CreateHostSignalingManager() {
                                       oauth_credentials.Pass());
 }
 
+void HostProcess::StartHostIfReady() {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(state_, HOST_INITIALIZING);
+
+  // Start the host if both the config and the policies are loaded.
+  if (!serialized_config_.empty() && policies_loaded_)
+    StartHost();
+}
+
 void HostProcess::StartHost() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(!host_);
@@ -1368,6 +1399,9 @@ void HostProcess::StartHost() {
   host_->Start(host_owner_email_);
 
   CreateAuthenticatorFactory();
+
+  ApplyHostDomainPolicy();
+  ApplyUsernamePolicy();
 }
 
 void HostProcess::OnAuthFailed() {
@@ -1439,7 +1473,6 @@ void HostProcess::ShutdownOnNetworkThread() {
     shutdown_watchdog_->Arm();
 
     config_watcher_.reset();
-    policy_watcher_.reset();
 
     // Complete the rest of shutdown on the main thread.
     context_->ui_task_runner()->PostTask(
@@ -1481,6 +1514,9 @@ int HostProcessMain() {
   // Ensures runtime specific CPU features are initialized.
   media::InitializeCPUSpecificMediaFeatures();
 
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      net::NetworkChangeNotifier::Create());
+
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
   scoped_ptr<ChromotingHostContext> context =
@@ -1488,6 +1524,13 @@ int HostProcessMain() {
           message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure()));
   if (!context)
     return kInitializationFailed;
+
+  // BasicURLRequestContext holds references to threads, so it needs to be
+  // dereferences on UI threads. Store the reference to the URLRequestGetter to
+  // make sure it's not destroyed on other threads.
+  // TODO(sergeyu): Consider fixing it in BasicURLRequestContext.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      context->url_request_context_getter();
 
   // Create & start the HostProcess using these threads.
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
