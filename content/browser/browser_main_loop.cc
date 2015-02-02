@@ -1089,8 +1089,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
 #if defined(OS_WIN)
-  LOCAL_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
-                          IsWin32kRendererLockdownEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
+                        IsWin32kRendererLockdownEnabled());
 #endif
   // RDH needs the IO thread to be created
   {
