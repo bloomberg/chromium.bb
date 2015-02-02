@@ -100,8 +100,8 @@ class LinuxDumper {
   PageAllocator* allocator() { return &allocator_; }
 
   // Copy content of |length| bytes from a given process |child|,
-  // starting from |src|, into |dest|.
-  virtual void CopyFromProcess(void* dest, pid_t child, const void* src,
+  // starting from |src|, into |dest|. Returns true on success.
+  virtual bool CopyFromProcess(void* dest, pid_t child, const void* src,
                                size_t length) = 0;
 
   // Builds a proc path for a certain pid for a node (/proc/<pid>/<node>).

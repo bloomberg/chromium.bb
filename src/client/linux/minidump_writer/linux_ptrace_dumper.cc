@@ -130,7 +130,7 @@ bool LinuxPtraceDumper::BuildProcPath(char* path, pid_t pid,
   return true;
 }
 
-void LinuxPtraceDumper::CopyFromProcess(void* dest, pid_t child,
+bool LinuxPtraceDumper::CopyFromProcess(void* dest, pid_t child,
                                         const void* src, size_t length) {
   unsigned long tmp = 55;
   size_t done = 0;
@@ -146,6 +146,7 @@ void LinuxPtraceDumper::CopyFromProcess(void* dest, pid_t child,
     my_memcpy(local + done, &tmp, l);
     done += l;
   }
+  return true;
 }
 
 // Read thread info from /proc/$pid/status.

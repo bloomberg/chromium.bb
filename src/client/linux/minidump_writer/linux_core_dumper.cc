@@ -74,7 +74,7 @@ bool LinuxCoreDumper::BuildProcPath(char* path, pid_t pid,
   return true;
 }
 
-void LinuxCoreDumper::CopyFromProcess(void* dest, pid_t child,
+bool LinuxCoreDumper::CopyFromProcess(void* dest, pid_t child,
                                       const void* src, size_t length) {
   ElfCoreDump::Addr virtual_address = reinterpret_cast<ElfCoreDump::Addr>(src);
   // TODO(benchan): Investigate whether the data to be copied could span
@@ -84,7 +84,9 @@ void LinuxCoreDumper::CopyFromProcess(void* dest, pid_t child,
     // If the data segment is not found in the core dump, fill the result
     // with marker characters.
     memset(dest, 0xab, length);
+    return false;
   }
+  return true;
 }
 
 bool LinuxCoreDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {

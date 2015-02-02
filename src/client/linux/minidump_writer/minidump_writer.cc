@@ -658,7 +658,9 @@ class MinidumpWriter {
     ElfW(Addr) dyn_addr = 0;
     for (; phnum >= 0; phnum--, phdr++) {
       ElfW(Phdr) ph;
-      dumper_->CopyFromProcess(&ph, GetCrashThread(), phdr, sizeof(ph));
+      if (!dumper_->CopyFromProcess(&ph, GetCrashThread(), phdr, sizeof(ph)))
+        return false;
+
       // Adjust base address with the virtual address of the PT_LOAD segment
       // corresponding to offset 0
       if (ph.p_type == PT_LOAD && ph.p_offset == 0) {
@@ -679,11 +681,14 @@ class MinidumpWriter {
     struct r_debug* r_debug = NULL;
     uint32_t dynamic_length = 0;
 
-    for (int i = 0;;) {
+    for (int i = 0; ; ++i) {
       ElfW(Dyn) dyn;
       dynamic_length += sizeof(dyn);
-      dumper_->CopyFromProcess(&dyn, GetCrashThread(), dynamic+i++,
-                               sizeof(dyn));
+      if (!dumper_->CopyFromProcess(&dyn, GetCrashThread(), dynamic + i,
+                                    sizeof(dyn))) {
+        return false;
+      }
+
       if (dyn.d_tag == DT_DEBUG) {
         r_debug = reinterpret_cast<struct r_debug*>(dyn.d_un.d_ptr);
         continue;
@@ -703,11 +708,15 @@ class MinidumpWriter {
     // Count the number of loaded DSOs
     int dso_count = 0;
     struct r_debug debug_entry;
-    dumper_->CopyFromProcess(&debug_entry, GetCrashThread(), r_debug,
-                             sizeof(debug_entry));
+    if (!dumper_->CopyFromProcess(&debug_entry, GetCrashThread(), r_debug,
+                                  sizeof(debug_entry))) {
+      return false;
+    }
     for (struct link_map* ptr = debug_entry.r_map; ptr; ) {
       struct link_map map;
-      dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map));
+      if (!dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map)))
+        return false;
+
       ptr = map.l_next;
       dso_count++;
     }
@@ -725,7 +734,9 @@ class MinidumpWriter {
       // Iterate over DSOs and write their information to mini dump
       for (struct link_map* ptr = debug_entry.r_map; ptr; ) {
         struct link_map map;
-        dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map));
+        if (!dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map)))
+          return  false;
+
         ptr = map.l_next;
         char filename[257] = { 0 };
         if (map.l_name) {
