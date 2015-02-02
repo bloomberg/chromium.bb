@@ -1741,15 +1741,20 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
       v_texture_location_(-1),
       alpha_location_(-1),
       yuv_matrix_location_(-1),
-      yuv_adj_location_(-1) {
+      yuv_adj_location_(-1),
+      clamp_rect_location_(-1) {
 }
 
 void FragmentShaderYUVVideo::Init(GLES2Interface* context,
                                   unsigned program,
                                   int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "y_texture", "u_texture", "v_texture", "alpha", "yuv_matrix", "yuv_adj",
-  };
+  static const char* uniforms[] = {"y_texture",
+                                   "u_texture",
+                                   "v_texture",
+                                   "alpha",
+                                   "yuv_matrix",
+                                   "yuv_adj",
+                                   "clamp_rect"};
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
@@ -1764,6 +1769,7 @@ void FragmentShaderYUVVideo::Init(GLES2Interface* context,
   alpha_location_ = locations[3];
   yuv_matrix_location_ = locations[4];
   yuv_adj_location_ = locations[5];
+  clamp_rect_location_ = locations[6];
 }
 
 std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
@@ -1780,10 +1786,12 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
       uniform float alpha;
       uniform vec3 yuv_adj;
       uniform mat3 yuv_matrix;
+      uniform vec4 clamp_rect;
       void main() {
-        float y_raw = TextureLookup(y_texture, v_texCoord).x;
-        float u_unsigned = TextureLookup(u_texture, v_texCoord).x;
-        float v_unsigned = TextureLookup(v_texture, v_texCoord).x;
+        vec2 clamped = max(clamp_rect.xy, min(clamp_rect.zw, v_texCoord));
+        float y_raw = TextureLookup(y_texture, clamped).x;
+        float u_unsigned = TextureLookup(u_texture, clamped).x;
+        float v_unsigned = TextureLookup(v_texture, clamped).x;
         vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
         vec3 rgb = yuv_matrix * yuv;
         gl_FragColor = vec4(rgb, 1.0) * alpha;
@@ -1814,6 +1822,7 @@ void FragmentShaderYUVAVideo::Init(GLES2Interface* context,
       "alpha",
       "cc_matrix",
       "yuv_adj",
+      "clamp_rect",
   };
   int locations[arraysize(uniforms)];
 
@@ -1830,6 +1839,7 @@ void FragmentShaderYUVAVideo::Init(GLES2Interface* context,
   alpha_location_ = locations[4];
   yuv_matrix_location_ = locations[5];
   yuv_adj_location_ = locations[6];
+  clamp_rect_location_ = locations[7];
 }
 
 std::string FragmentShaderYUVAVideo::GetShaderString(
@@ -1848,11 +1858,13 @@ std::string FragmentShaderYUVAVideo::GetShaderString(
       uniform float alpha;
       uniform vec3 yuv_adj;
       uniform mat3 yuv_matrix;
+      uniform vec4 clamp_rect;
       void main() {
-        float y_raw = TextureLookup(y_texture, v_texCoord).x;
-        float u_unsigned = TextureLookup(u_texture, v_texCoord).x;
-        float v_unsigned = TextureLookup(v_texture, v_texCoord).x;
-        float a_raw = TextureLookup(a_texture, v_texCoord).x;
+        vec2 clamped = max(clamp_rect.xy, min(clamp_rect.zw, v_texCoord));
+        float y_raw = TextureLookup(y_texture, clamped).x;
+        float u_unsigned = TextureLookup(u_texture, clamped).x;
+        float v_unsigned = TextureLookup(v_texture, clamped).x;
+        float a_raw = TextureLookup(a_texture, clamped).x;
         vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
         vec3 rgb = yuv_matrix * yuv;
         gl_FragColor = vec4(rgb, 1.0) * (alpha * a_raw);

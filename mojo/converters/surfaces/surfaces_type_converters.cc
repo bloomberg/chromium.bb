@@ -175,6 +175,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
                        input->visible_rect.To<gfx::Rect>(),
                        input->needs_blending,
                        yuv_state->tex_coord_rect.To<gfx::RectF>(),
+                       gfx::Size(),  // TODO(jamesr): texture size
                        yuv_state->y_plane_resource_id,
                        yuv_state->u_plane_resource_id,
                        yuv_state->v_plane_resource_id,

@@ -230,16 +230,10 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       YUVVideoDrawQuad* yuv_video_quad =
           render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       yuv_video_quad->SetNew(
-          shared_quad_state,
-          quad_rect,
-          opaque_rect,
-          visible_quad_rect,
-          tex_coord_rect,
-          frame_resources_[0],
-          frame_resources_[1],
+          shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
+          tex_coord_rect, coded_size, frame_resources_[0], frame_resources_[1],
           frame_resources_[2],
-          frame_resources_.size() > 3 ? frame_resources_[3] : 0,
-          color_space);
+          frame_resources_.size() > 3 ? frame_resources_[3] : 0, color_space);
       break;
     }
     case VideoFrameExternalResources::RGB_RESOURCE: {

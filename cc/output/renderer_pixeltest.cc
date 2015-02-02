@@ -423,8 +423,9 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
         v_row[j] = (v_value += 5);
       }
     }
+    uint8 alpha_value = is_transparent ? 0 : 128;
     CreateTestYUVVideoDrawQuad_FromVideoFrame(
-        shared_state, video_frame, is_transparent, tex_coord_rect, render_pass);
+        shared_state, video_frame, alpha_value, tex_coord_rect, render_pass);
   }
 
   void CreateTestYUVVideoDrawQuad_Solid(const SharedQuadState* shared_state,
@@ -456,14 +457,110 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
            video_frame->stride(media::VideoFrame::kVPlane) *
                video_frame->rows(media::VideoFrame::kVPlane));
 
+    uint8 alpha_value = is_transparent ? 0 : 128;
     CreateTestYUVVideoDrawQuad_FromVideoFrame(
-        shared_state, video_frame, is_transparent, tex_coord_rect, render_pass);
+        shared_state, video_frame, alpha_value, tex_coord_rect, render_pass);
+  }
+
+  void CreateEdgeBleedPass(media::VideoFrame::Format format,
+                           RenderPassList* pass_list) {
+    gfx::Rect rect(200, 200);
+
+    RenderPassId id(1, 1);
+    scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+    // Scale the video up so that bilinear filtering kicks in to sample more
+    // than just nearest neighbor would.
+    gfx::Transform scale_by_2;
+    scale_by_2.Scale(2.f, 2.f);
+    gfx::Rect half_rect(100, 100);
+    SharedQuadState* shared_state =
+        CreateTestSharedQuadState(scale_by_2, half_rect, pass.get());
+
+    gfx::Size background_size(200, 200);
+    gfx::Rect green_rect(16, 20, 100, 100);
+    gfx::RectF tex_coord_rect(
+        static_cast<float>(green_rect.x()) / background_size.width(),
+        static_cast<float>(green_rect.y()) / background_size.height(),
+        static_cast<float>(green_rect.width()) / background_size.width(),
+        static_cast<float>(green_rect.height()) / background_size.height());
+
+    // YUV of (149,43,21) should be green (0,255,0) in RGB.
+    // Create a video frame that has a non-green background rect, with a
+    // green sub-rectangle that should be the only thing displayed in
+    // the final image.  Bleeding will appear on all four sides of the video
+    // if the tex coords are not clamped.
+    CreateTestYUVVideoDrawQuad_TwoColor(shared_state, format, false,
+                                        tex_coord_rect, background_size, 0, 0,
+                                        0, green_rect, 149, 43, 21, pass.get());
+    pass_list->push_back(pass.Pass());
+  }
+
+  // Creates a video frame of size background_size filled with yuv_background,
+  // and then draws a foreground rectangle in a different color on top of
+  // that. The foreground rectangle must have coordinates that are divisible
+  // by 2 because YUV is a block format.
+  void CreateTestYUVVideoDrawQuad_TwoColor(const SharedQuadState* shared_state,
+                                           media::VideoFrame::Format format,
+                                           bool is_transparent,
+                                           const gfx::RectF& tex_coord_rect,
+                                           const gfx::Size& background_size,
+                                           uint8 y_background,
+                                           uint8 u_background,
+                                           uint8 v_background,
+                                           const gfx::Rect& foreground_rect,
+                                           uint8 y_foreground,
+                                           uint8 u_foreground,
+                                           uint8 v_foreground,
+                                           RenderPass* render_pass) {
+    const gfx::Rect rect(background_size);
+
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateFrame(format, background_size, foreground_rect,
+                                       foreground_rect.size(),
+                                       base::TimeDelta());
+
+    int planes[] = {media::VideoFrame::kYPlane,
+                    media::VideoFrame::kUPlane,
+                    media::VideoFrame::kVPlane};
+    uint8 yuv_background[] = {y_background, u_background, v_background};
+    uint8 yuv_foreground[] = {y_foreground, u_foreground, v_foreground};
+    int sample_size[] = {1, 2, 2};
+
+    for (int i = 0; i < 3; ++i) {
+      memset(video_frame->data(planes[i]), yuv_background[i],
+             video_frame->stride(planes[i]) * video_frame->rows(planes[i]));
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      // Since yuv encoding uses block encoding, widths have to be divisible
+      // by the sample size in order for this function to behave properly.
+      DCHECK_EQ(foreground_rect.x() % sample_size[i], 0);
+      DCHECK_EQ(foreground_rect.y() % sample_size[i], 0);
+      DCHECK_EQ(foreground_rect.width() % sample_size[i], 0);
+      DCHECK_EQ(foreground_rect.height() % sample_size[i], 0);
+
+      gfx::Rect sample_rect(foreground_rect.x() / sample_size[i],
+                            foreground_rect.y() / sample_size[i],
+                            foreground_rect.width() / sample_size[i],
+                            foreground_rect.height() / sample_size[i]);
+      for (int y = sample_rect.y(); y < sample_rect.bottom(); ++y) {
+        for (int x = sample_rect.x(); x < sample_rect.right(); ++x) {
+          size_t offset = y * video_frame->stride(planes[i]) + x;
+          video_frame->data(planes[i])[offset] = yuv_foreground[i];
+        }
+      }
+    }
+
+    uint8 alpha_value = 255;
+    CreateTestYUVVideoDrawQuad_FromVideoFrame(
+        shared_state, video_frame, alpha_value, tex_coord_rect, render_pass);
   }
 
   void CreateTestYUVVideoDrawQuad_FromVideoFrame(
       const SharedQuadState* shared_state,
       scoped_refptr<media::VideoFrame> video_frame,
-      bool is_transparent,
+      uint8 alpha_value,
       const gfx::RectF& tex_coord_rect,
       RenderPass* render_pass) {
     const bool with_alpha = (video_frame->format() == media::VideoFrame::YV12A);
@@ -471,12 +568,11 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
         (video_frame->format() == media::VideoFrame::YV12J
              ? YUVVideoDrawQuad::REC_601_JPEG
              : YUVVideoDrawQuad::REC_601);
-    const gfx::Rect rect(this->device_viewport_size_);
+    const gfx::Rect rect(shared_state->content_bounds);
     const gfx::Rect opaque_rect(0, 0, 0, 0);
 
     if (with_alpha)
-      memset(video_frame->data(media::VideoFrame::kAPlane),
-             is_transparent ? 0 : 128,
+      memset(video_frame->data(media::VideoFrame::kAPlane), alpha_value,
              video_frame->stride(media::VideoFrame::kAPlane) *
                  video_frame->rows(media::VideoFrame::kAPlane));
 
@@ -515,16 +611,9 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
 
     YUVVideoDrawQuad* yuv_quad =
         render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
-    yuv_quad->SetNew(shared_state,
-                     rect,
-                     opaque_rect,
-                     rect,
-                     tex_coord_rect,
-                     y_resource,
-                     u_resource,
-                     v_resource,
-                     a_resource,
-                     color_space);
+    yuv_quad->SetNew(shared_state, rect, opaque_rect, rect, tex_coord_rect,
+                     video_frame->coded_size(), y_resource, u_resource,
+                     v_resource, a_resource, color_space);
   }
 
   void SetUp() override {
@@ -637,6 +726,24 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("green.png")),
+                                 FuzzyPixelOffByOneComparator(true)));
+}
+
+// Test that a YUV video doesn't bleed outside of its tex coords when the
+// tex coord rect is only a partial subrectangle of the coded contents.
+TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
+  RenderPassList pass_list;
+  CreateEdgeBleedPass(media::VideoFrame::YV12J, &pass_list);
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("green.png")),
+                                 FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
+  RenderPassList pass_list;
+  CreateEdgeBleedPass(media::VideoFrame::YV12A, &pass_list);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  FuzzyPixelOffByOneComparator(true)));
