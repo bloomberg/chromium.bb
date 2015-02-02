@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
@@ -148,6 +149,10 @@ void PrivetURLFetcher::Try() {
 
 
     url_fetcher_.reset(net::URLFetcher::Create(url_, request_type_, this));
+    // Privet requests are relevant to hosts on local network only.
+    url_fetcher_->SetLoadFlags(url_fetcher_->GetLoadFlags() |
+                               net::LOAD_BYPASS_PROXY |
+                               net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetRequestContext(request_context_.get());
 
     if (v3_mode_) {
