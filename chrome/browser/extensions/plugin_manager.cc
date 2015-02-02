@@ -149,7 +149,7 @@ void PluginManager::OnExtensionUnloaded(
   if (handler && !handler->handler_url().empty()) {
     plugins_or_nacl_changed = true;
     base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(handler->extension_id());
+        base::FilePath::FromUTF8Unsafe(extension->url().spec());
     PluginService::GetInstance()->UnregisterInternalPlugin(path);
     PluginService::GetInstance()->ForcePluginShutdown(path);
     PluginService::GetInstance()->RefreshPlugins();
