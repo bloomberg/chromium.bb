@@ -59,8 +59,10 @@
         <menuitem type="radio" radiogroup="group" label="Item17"></menuitem>
         <menuitem type="radio" radiogroup="group" label="Item18" checked></menuitem>
         <menuitem type="radio" radiogroup="group" label="Item19"></menuitem>
-        <!-- Test menuitem of with "icon" attribute. -->
-        <menuitem label="Item20" icon="abc.png" checked></menuitem>
+        <!-- Test menuitem with "icon" attribute. -->
+        <menuitem label="Item20" icon="icon1.png" checked></menuitem>
+        <!-- Test menuitem with "icon" attribute having leading and trailing white spaces. -->
+        <menuitem label="Item21" icon="  icon2.png   " checked></menuitem>
         <!-- Test removal of separator at the end. -->
         <hr>
     </menu>
@@ -166,7 +168,7 @@ eventSender.keyDown("escape");
 var button5 = document.getElementById("button_5");
 var items5 = contextClickAndGetMenuItems(button5);
 
-shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 24);
+shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 25);
 shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
 shouldBeEqualToString("itemsWithCustomContextMenu[1]", "#Item2");
 shouldBeEqualToString("itemsWithCustomContextMenu[2]", "---------");
@@ -190,7 +192,8 @@ shouldBeEqualToString("itemsWithCustomContextMenu[19]", "Item16");
 shouldBeEqualToString("itemsWithCustomContextMenu[20]", "Item17");
 shouldBeEqualToString("itemsWithCustomContextMenu[21]", "*Item18");
 shouldBeEqualToString("itemsWithCustomContextMenu[22]", "Item19");
-shouldBeEqualToString("itemsWithCustomContextMenu[23]", "Item20http://127.0.0.1:8000/misc/abc.png");
+shouldBeEqualToString("itemsWithCustomContextMenu[23]", "Item20http://127.0.0.1:8000/misc/icon1.png");
+shouldBeEqualToString("itemsWithCustomContextMenu[24]", "Item21http://127.0.0.1:8000/misc/icon2.png");
 shouldBeEqualToNumber("items1.length - items.length", 0);
 shouldBeEqualToNumber("items2.length - items.length", 0);
 shouldBeEqualToNumber("items3.length - items.length", 0);

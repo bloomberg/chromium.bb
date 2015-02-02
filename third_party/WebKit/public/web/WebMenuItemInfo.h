@@ -58,6 +58,7 @@ struct WebMenuItemInfo {
     }
 
     WebString label;
+    // "icon" provides absolute URL of an image that repesents the command.
     WebString icon;
     WebString toolTip;
     Type type;
