@@ -40,6 +40,7 @@ public:
     {
         return (m_restrictor != MediaQuery::None || m_mediaTypeSet || m_expressions->size() > 0);
     }
+    inline MediaQuery::Restrictor restrictor() { return m_restrictor; }
 
     inline void setRestrictor(MediaQuery::Restrictor restrictor) { m_restrictor = restrictor; }
 

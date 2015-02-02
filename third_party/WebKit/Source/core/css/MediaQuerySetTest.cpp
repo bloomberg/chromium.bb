@@ -159,6 +159,16 @@ TEST(MediaQuerySetTest, Basic)
         {"'\"\"\"', (max-width: 900px)", "not all, (max-width: 900px)", true},
         {"\"'\"', (max-width: 900px)", "not all", true},
         {"\"'''\", (max-width: 900px)", "not all, (max-width: 900px)", true},
+        {"not not", "not all", true},
+        {"not and", "not all", true},
+        {"not only", "not all", true},
+        {"not or", "not all", true},
+        {"only not", "not all", true},
+        {"only and", "not all", true},
+        {"only only", "not all", true},
+        {"only or", "not all", true},
+        {"not (orientation)", "not all", true},
+        {"only (orientation)", "not all", true},
         {0, 0} // Do not remove the terminator line.
     };
 

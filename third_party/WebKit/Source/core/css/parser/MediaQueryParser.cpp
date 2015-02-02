@@ -76,15 +76,30 @@ void MediaQueryParser::readMediaNot(CSSParserTokenType type, const CSSParserToke
         readFeatureStart(type, token);
 }
 
+static bool isRestrictorOrLogicalOperator(const String& tokenValue)
+{
+    // FIXME: it would be more efficient to use lower-case always for tokenValue.
+    return equalIgnoringCase(tokenValue, "not")
+        || equalIgnoringCase(tokenValue, "and")
+        || equalIgnoringCase(tokenValue, "or")
+        || equalIgnoringCase(tokenValue, "only");
+}
+
 void MediaQueryParser::readMediaType(CSSParserTokenType type, const CSSParserToken& token)
 {
     if (type == LeftParenthesisToken) {
-        m_state = ReadFeature;
+        if (m_mediaQueryData.restrictor() != MediaQuery::None)
+            m_state = SkipUntilComma;
+        else
+            m_state = ReadFeature;
     } else if (type == IdentToken) {
         if (m_state == ReadRestrictor && equalIgnoringCase(token.value(), "not")) {
             setStateAndRestrict(ReadMediaType, MediaQuery::Not);
         } else if (m_state == ReadRestrictor && equalIgnoringCase(token.value(), "only")) {
             setStateAndRestrict(ReadMediaType, MediaQuery::Only);
+        } else if (m_mediaQueryData.restrictor() != MediaQuery::None
+            && isRestrictorOrLogicalOperator(token.value())) {
+            m_state = SkipUntilComma;
         } else {
             m_mediaQueryData.setMediaType(token.value());
             m_state = ReadAnd;
