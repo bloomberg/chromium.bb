@@ -129,3 +129,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
       "foreground/js/metadata/metadata_cache_item_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheSet) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL(
+      "foreground/js/metadata/metadata_cache_set_unittest.html")));
+}
