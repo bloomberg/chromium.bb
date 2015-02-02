@@ -283,7 +283,6 @@ imc_syscalls = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
-    'nameservice.c',
     ]
 
 libimc_syscalls = env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)

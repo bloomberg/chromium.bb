@@ -34,6 +34,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/elf.h"
 
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/public/nacl_app.h"
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
@@ -50,7 +51,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
-#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -244,13 +244,6 @@ struct NaClApp {
    * at least NACL_MAX_SYSCALLS.
    */
   struct NaClSyscallTableEntry *syscall_table;
-
-  /*
-   * Name service must launch after mu, cv, vm_hole_may_exit,
-   * threads_launching are initialized.
-   */
-  struct NaClNameService    *name_service;  /* default name server */
-  struct NaClDesc           *name_service_conn_cap;
 
   struct NaClSecureService          *secure_service;
 

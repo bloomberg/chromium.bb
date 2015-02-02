@@ -45,9 +45,6 @@ extern int NaClAclBypassChecks;
 
 void NaClInsecurelyBypassAllAclChecks(void);
 
-int32_t NaClSysNameService(struct NaClAppThread *natp,
-                           uint32_t             desc_addr);
-
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,
                                                   uintptr_t usraddr,

@@ -3314,7 +3314,6 @@ irt_variant_tests = [
     'tests/mmap_prot_exec/nacl.scons',
     'tests/mmap_race_protect/nacl.scons',
     'tests/nacl_log/nacl.scons',
-    'tests/nameservice/nacl.scons',
     'tests/nanosleep/nacl.scons',
     'tests/nonsfi/nacl.scons',
     'tests/noop/nacl.scons',

@@ -218,7 +218,6 @@
       'imc_recvmsg.c',
       'imc_sendmsg.c',
       'imc_socketpair.c',
-      'nameservice.c',
     ],
   },
 

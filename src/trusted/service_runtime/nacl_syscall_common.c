@@ -144,57 +144,6 @@ int32_t NaClSysThreadExit(struct NaClAppThread  *natp,
   return -NACL_ABI_EINVAL;
 }
 
-int32_t NaClSysNameService(struct NaClAppThread *natp,
-                           uint32_t             desc_addr) {
-  struct NaClApp *nap = natp->nap;
-  int32_t   retval = -NACL_ABI_EINVAL;
-  int32_t   desc;
-
-  NaClLog(3,
-          ("NaClSysNameService(0x%08"NACL_PRIxPTR","
-           " 0x%08"NACL_PRIx32")\n"),
-          (uintptr_t) natp,
-          desc_addr);
-
-  if (!NaClCopyInFromUser(nap, &desc, desc_addr, sizeof desc)) {
-    NaClLog(LOG_ERROR,
-            "Invalid address argument to NaClSysNameService\n");
-    retval = -NACL_ABI_EFAULT;
-    goto done;
-  }
-
-  if (-1 == desc) {
-    /* read */
-    desc = NaClAppSetDescAvail(nap, NaClDescRef(nap->name_service_conn_cap));
-    if (NaClCopyOutToUser(nap, desc_addr, &desc, sizeof desc)) {
-      retval = 0;
-    } else {
-      retval = -NACL_ABI_EFAULT;
-    }
-  } else {
-    struct NaClDesc *desc_obj_ptr = NaClAppGetDesc(nap, desc);
-
-    if (NULL == desc_obj_ptr) {
-      retval = -NACL_ABI_EBADF;
-      goto done;
-    }
-    if (NACL_DESC_CONN_CAP != NACL_VTBL(NaClDesc, desc_obj_ptr)->typeTag &&
-        NACL_DESC_CONN_CAP_FD != NACL_VTBL(NaClDesc, desc_obj_ptr)->typeTag) {
-      retval = -NACL_ABI_EINVAL;
-      goto done;
-    }
-    /* write */
-    NaClXMutexLock(&nap->mu);
-    NaClDescUnref(nap->name_service_conn_cap);
-    nap->name_service_conn_cap = desc_obj_ptr;
-    NaClXMutexUnlock(&nap->mu);
-    retval = 0;
-  }
-
- done:
-  return retval;
-}
-
 int32_t NaClSysTlsInit(struct NaClAppThread  *natp,
                        uint32_t              thread_ptr) {
   int32_t   retval = -NACL_ABI_EINVAL;

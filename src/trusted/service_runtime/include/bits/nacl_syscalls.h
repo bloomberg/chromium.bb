@@ -18,7 +18,6 @@
  */
 
 #define NACL_sys_null                    1
-#define NACL_sys_nameservice             2
 
 #define NACL_sys_dup                     8
 #define NACL_sys_dup2                    9

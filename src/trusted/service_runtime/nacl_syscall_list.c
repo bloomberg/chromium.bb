@@ -24,7 +24,6 @@
  * here.
  */
 NACL_DEFINE_SYSCALL_0(NaClSysNull)
-NACL_DEFINE_SYSCALL_1(NaClSysNameService)
 NACL_DEFINE_SYSCALL_1(NaClSysDup)
 NACL_DEFINE_SYSCALL_2(NaClSysDup2)
 NACL_DEFINE_SYSCALL_3(NaClSysOpen)
@@ -112,7 +111,6 @@ NACL_DEFINE_SYSCALL_2(NaClSysGetRandomBytes)
  */
 static void RegisterSyscalls(void) {
   NACL_REGISTER_SYSCALL(NaClSysNull, NACL_sys_null);
-  NACL_REGISTER_SYSCALL(NaClSysNameService, NACL_sys_nameservice);
   NACL_REGISTER_SYSCALL(NaClSysDup, NACL_sys_dup);
   NACL_REGISTER_SYSCALL(NaClSysDup2, NACL_sys_dup2);
   NACL_REGISTER_SYSCALL(NaClSysOpen, NACL_sys_open);

@@ -13,6 +13,7 @@
 #endif
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 NaClErrorCode NaClMainLoadIrt(struct NaClApp *nap, struct NaClDesc *nd,

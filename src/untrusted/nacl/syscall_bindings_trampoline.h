@@ -62,8 +62,6 @@ extern void IRT_post_irtcall_hook(void);
 /* files */
 /* ============================================================ */
 
-typedef int (*TYPE_nacl_nameservice)(int *desc_in_out);
-
 typedef int (*TYPE_nacl_dup)(int oldfd);
 
 typedef int (*TYPE_nacl_dup2)(int oldfd, int newfd);

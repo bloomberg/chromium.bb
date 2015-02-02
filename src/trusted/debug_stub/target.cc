@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/debug_stub/target.h"
 #include "native_client/src/trusted/debug_stub/thread.h"
 #include "native_client/src/trusted/debug_stub/util.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"

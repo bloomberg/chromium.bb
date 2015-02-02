@@ -484,8 +484,6 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   NaClLog(4, "NaClAppLaunchServiceThreads: Entered, nap 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) nap);
 
-  NaClNameServiceLaunch(nap->name_service);
-
   if (LOAD_OK != NaClWaitForStartModuleCommand(nap)) {
     return rv;
   }
@@ -542,18 +540,6 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   rv = 1;
 
 done:
-  NaClXMutexLock(&nap->mu);
-  if (NULL != nap->kernel_service) {
-    NaClLog(3,
-            ("NaClAppLaunchServiceThreads: adding kernel service to"
-             " name service\n"));
-    (*NACL_VTBL(NaClNameService, nap->name_service)->
-     CreateDescEntry)(nap->name_service,
-                      "KernelService", NACL_ABI_O_RDWR,
-                      NaClDescRef(nap->kernel_service->base.bound_and_cap[1]));
-  }
-  NaClXMutexUnlock(&nap->mu);
-
   /*
    * Single exit path.
    *

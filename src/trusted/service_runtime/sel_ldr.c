@@ -51,7 +51,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
-#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -208,20 +207,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->module_initialization_state = NACL_MODULE_UNINITIALIZED;
   nap->module_load_status = LOAD_OK;
 
-  nap->name_service = (struct NaClNameService *) malloc(
-      sizeof *nap->name_service);
-  if (NULL == nap->name_service) {
-    goto cleanup_cv;
-  }
-  if (!NaClNameServiceCtor(nap->name_service,
-                           NaClAddrSpSquattingThreadIfFactoryFunction,
-                           (void *) nap)) {
-    free(nap->name_service);
-    goto cleanup_cv;
-  }
-  nap->name_service_conn_cap = NaClDescRef(nap->name_service->
-                                           base.base.bound_and_cap[1]);
-
   nap->ignore_validator_result = 0;
   nap->skip_validator = 0;
   nap->validator_stub_out_mode = 0;
@@ -243,7 +228,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->pnacl_mode = 0;
 
   if (!NaClMutexCtor(&nap->threads_mu)) {
-    goto cleanup_name_service;
+    goto cleanup_cv;
   }
   nap->num_threads = 0;
   if (!NaClFastMutexCtor(&nap->desc_mu)) {
@@ -309,9 +294,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   NaClFastMutexDtor(&nap->desc_mu);
  cleanup_threads_mu:
   NaClMutexDtor(&nap->threads_mu);
- cleanup_name_service:
-  NaClDescUnref(nap->name_service_conn_cap);
-  NaClRefCountUnref((struct NaClRefCount *) nap->name_service);
  cleanup_cv:
   NaClCondVarDtor(&nap->cv);
  cleanup_mu:

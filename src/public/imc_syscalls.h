@@ -108,16 +108,6 @@ extern int imc_mem_obj_create(size_t nbytes);
  */
 extern int imc_socketpair(int pair[2]);
 
-/**
- * @nacl
- * Set or get the name service connection capability.
- *
- * @param name_desc_in_out If not -1, the name service connection
- * capability is set to this value; if it is -1, then it is set to the
- * current connection capability value.
- */
-extern int nacl_nameservice(int *name_desc_in_out);
-
 #ifdef __cplusplus
 }
 #endif

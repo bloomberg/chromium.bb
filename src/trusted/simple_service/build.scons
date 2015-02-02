@@ -12,5 +12,3 @@ simple_service_inputs = [
 ]
 
 env.DualLibrary('simple_service', simple_service_inputs)
-
-# see tests/nameservice

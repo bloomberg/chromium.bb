@@ -70,7 +70,6 @@ static_library("imc_syscalls") {
     "imc_recvmsg.c",
     "imc_sendmsg.c",
     "imc_socketpair.c",
-    "nameservice.c",
   ]
 
   if (cpu_arch == "pnacl") {
