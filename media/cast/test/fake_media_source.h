@@ -57,6 +57,10 @@ class FakeMediaSource {
   // If |override_fps| is non zero then the file is played at the desired rate.
   void SetSourceFile(const base::FilePath& video_file, int override_fps);
 
+  // Set to true to randomly change the frame size at random points in time.
+  // Only applies when SetSourceFile() is not used.
+  void SetVariableFrameSizeMode(bool enabled);
+
   void Start(scoped_refptr<AudioFrameInput> audio_frame_input,
              scoped_refptr<VideoFrameInput> video_frame_input);
 
@@ -70,6 +74,8 @@ class FakeMediaSource {
 
   void SendNextFrame();
   void SendNextFakeFrame();
+
+  void UpdateNextFrameSize();
 
   // Return true if a frame was sent.
   bool SendNextTranscodedVideo(base::TimeDelta elapsed_time);
@@ -104,6 +110,9 @@ class FakeMediaSource {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const VideoSenderConfig video_config_;
   const bool keep_frames_;
+  bool variable_frame_size_mode_;
+  gfx::Size current_frame_size_;
+  base::TimeTicks next_frame_size_change_time_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
   uint8 synthetic_count_;

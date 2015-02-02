@@ -7,6 +7,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_buffer.h"
@@ -32,10 +33,19 @@ namespace {
 
 static const int kAudioChannels = 2;
 static const int kAudioSamplingFrequency = 48000;
-static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
-static const float kSoundVolume = 0.5f;
+static const int kSoundFrequency = 440;  // Frequency of sinusoid wave.
+static const float kSoundVolume = 0.10f;
 static const int kAudioFrameMs = 10;  // Each audio frame is exactly 10ms.
 static const int kAudioPacketsPerSecond = 1000 / kAudioFrameMs;
+
+// Bounds for variable frame size mode.
+static const int kMinFakeFrameWidth = 60;
+static const int kMinFakeFrameHeight = 34;
+static const int kStartingFakeFrameWidth = 854;
+static const int kStartingFakeFrameHeight = 480;
+static const int kMaxFakeFrameWidth = 1280;
+static const int kMaxFakeFrameHeight = 720;
+static const int kMaxFrameSizeChangeMillis = 5000;
 
 void AVFreeFrame(AVFrame* frame) {
   av_frame_free(&frame);
@@ -63,7 +73,8 @@ FakeMediaSource::FakeMediaSource(
     bool keep_frames)
     : task_runner_(task_runner),
       video_config_(video_config),
-     keep_frames_(keep_frames),
+      keep_frames_(keep_frames),
+      variable_frame_size_mode_(false),
       synthetic_count_(0),
       clock_(clock),
       audio_frame_count_(0),
@@ -189,6 +200,10 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
   Rewind();
 }
 
+void FakeMediaSource::SetVariableFrameSizeMode(bool enabled) {
+  variable_frame_size_mode_ = enabled;
+}
+
 void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
                             scoped_refptr<VideoFrameInput> video_frame_input) {
   audio_frame_input_ = audio_frame_input;
@@ -207,9 +222,8 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
     // Send fake patterns.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
-            &FakeMediaSource::SendNextFakeFrame,
-            base::Unretained(this)));
+        base::Bind(&FakeMediaSource::SendNextFakeFrame,
+                   weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -228,18 +242,16 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
       static_cast<double>(audio_params_.sample_rate()) /
       kAudioSamplingFrequency,
       audio_params_.frames_per_buffer(),
-      base::Bind(&FakeMediaSource::ProvideData, base::Unretained(this))));
+      base::Bind(&FakeMediaSource::ProvideData, weak_factory_.GetWeakPtr())));
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &FakeMediaSource::SendNextFrame,
-          base::Unretained(this)));
+      base::Bind(&FakeMediaSource::SendNextFrame, weak_factory_.GetWeakPtr()));
 }
 
 void FakeMediaSource::SendNextFakeFrame() {
-  gfx::Size size(video_config_.width, video_config_.height);
+  UpdateNextFrameSize();
   scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::CreateBlackFrame(size);
+      VideoFrame::CreateBlackFrame(current_frame_size_);
   PopulateVideoFrame(video_frame.get(), synthetic_count_);
   ++synthetic_count_;
 
@@ -288,6 +300,32 @@ void FakeMediaSource::SendNextFakeFrame() {
       video_time - elapsed_time);
 }
 
+void FakeMediaSource::UpdateNextFrameSize() {
+  if (variable_frame_size_mode_) {
+    bool update_size_change_time = false;
+    if (current_frame_size_.IsEmpty()) {
+      current_frame_size_ = gfx::Size(kStartingFakeFrameWidth,
+                                      kStartingFakeFrameHeight);
+      update_size_change_time = true;
+    } else if (clock_->NowTicks() >= next_frame_size_change_time_) {
+      current_frame_size_ = gfx::Size(
+          base::RandInt(kMinFakeFrameWidth, kMaxFakeFrameWidth),
+          base::RandInt(kMinFakeFrameHeight, kMaxFakeFrameHeight));
+      update_size_change_time = true;
+    }
+
+    if (update_size_change_time) {
+      next_frame_size_change_time_ = clock_->NowTicks() +
+          base::TimeDelta::FromMillisecondsD(
+              base::RandDouble() * kMaxFrameSizeChangeMillis);
+    }
+  } else {
+    current_frame_size_ = gfx::Size(kStartingFakeFrameWidth,
+                                    kStartingFakeFrameHeight);
+    next_frame_size_change_time_ = base::TimeTicks();
+  }
+}
+
 bool FakeMediaSource::SendNextTranscodedVideo(base::TimeDelta elapsed_time) {
   if (!is_transcoding_video())
     return false;
@@ -296,33 +334,13 @@ bool FakeMediaSource::SendNextTranscodedVideo(base::TimeDelta elapsed_time) {
   if (video_frame_queue_.empty())
     return false;
 
-  scoped_refptr<VideoFrame> decoded_frame =
-      video_frame_queue_.front();
-  if (elapsed_time < decoded_frame->timestamp())
+  const scoped_refptr<VideoFrame> video_frame = video_frame_queue_.front();
+  if (elapsed_time < video_frame->timestamp())
     return false;
-
-  gfx::Size size(video_config_.width, video_config_.height);
-  scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::CreateBlackFrame(size);
   video_frame_queue_.pop();
-  media::CopyPlane(VideoFrame::kYPlane,
-                   decoded_frame->data(VideoFrame::kYPlane),
-                   decoded_frame->stride(VideoFrame::kYPlane),
-                   decoded_frame->rows(VideoFrame::kYPlane),
-                   video_frame.get());
-  media::CopyPlane(VideoFrame::kUPlane,
-                   decoded_frame->data(VideoFrame::kUPlane),
-                   decoded_frame->stride(VideoFrame::kUPlane),
-                   decoded_frame->rows(VideoFrame::kUPlane),
-                   video_frame.get());
-  media::CopyPlane(VideoFrame::kVPlane,
-                   decoded_frame->data(VideoFrame::kVPlane),
-                   decoded_frame->stride(VideoFrame::kVPlane),
-                   decoded_frame->rows(VideoFrame::kVPlane),
-                   video_frame.get());
 
   // Use the timestamp from the file if we're transcoding.
-  video_frame->set_timestamp(ScaleTimestamp(decoded_frame->timestamp()));
+  video_frame->set_timestamp(ScaleTimestamp(video_frame->timestamp()));
   if (keep_frames_)
     inserted_video_frame_queue_.push(video_frame);
   video_frame_input_->InsertRawVideoFrame(
@@ -373,9 +391,7 @@ void FakeMediaSource::SendNextFrame() {
   // Send next send.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(
-          &FakeMediaSource::SendNextFrame,
-          base::Unretained(this)),
+      base::Bind(&FakeMediaSource::SendNextFrame, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kAudioFrameMs));
 }
 

@@ -218,7 +218,11 @@ class EncodedVideoFrameTracker : public RawEventSubscriber {
 void AppendYuvToFile(const base::FilePath& path,
                      scoped_refptr<media::VideoFrame> frame) {
   // Write YUV420 format to file.
-  std::string header = "FRAME\n";
+  std::string header;
+  base::StringAppendF(
+      &header, "FRAME W%d H%d\n",
+      frame->coded_size().width(),
+      frame->coded_size().height());
   AppendToFile(path, header.data(), header.size());
   AppendToFile(path,
       reinterpret_cast<char*>(frame->data(media::VideoFrame::kYPlane)),
@@ -514,11 +518,7 @@ void RunSimulation(const base::FilePath& source_path,
     LOG(INFO) << "Writing YUV output to file: " << yuv_output_path.value();
 
     // Write YUV4MPEG2 header.
-    std::string header;
-    base::StringAppendF(
-        &header, "YUV4MPEG2 W%d H%d F30000:1001 Ip A1:1 C420\n",
-        media_source.get_video_config().width,
-        media_source.get_video_config().height);
+    const std::string header("YUV4MPEG2 W1280 H720 F30000:1001 Ip A1:1 C420\n");
     AppendToFile(yuv_output_path, header.data(), header.size());
   }
 

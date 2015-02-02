@@ -7,6 +7,7 @@
 
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace cast {
@@ -27,6 +28,7 @@ class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
 
  private:
   VideoSenderConfig video_config_;
+  gfx::Size last_frame_size_;
   bool next_frame_is_key_;
   uint32 frame_id_;
   uint32 frame_id_to_reference_;
