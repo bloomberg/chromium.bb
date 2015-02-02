@@ -6,7 +6,6 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "cc/test/test_now_source.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -479,82 +478,6 @@ TEST_F(TaskQueueManagerTest, PostFromNestedRunloop) {
   message_loop_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(0, 2, 1));
-}
-
-TEST_F(TaskQueueManagerTest, WorkBatching) {
-  Initialize(1u);
-
-  manager_->SetWorkBatchSize(2);
-
-  std::vector<int> run_order;
-  scoped_refptr<base::SingleThreadTaskRunner> runner =
-      manager_->TaskRunnerForQueue(0);
-
-  selector_->AppendQueueToService(0);
-  selector_->AppendQueueToService(0);
-  selector_->AppendQueueToService(0);
-  selector_->AppendQueueToService(0);
-
-  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
-  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
-
-  // Running one task in the host message loop should cause two posted tasks to
-  // get executed.
-  EXPECT_EQ(test_task_runner_->GetPendingTasks().size(), 1u);
-  test_task_runner_->RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
-
-  // The second task runs the remaining two posted tasks.
-  EXPECT_EQ(test_task_runner_->GetPendingTasks().size(), 1u);
-  test_task_runner_->RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
-}
-
-void AdvanceNowTestTask(int value,
-                        std::vector<int>* out_result,
-                        scoped_refptr<cc::TestNowSource> time_source,
-                        base::TimeDelta delta) {
-  TestTask(value, out_result);
-  time_source->AdvanceNow(delta);
-}
-
-TEST_F(TaskQueueManagerTest, InterruptWorkBatchForDelayedTask) {
-  scoped_refptr<cc::TestNowSource> clock(cc::TestNowSource::Create());
-  Initialize(1u);
-
-  manager_->SetWorkBatchSize(2);
-  manager_->SetTimeSourceForTesting(clock);
-
-  std::vector<int> run_order;
-  scoped_refptr<base::SingleThreadTaskRunner> runner =
-      manager_->TaskRunnerForQueue(0);
-
-  selector_->AppendQueueToService(0);
-  selector_->AppendQueueToService(0);
-  selector_->AppendQueueToService(0);
-
-  base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
-  runner->PostTask(
-      FROM_HERE, base::Bind(&AdvanceNowTestTask, 2, &run_order, clock, delta));
-  runner->PostTask(
-      FROM_HERE, base::Bind(&AdvanceNowTestTask, 3, &run_order, clock, delta));
-
-  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(5));
-  runner->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
-                          delay);
-
-  // At this point we have two posted tasks: one for DoWork and one of the
-  // delayed task. Only the first non-delayed task should get executed because
-  // the work batch is interrupted by the pending delayed task.
-  EXPECT_EQ(test_task_runner_->GetPendingTasks().size(), 2u);
-  test_task_runner_->RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(2));
-
-  // Running all remaining tasks should execute both pending tasks.
-  test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
 }
 
 }  // namespace
