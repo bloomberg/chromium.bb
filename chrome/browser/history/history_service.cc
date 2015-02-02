@@ -33,7 +33,6 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1166,6 +1165,7 @@ void HistoryService::ExpireHistory(
 }
 
 void HistoryService::ExpireLocalAndRemoteHistoryBetween(
+    history::WebHistoryService* web_history,
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time,
@@ -1174,8 +1174,6 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
   // TODO(dubroy): This should be factored out into a separate class that
   // dispatches deletions to the proper places.
 
-  history::WebHistoryService* web_history =
-      WebHistoryServiceFactory::GetForProfile(profile_);
   if (web_history) {
     // TODO(dubroy): This API does not yet support deletion of specific URLs.
     DCHECK(restrict_urls.empty());
@@ -1188,9 +1186,8 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     //
     // TODO(davidben): |callback| should not run until this operation completes
     // too.
-    web_history->ExpireHistoryBetween(
-        restrict_urls, begin_time, end_time,
-        base::Bind(&ExpireWebHistoryComplete));
+    web_history->ExpireHistoryBetween(restrict_urls, begin_time, end_time,
+                                      base::Bind(&ExpireWebHistoryComplete));
   }
   ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
 }

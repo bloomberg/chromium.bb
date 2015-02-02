@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
@@ -45,6 +46,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/domain_reliability/service.h"
+#include "components/history/core/browser/web_history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -308,7 +310,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       waiting_for_clear_history_ = true;
 
       history_service->ExpireLocalAndRemoteHistoryBetween(
-          restrict_urls, delete_begin_, delete_end_,
+          WebHistoryServiceFactory::GetForProfile(profile_), restrict_urls,
+          delete_begin_, delete_end_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      base::Unretained(this)),
           &history_task_tracker_);
