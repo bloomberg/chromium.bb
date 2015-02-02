@@ -674,6 +674,7 @@
         'browser/extension_host.cc',
         'browser/extension_host.h',
         'browser/extension_host_delegate.h',
+        'browser/extension_host_observer.h',
         'browser/extension_error.cc',
         'browser/extension_error.h',
         'browser/extension_function.cc',

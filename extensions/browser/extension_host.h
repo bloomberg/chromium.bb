@@ -5,11 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_HOST_H_
 #define EXTENSIONS_BROWSER_EXTENSION_HOST_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -31,6 +33,7 @@ class SiteInstance;
 namespace extensions {
 class Extension;
 class ExtensionHostDelegate;
+class ExtensionHostObserver;
 class WindowController;
 
 // This class is the browser component of an extension component's RenderView.
@@ -74,6 +77,22 @@ class ExtensionHost : public content::WebContentsDelegate,
   // navigating to this host's url. Uses host_view for the RenderViewHost's view
   // (can be NULL). This happens delayed to avoid locking the UI.
   void CreateRenderViewSoon();
+
+  // Typical observer interface.
+  void AddObserver(ExtensionHostObserver* observer);
+  void RemoveObserver(ExtensionHostObserver* observer);
+
+  // Called when an IPC message is dispatched to the RenderView associated with
+  // this ExtensionHost.
+  void OnMessageDispatched(const std::string& event_name, int message_id);
+
+  // Called by the ProcessManager when a network request is started by the
+  // extension corresponding to this ExtensionHost.
+  void OnNetworkRequestStarted(uint64 request_id);
+
+  // Called by the ProcessManager when a previously started network request is
+  // finished.
+  void OnNetworkRequestDone(uint64 request_id);
 
   // content::WebContentsObserver
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -135,7 +154,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
-  void OnEventAck();
+  void OnEventAck(int message_id);
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
 
@@ -168,6 +187,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   // The original URL of the page being hosted.
   GURL initial_url_;
 
+  // Messages sent out to the renderer that have not been acknowledged yet.
+  std::set<int> unacked_messages_;
+
   content::NotificationRegistrar registrar_;
 
   ExtensionFunctionDispatcher extension_function_dispatcher_;
@@ -177,6 +199,8 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Used to measure how long it's been since the host was created.
   base::ElapsedTimer since_created_;
+
+  ObserverList<ExtensionHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

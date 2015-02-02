@@ -61,7 +61,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
-#include "chrome/browser/chromeos/power/light_bar.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
@@ -579,9 +578,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   renderer_freezer_.reset(
       new RendererFreezer(scoped_ptr<RendererFreezer::Delegate>(
           new FreezerCgroupProcessManager())));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWakeOnPackets))
-    light_bar_.reset(new LightBar());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
@@ -693,7 +689,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
   renderer_freezer_.reset();
-  light_bar_.reset();
   wake_on_wifi_manager_.reset();
   ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();

@@ -29,6 +29,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_host_delegate.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
@@ -159,6 +160,8 @@ ExtensionHost::~ExtensionHost() {
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
+  FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
+                    OnExtensionHostDestroyed(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
 }
 
@@ -203,6 +206,31 @@ void ExtensionHost::CreateRenderViewNow() {
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
+}
+
+void ExtensionHost::AddObserver(ExtensionHostObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ExtensionHost::RemoveObserver(ExtensionHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ExtensionHost::OnMessageDispatched(const std::string& event_name,
+                                        int message_id) {
+  unacked_messages_.insert(message_id);
+  FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
+                    OnExtensionMessageDispatched(this, event_name, message_id));
+}
+
+void ExtensionHost::OnNetworkRequestStarted(uint64 request_id) {
+  FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
+                    OnNetworkRequestStarted(this, request_id));
+}
+
+void ExtensionHost::OnNetworkRequestDone(uint64 request_id) {
+  FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
+                    OnNetworkRequestDone(this, request_id));
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -353,10 +381,25 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params, render_view_host());
 }
 
-void ExtensionHost::OnEventAck() {
+void ExtensionHost::OnEventAck(int message_id) {
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
     router->OnEventAck(browser_context_, extension_id());
+
+  // A compromised renderer could start sending out arbitrary message ids, which
+  // may affect other renderers by causing downstream methods to think that
+  // messages for other extensions have been acked.  Make sure that the message
+  // id sent by the renderer is one that this ExtensionHost expects to receive.
+  // This way if a renderer _is_ compromised, it can really only affect itself.
+  if (unacked_messages_.erase(message_id) > 0) {
+    FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
+                      OnExtensionMessageAcked(this, message_id));
+  } else {
+    // We have received an unexpected message id from the renderer.  It might be
+    // compromised or it might have some other issue.  Kill it just to be safe.
+    DCHECK(render_process_host());
+    render_process_host()->ReceivedBadMessage();
+  }
 }
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {

@@ -679,19 +679,25 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
 }
 
 void ProcessManager::OnNetworkRequestStarted(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    uint64 request_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionIDFromFrame(render_frame_host));
-  if (host && IsFrameInExtensionHost(host, render_frame_host))
+  if (host && IsFrameInExtensionHost(host, render_frame_host)) {
     IncrementLazyKeepaliveCount(host->extension());
+    host->OnNetworkRequestStarted(request_id);
+  }
 }
 
 void ProcessManager::OnNetworkRequestDone(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    uint64 request_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionIDFromFrame(render_frame_host));
-  if (host && IsFrameInExtensionHost(host, render_frame_host))
+  if (host && IsFrameInExtensionHost(host, render_frame_host)) {
+    host->OnNetworkRequestDone(request_id);
     DecrementLazyKeepaliveCount(host->extension());
+  }
 }
 
 void ProcessManager::CancelSuspend(const Extension* extension) {
@@ -931,6 +937,8 @@ void ProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
                                since_suspended->Elapsed());
     }
   }
+  FOR_EACH_OBSERVER(ProcessManagerObserver, observer_list_,
+                    OnBackgroundHostCreated(host));
 }
 
 void ProcessManager::CloseBackgroundHost(ExtensionHost* host) {

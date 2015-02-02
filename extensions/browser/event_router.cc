@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -48,22 +50,20 @@ void DoNothing(ExtensionHost* host) {}
 // registered from its lazy background page.
 const char kFilteredEvents[] = "filtered_events";
 
-// Sends a notification about an event to the API activity monitor on the
-// UI thread. Can be called from any thread.
-void NotifyApiEventDispatched(void* browser_context_id,
-                              const std::string& extension_id,
-                              const std::string& event_name,
-                              scoped_ptr<ListValue> args) {
+// Sends a notification about an event to the API activity monitor and the
+// ExtensionHost for |extension_id| on the UI thread. Can be called from any
+// thread.
+void NotifyEventDispatched(void* browser_context_id,
+                           const std::string& extension_id,
+                           const std::string& event_name,
+                           int message_id,
+                           scoped_ptr<ListValue> args) {
   // The ApiActivityMonitor can only be accessed from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&NotifyApiEventDispatched,
-                   browser_context_id,
-                   extension_id,
-                   event_name,
-                   base::Passed(&args)));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&NotifyEventDispatched, browser_context_id, extension_id,
+                   event_name, message_id, base::Passed(&args)));
     return;
   }
 
@@ -75,7 +75,20 @@ void NotifyApiEventDispatched(void* browser_context_id,
       ExtensionsBrowserClient::Get()->GetApiActivityMonitor(context);
   if (monitor)
     monitor->OnApiEventDispatched(extension_id, event_name, args.Pass());
+
+  ExtensionHost* host =
+      ProcessManager::Get(context)->GetBackgroundHostForExtension(extension_id);
+  if (host)
+    host->OnMessageDispatched(event_name, message_id);
 }
+
+// A global identifier used to distinguish extension messages that is
+// incremented every time a message is dispatched.
+int g_extension_message_id = 0;
+
+// Protects access to |g_extension_message_id|.
+base::LazyInstance<base::Lock>::Leaky g_message_id_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -106,15 +119,20 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            ListValue* event_args,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
-  NotifyApiEventDispatched(browser_context_id,
-                           extension_id,
-                           event_name,
-                           make_scoped_ptr(event_args->DeepCopy()));
+  // Since this function can be called from any thread we need to protect access
+  // to |g_extension_message_id|.
+  g_message_id_lock.Get().Acquire();
+  int message_id = g_extension_message_id++;
+  g_message_id_lock.Get().Release();
+
+  NotifyEventDispatched(browser_context_id, extension_id, event_name,
+                        message_id, make_scoped_ptr(event_args->DeepCopy()));
 
   ListValue args;
   args.Set(0, new base::StringValue(event_name));
   args.Set(1, event_args);
   args.Set(2, info.AsValue().release());
+  args.Set(3, new base::FundamentalValue(message_id));
   ipc_sender->Send(new ExtensionMsg_MessageInvoke(
       MSG_ROUTING_CONTROL,
       extension_id,

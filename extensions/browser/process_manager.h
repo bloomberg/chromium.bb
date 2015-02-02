@@ -131,8 +131,10 @@ class ProcessManager : public KeyedService,
 
   // Tracks network requests for a given RenderFrameHost, used to know
   // when network activity is idle for lazy background pages.
-  void OnNetworkRequestStarted(content::RenderFrameHost* render_frame_host);
-  void OnNetworkRequestDone(content::RenderFrameHost* render_frame_host);
+  void OnNetworkRequestStarted(content::RenderFrameHost* render_frame_host,
+                               uint64 request_id);
+  void OnNetworkRequestDone(content::RenderFrameHost* render_frame_host,
+                            uint64 request_id);
 
   // Prevents |extension|'s background page from being closed and sends the
   // onSuspendCanceled() event to it.

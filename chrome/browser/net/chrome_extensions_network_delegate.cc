@@ -30,6 +30,7 @@ enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
 // for a particular RenderFrame.
 void NotifyEPMRequestStatus(RequestStatus status,
                             void* profile_id,
+                            uint64 request_id,
                             int process_id,
                             int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -47,9 +48,9 @@ void NotifyEPMRequestStatus(RequestStatus status,
       content::RenderFrameHost::FromID(process_id, render_frame_id);
   if (render_frame_host) {
     if (status == REQUEST_STARTED) {
-      process_manager->OnNetworkRequestStarted(render_frame_host);
+      process_manager->OnNetworkRequestStarted(render_frame_host, request_id);
     } else if (status == REQUEST_DONE) {
-      process_manager->OnNetworkRequestDone(render_frame_host);
+      process_manager->OnNetworkRequestDone(render_frame_host, request_id);
     } else {
       NOTREACHED();
     }
@@ -69,9 +70,10 @@ void ForwardRequestStatus(
 
   int process_id, render_frame_id;
   if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyEPMRequestStatus,
-                   status, profile_id, process_id, render_frame_id));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&NotifyEPMRequestStatus, status, profile_id,
+                   request->identifier(), process_id, render_frame_id));
   }
 }
 

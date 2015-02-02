@@ -540,8 +540,10 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
     RenderView* background_view =
         ExtensionHelper::GetBackgroundPage(extension_id);
     if (background_view) {
-      background_view->Send(
-          new ExtensionHostMsg_EventAck(background_view->GetRoutingID()));
+      int message_id;
+      args.GetInteger(3, &message_id);
+      background_view->Send(new ExtensionHostMsg_EventAck(
+          background_view->GetRoutingID(), message_id));
     }
   }
 }

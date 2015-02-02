@@ -630,7 +630,7 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveFilteredListener,
                      bool /* lazy */)
 
 // Notify the browser that an event has finished being dispatched.
-IPC_MESSAGE_ROUTED0(ExtensionHostMsg_EventAck)
+IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 
 // Open a channel to all listening contexts owned by the extension with
 // the given ID.  This always returns a valid port ID which can be used for

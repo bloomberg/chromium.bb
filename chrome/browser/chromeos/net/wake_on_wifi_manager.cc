@@ -141,6 +141,7 @@ WakeOnWifiManager* WakeOnWifiManager::Get() {
 
 WakeOnWifiManager::WakeOnWifiManager()
     : current_feature_(WakeOnWifiManager::INVALID),
+      extension_event_observer_(new ExtensionEventObserver()),
       weak_ptr_factory_(this) {
   // This class must be constructed before any users are logged in, i.e., before
   // any profiles are created or added to the ProfileManager.  Additionally,
@@ -216,13 +217,15 @@ void WakeOnWifiManager::OnPreferenceChanged(
       base::Bind(&base::DoNothing),
       network_handler::ErrorCallback());
 
-  bool wake_from_suspend = IsWakeOnPacketEnabled(current_feature_);
+  bool wake_on_packet_enabled = IsWakeOnPacketEnabled(current_feature_);
   for (const auto& kv_pair : connection_observers_) {
     Profile* profile = kv_pair.first;
     gcm::GCMProfileServiceFactory::GetForProfile(profile)
         ->driver()
-        ->WakeFromSuspendForHeartbeat(wake_from_suspend);
+        ->WakeFromSuspendForHeartbeat(wake_on_packet_enabled);
   }
+
+  extension_event_observer_->SetShouldDelaySuspend(wake_on_packet_enabled);
 }
 
 bool WakeOnWifiManager::WakeOnWifiSupported() {

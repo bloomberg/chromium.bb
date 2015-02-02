@@ -7,7 +7,9 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/power/extension_event_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -67,6 +69,8 @@ class WakeOnWifiManager : public content::NotificationObserver {
   class WakeOnPacketConnectionObserver;
   base::ScopedPtrHashMap<Profile*, WakeOnPacketConnectionObserver>
       connection_observers_;
+
+  scoped_ptr<ExtensionEventObserver> extension_event_observer_;
 
   content::NotificationRegistrar registrar_;
 

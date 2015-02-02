@@ -167,6 +167,8 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   cache.DeleteProfileFromCache(profile->GetPath());
 
   profile_manager_->profiles_info_.erase(profile->GetPath());
+
+  testing_profiles_.erase(it);
 }
 
 void TestingProfileManager::DeleteAllTestingProfiles() {
