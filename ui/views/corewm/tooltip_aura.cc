@@ -53,6 +53,7 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
       tooltip_window_(NULL) {
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
+  label_.SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
   const int kHorizontalPadding = 3;
   const int kVerticalPadding = 2;
