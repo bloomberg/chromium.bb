@@ -5,6 +5,8 @@ include_rules = [
 
   "+components/autofill/content/renderer",
   "+components/cdm/renderer",
+  "+components/printing/common",
+  "+components/printing/renderer",
   "+components/visitedlink/renderer",
 
   "+content/public/renderer",

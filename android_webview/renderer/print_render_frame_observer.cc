@@ -4,8 +4,8 @@
 
 #include "android_webview/renderer/print_render_frame_observer.h"
 
-#include "android_webview/common/print_messages.h"
-#include "android_webview/renderer/print_web_view_helper.h"
+#include "components/printing/common/print_messages.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 #include "content/public/renderer/render_frame.h"
 
 namespace android_webview {

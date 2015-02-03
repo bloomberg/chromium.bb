@@ -756,6 +756,14 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
   on_ready_.Reset();
 }
 
+bool PrintWebViewHelper::Delegate::IsAskPrintSettingsEnabled() {
+  return true;
+}
+
+bool PrintWebViewHelper::Delegate::IsScriptedPrintEnabled() {
+  return true;
+}
+
 PrintWebViewHelper::PrintWebViewHelper(
     content::RenderView* render_view,
     scoped_ptr<Delegate> delegate)
@@ -785,6 +793,9 @@ void PrintWebViewHelper::DisablePreview() {
 
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
     blink::WebFrame* frame, bool user_initiated) {
+  if (!delegate_->IsScriptedPrintEnabled())
+    return false;
+
   // If preview is enabled, then the print dialog is tab modal, and the user
   // can always close the tab on a mis-behaving page (the system print dialog
   // is app modal). If the print was initiated through user action, don't
@@ -1259,7 +1270,8 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
-  if (!GetPrintSettingsFromUser(frame_ref.GetFrame(), node,
+  if (delegate_->IsAskPrintSettingsEnabled() &&
+      !GetPrintSettingsFromUser(frame_ref.GetFrame(), node,
                                 expected_page_count,
                                 is_scripted)) {
     DidFinishPrinting(OK);  // Release resources and fail silently.

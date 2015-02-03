@@ -10,14 +10,15 @@
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_message_port_client.h"
 #include "android_webview/renderer/aw_permission_client.h"
+#include "android_webview/renderer/aw_print_web_view_helper_delegate.h"
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
-#include "android_webview/renderer/print_web_view_helper.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -147,7 +148,10 @@ void AwContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   AwRenderViewExt::RenderViewCreated(render_view);
 
-  new printing::PrintWebViewHelper(render_view);
+  new printing::PrintWebViewHelper(
+      render_view,
+      scoped_ptr<printing::PrintWebViewHelper::Delegate>(
+          new AwPrintWebViewHelperDelegate()));
 }
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code,

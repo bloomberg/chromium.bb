@@ -1,13 +1,5 @@
 include_rules = [
   "-android_webview",
   "+android_webview/common",
-
-# TODO(sgurun) remove these deps after crbug.com/322276 is resolved
-  "+printing",
-  "+third_party/WebKit/public/web/WebPrintScalingOption.h",
-  "+ui/gfx/native_widget_types.h",
-  "+ui/gfx/rect.h",
-  "+ui/gfx/size.h",
-
-  "+ui/gl/gpu_memory_buffer.h",
+  "+components/printing/common",
 ]
