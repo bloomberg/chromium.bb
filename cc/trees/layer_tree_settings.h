@@ -36,6 +36,7 @@ class CC_EXPORT LayerTreeSettings {
   bool gpu_rasterization_enabled;
   bool gpu_rasterization_forced;
   int gpu_rasterization_msaa_sample_count;
+  bool threaded_gpu_rasterization_enabled;
   bool create_low_res_tiling;
 
   enum ScrollbarAnimator {

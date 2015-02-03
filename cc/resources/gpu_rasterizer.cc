@@ -31,22 +31,22 @@ scoped_ptr<GpuRasterizer> GpuRasterizer::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
-    bool tile_prepare_enabled,
+    bool threaded_gpu_rasterization_enabled,
     int msaa_sample_count) {
   return make_scoped_ptr<GpuRasterizer>(new GpuRasterizer(
       context_provider, resource_provider, use_distance_field_text,
-      tile_prepare_enabled, msaa_sample_count));
+      threaded_gpu_rasterization_enabled, msaa_sample_count));
 }
 
 GpuRasterizer::GpuRasterizer(ContextProvider* context_provider,
                              ResourceProvider* resource_provider,
                              bool use_distance_field_text,
-                             bool tile_prepare_enabled,
+                             bool threaded_gpu_rasterization_enabled,
                              int msaa_sample_count)
     : context_provider_(context_provider),
       resource_provider_(resource_provider),
       use_distance_field_text_(use_distance_field_text),
-      tile_prepare_enabled_(tile_prepare_enabled),
+      threaded_gpu_rasterization_enabled_(threaded_gpu_rasterization_enabled),
       msaa_sample_count_(msaa_sample_count) {
   DCHECK(context_provider_);
 }
@@ -55,8 +55,7 @@ GpuRasterizer::~GpuRasterizer() {
 }
 
 PrepareTilesMode GpuRasterizer::GetPrepareTilesMode() {
-  return tile_prepare_enabled_ ? PrepareTilesMode::PREPARE_PRIORITIZED_TILES
-                               : PrepareTilesMode::PREPARE_NONE;
+  return PrepareTilesMode::PREPARE_NONE;
 }
 
 void GpuRasterizer::RasterizeTiles(

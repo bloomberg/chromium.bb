@@ -16,7 +16,6 @@ class TileManager;
 
 enum class PrepareTilesMode {
   RASTERIZE_PRIORITIZED_TILES,
-  PREPARE_PRIORITIZED_TILES,
   PREPARE_NONE
 };
 

@@ -292,6 +292,21 @@ bool IsForceGpuRasterizationEnabled() {
   return command_line.HasSwitch(switches::kForceGpuRasterization);
 }
 
+bool IsThreadedGpuRasterizationEnabled() {
+  if (!IsImplSidePaintingEnabled())
+    return false;
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableThreadedGpuRasterization))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableThreadedGpuRasterization))
+    return true;
+
+  return false;
+}
+
 bool UseSurfacesEnabled() {
 #if defined(OS_ANDROID)
   return false;

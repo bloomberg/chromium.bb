@@ -30,6 +30,7 @@ class CompositorDependencies {
   virtual bool IsImplSidePaintingEnabled() = 0;
   virtual bool IsGpuRasterizationForced() = 0;
   virtual bool IsGpuRasterizationEnabled() = 0;
+  virtual bool IsThreadedGpuRasterizationEnabled() = 0;
   virtual int GetGpuRasterizationMSAASampleCount() = 0;
   virtual bool IsLcdTextEnabled() = 0;
   virtual bool IsDistanceFieldTextEnabled() = 0;

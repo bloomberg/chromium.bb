@@ -22,11 +22,12 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
  public:
   ~GpuRasterizer() override;
 
-  static scoped_ptr<GpuRasterizer> Create(ContextProvider* context_provider,
-                                          ResourceProvider* resource_provider,
-                                          bool use_distance_field_text,
-                                          bool tile_prepare_enabled,
-                                          int msaa_sample_count);
+  static scoped_ptr<GpuRasterizer> Create(
+      ContextProvider* context_provider,
+      ResourceProvider* resource_provider,
+      bool use_distance_field_text,
+      bool threaded_gpu_rasterization_enabled,
+      int msaa_sample_count);
   PrepareTilesMode GetPrepareTilesMode() override;
   void RasterizeTiles(
       const TileVector& tiles,
@@ -38,7 +39,7 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   GpuRasterizer(ContextProvider* context_provider,
                 ResourceProvider* resource_provider,
                 bool use_distance_filed_text,
-                bool tile_prepare_enabled,
+                bool threaded_gpu_rasterization_enabled,
                 int msaa_sample_count);
 
   using ScopedResourceWriteLocks =
@@ -55,7 +56,7 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   SkMultiPictureDraw multi_picture_draw_;
 
   bool use_distance_field_text_;
-  bool tile_prepare_enabled_;
+  bool threaded_gpu_rasterization_enabled_;
   int msaa_sample_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterizer);
