@@ -1,0 +1,4 @@
+AXWebArea AXRoleDescription='HTML content'
+    AXGroup AXSubrole=AXTabPanel AXRoleDescription='tabpanel'
+        AXRadioButton AXRoleDescription='tab' AXTitle='Item' AXValue='0'
+        AXRadioButton AXRoleDescription='tab' AXTitle='Prices' AXValue='0'
