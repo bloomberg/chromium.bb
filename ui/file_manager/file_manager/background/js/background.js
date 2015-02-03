@@ -326,17 +326,20 @@ var nextFileManagerDialogID = 0;
  * @type {Object}
  * @const
  */
-var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
-  bounds: Object.freeze({
+var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
+  bounds: {
     left: Math.round(window.screen.availWidth * 0.1),
     top: Math.round(window.screen.availHeight * 0.1),
     width: Math.round(window.screen.availWidth * 0.8),
     height: Math.round(window.screen.availHeight * 0.8)
-  }),
+  },
+  frame: {
+    color: '#1687d0'
+  },
   minWidth: 480,
   minHeight: 300,
   hidden: true
-});
+};
 
 /**
  * @param {Object=} opt_appState App state.
