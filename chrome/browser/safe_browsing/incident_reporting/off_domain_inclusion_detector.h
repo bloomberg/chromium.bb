@@ -42,8 +42,8 @@ class OffDomainInclusionDetector {
   };
 
   // TODO(gab): Hook the OffDomainInclusionDetector to the
-  // IncidentReportingService and use an AddIncidentCallback instead of this
-  // custom callback type.
+  // IncidentReportingService and use an IncidentReceiver instead of this custom
+  // callback type.
   typedef base::Callback<void(AnalysisEvent event)> ReportAnalysisEventCallback;
 
   // Constructs an OffDomainInclusionDetector which will use |database_manager|

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
@@ -51,7 +52,7 @@ void RegisterBinaryIntegrityAnalysis() {
 #endif
 }
 
-void VerifyBinaryIntegrity(const AddIncidentCallback& callback) {
+void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
       new BinaryFeatureExtractor());
 
@@ -78,8 +79,8 @@ void VerifyBinaryIntegrity(const AddIncidentCallback& callback) {
       incident->set_allocated_signature(signature_info.release());
 
       // Send the report.
-      callback.Run(make_scoped_ptr(
-          new BinaryIntegrityIncident(incident.Pass())));
+      incident_receiver->AddIncidentForProcess(
+          make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
     }
   }
 }

@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
 namespace safe_browsing {
@@ -21,7 +21,7 @@ void RegisterBlacklistLoadAnalysis() {
 }
 
 #if !defined(OS_WIN)
-void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
+void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
 }
 
 bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names) {

@@ -7,10 +7,12 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
 
 namespace safe_browsing {
+
+class IncidentReceiver;
 
 // Registers a process-wide analysis with the incident reporting service that
 // will examine how effective the blacklist was.
@@ -22,7 +24,7 @@ bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names);
 
 // Callback to pass to the incident reporting service. The incident reporting
 // service will decide when to start the analysis.
-void VerifyBlacklistLoadState(const AddIncidentCallback& callback);
+void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver);
 
 }  // namespace safe_browsing
 

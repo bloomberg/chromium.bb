@@ -5,21 +5,25 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
+
+class Profile;
 
 namespace safe_browsing {
 
+class IncidentReceiver;
+
 // A preference validation delegate that adds incidents to a given receiver
-// for preference validation failures.
+// for preference validation failures. The profile for which the delegate
+// operates must outlive the delegate itself.
 class PreferenceValidationDelegate
     : public TrackedPreferenceValidationDelegate {
  public:
-  explicit PreferenceValidationDelegate(
-      const AddIncidentCallback& add_incident);
+  PreferenceValidationDelegate(Profile* profile,
+                               scoped_ptr<IncidentReceiver> incident_receiver);
   ~PreferenceValidationDelegate() override;
 
  private:
@@ -36,7 +40,8 @@ class PreferenceValidationDelegate
       PrefHashStoreTransaction::ValueState value_state,
       bool is_personal) override;
 
-  AddIncidentCallback add_incident_;
+  Profile* profile_;
+  scoped_ptr<IncidentReceiver> incident_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceValidationDelegate);
 };

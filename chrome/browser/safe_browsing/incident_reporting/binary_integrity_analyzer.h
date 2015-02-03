@@ -7,13 +7,15 @@
 
 #include <vector>
 
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
 }  // namespace base
 
 namespace safe_browsing {
+
+class IncidentReceiver;
 
 // Registers a process-wide analysis with the incident reporting service that
 // will verify the signature of the most critical binaries used by Chrome. It
@@ -22,7 +24,7 @@ void RegisterBinaryIntegrityAnalysis();
 
 // Callback to pass to the incident reporting service. The incident reporting
 // service will decide when to start the analysis.
-void VerifyBinaryIntegrity(const AddIncidentCallback& callback);
+void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver);
 
 // Returns a vector containing the paths to all the binaries to verify.
 std::vector<base::FilePath> GetCriticalBinariesPath();

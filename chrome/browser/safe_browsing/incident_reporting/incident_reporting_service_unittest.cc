@@ -17,6 +17,7 @@
 #include "base/threading/thread_local.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
@@ -246,7 +247,12 @@ class IncidentReportingServiceTest : public testing::Test {
 
   // Adds a test incident to the service.
   void AddTestIncident(Profile* profile) {
-    instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident(nullptr));
+    scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+        instance_->GetIncidentReceiver());
+    if (profile)
+      receiver->AddIncidentForProfile(profile, MakeTestIncident(nullptr));
+    else
+      receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
   }
 
   // Registers the callback to be run for delayed analysis.
@@ -459,10 +465,10 @@ class IncidentReportingServiceTest : public testing::Test {
   void OnDownloadFinderDestroyed() { download_finder_destroyed_ = true; }
   void OnUploaderDestroyed() { uploader_destroyed_ = true; }
 
-  void OnDelayedAnalysis(const safe_browsing::AddIncidentCallback& callback) {
+  void OnDelayedAnalysis(scoped_ptr<safe_browsing::IncidentReceiver> receiver) {
     delayed_analysis_ran_ = true;
     if (on_delayed_analysis_action_ == ON_DELAYED_ANALYSIS_ADD_INCIDENT)
-      callback.Run(MakeTestIncident(nullptr));
+      receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
   }
 
   // A mapping of profile name to its corresponding properties.
@@ -637,7 +643,8 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
   ExpectTestIncidentUploaded(1);
 
   // Add a variation on the incident to the service.
-  instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident("leeches"));
+  instance_->GetIncidentReceiver()->AddIncidentForProfile(
+      profile, MakeTestIncident("leeches"));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -755,9 +762,9 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
                 nullptr);
 
   // Add the test incident.
-  safe_browsing::AddIncidentCallback add_incident(
-      instance_->GetAddIncidentCallback(NULL));
-  add_incident.Run(MakeTestIncident(nullptr));
+  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+      instance_->GetIncidentReceiver());
+  receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -766,7 +773,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   ExpectTestIncidentUploaded(1);
 
   // Add a variation on the incident to the service.
-  add_incident.Run(MakeTestIncident("leeches"));
+  receiver->AddIncidentForProcess(MakeTestIncident("leeches"));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();

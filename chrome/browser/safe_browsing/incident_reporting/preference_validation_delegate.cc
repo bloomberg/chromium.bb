@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
@@ -41,8 +41,10 @@ TPIncident_ValueState MapValueState(
 }  // namespace
 
 PreferenceValidationDelegate::PreferenceValidationDelegate(
-    const AddIncidentCallback& add_incident)
-    : add_incident_(add_incident) {
+    Profile* profile,
+    scoped_ptr<IncidentReceiver> incident_receiver)
+    : profile_(profile),
+      incident_receiver_(incident_receiver.Pass()) {
 }
 
 PreferenceValidationDelegate::~PreferenceValidationDelegate() {
@@ -64,8 +66,9 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(make_scoped_ptr(
-        new TrackedPreferenceIncident(incident.Pass(), is_personal)));
+    incident_receiver_->AddIncidentForProfile(
+        profile_, make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass(),
+                                                                is_personal)));
   }
 }
 
@@ -87,8 +90,9 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
       incident->add_split_key(*scan);
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(make_scoped_ptr(
-        new TrackedPreferenceIncident(incident.Pass(), is_personal)));
+    incident_receiver_->AddIncidentForProfile(
+        profile_, make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass(),
+                                                                is_personal)));
   }
 }
 

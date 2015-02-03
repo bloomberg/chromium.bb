@@ -1009,6 +1009,8 @@
       'browser/safe_browsing/incident_reporting/incident_report_uploader_impl_unittest.cc',
       'browser/safe_browsing/incident_reporting/incident_reporting_service_unittest.cc',
       'browser/safe_browsing/incident_reporting/last_download_finder_unittest.cc',
+      'browser/safe_browsing/incident_reporting/mock_incident_receiver.cc',
+      'browser/safe_browsing/incident_reporting/mock_incident_receiver.h',
       'browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.cc',
       'browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h',
       'browser/safe_browsing/incident_reporting/module_integrity_verifier_win_unittest.cc',

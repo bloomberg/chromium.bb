@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_callback_runner.h"
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
@@ -54,6 +53,8 @@ class ClientIncidentReport;
 class ClientIncidentReport_DownloadDetails;
 class ClientIncidentReport_EnvironmentData;
 class ClientIncidentReport_IncidentData;
+class Incident;
+class IncidentReceiver;
 
 // A class that manages the collection of incidents and submission of incident
 // reports to the safe browsing client-side detection service. The service
@@ -77,17 +78,15 @@ class IncidentReportingService : public content::NotificationObserver {
   // dropped at destruction.
   ~IncidentReportingService() override;
 
-  // Returns a callback by which external components can add an incident to the
-  // service on behalf of |profile|. The callback may outlive the service, but
-  // will no longer have any effect after the service is deleted. The callback
-  // must not be run after |profile| has been destroyed.
-  AddIncidentCallback GetAddIncidentCallback(Profile* profile);
+  // Returns an object by which external components can add an incident to the
+  // service. The object may outlive the service, but will no longer have any
+  // effect after the service is deleted.
+  scoped_ptr<IncidentReceiver> GetIncidentReceiver();
 
   // Returns a preference validation delegate that adds incidents to the service
   // for validation failures in |profile|. The delegate may outlive the service,
   // but incidents reported by it will no longer have any effect after the
-  // service is deleted. The lifetime of the delegate should not extend beyond
-  // that of the profile it services.
+  // service is deleted.
   scoped_ptr<TrackedPreferenceValidationDelegate>
       CreatePreferenceValidationDelegate(Profile* profile);
 
@@ -143,6 +142,7 @@ class IncidentReportingService : public content::NotificationObserver {
  private:
   struct ProfileContext;
   class UploadContext;
+  class Receiver;
 
   // A mapping of profiles to contexts holding state about received incidents.
   typedef std::map<Profile*, ProfileContext*> ProfileContextCollection;
@@ -161,8 +161,7 @@ class IncidentReportingService : public content::NotificationObserver {
   // participating in extended safe browsing are preferred.
   Profile* FindEligibleProfile() const;
 
-  // Adds |incident_data| to the service. The incident_time_msec field is
-  // populated with the current time if the caller has not already done so.
+  // Adds |incident_data| relating to the optional |profile| to the service.
   void AddIncident(Profile* profile, scoped_ptr<Incident> incident);
 
   // Begins processing a report. If processing is already underway, ensures that
@@ -321,7 +320,7 @@ class IncidentReportingService : public content::NotificationObserver {
   // Non-NULL while such a search is outstanding.
   scoped_ptr<LastDownloadFinder> last_download_finder_;
 
-  // A factory for handing out weak pointers for AddIncident callbacks.
+  // A factory for handing out weak pointers for IncidentReceiver objects.
   base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_;
 
   // A factory for handing out weak pointers for internal asynchronous tasks

@@ -15,6 +15,7 @@
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -43,7 +44,7 @@ bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names) {
   return true;
 }
 
-void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
+void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
   std::vector<base::string16> module_names;
   if (GetLoadedBlacklistedModules(&module_names)) {
     PathSanitizer path_sanitizer;
@@ -95,7 +96,7 @@ void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
           module_path, blacklist_load->mutable_image_headers());
 
       // Send the report.
-      callback.Run(
+      incident_receiver->AddIncidentForProcess(
           make_scoped_ptr(new BlacklistLoadIncident(blacklist_load.Pass())));
     }
   }

@@ -12,8 +12,15 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
+using ::testing::IsNull;
+using ::testing::NiceMock;
+using ::testing::WithArg;
 
 // A basic test harness that creates a delegate instance for which it stores all
 // incidents. Tests can push data to the delegate and verify that the test
@@ -30,13 +37,12 @@ class PreferenceValidationDelegateTest : public testing::Test {
     testing::Test::SetUp();
     invalid_keys_.push_back(std::string("one"));
     invalid_keys_.push_back(std::string("two"));
+    scoped_ptr<safe_browsing::MockIncidentReceiver> receiver(
+        new NiceMock<safe_browsing::MockIncidentReceiver>());
+    ON_CALL(*receiver, DoAddIncidentForProfile(IsNull(), _))
+        .WillByDefault(WithArg<1>(TakeIncidentToVector(&incidents_)));
     instance_.reset(new safe_browsing::PreferenceValidationDelegate(
-        base::Bind(&PreferenceValidationDelegateTest::AddIncident,
-                   base::Unretained(this))));
-  }
-
-  void AddIncident(scoped_ptr<safe_browsing::Incident> incident) {
-    incidents_.push_back(incident.release());
+        nullptr, receiver.Pass()));
   }
 
   static void ExpectValueStatesEquate(
