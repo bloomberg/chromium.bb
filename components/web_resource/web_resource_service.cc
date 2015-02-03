@@ -107,9 +107,9 @@ void WebResourceService::StartFetch() {
 
   GURL web_resource_server =
       application_locale_.empty()
-          ? google_util::AppendGoogleLocaleParam(web_resource_server_,
-                                                 application_locale_)
-          : web_resource_server_;
+          ? web_resource_server_
+          : google_util::AppendGoogleLocaleParam(web_resource_server_,
+                                                 application_locale_);
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
   url_fetcher_.reset(
