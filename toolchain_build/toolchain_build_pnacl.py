@@ -225,6 +225,11 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
       configure_args.extend(['CFLAGS=' + ' '.join(extra_cflags),
                              'CXXFLAGS=' + ' '.join(extra_cflags)])
     else:
+      # TODO(jvoung): Remove this after merging LLVM to be cleaner
+      # w.r.t. -Winconsistent-missing-override.
+      # https://code.google.com/p/nativeclient/issues/detail?id=4026
+      if not options.gcc:
+        extra_cflags.append('-Wno-inconsistent-missing-override')
       configure_args.extend(
        ['CFLAGS=' + ' '.join(extra_cflags),
         'LDFLAGS=-L%(' + GSDJoin('abs_libcxx', host) + ')s/lib',

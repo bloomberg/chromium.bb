@@ -11,7 +11,7 @@ vars = {
   # chrome_rev: 275800
   "valgrind_rev": "59886873b4b8258a8e0f098c23e1958e0d0c0a26", # from svn revision 231553
   "tools_valgrind_rev": "4989a1b19c3a33c828e385d3a07e83e202e1e651", # from svn revision 275521
-  "clang_rev": "7aa71664f527268776ce5b5bceae01a4bc6a1666", # from svn revision 274816
+  "clang_rev": "dc89dfdeeeb610545184911529aed5d3e4e8558f", # from cr commit position 307492
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
