@@ -198,7 +198,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
       int screen_y, blink::WebDragOperation operation);
 
   // Called when the drag started by this guest ends at an OS-level.
-  void EndSystemDrag();
+  void EmbedderSystemDragEnded();
+  void EndSystemDragIfApplicable();
 
   void RespondToPermissionRequest(int request_id,
                                   bool should_allow,
@@ -387,6 +388,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   // The is the routing ID for a swapped out RenderView for the guest
   // WebContents in the embedder's process.
   int guest_proxy_routing_id_;
+  // Last seen state of drag status update.
+  blink::WebDragStatus last_drag_status_;
+  // Whether or not our embedder has seen a SystemDragEnded() call.
+  bool seen_embedder_system_drag_ended_;
+  // Whether or not our embedder has seen a DragSourceEndedAt() call.
+  bool seen_embedder_drag_source_ended_at_;
 
   // Guests generate frames and send a CompositorFrameSwapped (CFS) message
   // indicating the next frame is ready to be positioned and composited.
