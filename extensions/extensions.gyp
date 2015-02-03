@@ -890,6 +890,12 @@
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'sources': [
+            'browser/api/networking_config/networking_config_api.cc',
+            'browser/api/networking_config/networking_config_api.h',
+            'browser/api/networking_config/networking_config_service.cc',
+            'browser/api/networking_config/networking_config_service.h',
+            'browser/api/networking_config/networking_config_service_factory.cc',
+            'browser/api/networking_config/networking_config_service_factory.h',
             'browser/api/vpn_provider/vpn_provider_api.cc',
             'browser/api/vpn_provider/vpn_provider_api.h',
             'browser/api/vpn_provider/vpn_service.cc',

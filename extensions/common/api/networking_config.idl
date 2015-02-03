@@ -49,6 +49,13 @@ namespace networking.config {
     failed
   };
 
+  // Invoked by $(setNetworkFilter) when the respective operation is finished.
+  callback SetNetworkFilterCallback = void();
+
+  // Invoked by $(finishAuthentication) when the respective operation is
+  // finished.
+  callback FinishAuthenticationCallback = void();
+
   interface Functions {
     // Allows an extension to define network filters for the networks it can
     // handle. A call to this function will remove all filters previously
@@ -56,16 +63,20 @@ namespace networking.config {
     // |networks|: Network filters to set. Every <code>NetworkInfo</code> must
     //             either have the <code>SSID</code> or <code>HexSSID</code>
     //             set. Other fields will be ignored.
-    void setNetworkFilter(NetworkInfo[] networks);
+    // |callback|: Called back when this operation is finished.
+    void setNetworkFilter(NetworkInfo[] networks,
+                          SetNetworkFilterCallback callback);
 
     // Called by the extension to notify the network config API that it finished
     // a captive portal authentication attempt and hand over the result of the
     // attempt. This function must only be called with the GUID of the latest
     // $(onCaptivePortalDetected) event.
-    // |GUID|: unique network identifier obtained from
+    // |GUID|: Unique network identifier obtained from
     //         $(onCaptivePortalDetected).
-    // |result|: the result of the authentication attempt
-    void finishAuthentication(DOMString GUID, AuthenticationResult result);
+    // |result|: The result of the authentication attempt.
+    // |callback|: Called back when this operation is finished.
+    void finishAuthentication(DOMString GUID, AuthenticationResult result,
+                              FinishAuthenticationCallback callback);
   };
 
   interface Events {

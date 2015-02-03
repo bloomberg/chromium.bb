@@ -47268,6 +47268,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="952" label="FILEMANAGERPRIVATE_SEARCHFILESBYHASHES"/>
   <int value="953" label="EASYUNLOCKPRIVATE_SHOWERRORBUBBLE"/>
   <int value="954" label="EXTENSIONVIEWINTERNAL_NAVIGATE"/>
+  <int value="955" label="NETWORKING_CONFIG_SETNETWORKFILTER"/>
+  <int value="956" label="NETWORKING_CONFIG_FINISHAUTHENTICATION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -47455,6 +47457,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="66" label="kTopSites"/>
   <int value="67" label="kU2fDevices"/>
   <int value="68" label="kDocumentScan"/>
+  <int value="69" label="kNetworkingConfig"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

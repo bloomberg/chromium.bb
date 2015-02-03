@@ -580,6 +580,12 @@ source_set("browser") {
 
     if (is_chromeos) {
       sources += [
+        "api/networking_config/networking_config_api.cc",
+        "api/networking_config/networking_config_api.h",
+        "api/networking_config/networking_config_service.cc",
+        "api/networking_config/networking_config_service.h",
+        "api/networking_config/networking_config_service_factory.cc",
+        "api/networking_config/networking_config_service_factory.h",
         "api/vpn_provider/vpn_provider_api.cc",
         "api/vpn_provider/vpn_provider_api.h",
         "api/vpn_provider/vpn_service.cc",

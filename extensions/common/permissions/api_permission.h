@@ -143,6 +143,7 @@ class APIPermission {
     kMDns,
     kMusicManagerPrivate,
     kNativeMessaging,
+    kNetworkingConfig,
     kNetworkingPrivate,
     kNotificationProvider,
     kNotifications,

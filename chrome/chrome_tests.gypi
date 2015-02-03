@@ -263,6 +263,7 @@
       'browser/extensions/lazy_background_page_apitest.cc',
       'browser/extensions/lazy_background_page_test_util.h',
       'browser/extensions/mutation_observers_apitest.cc',
+      'browser/extensions/api/networking_config_chromeos_apitest_chromeos.cc',
       'browser/extensions/options_page_apitest.cc',
       'browser/extensions/page_action_browsertest.cc',
       'browser/extensions/plugin_apitest.cc',

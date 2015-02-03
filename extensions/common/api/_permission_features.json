@@ -201,6 +201,11 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
+  "networking.config": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"]
+  },
   "networkingPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

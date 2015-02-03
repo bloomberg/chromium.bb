@@ -59,6 +59,7 @@
     ],
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
+      'networking_config.idl',
       'vpn_provider.idl',
       'webcam_private.idl',
     ],
