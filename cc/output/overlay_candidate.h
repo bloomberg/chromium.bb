@@ -20,6 +20,10 @@ class CC_EXPORT OverlayCandidate {
   static gfx::OverlayTransform GetOverlayTransform(
       const gfx::Transform& quad_transform,
       bool flipped);
+  // Apply transform |delta| to |in| and return the resulting transform,
+  // or OVERLAY_TRANSFORM_INVALID.
+  static gfx::OverlayTransform ModifyTransform(gfx::OverlayTransform in,
+                                               gfx::OverlayTransform delta);
   static gfx::Rect GetOverlayRect(const gfx::Transform& quad_transform,
                                   const gfx::Rect& rect);
 

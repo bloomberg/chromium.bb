@@ -24,7 +24,7 @@ OverlayCandidate::~OverlayCandidate() {}
 gfx::OverlayTransform OverlayCandidate::GetOverlayTransform(
     const gfx::Transform& quad_transform,
     bool flipped) {
-  if (!quad_transform.IsIdentityOrTranslation())
+  if (!quad_transform.IsPositiveScaleOrTranslation())
     return gfx::OVERLAY_TRANSFORM_INVALID;
 
   return flipped ? gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL
@@ -32,9 +32,105 @@ gfx::OverlayTransform OverlayCandidate::GetOverlayTransform(
 }
 
 // static
+gfx::OverlayTransform OverlayCandidate::ModifyTransform(
+    gfx::OverlayTransform in,
+    gfx::OverlayTransform delta) {
+  // There are 8 different possible transforms. We can characterize these
+  // by looking at where the origin moves and the direction the horizontal goes.
+  // (TL=top-left, BR=bottom-right, H=horizontal, V=vertical).
+  // NONE: TL, H
+  // FLIP_VERTICAL: BL, H
+  // FLIP_HORIZONTAL: TR, H
+  // ROTATE_90: TR, V
+  // ROTATE_180: BR, H
+  // ROTATE_270: BL, V
+  // Missing transforms: TL, V & BR, V
+  // Basic combinations:
+  // Flip X & Y -> Rotate 180 (TL,H -> TR,H -> BR,H or TL,H -> BL,H -> BR,H)
+  // Flip X or Y + Rotate 180 -> other flip (eg, TL,H -> TR,H -> BL,H)
+  // Rotate + Rotate simply adds values.
+  // Rotate 90/270 + flip is invalid because we can only have verticals with
+  // the origin in TR or BL.
+  if (delta == gfx::OVERLAY_TRANSFORM_NONE)
+    return in;
+  switch (in) {
+    case gfx::OVERLAY_TRANSFORM_NONE:
+      return delta;
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+      switch (delta) {
+        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+          return gfx::OVERLAY_TRANSFORM_NONE;
+        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+          return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
+        default:
+          return gfx::OVERLAY_TRANSFORM_INVALID;
+      }
+      break;
+    case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+      switch (delta) {
+        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+          return gfx::OVERLAY_TRANSFORM_NONE;
+        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+          return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+        default:
+          return gfx::OVERLAY_TRANSFORM_INVALID;
+      }
+      break;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+      switch (delta) {
+        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+          return gfx::OVERLAY_TRANSFORM_NONE;
+        default:
+          return gfx::OVERLAY_TRANSFORM_INVALID;
+      }
+      break;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+      switch (delta) {
+        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+          return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
+        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+          return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+          return gfx::OVERLAY_TRANSFORM_NONE;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+        default:
+          return gfx::OVERLAY_TRANSFORM_INVALID;
+      }
+      break;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+      switch (delta) {
+        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+          return gfx::OVERLAY_TRANSFORM_NONE;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+        default:
+          return gfx::OVERLAY_TRANSFORM_INVALID;
+      }
+      break;
+    default:
+      return gfx::OVERLAY_TRANSFORM_INVALID;
+  }
+}
+
+// static
 gfx::Rect OverlayCandidate::GetOverlayRect(const gfx::Transform& quad_transform,
                                            const gfx::Rect& rect) {
-  DCHECK(quad_transform.IsIdentityOrTranslation());
+  DCHECK(quad_transform.IsPositiveScaleOrTranslation());
 
   gfx::RectF float_rect(rect);
   quad_transform.TransformRect(&float_rect);

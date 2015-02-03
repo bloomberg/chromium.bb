@@ -14,6 +14,8 @@
 
 namespace cc {
 class OverlayCandidateValidator;
+class StreamVideoDrawQuad;
+class TextureDrawQuad;
 
 class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
  public:
@@ -23,6 +25,15 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
                OverlayCandidateList* candidate_list) override;
 
  private:
+  bool IsOverlayQuad(const DrawQuad* draw_quad);
+  bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
+                            OverlayCandidate* quad_info);
+
+  bool GetTextureQuadInfo(const TextureDrawQuad& quad,
+                          OverlayCandidate* quad_info);
+  bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
+                        OverlayCandidate* quad_info);
+
   OverlayCandidateValidator* capability_checker_;
   ResourceProvider* resource_provider_;
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategySingleOnTop);
