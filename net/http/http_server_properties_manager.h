@@ -181,6 +181,30 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
  private:
   void OnHttpServerPropertiesChanged();
 
+  void AddToSpdySettingsMap(const HostPortPair& server,
+                            const base::DictionaryValue& server_dict,
+                            SpdySettingsMap* spdy_settings_map);
+  bool AddToAlternateProtocolMap(const HostPortPair& server,
+                                 const base::DictionaryValue& server_dict,
+                                 AlternateProtocolMap* alternate_protocol_map);
+  bool AddToSupportsQuicMap(const HostPortPair& server,
+                            const base::DictionaryValue& server_dict,
+                            SupportsQuicMap* supports_quic_map);
+  bool AddToNetworkStatsMap(const HostPortPair& server,
+                            const base::DictionaryValue& server_dict,
+                            ServerNetworkStatsMap* network_stats_map);
+
+  void SaveSpdySettingsToServerPrefs(const SettingsMap* spdy_settings_map,
+                                     base::DictionaryValue* server_pref_dict);
+  void SaveAlternateProtocolToServerPrefs(
+      const AlternateProtocolInfo* port_alternate_protocol,
+      base::DictionaryValue* server_pref_dict);
+  void SaveSupportsQuicToServerPrefs(const SupportsQuic* supports_quic,
+                                     base::DictionaryValue* server_pref_dict);
+  void SaveNetworkStatsToServerPrefs(
+      const ServerNetworkStats* server_network_stats,
+      base::DictionaryValue* server_pref_dict);
+
   // -----------
   // Pref thread
   // -----------
