@@ -128,8 +128,13 @@ void DataReductionProxyUsageStats::OnUrlRequestCompleted(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DataReductionProxyTypeInfo proxy_info;
+  // Ignore requests that did not use the data reduction proxy. The check for
+  // LOAD_BYPASS_PROXY is necessary because the proxy_server() in the |request|
+  // might still be set to the data reduction proxy if |request| was retried
+  // over direct and a network error occurred while retrying it.
   if (data_reduction_proxy_params_->WasDataReductionProxyUsed(request,
-                                                              &proxy_info)) {
+                                                              &proxy_info) &&
+      (request->load_flags() & net::LOAD_BYPASS_PROXY) == 0) {
     if (request->status().status() == net::URLRequestStatus::SUCCESS) {
       successful_requests_through_proxy_count_++;
       NotifyUnavailabilityIfChanged();

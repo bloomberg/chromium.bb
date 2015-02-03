@@ -448,22 +448,25 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
 
   struct TestCase {
     bool was_proxy_used;
+    bool is_load_bypass_proxy;
     bool is_fallback;
     bool is_main_frame;
     net::Error net_error;
   };
 
   const TestCase test_cases[] = {
-    {false, false, true, net::OK},
-    {false, false, false, net::ERR_TOO_MANY_REDIRECTS},
-    {true, false, true, net::OK},
-    {true, false, true, net::ERR_TOO_MANY_REDIRECTS},
-    {true, false, false, net::OK},
-    {true, false, false, net::ERR_TOO_MANY_REDIRECTS},
-    {true, true, true, net::OK},
-    {true, true, true, net::ERR_TOO_MANY_REDIRECTS},
-    {true, true, false, net::OK},
-    {true, true, false, net::ERR_TOO_MANY_REDIRECTS}
+    {false, true, false, true, net::OK},
+    {false, true, false, false, net::ERR_TOO_MANY_REDIRECTS},
+    {false, false, false, true, net::OK},
+    {false, false, false, false, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, false, true, net::OK},
+    {true, false, false, true, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, false, false, net::OK},
+    {true, false, false, false, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, true, true, net::OK},
+    {true, false, true, true, net::ERR_TOO_MANY_REDIRECTS},
+    {true, false, true, false, net::OK},
+    {true, false, true, false, net::ERR_TOO_MANY_REDIRECTS}
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -478,6 +481,10 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
     scoped_ptr<net::URLRequest> fake_request(
         CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
                                             raw_headers));
+    if (test_cases[i].is_load_bypass_proxy) {
+      fake_request->SetLoadFlags(fake_request->load_flags() |
+                                 net::LOAD_BYPASS_PROXY);
+    }
     if (test_cases[i].is_main_frame) {
       fake_request->SetLoadFlags(fake_request->load_flags() |
                                  net::LOAD_MAIN_FRAME);
@@ -497,27 +504,29 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
 
     usage_stats->OnUrlRequestCompleted(fake_request.get(), false);
 
-    if (test_cases[i].was_proxy_used && !test_cases[i].is_fallback) {
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_load_bypass_proxy &&
+        !test_cases[i].is_fallback) {
       histogram_tester.ExpectUniqueSample(
           kPrimaryHistogramName, -net_error_int, 1);
     } else {
       histogram_tester.ExpectTotalCount(kPrimaryHistogramName, 0);
     }
-    if (test_cases[i].was_proxy_used && test_cases[i].is_fallback) {
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_load_bypass_proxy &&
+        test_cases[i].is_fallback) {
       histogram_tester.ExpectUniqueSample(
           kFallbackHistogramName, -net_error_int, 1);
     } else {
       histogram_tester.ExpectTotalCount(kFallbackHistogramName, 0);
     }
-    if (test_cases[i].was_proxy_used && !test_cases[i].is_fallback &&
-        test_cases[i].is_main_frame) {
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_load_bypass_proxy &&
+        !test_cases[i].is_fallback && test_cases[i].is_main_frame) {
       histogram_tester.ExpectUniqueSample(
           kPrimaryMainFrameHistogramName, -net_error_int, 1);
     } else {
       histogram_tester.ExpectTotalCount(kPrimaryMainFrameHistogramName, 0);
     }
-    if (test_cases[i].was_proxy_used && test_cases[i].is_fallback &&
-        test_cases[i].is_main_frame) {
+    if (test_cases[i].was_proxy_used && !test_cases[i].is_load_bypass_proxy &&
+        test_cases[i].is_fallback && test_cases[i].is_main_frame) {
       histogram_tester.ExpectUniqueSample(
           kFallbackMainFrameHistogramName, -net_error_int, 1);
     } else {
