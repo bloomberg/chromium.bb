@@ -75,16 +75,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Associates the |cdm| with this player.
   virtual void SetCdm(BrowserCdm* cdm);
 
-  int player_id() { return player_id_; }
-
-  GURL frame_url() { return frame_url_; }
-
- protected:
-  MediaPlayerAndroid(int player_id,
-                     MediaPlayerManager* manager,
-                     const RequestMediaResourcesCB& request_media_resources_cb,
-                     const GURL& frame_url);
-
   // TODO(qinmin): Simplify the MediaPlayerListener class to only listen to
   // media interrupt events. And have a separate child class to listen to all
   // the events needed by MediaPlayerBridge. http://crbug.com/422597.
@@ -97,6 +87,16 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void OnSeekComplete();
   virtual void OnMediaPrepared();
 
+  int player_id() { return player_id_; }
+
+  GURL frame_url() { return frame_url_; }
+
+ protected:
+  MediaPlayerAndroid(int player_id,
+                     MediaPlayerManager* manager,
+                     const RequestMediaResourcesCB& request_media_resources_cb,
+                     const GURL& frame_url);
+
   // Attach/Detaches |listener_| for listening to all the media events. If
   // |j_media_player| is NULL, |listener_| only listens to the system media
   // events. Otherwise, it also listens to the events from |j_media_player|.
@@ -108,8 +108,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   RequestMediaResourcesCB request_media_resources_cb_;
 
  private:
-  friend class MediaPlayerListener;
-
   // Player ID assigned to this player.
   int player_id_;
 
