@@ -76,7 +76,6 @@ DeviceCloudPolicyInvalidatorTest::~DeviceCloudPolicyInvalidatorTest() {
 void DeviceCloudPolicyInvalidatorTest::SetUp() {
   chromeos::SystemSaltGetter::Initialize();
   chromeos::DBusThreadManager::Initialize();
-  chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
       system_request_context_.get());
   ASSERT_TRUE(profile_manager_.SetUp());
@@ -84,6 +83,8 @@ void DeviceCloudPolicyInvalidatorTest::SetUp() {
   test_device_settings_service_.reset(new
       chromeos::ScopedTestDeviceSettingsService);
   test_cros_settings_.reset(new chromeos::ScopedTestCrosSettings);
+  chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util(
       new ownership::MockOwnerKeyUtil);
   owner_key_util->SetPublicKeyFromPrivateKey(

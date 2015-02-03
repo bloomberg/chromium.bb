@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -104,6 +105,9 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
     STATE_TOKEN_VALID,
   };
 
+  // Invoked by CrosSettings when the robot account ID becomes available.
+  void OnServiceAccountIdentityChanged();
+
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   // Ownership of |token_encryptor| will be taken.
   explicit DeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
@@ -160,6 +164,9 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
   std::string refresh_token_;
 
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      service_account_identity_subscription_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
 

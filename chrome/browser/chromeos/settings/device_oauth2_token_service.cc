@@ -8,16 +8,17 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -42,6 +43,11 @@ struct DeviceOAuth2TokenService::PendingRequest {
   const ScopeSet scopes;
 };
 
+void DeviceOAuth2TokenService::OnServiceAccountIdentityChanged() {
+  if (!GetRobotAccountId().empty() && !refresh_token_.empty())
+    FireRefreshTokenAvailable(GetRobotAccountId());
+}
+
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     net::URLRequestContextGetter* getter,
     PrefService* local_state)
@@ -49,6 +55,12 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
       local_state_(local_state),
       state_(STATE_LOADING),
       max_refresh_token_validation_retries_(3),
+      service_account_identity_subscription_(
+          CrosSettings::Get()->AddSettingsObserver(
+              kServiceAccountIdentity,
+              base::Bind(
+                  &DeviceOAuth2TokenService::OnServiceAccountIdentityChanged,
+                  base::Unretained(this))).Pass()),
       weak_ptr_factory_(this) {
   // Pull in the system salt.
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -75,7 +87,12 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
   bool waiting_for_salt = state_ == STATE_LOADING;
   refresh_token_ = refresh_token;
   state_ = STATE_VALIDATION_PENDING;
-  FireRefreshTokenAvailable(GetRobotAccountId());
+
+  // If the robot account ID is not available yet, do not announce the token. It
+  // will be done from OnServiceAccountIdentityChanged() once the robot account
+  // ID becomes available as well.
+  if (!GetRobotAccountId().empty())
+    FireRefreshTokenAvailable(GetRobotAccountId());
 
   token_save_callbacks_.push_back(result_callback);
   if (!waiting_for_salt) {
@@ -261,10 +278,10 @@ void DeviceOAuth2TokenService::CheckRobotAccountId(
     const std::string& gaia_robot_id) {
   // Make sure the value returned by GetRobotAccountId has been validated
   // against current device settings.
-  switch (CrosSettings::Get()->PrepareTrustedValues(
-      base::Bind(&DeviceOAuth2TokenService::CheckRobotAccountId,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 gaia_robot_id))) {
+  switch (CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+              &DeviceOAuth2TokenService::CheckRobotAccountId,
+              weak_ptr_factory_.GetWeakPtr(),
+              gaia_robot_id))) {
     case CrosSettingsProvider::TRUSTED:
       // All good, compare account ids below.
       break;

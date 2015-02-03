@@ -26,13 +26,13 @@ class DeviceOAuth2TokenServiceFactory {
 
   // Called by ChromeBrowserMainPartsChromeOS in order to bootstrap the
   // DeviceOAuth2TokenService instance after the required global data is
-  // available (local state and request context getter).
+  // available (local state, request context getter and CrosSettings).
   static void Initialize();
 
   // Called by ChromeBrowserMainPartsChromeOS in order to shutdown the
   // DeviceOAuth2TokenService instance and cancel all in-flight requests before
-  // the required global data is destroyed (local state and request context
-  // getter).
+  // the required global data is destroyed (local state, request context getter
+  // and CrosSettings).
   static void Shutdown();
 
  private:

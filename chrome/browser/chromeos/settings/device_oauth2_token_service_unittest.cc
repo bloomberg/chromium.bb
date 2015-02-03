@@ -28,9 +28,28 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
+ public:
+  MockOAuth2TokenServiceObserver();
+  ~MockOAuth2TokenServiceObserver() override;
+
+  MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
+};
+
+MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {
+}
+
+MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {
+}
+
+}  // namespace
 
 static const int kOAuthTokenServiceUrlFetcherId = 0;
 static const int kValidatorUrlFetcherId = gaia::GaiaOAuthClient::kUrlFetcherId;
@@ -96,6 +115,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   void TearDown() override {
+    oauth2_service_.reset();
     CrosSettings::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -428,6 +448,27 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
   request = StartTokenRequest();
   PerformURLFetches();
   AssertConsumerTokensAndErrors(1, 1);
+}
+
+TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
+  CreateService();
+
+  testing::StrictMock<MockOAuth2TokenServiceObserver> observer;
+  oauth2_service_->AddObserver(&observer);
+
+  // Make a token available during enrollment. Verify that the token is not
+  // announced yet.
+  oauth2_service_->SetAndSaveRefreshToken(
+      "test-token", DeviceOAuth2TokenService::StatusCallback());
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Also make the robot account ID available. Verify that the token is
+  // announced now.
+  EXPECT_CALL(observer, OnRefreshTokenAvailable("robot@example.com"));
+  SetRobotAccountId("robot@example.com");
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  oauth2_service_->RemoveObserver(&observer);
 }
 
 }  // namespace chromeos
