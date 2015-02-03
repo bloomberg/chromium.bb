@@ -48,6 +48,7 @@ class GPUTimesGpuRasterizationKeyMobileSites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.gpu_rasterization.key_mobile_sites_smooth'
 
+@benchmark.Disabled
 class GPUTimesTop25Sites(_GPUTimes):
   """Measures GPU timeline metric for the top 25 sites."""
   page_set = page_sets.Top25SmoothPageSet
