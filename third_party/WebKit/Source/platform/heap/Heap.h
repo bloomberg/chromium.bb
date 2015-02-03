@@ -92,7 +92,7 @@ class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
 class TracedValue;
 #endif
 
@@ -137,7 +137,7 @@ public:
 #if ENABLE(ASSERT)
         m_magic = magic;
 #endif
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
         m_age = 0;
 #endif
         // sizeof(HeapObjectHeader) must be equal to or smaller than
@@ -191,7 +191,7 @@ public:
     static const uint16_t magic = 0xfff1;
     static const uint16_t zappedMagic = 0x4321;
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
     NO_SANITIZE_ADDRESS
     size_t encodedSize() const { return m_encoded; }
 
@@ -206,7 +206,7 @@ public:
     }
 #endif
 
-#if !ENABLE(ASSERT) && !ENABLE(GC_PROFILE_HEAP) && CPU(64BIT)
+#if !ENABLE(ASSERT) && !ENABLE(GC_PROFILING) && CPU(64BIT)
     // This method is needed just to avoid compilers from removing m_padding.
     uint64_t unusedMethod() const { return m_padding; }
 #endif
@@ -216,7 +216,7 @@ private:
 #if ENABLE(ASSERT)
     uint16_t m_magic;
 #endif
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
     uint8_t m_age;
 #endif
 
@@ -232,7 +232,7 @@ private:
     // ^4 byte aligned             ^8 byte aligned               ^4 byte aligned
     //
     // since the former layout aligns both header and payload to 8 byte.
-#if !ENABLE(ASSERT) && !ENABLE(GC_PROFILE_HEAP) && CPU(64BIT)
+#if !ENABLE(ASSERT) && !ENABLE(GC_PROFILING) && CPU(64BIT)
     uint32_t m_padding;
 #endif
 };
@@ -379,13 +379,11 @@ public:
     // the stack.
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
     virtual void markOrphaned();
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     virtual const GCInfo* findGCInfo(Address) = 0;
-#endif
-#if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
 #endif
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     virtual bool contains(Address) = 0;
 #endif
     virtual size_t size() = 0;
@@ -472,13 +470,13 @@ public:
         memset(payload(), orphanedZapValue, payloadSize());
         BaseHeapPage::markOrphaned();
     }
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
 #endif
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
@@ -546,13 +544,11 @@ public:
         memset(payload(), orphanedZapValue, payloadSize());
         BaseHeapPage::markOrphaned();
     }
-#if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfo(Address);
-#endif
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
+    virtual const GCInfo* findGCInfo(Address) override;
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
 #endif
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
@@ -734,10 +730,10 @@ public:
     ~ThreadHeap();
     void cleanupPages();
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     BaseHeapPage* findPageFromAddress(Address);
 #endif
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
@@ -838,7 +834,7 @@ public:
     static void shutdown();
     static void doShutdown();
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     static BaseHeapPage* findPageFromAddress(Address);
     static BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
     static bool containedInHeapOrOrphanedPage(void*);
@@ -933,7 +929,7 @@ public:
     // thread heaps.  If so marks the object pointed to as live.
     static Address checkAndMarkPointer(Visitor*, Address);
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     // Dump the path to specified object on the next GC.  This method is to be
     // invoked from GDB.
     static void dumpPathToObjectOnNextGC(void* p);

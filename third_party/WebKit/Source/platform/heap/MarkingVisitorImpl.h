@@ -46,7 +46,7 @@ protected:
             return;
         header->mark();
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
         toDerived()->recordObjectGraphEdge(objectPointer);
 #endif
 

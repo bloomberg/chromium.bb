@@ -2074,7 +2074,7 @@ TEST(HeapTest, LargeHeapObjects)
         Persistent<LargeHeapObject> object = LargeHeapObject::create();
         ASSERT(ThreadState::current()->findPageFromAddress(object));
         ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
         const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
         EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);
         EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeHeapObject) - 1));

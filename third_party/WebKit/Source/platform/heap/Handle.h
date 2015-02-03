@@ -347,7 +347,7 @@ public:
     void trace(Visitor* visitor)
     {
         STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non-garbage collected object should not be in Persistent");
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
 #endif
         visitor->mark(m_raw);
@@ -403,7 +403,7 @@ public:
     T* get() const { return m_raw; }
 
 private:
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     void recordBacktrace()
     {
         if (m_raw)
@@ -446,7 +446,7 @@ public:
 
     void trace(Visitor* visitor)
     {
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, "PersistentHeapCollectionBase");
 #endif
         visitor->trace(*static_cast<Collection*>(this));

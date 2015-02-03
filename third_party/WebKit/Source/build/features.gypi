@@ -42,8 +42,7 @@
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
       'enable_oilpan%': 0,
-      'gc_profile_heap%': 0,
-      'gc_profile_marking%': 0,
+      'blink_gc_profiling%': 0,
       'blink_logging_always_on%': 0,
     },
     'conditions': [
@@ -81,16 +80,9 @@
           'ENABLE_OILPAN=1',
         ],
       }],
-      ['gc_profile_heap==1', {
+      ['blink_gc_profiling==1', {
         'feature_defines': [
           'ENABLE_GC_PROFILING=1',
-          'ENABLE_GC_PROFILE_HEAP=1',
-        ],
-      }],
-      ['gc_profile_marking==1', {
-        'feature_defines': [
-          'ENABLE_GC_PROFILING=1',
-          'ENABLE_GC_PROFILE_MARKING=1',
         ],
       }],
       ['blink_logging_always_on==1', {

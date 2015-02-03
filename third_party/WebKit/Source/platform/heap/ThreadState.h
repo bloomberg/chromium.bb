@@ -189,7 +189,7 @@ enum TypedHeaps {
     NumberOfHeaps,
 };
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
 const size_t numberOfGenerationsToTrack = 8;
 const size_t maxHeapObjectAge = numberOfGenerationsToTrack - 1;
 #endif
@@ -471,7 +471,7 @@ public:
     // HeapTypeTrait<Type>::index.
     ThreadHeap* heap(int index) const { return m_heaps[index]; }
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
@@ -497,12 +497,10 @@ public:
     // Visit all persistents allocated on this thread.
     void visitPersistents(Visitor*);
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address);
     static const GCInfo* findGCInfoFromAllThreads(Address);
-#endif
 
-#if ENABLE(GC_PROFILE_HEAP)
     struct SnapshotInfo {
         ThreadState* state;
 

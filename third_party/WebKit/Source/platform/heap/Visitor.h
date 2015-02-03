@@ -646,7 +646,7 @@ public:
     virtual bool isMarked(const void*) = 0;
     virtual bool ensureMarked(const void*) = 0;
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     void setHostInfo(void* object, const String& name)
     {
         m_hostObject = object;
@@ -675,7 +675,7 @@ protected:
     { }
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     virtual void recordObjectGraphEdge(const void*)
     {
         ASSERT_NOT_REACHED();

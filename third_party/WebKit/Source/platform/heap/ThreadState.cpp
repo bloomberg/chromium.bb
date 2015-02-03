@@ -40,7 +40,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/ThreadingPrimitives.h"
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
 #include "platform/TracedValue.h"
 #endif
 
@@ -583,16 +583,14 @@ void ThreadState::visitPersistents(Visitor* visitor)
     }
 }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 const GCInfo* ThreadState::findGCInfo(Address address)
 {
     if (BaseHeapPage* page = findPageFromAddress(address))
         return page->findGCInfo(address);
     return nullptr;
 }
-#endif
 
-#if ENABLE(GC_PROFILE_HEAP)
 size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcInfo)
 {
     ClassTagMap::AddResult result = classTags.add(gcInfo, classTags.size());
@@ -914,7 +912,7 @@ void ThreadState::prepareHeapForTermination()
         m_heaps[i]->prepareHeapForTermination();
 }
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
 BaseHeapPage* ThreadState::findPageFromAddress(Address address)
 {
     for (int i = 0; i < NumberOfHeaps; ++i) {
@@ -1042,7 +1040,7 @@ void ThreadState::postGCProcessing()
 
     m_didV8GCAfterLastGC = false;
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
     // We snapshot the heap prior to sweeping to get numbers for both resources
     // that have been allocated since the last GC and for resources that are
     // going to be freed.
@@ -1150,7 +1148,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
     m_preFinalizers.removeAll(deadObjects);
 }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 {
     bool needLockForIteration = !ThreadState::current()->isInGC();

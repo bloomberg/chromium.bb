@@ -67,7 +67,7 @@ protected:
         return true;
     }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     inline void recordObjectGraphEdge(const void* objectPointer)
     {
         m_visitor->recordObjectGraphEdge(objectPointer);

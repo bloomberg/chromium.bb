@@ -42,16 +42,14 @@
 #include "wtf/Assertions.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
+#include "platform/TracedValue.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include <stdio.h>
 #include <utility>
-#endif
-#if ENABLE(GC_PROFILE_HEAP)
-#include "platform/TracedValue.h"
 #endif
 
 #if OS(POSIX)
@@ -63,7 +61,7 @@
 
 namespace blink {
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 static String classOf(const void* object)
 {
     if (const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object))))
@@ -519,7 +517,7 @@ void LargeObject::checkAndMarkPointer(Visitor* visitor, Address address)
     ASSERT(contains(address));
     if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
         return;
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     visitor->setHostInfo(&address, "stack");
 #endif
     markPointer(visitor, heapObjectHeader());
@@ -859,7 +857,7 @@ static bool isLargeObjectAligned(LargeObject* largeObject, Address address)
 }
 #endif
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
 BaseHeapPage* ThreadHeap::findPageFromAddress(Address address)
 {
     for (HeapPage* page = m_firstPage; page; page = page->next()) {
@@ -884,7 +882,7 @@ BaseHeapPage* ThreadHeap::findPageFromAddress(Address address)
 }
 #endif
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
 #define GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD 0
 void ThreadHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
@@ -1703,13 +1701,13 @@ void HeapPage::checkAndMarkPointer(Visitor* visitor, Address address)
     HeapObjectHeader* header = findHeaderFromAddress(address);
     if (!header || header->isDead())
         return;
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     visitor->setHostInfo(&address, "stack");
 #endif
     markPointer(visitor, header);
 }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 const GCInfo* HeapPage::findGCInfo(Address address)
 {
     if (address < payload())
@@ -1723,7 +1721,7 @@ const GCInfo* HeapPage::findGCInfo(Address address)
 }
 #endif
 
-#if ENABLE(GC_PROFILE_HEAP)
+#if ENABLE(GC_PROFILING)
 void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
     HeapObjectHeader* header = nullptr;
@@ -1764,7 +1762,7 @@ size_t LargeObject::objectPayloadSizeForTesting()
     return payloadSize();
 }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 const GCInfo* LargeObject::findGCInfo(Address address)
 {
     if (!containedInObjectPayload(address))
@@ -1772,9 +1770,7 @@ const GCInfo* LargeObject::findGCInfo(Address address)
     HeapObjectHeader* header = heapObjectHeader();
     return Heap::gcInfo(header->gcInfoIndex());
 }
-#endif
 
-#if ENABLE(GC_PROFILE_HEAP)
 void LargeObject::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
     HeapObjectHeader* header = heapObjectHeader();
@@ -1863,7 +1859,7 @@ public:
     using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
     friend class MarkingVisitorImpl<MarkingVisitor<Mode>>;
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     using LiveObjectSet = HashSet<uintptr_t>;
     using LiveObjectMap = HashMap<String, LiveObjectSet>;
     using ObjectGraph = HashMap<uintptr_t, std::pair<uintptr_t, String>>;
@@ -1916,7 +1912,7 @@ public:
         return Impl::ensureMarked(objectPointer);
     }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     virtual void recordObjectGraphEdge(const void* objectPointer) override
     {
         MutexLocker locker(objectGraphMutex());
@@ -2152,14 +2148,14 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
     return nullptr;
 }
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 const GCInfo* Heap::findGCInfo(Address address)
 {
     return ThreadState::findGCInfoFromAllThreads(address);
 }
 #endif
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
     static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
@@ -2214,7 +2210,7 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
     if (!item)
         return false;
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     visitor->setHostInfo(item->object(), classOf(item->object()));
 #endif
     item->call(visitor);
@@ -2326,7 +2322,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         "forced", gcType == ThreadState::GCWithSweep);
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
 #endif
 
@@ -2368,7 +2364,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 
     postGC(gcType);
 
-#if ENABLE(GC_PROFILE_MARKING)
+#if ENABLE(GC_PROFILING)
     static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->reportStats();
 #endif
 
