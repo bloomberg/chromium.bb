@@ -830,6 +830,7 @@ def Main(argv):
   # See untrusted.gypi.
   product_dir = re.sub(r'/+xyz$', '', product_dir)
 
+  build = None
   try:
     if options.source_list:
       source_list_handle = open(options.source_list, 'r')
@@ -958,7 +959,8 @@ def Main(argv):
     sys.stderr.write('%s\n' % e)
     return 1
   except:
-    build.EmitDeferredLog()
+    if build is not None:
+      build.EmitDeferredLog()
     raise
 
 if __name__ == '__main__':
