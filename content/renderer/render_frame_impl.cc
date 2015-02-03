@@ -2587,7 +2587,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // new navigation.
   navigation_state->set_request_committed(true);
 
-  SendDidCommitProvisionalLoad(frame);
+  SendDidCommitProvisionalLoad(frame, commit_type);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3661,7 +3661,9 @@ bool RenderFrameImpl::IsHidden() {
 }
 
 // Tell the embedding application that the URL of the active page has changed.
-void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
+void RenderFrameImpl::SendDidCommitProvisionalLoad(
+      blink::WebFrame* frame,
+      blink::WebHistoryCommitType commit_type) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
@@ -3724,7 +3726,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
   render_view_->navigation_gesture_ = NavigationGestureUnknown;
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
-  // that commited entry has it at all times.
+  // that committed entry has it at all times.
   HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
   if (entry)
     params.page_state = HistoryEntryToPageState(entry);
@@ -3829,13 +3831,12 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
     // history entry, it means the user initiated the navigation and we should
-    // mark it as such. This test checks if this is the first time
-    // SendDidCommitProvisionalLoad has been called since WillNavigateToURL was
-    // called to initiate the load.
-    if (render_view_->page_id_ > render_view_->last_page_id_sent_to_browser_)
-      params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-    else
+    // mark it as such.
+    bool is_history_navigation = commit_type == blink::WebBackForwardCommit;
+    if (is_history_navigation || ds->replacesCurrentHistoryItem())
       params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    else
+      params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
 
     DCHECK(!navigation_state->history_list_was_cleared());
     params.history_list_was_cleared = false;
@@ -3845,10 +3846,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     if (!is_swapped_out())
       Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
   }
-
-  render_view_->last_page_id_sent_to_browser_ =
-      std::max(render_view_->last_page_id_sent_to_browser_,
-               render_view_->page_id_);
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.

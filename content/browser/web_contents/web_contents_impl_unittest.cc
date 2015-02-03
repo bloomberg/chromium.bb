@@ -2909,7 +2909,7 @@ TEST_F(WebContentsImplTest, StartStopEventsBalance) {
     // Commit the navigation in the child frame and send the DidStopLoading
     // message.
     contents()->TestDidNavigate(
-        subframe, 3, bar_url, ui::PAGE_TRANSITION_TYPED);
+        subframe, 3, bar_url, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
     subframe->OnMessageReceived(
         FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
   }

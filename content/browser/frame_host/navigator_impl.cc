@@ -504,21 +504,6 @@ void NavigatorImpl::DidNavigate(
   bool use_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSitePerProcess);
 
-  if (use_site_per_process) {
-    // TODO(creis): Until we mirror the frame tree in the subframe's process,
-    // cross-process subframe navigations happen in a renderer's main frame.
-    // Correct the transition type here if we know it is for a subframe.
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(
-            controller_->GetPendingEntry());
-    if (!render_frame_host->frame_tree_node()->IsMainFrame() &&
-        pending_entry &&
-        pending_entry->frame_tree_node_id() ==
-            render_frame_host->frame_tree_node()->frame_tree_node_id()) {
-      params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    }
-  }
-
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
       // When overscroll navigation gesture is enabled, a screenshot of the page
