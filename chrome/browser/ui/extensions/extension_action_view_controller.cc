@@ -288,7 +288,8 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
   if (popup_host_) {
     // Lazily register for notifications about extension host destructions.
     static const int kType = extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED;
-    content::Source<content::BrowserContext> source(browser_->profile());
+    content::Source<content::BrowserContext> source(
+        browser_->profile()->GetOriginalProfile());
     if (!registrar_.IsRegistered(this, kType, source))
       registrar_.Add(this, kType, source);
 
