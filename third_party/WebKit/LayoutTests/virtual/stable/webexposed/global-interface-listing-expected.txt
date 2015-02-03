@@ -2834,6 +2834,8 @@ interface XMLHttpRequest
     method overrideMimeType
     method send
     method setRequestHeader
+interface XMLHttpRequestEventTarget
+    method constructor
 interface XMLHttpRequestProgressEvent
     method constructor
 interface XMLHttpRequestUpload

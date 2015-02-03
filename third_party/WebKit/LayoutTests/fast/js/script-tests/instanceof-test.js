@@ -1,5 +1,5 @@
 description(
-"instanceof XMLHttpRequest test"
+"instanceof test"
 );
 
 shouldBeTrue("(new Audio()) instanceof Audio");
@@ -20,9 +20,6 @@ shouldBeFalse("(new Array()) instanceof WebKitCSSMatrix");
 
 shouldBeTrue("(new Worker('instanceof-operator-dummy-worker.js')) instanceof Worker");
 shouldBeFalse("(new Array()) instanceof Worker");
-
-shouldBeTrue("(new XMLHttpRequest()) instanceof XMLHttpRequest")
-shouldBeFalse("(new Array()) instanceof XMLHttpRequest")
 
 shouldBeTrue("(new XSLTProcessor()) instanceof XSLTProcessor");
 shouldBeFalse("(new Array()) instanceof XSLTProcessor");

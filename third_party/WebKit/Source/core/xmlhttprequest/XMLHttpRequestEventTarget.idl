@@ -25,7 +25,7 @@
  */
 
 [
-    NoInterfaceObject
+    Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequestEventTarget : EventTarget {
     attribute EventHandler onabort;
     attribute EventHandler onerror;
