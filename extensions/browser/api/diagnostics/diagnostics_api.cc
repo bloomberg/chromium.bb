@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/diagnostics/diagnostics_api.h"
-
-namespace SendPacket = extensions::api::diagnostics::SendPacket;
+#include "extensions/browser/api/diagnostics/diagnostics_api.h"
 
 namespace {
 
 const char kErrorPingNotImplemented[] = "Not implemented";
 const char kErrorPingFailed[] = "Failed to send ping packet";
-
 }
 
 namespace extensions {
 
-DiagnosticsSendPacketFunction::DiagnosticsSendPacketFunction() {}
+namespace SendPacket = core_api::diagnostics::SendPacket;
 
-DiagnosticsSendPacketFunction::~DiagnosticsSendPacketFunction() {}
+DiagnosticsSendPacketFunction::DiagnosticsSendPacketFunction() {
+}
+
+DiagnosticsSendPacketFunction::~DiagnosticsSendPacketFunction() {
+}
 
 bool DiagnosticsSendPacketFunction::Prepare() {
   parameters_ = SendPacket::Params::Create(*args_);
@@ -35,7 +36,7 @@ void DiagnosticsSendPacketFunction::OnCompleted(
     double latency) {
   switch (result_code) {
     case SEND_PACKET_OK: {
-      extensions::api::diagnostics::SendPacketResult result;
+      core_api::diagnostics::SendPacketResult result;
       result.ip = ip;
       result.latency = latency;
       results_ = SendPacket::Results::Create(result);

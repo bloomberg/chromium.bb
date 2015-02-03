@@ -580,6 +580,9 @@ source_set("browser") {
 
     if (is_chromeos) {
       sources += [
+        "api/diagnostics/diagnostics_api.cc",
+        "api/diagnostics/diagnostics_api.h",
+        "api/diagnostics/diagnostics_api_chromeos.cc",
         "api/networking_config/networking_config_api.cc",
         "api/networking_config/networking_config_api.h",
         "api/networking_config/networking_config_service.cc",

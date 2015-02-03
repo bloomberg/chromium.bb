@@ -5,9 +5,6 @@
 {
   'variables': {
     'chrome_browser_extensions_chromeos_sources': [
-      'browser/extensions/api/diagnostics/diagnostics_api.cc',
-      'browser/extensions/api/diagnostics/diagnostics_api.h',
-      'browser/extensions/api/diagnostics/diagnostics_api_chromeos.cc',
       'browser/extensions/api/document_scan/document_scan_interface_chromeos.cc',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.cc',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h',

@@ -107,7 +107,6 @@
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
       'accessibility_features.json',
-      'diagnostics.idl',
       'enterprise_platform_keys.idl',
       'enterprise_platform_keys_internal.idl',
       'file_browser_handler_internal.json',

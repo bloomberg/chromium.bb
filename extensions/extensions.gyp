@@ -890,6 +890,9 @@
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'sources': [
+            'browser/api/diagnostics/diagnostics_api.cc',
+            'browser/api/diagnostics/diagnostics_api.h',
+            'browser/api/diagnostics/diagnostics_api_chromeos.cc',
             'browser/api/networking_config/networking_config_api.cc',
             'browser/api/networking_config/networking_config_api.h',
             'browser/api/networking_config/networking_config_service.cc',

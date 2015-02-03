@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/diagnostics/diagnostics_api.h"
+#include "extensions/browser/api/diagnostics/diagnostics_api.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -25,12 +25,9 @@ const char kSize[] = "size";
 typedef base::Callback<void(
     DiagnosticsSendPacketFunction::SendPacketResultCode result_code,
     const std::string& ip,
-    double latency)>
-    SendPacketCallback;
+    double latency)> SendPacketCallback;
 
-bool ParseResult(const std::string& status,
-                 std::string* ip,
-                 double* latency) {
+bool ParseResult(const std::string& status, std::string* ip, double* latency) {
   // Parses the result and returns IP and latency.
   scoped_ptr<base::Value> parsed_value(base::JSONReader::Read(status));
   if (!parsed_value)
@@ -54,18 +51,15 @@ bool ParseResult(const std::string& status,
   return true;
 }
 
-void OnTestICMPCompleted(
-    const SendPacketCallback& callback,
-    bool succeeded,
-    const std::string& status) {
+void OnTestICMPCompleted(const SendPacketCallback& callback,
+                         bool succeeded,
+                         const std::string& status) {
   std::string ip;
   double latency;
   if (!succeeded || !ParseResult(status, &ip, &latency)) {
     callback.Run(DiagnosticsSendPacketFunction::SEND_PACKET_FAILED, "", 0.0);
   } else {
-    callback.Run(DiagnosticsSendPacketFunction::SEND_PACKET_OK,
-                 ip,
-                 latency);
+    callback.Run(DiagnosticsSendPacketFunction::SEND_PACKET_OK, ip, latency);
   }
 }
 
@@ -81,8 +75,9 @@ void DiagnosticsSendPacketFunction::AsyncWorkStart() {
   if (parameters_->options.size)
     config[kSize] = base::IntToString(*parameters_->options.size);
 
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      TestICMPWithOptions(
+  chromeos::DBusThreadManager::Get()
+      ->GetDebugDaemonClient()
+      ->TestICMPWithOptions(
           parameters_->options.ip, config,
           base::Bind(
               OnTestICMPCompleted,
