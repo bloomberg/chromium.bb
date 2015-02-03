@@ -193,6 +193,7 @@ class AccountReconcilor : public KeyedService,
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   bool registered_with_token_service_;
   bool registered_with_merge_session_helper_;
+  bool registered_with_content_settings_;
 
   // True while the reconcilor is busy checking or managing the accounts in
   // this profile.

@@ -65,6 +65,7 @@ AccountReconcilor::AccountReconcilor(ProfileOAuth2TokenService* token_service,
                             NULL),
       registered_with_token_service_(false),
       registered_with_merge_session_helper_(false),
+      registered_with_content_settings_(false),
       is_reconcile_started_(false),
       first_execution_(true),
       are_gaia_accounts_set_(false),
@@ -144,11 +145,24 @@ void AccountReconcilor::UnregisterWithSigninManager() {
 }
 
 void AccountReconcilor::RegisterWithContentSettings() {
+  VLOG(1) << "AccountReconcilor::RegisterWithContentSettings";
+  // During re-auth, the reconcilor will get a callback about successful signin
+  // even when the profile is already connected.  Avoid re-registering
+  // with the token service since this will DCHECK.
+  if (registered_with_content_settings_)
+    return;
+
   client_->AddContentSettingsObserver(this);
+  registered_with_content_settings_ = true;
 }
 
 void AccountReconcilor::UnregisterWithContentSettings() {
+  VLOG(1) << "AccountReconcilor::UnregisterWithContentSettings";
+  if (!registered_with_content_settings_)
+    return;
+
   client_->RemoveContentSettingsObserver(this);
+  registered_with_content_settings_ = false;
 }
 
 void AccountReconcilor::RegisterWithTokenService() {
