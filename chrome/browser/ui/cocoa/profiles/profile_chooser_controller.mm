@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#import <Carbon/Carbon.h>  // kVK_Return.
 
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 
@@ -786,6 +787,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   NSColor* backgroundColor = isHighlighted ? hoverColor_ : backgroundColor_;
   [[self cell] setBackgroundColor:backgroundColor];
+}
+
+-(void)keyDown:(NSEvent*)event {
+  // Since there is no default button in the bubble, it is safe to activate
+  // all buttons on Enter as well, and be consistent with the Windows
+  // implementation.
+  if ([event keyCode] == kVK_Return)
+    [self performClick:self];
+  else
+    [super keyDown:event];
 }
 
 - (BOOL)canBecomeKeyView {
