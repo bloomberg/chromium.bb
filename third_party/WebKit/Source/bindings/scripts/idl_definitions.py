@@ -34,7 +34,7 @@ Classes are primarily constructors, which build an IdlDefinitions object
 IR stores typedefs and they are resolved by the code generator.
 
 Typedef resolution uses some auxiliary classes and OOP techniques to make this
-a generic call, via the resolve_typedefs() method.
+a generic call. See TypedefResolver class in code_generator_v8.py.
 
 Class hierarchy (mostly containment, '<' for inheritance):
 
@@ -54,7 +54,7 @@ IdlDefinitions
     IdlException < IdlInterface
         (same contents as IdlInterface)
 
-TypedObject :: mixin for typedef resolution
+TypedObject :: Object with a type.
 
 IdlArgument is 'picklable', as it is stored in interfaces_info.
 
@@ -66,34 +66,20 @@ import abc
 from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlNullableType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
-STANDARD_TYPEDEFS = {
-    # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
-    'DOMTimeStamp': 'unsigned long long',
-}
 
 
 ################################################################################
-# TypedObject (mixin for typedef resolution)
+# TypedObject
 ################################################################################
 
 class TypedObject(object):
     """Object with a type, such as an Attribute or Operation (return value).
 
     The type can be an actual type, or can be a typedef, which must be resolved
-    before passing data to the code generator.
+    by the TypedefResolver before passing data to the code generator.
     """
     __metaclass__ = abc.ABCMeta
     idl_type = None
-
-    def resolve_typedefs(self, typedefs):
-        """Resolve typedefs to actual types in the object."""
-        # Constructors don't have their own return type, because it's the
-        # interface itself.
-        if not self.idl_type:
-            return
-        # Need to re-assign self.idl_type, not just mutate idl_type,
-        # since type(idl_type) may change.
-        self.idl_type = self.idl_type.resolve_typedefs(typedefs)
 
 
 ################################################################################
@@ -142,16 +128,15 @@ class IdlDefinitions(object):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
-    def resolve_typedefs(self, typedefs):
-        # Resolve typedefs with the actual types.
-        # http://www.w3.org/TR/WebIDL/#idl-typedefs
-        typedefs.update(dict((typedef_name, IdlType(type_name))
-                        for typedef_name, type_name in
-                        STANDARD_TYPEDEFS.iteritems()))
-        for callback_function in self.callback_functions.itervalues():
-            callback_function.resolve_typedefs(typedefs)
+    def accept(self, visitor):
+        visitor.visit_definitions(self)
+        # FIXME: Visit typedefs as well. (We need to add IdlTypedef to do that).
         for interface in self.interfaces.itervalues():
-            interface.resolve_typedefs(typedefs)
+            interface.accept(visitor)
+        for callback_function in self.callback_functions.itervalues():
+            callback_function.accept(visitor)
+        for dictionary in self.dictionaries.itervalues():
+            dictionary.accept(visitor)
 
     def update(self, other):
         """Update with additional IdlDefinitions."""
@@ -194,10 +179,10 @@ class IdlCallbackFunction(TypedObject):
         self.idl_type = type_node_to_type(type_node)
         self.arguments = arguments_node_to_arguments(idl_name, arguments_node)
 
-    def resolve_typedefs(self, typedefs):
-        TypedObject.resolve_typedefs(self, typedefs)
+    def accept(self, visitor):
+        visitor.visit_callback_function(self)
         for argument in self.arguments:
-            argument.resolve_typedefs(typedefs)
+            argument.accept(visitor)
 
 
 ################################################################################
@@ -224,6 +209,11 @@ class IdlDictionary(object):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
+    def accept(self, visitor):
+        visitor.visit_dictionary(self)
+        for member in self.members:
+            member.accept(visitor)
+
 
 class IdlDictionaryMember(object):
     def __init__(self, idl_name, node):
@@ -243,6 +233,9 @@ class IdlDictionaryMember(object):
                     ext_attributes_node_to_extended_attributes(idl_name, child))
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
+
+    def accept(self, visitor):
+        visitor.visit_dictionary_member(self)
 
 
 ################################################################################
@@ -321,17 +314,18 @@ class IdlInterface(object):
         if len(filter(None, [self.iterable, self.maplike, self.setlike])) > 1:
             raise ValueError('Interface can only have one of iterable<>, maplike<> and setlike<>.')
 
-    def resolve_typedefs(self, typedefs):
+    def accept(self, visitor):
+        visitor.visit_interface(self)
         for attribute in self.attributes:
-            attribute.resolve_typedefs(typedefs)
+            attribute.accept(visitor)
         for constant in self.constants:
-            constant.resolve_typedefs(typedefs)
+            constant.accept(visitor)
         for constructor in self.constructors:
-            constructor.resolve_typedefs(typedefs)
+            constructor.accept(visitor)
         for custom_constructor in self.custom_constructors:
-            custom_constructor.resolve_typedefs(typedefs)
+            custom_constructor.accept(visitor)
         for operation in self.operations:
-            operation.resolve_typedefs(typedefs)
+            operation.accept(visitor)
 
     def process_stringifier(self):
         """Add the stringifier's attribute or named operation child, if it has
@@ -405,6 +399,9 @@ class IdlAttribute(TypedObject):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
+    def accept(self, visitor):
+        visitor.visit_attribute(self)
+
 
 ################################################################################
 # Constants
@@ -440,6 +437,9 @@ class IdlConstant(TypedObject):
             self.extended_attributes = ext_attributes_node_to_extended_attributes(idl_name, ext_attributes_node)
         else:
             self.extended_attributes = {}
+
+    def accept(self, visitor):
+        visitor.visit_constant(self)
 
 
 ################################################################################
@@ -564,10 +564,10 @@ class IdlOperation(TypedObject):
         constructor.is_constructor = True
         return constructor
 
-    def resolve_typedefs(self, typedefs):
-        TypedObject.resolve_typedefs(self, typedefs)
+    def accept(self, visitor):
+        visitor.visit_operation(self)
         for argument in self.arguments:
-            argument.resolve_typedefs(typedefs)
+            argument.accept(visitor)
 
 
 ################################################################################
@@ -613,6 +613,9 @@ class IdlArgument(TypedObject):
 
     def __setstate__(self, state):
         pass
+
+    def accept(self, visitor):
+        visitor.visit_argument(self)
 
 
 def arguments_node_to_arguments(idl_name, node):
@@ -949,3 +952,38 @@ def union_type_node_to_idl_union_type(node):
     member_types = [type_node_to_type(member_type_node)
                     for member_type_node in node.GetChildren()]
     return IdlUnionType(member_types)
+
+
+################################################################################
+# Visitor
+################################################################################
+
+class Visitor(object):
+    """Abstract visitor class for IDL definitions traverse."""
+
+    def visit_definitions(self, definitions):
+        pass
+
+    def visit_callback_function(self, callback_function):
+        pass
+
+    def visit_dictionary(self, dictionary):
+        pass
+
+    def visit_dictionary_member(self, member):
+        pass
+
+    def visit_interface(self, interface):
+        pass
+
+    def visit_attribute(self, attribute):
+        pass
+
+    def visit_constant(self, constant):
+        pass
+
+    def visit_operation(self, operation):
+        pass
+
+    def visit_argument(self, argument):
+        pass

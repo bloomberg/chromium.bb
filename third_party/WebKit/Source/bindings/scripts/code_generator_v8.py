@@ -70,6 +70,7 @@ module_pyname = os.path.splitext(module_filename)[0] + '.py'
 sys.path.insert(1, third_party_dir)
 import jinja2
 
+from idl_definitions import Visitor
 import idl_types
 from idl_types import IdlType
 import v8_callback_interface
@@ -115,6 +116,46 @@ def set_global_type_info(info_provider):
     v8_types.set_component_dirs(interfaces_info['component_dirs'])
 
 
+class TypedefResolver(Visitor):
+    STANDARD_TYPEDEFS = {
+        # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
+        'DOMTimeStamp': IdlType('unsigned long long'),
+    }
+
+    def __init__(self, info_provider):
+        self.info_provider = info_provider
+
+    def resolve(self, definitions):
+        """Traverse definitions and resolves typedefs with the actual types."""
+        self.typedefs = self.info_provider.component_info['typedefs']
+        self.typedefs.update(self.STANDARD_TYPEDEFS)
+        definitions.accept(self)
+
+    def _resolve_typedefs(self, typed_object):
+        """Resolve typedefs to actual types in the object."""
+        idl_type = typed_object.idl_type
+        if not idl_type:
+            return
+        # Need to re-assign typed_object.idl_type, not just mutate idl_type,
+        # since type(idl_type) may change.
+        typed_object.idl_type = idl_type.resolve_typedefs(self.typedefs)
+
+    def visit_callback_function(self, callback_function):
+        self._resolve_typedefs(callback_function)
+
+    def visit_attribute(self, attribute):
+        self._resolve_typedefs(attribute)
+
+    def visit_constant(self, constant):
+        self._resolve_typedefs(constant)
+
+    def visit_operation(self, operation):
+        self._resolve_typedefs(operation)
+
+    def visit_argument(self, argument):
+        self._resolve_typedefs(argument)
+
+
 class CodeGeneratorBase(object):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
@@ -122,6 +163,7 @@ class CodeGeneratorBase(object):
         self.info_provider = info_provider
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
+        self.typedef_resolver = TypedefResolver(info_provider)
         set_global_type_info(info_provider)
 
     def generate_code(self, definitions, definition_name):
@@ -129,7 +171,7 @@ class CodeGeneratorBase(object):
         # Set local type info
         IdlType.set_callback_functions(definitions.callback_functions.keys())
         # Resolve typedefs
-        definitions.resolve_typedefs(self.info_provider.component_info['typedefs'])
+        self.typedef_resolver.resolve(definitions)
         return self.generate_code_internal(definitions, definition_name)
 
     def generate_code_internal(self, definitions, definition_name):
