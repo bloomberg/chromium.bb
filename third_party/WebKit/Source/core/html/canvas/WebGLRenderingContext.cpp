@@ -120,8 +120,10 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
     if (!extensionsUtil)
         return nullptr;
-    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker"))
-        context->pushGroupMarkerEXT("WebGLRenderingContext");
+    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
+        String contextLabel(String::format("WebGLRenderingContext-%p", context.get()));
+        context->pushGroupMarkerEXT(contextLabel.ascii().data());
+    }
 
     OwnPtrWillBeRawPtr<WebGLRenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGLRenderingContext(canvas, context.release(), attributes));
     renderingContext->registerContextExtensions();
