@@ -1484,7 +1484,7 @@ Color RenderObject::selectionBackgroundColor() const
         return Color::transparent;
 
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
-        return resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
+        return resolveColor(*pseudoStyle, CSSPropertyBackgroundColor).blendWithWhite();
     return frame()->selection().isFocusedAndActive() ?
         LayoutTheme::theme().activeSelectionBackgroundColor() :
         LayoutTheme::theme().inactiveSelectionBackgroundColor();
@@ -1498,7 +1498,7 @@ Color RenderObject::selectionColor(int colorProperty) const
         return resolveColor(colorProperty);
 
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
-        return resolveColor(pseudoStyle.get(), colorProperty);
+        return resolveColor(*pseudoStyle, colorProperty);
     if (!LayoutTheme::theme().supportsSelectionForegroundColors())
         return resolveColor(colorProperty);
     return frame()->selection().isFocusedAndActive() ?

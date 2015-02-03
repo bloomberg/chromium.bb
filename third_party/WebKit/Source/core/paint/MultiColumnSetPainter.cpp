@@ -37,11 +37,11 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     if (m_renderMultiColumnSet.flowThread()->isRenderPagedFlowThread())
         return;
 
-    RenderStyle* blockStyle = m_renderMultiColumnSet.multiColumnBlockFlow()->style();
+    const RenderStyle& blockStyle = m_renderMultiColumnSet.multiColumnBlockFlow()->styleRef();
     const Color& ruleColor = m_renderMultiColumnSet.resolveColor(blockStyle, CSSPropertyWebkitColumnRuleColor);
-    bool ruleTransparent = blockStyle->columnRuleIsTransparent();
-    EBorderStyle ruleStyle = blockStyle->columnRuleStyle();
-    LayoutUnit ruleThickness = blockStyle->columnRuleWidth();
+    bool ruleTransparent = blockStyle.columnRuleIsTransparent();
+    EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
+    LayoutUnit ruleThickness = blockStyle.columnRuleWidth();
     LayoutUnit colGap = m_renderMultiColumnSet.columnGap();
     bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
     if (!renderRule)

@@ -59,8 +59,8 @@ InlineBox* EllipsisBox::markupBox() const
 
 IntRect EllipsisBox::selectionRect()
 {
-    RenderStyle* style = renderer().style(isFirstLineStyle());
-    const Font& font = style->font();
+    const RenderStyle& style = renderer().styleRef(isFirstLineStyle());
+    const Font& font = style.font();
     return enclosingIntRect(font.selectionRectForText(constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
 

@@ -186,8 +186,8 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 
     LayoutUnit selTop = root().selectionTop();
     LayoutUnit selHeight = root().selectionHeight();
-    RenderStyle* styleToUse = renderer().style(isFirstLineStyle());
-    const Font& font = styleToUse->font();
+    const RenderStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
+    const Font& font = styleToUse.font();
 
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == m_len && hasHyphen();
@@ -329,13 +329,13 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     return false;
 }
 
-bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosition& emphasisPosition) const
+bool InlineTextBox::getEmphasisMarkPosition(const RenderStyle& style, TextEmphasisPosition& emphasisPosition) const
 {
     // This function returns true if there are text emphasis marks and they are suppressed by ruby text.
-    if (style->textEmphasisMark() == TextEmphasisMarkNone)
+    if (style.textEmphasisMark() == TextEmphasisMarkNone)
         return false;
 
-    emphasisPosition = style->textEmphasisPosition();
+    emphasisPosition = style.textEmphasisPosition();
     if (emphasisPosition == TextEmphasisPositionUnder)
         return true; // Ruby text is always over, so it cannot suppress emphasis marks under.
 
@@ -375,12 +375,12 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
     ePos = std::min(endPos - m_start, (int)m_len);
 }
 
-void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, RenderStyle* style, const Font& font, bool grammar)
+void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const RenderStyle& style, const Font& font, bool grammar)
 {
     InlineTextBoxPainter(*this).paintDocumentMarker(pt, boxOrigin.toFloatPoint(), marker, style, font, grammar);
 }
 
-void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, RenderStyle* style, const Font& font)
+void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const RenderStyle& style, const Font& font)
 {
     InlineTextBoxPainter(*this).paintTextMatchMarker(pt, boxOrigin.toFloatPoint(), marker, style, font);
 }
@@ -415,8 +415,8 @@ int InlineTextBox::offsetForPosition(FloatWillBeLayoutUnit lineOffset, bool incl
         return isLeftToRightDirection() ? 0 : len();
 
     RenderText& text = renderer();
-    RenderStyle* style = text.style(isFirstLineStyle());
-    const Font& font = style->font();
+    const RenderStyle& style = text.styleRef(isFirstLineStyle());
+    const Font& font = style.font();
     return font.offsetForPosition(constructTextRun(style, font), lineOffset - logicalLeft(), includePartialGlyphs);
 }
 
@@ -429,9 +429,8 @@ FloatWillBeLayoutUnit InlineTextBox::positionForOffset(int offset) const
         return logicalLeft();
 
     RenderText& text = renderer();
-    RenderStyle* styleToUse = text.style(isFirstLineStyle());
-    ASSERT(styleToUse);
-    const Font& font = styleToUse->font();
+    const RenderStyle& styleToUse = text.styleRef(isFirstLineStyle());
+    const Font& font = styleToUse.font();
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
     // FIXME: Do we need to add rightBearing here?
@@ -466,8 +465,8 @@ void InlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    RenderStyle* styleToUse = renderer().style(isFirstLineStyle());
-    const Font& font = styleToUse->font();
+    const RenderStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
+    const Font& font = styleToUse.font();
 
     TextRun textRun = constructTextRun(styleToUse, font);
 
@@ -481,9 +480,8 @@ void InlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
     }
 }
 
-TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& font, StringBuilder* charactersWithHyphen) const
 {
-    ASSERT(style);
     ASSERT(renderer().text());
 
     StringView string = renderer().text().createView();
@@ -496,12 +494,10 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     return constructTextRun(style, font, string, renderer().textLength() - startPos, charactersWithHyphen);
 }
 
-TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
 {
-    ASSERT(style);
-
     if (charactersWithHyphen) {
-        const AtomicString& hyphenString = style->hyphenString();
+        const AtomicString& hyphenString = style.hyphenString();
         charactersWithHyphen->reserveCapacity(string.length() + hyphenString.length());
         charactersWithHyphen->append(string);
         charactersWithHyphen->append(hyphenString);
@@ -511,10 +507,10 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
 
     ASSERT(maximumLength >= static_cast<int>(string.length()));
 
-    TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style->rtlOrdering() == VisualOrder, !renderer().canUseSimpleFontCodePath());
-    run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
+    TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style.rtlOrdering() == VisualOrder, !renderer().canUseSimpleFontCodePath());
+    run.setTabSize(!style.collapseWhiteSpace(), style.tabSize());
     run.setCodePath(renderer().canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
-    run.setTextJustify(style->textJustify());
+    run.setTextJustify(style.textJustify());
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
     run.setCharactersLength(maximumLength);
@@ -522,7 +518,7 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     return run;
 }
 
-TextRun InlineTextBox::constructTextRunForInspector(RenderStyle* style, const Font& font) const
+TextRun InlineTextBox::constructTextRunForInspector(const RenderStyle& style, const Font& font) const
 {
     return InlineTextBox::constructTextRun(style, font);
 }

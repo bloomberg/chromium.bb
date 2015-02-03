@@ -280,7 +280,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
         const RenderSVGShape& shape = static_cast<const RenderSVGShape&>(object);
         ASSERT(shape.element());
 
-        SVGPaintDescription strokePaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.style(), ApplyToStrokeMode);
+        SVGPaintDescription strokePaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.styleRef(), ApplyToStrokeMode);
         if (strokePaintDescription.isValid) {
             TextStreamSeparator s(" ");
             ts << " [stroke={" << s;
@@ -309,7 +309,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
             ts << "}]";
         }
 
-        SVGPaintDescription fillPaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.style(), ApplyToFillMode);
+        SVGPaintDescription fillPaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.styleRef(), ApplyToFillMode);
         if (fillPaintDescription.isValid) {
             TextStreamSeparator s(" ");
             ts << " [fill={" << s;

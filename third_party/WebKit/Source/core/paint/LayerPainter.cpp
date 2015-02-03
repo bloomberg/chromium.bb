@@ -106,19 +106,19 @@ public:
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
         : m_resourceClipper(0), m_clipStateSaver(*context, false), m_renderLayer(renderLayer), m_context(context)
     {
-        RenderStyle* style = renderLayer.renderer()->style();
+        const RenderStyle& style = renderLayer.renderer()->styleRef();
 
         // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
         // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
         // scrolling contents and scrollbars.
-        if (!renderLayer.renderer()->hasClipPath() || !style || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
+        if (!renderLayer.renderer()->hasClipPath() || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
             return;
 
         m_clipperState = RenderSVGResourceClipper::ClipperNotApplied;
 
-        ASSERT(style->clipPath());
-        if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
-            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
+        ASSERT(style.clipPath());
+        if (style.clipPath()->type() == ClipPathOperation::SHAPE) {
+            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style.clipPath());
             if (clipPath->isValid()) {
                 m_clipStateSaver.save();
 
@@ -129,8 +129,8 @@ public:
                 m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, renderLayer.renderer()->displayItemClient(),
                     clipPath->path(rootRelativeBounds), clipPath->windRule()));
             }
-        } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
-            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style->clipPath());
+        } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
+            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style.clipPath());
             Document& document = renderLayer.renderer()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
             Element* element = document.getElementById(referenceClipPathOperation->fragment());

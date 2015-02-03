@@ -17,12 +17,12 @@ namespace blink {
 
 void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    RenderStyle* style = m_ellipsisBox.renderer().style(m_ellipsisBox.isFirstLineStyle());
+    const RenderStyle& style = m_ellipsisBox.renderer().styleRef(m_ellipsisBox.isFirstLineStyle());
     paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
-void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
+void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const RenderStyle& style)
 {
     GraphicsContext* context = paintInfo.context;
     FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping().toFloatPoint();
@@ -38,7 +38,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
-    const Font& font = style->font();
+    const Font& font = style.font();
     FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
     bool isPrinting = m_ellipsisBox.renderer().document().printing();
@@ -58,7 +58,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
 }
 
-void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
+void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const RenderStyle& style)
 {
     InlineBox* markupBox = m_ellipsisBox.markupBox();
     if (!markupBox)
@@ -66,11 +66,11 @@ void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const Layout
 
     LayoutPoint adjustedPaintOffset = paintOffset;
     adjustedPaintOffset.move(m_ellipsisBox.x() + m_ellipsisBox.logicalWidth() - markupBox->x(),
-        m_ellipsisBox.y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(m_ellipsisBox.isFirstLineStyle())->fontMetrics().ascent()));
+        m_ellipsisBox.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().styleRef(m_ellipsisBox.isFirstLineStyle()).fontMetrics().ascent()));
     markupBox->paint(paintInfo, adjustedPaintOffset, lineTop, lineBottom);
 }
 
-void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font)
+void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, const RenderStyle& style, const Font& font)
 {
     Color textColor = m_ellipsisBox.renderer().resolveColor(style, CSSPropertyColor);
     Color c = m_ellipsisBox.renderer().selectionBackgroundColor();
@@ -86,7 +86,7 @@ void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoi
     LayoutUnit selectionBottom = m_ellipsisBox.root().selectionBottom();
     LayoutUnit top = m_ellipsisBox.root().selectionTop();
     LayoutUnit h = m_ellipsisBox.root().selectionHeight();
-    const int deltaY = roundToInt(m_ellipsisBox.renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - m_ellipsisBox.logicalBottom() : m_ellipsisBox.logicalTop() - top);
+    const int deltaY = roundToInt(m_ellipsisBox.renderer().styleRef().isFlippedLinesWritingMode() ? selectionBottom - m_ellipsisBox.logicalBottom() : m_ellipsisBox.logicalTop() - top);
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_ellipsisBox.logicalWidth(), h.toFloat()));
     context->clip(clipRect);

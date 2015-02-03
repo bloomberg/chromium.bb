@@ -903,10 +903,10 @@ void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         float totalWidth;
         InlineBox* anchorBox = lastLine->lastChild();
         if (anchorBox && anchorBox->renderer().style()->isLink())
-            totalWidth = anchorBox->logicalWidth() + font.width(constructTextRun(this, font, ellipsisAndSpace, 2, style(), style()->direction()));
+            totalWidth = anchorBox->logicalWidth() + font.width(constructTextRun(this, font, ellipsisAndSpace, 2, styleRef(), style()->direction()));
         else {
             anchorBox = 0;
-            totalWidth = font.width(constructTextRun(this, font, &horizontalEllipsis, 1, style(), style()->direction()));
+            totalWidth = font.width(constructTextRun(this, font, &horizontalEllipsis, 1, styleRef(), style()->direction()));
         }
 
         // See if this width can be accommodated on the last visible line

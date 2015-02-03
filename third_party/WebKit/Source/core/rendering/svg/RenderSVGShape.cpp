@@ -98,7 +98,7 @@ bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, co
     if (!m_fillBoundingBox.contains(point))
         return false;
 
-    if (requiresFill && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToFillMode))
+    if (requiresFill && !SVGPaintServer::existsForRenderer(*this, styleRef(), ApplyToFillMode))
         return false;
 
     return shapeDependentFillContains(point, fillRule);
@@ -109,7 +109,7 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
     if (!strokeBoundingBox().contains(point))
         return false;
 
-    if (requiresStroke && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
+    if (requiresStroke && !SVGPaintServer::existsForRenderer(*this, styleRef(), ApplyToStrokeMode))
         return false;
 
     return shapeDependentStrokeContains(point);

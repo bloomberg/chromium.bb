@@ -96,10 +96,10 @@ void RenderFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     const Font& font = style()->font();
     // FIXME: Remove the need for this const_cast by making constructTextRun take a const RenderObject*.
     RenderFileUploadControl* renderer = const_cast<RenderFileUploadControl*>(this);
-    float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(renderer, font, characterAsString, style(), TextRun::AllowTrailingExpansion));
+    float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(renderer, font, characterAsString, styleRef(), TextRun::AllowTrailingExpansion));
 
     const String label = toHTMLInputElement(node())->locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
-    float defaultLabelWidth = font.width(constructTextRun(renderer, font, label, style(), TextRun::AllowTrailingExpansion));
+    float defaultLabelWidth = font.width(constructTextRun(renderer, font, label, styleRef(), TextRun::AllowTrailingExpansion));
     if (HTMLInputElement* button = uploadButton())
         if (RenderObject* buttonRenderer = button->renderer())
             defaultLabelWidth += buttonRenderer->maxPreferredLogicalWidth() + afterButtonSpacing;

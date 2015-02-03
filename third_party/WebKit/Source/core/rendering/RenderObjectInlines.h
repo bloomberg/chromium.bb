@@ -25,6 +25,13 @@ inline RenderStyle* RenderObject::style(bool firstLine) const
     return firstLine ? firstLineStyle() : style();
 }
 
+inline const RenderStyle& RenderObject::styleRef(bool firstLine) const
+{
+    const RenderStyle* style = this->style(firstLine);
+    ASSERT(style);
+    return *style;
+}
+
 }
 
 #endif

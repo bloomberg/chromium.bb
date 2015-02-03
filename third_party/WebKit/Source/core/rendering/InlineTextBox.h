@@ -80,7 +80,7 @@ public:
     virtual int baselinePosition(FontBaseline) const override final;
     virtual LayoutUnit lineHeight() const override final;
 
-    bool getEmphasisMarkPosition(RenderStyle*, TextEmphasisPosition&) const;
+    bool getEmphasisMarkPosition(const RenderStyle&, TextEmphasisPosition&) const;
 
     LayoutRect logicalOverflowRect() const;
     void setLogicalOverflowRect(const LayoutRect&);
@@ -88,8 +88,8 @@ public:
     LayoutUnit logicalBottomVisualOverflow() const { return logicalOverflowRect().maxY(); }
 
     // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
-    TextRun constructTextRun(RenderStyle*, const Font&, StringBuilder* charactersWithHyphen = 0) const;
-    TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
+    TextRun constructTextRun(const RenderStyle&, const Font&, StringBuilder* charactersWithHyphen = 0) const;
+    TextRun constructTextRun(const RenderStyle&, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
 
 #ifndef NDEBUG
     virtual void showBox(int = 0) const override;
@@ -97,7 +97,7 @@ public:
 #endif
 
 public:
-    TextRun constructTextRunForInspector(RenderStyle*, const Font&) const;
+    TextRun constructTextRunForInspector(const RenderStyle&, const Font&) const;
     virtual FloatRectWillBeLayoutRect calculateBoundaries() const override { return FloatRectWillBeLayoutRect(x(), y(), width(), height()); }
 
     virtual LayoutRect localSelectionRect(int startPos, int endPos);
@@ -105,8 +105,8 @@ public:
     void selectionStartEnd(int& sPos, int& ePos) const;
 
     // These functions both paint markers and update the DocumentMarker's renderedRect.
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
+    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, const RenderStyle&, const Font&, bool grammar);
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, const RenderStyle&, const Font&);
 
 protected:
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;

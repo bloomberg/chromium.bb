@@ -83,8 +83,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
 
-    RenderStyle* style = textRenderer.style();
-    ASSERT(style);
+    const RenderStyle& style = textRenderer.styleRef();
 
     TextRun textRun = constructTextRun(style, fragment);
 
@@ -105,10 +104,9 @@ FloatWillBeLayoutUnit SVGInlineTextBox::positionForOffset(int) const
     return 0;
 }
 
-FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, RenderStyle* style)
+FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const RenderStyle& style)
 {
     ASSERT(startPosition < endPosition);
-    ASSERT(style);
 
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
@@ -139,8 +137,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     if (startPosition >= endPosition)
         return LayoutRect();
 
-    RenderStyle* style = renderer().style();
-    ASSERT(style);
+    const RenderStyle& style = renderer().styleRef();
 
     AffineTransform fragmentTransform;
     FloatRectWillBeLayoutRect selectionRect;
@@ -173,10 +170,8 @@ void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
     SVGInlineTextBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFragment& fragment) const
+TextRun SVGInlineTextBox::constructTextRun(const RenderStyle& style, const SVGTextFragment& fragment) const
 {
-    ASSERT(style);
-
     RenderText* text = &renderer();
 
     // FIXME(crbug.com/264211): This should not be necessary but can occur if we
@@ -189,7 +184,7 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
                 , 0 // padding, only relevant for justified text, not relevant for SVG
                 , TextRun::AllowTrailingExpansion
                 , direction()
-                , dirOverride() || style->rtlOrdering() == VisualOrder /* directionalOverride */);
+                , dirOverride() || style.rtlOrdering() == VisualOrder /* directionalOverride */);
 
     if (fragment.length) {
         if (text->is8Bit())
@@ -234,12 +229,12 @@ bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(const SVGText
     return true;
 }
 
-void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, RenderStyle*, const Font&, bool)
+void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const RenderStyle&, const Font&, bool)
 {
     // SVG does not have support for generic document markers (e.g., spellchecking, etc).
 }
 
-void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const FloatPointWillBeLayoutPoint& point, DocumentMarker* marker, RenderStyle* style, const Font& font)
+void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const FloatPointWillBeLayoutPoint& point, DocumentMarker* marker, const RenderStyle& style, const Font& font)
 {
     SVGInlineTextBoxPainter(*this).paintTextMatchMarker(context, point.toFloatPoint(), marker, style, font);
 }

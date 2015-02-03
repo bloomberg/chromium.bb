@@ -699,7 +699,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             }
             if (curr->isInlineTextBox()) {
                 TextEmphasisPosition emphasisMarkPosition;
-                if (toInlineTextBox(curr)->getEmphasisMarkPosition(curr->renderer().style(isFirstLineStyle()), emphasisMarkPosition)) {
+                if (toInlineTextBox(curr)->getEmphasisMarkPosition(curr->renderer().styleRef(isFirstLineStyle()), emphasisMarkPosition)) {
                     bool emphasisMarkIsOver = emphasisMarkPosition == TextEmphasisPositionOver;
                     if (emphasisMarkIsOver != curr->renderer().style(isFirstLineStyle())->isFlippedLinesWritingMode())
                         hasAnnotationsBefore = true;
@@ -845,27 +845,27 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     if (textBox->knownToHaveNoOverflow())
         return;
 
-    RenderStyle* style = textBox->renderer().style(isFirstLineStyle());
+    const RenderStyle& style = textBox->renderer().styleRef(isFirstLineStyle());
 
     GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.find(textBox);
     GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? 0 : &it->value.second;
-    bool isFlippedLine = style->isFlippedLinesWritingMode();
+    bool isFlippedLine = style.isFlippedLinesWritingMode();
 
     int topGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->bottom : glyphOverflow->top) : 0;
     int bottomGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->top : glyphOverflow->bottom) : 0;
     int leftGlyphEdge = glyphOverflow ? glyphOverflow->left : 0;
     int rightGlyphEdge = glyphOverflow ? glyphOverflow->right : 0;
 
-    int strokeOverflow = static_cast<int>(ceilf(style->textStrokeWidth() / 2.0f));
+    int strokeOverflow = static_cast<int>(ceilf(style.textStrokeWidth() / 2.0f));
     int topGlyphOverflow = -strokeOverflow - topGlyphEdge;
     int bottomGlyphOverflow = strokeOverflow + bottomGlyphEdge;
     int leftGlyphOverflow = -strokeOverflow - leftGlyphEdge;
     int rightGlyphOverflow = strokeOverflow + rightGlyphEdge;
 
     TextEmphasisPosition emphasisMarkPosition;
-    if (style->textEmphasisMark() != TextEmphasisMarkNone && textBox->getEmphasisMarkPosition(style, emphasisMarkPosition)) {
-        int emphasisMarkHeight = style->font().emphasisMarkHeight(style->textEmphasisMarkString());
-        if ((emphasisMarkPosition == TextEmphasisPositionOver) == (!style->isFlippedLinesWritingMode()))
+    if (style.textEmphasisMark() != TextEmphasisMarkNone && textBox->getEmphasisMarkPosition(style, emphasisMarkPosition)) {
+        int emphasisMarkHeight = style.font().emphasisMarkHeight(style.textEmphasisMarkString());
+        if ((emphasisMarkPosition == TextEmphasisPositionOver) == (!style.isFlippedLinesWritingMode()))
             topGlyphOverflow = std::min(topGlyphOverflow, -emphasisMarkHeight);
         else
             bottomGlyphOverflow = std::max(bottomGlyphOverflow, emphasisMarkHeight);
@@ -873,11 +873,11 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     // If letter-spacing is negative, we should factor that into right layout overflow. (Even in RTL, letter-spacing is
     // applied to the right, so this is not an issue with left overflow.
-    rightGlyphOverflow -= std::min(0, (int)style->font().fontDescription().letterSpacing());
+    rightGlyphOverflow -= std::min(0, (int)style.font().fontDescription().letterSpacing());
 
     LayoutRectOutsets textShadowLogicalOutsets;
-    if (ShadowList* textShadow = style->textShadow())
-        textShadowLogicalOutsets = LayoutRectOutsets(textShadow->rectOutsetsIncludingOriginal()).logicalOutsets(style->writingMode());
+    if (ShadowList* textShadow = style.textShadow())
+        textShadowLogicalOutsets = LayoutRectOutsets(textShadow->rectOutsetsIncludingOriginal()).logicalOutsets(style.writingMode());
 
     // FIXME: This code currently uses negative values for expansion of the top
     // and left edges. This should be cleaned up.
@@ -1200,14 +1200,14 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         }
 
         if (curr->isInlineTextBox()) {
-            RenderStyle* style = curr->renderer().style(isFirstLineStyle());
+            const RenderStyle& style = curr->renderer().styleRef(isFirstLineStyle());
             TextEmphasisPosition emphasisMarkPosition;
-            if (style->textEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
-                if (!style->isFlippedLinesWritingMode()) {
-                    int topOfEmphasisMark = curr->logicalTop() - style->font().emphasisMarkHeight(style->textEmphasisMarkString());
+            if (style.textEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
+                if (!style.isFlippedLinesWritingMode()) {
+                    int topOfEmphasisMark = curr->logicalTop() - style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, allowedPosition - topOfEmphasisMark);
                 } else {
-                    int bottomOfEmphasisMark = curr->logicalBottom() + style->font().emphasisMarkHeight(style->textEmphasisMarkString());
+                    int bottomOfEmphasisMark = curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, bottomOfEmphasisMark - allowedPosition);
                 }
             }

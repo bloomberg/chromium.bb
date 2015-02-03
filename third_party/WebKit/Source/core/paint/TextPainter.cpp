@@ -115,7 +115,7 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, RenderStyle* style, bool forceBlackText, bool isPrinting)
+TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, const RenderStyle& style, bool forceBlackText, bool isPrinting)
 {
     TextPainter::Style textStyle;
 
@@ -123,19 +123,19 @@ TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, Render
         textStyle.fillColor = Color::black;
         textStyle.strokeColor = Color::black;
         textStyle.emphasisMarkColor = Color::black;
-        textStyle.strokeWidth = style->textStrokeWidth();
+        textStyle.strokeWidth = style.textStrokeWidth();
         textStyle.shadow = 0;
     } else {
         textStyle.fillColor = renderer.resolveColor(style, CSSPropertyWebkitTextFillColor);
         textStyle.strokeColor = renderer.resolveColor(style, CSSPropertyWebkitTextStrokeColor);
         textStyle.emphasisMarkColor = renderer.resolveColor(style, CSSPropertyWebkitTextEmphasisColor);
-        textStyle.strokeWidth = style->textStrokeWidth();
-        textStyle.shadow = style->textShadow();
+        textStyle.strokeWidth = style.textStrokeWidth();
+        textStyle.shadow = style.textShadow();
 
         // Adjust text color when printing with a white background.
         bool forceBackgroundToWhite = false;
         if (isPrinting) {
-            if (style->printColorAdjust() == PrintColorAdjustEconomy)
+            if (style.printColorAdjust() == PrintColorAdjustEconomy)
                 forceBackgroundToWhite = true;
             if (renderer.document().settings() && renderer.document().settings()->shouldPrintBackgrounds())
                 forceBackgroundToWhite = false;
@@ -164,8 +164,8 @@ TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, b
             selectionStyle.emphasisMarkColor = renderer.selectionEmphasisMarkColor();
         }
 
-        if (RenderStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
-            selectionStyle.strokeColor = forceBlackText ? Color::black : renderer.resolveColor(pseudoStyle, CSSPropertyWebkitTextStrokeColor);
+        if (const RenderStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
+            selectionStyle.strokeColor = forceBlackText ? Color::black : renderer.resolveColor(*pseudoStyle, CSSPropertyWebkitTextStrokeColor);
             selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
             selectionStyle.shadow = forceBlackText ? 0 : pseudoStyle->textShadow();
         }

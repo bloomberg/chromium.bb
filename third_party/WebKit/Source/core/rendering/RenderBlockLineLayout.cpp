@@ -1184,7 +1184,7 @@ static inline void stripTrailingSpace(FloatWillBeLayoutUnit& inlineMax, FloatWil
         // FIXME: This ignores first-line.
         const Font& font = text->style()->font();
         TextRun run = constructTextRun(text, font, &trailingWhitespaceChar, 1,
-            text->style(), text->style()->direction());
+            text->styleRef(), text->style()->direction());
         run.setCodePath(text->canUseSimpleFontCodePath()
             ? TextRun::ForceSimple
             : TextRun::ForceComplex);
@@ -1946,8 +1946,8 @@ void RenderBlockFlow::checkLinesForTextOverflow()
     const Font& firstLineFont = firstLineStyle()->font();
     // FIXME: We should probably not hard-code the direction here. https://crbug.com/333004
     TextDirection ellipsisDirection = LTR;
-    float firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsis, 1, firstLineStyle(), ellipsisDirection));
-    float ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : font.width(constructTextRun(this, font, &horizontalEllipsis, 1, style(), ellipsisDirection));
+    float firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsis, 1, *firstLineStyle(), ellipsisDirection));
+    float ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : font.width(constructTextRun(this, font, &horizontalEllipsis, 1, styleRef(), ellipsisDirection));
 
     // For LTR text truncation, we want to get the right edge of our padding box, and then we want to see
     // if the right edge of a line box exceeds that.  For RTL, we use the left edge of the padding box and

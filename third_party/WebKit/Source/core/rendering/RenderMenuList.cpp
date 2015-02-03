@@ -482,7 +482,7 @@ PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
     getItemBackgroundColor(listIndex, itemBackgroundColor, itemHasCustomBackgroundColor);
 
     RenderStyle* style = element->renderStyle() ? element->renderStyle() : element->computedStyle();
-    return style ? PopupMenuStyle(resolveColor(style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
+    return style ? PopupMenuStyle(resolveColor(*style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
         isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
         style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
         itemHasCustomBackgroundColor ? PopupMenuStyle::CustomBackgroundColor : PopupMenuStyle::DefaultBackgroundColor) : menuStyle();
@@ -499,8 +499,8 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     HTMLElement* element = listItems[listIndex];
 
     Color backgroundColor;
-    if (element->renderStyle())
-        backgroundColor = resolveColor(element->renderStyle(), CSSPropertyBackgroundColor);
+    if (const RenderStyle* style = element->renderStyle())
+        backgroundColor = resolveColor(*style, CSSPropertyBackgroundColor);
     itemHasCustomBackgroundColor = backgroundColor.alpha();
     // If the item has an opaque background color, return that.
     if (!backgroundColor.hasAlpha()) {

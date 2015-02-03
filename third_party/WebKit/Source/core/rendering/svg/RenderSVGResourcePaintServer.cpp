@@ -80,12 +80,10 @@ void SVGPaintServer::prependTransform(const AffineTransform& transform)
         m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
 }
 
-static SVGPaintDescription requestPaint(const RenderObject& object, const RenderStyle* style, RenderSVGResourceMode mode)
+static SVGPaintDescription requestPaint(const RenderObject& object, const RenderStyle& style, RenderSVGResourceMode mode)
 {
-    ASSERT(style);
-
     // If we have no style at all, ignore it.
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGRenderStyle& svgStyle = style.svgStyle();
 
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {
@@ -113,7 +111,7 @@ static SVGPaintDescription requestPaint(const RenderObject& object, const Render
         break;
     }
 
-    if (style->insideLink() == InsideVisitedLink) {
+    if (style.insideLink() == InsideVisitedLink) {
         // FIXME: This code doesn't support the uri component of the visited link paint, https://bugs.webkit.org/show_bug.cgi?id=70006
         SVGPaintType visitedPaintType = applyToFill ? svgStyle.visitedLinkFillPaintType() : svgStyle.visitedLinkStrokePaintType();
 
@@ -154,9 +152,8 @@ static SVGPaintDescription requestPaint(const RenderObject& object, const Render
     return SVGPaintDescription(uriResource);
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, const RenderStyle& style, RenderSVGResourceMode resourceMode)
 {
-    ASSERT(style);
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
     SVGPaintDescription paintDescription = requestPaint(renderer, style, resourceMode);
@@ -172,7 +169,7 @@ SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, 
     return invalid();
 }
 
-bool SVGPaintServer::existsForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+bool SVGPaintServer::existsForRenderer(const RenderObject& renderer, const RenderStyle& style, RenderSVGResourceMode resourceMode)
 {
     return requestPaint(renderer, style, resourceMode).isValid;
 }
@@ -186,7 +183,7 @@ RenderSVGResourcePaintServer::~RenderSVGResourcePaintServer()
 {
 }
 
-SVGPaintDescription RenderSVGResourcePaintServer::requestPaintDescription(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+SVGPaintDescription RenderSVGResourcePaintServer::requestPaintDescription(const RenderObject& renderer, const RenderStyle& style, RenderSVGResourceMode resourceMode)
 {
     return requestPaint(renderer, style, resourceMode);
 }

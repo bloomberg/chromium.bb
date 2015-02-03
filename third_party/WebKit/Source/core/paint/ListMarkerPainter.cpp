@@ -165,7 +165,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
 
     const Font& font = m_renderListMarker.style()->font();
-    TextRun textRun = constructTextRun(&m_renderListMarker, font, m_renderListMarker.text(), m_renderListMarker.style());
+    TextRun textRun = constructTextRun(&m_renderListMarker, font, m_renderListMarker.text(), m_renderListMarker.styleRef());
 
     GraphicsContextStateSaver stateSaver(*context, false);
     if (!m_renderListMarker.style()->isHorizontalWritingMode()) {
@@ -203,7 +203,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
             m_renderListMarker.style()->isLeftToRightDirection() ? suffix : ' ',
             m_renderListMarker.style()->isLeftToRightDirection() ? ' ' : suffix
         };
-        TextRun suffixRun = constructTextRun(&m_renderListMarker, font, suffixStr, 2, m_renderListMarker.style(), m_renderListMarker.style()->direction());
+        TextRun suffixRun = constructTextRun(&m_renderListMarker, font, suffixStr, 2, m_renderListMarker.styleRef(), m_renderListMarker.style()->direction());
         TextRunPaintInfo suffixRunInfo(suffixRun);
         suffixRunInfo.bounds = marker;
 

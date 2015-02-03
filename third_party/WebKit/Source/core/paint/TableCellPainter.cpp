@@ -13,40 +13,40 @@
 
 namespace blink {
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const RenderStyle* styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const RenderStyle& styleForCellFlow) const
 {
-    if (styleForCellFlow->isHorizontalWritingMode()) {
-        return styleForCellFlow->isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart)
+    if (styleForCellFlow.isHorizontalWritingMode()) {
+        return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart)
             : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd);
     }
-    return styleForCellFlow->isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter)
+    return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter)
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const RenderStyle* styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const RenderStyle& styleForCellFlow) const
 {
-    if (styleForCellFlow->isHorizontalWritingMode()) {
-        return styleForCellFlow->isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
+    if (styleForCellFlow.isHorizontalWritingMode()) {
+        return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
             : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart);
     }
-    return styleForCellFlow->isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
+    return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const RenderStyle* styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const RenderStyle& styleForCellFlow) const
 {
-    if (styleForCellFlow->isHorizontalWritingMode())
-        return styleForCellFlow->isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
-    return styleForCellFlow->isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd);
+    if (styleForCellFlow.isHorizontalWritingMode())
+        return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
+    return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const RenderStyle* styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const RenderStyle& styleForCellFlow) const
 {
-    if (styleForCellFlow->isHorizontalWritingMode()) {
-        return styleForCellFlow->isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
+    if (styleForCellFlow.isHorizontalWritingMode()) {
+        return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
             : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter);
     }
-    return styleForCellFlow->isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
+    return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart);
 }
 
@@ -135,7 +135,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (recorder.canUseCachedDrawing())
         return;
 
-    const RenderStyle* styleForCellFlow = m_layoutTableCell.styleForCellFlow();
+    const RenderStyle& styleForCellFlow = *m_layoutTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
     CollapsedBorderValue rightVal = cachedCollapsedRightBorder(styleForCellFlow);
     CollapsedBorderValue topVal = cachedCollapsedTopBorder(styleForCellFlow);
@@ -229,17 +229,17 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
     if (recorder.canUseCachedDrawing())
         return;
 
-    BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.style(), Normal);
+    BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Normal);
 
     // Paint our cell background.
     paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableCell);
 
-    BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.style(), Inset);
+    BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Inset);
 
     if (!m_layoutTableCell.style()->hasBorder() || tableElt->collapseBorders())
         return;
 
-    BoxPainter::paintBorder(m_layoutTableCell, paintInfo, paintRect, m_layoutTableCell.style());
+    BoxPainter::paintBorder(m_layoutTableCell, paintInfo, paintRect, m_layoutTableCell.styleRef());
 }
 
 void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

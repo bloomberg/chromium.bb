@@ -761,7 +761,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
             return w;
     }
 
-    TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, start, len, style(), textDirection);
+    TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, start, len, styleRef(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
     run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
@@ -816,7 +816,7 @@ void RenderText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
             const UChar spaceChar = space;
-            TextRun run = constructTextRun(this, font, &spaceChar, 1, style(), direction);
+            TextRun run = constructTextRun(this, font, &spaceChar, 1, styleRef(), direction);
             run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
             maxWidth -= spaceWidth;
@@ -893,8 +893,8 @@ void RenderText::computePreferredLogicalWidths(float leadWidth)
 
 static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDirection direction)
 {
-    RenderStyle* style = renderer->style();
-    return font.width(constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
+    const RenderStyle& style = renderer->styleRef();
+    return font.width(constructTextRun(renderer, font, style.hyphenString().string(), style, direction));
 }
 
 void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
@@ -1043,7 +1043,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
-                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing;
+                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &space, 1, *styleToUse, textDirection)) + wordSpacing;
                 wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
             }
 
@@ -1114,7 +1114,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                     m_maxWidth = currMaxWidth;
                 currMaxWidth = 0;
             } else {
-                TextRun run = constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
+                TextRun run = constructTextRun(this, f, this, i, 1, *styleToUse, textDirection);
                 run.setCharactersLength(len - i);
                 run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
                 ASSERT(run.charactersLength() >= run.length());
@@ -1529,7 +1529,7 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
             w = widthFromCache(f, from, len, xPos, textDirection, fallbackFonts, glyphOverflow);
         }
     } else {
-        TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, from, len, style(), textDirection);
+        TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, from, len, styleRef(), textDirection);
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 

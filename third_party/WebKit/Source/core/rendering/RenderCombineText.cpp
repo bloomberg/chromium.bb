@@ -105,7 +105,7 @@ void RenderCombineText::updateFont()
     if (!m_isCombined)
         return;
 
-    TextRun run = constructTextRun(this, originalFont(), this, style(), style()->direction());
+    TextRun run = constructTextRun(this, originalFont(), this, styleRef(), style()->direction());
     FontDescription description = originalFont().fontDescription();
     float emWidth = description.computedSize();
     if (!(style()->textDecorationsInEffect() & (TextDecorationUnderline | TextDecorationOverline)))

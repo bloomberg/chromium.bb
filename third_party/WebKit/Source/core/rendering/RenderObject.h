@@ -799,13 +799,19 @@ public:
 
     RenderStyle* style() const { return m_style.get(); }
 
-    /* The two following methods are inlined in RenderObjectInlines.h */
+    // m_style can only be nullptr before the first style is set, thus most
+    // callers will never see a nullptr style and should use styleRef().
+    // FIXME: It would be better if style() returned a const reference.
+    const RenderStyle& styleRef() const { ASSERT(m_style); return *m_style; }
+
+    /* The following methods are inlined in RenderObjectInlines.h */
     RenderStyle* firstLineStyle() const;
     RenderStyle* style(bool firstLine) const;
+    const RenderStyle& styleRef(bool firstLine) const;
 
-    static inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty)
+    static inline Color resolveColor(const RenderStyle& styleToUse, int colorProperty)
     {
-        return styleToUse->visitedDependentColor(colorProperty);
+        return styleToUse.visitedDependentColor(colorProperty);
     }
 
     inline Color resolveColor(int colorProperty) const

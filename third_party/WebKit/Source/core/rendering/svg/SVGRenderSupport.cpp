@@ -346,15 +346,14 @@ bool SVGRenderSupport::transformToUserSpaceAndCheckClipping(RenderObject* object
     return pointInClippingArea(object, localPoint);
 }
 
-void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle* style, const RenderObject* object)
+void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle& style, const RenderObject* object)
 {
     ASSERT(context);
-    ASSERT(style);
     ASSERT(object);
     ASSERT(object->node());
     ASSERT(object->node()->isSVGElement());
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGRenderStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object->node()));
     context->setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
@@ -400,9 +399,8 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, RenderStyle* style, RenderObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const RenderStyle& style, RenderObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
-    ASSERT(style);
     ASSERT(paintInfo.context == stateSaver.context());
 
     GraphicsContext* context = paintInfo.context;
@@ -423,7 +421,7 @@ bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
 
     paintServer.apply(*context, resourceMode, &stateSaver);
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGRenderStyle& svgStyle = style.svgStyle();
 
     if (resourceMode == ApplyToFillMode) {
         context->setAlphaAsFloat(svgStyle.fillOpacity());

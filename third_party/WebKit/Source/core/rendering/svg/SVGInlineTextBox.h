@@ -57,12 +57,12 @@ public:
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
     int offsetForPositionInFragment(const SVGTextFragment&, FloatWillBeLayoutUnit position, bool includePartialGlyphs) const;
-    FloatRectWillBeLayoutRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, RenderStyle*);
-    TextRun constructTextRun(RenderStyle*, const SVGTextFragment&) const;
+    FloatRectWillBeLayoutRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const RenderStyle&);
+    TextRun constructTextRun(const RenderStyle&, const SVGTextFragment&) const;
 
 private:
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, RenderStyle*, const Font&, bool) override final;
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, RenderStyle*, const Font&) override final;
+    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const RenderStyle&, const Font&, bool) override final;
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const RenderStyle&, const Font&) override final;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 

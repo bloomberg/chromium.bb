@@ -33,10 +33,10 @@ public:
     LayoutRect paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior);
 
 private:
-    CollapsedBorderValue cachedCollapsedLeftBorder(const RenderStyle*) const;
-    CollapsedBorderValue cachedCollapsedRightBorder(const RenderStyle*) const;
-    CollapsedBorderValue cachedCollapsedTopBorder(const RenderStyle*) const;
-    CollapsedBorderValue cachedCollapsedBottomBorder(const RenderStyle*) const;
+    CollapsedBorderValue cachedCollapsedLeftBorder(const RenderStyle&) const;
+    CollapsedBorderValue cachedCollapsedRightBorder(const RenderStyle&) const;
+    CollapsedBorderValue cachedCollapsedTopBorder(const RenderStyle&) const;
+    CollapsedBorderValue cachedCollapsedBottomBorder(const RenderStyle&) const;
 
     LayoutTableCell& m_layoutTableCell;
 };

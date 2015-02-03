@@ -15,28 +15,28 @@
 
 namespace blink {
 
-void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
+void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const RenderStyle& style)
 {
     Vector<LayoutRect> focusRingRects;
     m_renderObject.addFocusRingRects(focusRingRects, paintOffset);
-    ASSERT(style->outlineStyleIsAuto());
+    ASSERT(style.outlineStyleIsAuto());
     Vector<IntRect> focusRingIntRects;
     for (size_t i = 0; i < focusRingRects.size(); ++i)
         focusRingIntRects.append(pixelSnappedIntRect(focusRingRects[i]));
-    paintInfo.context->drawFocusRing(focusRingIntRects, style->outlineWidth(), style->outlineOffset(), m_renderObject.resolveColor(style, CSSPropertyOutlineColor));
+    paintInfo.context->drawFocusRing(focusRingIntRects, style.outlineWidth(), style.outlineOffset(), m_renderObject.resolveColor(style, CSSPropertyOutlineColor));
 }
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
-    RenderStyle* styleToUse = m_renderObject.style();
-    if (!styleToUse->hasOutline())
+    const RenderStyle& styleToUse = m_renderObject.styleRef();
+    if (!styleToUse.hasOutline())
         return;
 
     RenderDrawingRecorder recorder(paintInfo.context, m_renderObject, paintInfo.phase, paintRect);
     if (recorder.canUseCachedDrawing())
         return;
 
-    if (styleToUse->outlineStyleIsAuto()) {
+    if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             paintFocusRing(paintInfo, paintRect.location(), styleToUse);
@@ -44,21 +44,21 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
         return;
     }
 
-    if (styleToUse->outlineStyle() == BNONE)
+    if (styleToUse.outlineStyle() == BNONE)
         return;
 
     IntRect inner = pixelSnappedIntRect(paintRect);
-    inner.inflate(styleToUse->outlineOffset());
+    inner.inflate(styleToUse.outlineOffset());
 
     IntRect outer = pixelSnappedIntRect(inner);
-    LayoutUnit outlineWidth = styleToUse->outlineWidth();
+    LayoutUnit outlineWidth = styleToUse.outlineWidth();
     outer.inflate(outlineWidth);
 
     // FIXME: This prevents outlines from painting inside the object. See bug 12042
     if (outer.isEmpty())
         return;
 
-    EBorderStyle outlineStyle = styleToUse->outlineStyle();
+    EBorderStyle outlineStyle = styleToUse.outlineStyle();
     Color outlineColor = m_renderObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
 
     GraphicsContext* graphicsContext = paintInfo.context;

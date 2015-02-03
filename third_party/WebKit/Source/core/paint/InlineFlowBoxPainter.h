@@ -31,7 +31,7 @@ private:
     void paintMask(const PaintInfo&, const LayoutPoint&);
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode);
-    void paintBoxShadow(const PaintInfo&, RenderStyle*, ShadowStyle, const LayoutRect&);
+    void paintBoxShadow(const PaintInfo&, const RenderStyle&, ShadowStyle, const LayoutRect&);
     LayoutRect roundedFrameRectClampedToLineTopAndBottomIfNeeded() const;
     LayoutRect paintRectForImageStrip(const LayoutPoint&, const LayoutSize&, TextDirection) const;
 

@@ -26,16 +26,16 @@ public:
     InlineTextBoxPainter(InlineTextBox& inlineTextBox) : m_inlineTextBox(inlineTextBox) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
-    void paintDocumentMarkers(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool background);
-    void paintDocumentMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
-    void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
+    void paintDocumentMarkers(GraphicsContext*, const FloatPoint& boxOrigin, const RenderStyle&, const Font&, bool background);
+    void paintDocumentMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, const RenderStyle&, const Font&, bool grammar);
+    void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, const RenderStyle&, const Font&);
 
     static void removeFromTextBlobCache(InlineTextBox&);
 
 private:
-    void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool useCustomUnderlines);
-    void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color backgroundColor, int startPos, int endPos);
-    void paintSelection(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color textColor);
+    void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, const RenderStyle&, const Font&, bool useCustomUnderlines);
+    void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, const RenderStyle&, const Font&, Color backgroundColor, int startPos, int endPos);
+    void paintSelection(GraphicsContext*, const FloatPoint& boxOrigin, const RenderStyle&, const Font&, Color textColor);
     void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration);
     void paintCompositionUnderline(GraphicsContext*, const FloatPoint& boxOrigin, const CompositionUnderline&);
     unsigned underlinePaintStart(const CompositionUnderline&);

@@ -81,7 +81,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     if (recorder.canUseCachedDrawing())
         return;
 
-    RenderStyle* style = m_renderBox.style();
+    const RenderStyle& style = m_renderBox.styleRef();
     BoxDecorationData boxDecorationData(m_renderBox, paintInfo.context);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
@@ -92,7 +92,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedClipBackground) {
         stateSaver.save();
-        FloatRoundedRect border = style->getRoundedBorderFor(paintRect);
+        FloatRoundedRect border = style.getRoundedBorderFor(paintRect);
         paintInfo.context->clipRoundedRect(border);
     }
 
@@ -528,7 +528,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
     if (allMaskImagesLoaded) {
         paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode);
-        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), SkXfermode::kSrcOver_Mode);
+        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.styleRef(), m_renderBox.style()->maskBoxImage(), SkXfermode::kSrcOver_Mode);
     }
 
     if (pushTransparencyLayer) {
@@ -890,7 +890,7 @@ static LayoutUnit computeBorderImageSide(const BorderImageLength& borderSlice, L
     return valueForLength(borderSlice.length(), boxExtent);
 }
 
-bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const RenderStyle* style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
+bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const RenderStyle& style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
 {
     StyleImage* styleImage = ninePieceImage.image();
     if (!styleImage)
@@ -899,19 +899,19 @@ bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext*
     if (!styleImage->isLoaded())
         return true; // Never paint a nine-piece image incrementally, but don't paint the fallback borders either.
 
-    if (!styleImage->canRender(obj, style->effectiveZoom()))
+    if (!styleImage->canRender(obj, style.effectiveZoom()))
         return false;
 
     // FIXME: border-image is broken with full page zooming when tiling has to happen, since the tiling function
     // doesn't have any understanding of the zoom that is in effect on the tile.
     LayoutRect rectWithOutsets = rect;
-    rectWithOutsets.expand(style->imageOutsets(ninePieceImage));
+    rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
     IntRect borderImageRect = pixelSnappedIntRect(rectWithOutsets);
 
     IntSize imageSize = obj.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(), RenderBoxModelObject::DoNotScaleByEffectiveZoom);
 
     // If both values are ‘auto’ then the intrinsic width and/or height of the image should be used, if any.
-    styleImage->setContainerSizeForRenderer(&obj, imageSize, style->effectiveZoom());
+    styleImage->setContainerSizeForRenderer(&obj, imageSize, style.effectiveZoom());
 
     int imageWidth = imageSize.width();
     int imageHeight = imageSize.height();
@@ -925,10 +925,10 @@ bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext*
     ENinePieceImageRule hRule = ninePieceImage.horizontalRule();
     ENinePieceImageRule vRule = ninePieceImage.verticalRule();
 
-    int topWidth = computeBorderImageSide(ninePieceImage.borderSlices().top(), style->borderTopWidth(), topSlice, borderImageRect.height());
-    int rightWidth = computeBorderImageSide(ninePieceImage.borderSlices().right(), style->borderRightWidth(), rightSlice, borderImageRect.width());
-    int bottomWidth = computeBorderImageSide(ninePieceImage.borderSlices().bottom(), style->borderBottomWidth(), bottomSlice, borderImageRect.height());
-    int leftWidth = computeBorderImageSide(ninePieceImage.borderSlices().left(), style->borderLeftWidth(), leftSlice, borderImageRect.width());
+    int topWidth = computeBorderImageSide(ninePieceImage.borderSlices().top(), style.borderTopWidth(), topSlice, borderImageRect.height());
+    int rightWidth = computeBorderImageSide(ninePieceImage.borderSlices().right(), style.borderRightWidth(), rightSlice, borderImageRect.width());
+    int bottomWidth = computeBorderImageSide(ninePieceImage.borderSlices().bottom(), style.borderBottomWidth(), bottomSlice, borderImageRect.height());
+    int leftWidth = computeBorderImageSide(ninePieceImage.borderSlices().left(), style.borderLeftWidth(), leftSlice, borderImageRect.width());
 
     // Reduce the widths if they're too large.
     // The spec says: Given Lwidth as the width of the border image area, Lheight as its height, and Wside as the border image width
@@ -1391,17 +1391,17 @@ static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect
         context->setShouldAntialias(wasAntialias);
 }
 
-void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const RenderStyle* style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const RenderStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     GraphicsContext* graphicsContext = info.context;
     // border-image is not affected by border-radius.
-    if (paintNinePieceImage(obj, graphicsContext, rect, style, style->borderImage()))
+    if (paintNinePieceImage(obj, graphicsContext, rect, style, style.borderImage()))
         return;
 
     BorderEdge edges[4];
-    style->getBorderEdgeInfo(edges, includeLogicalLeftEdge, includeLogicalRightEdge);
-    FloatRoundedRect outerBorder = style->getRoundedBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge);
-    FloatRoundedRect innerBorder = style->getRoundedInnerBorderFor(borderInnerRectAdjustedForBleedAvoidance(graphicsContext, rect, bleedAvoidance), includeLogicalLeftEdge, includeLogicalRightEdge);
+    style.getBorderEdgeInfo(edges, includeLogicalLeftEdge, includeLogicalRightEdge);
+    FloatRoundedRect outerBorder = style.getRoundedBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge);
+    FloatRoundedRect innerBorder = style.getRoundedInnerBorderFor(borderInnerRectAdjustedForBleedAvoidance(graphicsContext, rect, bleedAvoidance), includeLogicalLeftEdge, includeLogicalRightEdge);
 
     if (outerBorder.rect().isEmpty())
         return;
@@ -1565,7 +1565,7 @@ void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, c
 
     // If only one edge visible antialiasing doesn't create seams
     bool antialias = shouldAntialiasLines(graphicsContext) || numEdgesVisible == 1;
-    FloatRoundedRect unadjustedInnerBorder = (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? style->getRoundedInnerBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge) : innerBorder;
+    FloatRoundedRect unadjustedInnerBorder = (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? style.getRoundedInnerBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge) : innerBorder;
     IntPoint innerBorderAdjustment(innerBorder.rect().x() - unadjustedInnerBorder.rect().x(), innerBorder.rect().y() - unadjustedInnerBorder.rect().y());
     if (haveAlphaColor)
         paintTranslucentBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
@@ -1581,7 +1581,7 @@ static inline bool includesAdjacentEdges(BorderEdgeFlags flags)
         || (flags & (LeftBorderEdge | TopBorderEdge)) == (LeftBorderEdge | TopBorderEdge);
 }
 
-void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const RenderStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
     const BorderEdge edges[], BorderEdgeFlags edgesToDraw, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias)
 {
     // willBeOverdrawn assumes that we draw in order: top, bottom, left, right.
@@ -1631,7 +1631,7 @@ LayoutRect BoxPainter::borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*
     return (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? shrinkRectByOnePixel(context, rect) : rect;
 }
 
-void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const RenderStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const FloatRect& sideRect, BoxSide side, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge edges[], const Path* path,
     BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1678,7 +1678,7 @@ void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const Rend
     }
 }
 
-void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const RenderStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const IntPoint& innerBorderAdjustment, const BorderEdge edges[], BorderEdgeFlags edgeSet, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1727,7 +1727,7 @@ void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const Render
 }
 
 void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const LayoutRect& borderRect, const Path& borderPath, const BorderEdge edges[],
-    float thickness, float drawThickness, BoxSide side, const RenderStyle* style, Color color, EBorderStyle borderStyle, BackgroundBleedAvoidance bleedAvoidance,
+    float thickness, float drawThickness, BoxSide side, const RenderStyle& style, Color color, EBorderStyle borderStyle, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     if (thickness <= 0)
@@ -1802,7 +1802,7 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
         // Draw inner border line
         {
             GraphicsContextStateSaver stateSaver(*graphicsContext);
-            FloatRoundedRect innerClip = style->getRoundedInnerBorderFor(borderRect,
+            FloatRoundedRect innerClip = style.getRoundedInnerBorderFor(borderRect,
                 innerBorderTopWidth, innerBorderBottomWidth, innerBorderLeftWidth, innerBorderRightWidth,
                 includeLogicalLeftEdge, includeLogicalRightEdge);
 
@@ -1822,7 +1822,7 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
                 ++outerBorderRightWidth;
             }
 
-            FloatRoundedRect outerClip = style->getRoundedInnerBorderFor(outerRect,
+            FloatRoundedRect outerClip = style.getRoundedInnerBorderFor(outerRect,
                 outerBorderTopWidth, outerBorderBottomWidth, outerBorderLeftWidth, outerBorderRightWidth,
                 includeLogicalLeftEdge, includeLogicalRightEdge);
             graphicsContext->clipOutRoundedRect(outerClip);
@@ -1853,7 +1853,7 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
         LayoutUnit leftWidth = edges[BSLeft].usedWidth() / 2;
         LayoutUnit rightWidth = edges[BSRight].usedWidth() / 2;
 
-        FloatRoundedRect clipRect = style->getRoundedInnerBorderFor(borderRect,
+        FloatRoundedRect clipRect = style.getRoundedInnerBorderFor(borderRect,
             topWidth, bottomWidth, leftWidth, rightWidth,
             includeLogicalLeftEdge, includeLogicalRightEdge);
 
@@ -1878,22 +1878,22 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
     graphicsContext->drawRect(pixelSnappedIntRect(borderRect));
 }
 
-void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const RenderStyle* s, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const RenderStyle& style, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     // FIXME: Deal with border-image. Would be great to use border-image as a mask.
     GraphicsContext* context = info.context;
-    if (!s->boxShadow())
+    if (!style.boxShadow())
         return;
-    FloatRoundedRect border = (shadowStyle == Inset) ? s->getRoundedInnerBorderFor(paintRect, includeLogicalLeftEdge, includeLogicalRightEdge)
-        : s->getRoundedBorderFor(paintRect, includeLogicalLeftEdge, includeLogicalRightEdge);
+    FloatRoundedRect border = (shadowStyle == Inset) ? style.getRoundedInnerBorderFor(paintRect, includeLogicalLeftEdge, includeLogicalRightEdge)
+        : style.getRoundedBorderFor(paintRect, includeLogicalLeftEdge, includeLogicalRightEdge);
 
-    bool hasBorderRadius = s->hasBorderRadius();
-    bool isHorizontal = s->isHorizontalWritingMode();
-    bool hasOpaqueBackground = s->visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
+    bool hasBorderRadius = style.hasBorderRadius();
+    bool isHorizontal = style.isHorizontalWritingMode();
+    bool hasOpaqueBackground = style.visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
 
     GraphicsContextStateSaver stateSaver(*context, false);
 
-    const ShadowList* shadowList = s->boxShadow();
+    const ShadowList* shadowList = style.boxShadow();
     for (size_t i = shadowList->shadows().size(); i--; ) {
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() != shadowStyle)

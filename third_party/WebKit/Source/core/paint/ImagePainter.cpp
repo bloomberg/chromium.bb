@@ -54,8 +54,8 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     if (path.isEmpty())
         return;
 
-    RenderStyle* areaElementStyle = areaElement.computedStyle();
-    unsigned short outlineWidth = areaElementStyle->outlineWidth();
+    const RenderStyle& areaElementStyle = *areaElement.computedStyle();
+    unsigned short outlineWidth = areaElementStyle.outlineWidth();
     if (!outlineWidth)
         return;
 
@@ -71,7 +71,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     paintInfo.context->save();
     paintInfo.context->clip(focusRect);
     paintInfo.context->drawFocusRing(path, outlineWidth,
-        areaElementStyle->outlineOffset(),
+        areaElementStyle.outlineOffset(),
         m_renderImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
     paintInfo.context->restore();
 }

@@ -22,7 +22,7 @@ public:
     ObjectPainter(RenderObject& renderObject) : m_renderObject(renderObject) { }
 
     void paintOutline(const PaintInfo&, const LayoutRect& paintRect);
-    void paintFocusRing(const PaintInfo&, const LayoutPoint& paintOffset, RenderStyle*);
+    void paintFocusRing(const PaintInfo&, const LayoutPoint& paintOffset, const RenderStyle&);
 
     static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
 private:

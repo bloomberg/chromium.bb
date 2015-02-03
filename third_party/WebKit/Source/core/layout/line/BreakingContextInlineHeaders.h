@@ -497,9 +497,9 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
 
 inline float measureHyphenWidth(RenderText* renderer, const Font& font, TextDirection textDirection)
 {
-    RenderStyle* style = renderer->style();
+    const RenderStyle& style = renderer->styleRef();
     return font.width(constructTextRun(renderer, font,
-        style->hyphenString().string(), style, style->direction()));
+        style.hyphenString().string(), style, style.direction()));
 }
 
 ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction direction)
@@ -514,7 +514,7 @@ ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, con
     if (isFixedPitch || (!from && len == text->textLength()) || text->style()->hasTextCombine())
         return text->width(from, len, font, xPos, text->style()->direction(), fallbackFonts, &glyphOverflow);
 
-    TextRun run = constructTextRun(text, font, text, from, len, text->style());
+    TextRun run = constructTextRun(text, font, text, from, len, text->styleRef());
     run.setCodePath(text->canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTabSize(!collapseWhiteSpace, text->style()->tabSize());
     run.setXPos(xPos);
@@ -537,8 +537,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         m_lineBreak.moveToStartOf(m_current.object());
     }
 
-    RenderStyle* style = renderText->style(m_lineInfo.isFirstLine());
-    const Font& font = style->font();
+    const RenderStyle& style = renderText->styleRef(m_lineInfo.isFirstLine());
+    const Font& font = style.font();
     bool isFixedPitch = font.isFixedPitch();
 
     unsigned lastSpace = m_current.offset();
@@ -569,7 +569,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     if (m_renderTextInfo.m_text != renderText) {
         m_renderTextInfo.m_text = renderText;
         m_renderTextInfo.m_font = &font;
-        m_renderTextInfo.m_lineBreakIterator.resetStringAndReleaseIterator(renderText->text(), style->locale());
+        m_renderTextInfo.m_lineBreakIterator.resetStringAndReleaseIterator(renderText->text(), style.locale());
     } else if (m_renderTextInfo.m_font != &font) {
         m_renderTextInfo.m_font = &font;
     }
@@ -577,7 +577,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
     float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
-        font.width(constructTextRun(renderText, font, &space, 1, style, style->direction())) + wordSpacing
+        font.width(constructTextRun(renderText, font, &space, 1, style, style.direction())) + wordSpacing
         : 0;
 
     UChar lastCharacter = m_renderTextInfo.m_lineBreakIterator.lastCharacter();

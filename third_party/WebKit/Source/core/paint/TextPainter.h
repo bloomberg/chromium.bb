@@ -57,7 +57,7 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(RenderObject&, RenderStyle*, bool forceBlackText, bool isPrinting);
+    static Style textPaintingStyle(RenderObject&, const RenderStyle&, bool forceBlackText, bool isPrinting);
     static Style selectionPaintingStyle(RenderObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };

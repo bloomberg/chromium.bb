@@ -117,7 +117,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     }
 }
 
-void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, RenderStyle* s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
+void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const RenderStyle& s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
 {
     if ((!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
         BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle);
@@ -132,8 +132,8 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, RenderStyle* s,
 static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NinePieceImage& image, const LayoutRect& paintRect)
 {
     LayoutRect clipRect(paintRect);
-    RenderStyle* style = box->renderer().style();
-    LayoutRectOutsets outsets = style->imageOutsets(image);
+    const RenderStyle& style = box->renderer().styleRef();
+    LayoutRectOutsets outsets = style.imageOutsets(image);
     if (box->isHorizontal()) {
         clipRect.setY(paintRect.y() - outsets.top());
         clipRect.setHeight(paintRect.height() + outsets.top() + outsets.bottom());
@@ -194,7 +194,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
     // a line may actually have to paint a background.
-    RenderStyle* styleToUse = m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle());
+    const RenderStyle* styleToUse = m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle());
     bool shouldPaintBoxDecorationBackground;
     if (m_inlineFlowBox.parent())
         shouldPaintBoxDecorationBackground = m_inlineFlowBox.renderer().hasBoxDecorationBackground();
@@ -219,11 +219,11 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     // Shadow comes first and is behind the background and border.
     if (!m_inlineFlowBox.boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))
-        paintBoxShadow(paintInfo, styleToUse, Normal, paintRect);
+        paintBoxShadow(paintInfo, *styleToUse, Normal, paintRect);
 
-    Color backgroundColor = m_inlineFlowBox.renderer().resolveColor(styleToUse, CSSPropertyBackgroundColor);
+    Color backgroundColor = m_inlineFlowBox.renderer().resolveColor(*styleToUse, CSSPropertyBackgroundColor);
     paintFillLayers(paintInfo, backgroundColor, styleToUse->backgroundLayers(), paintRect);
-    paintBoxShadow(paintInfo, styleToUse, Inset, paintRect);
+    paintBoxShadow(paintInfo, *styleToUse, Inset, paintRect);
 
     // :first-line cannot be used to put borders on a line. Always paint borders with our
     // non-first-line style.
@@ -237,7 +237,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
         // The simple case is where we either have no border image or we are the only box for this object.
         // In those cases only a single call to draw is required.
         if (!hasBorderImage || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox())) {
-            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, paintRect, m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle()), BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
+            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, paintRect, m_inlineFlowBox.renderer().styleRef(m_inlineFlowBox.isFirstLineStyle()), BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
         } else {
             // We have a border image that spans multiple lines.
             // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
@@ -246,7 +246,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
             LayoutRect clipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, paintRect);
             GraphicsContextStateSaver stateSaver(*paintInfo.context);
             paintInfo.context->clip(clipRect);
-            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle()));
+            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.renderer().styleRef(m_inlineFlowBox.isFirstLineStyle()));
         }
     }
 }
@@ -296,7 +296,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     // The simple case is where we are the only box for this object. In those
     // cases only a single call to draw is required.
     if (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) {
-        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.boxModelObject(), paintInfo.context, paintRect, m_inlineFlowBox.renderer().style(), maskNinePieceImage, compositeOp);
+        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.boxModelObject(), paintInfo.context, paintRect, m_inlineFlowBox.renderer().styleRef(), maskNinePieceImage, compositeOp);
     } else {
         // We have a mask image that spans multiple lines.
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
@@ -305,7 +305,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         LayoutRect clipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, maskNinePieceImage, paintRect);
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         paintInfo.context->clip(clipRect);
-        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.boxModelObject(), paintInfo.context, imageStripPaintRect, m_inlineFlowBox.renderer().style(), maskNinePieceImage, compositeOp);
+        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.boxModelObject(), paintInfo.context, imageStripPaintRect, m_inlineFlowBox.renderer().styleRef(), maskNinePieceImage, compositeOp);
     }
 
     if (pushTransparencyLayer)
