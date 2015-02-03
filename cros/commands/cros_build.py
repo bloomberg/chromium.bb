@@ -10,7 +10,6 @@ import os
 import logging
 
 from chromite.cbuildbot import constants
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.scripts import cros_list_modified_packages as workon
@@ -51,11 +50,9 @@ To just build a single package:
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildCommand).AddParser(parser)
-    default_board = cros_build_lib.GetDefaultBoard()
-    board = parser.add_mutually_exclusive_group(
-        required=(default_board is None))
-    board.add_argument('--board', help='The board to build packages for',
-                       default=default_board)
+    board = parser.add_mutually_exclusive_group()
+    board.add_argument('--board', '--project',
+                       help='The board or project to build packages for')
     board.add_argument('--host', help='Build packages for the chroot itself',
                        default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages",
@@ -183,7 +180,12 @@ To just build a single package:
 
   def Run(self):
     """Run cros build."""
-    if not cros_build_lib.IsInsideChroot():
-      raise commandline.ChrootRequiredError()
+    if not (self.options.board or self.options.host or self.current_project):
+      cros_build_lib.Die('You did not specify a board/project to build for. You'
+                         ' need to be in a project directory or set '
+                         '--board/--project')
+
+    self.RunInsideChroot(auto_detect_project=True)
+
     self._SetupBoardIfNeeded()
     parallel.RunParallelSteps([self._CheckDependencies, self._Build])

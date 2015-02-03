@@ -336,10 +336,17 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
 
   DUMMY_CHROOT_TARGET_ARGS = ['cmd', 'arg1', 'arg2']
 
+  DUMMY_EXTRA_ARGS = ['extra', 'arg']
+
   @staticmethod
   def _DummyChrootTargetArgs(args):
     args = ScriptWrapperMainTest.DUMMY_CHROOT_TARGET_ARGS
     raise commandline.ChrootRequiredError(args)
+
+  @staticmethod
+  def _DummyChrootTargetExtraArgs(args):
+    extra_args = ScriptWrapperMainTest.DUMMY_EXTRA_ARGS
+    raise commandline.ChrootRequiredError(extra_args=extra_args)
 
   def testRestartInChroot(self):
     rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
@@ -357,3 +364,11 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
     ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetArgs
     commandline.ScriptWrapperMain(ret)
     rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, enter_chroot=True)
+
+  def testRestartInChrootExtraArgs(self):
+    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc.SetDefaultCmdResult()
+
+    ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetExtraArgs
+    commandline.ScriptWrapperMain(ret)
+    rc.assertCommandContains(self.DUMMY_EXTRA_ARGS, enter_chroot=True)

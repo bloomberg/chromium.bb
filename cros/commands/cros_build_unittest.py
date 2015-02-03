@@ -46,7 +46,7 @@ class BuildCommandTest(cros_test_lib.TestCase):
           self.assertFalse(build.inst.chroot_update)
 
   def testFailedDeps(self):
-    """Tests that failures are detected correctly."""
+    """Test that failures are detected correctly."""
     # pylint: disable=W0212
     args = ['--board=foo', 'power_manager']
     with MockBuildCommand(args) as build:

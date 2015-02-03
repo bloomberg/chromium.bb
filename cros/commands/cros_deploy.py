@@ -13,7 +13,6 @@ import logging
 import urlparse
 
 from chromite import cros
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
 from chromite.lib import remote_access
@@ -737,7 +736,7 @@ For more information of cros build usage:
         'Use @installed to update all installed packages (requires --update).',
         nargs='+')
     parser.add_argument(
-        '--board', default=None, help='The board to use. By default it is '
+        '--board', '--project', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option.')
     parser.add_argument(
@@ -892,6 +891,7 @@ For more information of cros build usage:
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
     self.ping = self.options.ping
+    self.board = self.options.board or self.current_project
     device = self.options.device
     # pylint: disable=E1101
     if urlparse.urlparse(device).scheme == '':
@@ -925,9 +925,8 @@ For more information of cros build usage:
 
   def Run(self):
     """Run cros deploy."""
-    if not cros_build_lib.IsInsideChroot():
-      raise commandline.ChrootRequiredError()
     self._ReadOptions()
+    self.RunInsideChroot(auto_detect_project=True)
     try:
       device_connected = False
 
@@ -938,7 +937,7 @@ For more information of cros build usage:
         device_connected = True
 
         self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                             override_board=self.options.board)
+                                             override_board=self.board)
         logging.info('Board is %s', self.board)
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 

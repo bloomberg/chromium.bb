@@ -56,12 +56,14 @@ class ChrootRequiredError(Exception):
   like any other element of argv.
   """
 
-  def __init__(self, new_argv=None, *args, **kwargs):
+  def __init__(self, new_argv=None, extra_args=None, *args, **kwargs):
     Exception.__init__(self, *args, **kwargs)
     if new_argv is None:
       new_argv = sys.argv[:]
       new_argv = [git.ReinterpretPathForChroot(new_argv[0])] + new_argv[1:]
 
+    if extra_args:
+      new_argv += extra_args
     self.new_argv = new_argv
 
 

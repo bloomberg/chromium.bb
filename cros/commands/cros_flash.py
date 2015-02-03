@@ -706,7 +706,7 @@ Examples:
 
     update = parser.add_argument_group('Advanced device update options')
     update.add_argument(
-        '--board', default=None, help='The board to use. By default it is '
+        '--board', '--project', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option')
     update.add_argument(
@@ -803,6 +803,7 @@ Examples:
         return 1
 
     try:
+      board = self.options.board or self.current_project
       if self.run_mode == self.SSH_MODE:
         logging.info('Preparing to update the remote device %s',
                      self.options.device)
@@ -810,7 +811,7 @@ Examples:
             self.ssh_hostname,
             self.ssh_port,
             self.options.image,
-            board=self.options.board,
+            board=board,
             src_image_to_delta=self.options.src_image_to_delta,
             rootfs_update=self.options.rootfs_update,
             stateful_update=self.options.stateful_update,
@@ -828,7 +829,7 @@ Examples:
         path = osutils.ExpandPath(self.usb_dev) if self.usb_dev else ''
         logging.info('Preparing to image the removable device %s', path)
         imager = USBImager(path,
-                           self.options.board,
+                           board,
                            self.options.image,
                            debug=self.options.debug,
                            install=self.options.install,
@@ -838,7 +839,7 @@ Examples:
         path = osutils.ExpandPath(self.copy_path) if self.copy_path else ''
         logging.info('Preparing to copy image to %s', path)
         imager = FileImager(path,
-                            self.options.board,
+                            board,
                             self.options.image,
                             debug=self.options.debug,
                             yes=self.options.yes)

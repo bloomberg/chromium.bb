@@ -17,6 +17,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
   """Unittest for project.py"""
 
   def testLayoutFormat(self):
+    """Test that layout.conf is correctly formatted."""
     content = {'repo-name': 'hello',
                'bar': 'foo'}
     project.WriteLayoutConf(content, self.tempdir)
@@ -31,6 +32,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
       self.assertTrue(line in layout_conf)
 
   def testWriteParents(self):
+    """Test that the parent file is correctly formatted."""
     parents = ['hello:bonjour',
                'foo:bar']
 
@@ -41,6 +43,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     self.assertEqual('hello:bonjour\nfoo:bar', parents_content)
 
   def testConfigurationGenerated(self):
+    """Test that portage's files are generated when project.json changes."""
     sample_config = {'name': 'hello',
                      'dependencies': []}
 
@@ -48,3 +51,21 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
     self.assertExists(os.path.join(self.tempdir, 'profiles', 'base', 'parent'))
     self.assertExists(os.path.join(self.tempdir, 'metadata', 'layout.conf'))
+
+  def testGetProjectJson(self):
+    """Test that we can infer the current project from the current directory."""
+    project_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
+    content = {'name': 'hello'}
+    project.WriteProjectJson({'name': 'hello'}, project_dir,
+                             update_config=False)
+
+    with osutils.ChdirContext(self.tempdir):
+      self.assertEqual(None, project.GetProjectJson())
+
+    with osutils.ChdirContext(project_dir):
+      self.assertEqual(content, project.GetProjectJson())
+
+    subdir = os.path.join(project_dir, 'sub', 'directory')
+    osutils.SafeMakedirs(subdir)
+    with osutils.ChdirContext(subdir):
+      self.assertEqual(content, project.GetProjectJson())

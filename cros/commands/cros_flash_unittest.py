@@ -15,6 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 from chromite.lib import partial_mock
+from chromite.lib import project
 from chromite.lib import remote_access
 
 
@@ -164,6 +165,7 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
     self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(project, 'GetProjectJson', return_value=None)
 
   def testLocalImagePathCopy(self):
     """Tests that imaging methods are called correctly."""
