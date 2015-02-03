@@ -526,19 +526,16 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
       force_(GetTouchForce(native_event)),
-      may_cause_scrolling_(false) {
+      may_cause_scrolling_(false),
+      should_remove_native_touch_id_mapping_(false) {
   latency()->AddLatencyNumberWithTimestamp(
-      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-      0,
-      0,
-      base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()),
-      1);
-
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
+      base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()), 1);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  fixRotationAngle();
 
-  if (type() == ET_TOUCH_PRESSED)
-    IncrementTouchIdRefCount(native_event);
+  FixRotationAngle();
+  if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
+    should_remove_native_touch_id_mapping_ = true;
 }
 
 TouchEvent::TouchEvent(EventType type,
@@ -552,7 +549,8 @@ TouchEvent::TouchEvent(EventType type,
       radius_y_(0.0f),
       rotation_angle_(0.0f),
       force_(0.0f),
-      may_cause_scrolling_(false) {
+      may_cause_scrolling_(false),
+      should_remove_native_touch_id_mapping_(false) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
@@ -572,17 +570,21 @@ TouchEvent::TouchEvent(EventType type,
       radius_y_(radius_y),
       rotation_angle_(angle),
       force_(force),
-      may_cause_scrolling_(false) {
+      may_cause_scrolling_(false),
+      should_remove_native_touch_id_mapping_(false) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  fixRotationAngle();
+  FixRotationAngle();
 }
 
 TouchEvent::~TouchEvent() {
   // In ctor TouchEvent(native_event) we call GetTouchId() which in X11
   // platform setups the tracking_id to slot mapping. So in dtor here,
   // if this touch event is a release event, we clear the mapping accordingly.
-  if (HasNativeEvent())
-    ClearTouchIdIfReleased(native_event());
+  if (should_remove_native_touch_id_mapping_) {
+    DCHECK(type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED);
+    if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
+      ClearTouchIdIfReleased(native_event());
+  }
 }
 
 void TouchEvent::UpdateForRootTransform(
@@ -603,7 +605,7 @@ void TouchEvent::DisableSynchronousHandling() {
       static_cast<EventResult>(result() | ER_DISABLE_SYNC_HANDLING));
 }
 
-void TouchEvent::fixRotationAngle() {
+void TouchEvent::FixRotationAngle() {
   while (rotation_angle_ < 0)
     rotation_angle_ += 180;
   while (rotation_angle_ >= 180)
