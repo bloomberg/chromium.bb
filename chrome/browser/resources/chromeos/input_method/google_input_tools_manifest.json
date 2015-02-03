@@ -18,6 +18,7 @@
     "inputMethodPrivate",
     "metricsPrivate",
     "tabs",
+    "tts",
     "unlimitedStorage",
     "virtualKeyboardPrivate"
   ],
