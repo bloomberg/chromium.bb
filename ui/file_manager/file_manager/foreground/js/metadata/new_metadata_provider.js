@@ -5,16 +5,28 @@
 /**
  * TODO(hirono): Remove 'New' from the name after removing old MetadataProvider.
  * @param {!MetadataProviderCache} cache
+ * @param {!Array<string>} validPropertyNames
  * @constructor
  * @struct
  * @template T
  */
-function NewMetadataProvider(cache) {
+function NewMetadataProvider(cache, validPropertyNames) {
   /**
    * @private {!MetadataProviderCache}
    * @const
    */
   this.cache_ = cache;
+
+  /**
+   * Set of valid property names. Key is the name of property and value is
+   * always true.
+   * @private {!Object<string, boolean>}
+   * @const
+   */
+  this.validPropertyNames_ = {};
+  for (var i = 0; i < validPropertyNames.length; i++) {
+    this.validPropertyNames_[validPropertyNames[i]] = true;
+  }
 
   /**
    * @private {!Array<!MetadataProviderCallbackRequest<T>>}
@@ -25,8 +37,6 @@ function NewMetadataProvider(cache) {
 
 /**
  * Obtains the metadata for the request.
- * Note: this must return all the properties requested by the argument.
- * Otherwise Promise returned by NewMetadataProvider#get may not be fulfilled.
  * @param {!Array<!MetadataRequest>} requests
  * @return {!Promise<!Array<!T>>}
  * @protected
@@ -40,6 +50,11 @@ NewMetadataProvider.prototype.getImpl;
  * @return {!Promise<!Array<!T>>}
  */
 NewMetadataProvider.prototype.get = function(entries, names) {
+  // Check if the property name is correct or not.
+  for (var i = 0; i < names.length; i++) {
+    assert(this.validPropertyNames_[names[i]]);
+  }
+
   // Check if the results are cached or not.
   if (this.cache_.hasFreshCache(entries, names))
     return Promise.resolve(this.getCache(entries, names));
@@ -60,11 +75,19 @@ NewMetadataProvider.prototype.get = function(entries, names) {
 
   // If the requests are not empty, call the requests.
   if (requests.length) {
-    var requestedEntries = [];
-    for (var i = 0; i < requests.length; i++) {
-      requestedEntries.push(requests[i].entry);
-    }
     this.getImpl(requests).then(function(list) {
+      // Obtain requested entries and ensure all the requested properties are
+      // contained in the result.
+      var requestedEntries = [];
+      for (var i = 0; i < requests.length; i++) {
+        requestedEntries.push(requests[i].entry);
+        for (var j = 0; j < requests[i].names.length; j++) {
+          var name = requests[i].names[j];
+          if (!(name in list[i]))
+            list[i][name] = undefined;
+        }
+      }
+
       // Store cache.
       if (this.cache_.storeProperties(requestId, requestedEntries, list)) {
         // TODO(hirono): Dispatch metadata change event here.

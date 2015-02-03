@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function TestMetadataProvider(cache) {
-  NewMetadataProvider.call(this, cache);
+  NewMetadataProvider.call(this, cache, ['property', 'propertyA', 'propertyB']);
   this.requestCount = 0;
 }
 
@@ -19,6 +19,18 @@ TestMetadataProvider.prototype.getImpl = function(requests) {
       result[names[i]] = entry.toURL() + ':' + names[i];
     }
     return result;
+  }));
+};
+
+function TestEmptyMetadataProvider(cache) {
+  NewMetadataProvider.call(this, cache, ['property']);
+}
+
+TestEmptyMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+
+TestEmptyMetadataProvider.prototype.getImpl = function(requests) {
+  return Promise.resolve(requests.map(function() {
+    return {};
   }));
 };
 
@@ -111,5 +123,22 @@ function testNewMetadataProviderGetCache(callback) {
     var cache = provider.getCache([entryA], ['property']);
     assertEquals(1, provider.requestCount);
     assertEquals('filesystem://A:property', cache[0].property);
+  }), callback);
+}
+
+function testNewMetadataProviderUnknownProperty() {
+  var cache = new MetadataProviderCache();
+  var provider = new TestMetadataProvider(cache);
+  assertThrows(function() {
+    provider.get([entryA], ['unknown']);
+  });
+}
+
+function testNewMetadataProviderEmptyResult(callback) {
+  var cache = new MetadataProviderCache();
+  var provider = new TestEmptyMetadataProvider(cache);
+  // getImpl returns empty result.
+  reportPromise(provider.get([entryA], ['property']).then(function(results) {
+    assertEquals(undefined, results[0].property);
   }), callback);
 }
