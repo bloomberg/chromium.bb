@@ -7,6 +7,7 @@
 
 #include <sys/types.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/template_util.h"
 #include "sandbox/sandbox_export.h"
@@ -20,8 +21,10 @@ class SANDBOX_EXPORT NamespaceUtils {
   // generic_id_t can be used for either uid_t or gid_t.
   typedef uid_t generic_id_t;
 
-  // Write a uid or gid mapping from |id| to |id| in |map_file|.
-  static bool WriteToIdMapFile(const char* map_file, generic_id_t id);
+  // Write a uid or gid mapping from |id| to |id| in |map_file|. This function
+  // is async-signal-safe.
+  static bool WriteToIdMapFile(const char* map_file,
+                               generic_id_t id) WARN_UNUSED_RESULT;
 
   // Returns true if unprivileged namespaces of type |type| is supported
   // (meaning that both CLONE_NEWUSER and type are are supported).  |type| must

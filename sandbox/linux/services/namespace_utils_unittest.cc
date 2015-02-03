@@ -45,11 +45,11 @@ SANDBOX_TEST(NamespaceUtils, WriteToIdMapFile) {
   ASSERT_NE(-1, pid);
   if (pid == 0) {
     RAW_CHECK(getuid() != uid);
-    NamespaceUtils::WriteToIdMapFile("/proc/self/uid_map", uid);
+    RAW_CHECK(NamespaceUtils::WriteToIdMapFile("/proc/self/uid_map", uid));
     RAW_CHECK(getuid() == uid);
 
     RAW_CHECK(getgid() != gid);
-    NamespaceUtils::WriteToIdMapFile("/proc/self/gid_map", gid);
+    RAW_CHECK(NamespaceUtils::WriteToIdMapFile("/proc/self/gid_map", gid));
     RAW_CHECK(getgid() == gid);
 
     _exit(0);

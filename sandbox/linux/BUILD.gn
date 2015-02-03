@@ -114,6 +114,7 @@ test("sandbox_linux_unittests") {
   if (compile_credentials) {
     sources += [
       "services/credentials_unittest.cc",
+      "services/namespace_sandbox_unittest.cc",
       "services/namespace_utils_unittest.cc",
       "services/proc_util_unittest.cc",
       "services/unix_domain_socket_unittest.cc",
@@ -255,6 +256,8 @@ component("sandbox_services") {
     sources += [
       "services/credentials.cc",
       "services/credentials.h",
+      "services/namespace_sandbox.cc",
+      "services/namespace_sandbox.h",
       "services/namespace_utils.cc",
       "services/namespace_utils.h",
       "services/proc_util.cc",

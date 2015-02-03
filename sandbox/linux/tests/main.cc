@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/test/test_suite.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 namespace sandbox {
 namespace {
@@ -30,6 +33,15 @@ void UnitTestAssertHandler(const std::string& str) {
 #endif
 
 int main(int argc, char* argv[]) {
+  base::CommandLine::Init(argc, argv);
+  std::string client_func =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTestChildProcess);
+  if (!client_func.empty()) {
+    base::AtExitManager exit_manager;
+    return multi_process_function_list::InvokeChildProcessTest(client_func);
+  }
+
 #if defined(OS_ANDROID)
   // The use of Callbacks requires an AtExitManager.
   base::AtExitManager exit_manager;
