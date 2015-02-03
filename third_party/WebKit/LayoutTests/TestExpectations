@@ -1745,6 +1745,16 @@ crbug.com/449023 http/tests/security/mixedContent/insecure-image-in-main-frame-a
 
 crbug.com/449081 [ Mac Linux Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-max-int-size.html [ Pass Failure ]
 
+crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-not-inherited-001.htm [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] virtual/slimmingpaint/fast/borders/border-radius-constraints.html [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-border.html [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] virtual/slimmingpaint/fast/borders/border-radius-with-box-shadow.html [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] virtual/slimmingpaint/fast/borders/mixed-border-styles-radius.html [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] virtual/slimmingpaint/fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
+crbug.com/453957 [ XP ] paint/roundedrects/circle-with-shadow.html [ ImageOnlyFailure Failure ]
+
 # Slow because many subtests are executed.
 crbug.com/453241 http/tests/fetch/serviceworker/fetch-access-control-auth.html [ Slow ]
 crbug.com/453241 http/tests/fetch/serviceworker/fetch-access-control-cors.html [ Slow ]
