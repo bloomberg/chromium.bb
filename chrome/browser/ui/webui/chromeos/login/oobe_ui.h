@@ -100,9 +100,9 @@ class OobeUI : public OobeDisplay,
 
   // OobeDisplay implementation:
   CoreOobeActor* GetCoreOobeActor() override;
-  UpdateScreenActor* GetUpdateScreenActor() override;
   NetworkView* GetNetworkView() override;
   EulaView* GetEulaView() override;
+  UpdateView* GetUpdateView() override;
   EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
   EnrollmentScreenActor* GetEnrollmentScreenActor() override;
   ResetScreenActor* GetResetScreenActor() override;

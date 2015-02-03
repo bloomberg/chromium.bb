@@ -436,10 +436,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     EXPECT_CALL(*mock_network_screen_, Show()).Times(0);
     EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);
 
-    MOCK(mock_update_screen_,
-         kUpdateScreenName,
-         MockUpdateScreen,
-         MockUpdateScreenActor);
+    MOCK(mock_update_screen_, kUpdateScreenName, MockUpdateScreen,
+         MockUpdateView);
     MOCK_WITH_DELEGATE(mock_eula_screen_, kEulaScreenName, MockEulaScreen,
                        MockEulaView);
     MOCK(mock_enrollment_screen_,
@@ -533,7 +531,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   linked_ptr<MockNetworkScreen> mock_network_screen_;
-  MockOutShowHide<MockUpdateScreen, MockUpdateScreenActor>* mock_update_screen_;
+  MockOutShowHide<MockUpdateScreen, MockUpdateView>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
   MockOutShowHide<MockEnrollmentScreen,
       MockEnrollmentScreenActor>* mock_enrollment_screen_;

@@ -405,16 +405,16 @@ CoreOobeActor* OobeUI::GetCoreOobeActor() {
   return core_handler_;
 }
 
-UpdateScreenActor* OobeUI::GetUpdateScreenActor() {
-  return update_screen_handler_;
-}
-
 NetworkView* OobeUI::GetNetworkView() {
   return network_view_;
 }
 
 EulaView* OobeUI::GetEulaView() {
   return eula_view_;
+}
+
+UpdateView* OobeUI::GetUpdateView() {
+  return update_screen_handler_;
 }
 
 EnableDebuggingScreenActor* OobeUI::GetEnableDebuggingScreenActor() {

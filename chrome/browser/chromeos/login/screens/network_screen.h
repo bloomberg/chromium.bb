@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_model.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/network/network_state_handler_observer.h"

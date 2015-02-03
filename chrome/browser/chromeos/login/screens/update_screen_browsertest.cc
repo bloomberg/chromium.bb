@@ -126,7 +126,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestBasic) {
-  ASSERT_TRUE(update_screen_->actor_ != NULL);
+  ASSERT_TRUE(update_screen_->view_ != NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {

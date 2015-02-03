@@ -8,49 +8,35 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/update_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
 namespace chromeos {
 
-class UpdateScreenHandler : public UpdateScreenActor,
+class UpdateScreenHandler : public UpdateView,
                             public BaseScreenHandler,
                             public NetworkDropdownHandler::Observer {
  public:
   UpdateScreenHandler();
   ~UpdateScreenHandler() override;
 
-  // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
-
-  // UpdateScreenActor implementation:
-  void SetDelegate(UpdateScreenActor::Delegate* screen) override;
+  // UpdateView:
+  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
-  void PrepareToShow() override;
-  void ShowManualRebootInfo() override;
-  void SetProgress(int progress) override;
-  void ShowEstimatedTimeLeft(bool visible) override;
-  void SetEstimatedTimeLeft(const base::TimeDelta& time) override;
-  void ShowProgressMessage(bool visible) override;
-  void SetProgressMessage(ProgressMessage message) override;
-  void ShowCurtain(bool visible) override;
+  void Bind(UpdateModel& model) override;
+  void Unbind() override;
 
-  // WebUIMessageHandler implementation:
-  void RegisterMessages() override;
+  // BaseScreenHandler:
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
  private:
   // NetworkDropdownHandler::Observer implementation:
   void OnConnectToNetworkRequested() override;
 
-#if !defined(OFFICIAL_BUILD)
-  // Called when user presses Escape to cancel update.
-  void HandleUpdateCancel();
-#endif
-
-  UpdateScreenActor::Delegate* screen_;
+  UpdateModel* model_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;

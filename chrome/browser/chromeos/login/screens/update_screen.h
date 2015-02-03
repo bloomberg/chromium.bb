@@ -13,8 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/update_model.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/pairing/host_pairing_controller.h"
@@ -26,39 +25,32 @@ class ErrorScreen;
 class ErrorScreensHistogramHelper;
 class NetworkState;
 class ScreenManager;
+class UpdateView;
 
-// Controller for the update screen. It does not depend on the specific
-// implementation of the screen showing (Views of WebUI based), the dependency
-// is moved to the UpdateScreenActor instead.
-class UpdateScreen : public UpdateEngineClient::Observer,
-                     public UpdateScreenActor::Delegate,
-                     public BaseScreen,
+// Controller for the update screen.
+class UpdateScreen : public UpdateModel,
+                     public UpdateEngineClient::Observer,
                      public NetworkPortalDetector::Observer {
  public:
   UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-               UpdateScreenActor* actor,
+               UpdateView* view,
                pairing_chromeos::HostPairingController* remora_controller);
   ~UpdateScreen() override;
 
   static UpdateScreen* Get(ScreenManager* manager);
 
-  // Overridden from BaseScreen.
+  // UpdateModel:
   void PrepareToShow() override;
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
-
-  // UpdateScreenActor::Delegate implementation:
-  void CancelUpdate() override;
-  void OnActorDestroyed(UpdateScreenActor* actor) override;
+  void Initialize(::login::ScreenContext* context) override;
+  void OnViewDestroyed(UpdateView* view) override;
+  void OnUserAction(const std::string& action_id) override;
+  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
   void OnConnectToNetworkRequested() override;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();
-
-  // Reboot check delay get/set, in seconds.
-  int reboot_check_delay() const { return reboot_check_delay_; }
-  void SetRebootCheckDelay(int seconds);
 
   // Returns true if this instance is still active (i.e. has not been deleted).
   static bool HasInstance(UpdateScreen* inst);
@@ -81,6 +73,9 @@ class UpdateScreen : public UpdateEngineClient::Observer,
   void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
+
+  // Skip update UI, usually used only in debug builds/tests.
+  void CancelUpdate();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
@@ -149,8 +144,7 @@ class UpdateScreen : public UpdateEngineClient::Observer,
   // Ignore fist IDLE status that is sent before update screen initiated check.
   bool ignore_idle_status_;
 
-  // Keeps actor which is delegated with all showing operations.
-  UpdateScreenActor* actor_;
+  UpdateView* view_;
 
   // Used to track updates over Bluetooth.
   pairing_chromeos::HostPairingController* remora_controller_;

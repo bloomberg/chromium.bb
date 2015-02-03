@@ -7,17 +7,56 @@
  */
 
 login.createScreen('UpdateScreen', 'update', function() {
+  var USER_ACTION_CANCEL_UPDATE_SHORTCUT = 'cancel-update';
+  var CONTEXT_KEY_TIME_LEFT_SEC = 'time-left-sec';
+  var CONTEXT_KEY_SHOW_TIME_LEFT = 'show-time-left';
+  var CONTEXT_KEY_UPDATE_MESSAGE = 'update-msg';
+  var CONTEXT_KEY_SHOW_CURTAIN = 'show-curtain';
+  var CONTEXT_KEY_SHOW_PROGRESS_MESSAGE = 'show-progress-msg';
+  var CONTEXT_KEY_PROGRESS = 'progress';
+  var CONTEXT_KEY_PROGRESS_MESSAGE = 'progress-msg';
+  var CONTEXT_KEY_CANCEL_UPDATE_SHORTCUT_ENABLED = 'cancel-update-enabled';
+
   return {
-    EXTERNAL_API: [
-      'enableUpdateCancel',
-      'setUpdateProgress',
-      'showEstimatedTimeLeft',
-      'setEstimatedTimeLeft',
-      'showProgressMessage',
-      'setProgressMessage',
-      'setUpdateMessage',
-      'showUpdateCurtain'
-    ],
+    EXTERNAL_API: [],
+
+    /** @override */
+    decorate: function() {
+      var self = this;
+
+      this.context.addObserver(CONTEXT_KEY_TIME_LEFT_SEC,
+                               function(time_left_sec) {
+        self.setEstimatedTimeLeft(time_left_sec);
+      });
+      this.context.addObserver(CONTEXT_KEY_SHOW_TIME_LEFT,
+                               function(show_time_left) {
+        self.showEstimatedTimeLeft(show_time_left);
+      });
+      this.context.addObserver(CONTEXT_KEY_UPDATE_MESSAGE,
+                               function(update_msg) {
+        self.setUpdateMessage(update_msg);
+      });
+      this.context.addObserver(CONTEXT_KEY_SHOW_CURTAIN,
+                               function(show_curtain) {
+        self.showUpdateCurtain(show_curtain);
+      });
+      this.context.addObserver(CONTEXT_KEY_SHOW_PROGRESS_MESSAGE,
+                               function(show_progress_msg) {
+        self.showProgressMessage(show_progress_msg);
+      });
+      this.context.addObserver(CONTEXT_KEY_PROGRESS,
+                               function(progress) {
+        self.setUpdateProgress(progress);
+      });
+      this.context.addObserver(CONTEXT_KEY_PROGRESS_MESSAGE,
+                               function(progress_msg) {
+        self.setProgressMessage(progress_msg);
+      });
+      this.context.addObserver(CONTEXT_KEY_CANCEL_UPDATE_SHORTCUT_ENABLED,
+                               function(enabled) {
+        $('update-cancel-hint').hidden = !enabled;
+      });
+    },
 
     /**
      * Header text of the screen.
@@ -32,18 +71,12 @@ login.createScreen('UpdateScreen', 'update', function() {
      */
     cancel: function() {
       // It's safe to act on the accelerator even if it's disabled on official
-      // builds, since Chrome will just ignore the message in that case.
+      // builds, since Chrome will just ignore this user action in that case.
       var updateCancelHint = $('update-cancel-hint').firstElementChild;
       updateCancelHint.textContent =
           loadTimeData.getString('cancelledUpdateMessage');
-      chrome.send('cancelUpdate');
-    },
-
-    /**
-     * Makes 'press Escape to cancel update' hint visible.
-     */
-    enableUpdateCancel: function() {
-      $('update-cancel-hint').hidden = false;
+      this.send(login.Screen.CALLBACK_USER_ACTED,
+                USER_ACTION_CANCEL_UPDATE_SHORTCUT);
     },
 
     /**

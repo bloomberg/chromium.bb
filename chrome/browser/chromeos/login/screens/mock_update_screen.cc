@@ -4,32 +4,36 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
 
+using ::testing::AtLeast;
+using ::testing::_;
+
 namespace chromeos {
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 MockUpdateScreen::MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
-                                   UpdateScreenActor* actor)
-    : UpdateScreen(base_screen_delegate, actor, NULL) {
+                                   UpdateView* view)
+    : UpdateScreen(base_screen_delegate, view, NULL) {
 }
 
 MockUpdateScreen::~MockUpdateScreen() {
 }
 
-MockUpdateScreenActor::MockUpdateScreenActor()
-    : screen_(NULL) {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
+MockUpdateView::MockUpdateView() : model_(nullptr) {
+  EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
 }
 
-MockUpdateScreenActor::~MockUpdateScreenActor() {
-  if (screen_)
-    screen_->OnActorDestroyed(this);
+MockUpdateView::~MockUpdateView() {
+  if (model_)
+    model_->OnViewDestroyed(this);
 }
 
-void MockUpdateScreenActor::SetDelegate(UpdateScreenActor::Delegate* screen) {
-  screen_ = screen;
-  MockSetDelegate(screen);
+void MockUpdateView::Bind(UpdateModel& model) {
+  model_ = &model;
+  MockBind(model);
+}
+
+void MockUpdateView::Unbind() {
+  model_ = nullptr;
+  MockUnbind();
 }
 
 }  // namespace chromeos

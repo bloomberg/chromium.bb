@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/screens/update_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,14 +21,12 @@ const char kJsScreenPath[] = "login.UpdateScreen";
 namespace chromeos {
 
 UpdateScreenHandler::UpdateScreenHandler()
-    : BaseScreenHandler(kJsScreenPath),
-      screen_(NULL),
-      show_on_init_(false) {
+    : BaseScreenHandler(kJsScreenPath), model_(nullptr), show_on_init_(false) {
 }
 
 UpdateScreenHandler::~UpdateScreenHandler() {
-  if (screen_)
-    screen_->OnActorDestroyed(this);
+  if (model_)
+    model_->OnViewDestroyed(this);
 }
 
 void UpdateScreenHandler::DeclareLocalizedValues(
@@ -62,8 +61,7 @@ void UpdateScreenHandler::Initialize() {
   }
 }
 
-void UpdateScreenHandler::SetDelegate(UpdateScreenActor::Delegate* screen) {
-  screen_ = screen;
+void UpdateScreenHandler::PrepareToShow() {
 }
 
 void UpdateScreenHandler::Show() {
@@ -72,79 +70,24 @@ void UpdateScreenHandler::Show() {
     return;
   }
   ShowScreen(OobeUI::kScreenOobeUpdate, NULL);
-#if !defined(OFFICIAL_BUILD)
-  CallJS("enableUpdateCancel");
-#endif
 }
 
 void UpdateScreenHandler::Hide() {
 }
 
-void UpdateScreenHandler::PrepareToShow() {
+void UpdateScreenHandler::Bind(UpdateModel& model) {
+  model_ = &model;
+  BaseScreenHandler::SetBaseScreen(model_);
 }
 
-void UpdateScreenHandler::ShowManualRebootInfo() {
-  CallJS("setUpdateMessage", l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
-}
-
-void UpdateScreenHandler::SetProgress(int progress) {
-  CallJS("setUpdateProgress", progress);
-}
-
-void UpdateScreenHandler::ShowEstimatedTimeLeft(bool visible) {
-  CallJS("showEstimatedTimeLeft", visible);
-}
-
-void UpdateScreenHandler::SetEstimatedTimeLeft(const base::TimeDelta& time) {
-  CallJS("setEstimatedTimeLeft", time.InSecondsF());
-}
-
-void UpdateScreenHandler::ShowProgressMessage(bool visible) {
-  CallJS("showProgressMessage", visible);
-}
-
-void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
-  int ids = 0;
-  switch (message) {
-    case PROGRESS_MESSAGE_UPDATE_AVAILABLE:
-      ids = IDS_UPDATE_AVAILABLE;
-      break;
-    case PROGRESS_MESSAGE_INSTALLING_UPDATE:
-      ids = IDS_INSTALLING_UPDATE;
-      break;
-    case PROGRESS_MESSAGE_VERIFYING:
-      ids = IDS_UPDATE_VERIFYING;
-      break;
-    case PROGRESS_MESSAGE_FINALIZING:
-      ids = IDS_UPDATE_FINALIZING;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  CallJS("setProgressMessage", l10n_util::GetStringUTF16(ids));
-}
-
-void UpdateScreenHandler::ShowCurtain(bool visible) {
-  CallJS("showUpdateCurtain", visible);
-}
-
-void UpdateScreenHandler::RegisterMessages() {
-#if !defined(OFFICIAL_BUILD)
-  AddCallback("cancelUpdate", &UpdateScreenHandler::HandleUpdateCancel);
-#endif
+void UpdateScreenHandler::Unbind() {
+  model_ = nullptr;
+  BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
 void UpdateScreenHandler::OnConnectToNetworkRequested() {
-  if (screen_)
-    screen_->OnConnectToNetworkRequested();
+  if (model_)
+    model_->OnConnectToNetworkRequested();
 }
-
-#if !defined(OFFICIAL_BUILD)
-void UpdateScreenHandler::HandleUpdateCancel() {
-  screen_->CancelUpdate();
-}
-#endif
 
 }  // namespace chromeos

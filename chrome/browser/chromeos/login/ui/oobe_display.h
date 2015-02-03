@@ -30,7 +30,7 @@ class NetworkView;
 class ResetScreenActor;
 class SupervisedUserCreationScreenHandler;
 class TermsOfServiceScreenActor;
-class UpdateScreenActor;
+class UpdateView;
 class UserImageView;
 class UserBoardView;
 class WrongHWIDScreenActor;
@@ -74,9 +74,9 @@ class OobeDisplay {
   // Pointers to actors which should be used by the specific screens. Actors
   // must be owned by the OobeDisplay implementation.
   virtual CoreOobeActor* GetCoreOobeActor() = 0;
-  virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
   virtual NetworkView* GetNetworkView() = 0;
   virtual EulaView* GetEulaView() = 0;
+  virtual UpdateView* GetUpdateView() = 0;
   virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() = 0;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;
   virtual ResetScreenActor* GetResetScreenActor() = 0;
