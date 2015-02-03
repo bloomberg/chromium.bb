@@ -2785,9 +2785,9 @@ def CMDdiff(parser, args):
     if rtn != 0:
       return rtn
 
-    # Switch back to starting brand and diff against the temporary
+    # Switch back to starting branch and diff against the temporary
     # branch containing the latest rietveld patch.
-    subprocess2.check_call(['git', 'diff', TMP_BRANCH, branch])
+    subprocess2.check_call(['git', 'diff', TMP_BRANCH, branch, '--'])
   finally:
     RunGit(['checkout', '-q', branch])
     RunGit(['branch', '-D', TMP_BRANCH])
