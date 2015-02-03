@@ -55,8 +55,6 @@
         'dri_gpu_platform_support.h',
         'dri_gpu_platform_support_host.cc',
         'dri_gpu_platform_support_host.h',
-        'dri_helper_thread.cc',
-        'dri_helper_thread.h',
         'dri_surface.cc',
         'dri_surface.h',
         'dri_surface_factory.cc',
