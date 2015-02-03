@@ -26,8 +26,8 @@
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/PageAnimator.h"
+#include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PageVisibilityState.h"
-#include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
@@ -55,7 +55,6 @@ class Frame;
 class FrameHost;
 class InspectorClient;
 class InspectorController;
-class PageLifecycleNotifier;
 class PluginData;
 class PointerLockController;
 class ScrollingCoordinator;
@@ -68,7 +67,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public LifecycleContext<Page>, public SettingsDelegate {
+class Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
@@ -198,13 +197,9 @@ public:
     void acceptLanguagesChanged();
 
     static void networkStateChanged(bool online);
-    PassOwnPtr<LifecycleNotifier<Page>> createLifecycleNotifier();
 
     void trace(Visitor*);
     void willBeDestroyed();
-
-protected:
-    PageLifecycleNotifier& lifecycleNotifier();
 
 private:
     void initGroup();

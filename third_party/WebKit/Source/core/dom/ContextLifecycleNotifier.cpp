@@ -38,10 +38,6 @@ ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
 {
 }
 
-ContextLifecycleNotifier::~ContextLifecycleNotifier()
-{
-}
-
 void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* observer)
 {
     LifecycleNotifier<ExecutionContext>::addObserver(observer);

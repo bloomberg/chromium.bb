@@ -28,17 +28,18 @@
 #include "core/dom/DocumentLifecycleObserver.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentLifecycleNotifier.h"
 
 namespace blink {
 
-template<> void observerContext(Document* context, LifecycleObserver<Document>* observer)
+template<> void observeContext(Document* context, LifecycleObserver<Document>* observer)
 {
-    static_cast<LifecycleContext<Document>*>(context)->wasObservedBy(observer);
+    static_cast<DocumentLifecycleNotifier*>(context)->addObserver(observer);
 }
 
-template<> void unobserverContext(Document* context, LifecycleObserver<Document>* observer)
+template<> void unobserveContext(Document* context, LifecycleObserver<Document>* observer)
 {
-    static_cast<LifecycleContext<Document>*>(context)->wasUnobservedBy(observer);
+    static_cast<DocumentLifecycleNotifier*>(context)->removeObserver(observer);
 }
 
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)

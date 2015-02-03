@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/page/PageLifecycleNotifier.h"
 
+#include "core/page/PageLifecycleObserver.h"
+
 namespace blink {
 
 PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
@@ -52,6 +54,20 @@ void PageLifecycleNotifier::removeObserver(PageLifecycleNotifier::Observer* obse
     }
 
     LifecycleNotifier<Page>::removeObserver(observer);
+}
+
+void PageLifecycleNotifier::notifyPageVisibilityChanged()
+{
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverPageObservers);
+    for (PageLifecycleObserver* pageObserver : m_pageObservers)
+        pageObserver->pageVisibilityChanged();
+}
+
+void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
+{
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverPageObservers);
+    for (PageLifecycleObserver* pageObserver : m_pageObservers)
+        pageObserver->didCommitLoad(frame);
 }
 
 } // namespace blink

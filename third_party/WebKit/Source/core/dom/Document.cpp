@@ -66,7 +66,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/DocumentType.h"
@@ -403,6 +402,7 @@ void DocumentVisibilityObserver::setObservedDocument(Document& document)
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
+    , DocumentLifecycleNotifier(this)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
@@ -642,7 +642,7 @@ void Document::dispose()
         accessSVGExtensions().pauseAnimations();
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
-    lifecycleNotifier().notifyDocumentWasDisposed();
+    DocumentLifecycleNotifier::notifyDocumentWasDisposed();
 }
 #endif
 
@@ -2183,7 +2183,7 @@ void Document::detach(const AttachContext& context)
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDetached();
 
-    lifecycleNotifier().notifyDocumentWasDetached();
+    DocumentLifecycleNotifier::notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 
     // FIXME: Currently we call notifyContextDestroyed() only in
@@ -2192,7 +2192,7 @@ void Document::detach(const AttachContext& context)
     // If such a document has any observer, the observer won't get
     // a contextDestroyed() notification. This can happen for a document
     // created by DOMImplementation::createDocument().
-    LifecycleContext<Document>::notifyContextDestroyed();
+    DocumentLifecycleNotifier::notifyContextDestroyed();
     ExecutionContext::notifyContextDestroyed();
 }
 
@@ -5459,16 +5459,6 @@ float Document::devicePixelRatio() const
     return m_frame ? m_frame->devicePixelRatio() : 1.0;
 }
 
-PassOwnPtr<LifecycleNotifier<Document>> Document::createLifecycleNotifier()
-{
-    return DocumentLifecycleNotifier::create(this);
-}
-
-DocumentLifecycleNotifier& Document::lifecycleNotifier()
-{
-    return static_cast<DocumentLifecycleNotifier&>(LifecycleContext<Document>::lifecycleNotifier());
-}
-
 void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.
@@ -5765,7 +5755,7 @@ void Document::trace(Visitor* visitor)
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
-    LifecycleContext<Document>::trace(visitor);
+    DocumentLifecycleNotifier::trace(visitor);
 }
 
 } // namespace blink

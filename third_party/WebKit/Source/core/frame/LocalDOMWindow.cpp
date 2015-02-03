@@ -382,7 +382,8 @@ bool LocalDOMWindow::canShowModalDialogNow(const LocalFrame* frame)
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
-    : m_frameObserver(WindowFrameObserver::create(this, frame))
+    : DOMWindowLifecycleNotifier(this)
+    , m_frameObserver(WindowFrameObserver::create(this, frame))
     , m_shouldPrintWhenFinishedLoading(false)
 #if ENABLE(ASSERT)
     , m_hasBeenReset(false)
@@ -1505,7 +1506,7 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<
         document->addListenerTypeIfNeeded(eventType);
     }
 
-    lifecycleNotifier().notifyAddEventListener(this, eventType);
+    notifyAddEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
         UseCounter::count(document(), UseCounter::DocumentUnloadRegistered);
@@ -1534,7 +1535,7 @@ bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefP
     if (frame() && frame()->host())
         frame()->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType);
 
-    lifecycleNotifier().notifyRemoveEventListener(this, eventType);
+    notifyRemoveEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
         removeUnloadEventListener(this);
@@ -1598,7 +1599,7 @@ void LocalDOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mo
     EventTarget::removeAllEventListeners();
 
     if (mode == DoBroadcastListenerRemoval) {
-        lifecycleNotifier().notifyRemoveAllEventListeners(this);
+        notifyRemoveAllEventListeners(this);
         if (frame() && frame()->host())
             frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     }
@@ -1791,16 +1792,6 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
     dialogFrame->host()->chrome().runModal();
 }
 
-DOMWindowLifecycleNotifier& LocalDOMWindow::lifecycleNotifier()
-{
-    return static_cast<DOMWindowLifecycleNotifier&>(LifecycleContext<LocalDOMWindow>::lifecycleNotifier());
-}
-
-PassOwnPtr<LifecycleNotifier<LocalDOMWindow>> LocalDOMWindow::createLifecycleNotifier()
-{
-    return DOMWindowLifecycleNotifier::create(this);
-}
-
 void LocalDOMWindow::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
@@ -1827,7 +1818,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     HeapSupplementable<LocalDOMWindow>::trace(visitor);
 #endif
     DOMWindow::trace(visitor);
-    LifecycleContext<LocalDOMWindow>::trace(visitor);
+    DOMWindowLifecycleNotifier::trace(visitor);
 }
 
 LocalFrame* LocalDOMWindow::frame() const

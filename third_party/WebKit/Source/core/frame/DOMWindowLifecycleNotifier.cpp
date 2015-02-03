@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 
+#include "core/frame/DOMWindowLifecycleObserver.h"
+
 namespace blink {
 
 DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
@@ -52,11 +54,6 @@ void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Obse
     }
 
     LifecycleNotifier<LocalDOMWindow>::removeObserver(observer);
-}
-
-PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LocalDOMWindow* context)
-{
-    return adoptPtr(new DOMWindowLifecycleNotifier(context));
 }
 
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
