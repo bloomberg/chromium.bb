@@ -174,12 +174,15 @@ void UploadFileElementReader::OnGetFileInfoCompleted(
   }
 
   // If the underlying file has been changed and the expected file modification
-  // time is set, treat it as error. Note that the expected modification time
-  // from WebKit is based on time_t precision. So we have to convert both to
-  // time_t to compare. This check is used for sliced files.
+  // time is set, treat it as error. Note that |expected_modification_time_| may
+  // have gone through multiple conversion steps involving loss of precision
+  // (including conversion to time_t). Therefore the check below only verifies
+  // that the timestamps are within one second of each other. This check is used
+  // for sliced files.
   if (!expected_modification_time_.is_null() &&
-      expected_modification_time_.ToTimeT() !=
-      file_info->last_modified.ToTimeT()) {
+      (expected_modification_time_ - file_info->last_modified)
+              .magnitude()
+              .InSeconds() != 0) {
     callback.Run(ERR_UPLOAD_FILE_CHANGED);
     return;
   }
