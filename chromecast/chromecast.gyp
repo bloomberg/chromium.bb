@@ -45,6 +45,29 @@
       ],
     },  # end of target 'cast_base'
     {
+      'target_name': 'cast_crash_client',
+      'type': '<(component)',
+      'dependencies': [
+        '../breakpad/breakpad.gyp:breakpad_client',
+        '../components/components.gyp:crash_component',
+      ],
+      'sources': [
+        'crash/cast_crash_reporter_client.cc',
+        'crash/cast_crash_reporter_client.h',
+      ],
+      'conditions': [
+        ['chromecast_branding=="Chrome"', {
+          'dependencies': [
+            '<(cast_internal_gyp):crash_internal',
+          ],
+        }, {
+          'sources': [
+            'crash/cast_crash_reporter_client_simple.cc',
+          ],
+        }],
+      ]
+    },  # end of target 'cast_crash_client'
+    {
       'target_name': 'cast_net',
       'type': '<(component)',
       'sources': [
@@ -113,6 +136,7 @@
       'type': '<(component)',
       'dependencies': [
         'cast_base',
+        'cast_crash_client',
         'cast_shell_pak',
         'cast_shell_resources',
         'cast_version_header',
@@ -423,29 +447,6 @@
     }, {  # OS != "android"
       'targets': [
         {
-          'target_name': 'cast_crash_client',
-          'type': '<(component)',
-          'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_client',
-            '../components/components.gyp:crash_component',
-          ],
-          'sources': [
-            'crash/cast_crash_reporter_client.cc',
-            'crash/cast_crash_reporter_client.h',
-          ],
-          'conditions': [
-            ['chromecast_branding=="Chrome"', {
-              'dependencies': [
-                '<(cast_internal_gyp):crash_internal',
-              ],
-            }, {
-              'sources': [
-                'crash/cast_crash_reporter_client_simple.cc',
-              ],
-            }],
-          ]
-        },  # end of target 'cast_crash_client'
-        {
           'target_name': 'cast_shell_media',
           'type': '<(component)',
           'dependencies': [
@@ -492,7 +493,6 @@
           'target_name': 'cast_shell_core',
           'type': '<(component)',
           'dependencies': [
-            'cast_crash_client',
             'cast_net',
             'cast_shell_media',
             'cast_shell_common',
