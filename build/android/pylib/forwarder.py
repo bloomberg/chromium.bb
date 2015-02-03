@@ -90,8 +90,10 @@ class Forwarder(object):
 
       device_serial = str(device)
       redirection_commands = [
-          ['--serial-id=' + device_serial, '--map', str(device_port),
-           str(host_port)] for device_port, host_port in port_pairs]
+          ['--adb=' + constants.GetAdbPath(),
+           '--serial-id=' + device_serial,
+           '--map', str(device_port), str(host_port)]
+          for device_port, host_port in port_pairs]
       logging.info('Forwarding using commands: %s', redirection_commands)
 
       for redirection_command in redirection_commands:
@@ -227,7 +229,9 @@ class Forwarder(object):
     if not serial_with_port in instance._device_to_host_port_map:
       logging.error('Trying to unmap non-forwarded port %d' % device_port)
       return
-    redirection_command = ['--serial-id=' + serial, '--unmap', str(device_port)]
+    redirection_command = ['--adb=' + constants.GetAdbPath(),
+                           '--serial-id=' + serial,
+                           '--unmap', str(device_port)]
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [instance._host_forwarder_path] + redirection_command)
     if exit_code != 0:
