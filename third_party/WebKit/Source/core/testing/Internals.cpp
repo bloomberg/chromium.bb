@@ -2355,7 +2355,7 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceho
 
 void Internals::forceBlinkGCWithoutV8GC()
 {
-    ThreadState::current()->scheduleGC();
+    ThreadState::current()->schedulePreciseGC();
 }
 
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)
