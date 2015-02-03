@@ -118,11 +118,11 @@ void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
 void BackgroundContents::AddNewContents(WebContents* source,
                                         WebContents* new_contents,
                                         WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
+                                        const gfx::Rect& initial_rect,
                                         bool user_gesture,
                                         bool* was_blocked) {
   delegate_->AddWebContents(
-      new_contents, disposition, initial_pos, user_gesture, was_blocked);
+      new_contents, disposition, initial_rect, user_gesture, was_blocked);
 }
 
 bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {

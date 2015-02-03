@@ -219,7 +219,7 @@ content::WebContents* ChromeAppDelegate::OpenURLFromTab(
 void ChromeAppDelegate::AddNewContents(content::BrowserContext* context,
                                        content::WebContents* new_contents,
                                        WindowOpenDisposition disposition,
-                                       const gfx::Rect& initial_pos,
+                                       const gfx::Rect& initial_rect,
                                        bool user_gesture,
                                        bool* was_blocked) {
   if (!disable_external_open_for_testing_) {
@@ -240,7 +240,7 @@ void ChromeAppDelegate::AddNewContents(content::BrowserContext* context,
                          NULL,
                          new_contents,
                          disposition,
-                         initial_pos,
+                         initial_rect,
                          user_gesture,
                          was_blocked);
 }

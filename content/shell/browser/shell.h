@@ -115,7 +115,7 @@ class Shell : public WebContentsDelegate,
   void AddNewContents(WebContents* source,
                       WebContents* new_contents,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
+                      const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
   void LoadingStateChanged(WebContents* source,

@@ -28,7 +28,7 @@ class TestWebContentsHandler
                       content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
+                      const gfx::Rect& initial_rect,
                       bool user_gesture) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsHandler);

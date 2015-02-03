@@ -29,7 +29,7 @@ class ShellAppDelegate : public AppDelegate {
   void AddNewContents(content::BrowserContext* context,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
+                      const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
   content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,

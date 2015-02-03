@@ -42,11 +42,11 @@ WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(
 
 void WebDialogWebContentsDelegate::AddNewContents(
     WebContents* source, WebContents* new_contents,
-    WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
+    WindowOpenDisposition disposition, const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   handler_->AddNewContents(browser_context_, source, new_contents, disposition,
-                           initial_pos, user_gesture);
+                           initial_rect, user_gesture);
 }
 
 bool WebDialogWebContentsDelegate::IsPopupOrPanel(

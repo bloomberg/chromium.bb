@@ -434,7 +434,7 @@ content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager(
 void ExtensionHost::AddNewContents(WebContents* source,
                                    WebContents* new_contents,
                                    WindowOpenDisposition disposition,
-                                   const gfx::Rect& initial_pos,
+                                   const gfx::Rect& initial_rect,
                                    bool user_gesture,
                                    bool* was_blocked) {
   // First, if the creating extension view was associated with a tab contents,
@@ -453,7 +453,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
       WebContentsDelegate* delegate = associated_contents->GetDelegate();
       if (delegate) {
         delegate->AddNewContents(
-            associated_contents, new_contents, disposition, initial_pos,
+            associated_contents, new_contents, disposition, initial_rect,
             user_gesture, was_blocked);
         return;
       }
@@ -461,7 +461,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
   }
 
   delegate_->CreateTab(
-      new_contents, extension_id_, disposition, initial_pos, user_gesture);
+      new_contents, extension_id_, disposition, initial_rect, user_gesture);
 }
 
 void ExtensionHost::RenderViewReady() {

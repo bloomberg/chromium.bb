@@ -107,7 +107,7 @@ gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
 
 void RenderWidgetHostViewChildFrame::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
-    const gfx::Rect& pos) {
+    const gfx::Rect& bounds) {
   NOTREACHED();
 }
 

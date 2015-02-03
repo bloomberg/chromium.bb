@@ -1001,19 +1001,19 @@ void RenderViewHostImpl::CreateNewFullscreenWidget(int route_id) {
 
 void RenderViewHostImpl::OnShowView(int route_id,
                                     WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_pos,
+                                    const gfx::Rect& initial_rect,
                                     bool user_gesture) {
   if (is_active_) {
     delegate_->ShowCreatedWindow(
-        route_id, disposition, initial_pos, user_gesture);
+        route_id, disposition, initial_rect, user_gesture);
   }
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowWidget(int route_id,
-                                      const gfx::Rect& initial_pos) {
+                                      const gfx::Rect& initial_rect) {
   if (is_active_)
-    delegate_->ShowCreatedWidget(route_id, initial_pos);
+    delegate_->ShowCreatedWidget(route_id, initial_rect);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 

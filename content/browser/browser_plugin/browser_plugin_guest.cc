@@ -867,8 +867,8 @@ void BrowserPluginGuest::OnShowPopup(
 #endif
 
 void BrowserPluginGuest::OnShowWidget(int route_id,
-                                      const gfx::Rect& initial_pos) {
-  GetWebContents()->ShowCreatedWidget(route_id, initial_pos);
+                                      const gfx::Rect& initial_rect) {
+  GetWebContents()->ShowCreatedWidget(route_id, initial_rect);
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {

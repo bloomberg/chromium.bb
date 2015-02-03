@@ -250,13 +250,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // the Windows function which is actually a #define.
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
+                                 const gfx::Rect& initial_rect,
                                  bool user_gesture) {}
 
   // Show the newly created widget with the specified bounds.
   // The widget is identified by the route_id passed to CreateNewWidget.
   virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) {}
+                                 const gfx::Rect& initial_rect) {}
 
   // Show the newly created full screen widget. Similar to above.
   virtual void ShowCreatedFullscreenWidget(int route_id) {}

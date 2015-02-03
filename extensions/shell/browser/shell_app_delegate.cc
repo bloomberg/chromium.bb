@@ -42,7 +42,7 @@ content::WebContents* ShellAppDelegate::OpenURLFromTab(
 void ShellAppDelegate::AddNewContents(content::BrowserContext* context,
                                       content::WebContents* new_contents,
                                       WindowOpenDisposition disposition,
-                                      const gfx::Rect& initial_pos,
+                                      const gfx::Rect& initial_rect,
                                       bool user_gesture,
                                       bool* was_blocked) {
   NOTIMPLEMENTED();

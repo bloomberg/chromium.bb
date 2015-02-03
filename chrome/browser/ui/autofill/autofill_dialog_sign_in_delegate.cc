@@ -89,12 +89,12 @@ void AutofillDialogSignInDelegate::AddNewContents(
     content::WebContents* source,
     content::WebContents* new_contents,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
+    const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   chrome::AddWebContents(
       chrome::FindBrowserWithWebContents(originating_web_contents_),
-      source, new_contents, disposition, initial_pos, user_gesture,
+      source, new_contents, disposition, initial_rect, user_gesture,
       was_blocked);
 }
 

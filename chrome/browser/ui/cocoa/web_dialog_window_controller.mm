@@ -67,7 +67,7 @@ public:
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
+                      const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
   void LoadingStateChanged(content::WebContents* source,
@@ -225,15 +225,15 @@ void WebDialogWindowDelegateBridge::AddNewContents(
     content::WebContents* source,
     content::WebContents* new_contents,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
+    const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   if (delegate_ && delegate_->HandleAddNewContents(
-          source, new_contents, disposition, initial_pos, user_gesture)) {
+          source, new_contents, disposition, initial_rect, user_gesture)) {
     return;
   }
   WebDialogWebContentsDelegate::AddNewContents(
-      source, new_contents, disposition, initial_pos, user_gesture,
+      source, new_contents, disposition, initial_rect, user_gesture,
       was_blocked);
 }
 

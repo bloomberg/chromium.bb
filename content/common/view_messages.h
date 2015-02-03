@@ -1043,19 +1043,19 @@ IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetProcessMemorySizes,
 // page/widget that was created by
 // CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
 // refers to the id that was returned from the Create message above.
-// The initial_position parameter is a rectangle in screen coordinates.
+// The initial_rect parameter is in screen coordinates.
 //
 // FUTURE: there will probably be flags here to control if the result is
 // in a new window.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_ShowView,
                     int /* route_id */,
                     WindowOpenDisposition /* disposition */,
-                    gfx::Rect /* initial_pos */,
+                    gfx::Rect /* initial_rect */,
                     bool /* opened_by_user_gesture */)
 
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
                     int /* route_id */,
-                    gfx::Rect /* initial_pos */)
+                    gfx::Rect /* initial_rect */)
 
 // Message to show a full screen widget.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,

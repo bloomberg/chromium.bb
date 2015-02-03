@@ -1084,13 +1084,13 @@ bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,
 void WebViewGuest::AddNewContents(content::WebContents* source,
                                   content::WebContents* new_contents,
                                   WindowOpenDisposition disposition,
-                                  const gfx::Rect& initial_pos,
+                                  const gfx::Rect& initial_rect,
                                   bool user_gesture,
                                   bool* was_blocked) {
   if (was_blocked)
     *was_blocked = false;
   RequestNewWindowPermission(disposition,
-                             initial_pos,
+                             initial_rect,
                              user_gesture,
                              new_contents);
 }

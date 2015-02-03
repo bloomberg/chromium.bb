@@ -767,7 +767,7 @@ const base::string16& BackgroundContentsService::GetParentApplicationId(
 void BackgroundContentsService::AddWebContents(
     WebContents* new_contents,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
+    const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   Browser* browser = chrome::FindLastActiveWithProfile(
@@ -775,6 +775,6 @@ void BackgroundContentsService::AddWebContents(
       chrome::GetActiveDesktop());
   if (browser) {
     chrome::AddWebContents(browser, NULL, new_contents, disposition,
-                           initial_pos, user_gesture, was_blocked);
+                           initial_rect, user_gesture, was_blocked);
   }
 }

@@ -828,7 +828,7 @@ void DevToolsWindow::ActivateContents(WebContents* contents) {
 void DevToolsWindow::AddNewContents(WebContents* source,
                                     WebContents* new_contents,
                                     WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_pos,
+                                    const gfx::Rect& initial_rect,
                                     bool user_gesture,
                                     bool* was_blocked) {
   if (new_contents == toolbox_web_contents_) {
@@ -848,7 +848,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (inspected_web_contents) {
     inspected_web_contents->GetDelegate()->AddNewContents(
-        source, new_contents, disposition, initial_pos, user_gesture,
+        source, new_contents, disposition, initial_rect, user_gesture,
         was_blocked);
   }
 }

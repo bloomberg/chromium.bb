@@ -213,10 +213,10 @@ void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
 void Shell::AddNewContents(WebContents* source,
                            WebContents* new_contents,
                            WindowOpenDisposition disposition,
-                           const gfx::Rect& initial_pos,
+                           const gfx::Rect& initial_rect,
                            bool user_gesture,
                            bool* was_blocked) {
-  CreateShell(new_contents, AdjustWindowSize(initial_pos.size()));
+  CreateShell(new_contents, AdjustWindowSize(initial_rect.size()));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDumpRenderTree))
     NotifyDoneForwarder::CreateForWebContents(new_contents);

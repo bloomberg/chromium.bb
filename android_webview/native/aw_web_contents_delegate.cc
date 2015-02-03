@@ -125,7 +125,7 @@ void AwWebContentsDelegate::RunFileChooser(WebContents* web_contents,
 void AwWebContentsDelegate::AddNewContents(WebContents* source,
                                            WebContents* new_contents,
                                            WindowOpenDisposition disposition,
-                                           const gfx::Rect& initial_pos,
+                                           const gfx::Rect& initial_rect,
                                            bool user_gesture,
                                            bool* was_blocked) {
   JNIEnv* env = AttachCurrentThread();

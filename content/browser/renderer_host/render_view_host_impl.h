@@ -334,9 +334,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // IPC message handlers.
   void OnShowView(int route_id,
                   WindowOpenDisposition disposition,
-                  const gfx::Rect& initial_pos,
+                  const gfx::Rect& initial_rect,
                   bool user_gesture);
-  void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
+  void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
   void OnRunModal(int opener_id, IPC::Message* reply_msg);
   void OnRenderViewReady();

@@ -48,7 +48,7 @@ void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     content::WebContents* new_contents,
                     WindowOpenDisposition disposition,
-                    const gfx::Rect& initial_pos,
+                    const gfx::Rect& initial_rect,
                     bool user_gesture,
                     bool* was_blocked) {
   // No code for this yet.
@@ -59,7 +59,7 @@ void AddWebContents(Browser* browser,
   NavigateParams params(browser, new_contents);
   params.source_contents = source_contents;
   params.disposition = disposition;
-  params.window_bounds = initial_pos;
+  params.window_bounds = initial_rect;
   params.window_action = NavigateParams::SHOW_WINDOW;
   // At this point, we're already beyond the popup blocker. Even if the popup
   // was created without a user gesture, we have to set |user_gesture| to true,

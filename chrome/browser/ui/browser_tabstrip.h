@@ -37,14 +37,15 @@ content::WebContents* AddSelectedTabWithURL(Browser* browser,
 
 // Creates a new tab with the already-created WebContents 'new_contents'.
 // The window for the added contents will be reparented correctly when this
-// method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
-// initial position. If |was_blocked| is non-NULL, then |*was_blocked| will be
-// set to true if the popup gets blocked, and left unchanged otherwise.
+// method returns.  If |disposition| is NEW_POPUP, |initial_rect| should hold
+// the initial position and size. If |was_blocked| is non-NULL, then
+// |*was_blocked| will be set to true if the popup gets blocked, and left
+// unchanged otherwise.
 void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     content::WebContents* new_contents,
                     WindowOpenDisposition disposition,
-                    const gfx::Rect& initial_pos,
+                    const gfx::Rect& initial_rect,
                     bool user_gesture,
                     bool* was__blocked);
 

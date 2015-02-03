@@ -193,7 +193,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) = 0;
+                           const gfx::Rect& bounds) = 0;
 
   // Perform all the initialization steps necessary for this object to represent
   // a full screen window.

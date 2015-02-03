@@ -218,7 +218,7 @@ void RenderWidgetHostViewGuest::InitAsChild(
 }
 
 void RenderWidgetHostViewGuest::InitAsPopup(
-    RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
+    RenderWidgetHostView* parent_host_view, const gfx::Rect& bounds) {
   // This should never get called.
   NOTREACHED();
 }

@@ -256,12 +256,12 @@ void TestWebContents::CreateNewFullscreenWidget(int render_process_id,
 
 void TestWebContents::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
+                                        const gfx::Rect& initial_rect,
                                         bool user_gesture) {
 }
 
 void TestWebContents::ShowCreatedWidget(int route_id,
-                                        const gfx::Rect& initial_pos) {
+                                        const gfx::Rect& initial_rect) {
 }
 
 void TestWebContents::ShowCreatedFullscreenWidget(int route_id) {

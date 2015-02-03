@@ -107,7 +107,7 @@ void CastWindowAndroid::LoadURL(const GURL& url) {
 void CastWindowAndroid::AddNewContents(content::WebContents* source,
                                        content::WebContents* new_contents,
                                        WindowOpenDisposition disposition,
-                                       const gfx::Rect& initial_pos,
+                                       const gfx::Rect& initial_rect,
                                        bool user_gesture,
                                        bool* was_blocked) {
   NOTIMPLEMENTED();

@@ -71,13 +71,13 @@ void CustomLauncherPageContents::AddNewContents(
     content::WebContents* source,
     content::WebContents* new_contents,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
+    const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   app_delegate_->AddNewContents(new_contents->GetBrowserContext(),
                                 new_contents,
                                 disposition,
-                                initial_pos,
+                                initial_rect,
                                 user_gesture,
                                 was_blocked);
 }

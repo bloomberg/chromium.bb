@@ -41,10 +41,10 @@ ChromeExtensionHostDelegate::GetJavaScriptDialogManager() {
 void ChromeExtensionHostDelegate::CreateTab(content::WebContents* web_contents,
                                             const std::string& extension_id,
                                             WindowOpenDisposition disposition,
-                                            const gfx::Rect& initial_pos,
+                                            const gfx::Rect& initial_rect,
                                             bool user_gesture) {
   ExtensionTabUtil::CreateTab(
-      web_contents, extension_id, disposition, initial_pos, user_gesture);
+      web_contents, extension_id, disposition, initial_rect, user_gesture);
 }
 
 void ChromeExtensionHostDelegate::ProcessMediaAccessRequest(

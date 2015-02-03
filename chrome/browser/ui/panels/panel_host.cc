@@ -138,7 +138,7 @@ void PanelHost::NavigationStateChanged(content::WebContents* source,
 void PanelHost::AddNewContents(content::WebContents* source,
                                content::WebContents* new_contents,
                                WindowOpenDisposition disposition,
-                               const gfx::Rect& initial_pos,
+                               const gfx::Rect& initial_rect,
                                bool user_gesture,
                                bool* was_blocked) {
   chrome::NavigateParams navigate_params(profile_, new_contents->GetURL(),
@@ -150,7 +150,7 @@ void PanelHost::AddNewContents(content::WebContents* source,
   navigate_params.disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
 
-  navigate_params.window_bounds = initial_pos;
+  navigate_params.window_bounds = initial_rect;
   navigate_params.user_gesture = user_gesture;
   navigate_params.extension_app_id = panel_->extension_id();
   chrome::Navigate(&navigate_params);

@@ -36,7 +36,7 @@ class BackgroundContents : public content::WebContentsDelegate,
     // set to true if the popup gets blocked, and left unchanged otherwise.
     virtual void AddWebContents(content::WebContents* new_contents,
                                 WindowOpenDisposition disposition,
-                                const gfx::Rect& initial_pos,
+                                const gfx::Rect& initial_rect,
                                 bool user_gesture,
                                 bool* was_blocked) = 0;
 
@@ -63,7 +63,7 @@ class BackgroundContents : public content::WebContentsDelegate,
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
+                      const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;

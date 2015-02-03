@@ -72,15 +72,15 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
 // Creates a new tab with |new_contents|. |context| is the browser context that
 // the browser should be owned by. |source| is the WebContent where the
 // operation originated. |disposition| controls how the new tab should be
-// opened. |initial_pos| is the position of the window if a new window is
-// created.  |user_gesture| is true if the operation was started by a user
+// opened. |initial_rect| is the position and size of the window if a new window
+// is created.  |user_gesture| is true if the operation was started by a user
 // gesture.
 void ChromeWebContentsHandler::AddNewContents(
     content::BrowserContext* context,
     WebContents* source,
     WebContents* new_contents,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
+    const gfx::Rect& initial_rect,
     bool user_gesture) {
   if (!context)
     return;
@@ -102,7 +102,7 @@ void ChromeWebContentsHandler::AddNewContents(
   chrome::NavigateParams params(browser, new_contents);
   params.source_contents = source;
   params.disposition = disposition;
-  params.window_bounds = initial_pos;
+  params.window_bounds = initial_rect;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   chrome::Navigate(&params);

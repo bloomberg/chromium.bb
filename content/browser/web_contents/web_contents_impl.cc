@@ -1644,9 +1644,9 @@ void WebContentsImpl::CreateNewWindow(
     // new window.  As a result, we need to show and navigate the window here.
     bool was_blocked = false;
     if (delegate_) {
-      gfx::Rect initial_pos;
+      gfx::Rect initial_rect;
       delegate_->AddNewContents(
-          this, new_contents, params.disposition, initial_pos,
+          this, new_contents, params.disposition, initial_rect,
           params.user_gesture, &was_blocked);
     }
     if (!was_blocked) {
@@ -1716,21 +1716,21 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
 
 void WebContentsImpl::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
+                                        const gfx::Rect& initial_rect,
                                         bool user_gesture) {
   WebContentsImpl* contents = GetCreatedWindow(route_id);
   if (contents) {
     WebContentsDelegate* delegate = GetDelegate();
     if (delegate) {
       delegate->AddNewContents(
-          this, contents, disposition, initial_pos, user_gesture, NULL);
+          this, contents, disposition, initial_rect, user_gesture, NULL);
     }
   }
 }
 
 void WebContentsImpl::ShowCreatedWidget(int route_id,
-                                        const gfx::Rect& initial_pos) {
-  ShowCreatedWidget(route_id, false, initial_pos);
+                                        const gfx::Rect& initial_rect) {
+  ShowCreatedWidget(route_id, false, initial_rect);
 }
 
 void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
@@ -1739,7 +1739,7 @@ void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
 
 void WebContentsImpl::ShowCreatedWidget(int route_id,
                                         bool is_fullscreen,
-                                        const gfx::Rect& initial_pos) {
+                                        const gfx::Rect& initial_rect) {
   RenderWidgetHostViewBase* widget_host_view =
       static_cast<RenderWidgetHostViewBase*>(GetCreatedWidget(route_id));
   if (!widget_host_view)
@@ -1769,7 +1769,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
     if (!widget_host_view->HasFocus())
       widget_host_view->Focus();
   } else {
-    widget_host_view->InitAsPopup(view, initial_pos);
+    widget_host_view->InitAsPopup(view, initial_rect);
   }
 
   RenderWidgetHostImpl* render_widget_host_impl =

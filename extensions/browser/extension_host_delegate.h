@@ -46,7 +46,7 @@ class ExtensionHostDelegate {
   virtual void CreateTab(content::WebContents* web_contents,
                          const std::string& extension_id,
                          WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_pos,
+                         const gfx::Rect& initial_rect,
                          bool user_gesture) = 0;
 
   // Requests access to an audio or video media stream. Invokes |callback|
