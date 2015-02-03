@@ -94,7 +94,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunRasterQueueConstructTest(const std::string& test_name,
                                    const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->SetScrollOffset(
+    pending_layer_->PushScrollOffsetFromMainThread(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
     host_impl_.pending_tree()->UpdateDrawProperties();
 
@@ -143,7 +143,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunEvictionQueueConstructTest(const std::string& test_name,
                                      const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->SetScrollOffset(
+    pending_layer_->PushScrollOffsetFromMainThread(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
     host_impl_.pending_tree()->UpdateDrawProperties();
 

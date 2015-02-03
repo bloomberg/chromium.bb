@@ -422,14 +422,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
-  // TODO(aelias): Delete these three methods after doing a mass rename in
-  // tests.
-  gfx::ScrollOffset TotalScrollOffset() const { return CurrentScrollOffset(); }
-  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
-    PushScrollOffsetFromMainThread(scroll_offset);
-  }
-  gfx::ScrollOffset scroll_offset() const { return BaseScrollOffset(); }
-
   void SetScrollClipLayer(int scroll_clip_layer_id);
   LayerImpl* scroll_clip_layer() const { return scroll_clip_layer_; }
   bool scrollable() const { return !!scroll_clip_layer_; }

@@ -348,7 +348,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scroll_layer->AddChild(sublayer_scoped_ptr.Pass());
   LayerImpl* scroll_layer_raw_ptr = scroll_layer_scoped_ptr.get();
   clip_layer->AddChild(scroll_layer_scoped_ptr.Pass());
-  scroll_layer_raw_ptr->SetScrollOffset(kScrollOffset);
+  scroll_layer_raw_ptr->PushScrollOffsetFromMainThread(kScrollOffset);
 
   scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
@@ -7819,7 +7819,7 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(fixed.get(), identity_transform, gfx::Point3F(),
                                gfx::PointF(3.0f, 4.0f), gfx::Size(50, 50), true,
                                false, false);
-  scroll_layer->SetScrollOffset(scroll_offset);
+  scroll_layer->PushScrollOffsetFromMainThread(scroll_offset);
   scroll_layer->SetScrollDelta(scroll_delta);
   scroll_layer->SetScrollCompensationAdjustment(main_scroll_fractional_part);
 

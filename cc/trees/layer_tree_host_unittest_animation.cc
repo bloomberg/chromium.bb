@@ -1103,7 +1103,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
             Animation::ScrollOffset))
       return;
 
-    EXPECT_EQ(final_postion_, scroll_layer_impl->TotalScrollOffset());
+    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
     EndTest();
   }
 

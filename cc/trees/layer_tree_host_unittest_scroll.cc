@@ -77,12 +77,12 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
+        EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->BaseScrollOffset());
         EXPECT_VECTOR_EQ(scroll_amount_, scroll_layer->ScrollDelta());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), second_scroll_);
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), second_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), scroll_amount_);
         EndTest();
         break;
@@ -157,7 +157,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
       scroll_layer->ScrollBy(scroll_amount_);
       EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), scroll_amount_);
 
-      EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
+      EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
       PostSetNeedsRedrawToMainThread();
     } else if (impl->active_tree()->source_frame_number() == 0 &&
                impl->SourceAnimationFrameNumber() == 2) {
@@ -303,7 +303,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), gfx::Vector2d());
       root_scroll_layer->ScrollBy(impl_scroll_);
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), impl_scroll_);
-      EXPECT_VECTOR_EQ(root_scroll_layer->scroll_offset(), initial_scroll_);
+      EXPECT_VECTOR_EQ(root_scroll_layer->BaseScrollOffset(), initial_scroll_);
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
@@ -322,7 +322,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       root_scroll_layer->ScrollBy(impl_scroll_);
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), impl_scroll_);
       EXPECT_VECTOR_EQ(
-          root_scroll_layer->scroll_offset(),
+          root_scroll_layer->BaseScrollOffset(),
           gfx::ScrollOffsetWithDelta(initial_scroll_, impl_scroll_));
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
@@ -344,7 +344,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       impl->SetNeedsCommit();
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), impl_scroll_);
       gfx::Vector2dF delta = impl_scroll_ + impl_scroll_ + second_main_scroll_;
-      EXPECT_VECTOR_EQ(root_scroll_layer->scroll_offset(),
+      EXPECT_VECTOR_EQ(root_scroll_layer->BaseScrollOffset(),
                        gfx::ScrollOffsetWithDelta(initial_scroll_, delta));
     } else if (impl->active_tree()->source_frame_number() == 2 &&
                impl->SourceAnimationFrameNumber() == 4) {
@@ -352,7 +352,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), gfx::Vector2d());
       gfx::Vector2dF delta =
           impl_scroll_ + impl_scroll_ + impl_scroll_ + second_main_scroll_;
-      EXPECT_VECTOR_EQ(root_scroll_layer->scroll_offset(),
+      EXPECT_VECTOR_EQ(root_scroll_layer->BaseScrollOffset(),
                        gfx::ScrollOffsetWithDelta(initial_scroll_, delta));
       EndTest();
     } else {
@@ -424,12 +424,12 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
     // multiple commits.
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), gfx::Vector2d(0, 0));
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), gfx::Vector2d(0, 0));
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d(0, 0));
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(),
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(),
                          gfx::ToFlooredVector2d(scroll_amount_));
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(),
                          gfx::Vector2dF(fmod(scroll_amount_.x(), 1.0f), 0.0f));
@@ -437,7 +437,7 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
         break;
       case 2:
         EXPECT_VECTOR_EQ(
-            scroll_layer->scroll_offset(),
+            scroll_layer->BaseScrollOffset(),
             gfx::ToFlooredVector2d(scroll_amount_ + scroll_amount_));
         EXPECT_VECTOR_EQ(
             scroll_layer->ScrollDelta(),
@@ -598,7 +598,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(initial_offset_,
-                         expected_scroll_layer_impl->scroll_offset());
+                         expected_scroll_layer_impl->BaseScrollOffset());
         EXPECT_VECTOR_EQ(scroll_amount_,
                          expected_scroll_layer_impl->ScrollDelta());
         break;
@@ -615,16 +615,16 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(javascript_scroll_,
-                         expected_scroll_layer_impl->scroll_offset());
+                         expected_scroll_layer_impl->BaseScrollOffset());
         EXPECT_VECTOR_EQ(scroll_amount_,
                          expected_scroll_layer_impl->ScrollDelta());
         break;
       }
       case 2:
 
-        EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(javascript_scroll_,
-                                                    scroll_amount_),
-                         expected_scroll_layer_impl->scroll_offset());
+        EXPECT_VECTOR_EQ(
+            gfx::ScrollOffsetWithDelta(javascript_scroll_, scroll_amount_),
+            expected_scroll_layer_impl->BaseScrollOffset());
         EXPECT_VECTOR_EQ(gfx::Vector2d(),
                          expected_scroll_layer_impl->ScrollDelta());
 
@@ -828,7 +828,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d());
           scroll_layer->ScrollBy(impl_thread_scroll1_);
 
-          EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
+          EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
           EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll1_);
           PostSetNeedsCommitToMainThread();
 
@@ -840,13 +840,13 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           EXPECT_EQ(impl->pending_tree()->source_frame_number(), 1);
 
           scroll_layer->ScrollBy(impl_thread_scroll2_);
-          EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
+          EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
           EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(),
                            impl_thread_scroll1_ + impl_thread_scroll2_);
 
           LayerImpl* pending_scroll_layer = pending_root->children()[0];
           EXPECT_VECTOR_EQ(
-              pending_scroll_layer->scroll_offset(),
+              pending_scroll_layer->BaseScrollOffset(),
               gfx::ScrollOffsetWithDelta(
                   initial_scroll_, main_thread_scroll_ + impl_thread_scroll1_));
           EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(),
@@ -856,7 +856,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
       case 1:
         EXPECT_FALSE(impl->pending_tree());
         EXPECT_VECTOR_EQ(
-            scroll_layer->scroll_offset(),
+            scroll_layer->BaseScrollOffset(),
             gfx::ScrollOffsetWithDelta(
                 initial_scroll_, main_thread_scroll_ + impl_thread_scroll1_));
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll2_);
@@ -954,7 +954,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
     ASSERT_TRUE(pending_scroll_layer);
     switch (impl->pending_tree()->source_frame_number()) {
       case 0:
-        EXPECT_VECTOR_EQ(pending_scroll_layer->scroll_offset(),
+        EXPECT_VECTOR_EQ(pending_scroll_layer->BaseScrollOffset(),
                          initial_scroll_);
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(), gfx::Vector2d());
         EXPECT_FALSE(active_root);
@@ -962,20 +962,21 @@ class ImplSidePaintingScrollTestImplOnlyScroll
       case 1:
         // Even though the scroll happened during the commit, both layers
         // should have the appropriate scroll delta.
-        EXPECT_VECTOR_EQ(pending_scroll_layer->scroll_offset(),
+        EXPECT_VECTOR_EQ(pending_scroll_layer->BaseScrollOffset(),
                          initial_scroll_);
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(),
                          impl_thread_scroll_);
         ASSERT_TRUE(active_root);
-        EXPECT_VECTOR_EQ(active_scroll_layer->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(active_scroll_layer->BaseScrollOffset(),
+                         initial_scroll_);
         EXPECT_VECTOR_EQ(active_scroll_layer->ScrollDelta(),
                          impl_thread_scroll_);
         break;
       case 2:
         // On the next commit, this delta should have been sent and applied.
-        EXPECT_VECTOR_EQ(pending_scroll_layer->scroll_offset(),
-                         gfx::ScrollOffsetWithDelta(initial_scroll_,
-                                                    impl_thread_scroll_));
+        EXPECT_VECTOR_EQ(
+            pending_scroll_layer->BaseScrollOffset(),
+            gfx::ScrollOffsetWithDelta(initial_scroll_, impl_thread_scroll_));
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(), gfx::Vector2d());
         break;
     }
@@ -989,14 +990,14 @@ class ImplSidePaintingScrollTestImplOnlyScroll
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d());
         EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
         EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll_);
         EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
         EXPECT_EQ(impl_scale_,
