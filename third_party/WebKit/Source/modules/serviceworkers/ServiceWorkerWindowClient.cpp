@@ -17,6 +17,16 @@
 
 namespace blink {
 
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, ServiceWorkerWindowClient::WebType* webClientRaw)
+{
+    return ServiceWorkerWindowClient::create(*webClientRaw);
+}
+
+void ServiceWorkerWindowClient::dispose(ServiceWorkerWindowClient::WebType* webClientRaw)
+{
+    delete webClientRaw;
+}
+
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(const WebServiceWorkerClientInfo& info)
 {
     return new ServiceWorkerWindowClient(info);
@@ -72,7 +82,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
     }
     scriptState->executionContext()->consumeWindowFocus();
 
-    ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(id(), new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
+    ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(id(), new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
     return promise;
 }
 

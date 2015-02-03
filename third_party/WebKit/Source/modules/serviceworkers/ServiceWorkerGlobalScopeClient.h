@@ -76,6 +76,7 @@ public:
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
     virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) = 0;
+    virtual void focus(int clientID, WebServiceWorkerClientCallbacks*) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

@@ -172,14 +172,12 @@ public:
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callback after calling either onSuccess or onError.
-    virtual void focus(int clientID, WebServiceWorkerClientFocusCallback* callback)
-    {
-        // FIXME: call BLINK_ASSERT_NOT_REACHED() when Chromium implementation
-        // is present. https://crbug.com/437149
-        bool result = true;
-        callback->onSuccess(&result);
-        delete callback;
-    }
+    // FIXME: delete this method as soon as Chromium stop calling it.
+    virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callback after calling either onSuccess or onError.
+    virtual void focus(int cliendID, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

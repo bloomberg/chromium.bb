@@ -12,11 +12,18 @@
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class ScriptState;
 
 class ServiceWorkerWindowClient final : public ServiceWorkerClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    // To be used by CallbackPromiseAdapter.
+    typedef WebServiceWorkerClientInfo WebType;
+
+    static ServiceWorkerWindowClient* take(ScriptPromiseResolver*, WebType*);
+    static void dispose(WebType*);
+
     static ServiceWorkerWindowClient* create(const WebServiceWorkerClientInfo&);
     ~ServiceWorkerWindowClient() override;
 
