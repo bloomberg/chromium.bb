@@ -31,7 +31,8 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
-      accessibility_mode_(AccessibilityModeOff) {
+      accessibility_mode_(AccessibilityModeOff),
+      disable_hot_tracking_(false) {
   ResetAccessibilityModeValue();
 #if defined(OS_WIN)
   // On Windows, UpdateHistograms calls some system functions with unknown

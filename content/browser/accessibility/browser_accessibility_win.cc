@@ -3568,8 +3568,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia_state |= STATE_SYSTEM_FOCUSABLE;
   if (HasState(ui::AX_STATE_HASPOPUP))
     ia_state |= STATE_SYSTEM_HASPOPUP;
-  if (HasState(ui::AX_STATE_HOVERED))
-    ia_state |= STATE_SYSTEM_HOTTRACKED;
   if (HasState(ui::AX_STATE_INDETERMINATE))
     ia_state |= STATE_SYSTEM_INDETERMINATE;
   if (HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
@@ -3606,6 +3604,16 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia2_state |= IA2_STATE_HORIZONTAL;
   if (HasState(ui::AX_STATE_VISITED))
     ia_state |= STATE_SYSTEM_TRAVERSED;
+
+  // Expose whether or not the mouse is over an element, but suppress
+  // this for tests because it can make the test results flaky depending
+  // on the position of the mouse.
+  BrowserAccessibilityStateImpl* accessibility_state =
+      BrowserAccessibilityStateImpl::GetInstance();
+  if (!accessibility_state->disable_hot_tracking_for_testing()) {
+    if (HasState(ui::AX_STATE_HOVERED))
+      ia_state |= STATE_SYSTEM_HOTTRACKED;
+  }
 
   // WebKit marks everything as readonly unless it's editable text, so if it's
   // not readonly, mark it as editable now. The final computation of the

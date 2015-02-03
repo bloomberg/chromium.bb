@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -121,6 +122,11 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
 
 void DumpAccessibilityTestBase::RunTest(
     const base::FilePath file_path, const char* file_dir) {
+  // Disable the "hot tracked" state (set when the mouse is hovering over
+  // an object) because it makes test output change based on the mouse position.
+  BrowserAccessibilityStateImpl::GetInstance()->
+      set_disable_hot_tracking_for_testing(true);
+
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Output the test path to help anyone who encounters a failure and needs

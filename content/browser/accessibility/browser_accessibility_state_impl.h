@@ -60,6 +60,18 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   // removed.
   void RemoveAccessibilityMode(AccessibilityMode mode);
 
+  // Accessibility objects can have the "hot tracked" state set when
+  // the mouse is hovering over them, but this makes tests flaky because
+  // the test behaves differently when the mouse happens to be over an
+  // element.  This is a global switch to not use the "hot tracked" state
+  // in a test.
+  void set_disable_hot_tracking_for_testing(bool disable_hot_tracking) {
+    disable_hot_tracking_ = disable_hot_tracking;
+  }
+  bool disable_hot_tracking_for_testing() const {
+    return disable_hot_tracking_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>;
   friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
@@ -83,6 +95,8 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   AccessibilityMode accessibility_mode_;
 
   std::vector<base::Closure> histogram_callbacks_;
+
+  bool disable_hot_tracking_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };
