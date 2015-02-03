@@ -501,13 +501,6 @@ public class SigninManager {
     }
 
     /**
-     * @return True if the new profile management is enabled.
-     */
-    public static boolean isNewProfileManagementEnabled() {
-        return nativeIsNewProfileManagementEnabled();
-    }
-
-    /**
      * @return Whether there is a signed in account on the native side.
      */
     public boolean isSignedInOnNative() {
@@ -551,5 +544,4 @@ public class SigninManager {
     private native void nativeClearLastSignedInUser(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
     private native boolean nativeIsSignedInOnNative(long nativeSigninManagerAndroid);
-    private static native boolean nativeIsNewProfileManagementEnabled();
 }
