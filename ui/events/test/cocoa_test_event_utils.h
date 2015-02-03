@@ -10,6 +10,7 @@
 #import <objc/objc-class.h>
 
 #include "base/basictypes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace cocoa_test_event_utils {
 
@@ -47,6 +48,15 @@ NSEvent* EnterExitEventWithType(NSEventType event_type);
 
 // Return an "other" event with the given type.
 NSEvent* OtherEventWithType(NSEventType event_type);
+
+// Time interval since system startup. Tests shouldn't rely on this.
+NSTimeInterval TimeIntervalSinceSystemStartup();
+
+// Creates a key event in a particular window.
+NSEvent* SynthesizeKeyEvent(NSWindow* window,
+                            bool keyDown,
+                            ui::KeyboardCode keycode,
+                            NSUInteger flags);
 
 }  // namespace cocoa_test_event_utils
 
