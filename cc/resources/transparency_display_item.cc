@@ -4,6 +4,8 @@
 
 #include "cc/resources/transparency_display_item.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -39,6 +41,13 @@ size_t TransparencyDisplayItem::PictureMemoryUsage() const {
   return sizeof(float) + sizeof(SkXfermode::Mode);
 }
 
+void TransparencyDisplayItem::AsValueInto(
+    base::debug::TracedValue* array) const {
+  array->AppendString(
+      base::StringPrintf("TransparencyDisplayItem opacity: %f, blend_mode: %d",
+                         opacity_, blend_mode_));
+}
+
 EndTransparencyDisplayItem::EndTransparencyDisplayItem() {
 }
 
@@ -60,6 +69,11 @@ int EndTransparencyDisplayItem::ApproximateOpCount() const {
 
 size_t EndTransparencyDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndTransparencyDisplayItem::AsValueInto(
+    base::debug::TracedValue* array) const {
+  array->AppendString("EndTransparencyDisplayItem");
 }
 
 }  // namespace cc

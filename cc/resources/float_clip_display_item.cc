@@ -4,6 +4,8 @@
 
 #include "cc/resources/float_clip_display_item.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
 
@@ -34,6 +36,11 @@ size_t FloatClipDisplayItem::PictureMemoryUsage() const {
   return sizeof(gfx::RectF);
 }
 
+void FloatClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString(base::StringPrintf("FloatClipDisplayItem rect: [%s]",
+                                         clip_rect_.ToString().c_str()));
+}
+
 EndFloatClipDisplayItem::EndFloatClipDisplayItem() {
 }
 
@@ -55,6 +62,11 @@ int EndFloatClipDisplayItem::ApproximateOpCount() const {
 
 size_t EndFloatClipDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndFloatClipDisplayItem::AsValueInto(
+    base::debug::TracedValue* array) const {
+  array->AppendString("EndFloatClipDisplayItem");
 }
 
 }  // namespace cc

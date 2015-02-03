@@ -4,6 +4,11 @@
 
 #include "cc/resources/drawing_display_item.h"
 
+#include <string>
+
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "cc/debug/picture_debug_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -54,6 +59,18 @@ int DrawingDisplayItem::ApproximateOpCount() const {
 size_t DrawingDisplayItem::PictureMemoryUsage() const {
   DCHECK(picture_);
   return SkPictureUtils::ApproximateBytesUsed(picture_.get());
+}
+
+void DrawingDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->BeginDictionary();
+  array->SetString("name", "DrawingDisplayItem");
+  array->SetString("location",
+                   base::StringPrintf("[%f,%f]", picture_->cullRect().x(),
+                                      picture_->cullRect().y()));
+  std::string b64_picture;
+  PictureDebugUtil::SerializeAsBase64(picture_.get(), &b64_picture);
+  array->SetString("skp64", b64_picture);
+  array->EndDictionary();
 }
 
 }  // namespace cc

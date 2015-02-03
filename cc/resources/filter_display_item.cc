@@ -4,6 +4,8 @@
 
 #include "cc/resources/filter_display_item.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -48,6 +50,11 @@ size_t FilterDisplayItem::PictureMemoryUsage() const {
   return sizeof(skia::RefPtr<SkImageFilter>) + sizeof(gfx::RectF);
 }
 
+void FilterDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString(base::StringPrintf("FilterDisplayItem bounds: [%s]",
+                                         bounds_.ToString().c_str()));
+}
+
 EndFilterDisplayItem::EndFilterDisplayItem() {
 }
 
@@ -70,6 +77,10 @@ int EndFilterDisplayItem::ApproximateOpCount() const {
 
 size_t EndFilterDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndFilterDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString("EndFilterDisplayItem");
 }
 
 }  // namespace cc

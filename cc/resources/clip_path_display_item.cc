@@ -4,6 +4,8 @@
 
 #include "cc/resources/clip_path_display_item.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -36,6 +38,11 @@ size_t ClipPathDisplayItem::PictureMemoryUsage() const {
   return total_size;
 }
 
+void ClipPathDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString(base::StringPrintf("ClipPathDisplayItem length: %d",
+                                         clip_path_.countPoints()));
+}
+
 EndClipPathDisplayItem::EndClipPathDisplayItem() {
 }
 
@@ -57,6 +64,11 @@ int EndClipPathDisplayItem::ApproximateOpCount() const {
 
 size_t EndClipPathDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndClipPathDisplayItem::AsValueInto(
+    base::debug::TracedValue* array) const {
+  array->AppendString("EndClipPathDisplayItem");
 }
 
 }  // namespace cc

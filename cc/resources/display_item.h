@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/traced_value.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
@@ -25,6 +26,7 @@ class CC_EXPORT DisplayItem {
   virtual bool IsSuitableForGpuRasterization() const = 0;
   virtual int ApproximateOpCount() const = 0;
   virtual size_t PictureMemoryUsage() const = 0;
+  virtual void AsValueInto(base::debug::TracedValue* array) const = 0;
 
  protected:
   DisplayItem();

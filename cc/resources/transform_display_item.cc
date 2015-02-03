@@ -4,6 +4,8 @@
 
 #include "cc/resources/transform_display_item.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -34,6 +36,11 @@ size_t TransformDisplayItem::PictureMemoryUsage() const {
   return sizeof(gfx::Transform);
 }
 
+void TransformDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString(base::StringPrintf("TransformDisplayItem transform: [%s]",
+                                         transform_.ToString().c_str()));
+}
+
 EndTransformDisplayItem::EndTransformDisplayItem() {
 }
 
@@ -55,6 +62,11 @@ int EndTransformDisplayItem::ApproximateOpCount() const {
 
 size_t EndTransformDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndTransformDisplayItem::AsValueInto(
+    base::debug::TracedValue* array) const {
+  array->AppendString("EndTransformDisplayItem");
 }
 
 }  // namespace cc

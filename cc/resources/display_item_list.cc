@@ -71,6 +71,11 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> DisplayItemList::AsValue()
       new base::debug::TracedValue();
 
   state->SetInteger("length", items_.size());
+  state->BeginArray("params.items");
+  for (const DisplayItem* item : items_) {
+    item->AsValueInto(state.get());
+  }
+  state->EndArray();
   state->SetValue("params.layer_rect",
                   MathUtil::AsValue(layer_rect_).release());
 

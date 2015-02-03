@@ -4,7 +4,12 @@
 
 #include "cc/resources/clip_display_item.h"
 
+#include <string>
+
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -48,6 +53,32 @@ size_t ClipDisplayItem::PictureMemoryUsage() const {
   return total_size;
 }
 
+void ClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  std::string value = base::StringPrintf("ClipDisplayItem rect: [%s]",
+                                         clip_rect_.ToString().c_str());
+  for (const SkRRect& rounded_rect : rounded_clip_rects_) {
+    base::StringAppendF(
+        &value, " rounded_rect: [rect: [%s]",
+        gfx::SkRectToRectF(rounded_rect.rect()).ToString().c_str());
+    base::StringAppendF(&value, " radii: [");
+    SkVector upper_left_radius = rounded_rect.radii(SkRRect::kUpperLeft_Corner);
+    base::StringAppendF(&value, "[%f,%f],", upper_left_radius.x(),
+                        upper_left_radius.y());
+    SkVector upper_right_radius =
+        rounded_rect.radii(SkRRect::kUpperRight_Corner);
+    base::StringAppendF(&value, " [%f,%f],", upper_right_radius.x(),
+                        upper_right_radius.y());
+    SkVector lower_right_radius =
+        rounded_rect.radii(SkRRect::kLowerRight_Corner);
+    base::StringAppendF(&value, " [%f,%f],", lower_right_radius.x(),
+                        lower_right_radius.y());
+    SkVector lower_left_radius = rounded_rect.radii(SkRRect::kLowerLeft_Corner);
+    base::StringAppendF(&value, " [%f,%f]]", lower_left_radius.x(),
+                        lower_left_radius.y());
+  }
+  array->AppendString(value);
+}
+
 EndClipDisplayItem::EndClipDisplayItem() {
 }
 
@@ -69,6 +100,10 @@ int EndClipDisplayItem::ApproximateOpCount() const {
 
 size_t EndClipDisplayItem::PictureMemoryUsage() const {
   return 0;
+}
+
+void EndClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+  array->AppendString("EndClipDisplayItem");
 }
 
 }  // namespace cc
