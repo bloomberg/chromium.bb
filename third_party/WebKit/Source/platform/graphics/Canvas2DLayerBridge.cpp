@@ -322,9 +322,6 @@ bool Canvas2DLayerBridge::restoreSurface()
     ASSERT(m_layer && !m_isSurfaceValid);
 
     WebGraphicsContext3D* sharedContext = 0;
-    // We must clear the mailboxes before calling m_layer->clearTexture() to prevent
-    // re-entry via mailboxReleased from operating on defunct GrContext objects.
-    m_mailboxes.clear();
     m_layer->clearTexture();
     m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (m_contextProvider)
