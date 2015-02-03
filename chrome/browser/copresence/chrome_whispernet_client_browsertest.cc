@@ -176,35 +176,52 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeWhispernetClientTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Initialize) {
+// These tests are irrelevant if NACL is disabled. See crbug.com/449198
+#if defined(DISABLE_NACL)
+#define MAYBE_Initialize DISABLED_Initialize
+#define MAYBE_EncodeToken DISABLED_EncodeToken
+#define MAYBE_DecodeSamples DISABLED_DecodeSamples
+#define MAYBE_DetectBroadcast DISABLED_DetectBroadcast
+#define MAYBE_Audible DISABLED_Audible
+#define MAYBE_TokenLengths DISABLED_TokenLengths
+#else
+#define MAYBE_Initialize Initialize
+#define MAYBE_EncodeToken EncodeToken
+#define MAYBE_DecodeSamples DecodeSamples
+#define MAYBE_DetectBroadcast DetectBroadcast
+#define MAYBE_Audible Audible
+#define MAYBE_TokenLengths TokenLengths
+#endif
+
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Initialize) {
   InitializeWhispernet();
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, EncodeToken) {
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeToken) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(false, kSixZeros);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DecodeSamples) {
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_DecodeSamples) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(false, kSixZeros);
   DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DetectBroadcast) {
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_DetectBroadcast) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(false, kSixZeros);
   DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
   DetectBroadcast();
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Audible) {
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Audible) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(true, kSixZeros);
   DecodeSamplesAndVerifyToken(true, kSixZeros, kTokenLengths);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, TokenLengths) {
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
   InitializeWhispernet();
   size_t kLongTokenLengths[2] = {8, 9};
 
