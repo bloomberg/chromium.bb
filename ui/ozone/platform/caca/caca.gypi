@@ -23,6 +23,7 @@
         '../../skia/skia.gyp:skia',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_layout',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],

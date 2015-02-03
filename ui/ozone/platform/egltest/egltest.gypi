@@ -21,9 +21,11 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
+        '../events/devices/events_devices.gyp:events_devices',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../events/ozone/events_ozone.gyp:events_ozone_layout',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         'eglplatform_shim',
       ],

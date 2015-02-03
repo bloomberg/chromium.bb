@@ -23,6 +23,7 @@
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_layout',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [

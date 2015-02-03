@@ -18,5 +18,6 @@ source_set("test") {
     "//ui/base",
     "//ui/gfx/geometry",
     "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/platform",
   ]
 }

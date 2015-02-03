@@ -22,6 +22,7 @@ source_set("caca") {
     "//base",
     "//skia",
     "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/platform",
     "//ui/gfx/geometry",
   ]
 

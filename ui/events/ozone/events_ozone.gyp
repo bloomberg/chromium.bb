@@ -51,6 +51,8 @@
       '../../ozone/ozone.gyp:ozone_base',
       '../devices/events_devices.gyp:events_devices',
       '../events.gyp:dom4_keycode_converter',
+      '../events.gyp:events',
+      '../events.gyp:events_base',
       '../platform/events_platform.gyp:events_platform',
       'events_ozone',
       'events_ozone_layout',
