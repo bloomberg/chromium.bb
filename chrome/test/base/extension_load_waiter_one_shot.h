@@ -19,16 +19,16 @@ class BrowserContext;
 class ExtensionLoadWaiterOneShot : public content::NotificationObserver {
  public:
   ExtensionLoadWaiterOneShot();
-  virtual ~ExtensionLoadWaiterOneShot();
+  ~ExtensionLoadWaiterOneShot() override;
 
   // Waits for extension with |extension_id| to load. The id should be a pointer
   // to a static char array.
   void WaitForExtension(const char* extension_id, const base::Closure& load_cb);
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Get the browser context associated with the loaded extension. Returns
   // NULL if |WaitForExtension| was not previously called.

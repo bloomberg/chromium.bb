@@ -97,7 +97,7 @@ TEST_F('BackgroundTest', 'InitialFeedback', function() {
   }, true);
   cvox.ChromeVox.tts.expectSpeech('end', testDone, true);
 
-  this.runWithDocument(function() {/*!
+  this.runWithAutomation(function() {/*!
     <p>start
     <p>end
   */},
@@ -107,7 +107,7 @@ TEST_F('BackgroundTest', 'InitialFeedback', function() {
 /** Tests consistency of navigating forward and backward. */
 TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
   cvox.ChromeVox.tts.expectSpeech('start', null, true);
-  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+  this.runWithAutomation(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
@@ -138,7 +138,7 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
 
 TEST_F('BackgroundTest', 'CaretNavigation', function() {
   cvox.ChromeVox.tts.expectSpeech('start', null, true);
-  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+  this.runWithAutomation(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
@@ -168,7 +168,7 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
 
 // Flaky: http://crbug.com/451362
 TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
-  this.runWithDocument(this.formsDoc, function(tabId) {
+  this.runWithAutomation(this.formsDoc, function(tabId) {
     var sendDownToSelect =
         this.sendKeyToElement.bind(this, tabId, 'Down', '#fruitSelect');
     var expect = cvox.ChromeVox.tts.expectSpeech.bind(cvox.ChromeVox.tts);
@@ -181,7 +181,7 @@ TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
 
 TEST_F('BackgroundTest', 'ContinuousRead', function() {
   cvox.ChromeVox.tts.expectSpeech('start', null, true);
-  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+  this.runWithAutomation(this.linksAndHeadingsDoc, function() {
     var doCmd = this.doCmd.bind(this);
     var expect =
         cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
