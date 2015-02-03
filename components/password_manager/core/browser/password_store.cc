@@ -160,10 +160,15 @@ void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
 
 void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled) {
-  ScheduleTask(base::Bind(&PasswordStore::ReportMetricsImpl,
-                          this,
-                          sync_username,
-                          custom_passphrase_sync_enabled));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+      GetBackgroundTaskRunner());
+  if (task_runner) {
+    base::Closure task =
+        base::Bind(&PasswordStore::ReportMetricsImpl, this, sync_username,
+                   custom_passphrase_sync_enabled);
+    task_runner->PostDelayedTask(FROM_HERE, task,
+                                 base::TimeDelta::FromSeconds(30));
+  }
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
