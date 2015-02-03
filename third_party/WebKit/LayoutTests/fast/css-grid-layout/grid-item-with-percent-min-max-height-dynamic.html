@@ -31,15 +31,15 @@ function testLayout(gridElementID, gridTracks, size)
 
 function runTests()
 {
-    testLayout("gridWithMinHeightItem", { "rows": "70px 140px" }, { "width": "50px", "height": "35px" });
-    testLayout("gridWithMinHeightItem", { "rows": "100px 140px" }, { "width": "50px", "height": "50px" });
-    testLayout("gridWithMinHeightItem", { "rows": "100px 240px" }, { "width": "50px", "height": "50px" });
-    testLayout("gridWithMinHeightItem", { "rows": "10px 240px" }, { "width": "50px", "height": "10px" });
+    testLayout("gridWithMinHeightItem", { "rows": "70px 140px" }, { "width": "50", "height": "35" });
+    testLayout("gridWithMinHeightItem", { "rows": "100px 140px" }, { "width": "50", "height": "50" });
+    testLayout("gridWithMinHeightItem", { "rows": "100px 240px" }, { "width": "50", "height": "50" });
+    testLayout("gridWithMinHeightItem", { "rows": "10px 240px" }, { "width": "50", "height": "10" });
 
-    testLayout("gridWithMaxHeightItem", { "rows": "70px 140px" }, { "width": "50px", "height": "35px" });
-    testLayout("gridWithMaxHeightItem", { "rows": "100px 140px" }, { "width": "50px", "height": "50px" });
-    testLayout("gridWithMaxHeightItem", { "rows": "100px 240px" }, { "width": "50px", "height": "50px" });
-    testLayout("gridWithMaxHeightItem", { "rows": "1000px 240px" }, { "width": "50px", "height": "100px" });
+    testLayout("gridWithMaxHeightItem", { "rows": "70px 140px" }, { "width": "50", "height": "35" });
+    testLayout("gridWithMaxHeightItem", { "rows": "100px 140px" }, { "width": "50", "height": "50" });
+    testLayout("gridWithMaxHeightItem", { "rows": "100px 240px" }, { "width": "50", "height": "50" });
+    testLayout("gridWithMaxHeightItem", { "rows": "1000px 240px" }, { "width": "50", "height": "100" });
 }
 
 window.addEventListener("load", runTests, false);
