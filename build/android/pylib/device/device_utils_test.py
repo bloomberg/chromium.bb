@@ -457,8 +457,16 @@ class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
         self.call.adb.Reboot(),
         (self.call.device.IsOnline(), True),
         (self.call.device.IsOnline(), False),
-        self.call.device.WaitUntilFullyBooted()):
+        self.call.device.WaitUntilFullyBooted(wifi=False)):
       self.device.Reboot(block=True)
+
+  def testReboot_blockUntilWifi(self):
+    with self.assertCalls(
+        self.call.adb.Reboot(),
+        (self.call.device.IsOnline(), True),
+        (self.call.device.IsOnline(), False),
+        self.call.device.WaitUntilFullyBooted(wifi=True)):
+      self.device.Reboot(block=True, wifi=True)
 
 
 class DeviceUtilsInstallTest(DeviceUtilsNewImplTest):

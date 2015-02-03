@@ -350,11 +350,13 @@ class DeviceUtils(object):
   @decorators.WithTimeoutAndRetriesDefaults(
       REBOOT_DEFAULT_TIMEOUT,
       REBOOT_DEFAULT_RETRIES)
-  def Reboot(self, block=True, timeout=None, retries=None):
+  def Reboot(self, block=True, wifi=False, timeout=None, retries=None):
     """Reboot the device.
 
     Args:
       block: A boolean indicating if we should wait for the reboot to complete.
+      wifi: A boolean indicating if we should wait for wifi to be enabled after
+        the reboot. The option has no effect unless |block| is also True.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -369,7 +371,7 @@ class DeviceUtils(object):
     self._cache = {}
     timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
-      self.WaitUntilFullyBooted()
+      self.WaitUntilFullyBooted(wifi=wifi)
 
   INSTALL_DEFAULT_TIMEOUT = 4 * _DEFAULT_TIMEOUT
   INSTALL_DEFAULT_RETRIES = _DEFAULT_RETRIES
