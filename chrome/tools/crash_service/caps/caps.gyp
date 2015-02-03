@@ -39,14 +39,21 @@
       'target_name': 'caps',
       'type': 'executable',
       'include_dirs': [
-        '../..',
+        '..',
       ],
       'sources': [
+        'exit_codes.h',
+        'logger_win.cc',
+        'logger_win.h',
         'main_win.cc',
+        'process_singleton_win.cc',
+        'process_singleton_win.h',
         '<(SHARED_INTERMEDIATE_DIR)/caps/caps_version.rc',
       ],
       'dependencies': [
         'caps_resources',
+        '../../../../base/base.gyp:base',
+        '../../../../chrome/chrome.gyp:common_version',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
