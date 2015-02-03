@@ -15,6 +15,7 @@ var default_content_settings = {
   "location": "ask",
   "notifications": "ask",
   "mouselock": "ask",
+  "microphone": "ask",
 };
 
 var settings = {
@@ -25,7 +26,8 @@ var settings = {
   "popups": "allow",
   "location": "block",
   "notifications": "block",
-  "mouselock": "block"
+  "mouselock": "block",
+  "microphone": "block"
 };
 
 Object.prototype.forEach = function(f) {
