@@ -787,7 +787,7 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
 
 TEST_F('HistoryWebUIRealBackendTest', 'atLeastOneFocusable', function() {
   var results = document.querySelectorAll('#results-display [tabindex="0"]');
-  expectEquals(1, results.length);
+  expectGE(results.length, 1);
   testDone();
 });
 
@@ -1004,7 +1004,7 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
 
 TEST_F('HistoryWebUIDeleteProhibitedTest', 'atLeastOneFocusable', function() {
   var results = document.querySelectorAll('#results-display [tabindex="0"]');
-  expectEquals(1, results.length);
+  expectGE(results.length, 1);
   testDone();
 });
 

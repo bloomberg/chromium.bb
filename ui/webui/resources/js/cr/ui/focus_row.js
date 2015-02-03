@@ -11,11 +11,13 @@ cr.define('cr.ui', function() {
    *
    * One could create a FocusRow by doing:
    *
-   *   new cr.ui.FocusRow([checkboxEl, labelEl, buttonEl])
+   *   var focusRow = new cr.ui.FocusRow(rowBoundary, rowEl);
    *
-   * if there are references to each node or querying them from the DOM like so:
+   *   focusRow.addFocusableElement(checkboxEl);
+   *   focusRow.addFocusableElement(labelEl);
+   *   focusRow.addFocusableElement(buttonEl);
    *
-   *   new cr.ui.FocusRow(dialog.querySelectorAll('list input[type=checkbox]'))
+   *   focusRow.setInitialFocusability(true);
    *
    * Pressing left cycles backward and pressing right cycles forward in item
    * order. Pressing Home goes to the beginning of the list and End goes to the
@@ -23,57 +25,20 @@ cr.define('cr.ui', function() {
    *
    * If an item in this row is focused, it'll stay active (accessible via tab).
    * If no items in this row are focused, the row can stay active until focus
-   * changes to a node inside |this.boundary_|. If opt_boundary isn't
-   * specified, any focus change deactivates the row.
+   * changes to a node inside |this.boundary_|. If |boundary| isn't specified,
+   * any focus change deactivates the row.
    *
-   * @param {!Array.<!Element>|!NodeList} items Elements to track focus of.
-   * @param {Node=} opt_boundary Focus events are ignored outside of this node.
-   * @param {FocusRow.Delegate=} opt_delegate A delegate to handle key events.
-   * @param {FocusRow.Observer=} opt_observer An observer that's notified if
-   *     this focus row is added to or removed from the focus order.
    * @constructor
    */
-  function FocusRow(items, opt_boundary, opt_delegate, opt_observer) {
-    /** @type {!Array.<!Element>} */
-    this.items = Array.prototype.slice.call(items);
-    assert(this.items.length > 0);
-
-    /** @type {!Node} */
-    this.boundary_ = opt_boundary || document;
-
-    /** @private {cr.ui.FocusRow.Delegate|undefined} */
-    this.delegate_ = opt_delegate;
-
-    /** @private {cr.ui.FocusRow.Observer|undefined} */
-    this.observer_ = opt_observer;
-
-    /** @private {!EventTracker} */
-    this.eventTracker_ = new EventTracker;
-    this.eventTracker_.add(cr.doc, 'focusin', this.onFocusin_.bind(this));
-    this.eventTracker_.add(cr.doc, 'keydown', this.onKeydown_.bind(this));
-
-    this.items.forEach(function(item) {
-      if (item != document.activeElement)
-        item.tabIndex = -1;
-
-      this.eventTracker_.add(item, 'mousedown', this.onMousedown_.bind(this));
-    }, this);
-
-    /**
-     * The index that should be actively participating in the page tab order.
-     * @type {number}
-     * @private
-     */
-    this.activeIndex_ = this.items.indexOf(document.activeElement);
-  }
+  function FocusRow() {}
 
   /** @interface */
   FocusRow.Delegate = function() {};
 
   FocusRow.Delegate.prototype = {
     /**
-     * Called when a key is pressed while an item in |this.items| is focused. If
-     * |e|'s default is prevented, further processing is skipped.
+     * Called when a key is pressed while an item in |this.focusableElements| is
+     * focused. If |e|'s default is prevented, further processing is skipped.
      * @param {cr.ui.FocusRow} row The row that detected a keydown.
      * @param {Event} e
      * @return {boolean} Whether the event was handled.
@@ -88,58 +53,89 @@ cr.define('cr.ui', function() {
     onMousedown: assertNotReached,
   };
 
-  /** @interface */
-  FocusRow.Observer = function() {};
-
-  FocusRow.Observer.prototype = {
-    /**
-     * Called when the row is activated (added to the focus order).
-     * @param {cr.ui.FocusRow} row The row added to the focus order.
-     */
-    onActivate: assertNotReached,
-
-    /**
-     * Called when the row is deactivated (removed from the focus order).
-     * @param {cr.ui.FocusRow} row The row removed from the focus order.
-     */
-    onDeactivate: assertNotReached,
-  };
-
   FocusRow.prototype = {
-    get activeIndex() {
-      return this.activeIndex_;
-    },
-    set activeIndex(index) {
-      var wasActive = this.items[this.activeIndex_];
-      if (wasActive)
-        wasActive.tabIndex = -1;
+    __proto__: HTMLDivElement.prototype,
 
-      this.items.forEach(function(item) { assert(item.tabIndex == -1); });
-      this.activeIndex_ = index;
+    /**
+     * Should be called in the constructor to decorate |this|.
+     * @param {Node} boundary Focus events are ignored outside of this node.
+     * @param {FocusRow.Delegate=} opt_delegate A delegate to handle key events.
+     */
+    decorate: function(boundary, opt_delegate) {
+      /** @private {!Node} */
+      this.boundary_ = boundary || document;
 
-      if (this.items[index])
-        this.items[index].tabIndex = 0;
+      /** @type {cr.ui.FocusRow.Delegate|undefined} */
+      this.delegate = opt_delegate;
 
-      if (!this.observer_)
-        return;
+      /** @type {Array<Element>} */
+      this.focusableElements = [];
 
-      var isActive = index >= 0 && index < this.items.length;
-      if (isActive == !!wasActive)
-        return;
-
-      if (isActive)
-        this.observer_.onActivate(this);
-      else
-        this.observer_.onDeactivate(this);
+      /** @private {!EventTracker} */
+      this.eventTracker_ = new EventTracker;
+      this.eventTracker_.add(cr.doc, 'focusin', this.onFocusin_.bind(this));
+      this.eventTracker_.add(cr.doc, 'keydown', this.onKeydown_.bind(this));
     },
 
     /**
-     * Focuses the item at |index|.
-     * @param {number} index An index to focus. Must be between 0 and
-     *     this.items.length - 1.
+     * Called when the row's active state changes and it is added/removed from
+     * the focus order.
+     * @param {boolean} state Whether the row has become active or inactive.
      */
-    focusIndex: function(index) {
-      this.items[index].focus();
+    onActiveStateChanged: function(state) {},
+
+    /**
+     * Find the element that best matches |sampleElement|.
+     * @param {Element} sampleElement An element from a row of the same type
+     *     which previously held focus.
+     * @return {!Element} The element that best matches sampleElement.
+     */
+    getEquivalentElement: assertNotReached,
+
+    /**
+     * Add an element to this FocusRow. No-op if |element| is not provided.
+     * @param {Element} element The element that should be added.
+     */
+    addFocusableElement: function(element) {
+      if (!element)
+        return;
+
+      assert(this.focusableElements.indexOf(element) == -1);
+      assert(this.contains(element));
+
+      this.focusableElements.push(element);
+      this.eventTracker_.add(element, 'mousedown',
+                             this.onMousedown_.bind(this));
+    },
+
+    /**
+     * Called when focus changes to activate/deactivate the row. Focus is
+     * removed from the row when |element| is not in the FocusRow.
+     * @param {Element} element The element that has focus. null if focus should
+     *     be removed.
+     * @private
+    */
+    onFocusChange_: function(element) {
+      var isActive = this.contains(element);
+      var wasActive = this.classList.contains('focus-row-active');
+
+      // Only send events if the active state is different for the row.
+      if (isActive != wasActive)
+        this.makeRowActive(isActive);
+    },
+
+    /**
+     * Enables/disables the tabIndex of the focusable elements in the FocusRow.
+     * tabIndex can be set properly.
+     * @param {boolean} active True if tab is allowed for this row.
+     */
+    makeRowActive: function(active) {
+      this.focusableElements.forEach(function(element) {
+        element.tabIndex = active ? 0 : -1;
+      });
+
+      this.classList.toggle('focus-row-active', active);
+      this.onActiveStateChanged(active);
     },
 
     /** Call this to clean up event handling before dereferencing. */
@@ -153,37 +149,38 @@ cr.define('cr.ui', function() {
      */
     onFocusin_: function(e) {
       if (this.boundary_.contains(assertInstanceof(e.target, Node)))
-        this.activeIndex = this.items.indexOf(e.target);
+        this.onFocusChange_(e.target);
     },
 
     /**
-     * @param {Event} e A focus event.
+     * Handles a keypress for an element in this FocusRow.
+     * @param {Event} e The keydown event.
      * @private
      */
     onKeydown_: function(e) {
-      var item = this.items.indexOf(e.target);
-      if (item < 0)
+      if (!this.contains(e.target))
         return;
 
-      if (this.delegate_ && this.delegate_.onKeydown(this, e))
+      if (this.delegate && this.delegate.onKeydown(this, e))
         return;
 
+      var elementIndex = this.focusableElements.indexOf(e.target);
       var index = -1;
 
       if (e.keyIdentifier == 'Left')
-        index = item + (isRTL() ? 1 : -1);
+        index = elementIndex + (isRTL() ? 1 : -1);
       else if (e.keyIdentifier == 'Right')
-        index = item + (isRTL() ? -1 : 1);
+        index = elementIndex + (isRTL() ? -1 : 1);
       else if (e.keyIdentifier == 'Home')
         index = 0;
       else if (e.keyIdentifier == 'End')
-        index = this.items.length - 1;
+        index = this.focusableElements.length - 1;
 
-      if (!this.items[index])
-        return;
-
-      this.focusIndex(index);
-      e.preventDefault();
+      var elementToFocus = this.focusableElements[index];
+      if (elementToFocus) {
+        this.getEquivalentElement(elementToFocus).focus();
+        e.preventDefault();
+      }
     },
 
     /**
@@ -191,11 +188,14 @@ cr.define('cr.ui', function() {
      * @private
      */
     onMousedown_: function(e) {
-      if (this.delegate_ && this.delegate_.onMousedown(this, e))
+      if (this.delegate && this.delegate.onMousedown(this, e))
         return;
 
-      if (!e.button)
-        this.activeIndex = this.items.indexOf(e.currentTarget);
+      // Only accept the left mouse click.
+      if (!e.button) {
+        // Focus this row if the target is one of the elements in this row.
+        this.onFocusChange_(e.target);
+      }
     },
   };
 

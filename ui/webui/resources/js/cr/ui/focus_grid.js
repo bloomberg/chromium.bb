@@ -18,27 +18,57 @@ cr.define('cr.ui', function() {
    *   focusable  [focused]  focusable  (row: 1, col: 1)
    *   focusable  focusable  focusable
    *
-   * And pressing right at this point would move the focus to:
+   * And pressing right or tab at this point would move the focus to:
    *
    *   focusable  focusable  focusable
    *   focusable  focusable  [focused]  (row: 1, col: 2)
    *   focusable  focusable  focusable
    *
-   * @param {Node=} opt_boundary Ignore focus events outside this node.
-   * @param {cr.ui.FocusRow.Observer=} opt_observer An observer of rows.
-   * @implements {cr.ui.FocusRow.Delegate}
    * @constructor
    */
-  function FocusGrid(opt_boundary, opt_observer) {
-    /** @type {Node|undefined} */
-    this.boundary_ = opt_boundary;
-
-    /** @private {cr.ui.FocusRow.Observer|undefined} */
-    this.observer_ = opt_observer;
-
+  function FocusGrid() {
     /** @type {!Array.<!cr.ui.FocusRow>} */
     this.rows = [];
+
+    /** @private {!EventTracker} */
+    this.eventTracker_ = new EventTracker;
+    this.eventTracker_.add(cr.doc, 'keydown', this.onKeydown_.bind(this));
+    this.eventTracker_.add(cr.doc, 'focusin', this.onFocusin_.bind(this));
+
+    /** @private {cr.ui.FocusRow.Delegate} */
+    this.delegate_ = new FocusGrid.RowDelegate(this);
   }
+
+  /**
+   * Row delegate to overwrite the behavior of a mouse click to deselect any row
+   * that wasn't clicked.
+   * @param {cr.ui.FocusGrid} focusGrid
+   * @implements {cr.ui.FocusRow.Delegate}
+   */
+  FocusGrid.RowDelegate = function(focusGrid) {
+    /** @private {cr.ui.FocusGrid} */
+    this.focusGrid_ = focusGrid;
+  };
+
+  FocusGrid.RowDelegate.prototype = {
+    /** @override */
+    onKeydown: function(row, e) { return false; },
+
+    /** @override */
+    onMousedown: function(row, e) {
+      // Only care about left mouse click.
+      if (e.button)
+        return false;
+
+      // Only the clicked row should be active.
+      this.focusGrid_.rows.forEach(function(row) {
+        row.makeRowActive(row.contains(e.target));
+      });
+
+      e.preventDefault();
+      return true;
+    },
+  };
 
   FocusGrid.prototype = {
     /**
@@ -51,22 +81,25 @@ cr.define('cr.ui', function() {
 
     /**
      * @param {EventTarget} target A target item to find in this grid.
-     * @return {?{row: number, col: number}} A position or null if not found.
+     * @return {number} The row index. -1 if not found.
      */
-    getPositionForTarget: function(target) {
+    getRowIndexForTarget: function(target) {
       for (var i = 0; i < this.rows.length; ++i) {
-        for (var j = 0; j < this.rows[i].items.length; ++j) {
-          if (target == this.rows[i].items[j])
-            return {row: i, col: j};
-        }
+        if (this.rows[i].contains(target))
+          return i;
       }
-      return null;
+      return -1;
     },
 
-    /** @override */
-    onKeydown: function(keyRow, e) {
-      var rowIndex = this.rows.indexOf(keyRow);
-      assert(rowIndex >= 0);
+    /**
+     * Handles keyboard shortcuts to move up/down in the grid.
+     * @param {Event} e The key event.
+     * @private
+     */
+    onKeydown_: function(e) {
+      var rowIndex = this.getRowIndexForTarget(e.target);
+      if (rowIndex == -1)
+        return;
 
       var row = -1;
 
@@ -79,35 +112,53 @@ cr.define('cr.ui', function() {
       else if (e.keyIdentifier == 'PageDown')
         row = this.rows.length - 1;
 
-      if (!this.rows[row])
-        return false;
-
-      var colIndex = keyRow.items.indexOf(e.target);
-      var col = Math.min(colIndex, this.rows[row].items.length - 1);
-
-      this.rows[row].focusIndex(col);
-
-      e.preventDefault();
-      return true;
-    },
-
-    /** @override */
-    onMousedown: function(row, e) {
-      return false;
+      var rowToFocus = this.rows[row];
+      if (rowToFocus) {
+        this.ignoreFocusChange_ = true;
+        rowToFocus.getEquivalentElement(this.lastFocused).focus();
+        e.preventDefault();
+      }
     },
 
     /**
-     * @param {!Array.<!NodeList|!Array.<!Element>>} grid A 2D array of nodes.
+     * Keep track of the last column that the user manually focused.
+     * @param {Event} The focusin event.
+     * @private
      */
-    setGrid: function(grid) {
-      this.destroy();
+    onFocusin_: function(e) {
+      if (this.ignoreFocusChange_) {
+        this.ignoreFocusChange_ = false;
+        return;
+      }
 
-      this.rows = grid.map(function(row) {
-        return new cr.ui.FocusRow(row, this.boundary_, this, this.observer_);
-      }, this);
+      if (this.getRowIndexForTarget(e.target) != -1)
+        this.lastFocused = e.target;
+    },
 
-      if (!this.getPositionForTarget(document.activeElement) && this.rows[0])
-        this.rows[0].activeIndex = 0;
+    /**
+     * Add a FocusRow to this grid. This needs to be called AFTER adding columns
+     * to the row. This is so that TAB focus can be properly enabled in the
+     * columns.
+     * @param {cr.ui.FocusRow} row The row that needs to be added to this grid.
+     */
+    addRow: function(row) {
+      row.delegate = row.delegate || this.delegate_;
+
+      if (this.rows.length == 0) {
+        // The first row should be active if no other row is focused.
+        row.makeRowActive(true);
+      } else if (row.contains(document.activeElement)) {
+        // The current row should be made active if it's the activeElement.
+        row.makeRowActive(true);
+        // Deactivate the first row.
+        this.rows[0].makeRowActive(false);
+      } else {
+        // All other rows should be inactive.
+        row.makeRowActive(false);
+      }
+
+      // Add the row after its initial focus is set.
+      this.rows.push(row);
     },
   };
 

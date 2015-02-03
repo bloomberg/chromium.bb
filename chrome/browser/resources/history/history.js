@@ -250,6 +250,10 @@ Visit.prototype.getResultDOM = function(propertyBag) {
       e.preventDefault();
     }.bind(this));
   }
+
+  if (focusless)
+    bookmarkSection.tabIndex = -1;
+
   entryBox.appendChild(bookmarkSection);
 
   var visitEntryWrapper = /** @type {HTMLElement} */(
@@ -884,69 +888,87 @@ HistoryModel.prototype.getGroupByDomain = function() {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// HistoryFocusObserver:
+// HistoryFocusRow:
 
 /**
+ * Provides an implementation for a single column grid.
  * @constructor
- * @implements {cr.ui.FocusRow.Observer}
+ * @extends {cr.ui.FocusRow}
  */
-function HistoryFocusObserver() {}
+function HistoryFocusRow() {}
 
-HistoryFocusObserver.prototype = {
+/**
+ * Decorates |rowElement| so that it can be treated as a HistoryFocusRow item.
+ * @param {Element} rowElement The element representing this row.
+ * @param {Node} boundary Focus events are ignored outside of this node.
+ */
+HistoryFocusRow.decorate = function(rowElement, boundary) {
+  rowElement.__proto__ = HistoryFocusRow.prototype;
+  rowElement.decorate(boundary);
+
+  rowElement.addElementIfPresent_('.entry-box input', 'checkbox');
+  rowElement.addElementIfPresent_('.domain-checkbox', 'checkbox');
+  rowElement.addElementIfPresent_('.bookmark-section.starred', 'star');
+  rowElement.addElementIfPresent_('[is="action-link"]', 'domain');
+  rowElement.addElementIfPresent_('.title a', 'title');
+  rowElement.addElementIfPresent_('.drop-down', 'menu');
+};
+
+HistoryFocusRow.prototype = {
+  __proto__: cr.ui.FocusRow.prototype,
+
   /** @override */
-  onActivate: function(row) {
-    this.getActiveRowElement_(row).classList.add('active');
+  onActiveStateChanged: function(state) {
+    this.classList.toggle('active', state);
   },
 
   /** @override */
-  onDeactivate: function(row) {
-    this.getActiveRowElement_(row).classList.remove('active');
+  getEquivalentElement: function(element) {
+    if (this.contains(element))
+      return element;
+
+    // All elements default to another element with the same type.
+    var equivalent = this.getColumn_(element.getAttribute('column-type'));
+
+    if (!equivalent) {
+      switch (element.getAttribute('column-type')) {
+        case 'star':
+          equivalent = this.getColumn_('title') || this.getColumn_('domain');
+          break;
+        case 'domain':
+          equivalent = this.getColumn_('title');
+          break;
+        case 'title':
+          equivalent = this.getColumn_('domain');
+          break;
+        case 'menu':
+          return this.focusableElements[this.focusableElements.length - 1];
+      }
+    }
+
+    return equivalent || this.focusableElements[0];
   },
 
   /**
-   * @param {cr.ui.FocusRow} row The row to find an element for.
-   * @return {Element} |row|'s "active" element.
+   * @param {string} type The type of column to return.
+   * @return {?Element} The column matching the type.
    * @private
    */
-  getActiveRowElement_: function(row) {
-    return findAncestorByClass(row.items[0], 'entry') ||
-           findAncestorByClass(row.items[0], 'site-domain-wrapper');
+  getColumn_: function(type) {
+    return this.querySelector('[column-type=' + type + ']');
   },
-};
 
-///////////////////////////////////////////////////////////////////////////////
-// HistoryFocusGrid:
-
-/**
- * @param {Node=} opt_boundary
- * @param {cr.ui.FocusRow.Observer=} opt_observer
- * @constructor
- * @extends {cr.ui.FocusGrid}
- */
-function HistoryFocusGrid(opt_boundary, opt_observer) {
-  cr.ui.FocusGrid.apply(this, arguments);
-}
-
-HistoryFocusGrid.prototype = {
-  __proto__: cr.ui.FocusGrid.prototype,
-
-  /** @override */
-  onMousedown: function(row, e) {
-    // TODO(dbeam): Can cr.ui.FocusGrid know about cr.ui.MenuButton? If so, bake
-    // this logic into the base class directly.
-    var menuButton = findAncestorByClass(e.target, 'menu-button');
-    if (menuButton) {
-      // Deactivate any other active row.
-      this.rows.some(function(r) {
-        if (r.activeIndex >= 0 && r != row) {
-          r.activeIndex = -1;
-          return true;
-        }
-      });
-      // Activate only the row with a pressed menu button.
-      row.activeIndex = row.items.indexOf(menuButton);
+  /**
+   * @param {string} query A query to select the appropriate element.
+   * @param {string} type The type to use for the element.
+   * @private
+   */
+  addElementIfPresent_: function(query, type) {
+    var element = this.querySelector(query);
+    if (element) {
+      this.addFocusableElement(element);
+      element.setAttribute('column-type', type);
     }
-    return !!menuButton;
   },
 };
 
@@ -964,8 +986,7 @@ function HistoryView(model) {
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
-  this.focusGrid_ = new HistoryFocusGrid(this.resultDiv_,
-                                         new HistoryFocusObserver);
+  this.focusGrid_ = new cr.ui.FocusGrid();
   this.pageDiv_ = $('results-pagination');
   this.model_ = model;
   this.pageIndex_ = 0;
@@ -1197,14 +1218,14 @@ HistoryView.prototype.showNotification = function(innerHTML, isWarning) {
 HistoryView.prototype.onBeforeRemove = function(visit) {
   assert(this.currentVisits_.indexOf(visit) >= 0);
 
-  var pos = this.focusGrid_.getPositionForTarget(document.activeElement);
-  if (!pos)
+  var rowIndex = this.focusGrid_.getRowIndexForTarget(document.activeElement);
+  if (rowIndex == -1)
     return;
 
-  var row = this.focusGrid_.rows[pos.row + 1] ||
-            this.focusGrid_.rows[pos.row - 1];
-  if (row)
-    row.focusIndex(Math.min(pos.col, row.items.length - 1));
+  var rowToFocus = this.focusGrid_.rows[rowIndex + 1] ||
+                   this.focusGrid_.rows[rowIndex - 1];
+  if (rowToFocus)
+    rowToFocus.getEquivalentElement(document.activeElement).focus();
 };
 
 /** @param {Visit} visit The visit about to be unstarred. */
@@ -1212,9 +1233,12 @@ HistoryView.prototype.onBeforeUnstarred = function(visit) {
   assert(this.currentVisits_.indexOf(visit) >= 0);
   assert(visit.bookmarkStar == document.activeElement);
 
-  var pos = this.focusGrid_.getPositionForTarget(document.activeElement);
-  var row = this.focusGrid_.rows[pos.row];
-  row.focusIndex(Math.min(pos.col + 1, row.items.length - 1));
+  var rowIndex = this.focusGrid_.getRowIndexForTarget(document.activeElement);
+  var row = this.focusGrid_.rows[rowIndex];
+
+  // Focus the title or domain when the bookmarked star is removed because the
+  // star will no longer be focusable.
+  row.querySelector('[column-type=title], [column-type=domain]').focus();
 };
 
 /** @param {Visit} visit The visit that was just unstarred. */
@@ -1312,7 +1336,7 @@ HistoryView.prototype.positionNotificationBar = function() {
  * @return {boolean} Whether |el| is in |this.focusGrid_|.
  */
 HistoryView.prototype.isInFocusGrid = function(el) {
-  return !!this.focusGrid_.getPositionForTarget(el);
+  return this.focusGrid_.getRowIndexForTarget(el) != -1;
 };
 
 // HistoryView, private: ------------------------------------------------------
@@ -1674,26 +1698,16 @@ var focusGridRowSelector = [
   '.site-domain-wrapper'
 ].join(', ');
 
-var focusGridColumnSelector = [
-  '.entry-box input',
-  '.bookmark-section.starred',
-  '.title a',
-  '.drop-down',
-  '.domain-checkbox',
-  '[is="action-link"]',
-].join(', ');
-
 /** @private */
 HistoryView.prototype.updateFocusGrid_ = function() {
   var rows = this.resultDiv_.querySelectorAll(focusGridRowSelector);
-  var grid = [];
+  this.focusGrid_.destroy();
 
   for (var i = 0; i < rows.length; ++i) {
     assert(rows[i].parentNode);
-    grid.push(rows[i].querySelectorAll(focusGridColumnSelector));
+    HistoryFocusRow.decorate(rows[i], this.resultDiv_);
+    this.focusGrid_.addRow(rows[i]);
   }
-
-  this.focusGrid_.setGrid(grid);
 };
 
 /**

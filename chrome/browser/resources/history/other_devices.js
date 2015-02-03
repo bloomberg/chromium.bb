@@ -427,6 +427,33 @@ DevicesView.prototype.increaseRowHeight = function(row, height) {
 // DevicesView, Private -------------------------------------------------------
 
 /**
+ * Provides an implementation for a single column grid.
+ * @constructor
+ * @extends {cr.ui.FocusRow}
+ */
+function DevicesViewFocusRow() {}
+
+/**
+ * Decorates |rowElement| so that it can be treated as a DevicesViewFocusRow.
+ * @param {Element} rowElement The element representing this row.
+ * @param {Node} boundary Focus events are ignored outside of this node.
+ */
+DevicesViewFocusRow.decorate = function(rowElement, boundary) {
+  rowElement.__proto__ = DevicesViewFocusRow.prototype;
+  rowElement.decorate(boundary);
+  rowElement.addFocusableElement(rowElement);
+};
+
+DevicesViewFocusRow.prototype = {
+  __proto__: cr.ui.FocusRow.prototype,
+
+  /** @override */
+  getEquivalentElement: function(element) {
+    return this;
+  },
+};
+
+/**
  * Update the page with results.
  * @private
  */
@@ -479,16 +506,17 @@ DevicesView.prototype.displayResults_ = function() {
   this.focusGrids_.forEach(function(grid) { grid.destroy(); });
   this.focusGrids_.length = 0;
 
-  var singleColumn = function(e) { return [e]; };
-
   var devices = this.resultDiv_.querySelectorAll('.device-contents');
   for (var i = 0; i < devices.length; ++i) {
     var rows = devices[i].querySelectorAll('.device-tab-entry, button');
     if (!rows.length)
       continue;
 
-    var grid = new cr.ui.FocusGrid(devices[i]);
-    grid.setGrid(Array.prototype.map.call(rows, singleColumn));
+    var grid = new cr.ui.FocusGrid();
+    for (var i = 0; i < rows.length; ++i) {
+      DevicesViewFocusRow.decorate(rows[i], devices[i]);
+      grid.addRow(rows[i]);
+    }
     this.focusGrids_.push(grid);
   }
 };

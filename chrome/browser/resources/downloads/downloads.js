@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(jhawkins): Use hidden instead of showInline* and display:none.
+// TODO(hcarmona): This file is big: it may be good to split it up.
 
 /**
  * The type of the download object. The definition is based on
@@ -77,6 +78,103 @@ function createButton(onclick, value) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// DownloadFocusRow:
+
+/**
+ * Provides an implementation for a single column grid.
+ * @constructor
+ * @extends {cr.ui.FocusRow}
+ */
+function DownloadFocusRow() {}
+
+/**
+ * Decorates |focusRow| so that it can be treated as a DownloadFocusRow.
+ * @param {Element} focusRow The element that has all the columns represented
+ *     by |download|.
+ * @param {Download} download The Download representing this row.
+ * @param {Node} boundary Focus events are ignored outside of this node.
+ */
+DownloadFocusRow.decorate = function(focusRow, download, boundary) {
+  focusRow.__proto__ = DownloadFocusRow.prototype;
+  focusRow.decorate(boundary);
+
+  // Add all clickable elements as a row into the grid.
+  focusRow.addElementIfFocusable_(download.nodeFileLink_, 'name');
+  focusRow.addElementIfFocusable_(download.nodeURL_, 'url');
+  focusRow.addElementIfFocusable_(download.controlShow_, 'show');
+  focusRow.addElementIfFocusable_(download.controlRetry_, 'retry');
+  focusRow.addElementIfFocusable_(download.controlPause_, 'pause');
+  focusRow.addElementIfFocusable_(download.controlResume_, 'resume');
+  focusRow.addElementIfFocusable_(download.controlRemove_, 'remove');
+  focusRow.addElementIfFocusable_(download.controlCancel_, 'cancel');
+  focusRow.addElementIfFocusable_(download.malwareSave_, 'save');
+  focusRow.addElementIfFocusable_(download.dangerSave_, 'save');
+  focusRow.addElementIfFocusable_(download.malwareDiscard_, 'discard');
+  focusRow.addElementIfFocusable_(download.dangerDiscard_, 'discard');
+  focusRow.addElementIfFocusable_(download.controlByExtensionLink_,
+                                  'extension');
+};
+
+DownloadFocusRow.prototype = {
+  __proto__: cr.ui.FocusRow.prototype,
+
+  /** @override */
+  getEquivalentElement: function(element) {
+    if (this.contains(element))
+      return element;
+
+    // All elements default to another element with the same type.
+    var columnType = element.getAttribute('column-type');
+    var equivalent = this.querySelector('[column-type=' + columnType + ']');
+
+    if (!equivalent) {
+      var equivalentTypes =
+          ['show', 'retry', 'pause', 'resume', 'remove', 'cancel'];
+      if (equivalentTypes.indexOf(columnType) != -1) {
+        var allTypes = equivalentTypes.map(function(type) {
+          return '[column-type=' + type + ']';
+        }).join(', ');
+        equivalent = this.querySelector(allTypes);
+      }
+    }
+
+    // Return the first focusable element if no equivalent type is found.
+    return equivalent || this.focusableElements[0];
+  },
+
+  /**
+   * @param {Element} element The element that should be added.
+   * @param {string} type The column type to use for the element.
+   * @private
+   */
+  addElementIfFocusable_: function(element, type) {
+    if (this.shouldFocus_(element)) {
+      this.addFocusableElement(element);
+      element.setAttribute('column-type', type);
+    }
+  },
+
+  /**
+   * Determines if element should be focusable.
+   * @param {!Element} element
+   * @return {boolean}
+   * @private
+   */
+  shouldFocus_: function(element) {
+    if (!element)
+      return false;
+
+    // Hidden elements are not focusable.
+    var style = window.getComputedStyle(element);
+    if (style.visibility == 'hidden' || style.display == 'none')
+      return false;
+
+    // Verify all ancestors are focusable.
+    return !element.parentElement || this.shouldFocus_(element.parentElement);
+  },
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // Downloads
 /**
  * Class to hold all the information about the visible downloads.
@@ -91,6 +189,7 @@ function Downloads() {
   this.node_ = $('downloads-display');
   this.summary_ = $('downloads-summary-text');
   this.searchText_ = '';
+  this.focusGrid_ = new cr.ui.FocusGrid();
 
   // Keep track of the dates of the newest and oldest downloads so that we
   // know where to insert them.
@@ -176,6 +275,29 @@ Downloads.prototype.updateResults = function() {
 
   if (loadTimeData.getBoolean('allow_deleting_history'))
     $('clear-all').hidden = !hasDownloads || this.searchText_.length > 0;
+
+  this.rebuildFocusGrid_();
+};
+
+/**
+ * Rebuild the focusGrid_ using the elements that each download will have.
+ * @private
+ */
+Downloads.prototype.rebuildFocusGrid_ = function() {
+  this.focusGrid_.destroy();
+
+  var keys = Object.keys(this.downloads_);
+  for (var i = 0; i < keys.length; ++i) {
+    var download = this.downloads_[keys[i]];
+    DownloadFocusRow.decorate(download.node, download, this.node_);
+  }
+
+  // The ordering of the keys is not guaranteed, and downloads should be added
+  // to the FocusGrid in the order they will be in the UI.
+  var downloads = document.querySelectorAll('.download');
+  for (var i = 0; i < downloads.length; ++i) {
+    this.focusGrid_.addRow(downloads[i]);
+  }
 };
 
 /**
