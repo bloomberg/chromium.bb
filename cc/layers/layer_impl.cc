@@ -1083,13 +1083,18 @@ void LayerImpl::PushScrollOffsetFromMainThread(
 gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
   RefreshFromScrollDelegate();
 
-  // TODO(aelias): Remove all this temporary flooring machinery when Blink
-  // fully supports fractional scrolls.
-  gfx::ScrollOffset current = CurrentScrollOffset();
-  gfx::ScrollOffset floored(floor(current.x()), floor(current.y()));
-  scroll_offset_->SetCurrent(floored);
+  // TODO(aelias, miletus): Remove all this temporary flooring machinery when
+  // Blink fully supports fractional scrolls.
+  gfx::ScrollOffset current_offset = CurrentScrollOffset();
+  gfx::Vector2dF current_delta = ScrollDelta();
+  gfx::Vector2dF floored_delta(floor(current_delta.x()),
+                               floor(current_delta.y()));
+  gfx::Vector2dF diff_delta = floored_delta - current_delta;
+  gfx::ScrollOffset tmp_offset = ScrollOffsetWithDelta(current_offset,
+                                                       diff_delta);
+  scroll_offset_->SetCurrent(tmp_offset);
   gfx::ScrollOffset delta = scroll_offset_->PullDeltaForMainThread();
-  scroll_offset_->SetCurrent(current);
+  scroll_offset_->SetCurrent(current_offset);
   return delta;
 }
 
