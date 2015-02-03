@@ -292,8 +292,7 @@ def main():
   events = Queue.Queue()
   start = time.time()
   kill_event = threading.Event()
-  swarm_bot_version_hash = calculate_version(
-      options.swarming + '/get_slave_code')
+  swarm_bot_version_hash = calculate_version(options.swarming + '/bot_code')
   hostname = get_hostname()
   if options.suffix:
     hostname += '-' + options.suffix
