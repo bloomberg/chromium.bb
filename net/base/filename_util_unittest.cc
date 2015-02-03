@@ -116,48 +116,56 @@ static const base::FilePath::CharType* kUnsafePortableBasenames[] = {
 };
 
 static const base::FilePath::CharType* kSafePortableRelativePaths[] = {
-  FILE_PATH_LITERAL("a/a"),
+    FILE_PATH_LITERAL("a/a"),
 #if defined(OS_WIN)
-  FILE_PATH_LITERAL("a\\a"),
+    FILE_PATH_LITERAL("a\\a"),
 #endif
 };
 
 TEST(FilenameUtilTest, IsSafePortablePathComponent) {
-  for (size_t i = 0 ; i < arraysize(kSafePortableBasenames); ++i) {
-    EXPECT_TRUE(IsSafePortablePathComponent(base::FilePath(
-        kSafePortableBasenames[i]))) << kSafePortableBasenames[i];
+  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
+    EXPECT_TRUE(
+        IsSafePortablePathComponent(base::FilePath(kSafePortableBasenames[i])))
+        << kSafePortableBasenames[i];
   }
-  for (size_t i = 0 ; i < arraysize(kUnsafePortableBasenames); ++i) {
-    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(
-        kUnsafePortableBasenames[i]))) << kUnsafePortableBasenames[i];
+  for (size_t i = 0; i < arraysize(kUnsafePortableBasenames); ++i) {
+    EXPECT_FALSE(IsSafePortablePathComponent(
+        base::FilePath(kUnsafePortableBasenames[i])))
+        << kUnsafePortableBasenames[i];
   }
-  for (size_t i = 0 ; i < arraysize(kSafePortableRelativePaths); ++i) {
-    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(
-        kSafePortableRelativePaths[i]))) << kSafePortableRelativePaths[i];
+  for (size_t i = 0; i < arraysize(kSafePortableRelativePaths); ++i) {
+    EXPECT_FALSE(IsSafePortablePathComponent(
+        base::FilePath(kSafePortableRelativePaths[i])))
+        << kSafePortableRelativePaths[i];
   }
 }
 
 TEST(FilenameUtilTest, IsSafePortableRelativePath) {
   base::FilePath safe_dirname(FILE_PATH_LITERAL("a"));
-  for (size_t i = 0 ; i < arraysize(kSafePortableBasenames); ++i) {
-    EXPECT_TRUE(IsSafePortableRelativePath(base::FilePath(
-        kSafePortableBasenames[i]))) << kSafePortableBasenames[i];
-    EXPECT_TRUE(IsSafePortableRelativePath(safe_dirname.Append(base::FilePath(
-        kSafePortableBasenames[i])))) << kSafePortableBasenames[i];
+  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
+    EXPECT_TRUE(
+        IsSafePortableRelativePath(base::FilePath(kSafePortableBasenames[i])))
+        << kSafePortableBasenames[i];
+    EXPECT_TRUE(IsSafePortableRelativePath(
+        safe_dirname.Append(base::FilePath(kSafePortableBasenames[i]))))
+        << kSafePortableBasenames[i];
   }
-  for (size_t i = 0 ; i < arraysize(kSafePortableRelativePaths); ++i) {
-    EXPECT_TRUE(IsSafePortableRelativePath(base::FilePath(
-        kSafePortableRelativePaths[i]))) << kSafePortableRelativePaths[i];
-    EXPECT_TRUE(IsSafePortableRelativePath(safe_dirname.Append(base::FilePath(
-        kSafePortableRelativePaths[i])))) << kSafePortableRelativePaths[i];
+  for (size_t i = 0; i < arraysize(kSafePortableRelativePaths); ++i) {
+    EXPECT_TRUE(IsSafePortableRelativePath(
+        base::FilePath(kSafePortableRelativePaths[i])))
+        << kSafePortableRelativePaths[i];
+    EXPECT_TRUE(IsSafePortableRelativePath(
+        safe_dirname.Append(base::FilePath(kSafePortableRelativePaths[i]))))
+        << kSafePortableRelativePaths[i];
   }
-  for (size_t i = 0 ; i < arraysize(kUnsafePortableBasenames); ++i) {
-    EXPECT_FALSE(IsSafePortableRelativePath(base::FilePath(
-        kUnsafePortableBasenames[i]))) << kUnsafePortableBasenames[i];
-    if (!base::FilePath::StringType(kUnsafePortableBasenames[i]).empty()) {
-      EXPECT_FALSE(IsSafePortableRelativePath(safe_dirname.Append(
-          base::FilePath(kUnsafePortableBasenames[i]))))
+  for (size_t i = 0; i < arraysize(kUnsafePortableBasenames); ++i) {
+    EXPECT_FALSE(
+        IsSafePortableRelativePath(base::FilePath(kUnsafePortableBasenames[i])))
         << kUnsafePortableBasenames[i];
+    if (!base::FilePath::StringType(kUnsafePortableBasenames[i]).empty()) {
+      EXPECT_FALSE(IsSafePortableRelativePath(
+          safe_dirname.Append(base::FilePath(kUnsafePortableBasenames[i]))))
+          << kUnsafePortableBasenames[i];
     }
   }
 }
@@ -168,19 +176,18 @@ TEST(FilenameUtilTest, FileURLConversion) {
 #if defined(OS_WIN)
     {L"C:\\foo\\bar.txt", "file:///C:/foo/bar.txt"},
     {L"\\\\some computer\\foo\\bar.txt",
-     "file://some%20computer/foo/bar.txt"}, // UNC
+     "file://some%20computer/foo/bar.txt"},  // UNC
     {L"D:\\Name;with%some symbols*#",
      "file:///D:/Name%3Bwith%25some%20symbols*%23"},
     // issue 14153: To be tested with the OS default codepage other than 1252.
     {L"D:\\latin1\\caf\x00E9\x00DD.txt",
      "file:///D:/latin1/caf%C3%A9%C3%9D.txt"},
-    {L"D:\\otherlatin\\caf\x0119.txt",
-     "file:///D:/otherlatin/caf%C4%99.txt"},
+    {L"D:\\otherlatin\\caf\x0119.txt", "file:///D:/otherlatin/caf%C4%99.txt"},
     {L"D:\\greek\\\x03B1\x03B2\x03B3.txt",
      "file:///D:/greek/%CE%B1%CE%B2%CE%B3.txt"},
     {L"D:\\Chinese\\\x6240\x6709\x4e2d\x6587\x7f51\x9875.doc",
      "file:///D:/Chinese/%E6%89%80%E6%9C%89%E4%B8%AD%E6%96%87%E7%BD%91"
-         "%E9%A1%B5.doc"},
+     "%E9%A1%B5.doc"},
     {L"D:\\plane1\\\xD835\xDC00\xD835\xDC01.txt",  // Math alphabet "AB"
      "file:///D:/plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
 #elif defined(OS_POSIX)
@@ -195,7 +202,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"/greek/\x03B1\x03B2\x03B3.txt", "file:///greek/%CE%B1%CE%B2%CE%B3.txt"},
     {L"/Chinese/\x6240\x6709\x4e2d\x6587\x7f51\x9875.doc",
      "file:///Chinese/%E6%89%80%E6%9C%89%E4%B8%AD%E6%96%87%E7%BD"
-         "%91%E9%A1%B5.doc"},
+     "%91%E9%A1%B5.doc"},
     {L"/plane1/\x1D400\x1D401.txt",  // Math alphabet "AB"
      "file:///plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
 #endif
@@ -205,8 +212,8 @@ TEST(FilenameUtilTest, FileURLConversion) {
   base::FilePath output;
   for (size_t i = 0; i < arraysize(round_trip_cases); i++) {
     // convert to the file URL
-    GURL file_url(FilePathToFileURL(
-                      WStringAsFilePath(round_trip_cases[i].file)));
+    GURL file_url(
+        FilePathToFileURL(WStringAsFilePath(round_trip_cases[i].file)));
     EXPECT_EQ(round_trip_cases[i].url, file_url.spec());
 
     // Back to the filename.
@@ -239,13 +246,13 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"/foo/bar.txt", "file:////foo////bar.txt"},
     {L"/c:/foo/bar.txt", "file:\\\\\\c:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:c:/foo/bar.txt"},
-    // We get these wrong because GURL turns back slashes into forward
-    // slashes.
-    //{L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
-    //{L"/c|/foo%5Cbar.txt", "file:c|/foo\\bar.txt"},
-    //{L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
-    //{L"/foo%5Cbar.txt", "file:////foo\\bar.txt"},
-    //{L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
+//  We get these wrong because GURL turns back slashes into forward
+//  slashes.
+//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
+//  {L"/c|/foo%5Cbar.txt", "file:c|/foo\\bar.txt"},
+//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
+//  {L"/foo%5Cbar.txt", "file:////foo\\bar.txt"},
+//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
 #endif
   };
   for (size_t i = 0; i < arraysize(url_cases); i++) {
@@ -253,14 +260,13 @@ TEST(FilenameUtilTest, FileURLConversion) {
     EXPECT_EQ(url_cases[i].file, FilePathAsWString(output));
   }
 
-  // Unfortunately, UTF8ToWide discards invalid UTF8 input.
+// Unfortunately, UTF8ToWide discards invalid UTF8 input.
 #ifdef BUG_878908_IS_FIXED
   // Test that no conversion happens if the UTF-8 input is invalid, and that
   // the input is preserved in UTF-8
   const char invalid_utf8[] = "file:///d:/Blah/\xff.doc";
   const wchar_t invalid_wide[] = L"D:\\Blah\\\xff.doc";
-  EXPECT_TRUE(FileURLToFilePath(
-      GURL(std::string(invalid_utf8)), &output));
+  EXPECT_TRUE(FileURLToFilePath(GURL(std::string(invalid_utf8)), &output));
   EXPECT_EQ(std::wstring(invalid_wide), output);
 #endif
 
@@ -288,144 +294,88 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
     const base::FilePath::CharType* expected_filename;
   } safe_tests[] = {
 #if defined(OS_WIN)
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\bar.htm"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.htm")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\bar.html"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.html")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\bar"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.htm")
-    },
-    {
-      "image/png",
-      FILE_PATH_LITERAL("C:\\bar.html"),
-      FILE_PATH_LITERAL("C:\\bar.html")
-    },
-    {
-      "image/png",
-      FILE_PATH_LITERAL("C:\\bar"),
-      FILE_PATH_LITERAL("C:\\bar.png")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.exe")
-    },
-    {
-      "image/gif",
-      FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.exe")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\google.com"),
-      FILE_PATH_LITERAL("C:\\foo\\google.com")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\con.htm"),
-      FILE_PATH_LITERAL("C:\\foo\\_con.htm")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\con"),
-      FILE_PATH_LITERAL("C:\\foo\\_con.htm")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\harmless.{not-really-this-may-be-a-guid}"),
-      FILE_PATH_LITERAL("C:\\foo\\harmless.download")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\harmless.local"),
-      FILE_PATH_LITERAL("C:\\foo\\harmless.download")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\harmless.lnk"),
-      FILE_PATH_LITERAL("C:\\foo\\harmless.download")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-"),
-      FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-")
-    },
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\bar.htm"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.htm")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\bar.html"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.html")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\bar"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.htm")},
+    {"image/png",
+     FILE_PATH_LITERAL("C:\\bar.html"),
+     FILE_PATH_LITERAL("C:\\bar.html")},
+    {"image/png",
+     FILE_PATH_LITERAL("C:\\bar"),
+     FILE_PATH_LITERAL("C:\\bar.png")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.exe")},
+    {"image/gif",
+     FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.exe")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\google.com"),
+     FILE_PATH_LITERAL("C:\\foo\\google.com")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\con.htm"),
+     FILE_PATH_LITERAL("C:\\foo\\_con.htm")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\con"),
+     FILE_PATH_LITERAL("C:\\foo\\_con.htm")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\harmless.{not-really-this-may-be-a-guid}"),
+     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\harmless.local"),
+     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\harmless.lnk"),
+     FILE_PATH_LITERAL("C:\\foo\\harmless.download")},
+    {"text/html",
+     FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-"),
+     FILE_PATH_LITERAL("C:\\foo\\harmless.{mismatched-")},
     // Allow extension synonyms.
-    {
-      "image/jpeg",
-      FILE_PATH_LITERAL("C:\\foo\\bar.jpg"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.jpg")
-    },
-    {
-      "image/jpeg",
-      FILE_PATH_LITERAL("C:\\foo\\bar.jpeg"),
-      FILE_PATH_LITERAL("C:\\foo\\bar.jpeg")
-    },
-#else  // !defined(OS_WIN)
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/bar.htm"),
-      FILE_PATH_LITERAL("/foo/bar.htm")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/bar.html"),
-      FILE_PATH_LITERAL("/foo/bar.html")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/bar"),
-      FILE_PATH_LITERAL("/foo/bar.html")
-    },
-    {
-      "image/png",
-      FILE_PATH_LITERAL("/bar.html"),
-      FILE_PATH_LITERAL("/bar.html")
-    },
-    {
-      "image/png",
-      FILE_PATH_LITERAL("/bar"),
-      FILE_PATH_LITERAL("/bar.png")
-    },
-    {
-      "image/gif",
-      FILE_PATH_LITERAL("/foo/bar.exe"),
-      FILE_PATH_LITERAL("/foo/bar.exe")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/google.com"),
-      FILE_PATH_LITERAL("/foo/google.com")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/con.htm"),
-      FILE_PATH_LITERAL("/foo/con.htm")
-    },
-    {
-      "text/html",
-      FILE_PATH_LITERAL("/foo/con"),
-      FILE_PATH_LITERAL("/foo/con.html")
-    },
+    {"image/jpeg",
+     FILE_PATH_LITERAL("C:\\foo\\bar.jpg"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.jpg")},
+    {"image/jpeg",
+     FILE_PATH_LITERAL("C:\\foo\\bar.jpeg"),
+     FILE_PATH_LITERAL("C:\\foo\\bar.jpeg")},
+#else   // !defined(OS_WIN)
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/bar.htm"),
+     FILE_PATH_LITERAL("/foo/bar.htm")},
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/bar.html"),
+     FILE_PATH_LITERAL("/foo/bar.html")},
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/bar"),
+     FILE_PATH_LITERAL("/foo/bar.html")},
+    {"image/png",
+     FILE_PATH_LITERAL("/bar.html"),
+     FILE_PATH_LITERAL("/bar.html")},
+    {"image/png", FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("/bar.png")},
+    {"image/gif",
+     FILE_PATH_LITERAL("/foo/bar.exe"),
+     FILE_PATH_LITERAL("/foo/bar.exe")},
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/google.com"),
+     FILE_PATH_LITERAL("/foo/google.com")},
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/con.htm"),
+     FILE_PATH_LITERAL("/foo/con.htm")},
+    {"text/html",
+     FILE_PATH_LITERAL("/foo/con"),
+     FILE_PATH_LITERAL("/foo/con.html")},
     // Allow extension synonyms.
-    {
-      "image/jpeg",
-      FILE_PATH_LITERAL("/bar.jpg"),
-      FILE_PATH_LITERAL("/bar.jpg")
-    },
-    {
-      "image/jpeg",
-      FILE_PATH_LITERAL("/bar.jpeg"),
-      FILE_PATH_LITERAL("/bar.jpeg")
-    },
+    {"image/jpeg",
+     FILE_PATH_LITERAL("/bar.jpg"),
+     FILE_PATH_LITERAL("/bar.jpg")},
+    {"image/jpeg",
+     FILE_PATH_LITERAL("/bar.jpeg"),
+     FILE_PATH_LITERAL("/bar.jpeg")},
 #endif  // !defined(OS_WIN)
   };
 
@@ -442,392 +392,287 @@ TEST(FilenameUtilTest, GenerateFileName) {
   // parameters and that Content-Disposition headers are properly
   // handled including failovers when the header is malformed.
   const GenerateFilenameCase selection_tests[] = {
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=test.html",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename= \"test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename   =   \"test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    { // filename is whitespace.  Should failover to URL host
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=  ",
-      "",
-      "",
-      "",
-      L"",
-      L"www.google.com"
-    },
-    { // No filename.
-      __LINE__,
-      "http://www.google.com/path/test.html",
-      "attachment",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    { // Ditto
-      __LINE__,
-      "http://www.google.com/path/test.html",
-      "attachment;",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    { // No C-D
-      __LINE__,
-      "http://www.google.com/",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"www.google.com"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/test.html",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    { // Now that we use src/url's ExtractFileName, this case falls back to
-      // the hostname. If this behavior is not desirable, we'd better change
-      // ExtractFileName (in url_parse.cc).
-      __LINE__,
-      "http://www.google.com/path/",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"www.google.com"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/path",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"path"
-    },
-    {
-      __LINE__,
-      "file:///",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"download"
-    },
-    {
-      __LINE__,
-      "file:///path/testfile",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"testfile"
-    },
-    {
-      __LINE__,
-      "non-standard-scheme:",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"download"
-    },
-    { // C-D should override default
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename =\"test.html\"",
-      "",
-      "",
-      "",
-      L"download",
-      L"test.html"
-    },
-    { // But the URL shouldn't
-      __LINE__,
-      "http://www.google.com/",
-      "",
-      "",
-      "",
-      "",
-      L"download",
-      L"download"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"../test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"-test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"..\\test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"..\\\\test.html\"",
-      "",
-      "",
-      "",
-      L"",
-      L"-test.html"
-    },
-    { // Filename disappears after leading and trailing periods are removed.
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"..\"",
-      "",
-      "",
-      "",
-      L"default",
-      L"default"
-    },
-    { // C-D specified filename disappears.  Failover to final filename.
-      __LINE__,
-      "http://www.google.com/test.html",
-      "attachment; filename=\"..\"",
-      "",
-      "",
-      "",
-      L"default",
-      L"default"
-    },
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=test.html",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename= \"test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename   =   \"test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {// filename is whitespace.  Should failover to URL host
+     __LINE__,
+     "http://www.google.com/",
+     "attachment; filename=  ",
+     "",
+     "",
+     "",
+     L"",
+     L"www.google.com"},
+    {// No filename.
+     __LINE__,
+     "http://www.google.com/path/test.html",
+     "attachment",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {// Ditto
+     __LINE__,
+     "http://www.google.com/path/test.html",
+     "attachment;",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {// No C-D
+     __LINE__,
+     "http://www.google.com/",
+     "",
+     "",
+     "",
+     "",
+     L"",
+     L"www.google.com"},
+    {__LINE__,
+     "http://www.google.com/test.html",
+     "",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {// Now that we use src/url's ExtractFileName, this case falls back to
+     // the hostname. If this behavior is not desirable, we'd better change
+     // ExtractFileName (in url_parse.cc).
+     __LINE__,
+     "http://www.google.com/path/",
+     "",
+     "",
+     "",
+     "",
+     L"",
+     L"www.google.com"},
+    {__LINE__, "http://www.google.com/path", "", "", "", "", L"", L"path"},
+    {__LINE__, "file:///", "", "", "", "", L"", L"download"},
+    {__LINE__, "file:///path/testfile", "", "", "", "", L"", L"testfile"},
+    {__LINE__, "non-standard-scheme:", "", "", "", "", L"", L"download"},
+    {// C-D should override default
+     __LINE__,
+     "http://www.google.com/",
+     "attachment; filename =\"test.html\"",
+     "",
+     "",
+     "",
+     L"download",
+     L"test.html"},
+    {// But the URL shouldn't
+     __LINE__,
+     "http://www.google.com/",
+     "",
+     "",
+     "",
+     "",
+     L"download",
+     L"download"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"../test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"-test.html"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"..\\test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"..\\\\test.html\"",
+     "",
+     "",
+     "",
+     L"",
+     L"-test.html"},
+    {// Filename disappears after leading and trailing periods are removed.
+     __LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"..\"",
+     "",
+     "",
+     "",
+     L"default",
+     L"default"},
+    {// C-D specified filename disappears.  Failover to final filename.
+     __LINE__,
+     "http://www.google.com/test.html",
+     "attachment; filename=\"..\"",
+     "",
+     "",
+     "",
+     L"default",
+     L"default"},
     // Below is a small subset of cases taken from HttpContentDisposition tests.
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"%EC%98%88%EC%88%A0%20"
-      "%EC%98%88%EC%88%A0.jpg\"",
-      "",
-      "",
-      "",
-      L"",
-      L"\uc608\uc220 \uc608\uc220.jpg"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
-      "",
-      "",
-      "",
-      "",
-      L"download",
-      L"\uc608\uc220 \uc608\uc220.jpg"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment;",
-      "",
-      "",
-      "",
-      L"\uB2E4\uC6B4\uB85C\uB4DC",
-      L"\uB2E4\uC6B4\uB85C\uB4DC"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/",
-      "attachment; filename=\"=?EUC-JP?Q?=B7=DD=BD="
-      "D13=2Epng?=\"",
-      "",
-      "",
-      "",
-      L"download",
-      L"\u82b8\u88533.png"
-    },
-    {
-      __LINE__,
-      "http://www.example.com/images?id=3",
-      "attachment; filename=caf\xc3\xa9.png",
-      "iso-8859-1",
-      "",
-      "",
-      L"",
-      L"caf\u00e9.png"
-    },
-    {
-      __LINE__,
-      "http://www.example.com/images?id=3",
-      "attachment; filename=caf\xe5.png",
-      "windows-1253",
-      "",
-      "",
-      L"",
-      L"caf\u03b5.png"
-    },
-    {
-      __LINE__,
-      "http://www.example.com/file?id=3",
-      "attachment; name=\xcf\xc2\xd4\xd8.zip",
-      "GBK",
-      "",
-      "",
-      L"",
-      L"\u4e0b\u8f7d.zip"
-    },
-    { // Invalid C-D header. Extracts filename from url.
-      __LINE__,
-      "http://www.google.com/test.html",
-      "attachment; filename==?iiso88591?Q?caf=EG?=",
-      "",
-      "",
-      "",
-      L"",
-      L"test.html"
-    },
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"%EC%98%88%EC%88%A0%20"
+     "%EC%98%88%EC%88%A0.jpg\"",
+     "",
+     "",
+     "",
+     L"",
+     L"\uc608\uc220 \uc608\uc220.jpg"},
+    {__LINE__,
+     "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
+     "",
+     "",
+     "",
+     "",
+     L"download",
+     L"\uc608\uc220 \uc608\uc220.jpg"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment;",
+     "",
+     "",
+     "",
+     L"\uB2E4\uC6B4\uB85C\uB4DC",
+     L"\uB2E4\uC6B4\uB85C\uB4DC"},
+    {__LINE__,
+     "http://www.google.com/",
+     "attachment; filename=\"=?EUC-JP?Q?=B7=DD=BD="
+     "D13=2Epng?=\"",
+     "",
+     "",
+     "",
+     L"download",
+     L"\u82b8\u88533.png"},
+    {__LINE__,
+     "http://www.example.com/images?id=3",
+     "attachment; filename=caf\xc3\xa9.png",
+     "iso-8859-1",
+     "",
+     "",
+     L"",
+     L"caf\u00e9.png"},
+    {__LINE__,
+     "http://www.example.com/images?id=3",
+     "attachment; filename=caf\xe5.png",
+     "windows-1253",
+     "",
+     "",
+     L"",
+     L"caf\u03b5.png"},
+    {__LINE__,
+     "http://www.example.com/file?id=3",
+     "attachment; name=\xcf\xc2\xd4\xd8.zip",
+     "GBK",
+     "",
+     "",
+     L"",
+     L"\u4e0b\u8f7d.zip"},
+    {// Invalid C-D header. Extracts filename from url.
+     __LINE__,
+     "http://www.google.com/test.html",
+     "attachment; filename==?iiso88591?Q?caf=EG?=",
+     "",
+     "",
+     "",
+     L"",
+     L"test.html"},
     // about: and data: URLs
-    {
-      __LINE__,
-      "about:chrome",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"download"
-    },
-    {
-      __LINE__,
-      "data:,looks/like/a.path",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"download"
-    },
-    {
-      __LINE__,
-      "data:text/plain;base64,VG8gYmUgb3Igbm90IHRvIGJlLg=",
-      "",
-      "",
-      "",
-      "",
-      L"",
-      L"download"
-    },
-    {
-      __LINE__,
-      "data:,looks/like/a.path",
-      "",
-      "",
-      "",
-      "",
-      L"default_filename_is_given",
-      L"default_filename_is_given"
-    },
-    {
-      __LINE__,
-      "data:,looks/like/a.path",
-      "",
-      "",
-      "",
-      "",
-      L"\u65e5\u672c\u8a9e",  // Japanese Kanji.
-      L"\u65e5\u672c\u8a9e"
-    },
-    { // The filename encoding is specified by the referrer charset.
-      __LINE__,
-      "http://example.com/V%FDvojov%E1%20psychologie.doc",
-      "",
-      "iso-8859-1",
-      "",
-      "",
-      L"",
-      L"V\u00fdvojov\u00e1 psychologie.doc"
-    },
-    { // Suggested filename takes precedence over URL
-      __LINE__,
-      "http://www.google.com/test",
-      "",
-      "",
-      "suggested",
-      "",
-      L"",
-      L"suggested"
-    },
-    { // The content-disposition has higher precedence over the suggested name.
-      __LINE__,
-      "http://www.google.com/test",
-      "attachment; filename=test.html",
-      "",
-      "suggested",
-      "",
-      L"",
-      L"test.html"
-    },
-    {
-      __LINE__,
-      "http://www.google.com/test",
-      "attachment; filename=test",
-      "utf-8",
-      "",
-      "image/png",
-      L"",
-      L"test"
-    },
+    {__LINE__, "about:chrome", "", "", "", "", L"", L"download"},
+    {__LINE__, "data:,looks/like/a.path", "", "", "", "", L"", L"download"},
+    {__LINE__,
+     "data:text/plain;base64,VG8gYmUgb3Igbm90IHRvIGJlLg=",
+     "",
+     "",
+     "",
+     "",
+     L"",
+     L"download"},
+    {__LINE__,
+     "data:,looks/like/a.path",
+     "",
+     "",
+     "",
+     "",
+     L"default_filename_is_given",
+     L"default_filename_is_given"},
+    {__LINE__,
+     "data:,looks/like/a.path",
+     "",
+     "",
+     "",
+     "",
+     L"\u65e5\u672c\u8a9e",  // Japanese Kanji.
+     L"\u65e5\u672c\u8a9e"},
+    {// The filename encoding is specified by the referrer charset.
+     __LINE__,
+     "http://example.com/V%FDvojov%E1%20psychologie.doc",
+     "",
+     "iso-8859-1",
+     "",
+     "",
+     L"",
+     L"V\u00fdvojov\u00e1 psychologie.doc"},
+    {// Suggested filename takes precedence over URL
+     __LINE__,
+     "http://www.google.com/test",
+     "",
+     "",
+     "suggested",
+     "",
+     L"",
+     L"suggested"},
+    {// The content-disposition has higher precedence over the suggested name.
+     __LINE__,
+     "http://www.google.com/test",
+     "attachment; filename=test.html",
+     "",
+     "suggested",
+     "",
+     L"",
+     L"test.html"},
+    {__LINE__,
+     "http://www.google.com/test",
+     "attachment; filename=test",
+     "utf-8",
+     "",
+     "image/png",
+     L"",
+     L"test"},
 #if 0
     { // The filename encoding doesn't match the referrer charset, the system
       // charset, or UTF-8.
@@ -843,108 +688,95 @@ TEST(FilenameUtilTest, GenerateFileName) {
     },
 #endif
     // Raw 8bit characters in C-D
-    {
-      __LINE__,
-      "http://www.example.com/images?id=3",
-      "attachment; filename=caf\xc3\xa9.png",
-      "iso-8859-1",
-      "",
-      "image/png",
-      L"",
-      L"caf\u00e9.png"
-    },
-    {
-      __LINE__,
-      "http://www.example.com/images?id=3",
-      "attachment; filename=caf\xe5.png",
-      "windows-1253",
-      "",
-      "image/png",
-      L"",
-      L"caf\u03b5.png"
-    },
-    { // No 'filename' keyword in the disposition, use the URL
-      __LINE__,
-      "http://www.evil.com/my_download.txt",
-      "a_file_name.txt",
-      "",
-      "",
-      "text/plain",
-      L"download",
-      L"my_download.txt"
-    },
-    { // Spaces in the disposition file name
-      __LINE__,
-      "http://www.frontpagehacker.com/a_download.exe",
-      "filename=My Downloaded File.exe",
-      "",
-      "",
-      "application/octet-stream",
-      L"download",
-      L"My Downloaded File.exe"
-    },
-    { // % encoded
-      __LINE__,
-      "http://www.examples.com/",
-      "attachment; "
-      "filename=\"%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg\"",
-      "",
-      "",
-      "image/jpeg",
-      L"download",
-      L"\uc608\uc220 \uc608\uc220.jpg"
-    },
-    { // name= parameter
-      __LINE__,
-      "http://www.examples.com/q.cgi?id=abc",
-      "attachment; name=abc de.pdf",
-      "",
-      "",
-      "application/octet-stream",
-      L"download",
-      L"abc de.pdf"
-    },
-    {
-      __LINE__,
-      "http://www.example.com/path",
-      "filename=\"=?EUC-JP?Q?=B7=DD=BD=D13=2Epng?=\"",
-      "",
-      "",
-      "image/png",
-      L"download",
-      L"\x82b8\x8853" L"3.png"
-    },
-    { // The following two have invalid CD headers and filenames come from the
-      // URL.
-      __LINE__,
-      "http://www.example.com/test%20123",
-      "attachment; filename==?iiso88591?Q?caf=EG?=",
-      "",
-      "",
-      "image/jpeg",
-      L"download",
-      L"test 123" JPEG_EXT
-    },
-    {
-      __LINE__,
-      "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
-      "malformed_disposition",
-      "",
-      "",
-      "image/jpeg",
-      L"download",
-      L"\uc608\uc220 \uc608\uc220.jpg"
-    },
-    { // Invalid C-D. No filename from URL. Falls back to 'download'.
-      __LINE__,
-      "http://www.google.com/path1/path2/",
-      "attachment; filename==?iso88591?Q?caf=E3?",
-      "",
-      "",
-      "image/jpeg",
-      L"download",
-      L"download" JPEG_EXT
-    },
+    {__LINE__,
+     "http://www.example.com/images?id=3",
+     "attachment; filename=caf\xc3\xa9.png",
+     "iso-8859-1",
+     "",
+     "image/png",
+     L"",
+     L"caf\u00e9.png"},
+    {__LINE__,
+     "http://www.example.com/images?id=3",
+     "attachment; filename=caf\xe5.png",
+     "windows-1253",
+     "",
+     "image/png",
+     L"",
+     L"caf\u03b5.png"},
+    {// No 'filename' keyword in the disposition, use the URL
+     __LINE__,
+     "http://www.evil.com/my_download.txt",
+     "a_file_name.txt",
+     "",
+     "",
+     "text/plain",
+     L"download",
+     L"my_download.txt"},
+    {// Spaces in the disposition file name
+     __LINE__,
+     "http://www.frontpagehacker.com/a_download.exe",
+     "filename=My Downloaded File.exe",
+     "",
+     "",
+     "application/octet-stream",
+     L"download",
+     L"My Downloaded File.exe"},
+    {// % encoded
+     __LINE__,
+     "http://www.examples.com/",
+     "attachment; "
+     "filename=\"%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg\"",
+     "",
+     "",
+     "image/jpeg",
+     L"download",
+     L"\uc608\uc220 \uc608\uc220.jpg"},
+    {// name= parameter
+     __LINE__,
+     "http://www.examples.com/q.cgi?id=abc",
+     "attachment; name=abc de.pdf",
+     "",
+     "",
+     "application/octet-stream",
+     L"download",
+     L"abc de.pdf"},
+    {__LINE__,
+     "http://www.example.com/path",
+     "filename=\"=?EUC-JP?Q?=B7=DD=BD=D13=2Epng?=\"",
+     "",
+     "",
+     "image/png",
+     L"download",
+     L"\x82b8\x8853"
+     L"3.png"},
+    {// The following two have invalid CD headers and filenames come from the
+     // URL.
+     __LINE__,
+     "http://www.example.com/test%20123",
+     "attachment; filename==?iiso88591?Q?caf=EG?=",
+     "",
+     "",
+     "image/jpeg",
+     L"download",
+     L"test 123" JPEG_EXT},
+    {__LINE__,
+     "http://www.google.com/%EC%98%88%EC%88%A0%20%EC%98%88%EC%88%A0.jpg",
+     "malformed_disposition",
+     "",
+     "",
+     "image/jpeg",
+     L"download",
+     L"\uc608\uc220 \uc608\uc220.jpg"},
+    {// Invalid C-D. No filename from URL. Falls back to 'download'.
+     __LINE__,
+     "http://www.google.com/path1/path2/",
+     "attachment; filename==?iso88591?Q?caf=E3?",
+     "",
+     "",
+     "image/jpeg",
+     L"download",
+     L"download" JPEG_EXT},
   };
 
   // Tests filename generation.  Once the correct filename is
@@ -1067,7 +899,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
      "text/plain",
      L"download",
      L"my-cat.jpg"},
-    // Windows specific tests
+// Windows specific tests
 #if defined(OS_WIN)
     {__LINE__,
      "http://www.goodguy.com/evil.exe",
