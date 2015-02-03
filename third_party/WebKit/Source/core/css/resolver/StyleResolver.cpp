@@ -682,13 +682,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
     // relevant one is animation-timing-function and we special-case that in
     // CSSAnimations.cpp
     bool inheritedOnly = false;
-    applyMatchedProperties<HighPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
 
     // Now do rest of the properties.
-    applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     loadPendingResources(state);
 
@@ -880,12 +880,12 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     bool inheritedOnly = false;
 
     MatchResult& result = collector.matchedResult();
-    applyMatchedProperties<HighPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
 
-    applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     loadPendingResources(state);
 
@@ -999,13 +999,13 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
 
     const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
     const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
-    applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForAnimations);
-    applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForTransitions);
+    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForAnimations);
+    applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForTransitions);
 
     updateFont(state);
 
-    applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForAnimations);
-    applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForTransitions);
+    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsForAnimations);
+    applyAnimatedProperties<LowPropertyPriority>(state, activeInterpolationsForTransitions);
 
     // Start loading resources used by animations.
     loadPendingResources(state);
@@ -1029,12 +1029,12 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
     return nullptr;
 }
 
-template <StyleResolver::StyleApplicationPass pass>
+template <CSSPropertyPriority priority>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolations)
 {
     for (const auto& interpolationEntry : activeInterpolations) {
         CSSPropertyID property = interpolationEntry.key;
-        if (!isPropertyForPass<pass>(property))
+        if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
         const StyleInterpolation* interpolation = toStyleInterpolation(interpolationEntry.value.get());
         interpolation->apply(state);
@@ -1214,60 +1214,14 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     }
 }
 
-// FIXME: Consider refactoring to create a new class which owns the following
-// first/last/range properties.
-// This method returns the first CSSPropertyId of high priority properties.
-// Other properties can depend on high priority properties. For example,
-// border-color property with currentColor value depends on color property.
-// All high priority properties are obtained by using
-// firstCSSPropertyId<HighPriorityProperties> and
-// lastCSSPropertyId<HighPriorityProperties>.
-template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPriorityProperties>()
-{
-    static_assert(CSSPropertyColor == firstCSSProperty, "CSSPropertyColor should be the first high priority property");
-    return CSSPropertyColor;
-}
-
-// This method returns the last CSSPropertyId of high priority properties.
-template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPriorityProperties>()
-{
-    static_assert(CSSPropertyZoom == CSSPropertyColor + 16, "CSSPropertyZoom should be the end of the high priority property range");
-    static_assert(CSSPropertyTextRendering == CSSPropertyZoom - 1, "CSSPropertyTextRendering should be immediately before CSSPropertyZoom");
-    return CSSPropertyZoom;
-}
-
-// This method returns the first CSSPropertyId of remaining properties,
-// i.e. low priority properties. No properties depend on low priority
-// properties. So we don't need to resolve such properties quickly.
-// All low priority properties are obtained by using
-// firstCSSPropertyId<LowPriorityProperties> and
-// lastCSSPropertyId<LowPriorityProperties>.
-template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
-{
-    static_assert(CSSPropertyAlignContent == CSSPropertyZoom + 1, "CSSPropertyAlignContent should be the first low priority property");
-    return CSSPropertyAlignContent;
-}
-
-// This method returns the last CSSPropertyId of low priority properties.
-template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::LowPriorityProperties>()
-{
-    return static_cast<CSSPropertyID>(lastCSSProperty);
-}
-
-template <StyleResolver::StyleApplicationPass pass>
-bool StyleResolver::isPropertyForPass(CSSPropertyID property)
-{
-    return firstCSSPropertyId<pass>() <= property && property <= lastCSSPropertyId<pass>();
-}
-
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
-template <StyleResolver::StyleApplicationPass pass>
+template <CSSPropertyPriority priority>
 void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly)
 {
     bool isUnsetValue = !allValue->isInitialValue() && !allValue->isInheritedValue();
-    unsigned startCSSProperty = firstCSSPropertyId<pass>();
-    unsigned endCSSProperty = lastCSSPropertyId<pass>();
+    unsigned startCSSProperty = CSSPropertyPriorityData<priority>::first();
+    unsigned endCSSProperty = CSSPropertyPriorityData<priority>::last();
 
     for (unsigned i = startCSSProperty; i <= endCSSProperty; ++i) {
         CSSPropertyID propertyId = static_cast<CSSPropertyID>(i);
@@ -1303,7 +1257,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
     }
 }
 
-template <StyleResolver::StyleApplicationPass pass>
+template <CSSPropertyPriority priority>
 void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     unsigned propertyCount = properties->propertyCount();
@@ -1314,7 +1268,7 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 
         CSSPropertyID property = current.id();
         if (property == CSSPropertyAll) {
-            applyAllProperty<pass>(state, current.value(), inheritedOnly);
+            applyAllProperty<priority>(state, current.value(), inheritedOnly);
             continue;
         }
 
@@ -1331,14 +1285,14 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             continue;
         }
 
-        if (!isPropertyForPass<pass>(property))
+        if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
 
         StyleBuilder::applyProperty(current.id(), state, current.value());
     }
 }
 
-template <StyleResolver::StyleApplicationPass pass>
+template <CSSPropertyPriority priority>
 void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, bool isImportant, int startIndex, int endIndex, bool inheritedOnly)
 {
     if (startIndex == -1)
@@ -1352,7 +1306,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             state.setApplyPropertyToRegularStyle(linkMatchType & SelectorChecker::MatchLink);
             state.setApplyPropertyToVisitedLinkStyle(linkMatchType & SelectorChecker::MatchVisited);
 
-            applyProperties<pass>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
+            applyProperties<priority>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
         }
         state.setApplyPropertyToRegularStyle(true);
         state.setApplyPropertyToVisitedLinkStyle(false);
@@ -1360,7 +1314,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
     for (int i = startIndex; i <= endIndex; ++i) {
         const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
-        applyProperties<pass>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
+        applyProperties<priority>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
     }
 }
 
@@ -1422,15 +1376,15 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     if (UNLIKELY(isSVGForeignObjectElement(element))) {
         // RenderSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
         //
         // FIXME: The following hijacks the zoom property for foreignObject so that children of foreignObject get the
-        // correct font-size in case of zooming. 'zoom' is part of HighPriorityProperties, along with other font-related
+        // correct font-size in case of zooming. 'zoom' has HighPropertyPriority, along with other font-related
         // properties used as input to the FontBuilder, so resetting it here may cause the FontBuilder to recompute the
         // font used as inheritable font for foreignObject content. If we want to support zoom on foreignObject we'll
         // need to find another way of handling the SVG zoom model.
@@ -1450,15 +1404,15 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     // Cache the UA properties to pass them to LayoutTheme in adjustRenderStyle.
     state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     loadPendingResources(state);
 

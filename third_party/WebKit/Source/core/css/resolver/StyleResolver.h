@@ -30,6 +30,7 @@
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/TreeBoundaryCrossingRules.h"
+#include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResourceLoader.h"
@@ -226,23 +227,13 @@ private:
     bool applyAnimatedProperties(StyleResolverState&, const Element* animatingElement);
     void applyCallbackSelectors(StyleResolverState&);
 
-    enum StyleApplicationPass {
-        HighPriorityProperties,
-        LowPriorityProperties
-    };
-    template <StyleResolver::StyleApplicationPass pass>
-    static inline CSSPropertyID firstCSSPropertyId();
-    template <StyleResolver::StyleApplicationPass pass>
-    static inline CSSPropertyID lastCSSPropertyId();
-    template <StyleResolver::StyleApplicationPass pass>
-    static inline bool isPropertyForPass(CSSPropertyID);
-    template <StyleApplicationPass pass>
+    template <CSSPropertyPriority priority>
     void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
-    template <StyleApplicationPass pass>
+    template <CSSPropertyPriority priority>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
-    template <StyleApplicationPass pass>
+    template <CSSPropertyPriority priority>
     void applyAnimatedProperties(StyleResolverState&, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >&);
-    template <StyleResolver::StyleApplicationPass pass>
+    template <CSSPropertyPriority priority>
     void applyAllProperty(StyleResolverState&, CSSValue*, bool inheritedOnly);
 
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
