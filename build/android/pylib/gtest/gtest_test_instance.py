@@ -111,7 +111,13 @@ class GtestTestInstance(test_instance.TestInstance):
       error_func('Could not find apk or executable for %s' % self._suite)
 
     self._data_deps = []
-    self._gtest_filter = args.test_filter
+    if args.test_filter:
+      self._gtest_filter = args.test_filter
+    elif args.test_filter_file:
+      with open(args.test_filter_file, 'r') as f:
+        self._gtest_filter = ':'.join(l.strip() for l in f)
+    else:
+      self._gtest_filter = None
     if args.isolate_file_path:
       self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
       self._isolate_delegate = isolate_delegate
@@ -165,6 +171,7 @@ class GtestTestInstance(test_instance.TestInstance):
 
     filtered_test_list = test_list
     for gtest_filter_string in gtest_filter_strings:
+      logging.debug('Filtering tests using: %s', gtest_filter_string)
       filtered_test_list = unittest_util.FilterTestNames(
           filtered_test_list, gtest_filter_string)
     return filtered_test_list

@@ -184,9 +184,6 @@ def AddGTestOptions(parser):
                      help=('Executable name of the test suite to run. '
                            'Available suites include (but are not limited to): '
                             '%s' % ', '.join('"%s"' % s for s in gtest_suites)))
-  group.add_argument('-f', '--gtest_filter', '--gtest-filter',
-                     dest='test_filter',
-                     help='googletest-style filter string.')
   group.add_argument('--gtest_also_run_disabled_tests',
                      '--gtest-also-run-disabled-tests',
                      dest='run_disabled', action='store_true',
@@ -202,6 +199,16 @@ def AddGTestOptions(parser):
                      dest='isolate_file_path',
                      help='.isolate file path to override the default '
                           'path')
+
+  filter_group = group.add_mutually_exclusive_group()
+  filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
+                            dest='test_filter',
+                            help='googletest-style filter string.')
+  filter_group.add_argument('--gtest-filter-file', dest='test_filter_file',
+                            help='Path to file that contains googletest-style '
+                                  'filter strings. (Lines will be joined with '
+                                  '":" to create a single filter string.)')
+
   AddDeviceOptions(parser)
   AddCommonOptions(parser)
   AddRemoteDeviceOptions(parser)
