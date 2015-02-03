@@ -289,7 +289,6 @@ class DepGraphGenerator(object):
     if self.board:
       sysroot = os.environ.get('SYSROOT', cros_build_lib.GetSysroot(self.board))
       os.environ["PORTAGE_CONFIGROOT"] = sysroot
-      os.environ["PORTAGE_SYSROOT"] = sysroot
       os.environ["SYSROOT"] = sysroot
 
       # Although CHROMEOS_ROOT isn't specific to boards, it's normally setup
