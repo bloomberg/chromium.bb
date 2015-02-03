@@ -175,18 +175,12 @@ public class LibraryLoader {
                     String apkFilePath = null;
                     boolean useMapExecSupportFallback = false;
 
-                    // If the Android build version pre-dates KitKat and the device
-                    // manufacturer is Samsung, skip the check for mmap exec support and
-                    // return false. This avoids triggering a warning on these devices.
-                    // The version check is included because these devices do not show
-                    // the warning on later OS builds.
+                    // If manufacturer is Samsung then skip the mmap exec check.
                     //
                     // For more, see:
                     //   https://code.google.com/p/chromium/issues/detail?id=448084
                     final String manufacturer = android.os.Build.MANUFACTURER;
-                    final int version = android.os.Build.VERSION.SDK_INT;
                     if (manufacturer != null
-                            && version < android.os.Build.VERSION_CODES.KITKAT
                             && manufacturer.toLowerCase(Locale.ENGLISH).contains("samsung")) {
                         Log.w(TAG, "Suppressed load from APK support check on this device");
                         sProbeMapApkWithExecPermission = false;
