@@ -32,6 +32,7 @@
     Constructor(DOMString str),
     NamedConstructor=TestInterface(DOMString str),
     WillBeGarbageCollected,
+    Unforgeable,
 ] interface TestInterfaceWillBeGarbageCollected : EventTarget { // Inherit from EventTarget to test order of internal fields
     attribute TestInterfaceWillBeGarbageCollected attr1;
     void func(TestInterfaceWillBeGarbageCollected arg);

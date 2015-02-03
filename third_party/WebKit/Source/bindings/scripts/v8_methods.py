@@ -39,7 +39,7 @@ from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
-from v8_utilities import has_extended_attribute_value
+from v8_utilities import has_extended_attribute_value, is_unforgeable
 
 
 # Methods with any of these require custom method registration code in the
@@ -75,7 +75,7 @@ def method_context(interface, method, is_visible=True):
     def function_template():
         if is_static:
             return 'functionTemplate'
-        if 'Unforgeable' in extended_attributes:
+        if is_unforgeable(interface, method):
             return 'instanceTemplate'
         return 'prototypeTemplate'
 
@@ -131,7 +131,9 @@ def method_context(interface, method, is_visible=True):
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
         'function_template': function_template(),
-        'has_custom_registration': is_static or
+        'has_custom_registration':
+            is_static or
+            is_unforgeable(interface, method) or
             v8_utilities.has_extended_attribute(
                 method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_exception_state':
@@ -158,7 +160,7 @@ def method_context(interface, method, is_visible=True):
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
-        'is_read_only': 'Unforgeable' in extended_attributes,
+        'is_read_only': is_unforgeable(interface, method),
         'is_static': is_static,
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
@@ -174,7 +176,7 @@ def method_context(interface, method, is_visible=True):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
-        'property_attributes': property_attributes(method),
+        'property_attributes': property_attributes(interface, method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
@@ -384,12 +386,12 @@ def v8_value_to_local_cpp_value(argument, index, return_promise=False, restricte
 ################################################################################
 
 # [NotEnumerable]
-def property_attributes(method):
+def property_attributes(interface, method):
     extended_attributes = method.extended_attributes
     property_attributes_list = []
     if 'NotEnumerable' in extended_attributes:
         property_attributes_list.append('v8::DontEnum')
-    if 'Unforgeable' in extended_attributes:
+    if is_unforgeable(interface, method):
         property_attributes_list.append('v8::ReadOnly')
     if property_attributes_list:
         property_attributes_list.insert(0, 'v8::DontDelete')

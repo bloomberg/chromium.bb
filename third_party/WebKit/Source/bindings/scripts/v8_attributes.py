@@ -40,7 +40,7 @@ import v8_types
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
                           has_extended_attribute_value, scoped_name, strip_suffix,
-                          uncapitalize, extended_attribute_value_as_list)
+                          uncapitalize, extended_attribute_value_as_list, is_unforgeable)
 
 
 def attribute_context(interface, attribute):
@@ -78,7 +78,7 @@ def attribute_context(interface, attribute):
         includes.add('bindings/core/v8/V8ErrorHandler.h')
 
     context = {
-        'access_control_list': access_control_list(attribute),
+        'access_control_list': access_control_list(interface, attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
@@ -118,7 +118,7 @@ def attribute_context(interface, attribute):
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
-        'is_unforgeable': 'Unforgeable' in extended_attributes,
+        'is_unforgeable': is_unforgeable(interface, attribute),
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
         'name': attribute.name,
@@ -126,7 +126,7 @@ def attribute_context(interface, attribute):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
-        'property_attributes': property_attributes(attribute),
+        'property_attributes': property_attributes(interface, attribute),
         'put_forwards': 'PutForwards' in extended_attributes,
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
@@ -443,7 +443,7 @@ def setter_callback_name(interface, attribute):
 
 
 # [DoNotCheckSecurity], [Unforgeable]
-def access_control_list(attribute):
+def access_control_list(interface, attribute):
     extended_attributes = attribute.extended_attributes
     access_control = []
     if 'DoNotCheckSecurity' in extended_attributes:
@@ -455,19 +455,19 @@ def access_control_list(attribute):
             if (not attribute.is_read_only or
                 'Replaceable' in extended_attributes):
                 access_control.append('v8::ALL_CAN_WRITE')
-    if 'Unforgeable' in extended_attributes:
+    if is_unforgeable(interface, attribute):
         access_control.append('v8::PROHIBITS_OVERWRITING')
     return access_control or ['v8::DEFAULT']
 
 
 # [NotEnumerable], [Unforgeable]
-def property_attributes(attribute):
+def property_attributes(interface, attribute):
     extended_attributes = attribute.extended_attributes
     property_attributes_list = []
     if ('NotEnumerable' in extended_attributes or
         is_constructor_attribute(attribute)):
         property_attributes_list.append('v8::DontEnum')
-    if 'Unforgeable' in extended_attributes:
+    if is_unforgeable(interface, attribute):
         property_attributes_list.append('v8::DontDelete')
     return property_attributes_list or ['v8::None']
 

@@ -401,6 +401,12 @@ def runtime_enabled_function_name(definition_or_member):
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
 
 
+# [Unforgeable]
+def is_unforgeable(interface, member):
+    return ('Unforgeable' in interface.extended_attributes or
+            'Unforgeable' in member.extended_attributes)
+
+
 ################################################################################
 # Indexed properties
 # http://heycam.github.io/webidl/#idl-indexed-properties
