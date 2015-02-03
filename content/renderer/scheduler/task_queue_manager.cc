@@ -5,8 +5,6 @@
 #include "content/renderer/scheduler/task_queue_manager.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
