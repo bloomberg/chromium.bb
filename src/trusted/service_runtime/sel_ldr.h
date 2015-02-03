@@ -48,7 +48,6 @@
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
-#include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
@@ -246,8 +245,6 @@ struct NaClApp {
   struct NaClSyscallTableEntry *syscall_table;
 
   struct NaClSecureService          *secure_service;
-
-  struct NaClKernelService          *kernel_service;
 
   struct NaClResourceNaClApp        resources;
   enum NaClResourcePhase            resource_phase;

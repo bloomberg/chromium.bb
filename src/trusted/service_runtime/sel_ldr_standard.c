@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
@@ -478,14 +477,11 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 }
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
-  struct NaClKernelService  *kernel_service = NULL;
-  int                       rv = 0;
-
   NaClLog(4, "NaClAppLaunchServiceThreads: Entered, nap 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) nap);
 
   if (LOAD_OK != NaClWaitForStartModuleCommand(nap)) {
-    return rv;
+    return 0;
   }
 
   NaClXMutexLock(&nap->mu);
@@ -495,62 +491,13 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
         !NaClRuntimeHostInterfaceCtor_protected(nap->runtime_host_interface)) {
       NaClLog(LOG_ERROR, "NaClAppLaunchServiceThreads:"
               " Failed to initialise runtime host interface\n");
-      goto done;
+      NaClXMutexUnlock(&nap->mu);
+      return 0;
     }
   }
   NaClXMutexUnlock(&nap->mu);
 
-  kernel_service = (struct NaClKernelService *) malloc(sizeof *kernel_service);
-  if (NULL == kernel_service) {
-    NaClLog(LOG_ERROR,
-            "NaClAppLaunchServiceThreads: No memory for kern service\n");
-    goto done;
-  }
-
-  if (!NaClKernelServiceCtor(kernel_service,
-                             NaClAddrSpSquattingThreadIfFactoryFunction,
-                             (void *) nap,
-                             nap->runtime_host_interface)) {
-    NaClLog(LOG_ERROR,
-            "NaClAppLaunchServiceThreads: KernServiceCtor failed\n");
-    free(kernel_service);
-    kernel_service = NULL;
-    goto done;
-  }
-
-  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
-                                           kernel_service)) {
-    NaClLog(LOG_ERROR,
-            "NaClAppLaunchServiceThreads: KernService start service failed\n");
-    goto done;
-  }
-  /*
-   * NB: StartServiceThread grabbed another reference to kernel_service,
-   * used by the service thread.  Closing the connection capability
-   * should cause the service thread to shut down and in turn release
-   * that reference.
-   */
-
-  NaClXMutexLock(&nap->mu);
-  CHECK(NULL == nap->kernel_service);
-
-  nap->kernel_service = kernel_service;
-  kernel_service = NULL;
-  NaClXMutexUnlock(&nap->mu);
-  rv = 1;
-
-done:
-  /*
-   * Single exit path.
-   *
-   * Error cleanup invariant.  No service thread should be running
-   * (modulo asynchronous shutdown).  Automatic variables refer to
-   * fully constructed objects if non-NULL, and when ownership is
-   * transferred to the NaClApp object the corresponding automatic
-   * variable is set to NULL.
-   */
-  NaClRefCountSafeUnref((struct NaClRefCount *) kernel_service);
-  return rv;
+  return 1;
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
