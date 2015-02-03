@@ -302,7 +302,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class VisitRelayingRenderProcessHost;
 
-  bool ShouldUseMojoChannel() const;
   scoped_ptr<IPC::ChannelProxy> CreateChannelProxy(
       const std::string& channel_id);
 
