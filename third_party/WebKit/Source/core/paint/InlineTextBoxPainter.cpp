@@ -107,11 +107,21 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
     FloatRect boxRect(boxOrigin, FloatSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
 
-    RenderCombineText* combinedText = styleToUse->hasTextCombine() && m_inlineTextBox.renderer().isCombineText() && toRenderCombineText(m_inlineTextBox.renderer()).isCombined() ? &toRenderCombineText(m_inlineTextBox.renderer()) : 0;
-
-    bool shouldRotate = !m_inlineTextBox.isHorizontal() && !combinedText;
-    if (shouldRotate)
-        context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
+    bool shouldRotate = false;
+    RenderCombineText* combinedText = nullptr;
+    if (!m_inlineTextBox.isHorizontal()) {
+        if (styleToUse->hasTextCombine() && m_inlineTextBox.renderer().isCombineText()) {
+            combinedText = &toRenderCombineText(m_inlineTextBox.renderer());
+            if (!combinedText->isCombined())
+                combinedText = nullptr;
+        }
+        if (combinedText) {
+            combinedText->updateFont();
+        } else {
+            shouldRotate = true;
+            context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
+        }
+    }
 
     // Determine whether or not we have composition underlines to draw.
     bool containsComposition = m_inlineTextBox.renderer().node() && m_inlineTextBox.renderer().frame()->inputMethodController().compositionNode() == m_inlineTextBox.renderer().node();
@@ -145,18 +155,11 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     // 2. Now paint the foreground, including text and decorations like underline/overline (in quirks mode only).
     int length = m_inlineTextBox.len();
-    int maximumLength;
-    StringView string;
-    if (!combinedText) {
-        string = m_inlineTextBox.renderer().text().createView();
-        ASSERT(m_inlineTextBox.start() + length <= string.length());
-        if (static_cast<unsigned>(length) != string.length() || m_inlineTextBox.start())
-            string.narrow(m_inlineTextBox.start(), length);
-        maximumLength = m_inlineTextBox.renderer().textLength() - m_inlineTextBox.start();
-    } else {
-        combinedText->getStringToRender(m_inlineTextBox.start(), string, length);
-        maximumLength = length;
-    }
+    StringView string = m_inlineTextBox.renderer().text().createView();
+    ASSERT(m_inlineTextBox.start() + length <= string.length());
+    if (static_cast<unsigned>(length) != string.length() || m_inlineTextBox.start())
+        string.narrow(m_inlineTextBox.start(), length);
+    int maximumLength = m_inlineTextBox.renderer().textLength() - m_inlineTextBox.start();
 
     StringBuilder charactersWithHyphen;
     TextRun textRun = m_inlineTextBox.constructTextRun(styleToUse, font, string, maximumLength, m_inlineTextBox.hasHyphen() ? &charactersWithHyphen : 0);

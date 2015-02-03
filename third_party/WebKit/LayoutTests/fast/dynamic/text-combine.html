@@ -2,16 +2,16 @@
 <style>
     html { -webkit-writing-mode: vertical-rl; }
     div { font-family: 'hiragino mincho pro'; font-size: 24px; }
-    #combine { -webkit-text-combine: horizontal; }
+    .combine { -webkit-text-combine: horizontal; }
 </style>
 <p>
     These two lines should be identical:
 </p>
 <div>
-    希薄化後の1株当り利益が<span id="combine">3.67</span>ドルでした。
+    希薄化後の1株当り利益が<span id="combine" class="combine">3.67</span>ドルでした。
 </div>
 <div>
-    希薄化後の1株当り利益が<span>3.667</span>ドルでした。
+    希薄化後の1株当り利益が<span class="combine">3.667</span>ドルでした。
 </div>
 <script>
     document.body.offsetTop;
