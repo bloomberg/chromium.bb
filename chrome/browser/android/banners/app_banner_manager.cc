@@ -12,6 +12,7 @@
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
+#include "chrome/browser/android/manifest_icon_selector.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -28,6 +29,7 @@
 #include "jni/AppBannerManager_jni.h"
 #include "net/base/load_flags.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/screen.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -139,17 +141,13 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
   // Create an infobar to promote the manifest's app.
   manifest_ = manifest;
 
-  /* TODO(dfalcantara): Use after landing https://crrev.com/880203004.
   GURL icon_url =
-      ManifestIconSelector::FindBestMatchingIcon(manifest.icons,
-                                                 GetPreferredIconSize(),
-                                                 web_contents());
+      ManifestIconSelector::FindBestMatchingIcon(
+          manifest.icons,
+          GetPreferredIconSize(),
+          gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
   if (icon_url.is_empty())
     return;
-  */
-  if (manifest.icons.empty())
-    return;
-  GURL icon_url = manifest.icons.back().src;
 
   FetchIcon(icon_url);
 }

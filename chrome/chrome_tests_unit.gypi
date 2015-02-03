@@ -15,12 +15,12 @@
       # All unittests in browser, common, renderer and service.
       'browser/about_flags_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
+      'browser/android/manifest_icon_selector_unittest.cc',
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
       'browser/android/preferences/pref_service_bridge_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
-      'browser/android/shortcut_helper_unittest.cc',
       'browser/app_controller_mac_unittest.mm',
       'browser/autocomplete/autocomplete_provider_unittest.cc',
       'browser/autocomplete/bookmark_provider_unittest.cc',

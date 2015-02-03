@@ -1,55 +1,60 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/manifest_icon_selector.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 
-// A dummy implementation of gfx::Screen, since ShortcutHelper needs access to
-// a gfx::Display's device scale factor.
+namespace {
+
+const int kPreferredIconSize = 48;
+
+}
+
+// A dummy implementation of gfx::Screen, since ManifestIconSelector needs
+// access to a gfx::Display's device scale factor.
 // This is inspired by web_contents_video_capture_device_unittest.cc
 // A bug has been opened to merge all those mocks: http://crbug.com/417227
 class FakeScreen : public gfx::Screen {
  public:
   FakeScreen() : display_(0x1337, gfx::Rect(0, 0, 2560, 1440)) {
   }
-  virtual ~FakeScreen() {}
+  ~FakeScreen() override {}
 
   void SetDisplayDeviceScaleFactor(float device_scale_factor) {
     display_.set_device_scale_factor(device_scale_factor);
   }
 
   // gfx::Screen implementation (only what's needed for testing).
-  virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) override { return NULL; }
-  virtual int GetNumDisplays() const override { return 1; }
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  gfx::NativeWindow GetWindowUnderCursor() override { return nullptr; }
+  gfx::NativeWindow GetWindowAtScreenPoint(
+      const gfx::Point& point) override { return nullptr; }
+  int GetNumDisplays() const override { return 1; }
+  std::vector<gfx::Display> GetAllDisplays() const override {
     return std::vector<gfx::Display>(1, display_);
   }
-  virtual gfx::Display GetDisplayNearestWindow(
+  gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const override {
     return display_;
   }
-  virtual gfx::Display GetDisplayNearestPoint(
+  gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const override {
     return display_;
   }
-  virtual gfx::Display GetDisplayMatching(
+  gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override {
     return display_;
   }
-  virtual gfx::Display GetPrimaryDisplay() const override {
+  gfx::Display GetPrimaryDisplay() const override {
     return display_;
   }
-  virtual void AddObserver(gfx::DisplayObserver* observer) override {}
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {}
+  void AddObserver(gfx::DisplayObserver* observer) override {}
+  void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
  private:
   gfx::Display display_;
@@ -57,59 +62,24 @@ class FakeScreen : public gfx::Screen {
   DISALLOW_COPY_AND_ASSIGN(FakeScreen);
 };
 
-class ShortcutHelperTest : public ChromeRenderViewHostTestHarness  {
+class ManifestIconSelectorTest : public testing::Test  {
  protected:
-  ShortcutHelperTest() : shortcut_helper_(NULL) {}
-  virtual ~ShortcutHelperTest() {}
-
-  static jobject CreateShortcutHelperJava(JNIEnv* env) {
-    jclass clazz = env->FindClass("org/chromium/chrome/browser/ShortcutHelper");
-    jmethodID constructor =
-        env->GetMethodID(clazz, "<init>",
-                         "(Landroid/content/Context;"
-                             "Lorg/chromium/chrome/browser/Tab;)V");
-    return env->NewObject(clazz, constructor, jobject(), jobject());
-  }
-
-  void ResetShorcutHelper() {
-    if (shortcut_helper_)
-      delete shortcut_helper_;
-
-    JNIEnv* env = base::android::AttachCurrentThread();
-    shortcut_helper_ =
-        new ShortcutHelper(env, CreateShortcutHelperJava(env), web_contents());
-  }
-
-  virtual void SetUp() override {
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &fake_screen_);
-    ASSERT_EQ(&fake_screen_, gfx::Screen::GetNativeScreen());
-
-    ChromeRenderViewHostTestHarness::SetUp();
-
-    ResetShorcutHelper();
-  }
-
-  virtual void TearDown() override {
-    delete shortcut_helper_;
-    shortcut_helper_ = NULL;
-
-    ChromeRenderViewHostTestHarness::TearDown();
-
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
-  }
+  ManifestIconSelectorTest() {}
+  ~ManifestIconSelectorTest() override {}
 
   GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons) {
-    return shortcut_helper_->FindBestMatchingIcon(icons);
+    return ManifestIconSelector::FindBestMatchingIcon(
+        icons,
+        GetPreferredIconSizeInDp(),
+        &fake_screen_);
   }
 
   void SetDisplayDeviceScaleFactor(float device_scale_factor) {
     fake_screen_.SetDisplayDeviceScaleFactor(device_scale_factor);
-
-    ResetShorcutHelper();
   }
 
   static int GetPreferredIconSizeInDp() {
-    return ShortcutHelper::kPreferredIconSizeInDp;
+    return kPreferredIconSize;
   }
 
   static content::Manifest::Icon CreateIcon(
@@ -128,20 +98,19 @@ class ShortcutHelperTest : public ChromeRenderViewHostTestHarness  {
   }
 
  private:
-  ShortcutHelper* shortcut_helper_;
   FakeScreen fake_screen_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShortcutHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(ManifestIconSelectorTest);
 };
 
-TEST_F(ShortcutHelperTest, NoIcons) {
+TEST_F(ManifestIconSelectorTest, NoIcons) {
   // No icons should return the empty URL.
   std::vector<content::Manifest::Icon> icons;
   GURL url = FindBestMatchingIcon(icons);
   EXPECT_TRUE(url.is_empty());
 }
 
-TEST_F(ShortcutHelperTest, NoSizes) {
+TEST_F(ManifestIconSelectorTest, NoSizes) {
   // Icon with no sizes are ignored.
   std::vector<content::Manifest::Icon> icons;
   icons.push_back(
@@ -151,7 +120,7 @@ TEST_F(ShortcutHelperTest, NoSizes) {
   EXPECT_TRUE(url.is_empty());
 }
 
-TEST_F(ShortcutHelperTest, MIMETypeFiltering) {
+TEST_F(ManifestIconSelectorTest, MIMETypeFiltering) {
   // Icons with type specified to a MIME type that isn't a valid image MIME type
   // are ignored.
   std::vector<gfx::Size> sizes;
@@ -187,7 +156,7 @@ TEST_F(ShortcutHelperTest, MIMETypeFiltering) {
   EXPECT_EQ("http://foo.com/icon.png", url.spec());
 }
 
-TEST_F(ShortcutHelperTest, PreferredSizeOfCurrentDensityIsUsedFirst) {
+TEST_F(ManifestIconSelectorTest, PreferredSizeOfCurrentDensityIsUsedFirst) {
   // This test has three icons each are marked with sizes set to the preferred
   // icon size for the associated density.
   std::vector<gfx::Size> sizes_1;
@@ -220,7 +189,7 @@ TEST_F(ShortcutHelperTest, PreferredSizeOfCurrentDensityIsUsedFirst) {
   EXPECT_EQ("http://foo.com/icon_x3.png", url.spec());
 }
 
-TEST_F(ShortcutHelperTest, PreferredSizeOfDefaultDensityIsUsedSecond) {
+TEST_F(ManifestIconSelectorTest, PreferredSizeOfDefaultDensityIsUsedSecond) {
   // This test has three icons. The first one is of density zero and is marked
   // with three sizes which are the preferred icon size for density 1, 2 and 3.
   // The icon for density 2 and 3 have a size set to 2x2 and 3x3.
@@ -258,7 +227,7 @@ TEST_F(ShortcutHelperTest, PreferredSizeOfDefaultDensityIsUsedSecond) {
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
-TEST_F(ShortcutHelperTest, DeviceDensityFirst) {
+TEST_F(ManifestIconSelectorTest, DeviceDensityFirst) {
   // If there is no perfect icon but an icon of the current device density is
   // present, it will be picked.
   // This test has three icons each are marked with sizes set to the preferred
@@ -284,7 +253,7 @@ TEST_F(ShortcutHelperTest, DeviceDensityFirst) {
   EXPECT_EQ("http://foo.com/icon_x3.png", url.spec());
 }
 
-TEST_F(ShortcutHelperTest, DeviceDensityFallback) {
+TEST_F(ManifestIconSelectorTest, DeviceDensityFallback) {
   // If there is no perfect icon but and no icon of the current display density,
   // an icon of density 1.0 will be used.
   std::vector<gfx::Size> sizes;
@@ -299,7 +268,7 @@ TEST_F(ShortcutHelperTest, DeviceDensityFallback) {
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
-TEST_F(ShortcutHelperTest, DoNotUseOtherDensities) {
+TEST_F(ManifestIconSelectorTest, DoNotUseOtherDensities) {
   // If there are only icons of densities that are not the current display
   // density or the default density, they are ignored.
   std::vector<gfx::Size> sizes;
@@ -313,7 +282,7 @@ TEST_F(ShortcutHelperTest, DoNotUseOtherDensities) {
   EXPECT_TRUE(url.is_empty());
 }
 
-TEST_F(ShortcutHelperTest, NotSquareIconsAreIgnored) {
+TEST_F(ManifestIconSelectorTest, NotSquareIconsAreIgnored) {
   std::vector<gfx::Size> sizes;
   sizes.push_back(gfx::Size(20, 2));
 
@@ -324,8 +293,8 @@ TEST_F(ShortcutHelperTest, NotSquareIconsAreIgnored) {
   EXPECT_TRUE(url.is_empty());
 }
 
-TEST_F(ShortcutHelperTest, ClosestIconToPreferred) {
-  // This test verifies ShortcutHelper::FindBestMatchingIcon by passing
+TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
+  // This test verifies ManifestIconSelector::FindBestMatchingIcon by passing
   // different icon sizes and checking which one is picked.
   // The Device Scale Factor is 1.0 and the preferred icon size is returned by
   // GetPreferredIconSizeInDp().
@@ -441,7 +410,7 @@ TEST_F(ShortcutHelperTest, ClosestIconToPreferred) {
   }
 }
 
-TEST_F(ShortcutHelperTest, UseAnyIfNoPreferredSize) {
+TEST_F(ManifestIconSelectorTest, UseAnyIfNoPreferredSize) {
   // 'any' (ie. gfx::Size(0,0)) should be used if there is no icon of a
   // preferred size. An icon with the current device scale factor is preferred
   // over one with the default density.

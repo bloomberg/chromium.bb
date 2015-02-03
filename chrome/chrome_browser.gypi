@@ -109,6 +109,8 @@
       'browser/android/location_settings.h',
       'browser/android/location_settings_impl.cc',
       'browser/android/location_settings_impl.h',
+      'browser/android/manifest_icon_selector.cc',
+      'browser/android/manifest_icon_selector.h',
       'browser/android/most_visited_sites.cc',
       'browser/android/most_visited_sites.h',
       'browser/android/omnibox/answers_image_bridge.cc',

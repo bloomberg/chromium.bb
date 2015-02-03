@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/android/manifest_icon_selector.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -115,124 +116,6 @@ void ShortcutHelper::OnDidGetWebApplicationInfo(
                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool ShortcutHelper::IconSizesContainsPreferredSize(
-    const std::vector<gfx::Size>& sizes) const {
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    if (sizes[i].height() != sizes[i].width())
-      continue;
-    if (sizes[i].width() == preferred_icon_size_in_px_)
-      return true;
-  }
-
-  return false;
-}
-
-bool ShortcutHelper::IconSizesContainsAny(
-    const std::vector<gfx::Size>& sizes) const {
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    if (sizes[i].IsEmpty())
-      return true;
-  }
-
-  return false;
-}
-
-GURL ShortcutHelper::FindBestMatchingIcon(
-    const std::vector<Manifest::Icon>& icons, float density) const {
-  GURL url;
-  int best_delta = std::numeric_limits<int>::min();
-
-  for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density != density)
-      continue;
-
-    const std::vector<gfx::Size>& sizes = icons[i].sizes;
-    for (size_t j = 0; j < sizes.size(); ++j) {
-      if (sizes[j].height() != sizes[j].width())
-        continue;
-      int delta = sizes[j].width() - preferred_icon_size_in_px_;
-      if (delta == 0)
-        return icons[i].src;
-      if (best_delta > 0 && delta < 0)
-        continue;
-      if ((best_delta > 0 && delta < best_delta) ||
-          (best_delta < 0 && delta > best_delta)) {
-        url = icons[i].src;
-        best_delta = delta;
-      }
-    }
-  }
-
-  return url;
-}
-
-// static
-std::vector<Manifest::Icon> ShortcutHelper::FilterIconsByType(
-    const std::vector<Manifest::Icon>& icons) {
-  std::vector<Manifest::Icon> result;
-
-  for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].type.is_null() ||
-        net::IsSupportedImageMimeType(
-            base::UTF16ToUTF8(icons[i].type.string()))) {
-      result.push_back(icons[i]);
-    }
-  }
-
-  return result;
-}
-
-GURL ShortcutHelper::FindBestMatchingIcon(
-    const std::vector<Manifest::Icon>& unfiltered_icons) const {
-  const float device_scale_factor =
-      gfx::Screen::GetScreenFor(web_contents()->GetNativeView())->
-          GetPrimaryDisplay().device_scale_factor();
-
-  GURL url;
-  std::vector<Manifest::Icon> icons = FilterIconsByType(unfiltered_icons);
-
-  // The first pass is to find the ideal icon. That icon is of the right size
-  // with the default density or the device's density.
-  for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density == device_scale_factor &&
-        IconSizesContainsPreferredSize(icons[i].sizes)) {
-      return icons[i].src;
-    }
-
-    // If there is an icon with the right size but not the right density, keep
-    // it on the side and only use it if nothing better is found.
-    if (icons[i].density == Manifest::Icon::kDefaultDensity &&
-        IconSizesContainsPreferredSize(icons[i].sizes)) {
-      url = icons[i].src;
-    }
-  }
-
-  // The second pass is to find an icon with 'any'. The current device scale
-  // factor is preferred. Otherwise, the default scale factor is used.
-  for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density == device_scale_factor &&
-        IconSizesContainsAny(icons[i].sizes)) {
-      return icons[i].src;
-    }
-
-    // If there is an icon with 'any' but not the right density, keep it on the
-    // side and only use it if nothing better is found.
-    if (icons[i].density == Manifest::Icon::kDefaultDensity &&
-        IconSizesContainsAny(icons[i].sizes)) {
-      url = icons[i].src;
-    }
-  }
-
-  // The last pass will try to find the best suitable icon for the device's
-  // scale factor. If none, another pass will be run using kDefaultDensity.
-  if (!url.is_valid())
-    url = FindBestMatchingIcon(icons, device_scale_factor);
-  if (!url.is_valid())
-    url = FindBestMatchingIcon(icons, Manifest::Icon::kDefaultDensity);
-
-  return url;
-}
-
 void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
   if (!manifest.IsEmpty()) {
       content::RecordAction(
@@ -269,7 +152,10 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
       orientation_ = manifest.orientation;
   }
 
-  GURL icon_src = FindBestMatchingIcon(manifest.icons);
+  GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
+      manifest.icons,
+      kPreferredIconSizeInDp,
+      gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
   if (icon_src.is_valid()) {
     web_contents()->DownloadImage(icon_src,
                                   false,

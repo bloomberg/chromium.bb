@@ -114,31 +114,6 @@ class ShortcutHelper : public content::WebContentsObserver {
 
   void Destroy();
 
-  // Runs the algorithm to find the best matching icon in the icons listed in
-  // the Manifest.
-  // Returns the icon url if a suitable icon is found. An empty URL otherwise.
-  GURL FindBestMatchingIcon(
-      const std::vector<content::Manifest::Icon>& icons) const;
-
-  // Runs an algorithm only based on icon declared sizes. It will try to find
-  // size that is the closest to preferred_icon_size_in_px_ but bigger than
-  // preferred_icon_size_in_px_ if possible.
-  // Returns the icon url if a suitable icon is found. An empty URL otherwise.
-  GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons,
-                            float density) const;
-
-  // Returns an array containing the items in |icons| without the unsupported
-  // image MIME types.
-  static std::vector<content::Manifest::Icon> FilterIconsByType(
-      const std::vector<content::Manifest::Icon>& icons);
-
-  // Returns whether the preferred_icon_size_in_px_ is in the given |sizes|.
-  bool IconSizesContainsPreferredSize(
-      const std::vector<gfx::Size>& sizes) const;
-
-  // Returns whether the 'any' (ie. gfx::Size(0,0)) is in the given |sizes|.
-  bool IconSizesContainsAny(const std::vector<gfx::Size>& sizes) const;
-
   JavaObjectWeakGlobalRef java_ref_;
 
   GURL url_;
@@ -156,7 +131,6 @@ class ShortcutHelper : public content::WebContentsObserver {
 
   base::WeakPtrFactory<ShortcutHelper> weak_ptr_factory_;
 
-  friend class ShortcutHelperTest;
   DISALLOW_COPY_AND_ASSIGN(ShortcutHelper);
 };
 
