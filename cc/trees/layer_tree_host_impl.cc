@@ -229,7 +229,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       id_(id),
       requires_high_res_to_draw_(false),
-      is_likely_to_require_a_draw_(false) {
+      is_likely_to_require_a_draw_(false),
+      frame_timing_tracker_(FrameTimingTracker::Create()) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -813,6 +814,18 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
                             *it,
                             occlusion_tracker,
                             &append_quads_data);
+
+        // For layers that represent themselves, add composite frame timing
+        // requests if the visible rect intersects the requested rect.
+        for (const auto& request : it->frame_timing_requests()) {
+          const gfx::Rect& request_content_rect =
+              it->LayerRectToContentRect(request.rect());
+          if (request_content_rect.Intersects(it->visible_content_rect())) {
+            frame->composite_events.push_back(
+                FrameTimingTracker::FrameAndRectIds(
+                    active_tree_->source_frame_number(), request.id()));
+          }
+        }
       }
 
       ++layers_drawn;
@@ -1437,6 +1450,11 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
+
+  if (!frame->composite_events.empty()) {
+    frame_timing_tracker_->SaveTimeStamps(frame_begin_time,
+                                          frame->composite_events);
+  }
 
   if (frame->has_no_damage) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);

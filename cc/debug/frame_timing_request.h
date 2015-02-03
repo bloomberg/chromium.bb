@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_FRAME_TIMING_REQUEST_H_
 #define CC_DEBUG_FRAME_TIMING_REQUEST_H_
 
+#include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -13,12 +14,15 @@ namespace cc {
 // given rect (in layer space) and an associated request id. When this request
 // is propagated to the active LayerImpl, it will cause events to be saved in
 // FrameTimingTracker, which in turn can be consumed by the requester.
-class FrameTimingRequest {
+class CC_EXPORT FrameTimingRequest {
  public:
   FrameTimingRequest();
   FrameTimingRequest(int64_t request_id, const gfx::Rect& rect);
 
+  // Return the ID for the request.
   int64_t id() const { return id_; }
+
+  // Return the layer space rect for this request.
   const gfx::Rect& rect() const { return rect_; }
 
  private:
