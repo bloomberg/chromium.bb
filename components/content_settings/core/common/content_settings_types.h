@@ -46,9 +46,7 @@ enum ContentSettingsType {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
 #endif
-#if defined(OS_ANDROID)
   CONTENT_SETTINGS_TYPE_APP_BANNER,
-#endif
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

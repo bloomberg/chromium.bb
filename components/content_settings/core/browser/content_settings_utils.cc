@@ -47,9 +47,7 @@ const char* kTypeNames[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   "protected-media-identifier",
 #endif
-#if defined(OS_ANDROID)
   "app-banner",
-#endif
 };
 static_assert(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
               "kTypeNames should have CONTENT_SETTINGS_NUM_TYPES elements");

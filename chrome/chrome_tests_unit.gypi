@@ -33,6 +33,7 @@
       'browser/autocomplete/shortcuts_provider_unittest.cc',
       'browser/autocomplete/zero_suggest_provider_unittest.cc',
       'browser/autofill/autofill_cc_infobar_delegate_unittest.cc',
+      'browser/banners/app_banner_settings_helper_unittest.cc',
       'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',
       'browser/bookmarks/chrome_bookmark_client_unittest.cc',
       'browser/browser_about_handler_unittest.cc',

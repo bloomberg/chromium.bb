@@ -746,6 +746,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
       break;
 #endif
+    case CONTENT_SETTINGS_TYPE_APP_BANNER:
+      // The content settings type CONTENT_SETTINGS_TYPE_APP_BANNER is used to
+      // track whether app banners should be shown or not, and is not a user
+      // visible content setting.
+      break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;

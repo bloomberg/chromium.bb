@@ -500,11 +500,9 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     return false;
   }
 
-#if defined(OS_ANDROID)
   // App banners store a dictionary.
   if (content_type == CONTENT_SETTINGS_TYPE_APP_BANNER)
     return false;
-#endif
 
   // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
@@ -542,10 +540,8 @@ bool HostContentSettingsMap::ContentTypeHasCompoundValue(
   // CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS are of type dictionary/map.
   // Compound types like dictionaries can't be mapped to the type
   // |ContentSetting|.
-#if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_APP_BANNER)
     return true;
-#endif
 
   return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
           type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
