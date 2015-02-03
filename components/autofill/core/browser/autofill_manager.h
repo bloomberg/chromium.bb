@@ -238,9 +238,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   IdentityProvider* GetIdentityProvider() override;
   void OnDidGetRealPan(const std::string& real_pan) override;
 
-  // A toy method called when the (fake) unmasking process has finished.
-  void OnUnmaskVerificationResult(bool success);
-
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels() const;
 

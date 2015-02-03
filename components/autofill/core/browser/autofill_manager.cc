@@ -561,8 +561,7 @@ void AutofillManager::FillOrPreviewForm(
       unmasking_query_id_ = query_id;
       unmasking_form_ = form;
       unmasking_field_ = field;
-      // TODO(estade): uncomment this after the demo.
-      // real_pan_client_.Prepare();
+      real_pan_client_.Prepare();
       client()->ShowUnmaskPrompt(unmasking_card_,
                                  weak_ptr_factory_.GetWeakPtr());
       return;
@@ -690,23 +689,9 @@ void AutofillManager::OnLoadedServerPredictions(
 void AutofillManager::OnUnmaskResponse(const base::string16& cvc,
                                        const base::string16& exp_month,
                                        const base::string16& exp_year) {
-  // Most of this function is demo code. The real code should look something
-  // like:
-  //   real_pan_client_.UnmaskCard(unmasking_card_, cvc, exp_month, exp_year);
-
   unmasking_cvc_ = cvc;
-  // TODO(estade): fake verification: assume 123/1234 is the correct cvc.
-  if (StartsWithASCII(base::UTF16ToASCII(cvc), "123", true)) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AutofillManager::OnUnmaskVerificationResult,
-                              base::Unretained(this), true),
-        base::TimeDelta::FromSeconds(2));
-  } else {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AutofillManager::OnUnmaskVerificationResult,
-                              base::Unretained(this), false),
-        base::TimeDelta::FromSeconds(2));
-  }
+  // TODO(estade): use month/year.
+  real_pan_client_.UnmaskCard(unmasking_card_, base::UTF16ToASCII(cvc));
 }
 
 void AutofillManager::OnUnmaskPromptClosed() {
@@ -721,25 +706,15 @@ IdentityProvider* AutofillManager::GetIdentityProvider() {
 }
 
 void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
-  NOTIMPLEMENTED();
-}
-
-void AutofillManager::OnUnmaskVerificationResult(bool success) {
-  if (success) {
+  if (!real_pan.empty()) {
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
-    if (unmasking_card_.type() == kAmericanExpressCard) {
-      unmasking_card_.SetNumber(base::ASCIIToUTF16("371449635398431"));
-    } else if (unmasking_card_.type() == kVisaCard) {
-      unmasking_card_.SetNumber(base::ASCIIToUTF16("4012888888881881"));
-    } else {
-      DCHECK_EQ(kDiscoverCard, unmasking_card_.type());
-      unmasking_card_.SetNumber(base::ASCIIToUTF16("6011000990139424"));
-    }
+    unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
     personal_data_->UpdateServerCreditCard(unmasking_card_);
     FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
                        unmasking_card_);
   }
-  client()->OnUnmaskVerificationResult(success);
+
+  client()->OnUnmaskVerificationResult(!real_pan.empty());
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {

@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -23,12 +24,11 @@ namespace wallet {
 namespace {
 
 const char kUnmaskCardRequestFormat[] =
-    "request_content_type=application/json&request=%s&cvc=%s";
+    "requestContentType=application/json; charset=utf-8&request=%s&cvc=%s";
 
-// TODO(estade): use a sandbox server on dev builds?
 const char kUnmaskCardRequestUrl[] =
-    "https://wallet.google.com/payments/apis-secure/creditcardservice"
-    "/GetRealPan?s7e=cvc";
+    "https://sandbox.google.com/payments/apis-secure/creditcardservice"
+    "/getrealpan?s7e=cvc";
 
 const char kTokenServiceConsumerId[] = "real_pan_wallet_client";
 const char kWalletOAuth2Scope[] =
@@ -64,8 +64,13 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
 
   base::DictionaryValue request_dict;
   request_dict.SetString("encrypted_cvc", "__param:cvc");
-  // TODO(estade): is this the correct "token"?
   request_dict.SetString("credit_card_token", card.server_id());
+
+  // TODO(estade): add real risk data.
+  std::string base64_risk;
+  base::Base64Encode("{}", &base64_risk);
+  request_dict.SetString("risk_data_base64", base64_risk);
+
   std::string json_request;
   base::JSONWriter::Write(&request_dict, &json_request);
   std::string post_body = base::StringPrintf(kUnmaskCardRequestFormat,
@@ -91,6 +96,8 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<net::URLFetcher> scoped_request(request_.Pass());
   scoped_ptr<base::DictionaryValue> response_dict;
   int response_code = source->GetResponseCode();
+  std::string data;
+  source->GetResponseAsString(&data);
 
   // TODO(estade): OAuth2 may fail due to an expired access token, in which case
   // we should invalidate the token and try again. How is that failure reported?
@@ -98,41 +105,40 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   switch (response_code) {
     // Valid response.
     case net::HTTP_OK: {
-      std::string data;
-      source->GetResponseAsString(&data);
       scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(
             static_cast<base::DictionaryValue*>(message_value.release()));
-      } else {
-        NOTIMPLEMENTED();
       }
       break;
     }
 
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
-      NOTIMPLEMENTED();
       break;
     }
 
     // Response contains an error to show the user.
     case net::HTTP_FORBIDDEN:
     case net::HTTP_INTERNAL_SERVER_ERROR: {
-      NOTIMPLEMENTED();
       break;
     }
 
     // Handle anything else as a generic error.
     default:
-      NOTIMPLEMENTED();
       break;
   }
 
   std::string real_pan;
   if (response_dict)
     response_dict->GetString("pan", &real_pan);
+
+  if (real_pan.empty()) {
+    NOTIMPLEMENTED() << "Unhandled error: " << response_code <<
+        " with data: " << data;
+  }
+
   delegate_->OnDidGetRealPan(real_pan);
 }
 
@@ -157,7 +163,7 @@ void RealPanWalletClient::OnGetTokenFailure(
     delegate_->OnDidGetRealPan(std::string());
   }
   // TODO(estade): what do we do in the failure case?
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED() << "Unhandled OAuth2 error: " << error.ToString();
 
   access_token_request_.reset();
 }
@@ -178,7 +184,7 @@ void RealPanWalletClient::StartTokenFetch() {
 }
 
 void RealPanWalletClient::SetOAuth2TokenAndStartRequest() {
-  request_->AddExtraRequestHeader("Authorization: " + access_token_);
+  request_->AddExtraRequestHeader("Authorization: Bearer " + access_token_);
   request_->Start();
 }
 
