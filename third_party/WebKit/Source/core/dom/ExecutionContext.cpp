@@ -206,11 +206,6 @@ KURL ExecutionContext::completeURL(const String& url) const
     return virtualCompleteURL(url);
 }
 
-bool ExecutionContext::isIteratingOverObservers() const
-{
-    return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
-}
-
 void ExecutionContext::allowWindowFocus()
 {
     ++m_windowFocusTokens;

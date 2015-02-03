@@ -160,8 +160,6 @@ private:
 
     bool m_strictMixedContentCheckingEnforced;
 
-    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
-
     // Counter that keeps track of how many window focus calls are allowed for
     // this ExecutionContext. Callers are expected to call |allowWindowFocus()|
     // and |consumeWindowFocus()| in order to increment and decrement the

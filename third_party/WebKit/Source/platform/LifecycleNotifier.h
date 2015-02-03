@@ -55,8 +55,6 @@ public:
 
     virtual void trace(Visitor*) { }
 
-    bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
-
 protected:
     explicit LifecycleNotifier(Context* context)
         : m_iterating(IteratingNone)
