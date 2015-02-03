@@ -8,8 +8,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/manifest.h"
 
 namespace content {
 struct FrameNavigateParams;
@@ -58,7 +60,8 @@ struct Manifest;
 namespace banners {
 
 class AppBannerManager : public chrome::BitmapFetcherDelegate,
-                         public content::WebContentsObserver {
+                         public content::WebContentsObserver,
+                         public AppBannerInfoBarDelegate::AppDelegate {
  public:
   AppBannerManager(JNIEnv* env, jobject obj);
   virtual ~AppBannerManager();
@@ -74,11 +77,15 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                           jobject obj,
                           jobject jweb_contents);
 
-  // Fetches the icon at the give URL.
+  // Fetches the icon at the given URL asynchronously.
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(JNIEnv* env,
                  jobject obj,
                  jstring jimage_url);
+
+  // Fetches the icon at the given URL asynchronously.
+  // Returns |false| if this couldn't be kicked off.
+  bool FetchIcon(const GURL& image_url);
 
   // WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
@@ -88,11 +95,18 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                              const GURL& validated_url) override;
   virtual bool OnMessageReceived(const IPC::Message& message) override;
 
-
   // BitmapFetcherDelegate overrides.
   virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
+  // AppBannerInfoBarDelegate::AppDelegate overrides.
+  virtual void Block() const override;
+  virtual void Install() const override;
+  virtual gfx::Image GetIcon() const override;
+
  private:
+  // Gets the preferred icon size for the banner icons.
+  int GetPreferredIconSize();
+
   // Called when the manifest has been retrieved, or if there is no manifest to
   // retrieve.
   void OnDidGetManifest(const content::Manifest& manifest);
@@ -109,6 +123,8 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;
   GURL validated_url_;
+  content::Manifest manifest_;
+  scoped_ptr<SkBitmap> app_icon_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +31,7 @@
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertUTF16ToJavaString;
 
 namespace {
 const char kBannerTag[] = "google-play-id";
@@ -58,6 +61,28 @@ void AppBannerManager::BlockBanner(JNIEnv* env,
   AppBannerSettingsHelper::Block(web_contents(), url, package_name);
 }
 
+void AppBannerManager::Block() const {
+  if (!web_contents() || manifest_.IsEmpty())
+    return;
+
+  AppBannerSettingsHelper::Block(web_contents(),
+                                 web_contents()->GetURL(),
+                                 manifest_.start_url.spec());
+}
+
+void AppBannerManager::Install() const {
+  if (!web_contents())
+    return;
+
+  if (!manifest_.IsEmpty()) {
+    // TODO(dfalcantara): Trigger shortcut creation.
+  }
+}
+
+gfx::Image AppBannerManager::GetIcon() const {
+  return gfx::Image::CreateFrom1xBitmap(*app_icon_.get());
+}
+
 void AppBannerManager::ReplaceWebContents(JNIEnv* env,
                                           jobject obj,
                                           jobject jweb_contents) {
@@ -69,6 +94,11 @@ void AppBannerManager::ReplaceWebContents(JNIEnv* env,
 void AppBannerManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // Clear current state.
+  fetcher_.reset();
+  manifest_ = content::Manifest();
+  app_icon_.reset();
+
   // Get rid of the current banner.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
@@ -105,7 +135,23 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
 
   // TODO(benwells): Check triggering parameters here and if there is a meta
   // tag.
-  // TODO(dfalcantara): Show banner for web site with manifest.
+
+  // Create an infobar to promote the manifest's app.
+  manifest_ = manifest;
+
+  /* TODO(dfalcantara): Use after landing https://crrev.com/880203004.
+  GURL icon_url =
+      ManifestIconSelector::FindBestMatchingIcon(manifest.icons,
+                                                 GetPreferredIconSize(),
+                                                 web_contents());
+  if (icon_url.is_empty())
+    return;
+  */
+  if (manifest.icons.empty())
+    return;
+  GURL icon_url = manifest.icons.back().src;
+
+  FetchIcon(icon_url);
 }
 
 bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
@@ -126,13 +172,26 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
     if (jobj.is_null())
       return;
 
-    ScopedJavaLocalRef<jstring> jimage_url(
-        ConvertUTF8ToJavaString(env, url.spec()));
-    ScopedJavaLocalRef<jobject> jimage = gfx::ConvertToJavaBitmap(bitmap);
-    bool displayed = Java_AppBannerManager_createBanner(env,
-                                                        jobj.obj(),
-                                                        jimage_url.obj(),
-                                                        jimage.obj());
+    bool displayed;
+    if (manifest_.IsEmpty()) {
+      ScopedJavaLocalRef<jobject> jimage = gfx::ConvertToJavaBitmap(bitmap);
+      ScopedJavaLocalRef<jstring> jimage_url(
+          ConvertUTF8ToJavaString(env, url.spec()));
+
+      displayed = Java_AppBannerManager_createBanner(env,
+                                                     jobj.obj(),
+                                                     jimage_url.obj(),
+                                                     jimage.obj());
+    } else {
+      app_icon_.reset(new SkBitmap(*bitmap));
+      InfoBarService* service = InfoBarService::FromWebContents(web_contents());
+      displayed = AppBannerInfoBarDelegate::CreateForWebApp(
+          service,
+          this,
+          manifest_.name.string(),
+          manifest_.start_url) != NULL;
+    }
+
     if (displayed)
       banners::TrackDisplayEvent(DISPLAY_CREATED);
   } else {
@@ -181,19 +240,32 @@ bool AppBannerManager::FetchIcon(JNIEnv* env,
                                  jobject obj,
                                  jstring jimage_url) {
   std::string image_url = ConvertJavaStringToUTF8(env, jimage_url);
+  return FetchIcon(GURL(image_url));
+}
+
+bool AppBannerManager::FetchIcon(const GURL& image_url) {
   if (!web_contents())
     return false;
 
   // Begin asynchronously fetching the app icon.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  fetcher_.reset(new chrome::BitmapFetcher(GURL(image_url), this));
+  fetcher_.reset(new chrome::BitmapFetcher(image_url, this));
   fetcher_.get()->Start(
       profile->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
   return true;
+}
+
+int AppBannerManager::GetPreferredIconSize() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
+  if (jobj.is_null())
+    return 0;
+
+  return Java_AppBannerManager_getPreferredIconSize(env, jobj.obj());
 }
 
 void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {

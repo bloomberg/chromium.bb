@@ -115,6 +115,11 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
         nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
     }
 
+    @CalledByNative
+    private int getPreferredIconSize() {
+        return AppBannerView.getIconSize(mContentViewCore.getContext());
+    }
+
     /**
      * Grabs package information for the banner asynchronously.
      * @param url         URL for the page that is triggering the banner.
@@ -127,7 +132,7 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
 
         if (sAppDetailsDelegate == null || !isBannerForCurrentPage(url)) return;
 
-        int iconSize = AppBannerView.getIconSize(mContentViewCore.getContext());
+        int iconSize = getPreferredIconSize();
         sAppDetailsDelegate.getAppDetailsAsynchronously(this, url, packageName, iconSize);
     }
 
@@ -225,8 +230,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      * @return          True if the user is still on the same page.
      */
     private boolean isBannerForCurrentPage(String bannerUrl) {
-        return mContentViewCore != null &&
-               TextUtils.equals(mContentViewCore.getWebContents().getUrl(), bannerUrl);
+        return mContentViewCore != null
+                && TextUtils.equals(mContentViewCore.getWebContents().getUrl(), bannerUrl);
     }
 
     private static native boolean nativeIsEnabled();

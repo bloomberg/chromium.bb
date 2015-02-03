@@ -29,6 +29,8 @@
       'browser/android/activity_type_ids.h',
       'browser/android/appmenu/app_menu_drag_helper.cc',
       'browser/android/appmenu/app_menu_drag_helper.h',
+      'browser/android/banners/app_banner_infobar_delegate.cc',
+      'browser/android/banners/app_banner_infobar_delegate.h',
       'browser/android/banners/app_banner_manager.cc',
       'browser/android/banners/app_banner_manager.h',
       'browser/android/banners/app_banner_metrics_id_list.h',
