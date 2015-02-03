@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+/** @type {Array.<string>} */
 var keyboardMap = [
   '',
   '',

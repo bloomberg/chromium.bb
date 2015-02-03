@@ -59,6 +59,7 @@
     'remoting_client.gypi',
     'remoting_host.gypi',
     'remoting_host_srcs.gypi',
+    'remoting_key_tester.gypi',
     'remoting_locales.gypi',
     'remoting_srcs.gypi',
     'remoting_test.gypi',

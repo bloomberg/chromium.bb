@@ -15,8 +15,30 @@ found in the LICENSE file.
   </head>
   <body>
     <h2>Chrome AppsV2  Key Event Tester</h2>
-    <button id="clear-log">Clear log</button>
-    <div id="key-log">
+    <div id="pnacl-listener">
+      PNaCl focus box:
+      <embed id="pnacl-plugin" width=100 height=12
+             src="remoting_key_tester.nmf" type="application/x-pnacl" />
+      (click inside to get focus, yellow background means it has focus).
+    </div>
+    <button id="clear-log">Clear logs</button>
+    <hr/>
+    <div class="logs">
+      <div class="summary-log-container">
+        Summary of JavaScript logs:
+        <div id="javascript-log">
+        </div>
+      </div>
+      <div class="summary-log-container">
+        Summary of PNaCl logs:
+        <div id="pnacl-log">
+        </div>
+      </div>
+      <div class="text-log-container">
+        Text log of JSON-ified events:
+        <div id="text-log">
+        </div>
+      </div>
     </div>
   </body>
 </html>

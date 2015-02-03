@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../native_client/build/untrusted.gypi',
+    '../build/common_untrusted.gypi',
     'remoting_srcs.gypi',
   ],
 
