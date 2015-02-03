@@ -60,11 +60,19 @@ void ShellDevToolsFrontend::Focus() {
 }
 
 void ShellDevToolsFrontend::InspectElementAt(int x, int y) {
-  agent_host_->InspectElement(x, y);
+  if (agent_host_)
+    agent_host_->InspectElement(x, y);
 }
 
 void ShellDevToolsFrontend::Close() {
   frontend_shell_->Close();
+}
+
+void ShellDevToolsFrontend::DisconnectFromTarget() {
+  if (!agent_host_)
+    return;
+  agent_host_->DetachClient();
+  agent_host_ = NULL;
 }
 
 ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
@@ -82,17 +90,26 @@ void ShellDevToolsFrontend::RenderViewCreated(
   if (!frontend_host_) {
     frontend_host_.reset(
         DevToolsFrontendHost::Create(web_contents()->GetMainFrame(), this));
-    agent_host_->AttachClient(this);
   }
 }
 
+void ShellDevToolsFrontend::DidNavigateMainFrame(
+    const LoadCommittedDetails& details,
+    const FrameNavigateParams& params) {
+  if (agent_host_)
+    agent_host_->AttachClient(this);
+}
+
 void ShellDevToolsFrontend::WebContentsDestroyed() {
-  agent_host_->DetachClient();
+  if (agent_host_)
+    agent_host_->DetachClient();
   delete this;
 }
 
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
+  if (!agent_host_)
+    return;
   std::string method;
   int id = 0;
   base::ListValue* params = NULL;
@@ -127,7 +144,8 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
 
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontendToBackend(
     const std::string& message) {
-  agent_host_->DispatchProtocolMessage(message);
+  if (agent_host_)
+    agent_host_->DispatchProtocolMessage(message);
 }
 
 void ShellDevToolsFrontend::DispatchProtocolMessage(
@@ -149,6 +167,11 @@ void ShellDevToolsFrontend::DispatchProtocolMessage(
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
   }
+}
+
+void ShellDevToolsFrontend::AttachTo(WebContents* inspected_contents) {
+  DisconnectFromTarget();
+  agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents);
 }
 
 void ShellDevToolsFrontend::AgentHostClosed(

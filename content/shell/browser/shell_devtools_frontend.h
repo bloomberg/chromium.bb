@@ -30,26 +30,32 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   void InspectElementAt(int x, int y);
   void Close();
 
+  void DisconnectFromTarget();
+
   Shell* frontend_shell() const { return frontend_shell_; }
 
  protected:
   ShellDevToolsFrontend(Shell* frontend_shell, DevToolsAgentHost* agent_host);
   ~ShellDevToolsFrontend() override;
 
+  // content::DevToolsAgentHostClient implementation.
+  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override;
+  void AttachTo(WebContents* inspected_contents);
+
  private:
   // WebContentsObserver overrides
   void RenderViewCreated(RenderViewHost* render_view_host) override;
+  void DidNavigateMainFrame(
+      const LoadCommittedDetails& details,
+      const FrameNavigateParams& params) override;
   void WebContentsDestroyed() override;
 
   // content::DevToolsFrontendHost::Delegate implementation.
   void HandleMessageFromDevToolsFrontend(const std::string& message) override;
   void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) override;
-
-  // content::DevToolsAgentHostClient implementation.
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
 
   Shell* frontend_shell_;
   scoped_refptr<DevToolsAgentHost> agent_host_;

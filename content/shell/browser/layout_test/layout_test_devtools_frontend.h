@@ -24,10 +24,17 @@ class LayoutTestDevToolsFrontend : public ShellDevToolsFrontend {
   static GURL GetDevToolsPathAsURL(const std::string& settings,
                                    const std::string& frontend_url);
 
+  void ReuseFrontend(WebContents* inspected_contents,
+                     const std::string& settings,
+                     const std::string frontend_url);
+
  private:
   LayoutTestDevToolsFrontend(Shell* frontend_shell,
                              DevToolsAgentHost* agent_host);
   ~LayoutTestDevToolsFrontend() override;
+
+  // content::DevToolsAgentHostClient implementation.
+  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;

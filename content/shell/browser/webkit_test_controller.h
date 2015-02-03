@@ -28,6 +28,7 @@ class SkBitmap;
 
 namespace content {
 
+class LayoutTestDevToolsFrontend;
 class Shell;
 
 #if defined(OS_ANDROID)
@@ -213,6 +214,8 @@ class WebKitTestController : public base::NonThreadSafe,
 
   const bool is_leak_detection_enabled_;
   bool crash_when_leak_found_;
+
+  LayoutTestDevToolsFrontend* devtools_frontend_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

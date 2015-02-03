@@ -33,15 +33,6 @@ LayoutTestDevToolsFrontend* LayoutTestDevToolsFrontend::Show(
   return devtools_frontend;
 }
 
-LayoutTestDevToolsFrontend::LayoutTestDevToolsFrontend(
-    Shell* frontend_shell,
-    DevToolsAgentHost* agent_host)
-    : ShellDevToolsFrontend(frontend_shell, agent_host) {
-}
-
-LayoutTestDevToolsFrontend::~LayoutTestDevToolsFrontend() {
-}
-
 // static.
 GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
     const std::string& settings,
@@ -68,6 +59,27 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
                                      result.spec().c_str(),
                                      settings.c_str()));
   return result;
+}
+
+void LayoutTestDevToolsFrontend::ReuseFrontend(WebContents* inspected_contents,
+                                               const std::string& settings,
+                                               const std::string frontend_url) {
+  AttachTo(inspected_contents);
+  frontend_shell()->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
+}
+
+LayoutTestDevToolsFrontend::LayoutTestDevToolsFrontend(
+    Shell* frontend_shell,
+    DevToolsAgentHost* agent_host)
+    : ShellDevToolsFrontend(frontend_shell, agent_host) {
+}
+
+LayoutTestDevToolsFrontend::~LayoutTestDevToolsFrontend() {
+}
+
+void LayoutTestDevToolsFrontend::AgentHostClosed(
+    DevToolsAgentHost* agent_host, bool replaced) {
+  // Do not close the front-end shell.
 }
 
 void LayoutTestDevToolsFrontend::RenderProcessGone(
