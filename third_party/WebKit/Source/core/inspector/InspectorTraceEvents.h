@@ -277,9 +277,9 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int workerId, WorkerThread*);
 };
 
-class InspectorTracingStartedInPage {
+class InspectorTracingStartedInFrame {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, Page*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, LocalFrame*);
 };
 
 class InspectorSetLayerTreeId {

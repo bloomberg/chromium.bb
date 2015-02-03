@@ -99,7 +99,7 @@ void PageScriptDebugServer::setMainThreadIsolate(v8::Isolate* isolate)
 
 PageScriptDebugServer::PageScriptDebugServer()
     : ScriptDebugServer(s_mainThreadIsolate)
-    , m_pausedPage(nullptr)
+    , m_pausedFrame(nullptr)
     , m_preprocessorSourceCode()
 {
 }
@@ -112,15 +112,17 @@ void PageScriptDebugServer::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_listenersMap);
-    visitor->trace(m_pausedPage);
+    visitor->trace(m_pausedFrame);
     visitor->trace(m_preprocessorSourceCode);
 #endif
     ScriptDebugServer::trace(visitor);
 }
 
-void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* page)
+void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot)
 {
-    ScriptController& scriptController = page->deprecatedLocalMainFrame()->script();
+    ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
+
+    ScriptController& scriptController = localFrameRoot->script();
     if (!scriptController.canExecuteScripts(NotAboutToExecuteScript))
         return;
 
@@ -136,7 +138,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
 
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
     ASSERT(!debuggerScript->IsUndefined());
-    m_listenersMap.set(page, listener);
+    m_listenersMap.set(localFrameRoot, listener);
 
     WindowProxy* windowProxy = scriptController.existingWindowProxy(DOMWrapperWorld::mainWorld());
     if (!windowProxy || !windowProxy->isContextInitialized())
@@ -153,15 +155,15 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
         dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
 }
 
-void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* page)
+void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
 {
-    if (!m_listenersMap.contains(page))
+    if (!m_listenersMap.contains(localFrame))
         return;
 
-    if (m_pausedPage == page)
+    if (m_pausedFrame == localFrame)
         continueProgram();
 
-    m_listenersMap.remove(page);
+    m_listenersMap.remove(localFrame);
 
     if (m_listenersMap.isEmpty()) {
         discardDebuggerScript();
@@ -221,23 +223,23 @@ ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handl
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
     if (!frame)
         return 0;
-    return m_listenersMap.get(frame->page());
+    return m_listenersMap.get(frame->localFrameRoot());
 }
 
 void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> context)
 {
     v8::HandleScope scope(m_isolate);
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
-    m_pausedPage = frame->page();
+    m_pausedFrame = frame->localFrameRoot();
 
     // Wait for continue or step command.
-    m_clientMessageLoop->run(m_pausedPage);
+    m_clientMessageLoop->run(m_pausedFrame);
 
     // The listener may have been removed in the nested loop.
-    if (ScriptDebugListener* listener = m_listenersMap.get(m_pausedPage))
+    if (ScriptDebugListener* listener = m_listenersMap.get(m_pausedFrame))
         listener->didContinue();
 
-    m_pausedPage = 0;
+    m_pausedFrame = 0;
 }
 
 void PageScriptDebugServer::quitMessageLoopOnPause()

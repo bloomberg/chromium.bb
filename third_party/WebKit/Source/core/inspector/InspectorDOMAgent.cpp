@@ -283,7 +283,7 @@ void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
 
     m_frontend = frontend->dom();
     m_instrumentingAgents->setInspectorDOMAgent(this);
-    m_document = m_pageAgent->mainFrame()->document();
+    m_document = m_pageAgent->inspectedFrame()->document();
 }
 
 void InspectorDOMAgent::clearFrontend()
@@ -532,7 +532,7 @@ void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
     m_document = nullptr;
-    setDocument(m_pageAgent->mainFrame()->document());
+    setDocument(m_pageAgent->inspectedFrame()->document());
     if (m_listener)
         m_listener->domAgentWasEnabled();
 }
@@ -1900,7 +1900,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
-    if (!frame->isMainFrame())
+    if (frame != m_pageAgent->inspectedFrame())
         return;
 
     // Re-push document once it is loaded.
@@ -1930,20 +1930,15 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
     m_frontend->childNodeInserted(parentId, prevId, value.release());
 }
 
-void InspectorDOMAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
+void InspectorDOMAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
-    // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
-    // then all we need to check here is loader->frame()->isMainFrame()
-    // and we don't need "frame" at all.
-    if (!frame->page()->mainFrame()->isLocalFrame())
-        return;
-    LocalFrame* mainFrame = frame->page()->deprecatedLocalMainFrame();
-    if (loader->frame() != mainFrame) {
+    LocalFrame* inspectedFrame = m_pageAgent->inspectedFrame();
+    if (loader->frame() != inspectedFrame) {
         invalidateFrameOwnerElement(loader->frame());
         return;
     }
 
-    setDocument(mainFrame->document());
+    setDocument(inspectedFrame->document());
 }
 
 void InspectorDOMAgent::didInsertDOMNode(Node* node)
@@ -2134,9 +2129,7 @@ void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)
     if (!document)
         return;
 
-    Page* page = frame->page();
-    ASSERT(page);
-    if (frame != page->mainFrame())
+    if (frame != m_pageAgent->inspectedFrame())
         return;
 
     // Only update the main frame document, nested frame document updates are not required
@@ -2242,7 +2235,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
         }
 
         Node* node = InspectorNodeIds::nodeForId(backendNodeId);
-        if (node && node->document().page() == m_pageAgent->page())
+        if (node && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
             result->addItem(pushNodePathToFrontend(node));
         else
             result->addItem(0);

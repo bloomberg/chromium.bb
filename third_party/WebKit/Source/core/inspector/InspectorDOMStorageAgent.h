@@ -65,7 +65,7 @@ public:
     virtual void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
 
     // Called from InspectorInstrumentation
-    void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
+    void didDispatchDOMStorageEvent(LocalFrame*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
 
 private:
 

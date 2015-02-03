@@ -1362,7 +1362,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         return false;
 
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
-        InspectorInstrumentation::didScroll(page());
+        InspectorInstrumentation::didScroll(m_frame.get());
         return true;
     }
 
@@ -1386,7 +1386,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layer);
     }
 
-    InspectorInstrumentation::didScroll(page());
+    InspectorInstrumentation::didScroll(m_frame.get());
     return true;
 }
 
@@ -2150,7 +2150,7 @@ void FrameView::sendResizeEventIfNeeded()
     m_frame->document()->enqueueResizeEvent();
 
     if (m_frame->isMainFrame())
-        InspectorInstrumentation::didResizeMainFrame(m_frame->page());
+        InspectorInstrumentation::didResizeMainFrame(m_frame.get());
 }
 
 void FrameView::postLayoutTimerFired(Timer<FrameView>*)

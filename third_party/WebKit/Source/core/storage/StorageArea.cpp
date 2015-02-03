@@ -174,8 +174,8 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             Storage* storage = DOMWindowStorage::from(*localWindow).optionalLocalStorage();
             if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
+            InspectorInstrumentation::didDispatchDOMStorageEvent(localFrame, key, oldValue, newValue, LocalStorage, securityOrigin);
         }
-        InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, LocalStorage, securityOrigin);
     }
 }
 
@@ -207,8 +207,8 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         Storage* storage = DOMWindowStorage::from(*localWindow).optionalSessionStorage();
         if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
+        InspectorInstrumentation::didDispatchDOMStorageEvent(localFrame, key, oldValue, newValue, SessionStorage, securityOrigin);
     }
-    InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, SessionStorage, securityOrigin);
 }
 
 bool StorageArea::isEventSource(Storage* storage, WebStorageArea* sourceAreaInstance)

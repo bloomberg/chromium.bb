@@ -73,10 +73,10 @@ void InspectorResourceContentLoader::ResourceClient::notifyFinished(Resource* re
     resourceFinished(resource);
 }
 
-InspectorResourceContentLoader::InspectorResourceContentLoader(Page* page)
+InspectorResourceContentLoader::InspectorResourceContentLoader(LocalFrame* inspectedFrame)
     : m_allRequestsStarted(false)
     , m_started(false)
-    , m_page(page)
+    , m_inspectedFrame(inspectedFrame)
 {
 }
 
@@ -84,7 +84,7 @@ void InspectorResourceContentLoader::start()
 {
     m_started = true;
     Vector<Document*> documents;
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
         if (!frame->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(frame);
@@ -159,7 +159,7 @@ InspectorResourceContentLoader::~InspectorResourceContentLoader()
 void InspectorResourceContentLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_callbacks);
-    visitor->trace(m_page);
+    visitor->trace(m_inspectedFrame);
 }
 
 void InspectorResourceContentLoader::dispose()

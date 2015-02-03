@@ -57,7 +57,7 @@ public:
 
     // InspectorInstrumentation API
     void updateApplicationCacheStatus(LocalFrame*);
-    void networkStateChanged(bool online);
+    void networkStateChanged(LocalFrame*, bool online);
 
     // ApplicationCache API for InspectorFrontend
     virtual void enable(ErrorString*) override;

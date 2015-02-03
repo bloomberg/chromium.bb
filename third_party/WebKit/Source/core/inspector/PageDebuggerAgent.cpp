@@ -84,12 +84,12 @@ void PageDebuggerAgent::disable()
 
 void PageDebuggerAgent::startListeningScriptDebugServer()
 {
-    scriptDebugServer().addListener(this, m_pageAgent->page());
+    scriptDebugServer().addListener(this, m_pageAgent->inspectedFrame());
 }
 
 void PageDebuggerAgent::stopListeningScriptDebugServer()
 {
-    scriptDebugServer().removeListener(this, m_pageAgent->page());
+    scriptDebugServer().removeListener(this, m_pageAgent->inspectedFrame());
 }
 
 PageScriptDebugServer& PageDebuggerAgent::scriptDebugServer()
@@ -122,7 +122,7 @@ void PageDebuggerAgent::overlaySteppedOver()
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->mainFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.isEmpty())
             *errorString = "Internal error: main world execution context not found.";
@@ -136,7 +136,8 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
 
 void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
-    if (frame != m_pageAgent->mainFrame())
+    // FIXME: what about nested objects?
+    if (frame != m_pageAgent->inspectedFrame())
         return;
 
     reset();
@@ -149,8 +150,7 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
-    Frame* mainFrame = frame->page()->deprecatedLocalMainFrame();
-    if (loader->frame() == mainFrame)
+    if (loader->frame() == m_pageAgent->inspectedFrame())
         pageDidCommitLoad();
 }
 

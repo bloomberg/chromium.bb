@@ -34,6 +34,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
+#include "core/frame/FrameHost.h"
 #include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
@@ -83,7 +84,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_layerTreeAgent(nullptr)
     , m_animationAgent(nullptr)
     , m_inspectorFrontendClient(nullptr)
-    , m_page(page)
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_isUnderTest(false)
@@ -92,9 +92,9 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
     InspectorOverlay* overlay = m_overlay.get();
 
-    m_agents.append(InspectorInspectorAgent::create(m_page, injectedScriptManager));
+    m_agents.append(InspectorInspectorAgent::create(this, injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_page, injectedScriptManager, inspectorClient, overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, inspectorClient, overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -102,7 +102,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_page));
+    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_pageAgent));
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
 
@@ -113,12 +113,12 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
-    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, inspectorClient, pageScriptDebugServer, m_page, m_pageAgent));
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, inspectorClient, pageScriptDebugServer, m_pageAgent));
 
-    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_page);
+    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_pageAgent);
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
 
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient, workerAgentPtr.get(), page);
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient, workerAgentPtr.get(), m_pageAgent);
     m_tracingAgent = tracingAgentPtr.get();
     m_agents.append(tracingAgentPtr.release());
 
@@ -149,7 +149,6 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
     visitor->trace(m_inspectorBackendDispatcher);
-    visitor->trace(m_page);
     visitor->trace(m_agents);
 }
 
@@ -215,21 +214,21 @@ void InspectorController::initializeDeferredAgents()
 
     m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
 
-    m_agents.append(InspectorInputAgent::create(m_page, m_inspectorClient));
+    m_agents.append(InspectorInputAgent::create(m_pageAgent, m_inspectorClient));
 }
 
 void InspectorController::willBeDestroyed()
 {
 #if ENABLE(ASSERT)
-    ASSERT(m_page->mainFrame());
-    if (m_page->mainFrame()->isLocalFrame())
-        ASSERT(m_page->deprecatedLocalMainFrame()->view());
+    Frame* frame = m_pageAgent->frameHost()->page().mainFrame();
+    ASSERT(frame);
+    if (frame->isLocalFrame())
+        ASSERT(m_pageAgent->inspectedFrame()->view());
 #endif
 
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
     m_inspectorClient = 0;
-    m_page = nullptr;
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
     if (m_inspectorFrontendClient)
@@ -250,7 +249,7 @@ void InspectorController::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     // If the page is supposed to serve as InspectorFrontend notify inspector frontend
     // client that it's cleared so that the client can expose inspector bindings.
-    if (m_inspectorFrontendClient && frame == m_page->mainFrame())
+    if (m_inspectorFrontendClient && frame == m_pageAgent->inspectedFrame())
         m_inspectorFrontendClient->windowObjectCleared();
 }
 

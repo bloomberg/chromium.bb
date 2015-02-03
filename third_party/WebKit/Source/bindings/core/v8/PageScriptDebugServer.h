@@ -50,15 +50,15 @@ public:
 
     static void setMainThreadIsolate(v8::Isolate*);
 
-    void addListener(ScriptDebugListener*, Page*);
-    void removeListener(ScriptDebugListener*, Page*);
+    void addListener(ScriptDebugListener*, LocalFrame*);
+    void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static void interruptAndRun(PassOwnPtr<Task>);
 
     class ClientMessageLoop {
     public:
         virtual ~ClientMessageLoop() { }
-        virtual void run(Page*) = 0;
+        virtual void run(LocalFrame*) = 0;
         virtual void quitNow() = 0;
     };
     void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
@@ -82,10 +82,10 @@ private:
     void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
     void quitMessageLoopOnPause() override;
 
-    using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<Page>, ScriptDebugListener*>;
+    using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, ScriptDebugListener*>;
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
-    RawPtrWillBeMember<Page> m_pausedPage;
+    RawPtrWillBeMember<LocalFrame> m_pausedFrame;
     HashMap<String, String> m_compiledScriptURLs;
 
     ScriptSourceCode m_preprocessorSourceCode;

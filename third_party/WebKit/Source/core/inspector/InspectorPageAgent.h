@@ -43,7 +43,7 @@ namespace blink {
 class Resource;
 class Document;
 class DocumentLoader;
-class LocalFrame;
+class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class InjectedScriptManager;
@@ -52,6 +52,7 @@ class InspectorOverlay;
 class InspectorResourceContentLoader;
 class KURL;
 class LayoutRect;
+class LocalFrame;
 class Page;
 class RenderObject;
 class SharedBuffer;
@@ -157,8 +158,8 @@ public:
     void discardAgent() override;
 
     // Cross-agents API
-    Page* page() { return m_page; }
-    LocalFrame* mainFrame();
+    FrameHost* frameHost();
+    LocalFrame* inspectedFrame();
     String createIdentifier();
     LocalFrame* frameForId(const String& frameId);
     String frameId(LocalFrame*);

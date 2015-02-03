@@ -112,14 +112,14 @@ private:
         , m_messageLoop(messageLoop) { }
 
 
-    virtual void run(Page* page)
+    virtual void run(LocalFrame* frame)
     {
         if (m_running)
             return;
         m_running = true;
 
         // 0. Flush pending frontend messages.
-        WebViewImpl* viewImpl = WebViewImpl::fromPage(page);
+        WebViewImpl* viewImpl = WebViewImpl::fromPage(frame->page());
         WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(viewImpl->devToolsAgent());
         agent->flushPendingProtocolNotifications();
 

@@ -910,7 +910,7 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     m_state->setBoolean(ResourceAgentState::cacheDisabled, cacheDisabled);
     if (cacheDisabled)
         memoryCache()->evictResources();
-    for (Frame* frame = m_pageAgent->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             toLocalFrame(frame)->document()->fetcher()->garbageCollectDocumentResources();
     }
@@ -923,7 +923,7 @@ void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double
 void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> prpCallback)
 {
     RefPtrWillBeRawPtr<LoadResourceForFrontendCallback> callback = prpCallback;
-    Frame* frame = m_pageAgent->page()->mainFrame();
+    Frame* frame = m_pageAgent->inspectedFrame();
     if (!frame || !frame->isLocalFrame()) {
         *errorString = "No frame to use as a loader found";
         return;
@@ -972,7 +972,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
 
 void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
-    if (loader->frame() != frame->page()->mainFrame())
+    if (loader->frame() != m_pageAgent->inspectedFrame())
         return;
 
     if (m_state->getBoolean(ResourceAgentState::cacheDisabled))

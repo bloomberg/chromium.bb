@@ -57,6 +57,7 @@ namespace blink {
     class InputMethodController;
     class IntPoint;
     class IntSize;
+    class InstrumentingAgents;
     class LocalDOMWindow;
     class Node;
     class Range;
@@ -124,6 +125,9 @@ namespace blink {
         // FIXME: This is a temporary hack to support RemoteFrames, and callers
         // should be updated to avoid storing things on the main frame.
         LocalFrame* localFrameRoot();
+
+        InstrumentingAgents* instrumentingAgents();
+        void setInstrumentingAgents(InstrumentingAgents*);
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
@@ -222,6 +226,8 @@ namespace blink {
         float m_textZoomFactor;
 
         bool m_inViewSourceMode;
+
+        RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     };
 
     inline void LocalFrame::init()

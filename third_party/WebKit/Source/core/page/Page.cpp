@@ -92,12 +92,13 @@ void Page::networkStateChanged(bool online)
             if (frame->isLocalFrame())
                 frames.append(toLocalFrame(frame));
         }
-        InspectorInstrumentation::networkStateChanged(page, online);
     }
 
     AtomicString eventName = online ? EventTypeNames::online : EventTypeNames::offline;
-    for (unsigned i = 0; i < frames.size(); i++)
+    for (unsigned i = 0; i < frames.size(); i++) {
         frames[i]->domWindow()->dispatchEvent(Event::create(eventName));
+        InspectorInstrumentation::networkStateChanged(frames[i].get(), online);
+    }
 }
 
 float deviceScaleFactor(LocalFrame* frame)

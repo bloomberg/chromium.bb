@@ -356,7 +356,7 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
         return;
     m_state->setBoolean(TimelineAgentState::startedFromProtocol, true);
 
-    if (LocalFrame* frame = mainFrame()) {
+    if (LocalFrame* frame = inspectedFrame()) {
         if (UseCounter* useCounter = UseCounter::getFrom(frame->document()))
             useCounter->count(UseCounter::TimelineStart);
     }
@@ -464,7 +464,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
-        mainFrame()->console().addMessage(ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message));
+        inspectedFrame()->console().addMessage(ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message));
     }
     m_consoleTimelines.clear();
 
@@ -830,7 +830,7 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
 
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
     consoleMessage->setScriptState(scriptState);
-    mainFrame()->console().addMessage(consoleMessage.release());
+    inspectedFrame()->console().addMessage(consoleMessage.release());
     m_consoleTimelines.append(title);
     if (!isStarted()) {
         m_state->setBoolean(TimelineAgentState::bufferEvents, true);
@@ -853,7 +853,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
         consoleMessage->setScriptState(scriptState);
-        mainFrame()->console().addMessage(consoleMessage.release());
+        inspectedFrame()->console().addMessage(consoleMessage.release());
         return;
     }
 
@@ -866,12 +866,12 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     }
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
     consoleMessage->setScriptState(scriptState);
-    mainFrame()->console().addMessage(consoleMessage.release());
+    inspectedFrame()->console().addMessage(consoleMessage.release());
 }
 
 void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
-    bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
+    bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->inspectedFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkDOMContent, false, frame);
     if (isMainFrame)
         m_mayEmitFirstPaint = true;
@@ -879,7 +879,7 @@ void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)
 
 void InspectorTimelineAgent::loadEventFired(LocalFrame* frame)
 {
-    bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
+    bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->inspectedFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkLoad, false, frame);
 }
 
@@ -1284,11 +1284,11 @@ double InspectorTimelineAgent::timestamp()
     return WTF::monotonicallyIncreasingTime() * msPerSecond;
 }
 
-LocalFrame* InspectorTimelineAgent::mainFrame() const
+LocalFrame* InspectorTimelineAgent::inspectedFrame() const
 {
     if (!m_pageAgent)
         return nullptr;
-    return m_pageAgent->mainFrame();
+    return m_pageAgent->inspectedFrame();
 }
 
 PassRefPtr<TimelineEvent> InspectorTimelineAgent::createRecordForEvent(const TraceEventDispatcher::TraceEvent& event, const String& type, PassRefPtr<JSONObject> data)

@@ -52,13 +52,13 @@ namespace InspectorAgentState {
 static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 }
 
-InspectorInspectorAgent::InspectorInspectorAgent(Page* page, InjectedScriptManager* injectedScriptManager)
+InspectorInspectorAgent::InspectorInspectorAgent(InspectorController* inspectorController, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorInspectorAgent>("Inspector")
-    , m_inspectedPage(page)
+    , m_inspectorController(inspectorController)
     , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
 {
-    ASSERT_ARG(page, page);
+    ASSERT_ARG(inspectorController, inspectorController);
 }
 
 InspectorInspectorAgent::~InspectorInspectorAgent()
@@ -70,7 +70,7 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 
 void InspectorInspectorAgent::trace(Visitor* visitor)
 {
-    visitor->trace(m_inspectedPage);
+    visitor->trace(m_inspectorController);
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
@@ -131,12 +131,12 @@ void InspectorInspectorAgent::disable(ErrorString*)
 
 void InspectorInspectorAgent::reset(ErrorString*)
 {
-    m_inspectedPage->inspectorController().reconnectFrontend();
+    m_inspectorController->reconnectFrontend();
 }
 
 void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
-    if (frame->page()->mainFrame() != frame)
+    if (frame != frame->localFrameRoot())
         return;
 
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();

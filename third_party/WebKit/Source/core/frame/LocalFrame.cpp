@@ -51,6 +51,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -221,6 +222,7 @@ LocalFrame::~LocalFrame()
 
 void LocalFrame::trace(Visitor* visitor)
 {
+    visitor->trace(m_instrumentingAgents);
 #if ENABLE(OILPAN)
     visitor->trace(m_destructionObservers);
     visitor->trace(m_loader);
@@ -422,6 +424,16 @@ LocalFrame* LocalFrame::localFrameRoot()
         curFrame = toLocalFrame(curFrame->tree().parent());
 
     return curFrame;
+}
+
+InstrumentingAgents* LocalFrame::instrumentingAgents()
+{
+    return m_instrumentingAgents.get();
+}
+
+void LocalFrame::setInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
+{
+    m_instrumentingAgents = instrumentingAgents;
 }
 
 bool LocalFrame::inScope(TreeScope* scope) const
@@ -815,6 +827,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
+    , m_instrumentingAgents(host->instrumentingAgents())
 {
 }
 

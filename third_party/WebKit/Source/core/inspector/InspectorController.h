@@ -137,12 +137,12 @@ public:
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);
 
+    InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
+
 private:
     InspectorController(Page*, InspectorClient*);
 
     void initializeDeferredAgents();
-
-    friend InstrumentingAgents* instrumentationForPage(Page*);
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
@@ -162,7 +162,6 @@ private:
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     InspectorFrontendClient* m_inspectorFrontendClient;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
-    RawPtrWillBeMember<Page> m_page;
     InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;
     bool m_isUnderTest;

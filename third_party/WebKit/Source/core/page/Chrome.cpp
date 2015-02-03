@@ -196,7 +196,7 @@ bool Chrome::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* fram
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
     bool ok = m_client->runBeforeUnloadConfirmPanel(message, frame);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
     return ok;
@@ -219,7 +219,7 @@ void Chrome::runJavaScriptAlert(LocalFrame* frame, const String& message)
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
     m_client->runJavaScriptAlert(frame, message);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
 }
@@ -236,7 +236,7 @@ bool Chrome::runJavaScriptConfirm(LocalFrame* frame, const String& message)
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
     bool ok = m_client->runJavaScriptConfirm(frame, message);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
     return ok;
@@ -254,7 +254,7 @@ bool Chrome::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const 
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, prompt);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, prompt);
     bool ok = m_client->runJavaScriptPrompt(frame, prompt, defaultValue, result);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
 

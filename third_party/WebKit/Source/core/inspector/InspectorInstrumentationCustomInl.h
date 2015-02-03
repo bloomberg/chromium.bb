@@ -54,10 +54,10 @@ inline bool isDebuggerPaused(LocalFrame* frame)
     return false;
 }
 
-inline bool collectingHTMLParseErrors(Page* page)
+inline bool collectingHTMLParseErrors(Document* document)
 {
     FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(page))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
         return collectingHTMLParseErrorsImpl(instrumentingAgents);
     return false;
 }

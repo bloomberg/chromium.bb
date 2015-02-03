@@ -54,7 +54,6 @@ namespace blink {
 class Document;
 class EventTarget;
 class ExecutionContext;
-class FrameHost;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
 class ThreadableLoaderClient;
@@ -101,7 +100,6 @@ void unregisterInstrumentingAgents(InstrumentingAgents*);
 InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
 
 // Called from generated instrumentation code.
-InstrumentingAgents* instrumentingAgentsFor(Page*);
 InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);
 InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
@@ -110,7 +108,6 @@ InstrumentingAgents* instrumentingAgentsFor(Document*);
 InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
 InstrumentingAgents* instrumentingAgentsFor(Node*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
-InstrumentingAgents* instrumentingAgentsFor(FrameHost*);
 
 // Helper for the one above.
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
@@ -145,17 +142,12 @@ inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
     return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
-{
-    return frame ? instrumentingAgentsFor(frame->page()) : 0;
-}
-
 inline InstrumentingAgents* instrumentingAgentsFor(Document& document)
 {
-    Page* page = document.page();
-    if (!page && document.templateDocumentHost())
-        page = document.templateDocumentHost()->page();
-    return instrumentingAgentsFor(page);
+    LocalFrame* frame = document.frame();
+    if (!frame && document.templateDocumentHost())
+        frame = document.templateDocumentHost()->frame();
+    return instrumentingAgentsFor(frame);
 }
 
 inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
@@ -179,8 +171,6 @@ inline InstrumentingAgents* instrumentingAgentsFor(CSSStyleDeclaration* declarat
 }
 
 } // namespace InspectorInstrumentation
-
-InstrumentingAgents* instrumentationForPage(Page*);
 
 InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 

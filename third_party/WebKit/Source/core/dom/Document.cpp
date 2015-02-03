@@ -2271,7 +2271,7 @@ AXObjectCache* Document::axObjectCache() const
 PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
-        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
+        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this);
         return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors, m_parserSyncPolicy);
     }
     // FIXME: this should probably pass the frame instead

@@ -39,16 +39,16 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class InspectorDOMAgent;
-class Page;
+class InspectorPageAgent;
 class WorkerInspectorProxy;
 class WorkerGlobalScopeProxy;
 
 class PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, Page* page)
+    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, page));
+        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, pageAgent));
     }
     virtual ~PageConsoleAgent();
     virtual void trace(Visitor*) override;
@@ -69,12 +69,12 @@ protected:
     virtual void disableStackCapturingIfNeeded() override;
 
 private:
-    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, Page*);
+    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorPageAgent*);
     virtual void clearMessages(ErrorString*) override;
     virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
-    RawPtrWillBeMember<Page> m_page;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     HashSet<WorkerGlobalScopeProxy*> m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;

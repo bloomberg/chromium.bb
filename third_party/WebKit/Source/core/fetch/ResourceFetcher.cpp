@@ -1221,7 +1221,7 @@ void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
     context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
     // FIXME: If willSendRequest changes the request, we don't respect it.
     willSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
-    InspectorInstrumentation::markResourceAsCached(frame()->page(), identifier);
+    InspectorInstrumentation::markResourceAsCached(frame(), identifier);
     context().sendRemainingDelegateMessages(m_documentLoader, identifier, resource->response(), resource->encodedSize());
 }
 

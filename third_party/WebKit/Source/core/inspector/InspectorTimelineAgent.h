@@ -273,7 +273,7 @@ private:
 
     double timestamp();
 
-    LocalFrame* mainFrame() const;
+    LocalFrame* inspectedFrame() const;
 
     bool isStarted();
     void innerStart();

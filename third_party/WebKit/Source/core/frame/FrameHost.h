@@ -43,6 +43,7 @@ namespace blink {
 class Chrome;
 class ConsoleMessageStorage;
 class EventHandlerRegistry;
+class InstrumentingAgents;
 class Page;
 class PinchViewport;
 class Settings;
@@ -69,6 +70,7 @@ public:
     Settings& settings() const;
     Chrome& chrome() const;
     UseCounter& useCounter() const;
+    InstrumentingAgents* instrumentingAgents() const;
 
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.

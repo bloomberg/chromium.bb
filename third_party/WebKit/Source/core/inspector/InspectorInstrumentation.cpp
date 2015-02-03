@@ -195,11 +195,9 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
     return 0;
 }
 
-InstrumentingAgents* instrumentingAgentsFor(Page* page)
+InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
 {
-    if (!page)
-        return 0;
-    return instrumentationForPage(page);
+    return frame ? frame->instrumentingAgents() : nullptr;
 }
 
 InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
@@ -219,11 +217,6 @@ InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope
     if (!workerGlobalScope)
         return 0;
     return instrumentationForWorkerGlobalScope(workerGlobalScope);
-}
-
-InstrumentingAgents* instrumentingAgentsFor(FrameHost* host)
-{
-    return instrumentationForPage(&host->page());
 }
 
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)
@@ -253,12 +246,6 @@ const char LayerTreeId[] = "layerTreeId";
 const char PageId[] = "pageId";
 const char CallbackName[] = "callbackName";
 };
-
-InstrumentingAgents* instrumentationForPage(Page* page)
-{
-    ASSERT(isMainThread());
-    return page->inspectorController().m_instrumentingAgents.get();
-}
 
 InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)
 {

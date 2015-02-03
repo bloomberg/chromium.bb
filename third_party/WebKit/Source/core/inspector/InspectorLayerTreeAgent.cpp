@@ -39,12 +39,12 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/RenderLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
@@ -144,10 +144,10 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     return layerObject;
 }
 
-InspectorLayerTreeAgent::InspectorLayerTreeAgent(Page* page)
+InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree")
     , m_frontend(0)
-    , m_page(page)
+    , m_pageAgent(pageAgent)
 {
 }
 
@@ -157,7 +157,7 @@ InspectorLayerTreeAgent::~InspectorLayerTreeAgent()
 
 void InspectorLayerTreeAgent::trace(Visitor* visitor)
 {
-    visitor->trace(m_page);
+    visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);
 }
 
@@ -182,7 +182,7 @@ void InspectorLayerTreeAgent::restore()
 void InspectorLayerTreeAgent::enable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorLayerTreeAgent(this);
-    if (LocalFrame* frame = m_page->deprecatedLocalMainFrame()) {
+    if (LocalFrame* frame = m_pageAgent->inspectedFrame()) {
         Document* document = frame->document();
         if (document && document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
             layerTreeDidChange();
@@ -266,15 +266,15 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
-    RenderView* renderView = m_page->deprecatedLocalMainFrame()->contentRenderer();
+    RenderView* renderView = m_pageAgent->inspectedFrame()->contentRenderer();
     RenderLayerCompositor* compositor = renderView ? renderView->compositor() : nullptr;
     return compositor;
 }
 
 GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer()
 {
-    if (m_page->settings().pinchVirtualViewportEnabled())
-        return m_page->frameHost().pinchViewport().rootGraphicsLayer();
+    if (m_pageAgent->frameHost()->settings().pinchVirtualViewportEnabled())
+        return m_pageAgent->frameHost()->pinchViewport().rootGraphicsLayer();
 
     return renderLayerCompositor()->rootGraphicsLayer();
 }

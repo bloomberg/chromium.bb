@@ -71,9 +71,7 @@ void InspectorApplicationCacheAgent::enable(ErrorString*)
 {
     m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, true);
     m_instrumentingAgents->setInspectorApplicationCacheAgent(this);
-
-    // We need to pass initial navigator.onOnline.
-    networkStateChanged(networkStateNotifier().onLine());
+    m_frontend->networkStateUpdated(networkStateNotifier().onLine());
 }
 
 void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* frame)
@@ -90,17 +88,18 @@ void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* fr
     m_frontend->applicationCacheStatusUpdated(m_pageAgent->frameId(frame), manifestURL, static_cast<int>(status));
 }
 
-void InspectorApplicationCacheAgent::networkStateChanged(bool online)
+void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame, bool online)
 {
-    m_frontend->networkStateUpdated(online);
+    if (frame == m_pageAgent->inspectedFrame())
+        m_frontend->networkStateUpdated(online);
 }
 
 void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest> >& result)
 {
     result = TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest>::create();
 
-    LocalFrame* mainFrame = m_pageAgent->mainFrame();
-    for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
+    LocalFrame* inspectedFrame = m_pageAgent->inspectedFrame();
+    for (Frame* frame = inspectedFrame; frame; frame = frame->tree().traverseNext(inspectedFrame)) {
         if (!frame->isLocalFrame())
             continue;
         DocumentLoader* documentLoader = toLocalFrame(frame)->loader().documentLoader();

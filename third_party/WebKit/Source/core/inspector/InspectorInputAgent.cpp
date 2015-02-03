@@ -34,6 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -79,19 +80,19 @@ public:
     }
 };
 
-void ConvertInspectorPoint(blink::Page* page, const blink::IntPoint& point, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
+void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& point, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
 {
-    *convertedPoint = page->deprecatedLocalMainFrame()->view()->convertToContainingWindow(point);
-    *globalPoint = page->chrome().rootViewToScreen(blink::IntRect(point, blink::IntSize(0, 0))).location();
+    *convertedPoint = frame->view()->convertToContainingWindow(point);
+    *globalPoint = frame->page()->chrome().rootViewToScreen(blink::IntRect(point, blink::IntSize(0, 0))).location();
 }
 
 } // namespace
 
 namespace blink {
 
-InspectorInputAgent::InspectorInputAgent(Page* page, InspectorClient* client)
+InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent, InspectorClient* client)
     : InspectorBaseAgent<InspectorInputAgent>("Input")
-    , m_page(page), m_client(client)
+    , m_pageAgent(pageAgent), m_client(client)
 {
 }
 
@@ -163,7 +164,7 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
     // Some platforms may have flipped coordinate systems, but the given coordinates
     // assume the origin is in the top-left of the window. Convert.
     IntPoint convertedPoint, globalPoint;
-    ConvertInspectorPoint(m_page, IntPoint(x, y), &convertedPoint, &globalPoint);
+    ConvertInspectorPoint(m_pageAgent->inspectedFrame(), IntPoint(x, y), &convertedPoint, &globalPoint);
 
     PlatformMouseEvent event(
         convertedPoint,
@@ -257,18 +258,18 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         // Some platforms may have flipped coordinate systems, but the given coordinates
         // assume the origin is in the top-left of the window. Convert.
         IntPoint convertedPoint, globalPoint;
-        ConvertInspectorPoint(m_page, IntPoint(x, y), &convertedPoint, &globalPoint);
+        ConvertInspectorPoint(m_pageAgent->inspectedFrame(), IntPoint(x, y), &convertedPoint, &globalPoint);
 
         SyntheticInspectorTouchPoint point(id++, convertedState, globalPoint, convertedPoint, radiusX, radiusY, rotationAngle, force);
         event.append(point);
     }
 
-    m_page->deprecatedLocalMainFrame()->eventHandler().handleTouchEvent(event);
+    m_pageAgent->inspectedFrame()->eventHandler().handleTouchEvent(event);
 }
 
 void InspectorInputAgent::trace(Visitor* visitor)
 {
-    visitor->trace(m_page);
+    visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);
 }
 
