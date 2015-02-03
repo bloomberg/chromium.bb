@@ -81,6 +81,10 @@ class LoginWebDialog : public ui::WebDialogDelegate,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleOpenURLFromTab(content::WebContents* source,
+                            const content::OpenURLParams& params,
+                            content::WebContents** out_new_contents) override;
+  bool HandleShouldCreateWebContents() override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

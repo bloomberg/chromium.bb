@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -155,6 +156,23 @@ bool LoginWebDialog::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
+}
+
+bool LoginWebDialog::HandleOpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params,
+    content::WebContents** out_new_contents) {
+  // On a login screen, if a missing extension is trying to show in a web
+  // dialog, a NetErrorHelper is displayed instead (hence we have a |source|),
+  // but there is no browser window associated with it. A helper screen will
+  // fire an auto-reload, which in turn leads to opening a new browser window,
+  // so we must suppress it.
+  // http://crbug.com/443096
+  return (source && !chrome::FindBrowserWithWebContents(source));
+}
+
+bool LoginWebDialog::HandleShouldCreateWebContents() {
+  return false;
 }
 
 void LoginWebDialog::Observe(int type,

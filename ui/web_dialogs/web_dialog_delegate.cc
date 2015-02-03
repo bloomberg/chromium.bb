@@ -48,4 +48,8 @@ bool WebDialogDelegate::HandleAddNewContents(
   return false;
 }
 
+bool WebDialogDelegate::HandleShouldCreateWebContents() {
+  return true;
+}
+
 }  // namespace ui

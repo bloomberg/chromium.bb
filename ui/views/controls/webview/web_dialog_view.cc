@@ -331,6 +331,20 @@ void WebDialogView::BeforeUnloadFired(content::WebContents* tab,
   *proceed_to_fire_unload = proceed;
 }
 
+bool WebDialogView::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    int route_id,
+    int main_frame_route_id,
+    WindowContainerType window_container_type,
+    const base::string16& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  if (delegate_)
+    return delegate_->HandleShouldCreateWebContents();
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, private:
 
