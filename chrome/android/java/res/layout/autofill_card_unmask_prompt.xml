@@ -47,9 +47,16 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:ems="4"
             android:hint="@string/card_unmask_input_hint" />
+
+        <ImageView
+            android:id="@+id/cvc_hint_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp" />
 
         <ProgressBar
             style="@android:style/Widget.ProgressBar.Small"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"
 
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/CardUnmaskBridge_jni.h"
@@ -43,7 +44,9 @@ void CardUnmaskPromptViewAndroid::Show() {
           env, controller_->GetInstructionsMessage());
   java_object_.Reset(Java_CardUnmaskBridge_create(
       env, reinterpret_cast<intptr_t>(this), dialog_title.obj(),
-      instructions.obj(), controller_->ShouldRequestExpirationDate(),
+      instructions.obj(),
+      ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
+      controller_->ShouldRequestExpirationDate(),
       view_android->GetWindowAndroid()->GetJavaObject().obj()));
 
   Java_CardUnmaskBridge_show(env, java_object_.obj());

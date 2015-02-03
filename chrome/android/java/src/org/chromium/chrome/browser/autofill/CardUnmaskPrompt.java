@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.autofill;
+package org.chromium.chrome.browser.autofill;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,11 +16,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.chromium.ui.R;
+import org.chromium.chrome.R;
 
 import java.text.NumberFormat;
 import java.util.Calendar;
@@ -62,7 +63,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
-            String instructions, boolean shouldRequestExpirationDate) {
+            String instructions, int drawableId, boolean shouldRequestExpirationDate) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -74,6 +75,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
+        ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
         mDialog = new AlertDialog.Builder(context)
                           .setTitle(title)
@@ -207,7 +209,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private boolean areInputsValid() {
         if (mShouldRequestExpirationDate
                 && (mMonthSpinner.getSelectedItemPosition() == 0
-                           || mYearSpinner.getSelectedItemPosition() == 0)) {
+                        || mYearSpinner.getSelectedItemPosition() == 0)) {
             return false;
         }
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());

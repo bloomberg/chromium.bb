@@ -9,8 +9,8 @@ import android.os.Handler;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.ui.autofill.CardUnmaskPrompt;
-import org.chromium.ui.autofill.CardUnmaskPrompt.CardUnmaskPromptDelegate;
+import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskPromptDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -22,7 +22,8 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private final CardUnmaskPrompt mCardUnmaskPrompt;
 
     public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, String title,
-            String instructions, boolean shouldRequestExpirationDate, WindowAndroid windowAndroid) {
+            String instructions, int iconId, boolean shouldRequestExpirationDate,
+            WindowAndroid windowAndroid) {
         mNativeCardUnmaskPromptViewAndroid = nativeCardUnmaskPromptViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -36,15 +37,16 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
                 }
             });
         } else {
-            mCardUnmaskPrompt = new CardUnmaskPrompt(
-                    activity, this, title, instructions, shouldRequestExpirationDate);
+            mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions,
+                    ResourceId.mapToDrawableId(iconId), shouldRequestExpirationDate);
         }
     }
 
     @CalledByNative
     private static CardUnmaskBridge create(long nativeUnmaskPrompt, String title,
-            String instructions, boolean shouldRequestExpirationDate, WindowAndroid windowAndroid) {
-        return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions,
+            String instructions, int iconId, boolean shouldRequestExpirationDate,
+            WindowAndroid windowAndroid) {
+        return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions, iconId,
                 shouldRequestExpirationDate, windowAndroid);
     }
 
