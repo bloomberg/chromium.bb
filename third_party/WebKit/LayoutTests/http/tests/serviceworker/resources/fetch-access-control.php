@@ -4,7 +4,7 @@ header('X-ServiceWorker-ServerHeader: SetInTheServer');
 $prefix = '';
 // If PreflightTest is set:
 // - Use PACAOrign, PACAHeaders, PACAMethods, PACACredentials, PACEHeaders,
-//   PAuth, and PAuthFail parameters in preflight.
+//   PAuth, PAuthFail and PSetCookie* parameters in preflight.
 // - Use $_GET['PreflightTest'] as HTTP status code.
 // - Check Access-Control-Request-Method/Headers headers with
 //   PACRMethod/Headers parameter, if set, in preflight.
@@ -20,6 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS' && isset($_GET['PreflightTest'])) {
     if (isset($_GET['PACRHeaders']) &&
         $_GET['PACRHeaders'] !=
         $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']) {
+        header("HTTP/1.1 400");
+        exit;
+    }
+    // Preflight must not include Cookie headers.
+    if (isset($_SERVER['HTTP_COOKIE'])) {
         header("HTTP/1.1 400");
         exit;
     }
@@ -40,6 +45,10 @@ if (isset($_GET[$prefix . 'ACACredentials']))
            $_GET[$prefix . 'ACACredentials']);
 if (isset($_GET[$prefix . 'ACEHeaders']))
     header('Access-Control-Expose-Headers: ' . $_GET[$prefix . 'ACEHeaders']);
+if (isset($_GET[$prefix . 'SetCookie']))
+    header('Set-Cookie: cookie=' . $_GET[$prefix . 'SetCookie']);
+if (isset($_GET[$prefix . 'SetCookie2']))
+    header('Set-Cookie2: cookie=' . $_GET[$prefix . 'SetCookie2']);
 
 if ((isset($_GET[$prefix . 'Auth']) and !isset($_SERVER['PHP_AUTH_USER'])) ||
     isset($_GET[$prefix . 'AuthFail'])) {

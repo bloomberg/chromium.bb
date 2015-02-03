@@ -111,6 +111,14 @@ var checkJsonpAuth = function(username, password, cookie, url, data) {
                 cookie,
                 'Cookie must match. url: ' + url);
 };
+var checkJsonpCookie = function(cookie, url, data) {
+  assert_equals(data.jsonpResult,
+                'success',
+                url + ' jsonpResult must be success');
+  assert_equals(data.cookie,
+                cookie,
+                'Cookie must match. url: ' + url);
+};
 var checkJsonpError = checkJsonpResult.bind(this, 'error');
 var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
 var checkJsonpNoRedirect = checkJsonpResult.bind(this, 'noredirect');
@@ -133,6 +141,13 @@ var authCheckNone =
   checkJsonpAuth.bind(this, 'undefined', 'undefined', 'undefined');
 var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1', 'cookie1');
 var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2', 'cookie2');
+
+var cookieCheck1 = checkJsonpCookie.bind(this, 'cookie1');
+var cookieCheck2 = checkJsonpCookie.bind(this, 'cookie2');
+var cookieCheckA = checkJsonpCookie.bind(this, 'cookieA');
+var cookieCheckB = checkJsonpCookie.bind(this, 'cookieB');
+var cookieCheckC = checkJsonpCookie.bind(this, 'cookieC');
+var cookieCheckNone = checkJsonpCookie.bind(this, 'undefined');
 
 function login(test) {
   var login1 =
