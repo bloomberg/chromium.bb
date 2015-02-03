@@ -149,6 +149,20 @@ void DeviceDataManager::OnKeyboardDevicesUpdated(
                     OnKeyboardDeviceConfigurationChanged());
 }
 
+void DeviceDataManager::OnMouseDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  FOR_EACH_OBSERVER(InputDeviceEventObserver,
+                    observers_,
+                    OnMouseDeviceConfigurationChanged());
+}
+
+void DeviceDataManager::OnTouchpadDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  FOR_EACH_OBSERVER(InputDeviceEventObserver,
+                    observers_,
+                    OnTouchpadDeviceConfigurationChanged());
+}
+
 void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {
   observers_.AddObserver(observer);
 }

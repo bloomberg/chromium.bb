@@ -39,6 +39,8 @@ class TestInputDeviceObserver : public InputDeviceEventObserver {
   void OnKeyboardDeviceConfigurationChanged() override {
     change_notified_ = true;
   }
+  void OnMouseDeviceConfigurationChanged() override {}
+  void OnTouchpadDeviceConfigurationChanged() override {}
 
   int change_notified() const { return change_notified_; }
   void Reset() { change_notified_ = false; }

@@ -16,6 +16,8 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
 
   virtual void OnKeyboardDeviceConfigurationChanged() = 0;
   virtual void OnTouchscreenDeviceConfigurationChanged() = 0;
+  virtual void OnMouseDeviceConfigurationChanged() = 0;
+  virtual void OnTouchpadDeviceConfigurationChanged() = 0;
 };
 
 }  // namespace ui

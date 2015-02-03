@@ -254,12 +254,16 @@ void EventFactoryEvdev::DispatchMouseDevicesUpdated(
     const std::vector<InputDevice>& devices) {
   // There's no list of mice in DeviceDataManager.
   input_controller_.set_has_mouse(devices.size() != 0);
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnMouseDevicesUpdated(devices);
 }
 
 void EventFactoryEvdev::DispatchTouchpadDevicesUpdated(
     const std::vector<InputDevice>& devices) {
   // There's no list of touchpads in DeviceDataManager.
   input_controller_.set_has_touchpad(devices.size() != 0);
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnTouchpadDevicesUpdated(devices);
 }
 
 

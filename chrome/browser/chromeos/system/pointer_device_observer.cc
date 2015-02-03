@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/events/devices/device_data_manager.h"
 
 #if defined(USE_X11)
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
@@ -27,6 +28,8 @@ PointerDeviceObserver::~PointerDeviceObserver() {
 #if defined(USE_X11)
   XInputHierarchyChangedEventListener::GetInstance()
       ->RemoveObserver(this);
+#elif defined(USE_OZONE)
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 #endif
 }
 
@@ -34,6 +37,8 @@ void PointerDeviceObserver::Init() {
 #if defined(USE_X11)
   XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
+#elif defined(USE_OZONE)
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 #endif
 }
 
@@ -51,6 +56,14 @@ void PointerDeviceObserver::RemoveObserver(Observer* observer) {
 }
 
 void PointerDeviceObserver::DeviceHierarchyChanged() {
+  CheckDevices();
+}
+
+void PointerDeviceObserver::OnMouseDeviceConfigurationChanged() {
+  CheckDevices();
+}
+
+void PointerDeviceObserver::OnTouchpadDeviceConfigurationChanged() {
   CheckDevices();
 }
 

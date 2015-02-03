@@ -11,6 +11,7 @@
 
 namespace ui {
 
+struct InputDevice;
 struct KeyboardDevice;
 struct TouchscreenDevice;
 
@@ -20,14 +21,24 @@ class EVENTS_DEVICES_EXPORT DeviceHotplugEventObserver {
   virtual ~DeviceHotplugEventObserver() {}
 
   // On a hotplug event this is called with the list of available touchscreen
-  // devices. The set of touchscreen devices may not necessarily have changed.
+  // devices. The set of touchscreen devices may not have changed.
   virtual void OnTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) = 0;
 
   // On a hotplug event this is called with the list of available keyboard
-  // devices. The set of keyboard devices may not necessarily have changed.
+  // devices. The set of keyboard devices may not have changed.
   virtual void OnKeyboardDevicesUpdated(
       const std::vector<KeyboardDevice>& devices) = 0;
+
+  // On a hotplug event this is called with the list of available mice. The set
+  // of mice may not have changed.
+  virtual void OnMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) = 0;
+
+  // On a hotplug event this is called with the list of available touchpads. The
+  // set of touchpads may not have changed.
+  virtual void OnTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) = 0;
 };
 
 }  // namespace ui

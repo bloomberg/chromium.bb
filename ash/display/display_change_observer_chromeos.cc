@@ -280,4 +280,10 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
 void DisplayChangeObserver::OnKeyboardDeviceConfigurationChanged() {
 }
 
+void DisplayChangeObserver::OnMouseDeviceConfigurationChanged() {
+}
+
+void DisplayChangeObserver::OnTouchpadDeviceConfigurationChanged() {
+}
+
 }  // namespace ash

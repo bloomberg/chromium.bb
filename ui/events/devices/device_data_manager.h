@@ -64,6 +64,10 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
       const std::vector<TouchscreenDevice>& devices) override;
   void OnKeyboardDevicesUpdated(
       const std::vector<KeyboardDevice>& devices) override;
+  void OnMouseDevicesUpdated(
+      const std::vector<InputDevice>& devices) override;
+  void OnTouchpadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override;
 
  private:
   static DeviceDataManager* instance_;

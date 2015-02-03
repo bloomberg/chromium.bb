@@ -340,6 +340,8 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   UiCallbacks callbacks;
   callbacks.keyboard_callback = base::Bind(&OnKeyboardDevices);
   callbacks.touchscreen_callback = base::Bind(&OnTouchscreenDevices);
+  // TODO(pkotwicz): Compute the lists of mice and touchpads and send the new
+  // lists to DeviceHotplugEventObserver.
 
   // Parsing the device information may block, so delegate the operation to a
   // worker thread. Once the device information is extracted the parsed devices

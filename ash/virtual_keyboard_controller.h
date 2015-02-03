@@ -28,6 +28,8 @@ class ASH_EXPORT VirtualKeyboardController
   // ui::InputDeviceObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;
   void OnKeyboardDeviceConfigurationChanged() override;
+  void OnMouseDeviceConfigurationChanged() override;
+  void OnTouchpadDeviceConfigurationChanged() override;
 
   // Toggles whether the presense of an external keyboard should be ignored
   // when determining whether or not to show the on-screen keyboard.
