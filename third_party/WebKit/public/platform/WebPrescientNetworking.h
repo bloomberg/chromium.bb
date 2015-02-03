@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebString.h"
+#include "WebURL.h"
 
 namespace blink {
 
@@ -43,6 +44,8 @@ public:
     // When a page navigation is speculated, DNS prefetch is triggered to hide
     // the host resolution latency.
     virtual void prefetchDNS(const WebString& hostname) { }
+
+    virtual void preconnect(const WebURL& url) { }
 };
 
 } // namespace blink

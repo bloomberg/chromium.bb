@@ -41,6 +41,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isStyleSheet(false)
     , m_isAlternate(false)
     , m_isDNSPrefetch(false)
+    , m_isPreconnect(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
@@ -73,6 +74,9 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
             m_isLinkPrefetch = true;
         } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
             m_isDNSPrefetch = true;
+        } else if (equalIgnoringCase(linkType, "preconnect")) {
+            if (RuntimeEnabledFeatures::linkPreconnectEnabled())
+                m_isPreconnect = true;
         } else if (equalIgnoringCase(linkType, "subresource")) {
             m_isLinkSubresource = true;
         } else if (equalIgnoringCase(linkType, "prerender")) {

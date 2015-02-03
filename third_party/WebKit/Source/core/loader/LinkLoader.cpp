@@ -40,7 +40,7 @@
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/PrerenderHandle.h"
 #include "platform/Prerender.h"
-#include "platform/network/DNS.h"
+#include "platform/network/NetworkHints.h"
 #include "public/platform/WebPrerender.h"
 
 namespace blink {
@@ -119,6 +119,10 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
         // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
         if (settings && settings->dnsPrefetchingEnabled() && href.isValid() && !href.isEmpty())
             prefetchDNS(href.host());
+    }
+
+    if (relAttribute.isPreconnect() && href.isValid()) {
+        preconnect(href);
     }
 
     // FIXME(crbug.com/323096): Should take care of import.

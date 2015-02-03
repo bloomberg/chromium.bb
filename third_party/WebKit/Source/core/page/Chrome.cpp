@@ -39,7 +39,7 @@
 #include "platform/FileChooser.h"
 #include "platform/Logging.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/network/DNS.h"
+#include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"

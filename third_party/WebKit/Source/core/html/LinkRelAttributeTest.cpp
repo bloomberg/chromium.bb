@@ -55,7 +55,7 @@ private:
     bool m_touchIconLoadingEnabled;
 };
 
-static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false)
+static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false, bool isPreconnect = false)
 {
     LinkRelAttribute linkRelAttribute(value);
     ASSERT_EQ(isStyleSheet, linkRelAttribute.isStyleSheet()) << value.utf8().data();
@@ -65,6 +65,7 @@ static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconTyp
     ASSERT_EQ(isLinkSubresource, linkRelAttribute.isLinkSubresource()) << value.utf8().data();
     ASSERT_EQ(isLinkPrerender, linkRelAttribute.isLinkPrerender()) << value.utf8().data();
     ASSERT_EQ(isImport, linkRelAttribute.isImport()) << value.utf8().data();
+    ASSERT_EQ(isPreconnect, linkRelAttribute.isPreconnect()) << value.utf8().data();
 }
 
 TEST_F(LinkRelAttributeTest, Constructor)
@@ -99,6 +100,9 @@ TEST_F(LinkRelAttributeTest, Constructor)
     testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
     // "import" is mutually exclusive and "stylesheet" wins when they conflict.
     testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
+
+    testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, false, true);
+    testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, false, true);
 }
 
 TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
@@ -134,6 +138,9 @@ TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
     testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
     testLinkRelAttribute("alternate import", false, InvalidIcon, true, false, false, false, true);
     testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
+
+    testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, false, true);
+    testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, false, true);
 }
 
 } // namespace

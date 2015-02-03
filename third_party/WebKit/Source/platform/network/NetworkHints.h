@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "platform/network/DNS.h"
+#ifndef NetworkHints_h
+#define NetworkHints_h
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebPrescientNetworking.h"
+#include "platform/PlatformExport.h"
+#include "platform/weborigin/KURL.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
-void prefetchDNS(const String& hostname)
-{
-    if (WebPrescientNetworking* prescientNetworking = Platform::current()->prescientNetworking())
-        prescientNetworking->prefetchDNS(hostname);
-}
+PLATFORM_EXPORT void prefetchDNS(const String& hostname);
+PLATFORM_EXPORT void preconnect(const KURL&);
 
 } // namespace blink
+
+#endif

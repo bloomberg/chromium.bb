@@ -45,7 +45,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/network/DNS.h"
+#include "platform/network/NetworkHints.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
