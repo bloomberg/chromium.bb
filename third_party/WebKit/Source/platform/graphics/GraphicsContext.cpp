@@ -1369,6 +1369,7 @@ void GraphicsContext::fillRoundedRect(const FloatRect& rect, const FloatSize& to
         // Not all the radii fit, return a rect. This matches the behavior of
         // Path::createRoundedRectangle. Without this we attempt to draw a round
         // shadow for a square box.
+        // FIXME: this fallback code is wrong, and also duplicates related code in FloatRoundedRect::constrainRadii, Path and SKRRect.
         fillRect(rect, color);
         return;
     }

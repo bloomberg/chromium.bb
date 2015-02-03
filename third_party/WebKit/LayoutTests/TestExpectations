@@ -256,6 +256,8 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
+crbug.com/451600 paint/roundedrects/circle-with-shadow.html [ NeedsRebaseline ]
+
 # V8 Changed error message when calling non-function
 crbug.com/259443 fast/forms/selection-wrongtype.html [ NeedsManualRebaseline ]
 crbug.com/259443 fast/js/exception-thrown-from-new.html [ NeedsManualRebaseline ]
