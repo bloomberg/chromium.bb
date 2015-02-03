@@ -1031,6 +1031,7 @@
     ['use_ozone==1', {
       'dependencies': [
         '../ui/ozone/ozone.gyp:ozone',
+        '../ui/ozone/ozone.gyp:ozone_base',
         '../ui/ozone/gpu/ozone_gpu.gyp:ozone_gpu',
       ],
       'sources!': [
