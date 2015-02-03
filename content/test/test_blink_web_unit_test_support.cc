@@ -64,6 +64,11 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   gin::IsolateHolder::LoadV8Snapshot();
 #endif
 
+  if (base::MessageLoopProxy::current()) {
+    renderer_scheduler_ = RendererScheduler::Create();
+    web_scheduler_.reset(new WebSchedulerImpl(renderer_scheduler_.get()));
+  }
+
   blink::initialize(this);
   blink::mainThreadIsolate()->SetCounterFunction(
       base::StatsTable::FindLocation);
@@ -322,12 +327,6 @@ bool TestBlinkWebUnitTestSupport::getBlobItems(
 }
 
 blink::WebScheduler* TestBlinkWebUnitTestSupport::scheduler() {
-  // Lazily create the WebSchedulerImpl and RendererScheduler if needed.
-  if (!web_scheduler_) {
-    if (!renderer_scheduler_)
-      renderer_scheduler_ = RendererScheduler::Create();
-    web_scheduler_.reset(new WebSchedulerImpl(renderer_scheduler_.get()));
-  }
   return web_scheduler_.get();
 }
 
