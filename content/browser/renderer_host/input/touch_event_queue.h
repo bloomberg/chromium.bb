@@ -164,8 +164,9 @@ class CONTENT_EXPORT TouchEventQueue {
   // Safely pop the head of the queue.
   scoped_ptr<CoalescedWebTouchEvent> PopTouchEvent();
 
-  // Dispatch |touch| to the client.
-  void SendTouchEventImmediately(const TouchEventWithLatencyInfo& touch);
+  // Dispatch |touch| to the client. Before dispatching, updates pointer
+  // states in touchmove events for pointers that have not changed position.
+  void SendTouchEventImmediately(TouchEventWithLatencyInfo* touch);
 
   enum PreFilterResult {
     ACK_WITH_NO_CONSUMER_EXISTS,
@@ -235,6 +236,9 @@ class CONTENT_EXPORT TouchEventQueue {
   // setting for experimentation, but we may evolve it into an app-controlled
   // mode.
   const TouchScrollingMode touch_scrolling_mode_;
+
+  // Event is saved to compare pointer positions for new touchmove events.
+  scoped_ptr<blink::WebTouchEvent> last_sent_touchevent_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };

@@ -45,6 +45,20 @@ bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
          !WebInputEventTraits::IgnoresAckDisposition(event);
 }
 
+// Compare all properties of touch points to determine the state.
+bool HasPointChanged(const WebTouchPoint& last_point,
+    const WebTouchPoint& current_point) {
+  if (last_point.screenPosition != current_point.screenPosition ||
+      last_point.position != current_point.position ||
+      last_point.radiusX != current_point.radiusX ||
+      last_point.radiusY != current_point.radiusY ||
+      last_point.rotationAngle != current_point.rotationAngle ||
+      last_point.force != current_point.force) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 
@@ -96,7 +110,7 @@ class TouchEventQueue::TouchTimeoutHandler {
           SetPendingAckState(PENDING_ACK_CANCEL_EVENT);
           TouchEventWithLatencyInfo cancel_event =
               ObtainCancelEventForTouchEvent(timeout_event_);
-          touch_queue_->SendTouchEventImmediately(cancel_event);
+          touch_queue_->SendTouchEventImmediately(&cancel_event);
         } else {
           SetPendingAckState(PENDING_ACK_NONE);
           touch_queue_->UpdateTouchConsumerStates(timeout_event_.event,
@@ -500,7 +514,7 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
           pending_async_touchmove_.Pass();
       async_move->event.cancelable = false;
       touch_queue_.push_front(new CoalescedWebTouchEvent(*async_move, true));
-      SendTouchEventImmediately(*async_move);
+      SendTouchEventImmediately(async_move.get());
       return;
     }
   }
@@ -514,7 +528,7 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
   // A synchronous ack will reset |dispatching_touch_|, in which case
   // the touch timeout should not be started.
   base::AutoReset<bool> dispatching_touch(&dispatching_touch_, true);
-  SendTouchEventImmediately(touch);
+  SendTouchEventImmediately(&touch);
   if (dispatching_touch_ && timeout_handler_)
     timeout_handler_->StartIfNecessary(touch);
 }
@@ -674,8 +688,34 @@ scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
 }
 
 void TouchEventQueue::SendTouchEventImmediately(
-    const TouchEventWithLatencyInfo& touch) {
-  client_->SendTouchEventImmediately(touch);
+    TouchEventWithLatencyInfo* touch) {
+  // For touchmove events, compare touch points position from current event
+  // to last sent event and update touch points state.
+  if (touch->event.type == WebInputEvent::TouchMove) {
+    CHECK(last_sent_touchevent_);
+    for (unsigned int i = 0; i < last_sent_touchevent_->touchesLength; ++i) {
+      const WebTouchPoint& last_touch_point =
+          last_sent_touchevent_->touches[i];
+      // Touches with same id may not have same index in Touches array.
+      for (unsigned int j = 0; j < touch->event.touchesLength; ++j) {
+        const WebTouchPoint& current_touchmove_point = touch->event.touches[j];
+        if (current_touchmove_point.id != last_touch_point.id)
+          continue;
+
+        if (!HasPointChanged(last_touch_point, current_touchmove_point))
+          touch->event.touches[j].state = WebTouchPoint::StateStationary;
+
+        break;
+      }
+    }
+  }
+
+  if (last_sent_touchevent_)
+    *last_sent_touchevent_ = touch->event;
+  else
+    last_sent_touchevent_.reset(new WebTouchEvent(touch->event));
+
+  client_->SendTouchEventImmediately(*touch);
 }
 
 TouchEventQueue::PreFilterResult
@@ -690,6 +730,8 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
     touch_consumer_states_.clear();
     send_touch_events_async_ = false;
     pending_async_touchmove_.reset();
+    last_sent_touchevent_.reset();
+
     touch_sequence_start_position_ = gfx::PointF(event.touches[0].position);
     drop_remaining_touches_in_sequence_ = false;
     if (!has_handlers_) {

@@ -169,6 +169,46 @@ class TouchEventQueueTest : public testing::Test,
     SendTouchEvent();
   }
 
+  void ChangeTouchPointRadius(int index, float radius_x, float radius_y) {
+    CHECK_GE(index, 0);
+    CHECK_LT(index, touch_event_.touchesLengthCap);
+    WebTouchPoint& point = touch_event_.touches[index];
+    point.radiusX = radius_x;
+    point.radiusY = radius_y;
+    touch_event_.touches[index].state = WebTouchPoint::StateMoved;
+    touch_event_.causesScrollingIfUncanceled = true;
+    WebTouchEventTraits::ResetType(WebInputEvent::TouchMove,
+                                   touch_event_.timeStampSeconds,
+                                   &touch_event_);
+    SendTouchEvent();
+  }
+
+  void ChangeTouchPointRotationAngle(int index, float rotation_angle) {
+    CHECK_GE(index, 0);
+    CHECK_LT(index, touch_event_.touchesLengthCap);
+    WebTouchPoint& point = touch_event_.touches[index];
+    point.rotationAngle = rotation_angle;
+    touch_event_.touches[index].state = WebTouchPoint::StateMoved;
+    touch_event_.causesScrollingIfUncanceled = true;
+    WebTouchEventTraits::ResetType(WebInputEvent::TouchMove,
+                                   touch_event_.timeStampSeconds,
+                                   &touch_event_);
+    SendTouchEvent();
+  }
+
+  void ChangeTouchPointForce(int index, float force) {
+    CHECK_GE(index, 0);
+    CHECK_LT(index, touch_event_.touchesLengthCap);
+    WebTouchPoint& point = touch_event_.touches[index];
+    point.force = force;
+    touch_event_.touches[index].state = WebTouchPoint::StateMoved;
+    touch_event_.causesScrollingIfUncanceled = true;
+    WebTouchEventTraits::ResetType(WebInputEvent::TouchMove,
+                                   touch_event_.timeStampSeconds,
+                                   &touch_event_);
+    SendTouchEvent();
+  }
+
   void ReleaseTouchPoint(int index) {
     touch_event_.ReleasePoint(index);
     SendTouchEvent();
@@ -1894,7 +1934,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_TRUE(sent_event().cancelable);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
   EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-  EXPECT_EQ(WebTouchPoint::StateMoved, sent_event().touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, sent_event().touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, sent_event().touches[1].state);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -2298,6 +2338,116 @@ TEST_F(TouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Tests that touch points states are correct in TouchMove events.
+TEST_F(TouchEventQueueTest, PointerStatesInTouchMove) {
+  PressTouchPoint(1, 1);
+  PressTouchPoint(2, 2);
+  PressTouchPoint(3, 3);
+  PressTouchPoint(4, 4);
+  EXPECT_EQ(4U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive ACK for the first three touch-events.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Test current touches state before sending TouchMoves.
+  const WebTouchEvent& event1 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchStart, event1.type);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event1.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event1.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::StatePressed, event1.touches[3].state);
+
+  // Move x-position for 1st touch, y-position for 2nd touch
+  // and do not move other touches.
+  MoveTouchPoints(0, 1.1f, 1.f, 1, 2.f, 20.001f);
+  MoveTouchPoints(2, 3.f, 3.f, 3, 4.f, 4.f);
+  EXPECT_EQ(2U, queued_event_count());
+
+  // Receive an ACK for the last TouchPress event.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // 1st TouchMove is sent. Test for touches state.
+  const WebTouchEvent& event2 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event2.type);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event2.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event2.touches[3].state);
+
+  // Move only 4th touch but not others.
+  MoveTouchPoints(0, 1.1f, 1.f, 1, 2.f, 20.001f);
+  MoveTouchPoints(2, 3.f, 3.f, 3, 4.1f, 4.1f);
+
+  // Receive an ACK for previous (1st) TouchMove.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // 2nd TouchMove is sent. Test for touches state.
+  const WebTouchEvent& event3 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event3.type);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event3.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event3.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event3.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event3.touches[3].state);
+}
+
+// Tests that touch point state is correct in TouchMove events
+// when point properties other than position changed.
+TEST_F(TouchEventQueueTest, PointerStatesWhenOtherThanPositionChanged) {
+  PressTouchPoint(1, 1);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Default initial radiusX/Y is (1.f, 1.f).
+  // Default initial rotationAngle is 1.f.
+  // Default initial force is 1.f.
+
+  // Change touch point radius only.
+  ChangeTouchPointRadius(0, 1.5f, 1.f);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // TouchMove is sent. Test for pointer state.
+  const WebTouchEvent& event1 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event1.type);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event1.touches[0].state);
+
+  // Change touch point force.
+  ChangeTouchPointForce(0, 0.9f);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // TouchMove is sent. Test for pointer state.
+  const WebTouchEvent& event2 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event2.type);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[0].state);
+
+  // Change touch point rotationAngle.
+  ChangeTouchPointRotationAngle(0, 1.1f);
+
+  // TouchMove is sent. Test for pointer state.
+  const WebTouchEvent& event3 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event3.type);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event3.touches[0].state);
+
+  // TODO(jdduke): Now trying to forward a TouchMove event without really
+  // changing touch point properties. Update below test with testing for
+  // rejected TouchMove with ack state INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+  // crbug.com/452032. Or should it be in a separte test?.
+
+  // Do not change any properties, but use previous values.
+  MoveTouchPoint(0, 1.f, 1.f);
+  ChangeTouchPointRadius(0, 1.5f, 1.f);
+
+  // Receive an ACK for previous TouchMove.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // TouchMove is sent, but pointer state should be StateStationary.
+  const WebTouchEvent& event4 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event4.type);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event4.touches[0].state);
 }
 
 }  // namespace content

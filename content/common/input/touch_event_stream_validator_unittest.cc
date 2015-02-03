@@ -159,7 +159,12 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
          j <= WebTouchPoint::StateCancelled;
          ++j) {
       event.touches[0].state = static_cast<WebTouchPoint::State>(j);
-      if (event.touches[0].state == kValidTouchPointStatesForType[i]) {
+      if (event.touches[0].state == kValidTouchPointStatesForType[i]
+          // TODO(jdduke): Remove this StateStationary workaround check for
+          // TouchMove after implementing TouchMove events filtering based on
+          // corrected touches state in TouchEventQueue, crbug.com/452032.
+          || (event.type == WebInputEvent::TouchMove
+              && event.touches[0].state == WebTouchPoint::StateStationary)) {
         EXPECT_TRUE(validator.Validate(event, &error_msg));
         EXPECT_TRUE(error_msg.empty());
       } else {

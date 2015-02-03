@@ -139,6 +139,12 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
         break;
 
       case WebTouchPoint::StateStationary:
+        // TODO(jdduke): Remove this after implementing TouchMove events
+        // filtering based on corrected touches state in TouchEventQueue,
+        // crbug.com/452032.
+        if (event.type == WebInputEvent::TouchMove)
+          found_valid_state_for_type = true;
+
         break;
 
       case WebTouchPoint::StateCancelled:
