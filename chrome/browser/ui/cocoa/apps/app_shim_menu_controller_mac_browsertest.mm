@@ -9,8 +9,11 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -26,23 +29,43 @@ namespace {
 class AppShimMenuControllerBrowserTest
     : public extensions::PlatformAppBrowserTest {
  protected:
+  // The apps that can be installed and launched by SetUpApps().
+  enum AvailableApps { PACKAGED_1 = 0x1, PACKAGED_2 = 0x2, HOSTED = 0x4 };
+
   AppShimMenuControllerBrowserTest()
-      : app_1_(NULL),
-        app_2_(NULL),
+      : app_1_(nullptr),
+        app_2_(nullptr),
+        hosted_app_(nullptr),
         initial_menu_item_count_(0) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
-  // Start two apps and wait for them to be launched.
-  void SetUpApps() {
-    ExtensionTestMessageListener listener_1("Launched", false);
-    app_1_ = InstallAndLaunchPlatformApp("minimal_id");
-    ASSERT_TRUE(listener_1.WaitUntilSatisfied());
-    ExtensionTestMessageListener listener_2("Launched", false);
-    app_2_ = InstallAndLaunchPlatformApp("minimal");
-    ASSERT_TRUE(listener_2.WaitUntilSatisfied());
+  // Start testing apps and wait for them to launch. |flags| is a bitmask of
+  // AvailableApps.
+  void SetUpApps(int flags) {
+
+    if (flags & PACKAGED_1) {
+      ExtensionTestMessageListener listener_1("Launched", false);
+      app_1_ = InstallAndLaunchPlatformApp("minimal_id");
+      ASSERT_TRUE(listener_1.WaitUntilSatisfied());
+    }
+
+    if (flags & PACKAGED_2) {
+      ExtensionTestMessageListener listener_2("Launched", false);
+      app_2_ = InstallAndLaunchPlatformApp("minimal");
+      ASSERT_TRUE(listener_2.WaitUntilSatisfied());
+    }
+
+    if (flags & HOSTED) {
+      hosted_app_ = InstallHostedApp();
+
+      // Explicitly set the launch type to open in a new window.
+      extensions::SetLaunchType(profile(), hosted_app_->id(),
+                                extensions::LAUNCH_TYPE_WINDOW);
+      LaunchHostedApp(hosted_app_);
+    }
 
     initial_menu_item_count_ = [[[NSApp mainMenu] itemArray] count];
   }
@@ -74,8 +97,35 @@ class AppShimMenuControllerBrowserTest
       EXPECT_FALSE([[item_array objectAtIndex:i] isHidden]);
   }
 
+  void CheckEditMenu(const extensions::Extension* app) const {
+    const int edit_menu_index = initial_menu_item_count_ + 2;
+
+    NSMenuItem* edit_menu =
+        [[[NSApp mainMenu] itemArray] objectAtIndex:edit_menu_index];
+    NSMenu* edit_submenu = [edit_menu submenu];
+    NSMenuItem* paste_match_style_menu_item =
+        [edit_submenu itemWithTag:IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE];
+    NSMenuItem* find_menu_item = [edit_submenu itemWithTag:IDC_FIND_MENU];
+    if (app->is_hosted_app()) {
+      EXPECT_FALSE([paste_match_style_menu_item isHidden]);
+      EXPECT_FALSE([find_menu_item isHidden]);
+    } else {
+      EXPECT_TRUE([paste_match_style_menu_item isHidden]);
+      EXPECT_TRUE([find_menu_item isHidden]);
+    }
+  }
+
+  extensions::AppWindow* FirstWindowForApp(const extensions::Extension* app) {
+    extensions::AppWindowRegistry::AppWindowList window_list =
+        extensions::AppWindowRegistry::Get(profile())
+            ->GetAppWindowsForApp(app->id());
+    EXPECT_FALSE(window_list.empty());
+    return window_list.front();
+  }
+
   const extensions::Extension* app_1_;
   const extensions::Extension* app_2_;
+  const extensions::Extension* hosted_app_;
   NSUInteger initial_menu_item_count_;
 
  private:
@@ -85,21 +135,17 @@ class AppShimMenuControllerBrowserTest
 // Test that focusing an app window changes the menu bar.
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                        PlatformAppFocusUpdatesMenuBar) {
-  SetUpApps();
+  SetUpApps(PACKAGED_1 | PACKAGED_2);
   // When an app is focused, all Chrome menu items should be hidden, and a menu
   // item for the app should be added.
-  extensions::AppWindow* app_1_app_window =
-      extensions::AppWindowRegistry::Get(profile())
-          ->GetAppWindowsForApp(app_1_->id()).front();
+  extensions::AppWindow* app_1_app_window = FirstWindowForApp(app_1_);
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_app_window->GetNativeWindow()];
   CheckHasAppMenus(app_1_);
 
   // When another app is focused, the menu item for the app should change.
-  extensions::AppWindow* app_2_app_window =
-      extensions::AppWindowRegistry::Get(profile())
-          ->GetAppWindowsForApp(app_2_->id()).front();
+  extensions::AppWindow* app_2_app_window = FirstWindowForApp(app_2_);
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_2_app_window->GetNativeWindow()];
@@ -123,27 +169,53 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   CheckNoAppMenus();
 }
 
+// Test to check that hosted apps have "Find" and "Paste and Match Style" menu
+// items under the "Edit" menu.
+IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
+                       HostedAppHasAdditionalEditMenuItems) {
+  SetUpApps(HOSTED | PACKAGED_1);
+
+  // Find the first hosted app window.
+  Browser* hosted_app_browser = nullptr;
+  BrowserList* browsers =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  for (Browser* browser : *browsers) {
+    const extensions::Extension* extension =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (extension && extension->is_hosted_app()) {
+      hosted_app_browser = browser;
+      break;
+    }
+  }
+  EXPECT_TRUE(hosted_app_browser);
+
+  // Focus the hosted app.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:hosted_app_browser->window()->GetNativeWindow()];
+  CheckEditMenu(hosted_app_);
+
+  // Now focus a platform app, the Edit menu should not have the additional
+  // options.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:FirstWindowForApp(app_1_)->GetNativeWindow()];
+  CheckEditMenu(app_1_);
+}
+
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                        ExtensionUninstallUpdatesMenuBar) {
-  SetUpApps();
+  SetUpApps(PACKAGED_1 | PACKAGED_2);
 
   // This essentially tests that a NSWindowWillCloseNotification gets fired when
   // an app is uninstalled. We need to close the other windows first since the
   // menu only changes on a NSWindowWillCloseNotification if there are no other
   // windows.
-  extensions::AppWindow* app_2_app_window =
-      extensions::AppWindowRegistry::Get(profile())
-          ->GetAppWindowsForApp(app_2_->id()).front();
-  app_2_app_window->GetBaseWindow()->Close();
-
+  FirstWindowForApp(app_2_)->GetBaseWindow()->Close();
   chrome::BrowserIterator()->window()->Close();
-
-  extensions::AppWindow* app_1_app_window =
-      extensions::AppWindowRegistry::Get(profile())
-          ->GetAppWindowsForApp(app_1_->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
-                    object:app_1_app_window->GetNativeWindow()];
+                    object:FirstWindowForApp(app_1_)->GetNativeWindow()];
 
   CheckHasAppMenus(app_1_);
   ExtensionService::UninstallExtensionHelper(

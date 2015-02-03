@@ -75,6 +75,44 @@ void RemoveMenuItemWithTag(NSMenuItem* top_level_item,
     [submenu removeItem:nextItem];
 }
 
+// Sets the menu item with |item_tag| in |top_level_item| visible.
+// If |has_alternate| is true, the item immediately following |item_tag| is
+// assumed to be its (only) alternate. Since AppKit is unable to hide items
+// with alternates, |has_alternate| will cause -[NSMenuItem alternate] to be
+// removed when hiding and restored when showing.
+void SetItemWithTagVisible(NSMenuItem* top_level_item,
+                           NSInteger item_tag,
+                           bool visible,
+                           bool has_alternate) {
+  NSMenu* submenu = [top_level_item submenu];
+  NSMenuItem* menu_item = [submenu itemWithTag:item_tag];
+  DCHECK(menu_item);
+
+  if (visible != [menu_item isHidden])
+    return;
+
+  if (!has_alternate) {
+    [menu_item setHidden:!visible];
+    return;
+  }
+
+  NSInteger next_index = [submenu indexOfItem:menu_item] + 1;
+  DCHECK_LT(next_index, [submenu numberOfItems]);
+
+  NSMenuItem* alternate_item = [submenu itemAtIndex:next_index];
+  if (!visible) {
+    // When hiding (only), we can verify the assumption that the item following
+    // |item_tag| is actually an alternate.
+    DCHECK([alternate_item isAlternate]);
+  }
+
+  // The alternate item visibility should always be in sync.
+  DCHECK_EQ([alternate_item isHidden], [menu_item isHidden]);
+  [alternate_item setAlternate:visible];
+  [alternate_item setHidden:!visible];
+  [menu_item setHidden:!visible];
+}
+
 }  // namespace
 
 // Used by AppShimMenuController to manage menu items that are a copy of a
@@ -270,14 +308,10 @@ void RemoveMenuItemWithTag(NSMenuItem* top_level_item,
   [closeWindowMenuItem setKeyEquivalent:@"w"];
   [closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
 
-  // Edit menu. This copies the menu entirely and removes
-  // "Paste and Match Style" and "Find". This is because the last two items,
-  // "Start Dictation" and "Special Characters" are added by OSX, so we can't
-  // copy them explicitly.
+  // Edit menu. We copy the menu because the last two items, "Start Dictation"
+  // and "Special Characters" are added by OSX, so we can't copy them
+  // explicitly.
   editMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_EDIT_MENU] copy]);
-  RemoveMenuItemWithTag(editMenuItem_,
-                        IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE, NO);
-  RemoveMenuItemWithTag(editMenuItem_, IDC_FIND_MENU, NO);
 
   // View menu. Remove "Always Show Bookmark Bar" and separator.
   viewMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] copy]);
@@ -379,7 +413,14 @@ void RemoveMenuItemWithTag(NSMenuItem* top_level_item,
 
   [mainMenu addItem:appMenuItem_];
   [mainMenu addItem:fileMenuItem_];
+
+  SetItemWithTagVisible(editMenuItem_,
+                        IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
+                        app->is_hosted_app(), true);
+  SetItemWithTagVisible(editMenuItem_, IDC_FIND_MENU, app->is_hosted_app(),
+                        false);
   [mainMenu addItem:editMenuItem_];
+
   if (app->is_hosted_app()) {
     [mainMenu addItem:viewMenuItem_];
     [mainMenu addItem:historyMenuItem_];
