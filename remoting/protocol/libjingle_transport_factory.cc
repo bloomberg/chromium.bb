@@ -86,6 +86,8 @@ class LibjingleTransport
   // socket is destroyed.
   void OnChannelDestroyed();
 
+  void NotifyRouteChanged();
+
   // Tries to connect by restarting ICE. Called by |reconnect_timer_|.
   void TryReconnect();
 
@@ -258,6 +260,44 @@ void LibjingleTransport::OnCandidateReady(
 void LibjingleTransport::OnRouteChange(
     cricket::TransportChannel* channel,
     const cricket::Candidate& candidate) {
+  // Ignore notifications if the channel is not writable.
+  if (channel_->writable())
+    NotifyRouteChanged();
+}
+
+void LibjingleTransport::OnWritableState(
+    cricket::TransportChannel* channel) {
+  DCHECK_EQ(channel, channel_.get());
+
+  if (channel->writable()) {
+    if (!channel_was_writable_) {
+      channel_was_writable_ = true;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&LibjingleTransport::NotifyConnected,
+                     weak_factory_.GetWeakPtr()));
+    }
+    connect_attempts_left_ = kMaxReconnectAttempts;
+    reconnect_timer_.Stop();
+
+    // Route change notifications are ignored when the |channel_| is not
+    // writable. Notify the event handler about the current route once the
+    // channel is writable.
+    NotifyRouteChanged();
+  } else if (!channel->writable() && channel_was_writable_) {
+    reconnect_timer_.Reset();
+    TryReconnect();
+  }
+}
+
+void LibjingleTransport::OnChannelDestroyed() {
+  if (is_connected()) {
+    // The connection socket is being deleted, so delete the transport too.
+    delete this;
+  }
+}
+
+void LibjingleTransport::NotifyRouteChanged() {
   TransportRoute route;
 
   DCHECK(channel_->best_connection());
@@ -276,7 +316,7 @@ void LibjingleTransport::OnRouteChange(
       CandidateTypeToTransportRouteType(connection->remote_candidate().type()));
 
   if (!jingle_glue::SocketAddressToIPEndPoint(
-          candidate.address(), &route.remote_address)) {
+          connection->remote_candidate().address(), &route.remote_address)) {
     LOG(FATAL) << "Failed to convert peer IP address.";
   }
 
@@ -288,33 +328,6 @@ void LibjingleTransport::OnRouteChange(
   }
 
   event_handler_->OnTransportRouteChange(this, route);
-}
-
-void LibjingleTransport::OnWritableState(
-    cricket::TransportChannel* channel) {
-  DCHECK_EQ(channel, channel_.get());
-
-  if (channel->writable()) {
-    if (!channel_was_writable_) {
-      channel_was_writable_ = true;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&LibjingleTransport::NotifyConnected,
-                     weak_factory_.GetWeakPtr()));
-    }
-    connect_attempts_left_ = kMaxReconnectAttempts;
-    reconnect_timer_.Stop();
-  } else if (!channel->writable() && channel_was_writable_) {
-    reconnect_timer_.Reset();
-    TryReconnect();
-  }
-}
-
-void LibjingleTransport::OnChannelDestroyed() {
-  if (is_connected()) {
-    // The connection socket is being deleted, so delete the transport too.
-    delete this;
-  }
 }
 
 void LibjingleTransport::TryReconnect() {
