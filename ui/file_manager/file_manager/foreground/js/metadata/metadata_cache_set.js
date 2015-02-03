@@ -134,7 +134,6 @@ MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
 
 /**
  * Interface of raw strage for MetadataCacheItem.
- * TODO(hirono): Add implementation of the interface for LRUCache.
  * @interface
  */
 function MetadataCacheSetStorage() {
@@ -173,16 +172,61 @@ function MetadataCacheSetStorageForObject(items) {
   this.items_ = items;
 }
 
+/**
+ * @override
+ */
 MetadataCacheSetStorageForObject.prototype.get = function(url) {
   return this.items_[url];
 };
 
+/**
+ * @override
+ */
 MetadataCacheSetStorageForObject.prototype.peek = function(url) {
   return this.items_[url];
 };
 
+/**
+ * @override
+ */
 MetadataCacheSetStorageForObject.prototype.put = function(url, item) {
   this.items_[url] = item;
+};
+
+/**
+ * Implementation of MetadataCacheSetStorage by using LRUCache.
+ * @param {!LRUCache<!MetadataCacheItem>} cache LRUCache.
+ * @constructor
+ * @implements {MetadataCacheSetStorage}
+ * @struct
+ */
+function MetadataCacheSetStorageForLRUCache(cache) {
+  /**
+   * @private {!LRUCache<!MetadataCacheItem>}
+   * @const
+   */
+  this.cache_ = cache;
+}
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForLRUCache.prototype.get = function(url) {
+  return this.cache_.get(url);
+};
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForLRUCache.prototype.peek = function(url) {
+  return this.cache_.peek(url);
+};
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForLRUCache.prototype.put = function(url, item) {
+  this.cache_.put(url, item);
 };
 
 /**
