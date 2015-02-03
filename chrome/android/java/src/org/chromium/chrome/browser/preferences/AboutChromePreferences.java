@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.text.format.DateUtils;
 import android.view.ContextThemeWrapper;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.ProfilePathCallback;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
@@ -46,10 +51,9 @@ public class AboutChromePreferences extends PreferenceFragment implements
         }
 
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-        PrefServiceBridge.AboutVersionStrings versionStrings =
-                prefServiceBridge.getAboutVersionStrings();
+        AboutVersionStrings versionStrings = prefServiceBridge.getAboutVersionStrings();
         Preference p = findPreference(PREF_APPLICATION_VERSION);
-        p.setSummary(versionStrings.getApplicationVersion());
+        p.setSummary(getApplicationVersion(versionStrings.getApplicationVersion()));
         p = findPreference(PREF_OS_VERSION);
         p.setSummary(versionStrings.getOSVersion());
         p = findPreference(PREF_WEBKIT_VERSION);
@@ -63,6 +67,25 @@ public class AboutChromePreferences extends PreferenceFragment implements
         p.setSummary(getString(R.string.legal_information_summary, currentYear));
 
         prefServiceBridge.getProfilePath(this);
+    }
+
+    private String getApplicationVersion(String version) {
+        if (ChromeVersionInfo.isOfficialBuild()) {
+            return version;
+        }
+
+        // For developer builds, show how recently the app was installed/updated.
+        PackageInfo info;
+        try {
+            info = getActivity().getPackageManager().getPackageInfo(
+                    getActivity().getPackageName(), 0);
+        } catch (NameNotFoundException e) {
+            return version;
+        }
+        CharSequence updateTimeString = DateUtils.getRelativeTimeSpanString(
+                info.lastUpdateTime, System.currentTimeMillis(), 0);
+        return getActivity().getString(R.string.version_with_update_time, version,
+                updateTimeString);
     }
 
     @Override

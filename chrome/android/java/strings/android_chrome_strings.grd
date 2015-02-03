@@ -450,6 +450,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_APPLICATION_VERSION_TITLE" desc="Title for application version">
         Application version
       </message>
+      <message name="IDS_VERSION_WITH_UPDATE_TIME" desc="Message showing Chrome's version and the time it was last updated">
+        <ph name="VERSION">%1$s<ex>Chrome 40.0.2214.67</ex></ph> (Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>5 minutes ago</ex></ph>)
+      </message>
       <message name="IDS_OS_VERSION_TITLE" desc="Title for operating system version">
         Operating system
       </message>
