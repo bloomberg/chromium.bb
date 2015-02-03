@@ -1488,7 +1488,10 @@
                '^(source_list_pnacl_newlib)',
                '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
              ],
-             'outputs': ['>(out_pnacl_newlib)'],
+             'outputs': [
+               '>(out_pnacl_newlib)',
+               '>(out_pnacl_newlib).debug',
+             ],
              'action': [
                '<@(common_args)',
                '>@(extra_args)',
