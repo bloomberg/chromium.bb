@@ -22,81 +22,21 @@
 
 namespace {
 
-struct HashEncoding {
-  char version;
-  unsigned hash_bits;
-  unsigned hash_bytes;
-  unsigned iteration_count;
-  unsigned stored_bits;
-  unsigned stored_bytes;
-
-  public:
-   HashEncoding(char version,
-                unsigned hash_bits,
-                unsigned hash_bytes,
-                unsigned iteration_count,
-                unsigned stored_bits,
-                unsigned stored_bytes) :
-      version(version),
-      hash_bits(hash_bits),
-      hash_bytes(hash_bytes),
-      iteration_count(iteration_count),
-      stored_bits(stored_bits),
-      stored_bytes(stored_bytes) {}
-};
-
 // WARNING: Changing these values will make it impossible to do off-line
 // authentication until the next successful on-line authentication.  To change
-// these safely, add a new HashEncoding object below and increment
-// NUM_HASH_ENCODINGS.
-const char kHash1Version = '1';
+// these safely, change the "encoding" version below and make verification
+// handle multiple values.
+const char kHash1Encoding = '1';
 const unsigned kHash1Bits = 256;
 const unsigned kHash1Bytes = kHash1Bits / 8;
 const unsigned kHash1IterationCount = 100000;
 
-// Store 13 bits to provide pin-like security (8192 possible values), without
-// providing a complete oracle for the user's GAIA password.
-const char kHash2Version = '2';
-const unsigned kHash2Bits = 256;
-const unsigned kHash2Bytes = kHash2Bits / 8;
-const unsigned kHash2IterationCount = 100000;
-const unsigned kHash2StoredBits = 13;
-const unsigned kHash2StoredBytes = (kHash2StoredBits + 7) / 8;
-
-const int NUM_HASH_ENCODINGS = 2;
-HashEncoding encodings[NUM_HASH_ENCODINGS] = {
-  HashEncoding(
-      kHash1Version, kHash1Bits, kHash1Bytes, kHash1IterationCount, 0, 0),
-  HashEncoding(
-      kHash2Version, kHash2Bits, kHash2Bytes, kHash2IterationCount,
-          kHash2StoredBits, kHash2StoredBytes)
-};
-
-const HashEncoding* GetEncodingForVersion(char version) {
-  // Note that versions are 1-indexed.
-  DCHECK(version > '0' && version <= ('0' + NUM_HASH_ENCODINGS));
-  return &encodings[(version - '0') - 1];
-}
-
-std::string TruncateStringByBits(const std::string& str,
-                                 const size_t len_bits) {
-  if (len_bits % 8 == 0)
-    return str.substr(0, len_bits / 8);
-
-  // The initial truncation copies whole bytes
-  int number_bytes = (len_bits + 7) / 8;
-  std::string truncated_string = str.substr(0, number_bytes);
-
-  // Keep the prescribed number of bits from the last byte.
-  unsigned last_char_bitmask = (1 << (len_bits % 8)) - 1;
-  truncated_string[number_bytes - 1] &= last_char_bitmask;
-  return truncated_string;
-}
-
 std::string CreateSecurePasswordHash(const std::string& salt,
                                      const std::string& password,
-                                     const HashEncoding& encoding) {
-  DCHECK_EQ(encoding.hash_bytes, salt.length());
+                                     char encoding) {
+  DCHECK_EQ(kHash1Bytes, salt.length());
+  DCHECK_EQ(kHash1Encoding, encoding);  // Currently support only one method.
+
   base::Time start_time = base::Time::Now();
 
   // Library call to create secure password hash as SymmetricKey (uses PBKDF2).
@@ -104,26 +44,22 @@ std::string CreateSecurePasswordHash(const std::string& salt,
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::AES,
           password, salt,
-          encoding.iteration_count, encoding.hash_bits));
+          kHash1IterationCount, kHash1Bits));
   std::string password_hash;
   const bool success = password_key->GetRawKey(&password_hash);
   DCHECK(success);
-  DCHECK_EQ(encoding.hash_bytes, password_hash.length());
+  DCHECK_EQ(kHash1Bytes, password_hash.length());
 
   UMA_HISTOGRAM_TIMES("PasswordHash.CreateTime",
                       base::Time::Now() - start_time);
 
-  if (encoding.stored_bits) {
-    password_hash = TruncateStringByBits(password_hash, encoding.stored_bits);
-    DCHECK_EQ(encoding.stored_bytes, password_hash.length());
-  }
-  DCHECK_EQ(encoding.stored_bytes ? encoding.stored_bytes : encoding.hash_bytes,
-            password_hash.length());
   return password_hash;
 }
 
 std::string EncodePasswordHashRecord(const std::string& record,
-                                     const HashEncoding& encoding) {
+                                     char encoding) {
+  DCHECK_EQ(kHash1Encoding, encoding);  // Currently support only one method.
+
   // Encrypt the hash using the OS account-password protection (if available).
   std::string encoded;
   const bool success = OSCrypt::EncryptString(record, &encoded);
@@ -134,7 +70,7 @@ std::string EncodePasswordHashRecord(const std::string& record,
   base::Base64Encode(encoded, &encoded64);
 
   // Stuff the "encoding" value into the first byte.
-  encoded64.insert(0, &encoding.version, sizeof(encoding.version));
+  encoded64.insert(0, &encoding, sizeof(encoding));
 
   return encoded64;
 }
@@ -146,7 +82,7 @@ bool DecodePasswordHashRecord(const std::string& encoded,
   if (encoded.length() < 1)
     return false;
   *encoding = encoded[0];
-  if (!GetEncodingForVersion(*encoding))
+  if (*encoding != kHash1Encoding)
     return false;
 
   // Stored record is base64; convert to binary.
@@ -168,33 +104,33 @@ size_t GetProfileInfoIndexOfProfile(const Profile* profile) {
 
 }  // namespace
 
-std::string LocalAuth::TruncateStringByBits(const std::string& str,
-                                            const size_t len_bits) {
-  return ::TruncateStringByBits(str, len_bits);
-}
+namespace chrome {
 
-void LocalAuth::RegisterLocalAuthPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void RegisterLocalAuthPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
       prefs::kGoogleServicesPasswordHash,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,
-                                                    const std::string& password,
-                                                    char encoding_version) {
-  const HashEncoding& encoding = encodings[(encoding_version - '0') - 1];
+void SetLocalAuthCredentials(size_t info_index,
+                             const std::string& password) {
+  if (info_index == std::string::npos) {
+    NOTREACHED();
+    return;
+  }
+  DCHECK(password.length());
 
   // Salt should be random data, as long as the hash length, and different with
   // every save.
   std::string salt_str;
-  crypto::RandBytes(WriteInto(&salt_str, encoding.hash_bytes + 1),
-                              encoding.hash_bytes);
+  crypto::RandBytes(WriteInto(&salt_str, kHash1Bytes + 1), kHash1Bytes);
+  DCHECK_EQ(kHash1Bytes, salt_str.length());
 
   // Perform secure hash of password for storage.
   std::string password_hash = CreateSecurePasswordHash(
-      salt_str, password, encoding);
+      salt_str, password, kHash1Encoding);
+  DCHECK_EQ(kHash1Bytes, password_hash.length());
 
   // Group all fields into a single record for storage;
   std::string record;
@@ -202,30 +138,19 @@ void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,
   record.append(password_hash);
 
   // Encode it and store it.
-  std::string encoded = EncodePasswordHashRecord(record, encoding);
+  std::string encoded = EncodePasswordHashRecord(record, kHash1Encoding);
   ProfileInfoCache& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   info.SetLocalAuthCredentialsOfProfileAtIndex(info_index, encoded);
 }
 
-void LocalAuth::SetLocalAuthCredentials(size_t info_index,
-                                        const std::string& password) {
-  if (info_index == std::string::npos) {
-    NOTREACHED();
-    return;
-  }
-  DCHECK(password.length());
-  SetLocalAuthCredentialsWithEncoding(
-      info_index, password, '0' + NUM_HASH_ENCODINGS);
-}
-
-void LocalAuth::SetLocalAuthCredentials(const Profile* profile,
-                                        const std::string& password) {
+void SetLocalAuthCredentials(const Profile* profile,
+                             const std::string& password) {
   SetLocalAuthCredentials(GetProfileInfoIndexOfProfile(profile), password);
 }
 
-bool LocalAuth::ValidateLocalAuthCredentials(size_t info_index,
-                                             const std::string& password) {
+bool ValidateLocalAuthCredentials(size_t info_index,
+                                  const std::string& password) {
   if (info_index == std::string::npos) {
     NOTREACHED();
     return false;
@@ -249,31 +174,28 @@ bool LocalAuth::ValidateLocalAuthCredentials(size_t info_index,
   const char* password_check;
   size_t password_length;
 
-  const HashEncoding* hash_encoding = GetEncodingForVersion(encoding);
-  if (!hash_encoding) {
-    // Unknown encoding.
+  if (encoding == '1') {
+    // Validate correct length; extract salt and password hash.
+    if (record.length() != 2 * kHash1Bytes)
+      return false;
+    std::string salt_str(record.data(), kHash1Bytes);
+    password_saved = record.data() + kHash1Bytes;
+    password_hash = CreateSecurePasswordHash(salt_str, password, encoding);
+    password_check = password_hash.data();
+    password_length = kHash1Bytes;
+  } else {
+    // unknown encoding
     return false;
   }
 
-  // Extract salt.
-  std::string salt_str(record.data(), hash_encoding->hash_bytes);
-  // Extract password.
-  password_saved = record.data() + hash_encoding->hash_bytes;
-  password_hash = CreateSecurePasswordHash(salt_str, password, *hash_encoding);
-  password_length = hash_encoding->stored_bytes;
-  password_check = password_hash.data();
-
-  bool passwords_match = crypto::SecureMemEqual(
-      password_saved, password_check, password_length);
-
-  // Update the stored credentials to the latest encoding if necessary.
-  if (passwords_match && (hash_encoding->version - '0') != NUM_HASH_ENCODINGS)
-    SetLocalAuthCredentials(info_index, password);
-  return passwords_match;
+  return crypto::SecureMemEqual(password_saved, password_check,
+                                password_length);
 }
 
-bool LocalAuth::ValidateLocalAuthCredentials(const Profile* profile,
-                                             const std::string& password) {
+bool ValidateLocalAuthCredentials(const Profile* profile,
+                                  const std::string& password) {
   return ValidateLocalAuthCredentials(GetProfileInfoIndexOfProfile(profile),
                                       password);
 }
+
+}  // namespace chrome
