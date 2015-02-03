@@ -17,6 +17,7 @@ function test()
     WebInspector.ConsolePanel.show();
     InspectorTest.runWhenPageLoads(step1);
     InspectorTest.addResult("Reloading page on console panel");
+    panel._millisecondsToRecordAfterLoadEvent = 1;
     InspectorTest.resourceTreeModel.reloadPage();
 
     function step1()
@@ -31,7 +32,7 @@ function test()
     function recordingStarted()
     {
         InspectorTest.addResult("Recording started");
-        InspectorTest.addResult("Initiated by user: " + panel._userInitiatedRecording);
+        InspectorTest.addResult("Initiated by user: " + !panel._autoRecordGeneration);
     }
 
     function recordingStopped()
