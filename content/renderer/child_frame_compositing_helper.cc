@@ -61,7 +61,10 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       render_frame_proxy_(render_frame_proxy),
       frame_(frame) {}
 
-ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {}
+ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
+  if (resource_collection_.get())
+    resource_collection_->SetClient(NULL);
+}
 
 BrowserPluginManager* ChildFrameCompositingHelper::GetBrowserPluginManager() {
   if (!browser_plugin_)
