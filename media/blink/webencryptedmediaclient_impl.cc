@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "webcontentdecryptionmodule_impl.h"
 #include "webcontentdecryptionmoduleaccess_impl.h"
 
 namespace media {
@@ -189,7 +190,7 @@ class WebEncryptedMediaClientImpl::Reporter {
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     scoped_ptr<CdmFactory> cdm_factory,
     MediaPermission* media_permission)
-    : cdm_factory_(cdm_factory.Pass()) {
+    : cdm_factory_(cdm_factory.Pass()), weak_factory_(this) {
   // TODO(sandersd): Use |media_permission| to check for media permissions in
   // this class.
   DCHECK(media_permission);
@@ -237,7 +238,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     reporter->ReportSupported();
     request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
         request.keySystem(), blink::WebMediaKeySystemConfiguration(),
-        request.securityOrigin(), cdm_factory_.get()));
+        request.securityOrigin(), weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -250,7 +251,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
       reporter->ReportSupported();
       request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
           request.keySystem(), accumulated_configuration,
-          request.securityOrigin(), cdm_factory_.get()));
+          request.securityOrigin(), weak_factory_.GetWeakPtr()));
       return;
     }
   }
@@ -258,6 +259,14 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   // 7.4 Reject promise with a new DOMException whose name is NotSupportedError.
   request.requestNotSupported(
       "None of the requested configurations were supported.");
+}
+
+void WebEncryptedMediaClientImpl::CreateCdm(
+    const blink::WebString& key_system,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebContentDecryptionModuleResult result) {
+  WebContentDecryptionModuleImpl::Create(cdm_factory_.get(), security_origin,
+                                         key_system, result);
 }
 
 // Lazily create Reporters.

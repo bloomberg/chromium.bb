@@ -2,24 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webcontentdecryptionmoduleaccess_impl.h"
+#include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "webcontentdecryptionmodule_impl.h"
+#include "media/blink/webencryptedmediaclient_impl.h"
 
 namespace media {
 
 // The caller owns the created cdm (passed back using |result|).
-static void CreateCdm(CdmFactory* cdm_factory,
-                      blink::WebSecurityOrigin security_origin,
-                      blink::WebString key_system,
+static void CreateCdm(const base::WeakPtr<WebEncryptedMediaClientImpl>& client,
+                      const blink::WebString& key_system,
+                      const blink::WebSecurityOrigin& security_origin,
                       blink::WebContentDecryptionModuleResult result) {
-  WebContentDecryptionModuleImpl::Create(cdm_factory, security_origin,
-                                         key_system, result);
+  // If |client| is gone (due to the frame getting destroyed), it is
+  // impossible to create the CDM, so fail.
+  if (!client) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
+        "Failed to create CDM.");
+    return;
+  }
+
+  client->CreateCdm(key_system, security_origin, result);
 }
 
 WebContentDecryptionModuleAccessImpl*
@@ -27,20 +34,20 @@ WebContentDecryptionModuleAccessImpl::Create(
     const blink::WebString& key_system,
     const blink::WebMediaKeySystemConfiguration& configuration,
     const blink::WebSecurityOrigin& security_origin,
-    CdmFactory* cdm_factory) {
+    const base::WeakPtr<WebEncryptedMediaClientImpl>& client) {
   return new WebContentDecryptionModuleAccessImpl(key_system, configuration,
-                                                  security_origin, cdm_factory);
+                                                  security_origin, client);
 }
 
 WebContentDecryptionModuleAccessImpl::WebContentDecryptionModuleAccessImpl(
     const blink::WebString& key_system,
     const blink::WebMediaKeySystemConfiguration& configuration,
     const blink::WebSecurityOrigin& security_origin,
-    CdmFactory* cdm_factory)
+    const base::WeakPtr<WebEncryptedMediaClientImpl>& client)
     : key_system_(key_system),
       configuration_(configuration),
       security_origin_(security_origin),
-      cdm_factory_(cdm_factory) {
+      client_(client) {
 }
 
 WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() {
@@ -58,8 +65,8 @@ void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
   // blink side, copy all values needed by CreateCdm() in case the blink object
   // gets garbage-collected.
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(&CreateCdm, cdm_factory_, security_origin_,
-                            key_system_, result));
+      FROM_HERE,
+      base::Bind(&CreateCdm, client_, key_system_, security_origin_, result));
 }
 
 }  // namespace media
