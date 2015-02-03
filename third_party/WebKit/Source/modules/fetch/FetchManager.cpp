@@ -66,6 +66,7 @@ private:
     PersistentWillBeMember<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
     bool m_failed;
+    bool m_finished;
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
@@ -74,6 +75,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_resolver(resolver)
     , m_request(request->createCopy())
     , m_failed(false)
+    , m_finished(false)
 {
 }
 
@@ -144,8 +146,10 @@ void FetchManager::Loader::didReceiveData(const char* data, unsigned size)
 void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
     ASSERT(m_responseBuffer);
+    ASSERT(!m_failed);
     m_responseBuffer->close();
     m_responseBuffer.clear();
+    m_finished = true;
     notifyFinished();
 }
 
@@ -360,7 +364,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
 
 void FetchManager::Loader::failed(const String& message)
 {
-    if (m_failed)
+    if (m_failed || m_finished)
         return;
     m_failed = true;
     executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
