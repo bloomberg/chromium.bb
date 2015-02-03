@@ -1,10 +1,5 @@
 # List of suppressions
 
-# crbug.com/139429
-BrowserMainTest.WarmConnectionFieldTrial_Invalid
-BrowserMainTest.WarmConnectionFieldTrial_Random
-BrowserMainTest.WarmConnectionFieldTrial_WarmestSocket
-
 # The UDP related tests currently do not work on Android because
 # we lack a UDP forwarder tool.
 NetworkStatsTestUDP.*

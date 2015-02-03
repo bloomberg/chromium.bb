@@ -185,10 +185,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Members needed across shutdown methods.
   bool restart_last_session_;
 
-  // Tests can set this to true to disable restricting cookie access in the
-  // network stack, as this can only be done once.
-  static bool disable_enforcing_cookie_policies_for_tests_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
 

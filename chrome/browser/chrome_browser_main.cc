@@ -553,10 +553,6 @@ const char kMissingLocaleDataMessage[] =
 
 // BrowserMainParts ------------------------------------------------------------
 
-// static
-bool ChromeBrowserMainParts::disable_enforcing_cookie_policies_for_tests_ =
-    false;
-
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters)
     : parameters_(parameters),
@@ -577,8 +573,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies need to go through one of Chrome's URLRequestContexts which have
   // a ChromeNetworkDelegate attached that selectively allows cookies again.
-  if (!disable_enforcing_cookie_policies_for_tests_)
-    net::URLRequest::SetDefaultCookiePolicyToBlock();
+  net::URLRequest::SetDefaultCookiePolicyToBlock();
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
