@@ -17,7 +17,6 @@ namespace chromeos {
 
 namespace {
 
-const char kErrorInternal[] = "Internal Error.";
 const char kErrorKeyNotAllowedForSigning[] =
     "This key is not allowed for signing. Either it was used for signing "
     "before or it was not correctly generated.";
@@ -30,16 +29,10 @@ scoped_ptr<base::StringValue> GetPublicKeyValue(
   return make_scoped_ptr(new base::StringValue(public_key_spki_der_b64));
 }
 
-// Wraps |callback| into a void(bool) callback which forwards
-// |public_key_spki_der| if |true| is passed to it.
-void WrapGenerateKeyCallback(
+void RunGenerateKeyCallback(
     const PlatformKeysService::GenerateKeyCallback& callback,
-    const std::string& public_key_spki_der,
-    bool success) {
-  if (success)
-    callback.Run(public_key_spki_der, std::string() /* no error */);
-  else
-    callback.Run(std::string() /* no public key */, kErrorInternal);
+    const std::string& public_key_spki_der) {
+  callback.Run(public_key_spki_der, std::string() /* no error */);
 }
 
 // Callback used by |PlatformKeysService::Sign|.
@@ -118,7 +111,7 @@ void PlatformKeysService::Sign(const std::string& token_id,
 void PlatformKeysService::RegisterPublicKey(
     const std::string& extension_id,
     const std::string& public_key_spki_der,
-    const base::Callback<void(bool)>& callback) {
+    const base::Closure& callback) {
   GetPlatformKeysOfExtension(
       extension_id,
       base::Bind(&PlatformKeysService::RegisterPublicKeyGotPlatformKeys,
@@ -144,12 +137,16 @@ void PlatformKeysService::GetPlatformKeysOfExtension(
     const std::string& extension_id,
     const GetPlatformKeysCallback& callback) {
   state_store_->GetExtensionValue(
-      extension_id,
-      kStateStorePlatformKeys,
+      extension_id, kStateStorePlatformKeys,
       base::Bind(&PlatformKeysService::GotPlatformKeysOfExtension,
-                 weak_factory_.GetWeakPtr(),
-                 extension_id,
-                 callback));
+                 weak_factory_.GetWeakPtr(), extension_id, callback));
+}
+
+void PlatformKeysService::SetPlatformKeysOfExtension(
+    const std::string& extension_id,
+    scoped_ptr<base::ListValue> platform_keys) {
+  state_store_->SetExtensionValue(extension_id, kStateStorePlatformKeys,
+                                  platform_keys.Pass());
 }
 
 void PlatformKeysService::GenerateRSAKeyCallback(
@@ -161,22 +158,16 @@ void PlatformKeysService::GenerateRSAKeyCallback(
     callback.Run(std::string() /* no public key */, error_message);
     return;
   }
-  base::Callback<void(bool)> wrapped_callback(
-      base::Bind(&WrapGenerateKeyCallback, callback, public_key_spki_der));
+  base::Closure wrapped_callback(
+      base::Bind(&RunGenerateKeyCallback, callback, public_key_spki_der));
   RegisterPublicKey(extension_id, public_key_spki_der, wrapped_callback);
 }
 
 void PlatformKeysService::RegisterPublicKeyGotPlatformKeys(
     const std::string& extension_id,
     const std::string& public_key_spki_der,
-    const base::Callback<void(bool)>& callback,
+    const base::Closure& callback,
     scoped_ptr<base::ListValue> platform_keys) {
-  if (!platform_keys) {
-    LOG(ERROR) << "Error while reading the platform keys.";
-    callback.Run(false);
-    return;
-  }
-
   scoped_ptr<base::StringValue> key_value(
       GetPublicKeyValue(public_key_spki_der));
 
@@ -184,10 +175,8 @@ void PlatformKeysService::RegisterPublicKeyGotPlatformKeys(
       << "Keys are assumed to be generated and not to be registered multiple "
          "times.";
   platform_keys->Append(key_value.release());
-
-  state_store_->SetExtensionValue(
-      extension_id, kStateStorePlatformKeys, platform_keys.Pass());
-  callback.Run(true);
+  SetPlatformKeysOfExtension(extension_id, platform_keys.Pass());
+  callback.Run();
 }
 
 void PlatformKeysService::InvalidateKey(
@@ -205,8 +194,7 @@ void PlatformKeysService::InvalidateKey(
     return;
   }
 
-  state_store_->SetExtensionValue(
-      extension_id, kStateStorePlatformKeys, platform_keys.Pass());
+  SetPlatformKeysOfExtension(extension_id, platform_keys.Pass());
   callback.Run(true);
 }
 
@@ -220,8 +208,11 @@ void PlatformKeysService::GotPlatformKeysOfExtension(
   base::ListValue* keys = NULL;
   if (!value->GetAsList(&keys)) {
     LOG(ERROR) << "Found a value of wrong type.";
-    value.reset();
+
+    keys = new base::ListValue;
+    value.reset(keys);
   }
+
   ignore_result(value.release());
   callback.Run(make_scoped_ptr(keys));
 }

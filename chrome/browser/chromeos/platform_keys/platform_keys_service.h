@@ -85,8 +85,8 @@ class PlatformKeysService : public KeyedService {
             const SignCallback& callback);
 
  private:
-  typedef base::Callback<void(scoped_ptr<base::ListValue> platform_keys)>
-      GetPlatformKeysCallback;
+  using GetPlatformKeysCallback =
+      base::Callback<void(scoped_ptr<base::ListValue> platform_keys)>;
 
   // Registers the given public key as newly generated key, which is allowed to
   // be used for signing for a single time. Afterwards, calls |callback|. If
@@ -94,7 +94,7 @@ class PlatformKeysService : public KeyedService {
   // callback.
   void RegisterPublicKey(const std::string& extension_id,
                          const std::string& public_key_spki_der,
-                         const base::Callback<void(bool)>& callback);
+                         const base::Closure& callback);
 
   // Gets the current validity of the given public key by reading StateStore.
   // Invalidates the key if it was found to be valid. Finally, calls |callback|
@@ -108,6 +108,11 @@ class PlatformKeysService : public KeyedService {
   // none existed. If an error occurred, calls |callback| with NULL.
   void GetPlatformKeysOfExtension(const std::string& extension_id,
                                   const GetPlatformKeysCallback& callback);
+
+  // Writes |platform_keys| to the state store of the extension with id
+  // |extension_id|.
+  void SetPlatformKeysOfExtension(const std::string& extension_id,
+                                  scoped_ptr<base::ListValue> platform_keys);
 
   // Callback used by |GenerateRSAKey|.
   // If the key generation was successful, registers the generated public key
@@ -125,7 +130,7 @@ class PlatformKeysService : public KeyedService {
   void RegisterPublicKeyGotPlatformKeys(
       const std::string& extension_id,
       const std::string& public_key_spki_der,
-      const base::Callback<void(bool)>& callback,
+      const base::Closure& callback,
       scoped_ptr<base::ListValue> platform_keys);
 
   // Callback used by |ReadValidityAndInvalidateKey|.
