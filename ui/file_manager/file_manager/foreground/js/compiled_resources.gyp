@@ -88,6 +88,7 @@
           './metadata/metadata_cache.js',
           './metadata/metadata_cache_item.js',
           './metadata/metadata_cache_set.js',
+          './metadata/new_metadata_provider.js',
           './metadata_update_controller.js',
           './naming_controller.js',
           './navigation_list_model.js',
