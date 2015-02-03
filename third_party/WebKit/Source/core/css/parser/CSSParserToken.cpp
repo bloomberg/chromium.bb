@@ -15,9 +15,6 @@ namespace blink {
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
     : m_type(type)
-    , m_delimiter(0)
-    , m_numericValue(0)
-    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
     , m_blockType(blockType)
 {
 }
@@ -25,57 +22,45 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
 // Just a helper used for Delimiter tokens.
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
     : m_type(type)
-    , m_delimiter(c)
-    , m_numericValue(0)
-    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
     , m_blockType(NotBlock)
+    , m_delimiter(c)
 {
     ASSERT(m_type == DelimiterToken);
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, String value, BlockType blockType)
     : m_type(type)
-    , m_value(value)
-    , m_delimiter(0)
-    , m_numericValue(0)
-    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
     , m_blockType(blockType)
+    , m_value(value)
 {
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, NumericValueType numericValueType, NumericSign sign)
     : m_type(type)
-    , m_delimiter(0)
+    , m_blockType(NotBlock)
     , m_numericValueType(numericValueType)
     , m_numericSign(sign)
-    , m_numericValue(numericValue)
     , m_unit(CSSPrimitiveValue::CSS_NUMBER)
-    , m_blockType(NotBlock)
+    , m_numericValue(numericValue)
 {
     ASSERT(type == NumberToken);
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
     : m_type(UnicodeRangeToken)
-    , m_value(String::format("U+%X-%X", start, end)) // FIXME: Remove this once CSSParserValues is gone
-    , m_delimiter(0)
-    , m_numericValue(0)
-    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
-    , m_unicodeRangeStart(start)
-    , m_unicodeRangeEnd(end)
     , m_blockType(NotBlock)
+    , m_value(String::format("U+%X-%X", start, end)) // FIXME: Remove this once CSSParserValues is gone
 {
     ASSERT_UNUSED(type, type == UnicodeRangeToken);
+    m_unicodeRange.start = start;
+    m_unicodeRange.end = end;
 }
 
 CSSParserToken::CSSParserToken(HashTokenType type, String value)
     : m_type(HashToken)
-    , m_value(value)
-    , m_delimiter(0)
-    , m_hashTokenType(type)
-    , m_numericValue(0)
-    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
     , m_blockType(NotBlock)
+    , m_value(value)
+    , m_hashTokenType(type)
 {
 }
 
@@ -105,13 +90,13 @@ NumericSign CSSParserToken::numericSign() const
     // This is valid for DimensionToken and PercentageToken, but only used
     // in <an+b> parsing on NumberTokens.
     ASSERT(m_type == NumberToken);
-    return m_numericSign;
+    return static_cast<NumericSign>(m_numericSign);
 }
 
 NumericValueType CSSParserToken::numericValueType() const
 {
     ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
-    return m_numericValueType;
+    return static_cast<NumericValueType>(m_numericValueType);
 }
 
 double CSSParserToken::numericValue() const

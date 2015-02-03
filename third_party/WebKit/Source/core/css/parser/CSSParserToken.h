@@ -85,7 +85,7 @@ public:
     // Converts NumberToken to PercentageToken.
     void convertToPercentage();
 
-    CSSParserTokenType type() const { return m_type; }
+    CSSParserTokenType type() const { return static_cast<CSSParserTokenType>(m_type); }
     String value() const { return m_value; }
 
     UChar delimiter() const;
@@ -93,30 +93,41 @@ public:
     NumericValueType numericValueType() const;
     double numericValue() const;
     HashTokenType hashTokenType() const { ASSERT(m_type == HashToken); return m_hashTokenType; }
-    BlockType blockType() const { return m_blockType; }
-    CSSPrimitiveValue::UnitType unitType() const { return m_unit; }
-    UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeStart; }
-    UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeEnd; }
+    BlockType blockType() const { return static_cast<BlockType>(m_blockType); }
+    CSSPrimitiveValue::UnitType unitType() const { return static_cast<CSSPrimitiveValue::UnitType>(m_unit); }
+    UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.start; }
+    UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.end; }
 
     CSSPropertyID parseAsCSSPropertyID() const;
 
 private:
-    CSSParserTokenType m_type;
+    unsigned m_type : 6; // CSSParserTokenType
+    unsigned m_blockType : 2; // BlockType
+    unsigned m_numericValueType : 1; // NumericValueType
+    unsigned m_numericSign : 2; // NumericSign
+    unsigned m_unit : 7; // CSSPrimitiveValue::UnitType
+
     String m_value;
 
-    // This could be a union to save space
-    UChar m_delimiter;
-    HashTokenType m_hashTokenType;
-    NumericValueType m_numericValueType;
-    NumericSign m_numericSign;
-    double m_numericValue;
-    CSSPrimitiveValue::UnitType m_unit;
-    UChar32 m_unicodeRangeStart;
-    UChar32 m_unicodeRangeEnd;
+    union {
+        UChar m_delimiter;
+        HashTokenType m_hashTokenType;
+        double m_numericValue;
 
-    BlockType m_blockType;
+        struct {
+            UChar32 start;
+            UChar32 end;
+        } m_unicodeRange;
+    };
 };
 
-} // namespace
+} // namespace blink
+
+namespace WTF {
+template <>
+struct IsTriviallyMoveAssignable<blink::CSSParserToken> {
+    static const bool value = true;
+};
+}
 
 #endif // CSSSParserToken_h
