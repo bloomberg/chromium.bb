@@ -15264,12 +15264,6 @@ Do you accept?
       <message name="IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE" desc="A generic catch-all error message to display when something goes wrong after the user clicks 'Find my phone' during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
         Can’t find your phone. Make sure you’re using a compatible Android phone that’s turned on and within arm’s reach. &lt;a&gt;Learn more&lt;/a&gt;
       </message>
-      <message name="IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED" desc="The error message to display when the Bluetooth connection between the phone and the Chromebook is disconnected during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-        Couldn’t establish a connection with your phone. Make sure Bluetooth is turned on for both of your devices. &lt;a&gt;Learn more&lt;/a&gt;
-      </message>
-      <message name="IDS_EASY_UNLOCK_SETUP_ERROR_CONNECT_TO_PHONE_TIMEOUT" desc="The error message to display when the Chromebook is unable to establish connection to the phone within a reasonable amount of time. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-        Couldn’t establish a connection with your phone. Make sure you’re using a compatible Android phone that is turned on and within arm’s reach. &lt;a&gt;Learn more&lt;/a&gt;
-      </message>
       <message name="IDS_EASY_UNLOCK_SETUP_ERROR_SYNC_PHONE_STATE_FAILED" desc="The error message to display when the Chromebook fails to sync the phone's state.">
         Smart Lock is currently unavailable. Please try again later.
       </message>

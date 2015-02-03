@@ -306,20 +306,6 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   strings->SetString(
       "setupErrorFindingPhone",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE));
-  // TODO(isherman): Remove the setupErrorBluetoothConnectionFailed string; it
-  // is unused.
-  strings->SetString(
-      "setupErrorBluetoothConnectionFailed",
-      l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED,
-          device_type));
-  // TODO(isherman): Remove the setupErrorConnectionToPhoneTimeout string; it is
-  // identical to the setupErrorConnectingToPhone string, and hence obsolete.
-  strings->SetString(
-      "setupErrorConnectionToPhoneTimeout",
-       l10n_util::GetStringFUTF16(
-           IDS_EASY_UNLOCK_SETUP_ERROR_CONNECT_TO_PHONE_TIMEOUT,
-           device_type));
   strings->SetString(
       "setupErrorSyncPhoneState",
        l10n_util::GetStringUTF16(
@@ -328,9 +314,6 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupErrorConnectingToPhone",
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE, device_type));
-
-  // TODO(isherman): Remove this string once the app has been updated.
-  strings->SetString("setupIntroHeaderFootnote", base::string16());
 
   SetResult(strings.release());
   return true;
