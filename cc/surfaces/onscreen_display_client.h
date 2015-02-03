@@ -2,49 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_ONSCREEN_DISPLAY_CLIENT_H_
-#define CONTENT_BROWSER_COMPOSITOR_ONSCREEN_DISPLAY_CLIENT_H_
+#ifndef CC_SURFACES_ONSCREEN_DISPLAY_CLIENT_H_
+#define CC_SURFACES_ONSCREEN_DISPLAY_CLIENT_H_
 
 #include "cc/surfaces/display_client.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
 class ContextProvider;
 class SurfaceManager;
-}
-
-namespace content {
 class SurfaceDisplayOutputSurface;
 
 // This class provides a DisplayClient implementation for drawing directly to an
 // onscreen context.
-class OnscreenDisplayClient : cc::DisplayClient {
+class CC_SURFACES_EXPORT OnscreenDisplayClient
+    : NON_EXPORTED_BASE(DisplayClient) {
  public:
   OnscreenDisplayClient(
-      scoped_ptr<cc::OutputSurface> output_surface,
-      cc::SurfaceManager* manager,
-      const cc::RendererSettings& settings,
+      scoped_ptr<OutputSurface> output_surface,
+      SurfaceManager* manager,
+      SharedBitmapManager* bitmap_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const RendererSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~OnscreenDisplayClient() override;
 
   bool Initialize();
-  cc::Display* display() { return display_.get(); }
+  Display* display() { return display_.get(); }
   void set_surface_output_surface(SurfaceDisplayOutputSurface* surface) {
     surface_display_output_surface_ = surface;
   }
 
-  // cc::DisplayClient implementation.
+  // DisplayClient implementation.
   void DisplayDamaged() override;
   void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void OutputSurfaceLost() override;
-  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
 
   bool output_surface_lost() { return output_surface_lost_; }
 
@@ -52,8 +54,8 @@ class OnscreenDisplayClient : cc::DisplayClient {
   void ScheduleDraw();
   void Draw();
 
-  scoped_ptr<cc::OutputSurface> output_surface_;
-  scoped_ptr<cc::Display> display_;
+  scoped_ptr<OutputSurface> output_surface_;
+  scoped_ptr<Display> display_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool scheduled_draw_;
@@ -68,6 +70,6 @@ class OnscreenDisplayClient : cc::DisplayClient {
   DISALLOW_COPY_AND_ASSIGN(OnscreenDisplayClient);
 };
 
-}  // namespace content
+}  // namespace cc
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_ONSCREEN_DISPLAY_CLIENT_H_
+#endif  // CC_SURFACES_ONSCREEN_DISPLAY_CLIENT_H_

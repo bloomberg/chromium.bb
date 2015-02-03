@@ -27,12 +27,12 @@ struct ANativeWindow;
 namespace cc {
 class Layer;
 class LayerTreeHost;
+class OnscreenDisplayClient;
 class SurfaceIdAllocator;
 }
 
 namespace content {
 class CompositorClient;
-class OnscreenDisplayClient;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -144,7 +144,7 @@ class CONTENT_EXPORT CompositorImpl
   ui::UIResourceProvider ui_resource_provider_;
   ui::ResourceManagerImpl resource_manager_;
 
-  scoped_ptr<OnscreenDisplayClient> display_client_;
+  scoped_ptr<cc::OnscreenDisplayClient> display_client_;
   scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
 
   gfx::Size size_;

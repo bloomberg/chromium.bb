@@ -10,6 +10,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/surfaces/onscreen_display_client.h"
+#include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -62,10 +64,13 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace
 
-InProcessContextFactory::InProcessContextFactory(bool context_factory_for_test)
+InProcessContextFactory::InProcessContextFactory(
+    bool context_factory_for_test,
+    cc::SurfaceManager* surface_manager)
     : next_surface_id_namespace_(1u),
       use_test_surface_(true),
-      context_factory_for_test_(context_factory_for_test) {
+      context_factory_for_test_(context_factory_for_test),
+      surface_manager_(surface_manager) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
@@ -82,7 +87,9 @@ InProcessContextFactory::InProcessContextFactory(bool context_factory_for_test)
   }
 }
 
-InProcessContextFactory::~InProcessContextFactory() {}
+InProcessContextFactory::~InProcessContextFactory() {
+  DCHECK(per_compositor_data_.empty());
+}
 
 void InProcessContextFactory::CreateOutputSurface(
     base::WeakPtr<Compositor> compositor,
@@ -105,13 +112,36 @@ void InProcessContextFactory::CreateOutputSurface(
       InProcessContextProvider::Create(attribs, lose_context_when_out_of_memory,
                                        compositor->widget(), "UICompositor");
 
+  scoped_ptr<cc::OutputSurface> real_output_surface;
+
   if (use_test_surface_) {
     bool flipped_output_surface = false;
-    compositor->SetOutputSurface(make_scoped_ptr(new cc::PixelTestOutputSurface(
-        context_provider, flipped_output_surface)));
+    real_output_surface = make_scoped_ptr(new cc::PixelTestOutputSurface(
+        context_provider, flipped_output_surface));
   } else {
-    compositor->SetOutputSurface(
-        make_scoped_ptr(new DirectOutputSurface(context_provider)));
+    real_output_surface =
+        make_scoped_ptr(new DirectOutputSurface(context_provider));
+  }
+
+  if (surface_manager_) {
+    scoped_ptr<cc::OnscreenDisplayClient> display_client(
+        new cc::OnscreenDisplayClient(
+            real_output_surface.Pass(), surface_manager_,
+            GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
+            compositor->GetRendererSettings(), compositor->task_runner()));
+    scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+        new cc::SurfaceDisplayOutputSurface(surface_manager_,
+                                            compositor->surface_id_allocator(),
+                                            context_provider));
+    display_client->set_surface_output_surface(surface_output_surface.get());
+    surface_output_surface->set_display_client(display_client.get());
+
+    compositor->SetOutputSurface(surface_output_surface.Pass());
+
+    delete per_compositor_data_[compositor.get()];
+    per_compositor_data_[compositor.get()] = display_client.release();
+  } else {
+    compositor->SetOutputSurface(real_output_surface.Pass());
   }
 }
 
@@ -140,7 +170,12 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
-void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {}
+void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
+  if (!per_compositor_data_.count(compositor))
+    return;
+  delete per_compositor_data_[compositor];
+  per_compositor_data_.erase(compositor);
+}
 
 bool InProcessContextFactory::DoesCreateTestContexts() {
   return context_factory_for_test_;
@@ -169,6 +204,9 @@ InProcessContextFactory::CreateSurfaceIdAllocator() {
 
 void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                             const gfx::Size& size) {
+  if (!per_compositor_data_.count(compositor))
+    return;
+  per_compositor_data_[compositor]->display()->Resize(size);
 }
 
 }  // namespace ui

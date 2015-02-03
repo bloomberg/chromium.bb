@@ -13,11 +13,19 @@ namespace base {
 class Thread;
 }
 
+namespace cc {
+class OnscreenDisplayClient;
+class SurfaceManager;
+}
+
 namespace ui {
 
 class InProcessContextFactory : public ContextFactory {
  public:
-  explicit InProcessContextFactory(bool context_factory_for_test);
+  // surface_manager is owned by the creator of this and must outlive the
+  // context factory.
+  InProcessContextFactory(bool context_factory_for_test,
+                          cc::SurfaceManager* surface_manager);
   ~InProcessContextFactory() override;
 
   // If true (the default) an OutputSurface is created that does not display
@@ -51,8 +59,10 @@ class InProcessContextFactory : public ContextFactory {
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   uint32_t next_surface_id_namespace_;
   bool use_test_surface_;
+  bool context_factory_for_test_;
+  cc::SurfaceManager* surface_manager_;
 
-  const bool context_factory_for_test_;
+  base::hash_map<Compositor*, cc::OnscreenDisplayClient*> per_compositor_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };

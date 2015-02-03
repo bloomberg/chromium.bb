@@ -35,10 +35,10 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 #endif
 
  private:
+  scoped_ptr<cc::SurfaceManager> surface_manager_;
   scoped_ptr<ui::ContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_ptr<GLHelper> gl_helper_;
-  scoped_ptr<cc::SurfaceManager> surface_manager_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);

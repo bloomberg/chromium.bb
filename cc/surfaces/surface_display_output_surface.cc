@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/surface_display_output_surface.h"
+#include "cc/surfaces/surface_display_output_surface.h"
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "content/browser/compositor/onscreen_display_client.h"
 
-namespace content {
+namespace cc {
 
 SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
-    cc::SurfaceManager* surface_manager,
-    cc::SurfaceIdAllocator* allocator,
-    const scoped_refptr<cc::ContextProvider>& context_provider)
-    : cc::OutputSurface(context_provider,
-                        scoped_ptr<cc::SoftwareOutputDevice>()),
+    SurfaceManager* surface_manager,
+    SurfaceIdAllocator* allocator,
+    const scoped_refptr<ContextProvider>& context_provider)
+    : OutputSurface(context_provider, nullptr),
       display_client_(NULL),
       surface_manager_(surface_manager),
       factory_(surface_manager, this),
@@ -41,7 +40,7 @@ void SurfaceDisplayOutputSurface::ReceivedVSyncParameters(
   CommitVSyncParameters(timebase, interval);
 }
 
-void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size != display_size_) {
@@ -55,19 +54,17 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   display_client_->display()->SetSurfaceId(surface_id_,
                                            frame->metadata.device_scale_factor);
 
-  scoped_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame());
+  scoped_ptr<CompositorFrame> frame_copy(new CompositorFrame());
   frame->AssignTo(frame_copy.get());
   factory_.SubmitFrame(
-      surface_id_,
-      frame_copy.Pass(),
+      surface_id_, frame_copy.Pass(),
       base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,
                  base::Unretained(this)));
 
   client_->DidSwapBuffers();
 }
 
-bool SurfaceDisplayOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
+bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(display_client_);
   client_ = client;
@@ -78,25 +75,24 @@ bool SurfaceDisplayOutputSurface::BindToClient(
 
 void SurfaceDisplayOutputSurface::ForceReclaimResources() {
   if (!surface_id_.is_null()) {
-    scoped_ptr<cc::CompositorFrame> empty_frame(new cc::CompositorFrame());
-    empty_frame->delegated_frame_data.reset(new cc::DelegatedFrameData);
+    scoped_ptr<CompositorFrame> empty_frame(new CompositorFrame());
+    empty_frame->delegated_frame_data.reset(new DelegatedFrameData);
     factory_.SubmitFrame(surface_id_, empty_frame.Pass(),
-                         cc::SurfaceFactory::DrawCallback());
+                         SurfaceFactory::DrawCallback());
   }
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(
-    const cc::ReturnedResourceArray& resources) {
-  cc::CompositorFrameAck ack;
+    const ReturnedResourceArray& resources) {
+  CompositorFrameAck ack;
   ack.resources = resources;
   if (client_)
     client_->ReclaimResources(&ack);
 }
 
-void SurfaceDisplayOutputSurface::SwapBuffersComplete(
-    cc::SurfaceDrawStatus drawn) {
+void SurfaceDisplayOutputSurface::SwapBuffersComplete(SurfaceDrawStatus drawn) {
   if (client_ && !display_client_->output_surface_lost())
     client_->DidSwapBuffersComplete();
 }
 
-}  // namespace content
+}  // namespace cc

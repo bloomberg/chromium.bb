@@ -1537,12 +1537,6 @@
       'browser/context_factory.cc',
       'browser/memory_pressure_observer.cc',
     ],
-    'compositor_browser_surface_sources': [
-      'browser/compositor/onscreen_display_client.cc',
-      'browser/compositor/onscreen_display_client.h',
-      'browser/compositor/surface_display_output_surface.cc',
-      'browser/compositor/surface_display_output_surface.h',
-    ],
     'plugin_browser_sources': [
       'browser/pepper_flash_settings_helper_impl.cc',
       'browser/pepper_flash_settings_helper_impl.h',
@@ -1719,9 +1713,6 @@
       'dependencies': [
         '../sandbox/sandbox.gyp:sandbox',
       ],
-    }],
-    ['OS!="ios"', {
-      'sources': [ '<@(compositor_browser_surface_sources)' ],
     }],
     ['OS!="android" and OS!="ios"', {
       'dependencies': [

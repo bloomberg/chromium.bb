@@ -28,12 +28,12 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/onscreen_display_client.h"
+#include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/child_process_launcher_android.h"
-#include "content/browser/compositor/onscreen_display_client.h"
-#include "content/browser/compositor/surface_display_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -591,13 +591,14 @@ void CompositorImpl::CreateOutputSurface() {
 
   cc::SurfaceManager* manager = GetSurfaceManager();
   if (manager) {
-    display_client_.reset(
-        new OnscreenDisplayClient(real_output_surface.Pass(), manager,
-                                  host_->settings().renderer_settings,
-                                  base::MessageLoopProxy::current()));
-    scoped_ptr<SurfaceDisplayOutputSurface> surface_output_surface(
-        new SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),
-                                        context_provider));
+    display_client_.reset(new cc::OnscreenDisplayClient(
+        real_output_surface.Pass(), manager, HostSharedBitmapManager::current(),
+        BrowserGpuMemoryBufferManager::current(),
+        host_->settings().renderer_settings,
+        base::MessageLoopProxy::current()));
+    scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+        new cc::SurfaceDisplayOutputSurface(
+            manager, surface_id_allocator_.get(), context_provider));
 
     display_client_->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client_.get());
