@@ -16,6 +16,7 @@ var default_content_settings = {
   "notifications": "ask",
   "mouselock": "ask",
   "microphone": "ask",
+  "camera": "ask",
 };
 
 var settings = {
@@ -27,7 +28,8 @@ var settings = {
   "location": "block",
   "notifications": "block",
   "mouselock": "block",
-  "microphone": "block"
+  "microphone": "block",
+  "camera": "block"
 };
 
 Object.prototype.forEach = function(f) {

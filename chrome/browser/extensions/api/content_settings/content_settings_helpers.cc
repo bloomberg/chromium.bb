@@ -30,7 +30,8 @@ const char* const kContentSettingsTypeNames[] = {
   "mouselock",
   "mixed-script",
   "media-stream",
-  "media-stream-mic"
+  "media-stream-mic",
+  "media-stream-camera"
 };
 
 // TODO(msramek): Assert that |kContentSettingsTypeNames| is synced with
