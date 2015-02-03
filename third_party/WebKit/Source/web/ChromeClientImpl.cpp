@@ -201,7 +201,7 @@ void ChromeClientImpl::focusedNodeChanged(Node* fromNode, Node* toNode)
     m_webView->client()->focusedNodeChanged(WebNode(fromNode), WebNode(toNode));
 
     WebURL focusURL;
-    if (toNode && toNode->isElementNode() && toElement(toNode)->isLiveLink())
+    if (toNode && toNode->isElementNode() && toElement(toNode)->isLiveLink() && toNode->shouldHaveFocusAppearance())
         focusURL = toElement(toNode)->hrefURL();
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
