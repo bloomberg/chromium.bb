@@ -28,6 +28,7 @@ content/app/resources
 content/renderer/resources
 content/shell/resources
 remoting/resources
+ui/android/java/res
 ui/resources
 ui/chromeos/resources
 ui/webui/resources/images
