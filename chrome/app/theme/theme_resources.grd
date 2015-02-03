@@ -438,7 +438,7 @@
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="common/infobar_multiple_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_CRASHED" file="common/infobar_plugin_crashed.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_INSTALL" file="common/infobar_plugin_install.png" />
-      <if expr="is_android">
+      <if expr="is_android or chromeos">
         <!-- The actual image here is not used; this line only exists to
              reserve a valid ID, so the Android code can map it to the
              appropriate Android resource.  So we just refer to a random

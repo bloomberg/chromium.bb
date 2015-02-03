@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
 #endif
 
@@ -120,7 +120,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
           display_languages, type_);
       break;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       infobar_ = ProtectedMediaIdentifierInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,

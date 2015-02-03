@@ -12,6 +12,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/settings/cros_settings_names.h"
+#endif
+
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -30,22 +35,28 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-#if defined(OS_ANDROID)
-  // Check if the protected media identifier master switch is disabled.
-  if (!profile()->GetPrefs()->GetBoolean(
-        prefs::kProtectedMediaIdentifierEnabled)) {
+  if (!IsProtectedMediaIdentifierEnabled()) {
     NotifyPermissionSet(id,
                         requesting_frame_origin,
                         web_contents->GetLastCommittedURL().GetOrigin(),
                         callback, false, false);
     return;
   }
-#endif
 
   PermissionContextBase::RequestPermission(web_contents, id,
                                            requesting_frame_origin,
                                            user_gesture,
                                            callback);
+}
+
+ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const {
+  if (!IsProtectedMediaIdentifierEnabled())
+    return CONTENT_SETTING_BLOCK;
+
+  return PermissionContextBase::GetPermissionStatus(requesting_origin,
+                                                    embedding_origin);
 }
 
 void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
@@ -63,4 +74,30 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
         requesting_frame.GetOrigin(), allowed);
   }
 
+}
+
+// TODO(xhwang): We should consolidate the "protected content" related pref
+// across platforms.
+bool ProtectedMediaIdentifierPermissionContext::
+    IsProtectedMediaIdentifierEnabled() const {
+  bool enabled = false;
+
+#if defined(OS_ANDROID)
+  enabled = profile()->GetPrefs()->GetBoolean(
+      prefs::kProtectedMediaIdentifierEnabled);
+#endif
+
+#if defined(OS_CHROMEOS)
+  // This could be disabled by the device policy.
+  bool enabled_for_device = false;
+  enabled = chromeos::CrosSettings::Get()->GetBoolean(
+                chromeos::kAttestationForContentProtectionEnabled,
+                &enabled_for_device) &&
+            enabled_for_device &&
+            profile()->GetPrefs()->GetBoolean(prefs::kEnableDRM);
+#endif
+
+  DVLOG_IF(1, !enabled)
+      << "Protected media identifier disabled by the user or by device policy.";
+  return enabled;
 }

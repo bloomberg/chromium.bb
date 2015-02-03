@@ -104,9 +104,11 @@
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#else
+#endif
+
+#if !defined(OS_ANDROID)
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
 
@@ -173,7 +175,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CaptivePortalServiceFactory::GetInstance();
 #endif
   GeolocationPermissionContextFactory::GetInstance();
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   ProtectedMediaIdentifierPermissionContextFactory::GetInstance();
 #endif
 #if defined(ENABLE_PRINT_PREVIEW)

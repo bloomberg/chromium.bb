@@ -723,6 +723,12 @@
     # ChromeOS-sources not ending in _chromeos (which would be included in
     # other sections and filtered out for non-ChromeOS platforms.
     'chrome_browser_chromeos_sources': [
+      'browser/media/protected_media_identifier_infobar_delegate.cc',
+      'browser/media/protected_media_identifier_infobar_delegate.h',
+      'browser/media/protected_media_identifier_permission_context.cc',
+      'browser/media/protected_media_identifier_permission_context.h',
+      'browser/media/protected_media_identifier_permission_context_factory.cc',
+      'browser/media/protected_media_identifier_permission_context_factory.h',
       'browser/metrics/chromeos_metrics_provider.cc',
       'browser/metrics/chromeos_metrics_provider.h',
       'browser/renderer_host/offline_resource_throttle.cc',

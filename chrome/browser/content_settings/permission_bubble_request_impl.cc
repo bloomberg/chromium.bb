@@ -51,6 +51,11 @@ int PermissionBubbleRequestImpl::GetIconID() const {
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       icon_id = IDR_INFOBAR_WARNING;
       break;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      icon_id = IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
+      break;
+#endif
     default:
       NOTREACHED();
       return IDR_INFOBAR_WARNING;
@@ -75,6 +80,11 @@ base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       message_id = IDS_PUSH_MESSAGES_PERMISSION_QUESTION;
       break;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION;
+      break;
+#endif
     default:
       NOTREACHED();
       return base::string16();
@@ -104,6 +114,11 @@ base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       message_id = IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT;
       break;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
+      break;
+#endif
     default:
       NOTREACHED();
       return base::string16();

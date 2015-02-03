@@ -13345,7 +13345,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Proteced media identifier permission infobar -->
-      <if expr="is_android">
+      <if expr="is_android or chromeos">
+        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
+          Protected content identifier.
+        </message>
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION" desc="Question asked on the infobar whenever URL wants to access protected media identifier. It shows the origin of the URL.">
           <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> needs to uniquely identify your device to play premium content.
         </message>

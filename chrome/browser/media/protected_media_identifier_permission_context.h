@@ -29,6 +29,9 @@ class ProtectedMediaIdentifierPermissionContext
                          const GURL& requesting_frame_origin,
                          bool user_gesture,
                          const BrowserPermissionCallback& callback) override;
+  ContentSetting GetPermissionStatus(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
 
  private:
   ~ProtectedMediaIdentifierPermissionContext() override;
@@ -36,6 +39,10 @@ class ProtectedMediaIdentifierPermissionContext
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
+
+  // Returns whether "Protected content" is enabled. It can be disabled by a
+  // user in the master switch in content settings, or by the device policy.
+  bool IsProtectedMediaIdentifierEnabled() const;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdentifierPermissionContext);
 };
