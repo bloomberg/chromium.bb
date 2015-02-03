@@ -24,6 +24,33 @@
       }],
     ],
   },
+  'target_defaults': {
+    'target_conditions': [
+      ['_type=="executable"', {
+        # All of the executable targets depend on 'opus'. Unfortunately the
+        # 'dependencies' block cannot be inherited via 'target_defaults'.
+        'include_dirs': [
+          'src/celt',
+          'src/silk',
+        ],
+        'conditions': [
+          ['OS == "win"', {
+            'defines': [
+              'inline=__inline',
+            ],
+          }],
+          ['OS=="android"', {
+            'libraries': [
+              '-llog',
+            ],
+          }],
+          ['clang==1', {
+            'cflags': [ '-Wno-absolute-value' ],
+          }]
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'opus',
@@ -134,29 +161,8 @@
       'dependencies': [
         'opus'
       ],
-      'conditions': [
-        ['OS == "win"', {
-          'defines': [
-            'inline=__inline',
-          ],
-        }],
-        ['OS=="android"', {
-          'link_settings': {
-            'libraries': [
-              '-llog',
-            ],
-          },
-        }],
-        ['clang==1', {
-          'cflags': [ '-Wno-absolute-value' ],
-        }]
-      ],
       'sources': [
         'src/src/opus_compare.c',
-      ],
-      'include_dirs': [
-        'src/celt',
-        'src/silk',
       ],
     },  # target opus_compare
     {
@@ -165,30 +171,63 @@
       'dependencies': [
         'opus'
       ],
-      'conditions': [
-        ['OS == "win"', {
-          'defines': [
-            'inline=__inline',
-          ],
-        }],
-        ['OS=="android"', {
-          'link_settings': {
-            'libraries': [
-              '-llog',
-            ],
-          },
-        }],
-        ['clang==1', {
-          'cflags': [ '-Wno-absolute-value' ],
-        }]
-      ],
       'sources': [
         'src/src/opus_demo.c',
       ],
-      'include_dirs': [
-        'src/celt',
-        'src/silk',
-      ],
     },  # target opus_demo
+    {
+      'target_name': 'test_opus_api',
+      'type': 'executable',
+      'dependencies': [
+        'opus'
+      ],
+      'sources': [
+        'src/tests/test_opus_api.c',
+      ],
+    },  # target test_opus_api
+    {
+      'target_name': 'test_opus_encode',
+      'type': 'executable',
+      'dependencies': [
+        'opus'
+      ],
+      'sources': [
+        'src/tests/test_opus_encode.c',
+      ],
+    },  # target test_opus_encode
+    {
+      'target_name': 'test_opus_decode',
+      'type': 'executable',
+      'dependencies': [
+        'opus'
+      ],
+      'sources': [
+        'src/tests/test_opus_decode.c',
+      ],
+      # test_opus_decode passes a null pointer to opus_decode() for an argument
+      # marked as requiring a non-null value by the nonnull function attribute,
+      # and expects opus_decode() to fail. Disable the -Wnonnull option to avoid
+      # a compilation error if -Werror is specified.
+      'conditions': [
+        ['os_posix==1 and OS!="mac" and OS!="ios"', {
+          'cflags': ['-Wno-nonnull'],
+        }],
+        ['OS=="mac" or OS=="ios"', {
+          'xcode_settings': {
+            'WARNING_CFLAGS': ['-Wno-nonnull'],
+          },
+        }],
+      ],
+    },  # target test_opus_decode
+    {
+      'target_name': 'test_opus_padding',
+      'type': 'executable',
+      'dependencies': [
+        'opus'
+      ],
+      'sources': [
+        'src/tests/test_opus_padding.c',
+      ],
+    },  # target test_opus_padding
   ]
 }
