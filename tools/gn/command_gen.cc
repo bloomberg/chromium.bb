@@ -51,7 +51,7 @@ const char kGen_HelpShort[] =
 const char kGen_Help[] =
     "gn gen: Generate ninja files.\n"
     "\n"
-    "  gn gen <output_directory>\n"
+    "  gn gen <out_dir>\n"
     "\n"
     "  Generates ninja files from the current tree and puts them in the given\n"
     "  output directory.\n"

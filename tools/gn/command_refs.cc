@@ -204,7 +204,7 @@ const char kRefs[] = "refs";
 const char kRefs_HelpShort[] =
     "refs: Find stuff referencing a target or file.";
 const char kRefs_Help[] =
-    "gn refs <build_dir> (<label_pattern>|<file>) [--files] [--tree] [--all]\n"
+    "gn refs <out_dir> (<label_pattern>|<file>) [--files] [--tree] [--all]\n"
     "        [--all-toolchains]\n"
     "\n"
     "  Finds reverse dependencies (which targets reference something). The\n"
@@ -282,7 +282,7 @@ const char kRefs_Help[] =
 int RunRefs(const std::vector<std::string>& args) {
   if (args.size() != 2) {
     Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn refs <build_dir> (<label_pattern>|<file>)\"")
+        "Usage: \"gn refs <out_dir> (<label_pattern>|<file>)\"")
         .PrintToStdout();
     return 1;
   }

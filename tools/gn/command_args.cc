@@ -245,7 +245,7 @@ int EditArgsFile(const std::string& build_dir) {
           "# Build arguments go here. Examples:\n"
           "#   is_component_build = true\n"
           "#   is_debug = false\n"
-          "# See \"gn args <dir_name> --list\" for available build "
+          "# See \"gn args <out_dir> --list\" for available build "
           "arguments.\n";
 #if defined(OS_WIN)
       // Use Windows lineendings for this file since it will often open in
@@ -275,13 +275,13 @@ extern const char kArgs[] = "args";
 extern const char kArgs_HelpShort[] =
     "args: Display or configure arguments declared by the build.";
 extern const char kArgs_Help[] =
-    "gn args [arg name]\n"
+    "gn args <out_dir> [--list] [--short] [--args]\n"
     "\n"
     "  See also \"gn help buildargs\" for a more high-level overview of how\n"
     "  build arguments work.\n"
     "\n"
     "Usage\n"
-    "  gn args <dir_name>\n"
+    "  gn args <out_dir>\n"
     "      Open the arguments for the given build directory in an editor\n"
     "      (as specified by the EDITOR environment variable). If the given\n"
     "      build directory doesn't exist, it will be created and an empty\n"
@@ -292,9 +292,9 @@ extern const char kArgs_Help[] =
     "\n"
     "      Note: you can edit the build args manually by editing the file\n"
     "      \"args.gn\" in the build directory and then running\n"
-    "      \"gn gen <build_dir>\".\n"
+    "      \"gn gen <out_dir>\".\n"
     "\n"
-    "  gn args <dir_name> --list[=<exact_arg>] [--short]\n"
+    "  gn args <out_dir> --list[=<exact_arg>] [--short]\n"
     "      Lists all build arguments available in the current configuration,\n"
     "      or, if an exact_arg is specified for the list flag, just that one\n"
     "      build argument.\n"
@@ -303,14 +303,14 @@ extern const char kArgs_Help[] =
     "      comment preceeding the declaration. If --short is specified,\n"
     "      only the names and values will be printed.\n"
     "\n"
-    "      If the dir_name is specified, the build configuration will be\n"
+    "      If the out_dir is specified, the build configuration will be\n"
     "      taken from that build directory. The reason this is needed is that\n"
     "      the definition of some arguments is dependent on the build\n"
     "      configuration, so setting some values might add, remove, or change\n"
     "      the default values for other arguments. Specifying your exact\n"
     "      configuration allows the proper arguments to be displayed.\n"
     "\n"
-    "      Instead of specifying the dir_name, you can also use the\n"
+    "      Instead of specifying the out_dir, you can also use the\n"
     "      command-line flag to specify the build configuration:\n"
     "        --args=<exact list of args to use>\n"
     "\n"
@@ -334,7 +334,7 @@ extern const char kArgs_Help[] =
 int RunArgs(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "Exactly one build dir needed.",
-        "Usage: \"gn args <build_dir>\"\n"
+        "Usage: \"gn args <out_dir>\"\n"
         "Or see \"gn help args\" for more variants.").PrintToStdout();
     return 1;
   }

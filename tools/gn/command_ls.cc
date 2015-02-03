@@ -18,7 +18,7 @@ const char kLs[] = "ls";
 const char kLs_HelpShort[] =
     "ls: List matching targets.";
 const char kLs_Help[] =
-    "gn ls <build dir> [<label_pattern>] [--out] [--all-toolchains]\n"
+    "gn ls <out_dir> [<label_pattern>] [--out] [--all-toolchains]\n"
     "\n"
     "  Lists all targets matching the given pattern for the given builn\n"
     "  directory. By default, only targets in the default toolchain will\n"
