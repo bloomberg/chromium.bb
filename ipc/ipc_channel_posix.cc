@@ -773,14 +773,20 @@ void ChannelPosix::ClosePipeOnError() {
 }
 
 int ChannelPosix::GetHelloMessageProcId() const {
+#if defined(OS_NACL_NONSFI)
+  // In nacl_helper_nonsfi, getpid() invoked by GetCurrentProcId() is not
+  // allowed and would cause a SIGSYS crash because of the seccomp sandbox.
+  return -1;
+#else
   int pid = base::GetCurrentProcId();
 #if defined(OS_LINUX)
   // Our process may be in a sandbox with a separate PID namespace.
   if (global_pid_) {
     pid = global_pid_;
   }
-#endif
+#endif  // defined(OS_LINUX)
   return pid;
+#endif  // defined(OS_NACL_NONSFI)
 }
 
 void ChannelPosix::QueueHelloMessage() {
