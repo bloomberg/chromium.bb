@@ -266,13 +266,6 @@ ScopedJavaLocalRef<jstring> AutocompleteControllerAndroid::
   return ConvertUTF8ToJavaString(env, match.destination_url.spec());
 }
 
-ScopedJavaLocalRef<jobject>
-AutocompleteControllerAndroid::GetTopSynchronousMatch(JNIEnv* env,
-                                                      jobject obj,
-                                                      jstring query) {
-  return GetTopSynchronousResult(env, obj, query, false);
-}
-
 void AutocompleteControllerAndroid::Shutdown() {
   autocomplete_controller_.reset();
 

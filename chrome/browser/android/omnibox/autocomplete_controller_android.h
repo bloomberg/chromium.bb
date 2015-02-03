@@ -70,11 +70,6 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
           jint selected_index,
           jlong elapsed_time_since_input_change);
 
-  base::android::ScopedJavaLocalRef<jobject> GetTopSynchronousMatch(
-      JNIEnv* env,
-      jobject obj,
-      jstring query);
-
   // KeyedService:
   virtual void Shutdown() override;
 

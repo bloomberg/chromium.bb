@@ -289,14 +289,6 @@ public class AutocompleteController {
                 mNativeAutocompleteControllerAndroid, selectedIndex, elapsedTimeSinceInputChange);
     }
 
-    /**
-     * @param query User input text.
-     * @return The top synchronous suggestion from the autocomplete controller.
-     */
-    public OmniboxSuggestion getTopSynchronousMatch(String query) {
-        return nativeGetTopSynchronousMatch(mNativeAutocompleteControllerAndroid, query);
-    }
-
     @VisibleForTesting
     protected native long nativeInit(Profile profile);
     private native void nativeStart(long nativeAutocompleteControllerAndroid, String text,
@@ -318,8 +310,6 @@ public class AutocompleteController {
     private native String nativeUpdateMatchDestinationURLWithQueryFormulationTime(
             long nativeAutocompleteControllerAndroid, int selectedIndex,
             long elapsedTimeSinceInputChange);
-    private native OmniboxSuggestion nativeGetTopSynchronousMatch(
-            long nativeAutocompleteControllerAndroid, String query);
 
     /**
      * Given a search query, this will attempt to see if the query appears to be portion of a
