@@ -1025,9 +1025,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // RenderWidgetHostViewGuest::ProcessAckedTouchEvent is, and
 // ProcessAckedTouchEvent is what triggers the translation of touch events to
 // gesture events.
+// Disabled: http://crbug.com/346297
 #if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PasswordValueAccessibleOnSubmit) {
+                       DISABLED_PasswordValueAccessibleOnSubmit) {
   NavigateToFile("/password/form_and_link.html");
 
   // Fill in the credentials, and make sure they are saved.
