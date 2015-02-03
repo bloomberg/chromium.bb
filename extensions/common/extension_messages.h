@@ -553,28 +553,6 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_WatchPages,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
                      std::vector<std::string> /* blob_uuids */)
 
-// The ACK for ExtensionHostMsg_CreateMimeHandlerViewGuest.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_CreateMimeHandlerViewGuestACK,
-                     int /* element_instance_id */)
-
-// Once a MimeHandlerView guest's JavaScript onload function has been called,
-// this IPC is sent to the container to notify it.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
-                     int /* element_instance_id */)
-
-// Once a RenderView proxy has been created for the guest in the embedder render
-// process, this IPC informs the embedder of the proxy's routing ID.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_GuestAttached,
-                     int /* element_instance_id */,
-                     int /* source_routing_id */)
-
-// This IPC tells the browser process to detach the provided
-// |element_instance_id| from a GuestViewBase if it is attached to one.
-// In other words, routing of input and graphics will no longer flow through
-// the container associated with the provided ID.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_GuestDetached,
-                     int /* element_instance_id*/)
-
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API
@@ -788,21 +766,6 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
                     base::string16 /* source */,
                     extensions::StackTrace /* stack trace */,
                     int32 /* severity level */)
-
-// Sent by the renderer to set initialization parameters of a Browser Plugin
-// that is identified by |element_instance_id|.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AttachGuest,
-                     int /* routing_id */,
-                     int /* element_instance_id */,
-                     int /* guest_instance_id */,
-                     base::DictionaryValue /* attach_params */)
-
-// Tells the browser to create a mime handler guest view for a plugin.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_CreateMimeHandlerViewGuest,
-                     int /* render_frame_id */,
-                     std::string /* view_id */,
-                     int /* element_instance_id */,
-                     gfx::Size /* element_size */)
 
 // Sent when a query selector request is made from the automation API.
 // acc_obj_id is the accessibility tree ID of the starting element.

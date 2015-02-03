@@ -11,7 +11,7 @@
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/common/extension_messages.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::BrowserContext;
@@ -23,7 +23,7 @@ namespace extensions {
 
 GuestViewMessageFilter::GuestViewMessageFilter(int render_process_id,
                                                BrowserContext* context)
-    : BrowserMessageFilter(ExtensionMsgStart),
+    : BrowserMessageFilter(GuestViewMsgStart),
       render_process_id_(render_process_id),
       browser_context_(context),
       weak_ptr_factory_(this) {
@@ -38,8 +38,8 @@ void GuestViewMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   switch (message.type()) {
-    case ExtensionHostMsg_AttachGuest::ID:
-    case ExtensionHostMsg_CreateMimeHandlerViewGuest::ID:
+    case GuestViewHostMsg_AttachGuest::ID:
+    case GuestViewHostMsg_CreateMimeHandlerViewGuest::ID:
       *thread = BrowserThread::UI;
       break;
     default:
@@ -56,8 +56,8 @@ void GuestViewMessageFilter::OnDestruct() const {
 bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GuestViewMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AttachGuest, OnAttachGuest)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CreateMimeHandlerViewGuest,
+    IPC_MESSAGE_HANDLER(GuestViewHostMsg_AttachGuest, OnAttachGuest)
+    IPC_MESSAGE_HANDLER(GuestViewHostMsg_CreateMimeHandlerViewGuest,
                         OnCreateMimeHandlerViewGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -144,7 +144,7 @@ void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
                        attach_params);
 
   rfh->Send(
-      new ExtensionMsg_CreateMimeHandlerViewGuestACK(element_instance_id));
+      new GuestViewMsg_CreateMimeHandlerViewGuestACK(element_instance_id));
 }
 
 }  // namespace extensions

@@ -22,6 +22,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
@@ -215,7 +216,7 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
 
 void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
   embedder_web_contents()->Send(
-      new ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted(
+      new GuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
           element_instance_id()));
 }
 

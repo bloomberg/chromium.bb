@@ -13,6 +13,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "gin/arguments.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
@@ -154,10 +155,10 @@ void MimeHandlerViewContainer::DidReceiveData(const char* data,
 bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
+  IPC_MESSAGE_HANDLER(GuestViewMsg_CreateMimeHandlerViewGuestACK,
                       OnCreateMimeHandlerViewGuestACK)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_GuestAttached, OnGuestAttached)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
+  IPC_MESSAGE_HANDLER(GuestViewMsg_GuestAttached, OnGuestAttached)
+  IPC_MESSAGE_HANDLER(GuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
                       OnMimeHandlerViewGuestOnLoadCompleted)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -299,7 +300,7 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
   if (!render_frame())
     return;
 
-  render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
+  render_frame()->Send(new GuestViewHostMsg_CreateMimeHandlerViewGuest(
       render_frame()->GetRoutingID(), view_id_, element_instance_id(),
       element_size_));
 }

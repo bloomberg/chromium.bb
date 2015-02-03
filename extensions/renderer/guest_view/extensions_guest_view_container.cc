@@ -6,8 +6,8 @@
 
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -62,7 +62,7 @@ void ExtensionsGuestViewContainer::AttachRequest::PerformRequest() {
 
   // Step 1, send the attach params to extensions/.
   container()->render_frame()->Send(
-      new ExtensionHostMsg_AttachGuest(container()->render_view_routing_id(),
+      new GuestViewHostMsg_AttachGuest(container()->render_view_routing_id(),
                                        container()->element_instance_id(),
                                        guest_instance_id_,
                                        *params_));
@@ -73,8 +73,8 @@ void ExtensionsGuestViewContainer::AttachRequest::PerformRequest() {
 
 void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
     const IPC::Message& message) {
-  ExtensionMsg_GuestAttached::Param param;
-  if (!ExtensionMsg_GuestAttached::Read(&message, &param))
+  GuestViewMsg_GuestAttached::Param param;
+  if (!GuestViewMsg_GuestAttached::Read(&message, &param))
     return;
 
   // If we don't have a callback then there's nothing more to do.

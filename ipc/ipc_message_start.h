@@ -114,6 +114,7 @@ enum IPCMessageStart {
   NavigatorConnectMsgStart,
   CastMediaMsgStart,
   AwMessagePortMsgStart,
+  GuestViewMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

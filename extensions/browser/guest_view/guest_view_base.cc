@@ -27,10 +27,10 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
@@ -387,7 +387,7 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   DidAttachToEmbedder();
 
   // Inform the associated GuestViewContainer that the contentWindow is ready.
-  embedder_web_contents()->Send(new ExtensionMsg_GuestAttached(
+  embedder_web_contents()->Send(new GuestViewMsg_GuestAttached(
       element_instance_id_,
       guest_proxy_routing_id));
 
@@ -398,7 +398,7 @@ void GuestViewBase::DidDetach() {
   GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(
       this, element_instance_id_);
   StopTrackingEmbedderZoomLevel();
-  owner_web_contents()->Send(new ExtensionMsg_GuestDetached(
+  owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));
   element_instance_id_ = guestview::kInstanceIDNone;
 }

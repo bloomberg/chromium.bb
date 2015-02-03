@@ -153,6 +153,7 @@
         'common/file_util.h',
         'common/guest_view/guest_view_constants.cc',
         'common/guest_view/guest_view_constants.h',
+        'common/guest_view_messages.h',
         'common/image_util.cc',
         'common/image_util.h',
         'common/install_warning.cc',
