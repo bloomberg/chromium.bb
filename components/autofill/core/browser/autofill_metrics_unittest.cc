@@ -364,6 +364,100 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Verify that when a field is annotated with the autocomplete attribute, its
+// predicted type is remembered when quality metrics are logged.
+TEST_F(AutofillMetricsTest, PredictedMetricsWithAutocomplete) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  FormFieldData field1;
+  test::CreateTestFormField("Select", "select", "USA", "select-one", &field1);
+  field1.autocomplete_attribute = "country";
+  form.fields.push_back(field1);
+
+  // Two other fields to have the minimum of 3 to be parsed by autofill. Note
+  // that they have default values not found in the user profiles. They will be
+  // changed between the time the form is seen/parsed, and the time it is
+  // submitted.
+  FormFieldData field2;
+  test::CreateTestFormField("Unknown", "Unknown", "", "text", &field2);
+  form.fields.push_back(field2);
+  FormFieldData field3;
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field3);
+  form.fields.push_back(field3);
+
+  std::vector<FormData> forms(1, form);
+
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    // We change the value of the text fields to change the default/seen values
+    // (hence the values are not cleared in UpdateFromCache). The new values
+    // match what is in the test profile.
+    form.fields[1].value = base::ASCIIToUTF16("79401");
+    form.fields[2].value = base::ASCIIToUTF16("2345678901");
+    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+
+    // First verify that country was not predicted by client or server.
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.ServerType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.HeuristicType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    // We expect a match for country because it had |autocomplete_attribute|.
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.PredictedType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::TYPE_MATCH),
+        1);
+
+    // We did not predict zip code or phone number, because they did not have
+    // |autocomplete_attribute|, nor client or server predictions.
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.ServerType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.HeuristicType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.PredictedType.ByFieldType",
+        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.ServerType.ByFieldType",
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.HeuristicType.ByFieldType",
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.PredictedType.ByFieldType",
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TYPE_UNKNOWN),
+        1);
+
+    // Sanity check.
+    histogram_tester.ExpectTotalCount("Autofill.Quality.PredictedType", 3);
+  }
+}
+
 // Test that we behave sanely when the cached form differs from the submitted
 // one.
 TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {

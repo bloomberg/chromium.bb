@@ -743,6 +743,8 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 
       field->set_heuristic_type(cached_field->second->heuristic_type());
       field->set_server_type(cached_field->second->server_type());
+      field->SetHtmlType(cached_field->second->html_type(),
+                         cached_field->second->html_mode());
     }
   }
 
