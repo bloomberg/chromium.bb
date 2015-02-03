@@ -1255,7 +1255,7 @@ class Segment {
   // diff - indicates the difference in size of the Cues element that needs to
   //        accounted for.
   // index - index in the list of Cues which is currently being adjusted.
-  // cue_size - size of the Cues element.
+  // cue_size - sum of size of all the CuePoint elements.
   void MoveCuesBeforeClustersHelper(uint64 diff, int index, uint64* cue_size);
 
   // Seeds the random number generator used to make UIDs.

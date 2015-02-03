@@ -2055,7 +2055,6 @@ Segment::~Segment() {
 
 void Segment::MoveCuesBeforeClustersHelper(uint64 diff, int32 index,
                                            uint64* cues_size) {
-  const uint64 old_cues_size = *cues_size;
   CuePoint* const cue_point = cues_.GetCueByIndex(index);
   if (cue_point == NULL)
     return;
@@ -2063,18 +2062,19 @@ void Segment::MoveCuesBeforeClustersHelper(uint64 diff, int32 index,
   const uint64 cluster_pos = cue_point->cluster_pos() + diff;
   cue_point->set_cluster_pos(cluster_pos);  // update the new cluster position
   // New size of the cue is computed as follows
-  //    Let a = current size of Cues Element
-  //    Let b = Difference in Cue Point's size after this pass
-  //    Let c = Difference in length of Cues Element's size
-  //            (This is computed as CodedSize(a + b) - CodedSize(a)
-  //    Let d = a + b + c. Now d is the new size of the Cues element which is
-  //                       passed on to the next recursive call.
+  //    Let a = current sum of size of all CuePoints
+  //    Let b = Increase in Cue Point's size due to this iteration
+  //    Let c = Increase in size of Cues Element's length due to this iteration
+  //            (This is computed as CodedSize(a + b) - CodedSize(a))
+  //    Let d = b + c. Now d is the |diff| passed to the next recursive call.
+  //    Let e = a + b. Now e is the |cues_size| passed to the next recursive
+  //                   call.
   const uint64 cue_point_size_diff = cue_point->Size() - old_cue_point_size;
   const uint64 cue_size_diff =
       GetCodedUIntSize(*cues_size + cue_point_size_diff) -
       GetCodedUIntSize(*cues_size);
-  *cues_size += cue_point_size_diff + cue_size_diff;
-  diff = *cues_size - old_cues_size;
+  *cues_size += cue_point_size_diff;
+  diff = cue_size_diff + cue_point_size_diff;
   if (diff > 0) {
     for (int32 i = 0; i < cues_.cue_entries_size(); ++i) {
       MoveCuesBeforeClustersHelper(diff, i, cues_size);
@@ -2084,8 +2084,10 @@ void Segment::MoveCuesBeforeClustersHelper(uint64 diff, int32 index,
 
 void Segment::MoveCuesBeforeClusters() {
   const uint64 current_cue_size = cues_.Size();
-  uint64 cue_size = current_cue_size;
-  for (int32 i = 0; i < cues_.cue_entries_size(); i++)
+  uint64 cue_size = 0;
+  for (int32 i = 0; i < cues_.cue_entries_size(); ++i)
+    cue_size += cues_.GetCueByIndex(i)->Size();
+  for (int32 i = 0; i < cues_.cue_entries_size(); ++i)
     MoveCuesBeforeClustersHelper(current_cue_size, i, &cue_size);
 
   // Adjust the Seek Entry to reflect the change in position
