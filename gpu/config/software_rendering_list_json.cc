@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.17",
+  "version": "9.16",
   "entries": [
     {
       "id": 1,
@@ -621,6 +621,22 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
+      "id": 62,
+      "description": "Accelerated 2D canvas buggy on old Qualcomm Adreno",
+      "cr_bugs": [161575],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": ".*Adreno.*",
+      "driver_version": {
+        "op": "<",
+        "value": "4.1"
+      },
+      "features": [
+        "accelerated_2d_canvas"
+      ]
+    },
+    {
       "id": 64,
       "description": "Hardware video decode is only supported in win7+",
       "cr_bugs": [159458],
@@ -1019,7 +1035,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 96,
-      "description": "Blacklist GPU raster/canvas on all except known good GPUs and newer Android releases",
+      "description": "GPU rasterization whitelist",
       "cr_bugs": [362779,424970],
       "os": {
         "type": "android"
@@ -1074,8 +1090,7 @@ LONG_STRING_CONST(
         }
       ],
       "features": [
-        "gpu_rasterization",
-        "accelerated_2d_canvas"
+        "gpu_rasterization"
       ]
     },
     {
@@ -1095,12 +1110,11 @@ LONG_STRING_CONST(
     },
     {
       "id": 100,
-      "description": "GPU rasterization and canvas is blacklisted on Nexus 10",
+      "description": "GPU rasterization is blacklisted on Nexus 10",
       "cr_bugs": [407144],
       "gl_renderer": ".*Mali-T604.*",
       "features": [
-        "gpu_rasterization",
-        "accelerated_2d_canvas"
+        "gpu_rasterization"
       ]
     },
     {
