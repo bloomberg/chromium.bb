@@ -111,8 +111,8 @@ def TestApps(options, work_dir):
       progress.Result(
           TestAppStartup(options, filename, app_path, profile_path))
     finally:
-      pynacl.file_tools.RemoveDir(app_path)
-      pynacl.file_tools.RemoveDir(profile_path)
+      pynacl.file_tools.RemoveDirectoryIfPresent(app_path)
+      pynacl.file_tools.RemoveDirectoryIfPresent(profile_path)
   progress.Summary()
 
 
@@ -155,7 +155,7 @@ def Main():
   try:
     TestApps(options, work_dir)
   finally:
-    pynacl.file_tools.RemoveDir(work_dir)
+    pynacl.file_tools.RemoveDirectoryIfPresent(work_dir)
 
 
 if __name__ == '__main__':

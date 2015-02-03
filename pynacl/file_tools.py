@@ -129,7 +129,7 @@ def RemoveDirectoryIfPresent(path):
       func(path)
 
   if os.path.exists(path):
-    shutil.rmtree(path, onerror=onerror_readonly)
+    Retry(shutil.rmtree, path, onerror=onerror_readonly)
 
 
 def CopyTree(src, dst):
@@ -203,7 +203,7 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
     Retry(os.rmdir, src_dir)
 
 
-def Retry(op, *args):
+def Retry(op, *args, **kwargs):
   # Windows seems to be prone to having commands that delete files or
   # directories fail.  We currently do not have a complete understanding why,
   # and as a workaround we simply retry the command a few times.
@@ -217,33 +217,29 @@ def Retry(op, *args):
     count = 0
     while True:
       try:
-        op(*args)
+        op(*args, **kwargs)
         break
       except Exception:
-        sys.stdout.write('FAILED: %s %s\n' % (op.__name__, repr(args)))
+        sys.stdout.write('FAILED: %s %s %s\n' % (
+            op.__name__, repr(args), repr(kwargs)))
         count += 1
         if count < 5:
-          sys.stdout.write('RETRY: %s %s\n' % (op.__name__, repr(args)))
+          sys.stdout.write('RETRYING\n')
           time.sleep(pow(2, count))
         else:
           # Don't mask the exception.
           raise
   else:
-    op(*args)
+    op(*args, **kwargs)
 
 
 def MoveDirCleanly(src, dst):
-  RemoveDir(dst)
+  RemoveDirectoryIfPresent(dst)
   MoveDir(src, dst)
 
 
 def MoveDir(src, dst):
   Retry(shutil.move, src, dst)
-
-
-def RemoveDir(path):
-  if os.path.exists(path):
-    Retry(shutil.rmtree, path)
 
 
 def RemoveFile(path):
