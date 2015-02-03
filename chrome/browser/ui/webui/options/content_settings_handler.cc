@@ -1060,6 +1060,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
               l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
         }
         exception->SetString(kOrigin, host);
+        break;
       }
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
         // These are not stored in preferences and get cleared on next browser
