@@ -32,6 +32,17 @@ AppListStartPageWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
+   * Sample doodle data.
+   */
+  doodleData_: {
+    'ddljson': {
+      'transparent_large_image': {
+        'url': 'doodle.png'
+      }
+    }
+  },
+
+  /**
    * Browser to app launcher start page.
    */
   browsePreload: 'chrome://app-list/',
@@ -121,6 +132,14 @@ AppListStartPageWebUITest.prototype = {
 
 TEST_F('AppListStartPageWebUITest', 'Basic', function() {
   assertEquals(this.browsePreload, document.location.href);
+});
+
+TEST_F('AppListStartPageWebUITest', 'LoadDoodle', function() {
+  var doodle = $('doodle');
+  assertEquals('', doodle.src);
+  appList.startPage.onAppListDoodleUpdated(this.doodleData_,
+                                           'http://example.com/');
+  assertEquals('http://example.com/doodle.png', doodle.src);
 });
 
 TEST_F('AppListStartPageWebUITest', 'SpeechRecognitionState', function() {

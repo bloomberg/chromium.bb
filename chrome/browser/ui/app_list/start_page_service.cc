@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -24,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -37,7 +40,9 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/url_fetcher.h"
 #include "ui/app_list/app_list_switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -51,9 +56,23 @@ namespace app_list {
 
 namespace {
 
+// Path to google.com's doodle JSON.
+const char kDoodleJsonPath[] = "async/ddljson";
+
+// Delay between checking for a new doodle when no doodle is found.
+const int kDefaultDoodleRecheckDelayMinutes = 30;
+
 bool InSpeechRecognition(SpeechRecognitionState state) {
   return state == SPEECH_RECOGNITION_RECOGNIZING ||
       state == SPEECH_RECOGNITION_IN_SPEECH;
+}
+
+GURL GetGoogleBaseURL(Profile* profile) {
+  GURL base_url(google_util::CommandLineGoogleBaseURL());
+  if (!base_url.is_valid())
+    base_url = google_profile_helper::GetGoogleHomePageURL(profile);
+
+  return base_url;
 }
 
 }  // namespace
@@ -472,6 +491,8 @@ void StartPageService::WebUILoaded() {
   for (const auto& cb : pending_webui_callbacks_)
     cb.Run();
   pending_webui_callbacks_.clear();
+
+  FetchDoodleJson();
 }
 
 void StartPageService::LoadContents() {
@@ -496,6 +517,63 @@ void StartPageService::LoadContents() {
 void StartPageService::UnloadContents() {
   contents_.reset();
   webui_finished_loading_ = false;
+}
+
+void StartPageService::FetchDoodleJson() {
+  // SetPathStr() requires its argument to stay in scope as long as
+  // |replacements| is, so a std::string is needed, instead of a char*.
+  std::string path = kDoodleJsonPath;
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+
+  GURL doodle_url = GetGoogleBaseURL(profile_).ReplaceComponents(replacements);
+  doodle_fetcher_.reset(
+      net::URLFetcher::Create(0, doodle_url, net::URLFetcher::GET, this));
+  doodle_fetcher_->SetRequestContext(profile_->GetRequestContext());
+  doodle_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  doodle_fetcher_->Start();
+}
+
+void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
+  std::string json_data;
+  source->GetResponseAsString(&json_data);
+
+  // Remove XSSI guard for JSON parsing.
+  size_t json_start_index = json_data.find("{");
+  if (json_start_index != std::string::npos)
+    json_data.erase(0, json_start_index);
+
+  JSONStringValueSerializer deserializer(json_data);
+  deserializer.set_allow_trailing_comma(true);
+  int error_code = 0;
+  scoped_ptr<base::Value> doodle_json(
+      deserializer.Deserialize(&error_code, nullptr));
+
+  base::TimeDelta recheck_delay =
+      base::TimeDelta::FromMinutes(kDefaultDoodleRecheckDelayMinutes);
+
+  if (error_code == 0) {
+    base::DictionaryValue* doodle_dictionary = nullptr;
+    // Use the supplied TTL as the recheck delay if available.
+    if (doodle_json->GetAsDictionary(&doodle_dictionary)) {
+      int time_to_live = 0;
+      if (doodle_dictionary->GetInteger("ddljson.time_to_live_ms",
+                                        &time_to_live)) {
+        recheck_delay = base::TimeDelta::FromMilliseconds(time_to_live);
+      }
+    }
+
+    contents_->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListDoodleUpdated", *doodle_json,
+        base::StringValue(GetGoogleBaseURL(profile_).spec()));
+  }
+
+  // Check for a new doodle.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&StartPageService::FetchDoodleJson,
+                 weak_factory_.GetWeakPtr()),
+      recheck_delay);
 }
 
 }  // namespace app_list

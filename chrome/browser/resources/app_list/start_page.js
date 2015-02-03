@@ -48,6 +48,27 @@ cr.define('appList.startPage', function() {
   }
 
   /**
+   * Invoked when the app-list doodle is updated.
+   *
+   * @param {Object} data The data object representing the current doodle.
+   */
+  function onAppListDoodleUpdated(data, base_url) {
+    var defaultLogo = $('default_logo');
+    var doodle = $('doodle');
+    if (!data.ddljson || !data.ddljson.transparent_large_image) {
+      defaultLogo.style.display = 'block';
+      doodle.style.display = 'none';
+      return;
+    }
+
+    doodle.onload = function() {
+      defaultLogo.style.display = 'none';
+      doodle.style.display = 'block';
+    };
+    doodle.src = base_url + data.ddljson.transparent_large_image.url;
+  }
+
+  /**
    * Invoked when the app-list bubble is hidden.
    */
   function onAppListHidden() {
@@ -66,6 +87,7 @@ cr.define('appList.startPage', function() {
     initialize: initialize,
     setHotwordEnabled: setHotwordEnabled,
     setNaclArch: setNaclArch,
+    onAppListDoodleUpdated: onAppListDoodleUpdated,
     onAppListShown: onAppListShown,
     onAppListHidden: onAppListHidden,
     toggleSpeechRecognition: toggleSpeechRecognition

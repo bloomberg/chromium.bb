@@ -30,14 +30,13 @@ namespace app_list {
 namespace {
 
 // Layout constants.
-const int kTopMargin = 84;
 const int kInstantContainerSpacing = 11;
 const int kSearchBoxAndTilesSpacing = 40;
 const int kStartPageSearchBoxWidth = 480;
 
 // WebView constants.
-const int kWebViewWidth = 500;
-const int kWebViewHeight = 105;
+const int kWebViewWidth = 700;
+const int kWebViewHeight = 189;
 
 // Tile container constants.
 const size_t kNumStartPageTiles = 4;
@@ -91,7 +90,7 @@ void StartPageView::InitInstantContainer() {
   views::BoxLayout* instant_layout_manager = new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0, kInstantContainerSpacing);
   instant_layout_manager->set_inside_border_insets(
-      gfx::Insets(kTopMargin, 0, kSearchBoxAndTilesSpacing, 0));
+      gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));
   instant_layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   instant_layout_manager->set_cross_axis_alignment(
