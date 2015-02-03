@@ -87,6 +87,7 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
@@ -835,6 +836,7 @@ void FrameView::performPreLayoutTasks()
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
     TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
+    double start = WTF::currentTimeMS();
 
     ScriptForbiddenScope forbidScript;
 
@@ -858,6 +860,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
+    int layoutMs = (WTF::currentTimeMS() - start);
+    Platform::current()->histogramCustomCounts("Renderer.LayoutMs", layoutMs, 0, 1000 * 60, 50);
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
