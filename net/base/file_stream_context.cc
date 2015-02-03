@@ -77,6 +77,12 @@ void FileStream::Context::Orphan() {
 
   orphaned_ = true;
 
+#if defined(OS_WIN)
+  // Clean up weak pointers here to ensure that they are destroyed on the
+  // same thread where they were created.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+#endif
+
   if (!async_in_progress_) {
     CloseAndDelete();
   } else if (file_.IsValid()) {

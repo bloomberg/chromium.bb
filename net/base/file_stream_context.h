@@ -28,6 +28,7 @@
 #define NET_BASE_FILE_STREAM_CONTEXT_H_
 
 #include "base/files/file.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/move.h"
 #include "base/task_runner.h"
@@ -159,6 +160,35 @@ class FileStream::Context {
   virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_read,
                              DWORD error) override;
+
+  // The ReadFile call on Windows can execute synchonously at times.
+  // http://support.microsoft.com/kb/156932. This ends up blocking the calling
+  // thread which is undesirable. To avoid this we execute the ReadFile call
+  // on a worker thread.
+  // The |context| parameter is a weak pointer instance passed to the worker
+  // pool.
+  // The |file| parameter is the handle to the file being read.
+  // The |buf| parameter is the buffer where we want the ReadFile to read the
+  // data into.
+  // The |buf_len| parameter contains the number of bytes to be read.
+  // The |overlapped| parameter is a pointer to the OVERLAPPED structure being
+  // used.
+  // The |origin_thread_loop| is a MessageLoopProxy instance used to post tasks
+  // back to the originating thread.
+  static void ReadAsync(
+      const base::WeakPtr<FileStream::Context>& context,
+      HANDLE file,
+      scoped_refptr<net::IOBuffer> buf,
+      int buf_len,
+      OVERLAPPED* overlapped,
+      scoped_refptr<base::MessageLoopProxy> origin_thread_loop);
+
+  // This callback executes on the main calling thread. It informs the caller
+  // about the result of the ReadFile call.
+  // The |os_error| parameter contains the value of the last error returned by
+  // the ReadFile API.
+  void ReadAsyncResult(DWORD os_error);
+
 #elif defined(OS_POSIX)
   // ReadFileImpl() is a simple wrapper around read() that handles EINTR
   // signals and calls RecordAndMapError() to map errno to net error codes.
@@ -179,6 +209,8 @@ class FileStream::Context {
   base::MessageLoopForIO::IOContext io_context_;
   CompletionCallback callback_;
   scoped_refptr<IOBuffer> in_flight_buf_;
+  // WeakPtrFactory for posting tasks back to |this|.
+  base::WeakPtrFactory<Context> weak_ptr_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Context);

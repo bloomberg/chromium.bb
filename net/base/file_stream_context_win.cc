@@ -8,9 +8,12 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/task_runner.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -37,7 +40,8 @@ FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       async_in_progress_(false),
       orphaned_(false),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_ptr_factory_(this) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
 }
@@ -48,7 +52,8 @@ FileStream::Context::Context(base::File file,
       file_(file.Pass()),
       async_in_progress_(false),
       orphaned_(false),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_ptr_factory_(this) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
   if (file_.IsValid()) {
@@ -69,20 +74,16 @@ int FileStream::Context::Read(IOBuffer* buf,
 
   DCHECK(!async_in_progress_);
 
-  DWORD bytes_read;
-  if (!ReadFile(file_.GetPlatformFile(), buf->data(), buf_len,
-                &bytes_read, &io_context_.overlapped)) {
-    IOResult error = IOResult::FromOSError(GetLastError());
-    if (error.os_error == ERROR_HANDLE_EOF)
-      return 0;  // Report EOF by returning 0 bytes read.
-    if (error.os_error == ERROR_IO_PENDING)
-      IOCompletionIsPending(callback, buf);
-    else
-      LOG(WARNING) << "ReadFile failed: " << error.os_error;
-    return static_cast<int>(error.result);
-  }
-
   IOCompletionIsPending(callback, buf);
+
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&FileStream::Context::ReadAsync,
+                 weak_ptr_factory_.GetWeakPtr(), file_.GetPlatformFile(),
+                 make_scoped_refptr(buf), buf_len, &io_context_.overlapped,
+                 base::MessageLoop::current()->message_loop_proxy()),
+      false);
+
   return ERR_IO_PENDING;
 }
 
@@ -163,6 +164,36 @@ void FileStream::Context::OnIOCompleted(
   scoped_refptr<IOBuffer> temp_buf = in_flight_buf_;
   in_flight_buf_ = NULL;
   temp_callback.Run(result);
+}
+
+// static
+void FileStream::Context::ReadAsync(
+    const base::WeakPtr<FileStream::Context>& context,
+    HANDLE file,
+    scoped_refptr<net::IOBuffer> buf,
+    int buf_len,
+    OVERLAPPED* overlapped,
+    scoped_refptr<base::MessageLoopProxy> origin_thread_loop) {
+  DWORD bytes_read = 0;
+  if (!ReadFile(file, buf->data(), buf_len, &bytes_read, overlapped)) {
+    origin_thread_loop->PostTask(
+        FROM_HERE, base::Bind(&FileStream::Context::ReadAsyncResult, context,
+                              ::GetLastError()));
+  }
+}
+
+void FileStream::Context::ReadAsyncResult(DWORD os_error) {
+  IOResult error = IOResult::FromOSError(os_error);
+  if (error.os_error == ERROR_HANDLE_EOF) {
+    // Report EOF by returning 0 bytes read.
+    OnIOCompleted(&io_context_, 0, error.os_error);
+  } else if (error.os_error != ERROR_IO_PENDING) {
+    // We don't need to inform the caller about ERROR_PENDING_IO as that was
+    // already done when the ReadFile call was queued to the worker pool.
+    if (error.os_error)
+      LOG(WARNING) << "ReadFile failed: " << error.os_error;
+    OnIOCompleted(&io_context_, 0, error.os_error);
+  }
 }
 
 }  // namespace net
