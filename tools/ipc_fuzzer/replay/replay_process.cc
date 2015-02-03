@@ -13,6 +13,7 @@
 #include "base/posix/global_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
@@ -89,7 +90,7 @@ void ReplayProcess::OpenChannel() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
   bool should_use_mojo = process_type == switches::kRendererProcess &&
-                         IPC::ChannelMojo::ShouldBeUsed();
+                         content::ShouldUseMojoChannel();
   if (should_use_mojo) {
     channel_ = IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateClientFactory(channel_name), this,

@@ -89,6 +89,7 @@ def main():
     '--ipc-fuzzer-testcase=' + args.testcase,
     '--no-sandbox',
     '--disable-kill-after-bad-ipc',
+    '--disable-mojo-channel',
   ]
 
   if args.gdb_browser:
