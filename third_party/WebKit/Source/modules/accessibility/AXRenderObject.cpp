@@ -818,18 +818,30 @@ String AXRenderObject::text() const
         if (!style)
             return String();
 
-        int unmaskedTextLength = toHTMLInputElement(node())->value().length();
+        unsigned unmaskedTextLength = AXNodeObject::text().length();
+        if (!unmaskedTextLength)
+            return String();
+
+        UChar maskCharacter = 0;
         switch (style->textSecurity()) {
         case TSNONE:
             break; // Fall through to the non-password branch.
         case TSDISC:
-            return String(&bullet, unmaskedTextLength);
+            maskCharacter = bullet;
+            break;
         case TSCIRCLE:
-            return String(&whiteBullet, unmaskedTextLength);
+            maskCharacter = whiteBullet;
+            break;
         case TSSQUARE:
-            return String(&blackSquare, unmaskedTextLength);
-        default:
-            ASSERT_NOT_REACHED();
+            maskCharacter = blackSquare;
+            break;
+        }
+        if (maskCharacter) {
+            StringBuilder maskedText;
+            maskedText.reserveCapacity(unmaskedTextLength);
+            for (unsigned i = 0; i < unmaskedTextLength; ++i)
+                maskedText.append(maskCharacter);
+            return maskedText.toString();
         }
     }
 
