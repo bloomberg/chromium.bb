@@ -48263,6 +48263,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="675" label="Fetch"/>
   <int value="676" label="FetchBodyStream"/>
   <int value="677" label="XMLHttpRequestAsynchronous"/>
+  <int value="678" label="AudioBufferSourceBufferOnce"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
