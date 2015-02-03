@@ -9,6 +9,7 @@ from __future__ import print_function
 import httplib
 import logging
 import os
+import re
 import shutil
 import urllib2
 
@@ -23,43 +24,55 @@ from chromite.lib import osutils
 
 DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
-MOBLAB_TMP_DIR = '/mnt/moblab/static/tmp'
+MOBLAB_STATIC_DIR = '/mnt/moblab/static'
+MOBLAB_TMP_DIR = os.path.join(MOBLAB_STATIC_DIR, 'tmp')
 BOARD_BUILD_DIR = 'usr/local/build'
 DEVSERVER_STAGE_URL = ('http://%(moblab)s:8080/stage?local_path=%(staged_dir)s'
                        '&artifacts=full_payload,stateful,test_suites,'
                        'control_files,autotest_packages')
+CUSTOM_BUILD_NAME = '%(board)s-custom/%(build)s'
 
 
 class CustomImageStagingException(Exception):
   """Thrown when there is an error staging an custom image."""
 
 
+def GSURLRegexHelper(gsurl):
+  """Helper to do regex matching on a Google Storage URL
+
+  Args:
+    gsurl: Google Storage URL to match.
+
+  Returns:
+    Regex Match Object with groups(board, type, & build_name) or None if there
+    was no match.
+  """
+  return re.match(r'gs://.*/(trybot-)?(?P<board>[\w-]+)-(?P<type>\w+)/'
+                  r'(?P<build_name>R\d+-[\d.ab-]+)', gsurl)
+
+
 @cros.CommandDecorator('stage')
 class StageCommand(cros.CrosCommand):
-  """Converts a locally generated image so that it can be staged remotely.
+  """Remotely stages an image onto a MobLab device or into Google Storage.
 
-  The image can be staged either on Google Storage or on a local Moblab device.
+  The image to be staged may be a local custom image built in the chroot or an
+  official image in Google Storage. The test binaries will always come from the
+  local build root regardless of the image source.
 
-  Moblab can only reimage and test devices if the specified image has:
-    * stateful.tgz
-    * update.gz
-    * test_suites.tar.bz2
-    * autotest_packages.tar
-    * control_files.tar
+  This script generates/copies the update payloads and test binaries required.
+  It then stages them on the Moblab's devserver or copies them into the
+  specified Google Storage Bucket.
 
-  Images made in the chroot lack these artifacts and the payloads need to be
-  generated.
-
-  Once generated, the artifacts need to be simply copied over to the Moblab's
-  devserver's static directory or into the specified Google Storage Bucket.
-
-  The image name to then use for testing is output at the end of this
+  The image name to then use for testing is outputted at the end of this
   script.
   """
 
   EPILOG = """
 To stage a local image path onto a moblab device:
   cros stage /path/to/board/build/chromiumos-test-image.bin <moblab>
+
+To stage an official image with custom test binaries onto a moblab device:
+  cros stage <gs_image_dir> <moblab>
 
 To stage a local image path into a Google Storage Bucket:
   cros stage /path/to/board/build/chromiumos-test-image.bin <gs_base_path>
@@ -79,12 +92,14 @@ NOTES:
     super(StageCommand, cls).AddParser(parser)
     parser.add_argument(
         'image', nargs='?', default='latest', help='Path to image we want to '
-        'stage. It should be in the format of '
-        '/.../.../board/build/<image>.bin')
+        'stage. If a local path, it should be in the format of '
+        '/.../.../board/build/<image>.bin . If a Google Storage path it should'
+        'be in the format of '
+        'gs://<bucket-name>/<board>-<builder type>/<build name>')
     parser.add_argument(
         'remote', help='MobLab device that has password-less SSH set up via '
         'the chroot already. Or Google Storage Bucket in the form of '
-        'gs://bucket-name/')
+        'gs://<bucket-name>/')
     parser.add_argument(
         '--boto_file', dest='boto_file', default=None,
         help='Path to boto file to use when uploading to Google Storage. If '
@@ -94,14 +109,24 @@ NOTES:
     """Initializes cros stage."""
     cros.CrosCommand.__init__(self, options)
     self.board = None
-    self.staged_image_name = self._GenerateImageName(self.options.image)
+    # Determine if we are staging a local custom image or an official image.
+    if self.options.image.startswith('gs://'):
+      self._remote_image = True
+      self.staged_image_name = self._GenerateImageNameFromGSUrl(
+          self.options.image)
+    else:
+      self._remote_image = False
+      self.staged_image_name = self._GenerateImageNameFromLocalPath(
+          self.options.image)
     self.stage_directory = os.path.join(MOBLAB_TMP_DIR, self.staged_image_name)
+
+    # Determine if the staging destination is a Moblab or Google Storage.
     if self.options.remote.startswith('gs://'):
       self._remote_is_moblab = False
     else:
       self._remote_is_moblab = True
 
-  def _GenerateImageName(self, image):
+  def _GenerateImageNameFromLocalPath(self, image):
     """Generate the name as which |image| will be staged onto Moblab.
 
     Args:
@@ -126,7 +151,38 @@ NOTES:
       build_name = build_name[:-len('-a1')]
 
     self.board = os.path.basename(os.path.dirname(os.path.dirname(realpath)))
-    return '%s-custom/%s' % (self.board, build_name)
+    return CUSTOM_BUILD_NAME % dict(board=self.board, build=build_name)
+
+  def _GenerateImageNameFromGSUrl(self, image):
+    """Generate the name as which |image| will be staged onto Moblab.
+
+    Args:
+      image: GS Url to the image we want to stage. It should be in the format
+             gs://<bucket-name>/<board>-<builder type>/<build name>
+
+    Returns:
+      Name the image will be staged as.
+
+    Raises:
+      CustomImageStagingException: If the image name supplied is not valid.
+    """
+    match = GSURLRegexHelper(image)
+    if not match:
+      raise CustomImageStagingException(
+          'Image URL: %s is improperly defined!' % image)
+    self.board = match.group('board')
+    return CUSTOM_BUILD_NAME % dict(board=self.board,
+                                    build=match.group('build_name'))
+
+  def _DownloadPayloads(self, tempdir):
+    """Download from GS the update payloads we require.
+
+    Args:
+      tempdir: Temporary Directory to store the downloaded payloads.
+    """
+    gs_context = gs.GSContext(boto_file=self.options.boto_file)
+    gs_context.Copy(os.path.join(self.options.image, 'stateful.tgz'), tempdir)
+    gs_context.Copy(os.path.join(self.options.image, '*_full*'), tempdir)
 
   def _GeneratePayloads(self, tempdir):
     """Generate the update payloads we require.
@@ -167,6 +223,9 @@ NOTES:
         device.CopyToDevice(os.path.join(tempdir, f), self.stage_directory)
       device.RunCommand(['chown', '-R', 'moblab:moblab',
                          MOBLAB_TMP_DIR])
+      # Delete this image from the Devserver in case it was previously staged.
+      device.RunCommand(['rm', '-rf', os.path.join(MOBLAB_STATIC_DIR,
+                                                   self.staged_image_name)])
       try:
         stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.remote,
                                                staged_dir=self.stage_directory)
@@ -204,7 +263,10 @@ NOTES:
                  self.options.image, self.staged_image_name,
                  self.options.remote)
     with osutils.TempDir() as tempdir:
-      self._GeneratePayloads(tempdir)
+      if self._remote_image:
+        self._DownloadPayloads(tempdir)
+      else:
+        self._GeneratePayloads(tempdir)
       self._GenerateTestBits(tempdir)
       if self._remote_is_moblab:
         self._StageOnMoblab(tempdir)
