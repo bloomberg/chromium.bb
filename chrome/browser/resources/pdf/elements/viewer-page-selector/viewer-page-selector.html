@@ -1,12 +1,13 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
 
 <polymer-element name="viewer-page-selector">
 <template>
   <link rel="stylesheet" href="viewer-page-selector.css">
-  <paper-input value="{{pageNo}}"
-               committedValue="{{chosenPageNo}}"
-               id="pageselector"></paper-input>
+  <paper-input-decorator id="pageselector">
+    <input id="input" is="core-input"
+        value="{{pageNo}}" committedvalue="{{chosenPageNo}}">
+  </paper-input-decorator>
   <span id="pagelength">/ {{docLength}}</span>
 </template>
 <script src="viewer-page-selector.js"></script>

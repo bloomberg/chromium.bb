@@ -291,6 +291,13 @@ PDFViewer.prototype = {
           e.preventDefault();
         }
         return;
+      case 71: // g key.
+        if (this.isMaterial_ && (e.ctrlKey || e.metaKey)) {
+          this.pageIndicator_.select();
+          // To prevent the default "find text" behaviour in Chrome.
+          e.preventDefault();
+        }
+        return;
       case 80:  // p key.
         if (e.ctrlKey || e.metaKey) {
           this.print_();

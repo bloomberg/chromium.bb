@@ -32,5 +32,9 @@ Polymer('viewer-page-selector', {
   docLengthChanged: function() {
     var numDigits = this.docLength.toString().length;
     this.$.pageselector.style.width = (numDigits * DIGIT_LENGTH) + 'em';
+  },
+
+  select: function() {
+    this.$.input.select();
   }
 });
