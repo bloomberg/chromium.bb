@@ -138,6 +138,11 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
+    # ASan.
+    'nacl-precise_64-newlib-dbg-asan':
+        python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
+    'nacl-mac10.7-newlib-dbg-asan':
+        python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
     # Pnacl main trybots
     'nacl-precise_64-newlib-arm_qemu-pnacl':
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu arm',
