@@ -4,8 +4,6 @@
 
 #include "media/cast/test/linux_output_window.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
@@ -120,27 +118,18 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
 
 void LinuxOutputWindow::RenderFrame(
     const scoped_refptr<media::VideoFrame>& video_frame) {
-  const gfx::Size damage_size(std::min(video_frame->visible_rect().width(),
-                                       image_->width),
-                              std::min(video_frame->visible_rect().height(),
-                                       image_->height));
-
-  if (damage_size.width() < image_->width ||
-      damage_size.height() < image_->height)
-    memset(image_->data, 0x00, image_->bytes_per_line * image_->height);
-
-  if (!damage_size.IsEmpty()) {
-    libyuv::I420ToARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                       video_frame->stride(VideoFrame::kYPlane),
-                       video_frame->visible_data(VideoFrame::kUPlane),
-                       video_frame->stride(VideoFrame::kUPlane),
-                       video_frame->visible_data(VideoFrame::kVPlane),
-                       video_frame->stride(VideoFrame::kVPlane),
-                       reinterpret_cast<uint8_t*>(image_->data),
-                       image_->bytes_per_line,
-                       damage_size.width(),
-                       damage_size.height());
-  }
+  CHECK_LE(video_frame->coded_size().width(), image_->width);
+  CHECK_LE(video_frame->coded_size().height(), image_->height);
+  libyuv::I420ToARGB(video_frame->data(VideoFrame::kYPlane),
+                     video_frame->stride(VideoFrame::kYPlane),
+                     video_frame->data(VideoFrame::kUPlane),
+                     video_frame->stride(VideoFrame::kUPlane),
+                     video_frame->data(VideoFrame::kVPlane),
+                     video_frame->stride(VideoFrame::kVPlane),
+                     reinterpret_cast<uint8_t*>(image_->data),
+                     image_->bytes_per_line,
+                     video_frame->coded_size().width(),
+                     video_frame->coded_size().height());
 
   // Place image in window.
   XShmPutImage(display_,
@@ -151,8 +140,8 @@ void LinuxOutputWindow::RenderFrame(
                0,
                0,
                0,
-               image_->width,
-               image_->height,
+               video_frame->coded_size().width(),
+               video_frame->coded_size().height(),
                true);
 
   // Very important for the image to update properly!

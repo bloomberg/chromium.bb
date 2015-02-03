@@ -361,10 +361,6 @@ void H264VideoToolboxEncoder::Teardown() {
   }
 }
 
-bool H264VideoToolboxEncoder::CanEncodeVariedFrameSizes() const {
-  return false;
-}
-
 bool H264VideoToolboxEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& reference_time,

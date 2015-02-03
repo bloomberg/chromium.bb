@@ -38,6 +38,8 @@
 #include "media/cast/test/utility/input_builder.h"
 
 namespace {
+static const int kAudioChannels = 2;
+static const int kAudioSamplingFrequency = 48000;
 
 // The max allowed size of serialized log.
 const int kMaxSerializedLogBytes = 10 * 1000 * 1000;
@@ -55,15 +57,61 @@ const int kMaxSerializedLogBytes = 10 * 1000 * 1000;
 //
 // --fps=xx
 //   Override framerate of the video stream.
-//
-// --vary-frame-sizes
-//   Randomly vary the video frame sizes at random points in time.  Has no
-//   effect if --source-file is being used.
 const char kSwitchAddress[] = "address";
 const char kSwitchPort[] = "port";
 const char kSwitchSourceFile[] = "source-file";
 const char kSwitchFps[] = "fps";
-const char kSwitchVaryFrameSizes[] = "vary-frame-sizes";
+
+media::cast::AudioSenderConfig GetAudioSenderConfig() {
+  media::cast::AudioSenderConfig audio_config;
+
+  audio_config.use_external_encoder = false;
+  audio_config.frequency = kAudioSamplingFrequency;
+  audio_config.channels = kAudioChannels;
+  audio_config.bitrate = 0;  // Use Opus auto-VBR mode.
+  audio_config.codec = media::cast::CODEC_AUDIO_OPUS;
+  audio_config.ssrc = 1;
+  audio_config.receiver_ssrc = 2;
+  audio_config.rtp_payload_type = 127;
+  // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
+  // should receiver.cc's config also be 100?
+  audio_config.max_playout_delay = base::TimeDelta::FromMilliseconds(300);
+  return audio_config;
+}
+
+media::cast::VideoSenderConfig GetVideoSenderConfig() {
+  media::cast::VideoSenderConfig video_config;
+
+  video_config.use_external_encoder = false;
+
+  // Resolution.
+  video_config.width = 1280;
+  video_config.height = 720;
+  video_config.max_frame_rate = 30;
+
+  // Bitrates.
+  video_config.max_bitrate = 2500000;
+  video_config.min_bitrate = 100000;
+  video_config.start_bitrate = video_config.min_bitrate;
+
+  // Codec.
+  video_config.codec = media::cast::CODEC_VIDEO_VP8;
+  video_config.max_number_of_video_buffers_used = 1;
+  video_config.number_of_encode_threads = 2;
+
+  // Quality options.
+  video_config.min_qp = 4;
+  video_config.max_qp = 40;
+
+  // SSRCs and payload type. Don't change them.
+  video_config.ssrc = 11;
+  video_config.receiver_ssrc = 12;
+  video_config.rtp_payload_type = 96;
+  // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
+  // should receiver.cc's config also be 100?
+  video_config.max_playout_delay = base::TimeDelta::FromMilliseconds(300);
+  return video_config;
+}
 
 void UpdateCastTransportStatus(
     media::cast::CastTransportStatus status) {
@@ -101,12 +149,10 @@ void LogRawEvents(
   }
 }
 
-void QuitLoopOnInitializationResult(
-    media::cast::CastInitializationStatus result) {
-  CHECK(result == media::cast::STATUS_AUDIO_INITIALIZED ||
-        result == media::cast::STATUS_VIDEO_INITIALIZED)
-      << "Cast sender uninitialized";
-  base::MessageLoop::current()->Quit();
+void InitializationResult(media::cast::CastInitializationStatus result) {
+  bool end_result = result == media::cast::STATUS_AUDIO_INITIALIZED ||
+                    result == media::cast::STATUS_VIDEO_INITIALIZED;
+  CHECK(end_result) << "Cast sender uninitialized";
 }
 
 net::IPEndPoint CreateUDPAddress(std::string ip_str, uint16 port) {
@@ -236,10 +282,8 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Sending to " << remote_ip_address << ":" << remote_port
             << ".";
 
-  media::cast::AudioSenderConfig audio_config =
-      media::cast::GetDefaultAudioSenderConfig();
-  media::cast::VideoSenderConfig video_config =
-      media::cast::GetDefaultVideoSenderConfig();
+  media::cast::AudioSenderConfig audio_config = GetAudioSenderConfig();
+  media::cast::VideoSenderConfig video_config = GetVideoSenderConfig();
 
   // Running transport on the main thread.
   // Setting up transport config.
@@ -271,8 +315,6 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Source: " << source_path.value();
     fake_media_source->SetSourceFile(source_path, override_fps);
   }
-  if (cmd->HasSwitch(kSwitchVaryFrameSizes))
-    fake_media_source->SetVariableFrameSizeMode(true);
 
   // CastTransportSender initialization.
   scoped_ptr<media::cast::CastTransportSender> transport_sender =
@@ -287,6 +329,16 @@ int main(int argc, char** argv) {
           base::TimeDelta::FromSeconds(1),
           media::cast::PacketReceiverCallback(),
           io_message_loop.message_loop_proxy());
+
+  // CastSender initialization.
+  scoped_ptr<media::cast::CastSender> cast_sender =
+      media::cast::CastSender::Create(cast_environment, transport_sender.get());
+  cast_sender->InitializeVideo(
+      fake_media_source->get_video_config(),
+      base::Bind(&InitializationResult),
+      media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
+      media::cast::CreateDefaultVideoEncodeMemoryCallback());
+  cast_sender->InitializeAudio(audio_config, base::Bind(&InitializationResult));
 
   // Set up event subscribers.
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
@@ -353,28 +405,9 @@ int main(int argc, char** argv) {
                  base::Passed(&offset_estimator)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
-  // CastSender initialization.
-  scoped_ptr<media::cast::CastSender> cast_sender =
-      media::cast::CastSender::Create(cast_environment, transport_sender.get());
-  io_message_loop.PostTask(
-      FROM_HERE,
-      base::Bind(&media::cast::CastSender::InitializeVideo,
-                 base::Unretained(cast_sender.get()),
-                 fake_media_source->get_video_config(),
-                 base::Bind(&QuitLoopOnInitializationResult),
-                 media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
-                 media::cast::CreateDefaultVideoEncodeMemoryCallback()));
-  io_message_loop.Run();  // Wait for video initialization.
-  io_message_loop.PostTask(
-      FROM_HERE,
-      base::Bind(&media::cast::CastSender::InitializeAudio,
-                 base::Unretained(cast_sender.get()),
-                 audio_config,
-                 base::Bind(&QuitLoopOnInitializationResult)));
-  io_message_loop.Run();  // Wait for audio initialization.
-
   fake_media_source->Start(cast_sender->audio_frame_input(),
                            cast_sender->video_frame_input());
+
   io_message_loop.Run();
   return 0;
 }

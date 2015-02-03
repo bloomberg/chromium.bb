@@ -32,7 +32,6 @@ class ExternalVideoEncoder : public VideoEncoder {
   ~ExternalVideoEncoder() override;
 
   // VideoEncoder implementation.
-  bool CanEncodeVariedFrameSizes() const override;
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,

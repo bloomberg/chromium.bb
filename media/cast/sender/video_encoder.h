@@ -26,10 +26,6 @@ class VideoEncoder {
 
   virtual ~VideoEncoder() {}
 
-  // Returns true if the size of video frames passed in successive calls to
-  // EncodedVideoFrame() can vary.
-  virtual bool CanEncodeVariedFrameSizes() const = 0;
-
   // If true is returned, the Encoder has accepted the request and will process
   // it asynchronously, running |frame_encoded_callback| on the MAIN
   // CastEnvironment thread with the result.  If false is returned, nothing

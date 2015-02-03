@@ -30,7 +30,6 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   ~H264VideoToolboxEncoder() override;
 
   // media::cast::VideoEncoder implementation
-  bool CanEncodeVariedFrameSizes() const override;
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,

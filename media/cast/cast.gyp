@@ -144,7 +144,6 @@
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/third_party/opus/opus.gyp:opus',
         '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ], # dependencies
       'sources': [
         'cast_sender.h',

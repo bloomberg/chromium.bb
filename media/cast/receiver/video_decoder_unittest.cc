@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <cstdlib>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,12 +22,14 @@ namespace cast {
 
 namespace {
 
-const int kStartingWidth = 360;
-const int kStartingHeight = 240;
+const int kWidth = 360;
+const int kHeight = 240;
 const int kFrameRate = 10;
 
 VideoSenderConfig GetVideoSenderConfigForTest() {
   VideoSenderConfig config = GetDefaultVideoSenderConfig();
+  config.width = kWidth;
+  config.height = kHeight;
   config.max_frame_rate = kFrameRate;
   return config;
 }
@@ -54,7 +55,6 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     video_decoder_.reset(new VideoDecoder(cast_environment_, GetParam()));
     CHECK_EQ(STATUS_VIDEO_INITIALIZED, video_decoder_->InitializationResult());
 
-    next_frame_size_ = gfx::Size(kStartingWidth, kStartingHeight);
     next_frame_timestamp_ = base::TimeDelta();
     last_frame_id_ = 0;
     seen_a_decoded_frame_ = false;
@@ -63,39 +63,34 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     total_video_frames_decoded_ = 0;
   }
 
-  void SetNextFrameSize(const gfx::Size& size) {
-    next_frame_size_ = size;
-  }
-
   // Called from the unit test thread to create another EncodedFrame and push it
   // into the decoding pipeline.
   void FeedMoreVideo(int num_dropped_frames) {
     // Prepare a simulated EncodedFrame to feed into the VideoDecoder.
 
+    const gfx::Size frame_size(kWidth, kHeight);
     const scoped_refptr<VideoFrame> video_frame =
         VideoFrame::CreateFrame(VideoFrame::YV12,
-                                next_frame_size_,
-                                gfx::Rect(next_frame_size_),
-                                next_frame_size_,
+                                frame_size,
+                                gfx::Rect(frame_size),
+                                frame_size,
                                 next_frame_timestamp_);
-    const base::TimeTicks reference_time =
-        base::TimeTicks::UnixEpoch() + next_frame_timestamp_;
     next_frame_timestamp_ += base::TimeDelta::FromSeconds(1) / kFrameRate;
     PopulateVideoFrame(video_frame.get(), 0);
 
     // Encode |frame| into |encoded_frame->data|.
-    scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
+    scoped_ptr<EncodedFrame> encoded_frame(
+        new EncodedFrame());
     // Test only supports VP8, currently.
     CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
-    vp8_encoder_.Encode(video_frame, reference_time, encoded_frame.get());
+    vp8_encoder_.Encode(video_frame, base::TimeTicks(), encoded_frame.get());
     // Rewrite frame IDs for testing purposes.
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
-    if (encoded_frame->dependency == EncodedFrame::KEY)
+    if (last_frame_id_ == 0)
       encoded_frame->referenced_frame_id = encoded_frame->frame_id;
     else
       encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
     last_frame_id_ = encoded_frame->frame_id;
-    ASSERT_EQ(reference_time, encoded_frame->reference_time);
 
     {
       base::AutoLock auto_lock(lock_);
@@ -153,7 +148,6 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
 
   const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
   scoped_ptr<VideoDecoder> video_decoder_;
-  gfx::Size next_frame_size_;
   base::TimeDelta next_frame_timestamp_;
   uint32 last_frame_id_;
   bool seen_a_decoded_frame_;
@@ -192,38 +186,7 @@ TEST_P(VideoDecoderTest, RecoversFromDroppedFrames) {
   WaitForAllVideoToBeDecoded();
 }
 
-TEST_P(VideoDecoderTest, DecodesFramesOfVaryingSizes) {
-  std::vector<gfx::Size> frame_sizes;
-  frame_sizes.push_back(gfx::Size(1280, 720));
-  frame_sizes.push_back(gfx::Size(640, 360));  // Shrink both dimensions.
-  frame_sizes.push_back(gfx::Size(300, 200));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(200, 300));  // Same area.
-  frame_sizes.push_back(gfx::Size(600, 400));  // Grow both dimensions.
-  frame_sizes.push_back(gfx::Size(638, 400));  // Shrink only one dimension.
-  frame_sizes.push_back(gfx::Size(638, 398));  // Shrink the other dimension.
-  frame_sizes.push_back(gfx::Size(320, 180));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(322, 180));  // Grow only one dimension.
-  frame_sizes.push_back(gfx::Size(322, 182));  // Grow the other dimension.
-  frame_sizes.push_back(gfx::Size(1920, 1080));  // Grow both dimensions again.
-
-  // Encode one frame at each size.
-  for (const auto& frame_size : frame_sizes) {
-    SetNextFrameSize(frame_size);
-    FeedMoreVideo(0);
-  }
-
-  // Encode 10 frames at each size.
-  for (const auto& frame_size : frame_sizes) {
-    SetNextFrameSize(frame_size);
-    const int kNumFrames = 10;
-    for (int i = 0; i < kNumFrames; ++i)
-      FeedMoreVideo(0);
-  }
-
-  WaitForAllVideoToBeDecoded();
-}
-
-INSTANTIATE_TEST_CASE_P(,
+INSTANTIATE_TEST_CASE_P(VideoDecoderTestScenarios,
                         VideoDecoderTest,
                         ::testing::Values(CODEC_VIDEO_VP8));
 

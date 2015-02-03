@@ -140,7 +140,6 @@ source_set("sender") {
     "//media:shared_memory_support",
     "//third_party/libvpx",
     "//third_party/opus",
-    "//ui/gfx/geometry",
   ]
 
   # use a restricted subset of media and no software codecs on iOS

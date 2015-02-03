@@ -17,8 +17,7 @@ double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
 double I420SSIM(const scoped_refptr<media::VideoFrame>& frame1,
                 const scoped_refptr<media::VideoFrame>& frame2);
 
-// Populate a video |frame| with a plaid pattern, cycling from the given
-// |start_value|.
+// Populate a video frame with values starting with the given start value.
 // Width, height and stride should be set in advance.
 // Memory is allocated within the function.
 void PopulateVideoFrame(VideoFrame* frame, int start_value);
