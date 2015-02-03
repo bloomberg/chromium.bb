@@ -34,38 +34,44 @@ enum CaptivePortalBlockingPageEvent {
   CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT
 };
 
+const char kOpenLoginPageCommand[] = "openLoginPage";
+
 void RecordUMA(CaptivePortalBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.captive_portal",
                             event,
                             CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT);
 }
 
-bool IsWifiConnection() {
-  // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux and
-  // Windows. See https://crbug.com/160537 for details.
-  // TODO(meacer): Add heuristics to get a more accurate connection type on
-  //               these platforms.
-  return net::NetworkChangeNotifier::GetConnectionType() ==
-      net::NetworkChangeNotifier::CONNECTION_WIFI;
-}
+class ConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
+ public:
+  ConnectionInfoDelegate() {}
+  ~ConnectionInfoDelegate() override {}
 
-std::string GetWiFiName() {
-  std::string ssid;
+  bool IsWifiConnection() const override {
+    // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux
+    // and Windows. See https://crbug.com/160537 for details.
+    // TODO(meacer): Add heuristics to get a more accurate connection type on
+    //               these platforms.
+    return net::NetworkChangeNotifier::GetConnectionType() ==
+           net::NetworkChangeNotifier::CONNECTION_WIFI;
+  }
+
+  std::string GetWiFiSSID() const override {
+    std::string ssid;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
-  wifi_service->Initialize(NULL);
-  std::string error;
-  wifi_service->GetConnectedNetworkSSID(&ssid, &error);
-  if (!error.empty())
-    return "";
+    scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+    wifi_service->Initialize(NULL);
+    std::string error;
+    wifi_service->GetConnectedNetworkSSID(&ssid, &error);
+    if (!error.empty())
+      return "";
 #endif
-  // TODO(meacer): Handle non UTF8 SSIDs.
-  if (!base::IsStringUTF8(ssid))
-    return "";
-  return ssid;
-}
-
-const char kOpenLoginPageCommand[] = "openLoginPage";
+    // TODO(meacer): Handle non UTF8 SSIDs.
+    if (!base::IsStringUTF8(ssid))
+      return "";
+    return ssid;
+  }
+};
 
 } // namespace
 
@@ -80,7 +86,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       login_url_(login_url),
-      is_wifi_connection_(IsWifiConnection()),
+      delegate_(new ConnectionInfoDelegate),
       callback_(callback) {
   DCHECK(login_url_.is_valid());
   RecordUMA(SHOW_ALL);
@@ -109,81 +115,67 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("type", "CAPTIVE_PORTAL");
   load_time_data->SetBoolean("overridable", false);
 
+  // |IsWifiConnection| isn't accurate on some platforms, so always try to get
+  // the Wi-Fi SSID even if |IsWifiConnection| is false.
+  std::string wifi_ssid = delegate_.get()->GetWiFiSSID();
+  bool is_wifi_connection = !wifi_ssid.empty() ||
+                            delegate_.get()->IsWifiConnection();
+
   load_time_data->SetString(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE));
-  load_time_data->SetString("tabTitle",
-      l10n_util::GetStringUTF16(
-          is_wifi_connection_ ?
-          IDS_CAPTIVE_PORTAL_HEADING_WIFI :
-          IDS_CAPTIVE_PORTAL_HEADING_WIRED));
-  load_time_data->SetString("heading",
-      l10n_util::GetStringUTF16(
-          is_wifi_connection_ ?
-          IDS_CAPTIVE_PORTAL_HEADING_WIFI :
-          IDS_CAPTIVE_PORTAL_HEADING_WIRED));
+  load_time_data->SetString(
+      "tabTitle", l10n_util::GetStringUTF16(
+                      is_wifi_connection ? IDS_CAPTIVE_PORTAL_HEADING_WIFI
+                                         : IDS_CAPTIVE_PORTAL_HEADING_WIRED));
+  load_time_data->SetString(
+      "heading", l10n_util::GetStringUTF16(
+                     is_wifi_connection ? IDS_CAPTIVE_PORTAL_HEADING_WIFI
+                                        : IDS_CAPTIVE_PORTAL_HEADING_WIRED));
 
   if (login_url_.spec() == captive_portal::CaptivePortalDetector::kDefaultURL) {
     // Captive portal may intercept requests without HTTP redirects, in which
     // case the login url would be the same as the captive portal detection url.
     // Don't show the login url in that case.
-    if (is_wifi_connection_) {
-      if (wifi_ssid_.empty())
-        wifi_ssid_ = GetWiFiName();
-      if (wifi_ssid_.empty()) {
-        load_time_data->SetString(
-            "primaryParagraph",
-            l10n_util::GetStringUTF16(
-                IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI));
-      } else {
-        load_time_data->SetString(
-            "primaryParagraph",
-            l10n_util::GetStringFUTF16(
-                IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI_SSID,
-                net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid_))));
-      }
-    } else {
-      // Non-WiFi connection:
+    if (wifi_ssid.empty()) {
       load_time_data->SetString(
           "primaryParagraph",
           l10n_util::GetStringUTF16(
-              IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIRED));
+              is_wifi_connection
+                  ? IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI
+                  : IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIRED));
+    } else {
+      load_time_data->SetString(
+          "primaryParagraph",
+          l10n_util::GetStringFUTF16(
+              IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI_SSID,
+              net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid))));
     }
   } else {
-    // Portal redirection was done with HTTP redirects, show the login URL.
+    // Portal redirection was done with HTTP redirects, so show the login URL.
+    // If |languages| is empty, punycode in |login_host| will always be decoded.
     std::string languages;
     Profile* profile = Profile::FromBrowserContext(
         web_contents()->GetBrowserContext());
     if (profile)
       languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-
     base::string16 login_host = net::IDNToUnicode(login_url_.host(), languages);
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&login_host);
 
-    if (is_wifi_connection_) {
-      if (wifi_ssid_.empty())
-        wifi_ssid_ = GetWiFiName();
-      if (wifi_ssid_.empty()) {
-        load_time_data->SetString(
-            "primaryParagraph",
-            l10n_util::GetStringFUTF16(
-                IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI,
-                login_host));
-      } else {
-        load_time_data->SetString(
-            "primaryParagraph",
-                l10n_util::GetStringFUTF16(
-                IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI_SSID,
-                net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid_)),
-                login_host));
-      }
-    } else {
-      // Non-WiFi connection:
+    if (wifi_ssid.empty()) {
       load_time_data->SetString(
           "primaryParagraph",
-          l10n_util::GetStringFUTF16(IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIRED,
-                                     login_host));
+          l10n_util::GetStringFUTF16(
+              is_wifi_connection ? IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI
+                                 : IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIRED,
+              login_host));
+    } else {
+      load_time_data->SetString(
+          "primaryParagraph",
+          l10n_util::GetStringFUTF16(
+              IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI_SSID,
+              net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid)), login_host));
     }
   }
 

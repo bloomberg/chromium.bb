@@ -64,6 +64,22 @@ enum ExpectLoginURL {
 
 }  // namespace
 
+class FakeConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
+ public:
+  FakeConnectionInfoDelegate(bool is_wifi_connection, std::string wifi_ssid)
+      : is_wifi_connection_(is_wifi_connection), wifi_ssid_(wifi_ssid) {}
+  ~FakeConnectionInfoDelegate() override {}
+
+  bool IsWifiConnection() const override { return is_wifi_connection_; }
+  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+
+ private:
+  const bool is_wifi_connection_;
+  const std::string wifi_ssid_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeConnectionInfoDelegate);
+};
+
 class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
  public:
   CaptivePortalBlockingPageTest() {}
@@ -98,11 +114,13 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   DCHECK(contents);
+  // Delegate is owned by the blocking page.
+  FakeConnectionInfoDelegate* delegate =
+      new FakeConnectionInfoDelegate(is_wifi_connection, wifi_ssid);
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
       contents, GURL(kBrokenSSL), login_url, base::Callback<void(bool)>());
-  blocking_page->SetWiFiConnectionForTesting(is_wifi_connection);
-  blocking_page->SetWiFiSSIDForTesting(wifi_ssid);
+  blocking_page->SetDelegateForTesting(delegate);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -140,9 +158,16 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
 // captive portal interstitial should be displayed.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_LoginURL) {
-  TestInterstitial(false, kWiFiSSID, GURL("http://captive.portal/landing_url"),
+  TestInterstitial(false, "", GURL("http://captive.portal/landing_url"),
                    EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
+}
 
+// Same as above, but SSID is available, so the connection should be assumed to
+// be Wi-Fi.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
+                       WiredNetwork_LoginURL_With_SSID) {
+  TestInterstitial(false, kWiFiSSID, GURL("http://captive.portal/landing_url"),
+                   EXPECT_WIFI_YES, EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_YES);
 }
 
 // Same as above, expect the login URL is the same as the captive portal ping
@@ -151,8 +176,17 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
-  TestInterstitial(false, kWiFiSSID, kLandingUrl,
-                   EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
+  TestInterstitial(false, "", kLandingUrl, EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO,
+                   EXPECT_LOGIN_URL_NO);
+}
+
+// Same as above, but SSID is available, so the connection should be assumed to
+// be Wi-Fi.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
+                       WiredNetwork_NoLoginURL_With_SSID) {
+  const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
+  TestInterstitial(false, kWiFiSSID, kLandingUrl, EXPECT_WIFI_YES,
+                   EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_NO);
 }
 
 // If the connection is a Wi-Fi connection, the Wi-Fi version of the captive
@@ -209,7 +243,6 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageIDNTest,
       base::StringPrintf("http://%s/landing_url", kHostname);
   GURL landing_url(landing_url_spec);
 
-  TestInterstitial(false, kWiFiSSID, landing_url,
-                   EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES,
-                   kHostnameJSUnicode);
+  TestInterstitial(false, "", landing_url, EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO,
+                   EXPECT_LOGIN_URL_YES, kHostnameJSUnicode);
 }

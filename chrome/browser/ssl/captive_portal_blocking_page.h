@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,16 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // Interstitial type, for testing.
   static const void* kTypeForTesting;
 
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Returns true if the connection is a Wi-Fi connection.
+    virtual bool IsWifiConnection() const = 0;
+    // Returns the SSID of the connected Wi-Fi network, if any.
+    virtual std::string GetWiFiSSID() const = 0;
+  };
+
   CaptivePortalBlockingPage(content::WebContents* web_contents,
                             const GURL& request_url,
                             const GURL& login_url,
@@ -37,13 +48,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // SecurityInterstitialPage method:
   const void* GetTypeForTesting() const override;
 
-  void SetWiFiConnectionForTesting(bool is_wifi_connection) {
-    is_wifi_connection_ = is_wifi_connection;
-  }
-
-  void SetWiFiSSIDForTesting(const std::string& wifi_ssid) {
-    wifi_ssid_ = wifi_ssid;
-  }
+  void SetDelegateForTesting(Delegate* delegate) { delegate_.reset(delegate); }
 
  protected:
   // SecurityInterstitialPage methods:
@@ -57,11 +62,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
   GURL login_url_;
-  // True if on a Wi-Fi connection.
-  bool is_wifi_connection_;
-  // SSID of the connected network if the connection is a Wi-Fi connection.
-  std::string wifi_ssid_;
-
+  scoped_ptr<Delegate> delegate_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
