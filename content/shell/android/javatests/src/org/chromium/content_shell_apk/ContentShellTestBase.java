@@ -9,11 +9,12 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
-import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseActivityInstrumentationTestCase;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -21,6 +22,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -37,8 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Base test class for all ContentShell based tests.
  */
-public class ContentShellTestBase extends ActivityInstrumentationTestCase2<ContentShellActivity> {
-
+@CommandLineFlags.Add(ContentSwitches.ENABLE_TEST_INTENTS)
+public class ContentShellTestBase
+        extends BaseActivityInstrumentationTestCase<ContentShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
     private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
 
@@ -53,25 +56,12 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
      * The URL can be null, in which case will default to ContentShellActivity.DEFAULT_SHELL_URL.
      */
     protected ContentShellActivity launchContentShellWithUrl(String url) {
-        return launchContentShellWithUrlAndCommandLineArgs(url, null);
-    }
-
-    /**
-     * Starts the ContentShell activity appending the provided command line arguments
-     * and loads the given URL. The URL can be null, in which case will default to
-     * ContentShellActivity.DEFAULT_SHELL_URL.
-     */
-    protected ContentShellActivity launchContentShellWithUrlAndCommandLineArgs(String url,
-            String[] commandLineArgs) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (url != null) intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
                 ContentShellActivity.class));
-        if (commandLineArgs != null) {
-            intent.putExtra(ContentShellActivity.COMMAND_LINE_ARGS_KEY, commandLineArgs);
-        }
         setActivityIntent(intent);
         return getActivity();
     }
@@ -89,21 +79,6 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         assertNotNull(getActivity());
         assertTrue(waitForActiveShellToBeDoneLoading());
         assertEquals(UrlUtils.getTestFileUrl(url), getContentViewCore().getWebContents().getUrl());
-    }
-
-    /**
-     * Starts the content shell activity with the provided test url and optional command line
-     * arguments to append.
-     * The url is synchronously loaded.
-     * @param url Test url to load.
-     * @param commandLineArgs Optional command line args to append when launching the activity.
-     */
-    protected void startActivityWithTestUrlAndCommandLineArgs(
-            String url, String[] commandLineArgs) throws Throwable {
-        launchContentShellWithUrlAndCommandLineArgs(
-                UrlUtils.getTestFileUrl(url), commandLineArgs);
-        assertNotNull(getActivity());
-        assertTrue(waitForActiveShellToBeDoneLoading());
     }
 
     /**

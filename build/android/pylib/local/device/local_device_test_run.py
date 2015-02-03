@@ -61,7 +61,7 @@ class LocalDeviceTestRun(test_run.TestRun):
       tests = [t for t in tests if self._GetTestName(t) not in results_names]
       tries += 1
 
-    all_unknown_test_names = set(tests)
+    all_unknown_test_names = set(self._GetTestName(t) for f in tests)
     all_failed_test_names = set(all_fail_results.iterkeys())
 
     unknown_tests = all_unknown_test_names.difference(all_failed_test_names)

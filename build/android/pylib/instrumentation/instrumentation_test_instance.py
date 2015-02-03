@@ -211,7 +211,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       if self._test_package == package_info.test_package:
         self._package_info = package_info
     if not self._package_info:
-      error_func('Unable to find package info for %s' % self._test_package)
+      logging.warning('Unable to find package info for %s', self._test_package)
 
   def __initializeDataDependencyAttributes(self, args, isolate_delegate):
     self._data_deps = []

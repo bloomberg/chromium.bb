@@ -10,17 +10,19 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.BaseActivityInstrumentationTestCase;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Base test class for all ChromeShell based tests.
  */
-public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<ChromeShellActivity> {
+@CommandLineFlags.Add(ContentSwitches.ENABLE_TEST_INTENTS)
+public class ChromeShellTestBase extends BaseActivityInstrumentationTestCase<ChromeShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
     private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
     private static final String TAG = "ChromeShellTestBase";

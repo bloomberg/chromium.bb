@@ -4,7 +4,6 @@
 
 package org.chromium.content.app;
 
-import android.content.Context;
 import android.os.Looper;
 import android.os.MessageQueue;
 
@@ -85,11 +84,4 @@ public abstract class ContentApplication extends BaseChromiumApplication {
 
         super.onTerminate();
     }
-
-    public abstract void initCommandLine();
-
-    /// This must only be called for contexts whose application is a subclass of ContentApplication.
-    public static void initCommandLine(Context context) {
-        ((ContentApplication) context.getApplicationContext()).initCommandLine();
-    };
 }

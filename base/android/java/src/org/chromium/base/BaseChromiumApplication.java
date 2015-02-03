@@ -6,6 +6,7 @@ package org.chromium.base;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Window;
 
@@ -96,4 +97,16 @@ public class BaseChromiumApplication extends Application {
     public void unregisterWindowFocusChangedListener(WindowFocusChangedListener listener) {
         mWindowFocusListeners.removeObserver(listener);
     }
+
+    /** Initializes the {@link CommandLine}. */
+    public void initCommandLine() {}
+
+    /**
+     * This must only be called for contexts whose application is a subclass of
+     * {@link BaseChromiumApplication}.
+     */
+    @VisibleForTesting
+    public static void initCommandLine(Context context) {
+        ((BaseChromiumApplication) context.getApplicationContext()).initCommandLine();
+    };
 }

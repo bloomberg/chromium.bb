@@ -11,10 +11,10 @@ import android.test.suitebuilder.annotation.SmallTest;
 import junit.framework.Assert;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_shell_apk.ContentShellActivity;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -96,13 +96,6 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         super.setUp();
         mTestController = new TestController();
         setUpContentView(mTestController, "testController");
-    }
-
-    @Override
-    protected ContentShellActivity launchContentShellWithUrl(String url) {
-        // Expose a global function "gc()" into pages.
-        return launchContentShellWithUrlAndCommandLineArgs(
-                url, new String[]{ "--js-flags=--expose-gc" });
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
@@ -471,6 +464,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     // leak.
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
+    @CommandLineFlags.Add("js-flags=--expose-gc")
     public void testReturnedObjectIsGarbageCollected() throws Throwable {
         // Make sure V8 exposes "gc" property on the global object (enabled with --expose-gc flag)
         assertEquals("function", executeJavaScriptAndGetStringResult("typeof gc"));

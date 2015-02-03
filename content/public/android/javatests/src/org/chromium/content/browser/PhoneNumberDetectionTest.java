@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.FlakyTest;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.ContentSwitches;
 
@@ -20,20 +21,6 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         if (intentUrl == null) return false;
         final String expectedUrl = TELEPHONE_INTENT_PREFIX + urlForContent(expectedContent);
         return intentUrl.equals(expectedUrl);
-    }
-
-    /**
-     * Starts the content shell activity with the provided test URL and setting the local country
-     * to the one provided by its 2-letter ISO code.
-     * @param testUrl Test url to load.
-     * @param countryIso 2-letter ISO country code. If set to null only international numbers
-     *                   can be assumed to be supported.
-     */
-    private void startActivityWithTestUrlAndCountryIso(String testUrl, String countryIso)
-            throws Throwable {
-        final String[] cmdlineArgs = countryIso == null ? null : new String[] {
-                "--" + ContentSwitches.NETWORK_COUNTRY_ISO + "=" + countryIso };
-        startActivityWithTestUrlAndCommandLineArgs(testUrl, cmdlineArgs);
     }
 
     /* @LargeTest */
@@ -155,8 +142,9 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     /* @MediumTest */
     @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
+    @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testLocalUSNumbers() throws Throwable {
-        startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "US");
+        startActivityWithTestUrl("content/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // US_1: 1-888-433-5788.
@@ -179,8 +167,9 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     /* @MediumTest */
     @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
+    @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=GB")
     public void testLocalUKNumbers() throws Throwable {
-        startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "GB");
+        startActivityWithTestUrl("content/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // GB_1: (0) 20 7323 8299.
@@ -203,8 +192,9 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     /* @MediumTest */
     @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
+    @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=FR")
     public void testLocalFRNumbers() throws Throwable {
-        startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "FR");
+        startActivityWithTestUrl("content/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // FR_1: 01 40 20 50 50.

@@ -28,11 +28,10 @@ public class AddToHomescreenDialogTest extends ChromeShellTestBase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
         mActivity = launchChromeShellWithBlankPage();
         ChromeShellApplication application =
                 (ChromeShellApplication) mActivity.getApplication();
-
-        super.setUp();
     }
 
     @SmallTest
