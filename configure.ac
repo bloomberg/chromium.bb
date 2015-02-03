@@ -85,7 +85,16 @@ AC_ARG_WITH(icondir, [  --with-icondir=<dir>    Look for cursor icons here],
 AC_SUBST([ICONDIR])
 
 if test "x$enable_scanner" = "xyes"; then
-	PKG_CHECK_MODULES(EXPAT, [expat])
+	PKG_CHECK_MODULES(EXPAT, [expat], [],
+		[AC_CHECK_HEADERS(expat.h, [],
+			[AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
+		 SAVE_LIBS="$LIBS"
+		 AC_SEARCH_LIBS(XML_ParserCreate, expat, [],
+			[AC_MSG_ERROR([Can't find expat library. Please install expat.])])
+		 EXPAT_LIBS="$LIBS"
+		 LIBS="$SAVE_LIBS"
+		 AC_SUBST(EXPAT_LIBS)
+		])
 fi
 
 AC_PATH_PROG(XSLTPROC, xsltproc)
