@@ -75,7 +75,9 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
     # Data is not part of open source chromium, but are included on some bots.
     path_join('data'),
     # This is not part of open source chromium, but are included on some bots.
-    path_join('skia', 'tools', 'clusterfuzz-data')
+    path_join('skia', 'tools', 'clusterfuzz-data'),
+    # Not shipped, only relates to Chrome for Android, but not to WebView
+    path_join('clank'),
   ]
   excluded_dirs_list.extend(EXTRA_EXCLUDED_DIRS)
 
@@ -311,7 +313,8 @@ def AnalyzeScanResults(input_api, whitelisted_files, offending_files):
     "Stale" are files that are whitelisted unnecessarily.
   """
   unknown = set(offending_files) - set(whitelisted_files)
-  missing = [f for f in whitelisted_files if not input_api.os_path.isfile(f)]
+  missing = [f for f in whitelisted_files if not input_api.os_path.isfile(
+    input_api.os_path.join(input_api.change.RepositoryRoot(), f))]
   stale = set(whitelisted_files) - set(offending_files) - set(missing)
   return (list(unknown), missing, list(stale))
 

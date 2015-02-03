@@ -178,6 +178,8 @@ class AnalyzeScanResultsTest(SuperMoxTestBase):
     SuperMoxTestBase.setUp(self)
     self.input_api = self.mox.CreateMockAnything()
     self.input_api.os_path = os.path
+    self.input_api.change = self.mox.CreateMockAnything()
+    self.input_api.change.RepositoryRoot = lambda: ''
 
   def testAnalyzeScanResults(self):
     # Tests whitelisted vs. current files state logic.

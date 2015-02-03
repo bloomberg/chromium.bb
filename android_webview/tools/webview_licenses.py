@@ -222,6 +222,8 @@ def _FindThirdPartyDirs():
     os.path.join('tools', 'swarming_client'),
     # Not shipped, only relates to Chrome for Android, but not to WebView
     os.path.join('clank'),
+    # Bots only, is not a part of the build
+    os.path.join('isolate_deps_dir'),
   ]
   third_party_dirs = licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
   return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
