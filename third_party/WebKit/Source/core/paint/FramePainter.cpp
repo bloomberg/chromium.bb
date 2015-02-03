@@ -20,6 +20,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
@@ -85,8 +86,12 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     else
         fillWithRed = true;
 
-    if (fillWithRed)
-        context->fillRect(rect, Color(0xFF, 0, 0));
+    if (fillWithRed) {
+        IntRect contentRect(IntPoint(), m_frameView.contentsSize());
+        DrawingRecorder drawingRecorder(context, m_frameView.renderView()->displayItemClient(), DisplayItem::DebugRedFill, contentRect);
+        if (!drawingRecorder.canUseCachedDrawing())
+            context->fillRect(contentRect, Color(0xFF, 0, 0));
+    }
 #endif
 
     RenderView* renderView = m_frameView.renderView();

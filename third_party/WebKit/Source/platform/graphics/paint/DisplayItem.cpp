@@ -55,6 +55,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ScrollbarVertical: return "DrawingScrollbarVertical";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::ViewBackground: return "DrawingViewBackground";
+    case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";

@@ -68,7 +68,8 @@ public:
         ScrollbarVertical,
         VideoBitmap,
         ViewBackground,
-        DrawingLast = ViewBackground,
+        DebugRedFill,
+        DrawingLast = DebugRedFill,
 
         CachedFirst,
         CachedLast = CachedFirst + DrawingLast - DrawingFirst,
