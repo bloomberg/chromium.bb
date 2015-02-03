@@ -94,6 +94,38 @@ MetadataCacheItem.prototype.get = function(names) {
 };
 
 /**
+ * Creates deep copy of the item.
+ * @return {!MetadataCacheItem}
+ */
+MetadataCacheItem.prototype.clone = function() {
+  var clonedItem = new MetadataCacheItem();
+  for (var name in this.properties_) {
+    var property = this.properties_[name];
+    clonedItem.properties_[name] = new MetadataCacheItemProperty();
+    clonedItem.properties_[name].value = property.value;
+    clonedItem.properties_[name].requestId = property.requestId;
+    clonedItem.properties_[name].state = property.state;
+  }
+  return clonedItem;
+};
+
+/**
+ * Returns whether all the given properties are fulfilled.
+ * @param {!Array<string>} names Property names.
+ * @return {boolean}
+ */
+MetadataCacheItem.prototype.hasFreshCache = function(names) {
+  for (var i = 0; i < names.length; i++) {
+    if (!(this.properties_[names[i]] &&
+          this.properties_[names[i]].state ===
+          MetadataCacheItemPropertyState.FULFILLED)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
  * @enum {string}
  */
 var MetadataCacheItemPropertyState = {

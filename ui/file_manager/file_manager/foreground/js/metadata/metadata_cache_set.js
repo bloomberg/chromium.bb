@@ -91,6 +91,36 @@ MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
 };
 
 /**
+ * Creates snapshot of the cache for entries.
+ * @param {!Array<!FileEntry>} entries
+ */
+MetadataCacheSet.prototype.createSnapshot = function(entries) {
+  var items = {};
+  for (var i = 0; i < entries.length; i++) {
+    var url = entries[i].toURL();
+    var item = this.items_.peek(url);
+    if (item)
+      items[url] = item.clone();
+  }
+  return new MetadataCacheSet(new MetadataCacheSetStorageForObject(items));
+};
+
+/**
+ * Returns whether all the given properties are fulfilled.
+ * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<string>} names Property names.
+ * @return {boolean}
+ */
+MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
+  for (var i = 0; i < entries.length; i++) {
+    var item = this.items_.peek(entries[i].toURL());
+    if (!(item && item.hasFreshCache(names)))
+      return false;
+  }
+  return true;
+};
+
+/**
  * Interface of raw strage for MetadataCacheItem.
  * TODO(hirono): Add implementation of the interface for LRUCache.
  * @interface

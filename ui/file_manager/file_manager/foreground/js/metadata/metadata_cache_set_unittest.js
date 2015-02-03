@@ -81,3 +81,43 @@ function testMetadataCacheSetInvalidatePartial() {
   assertEquals(1, loadRequested[0].names.length);
   assertEquals('property', loadRequested[0].names[0]);
 }
+
+function testMetadataCacheSetCreateSnapshot() {
+  var setA = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  setA.startRequests(1, setA.createRequests([entryA, entryB], ['property']));
+  var setB = setA.createSnapshot([entryA]);
+  setA.storeProperties(
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+  var results = setB.get([entryA, entryB], ['property']);
+  assertEquals(2, results.length);
+  assertEquals(null, results[0].property);
+  assertEquals(undefined, results[1].property);
+
+  setB.storeProperties(
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+  var results = setB.get([entryA, entryB], ['property']);
+  assertEquals(2, results.length);
+  assertEquals('valueA', results[0].property);
+  assertEquals(undefined, results[1].property);
+
+  setA.invalidate(2, [entryA, entryB]);
+  var results = setB.get([entryA, entryB], ['property']);
+  assertEquals(2, results.length);
+  assertEquals('valueA', results[0].property);
+  assertEquals(undefined, results[1].property);
+}
+
+function testMetadataCacheSetHasFreshCache() {
+  var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  assertFalse(set.hasFreshCache([entryA, entryB], ['property']));
+
+  set.startRequests(1, set.createRequests([entryA, entryB], ['property']));
+  set.storeProperties(
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+  assertTrue(set.hasFreshCache([entryA, entryB], ['property']));
+
+  set.invalidate(2, [entryB]);
+  assertFalse(set.hasFreshCache([entryA, entryB], ['property']));
+
+  assertTrue(set.hasFreshCache([entryA], ['property']));
+}

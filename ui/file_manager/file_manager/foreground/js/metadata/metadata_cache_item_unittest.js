@@ -47,3 +47,34 @@ function testMetadataCacheItemStoreInReverseOrder() {
   var result = item.get(['propertyA']);
   assertEquals('value2', result.propertyA);
 }
+
+function testMetadataCacheItemClone() {
+  var itemA = new MetadataCacheItem();
+  itemA.startRequests(1, itemA.createRequests(['property']));
+  var itemB = itemA.clone();
+  itemA.storeProperties(1, {property: 'value'});
+  assertFalse(itemB.hasFreshCache(['property']));
+
+  itemB.storeProperties(1, {property: 'value'});
+  assertTrue(itemB.hasFreshCache(['property']));
+
+  itemA.invalidate(2);
+  assertTrue(itemB.hasFreshCache(['property']));
+}
+
+function testMetadataCacheItemHasFreshCache() {
+  var item = new MetadataCacheItem();
+  assertFalse(item.hasFreshCache(['propertyA', 'propertyB']));
+
+  item.startRequests(1, item.createRequests(['propertyA', 'propertyB']));
+  item.storeProperties(1, {propertyA: 'valueA', propertyB: 'valueB'});
+  assertTrue(item.hasFreshCache(['propertyA', 'propertyB']));
+
+  item.invalidate(2);
+  assertFalse(item.hasFreshCache(['propertyA', 'propertyB']));
+
+  item.startRequests(1, item.createRequests(['propertyA']));
+  item.storeProperties(1, {propertyA: 'valueA'});
+  assertFalse(item.hasFreshCache(['propertyA', 'propertyB']));
+  assertTrue(item.hasFreshCache(['propertyA']));
+}
