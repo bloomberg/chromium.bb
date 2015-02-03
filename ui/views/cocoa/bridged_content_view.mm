@@ -8,6 +8,9 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/ime/text_input_client.h"
+#import "ui/events/cocoa/cocoa_event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -42,9 +45,22 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 // the event to NativeWidgetMac for handling.
 - (void)handleMouseEvent:(NSEvent*)theEvent;
 
-// Execute a command on the currently focused TextInputClient.
-// |commandId| should be a resource ID from ui_strings.grd.
-- (void)doCommandByID:(int)commandId;
+// Handles an NSResponder Action Message by mapping it to a corresponding text
+// editing command from ui_strings.grd and, when not being sent to a
+// TextInputClient, the keyCode that toolkit-views expects internally.
+// For example, moveToLeftEndOfLine: would pass ui::VKEY_HOME in non-RTL locales
+// even though the Home key on Mac defaults to moveToBeginningOfDocument:.
+// This approach also allows action messages a user
+// may have remapped in ~/Library/KeyBindings/DefaultKeyBinding.dict to be
+// catered for.
+// Note: default key bindings in Mac can be read from StandardKeyBinding.dict
+// which lives in /System/Library/Frameworks/AppKit.framework/Resources. Do
+// `plutil -convert xml1 -o StandardKeyBinding.xml StandardKeyBinding.dict` to
+// get something readable.
+- (void)handleAction:(int)commandId
+             keyCode:(ui::KeyboardCode)keyCode
+             domCode:(ui::DomCode)domCode
+          eventFlags:(int)eventFlags;
 
 @end
 
@@ -111,9 +127,24 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   hostedView_->GetWidget()->OnMouseEvent(&event);
 }
 
-- (void)doCommandByID:(int)commandId {
-  if (textInputClient_ && textInputClient_->IsEditingCommandEnabled(commandId))
+- (void)handleAction:(int)commandId
+             keyCode:(ui::KeyboardCode)keyCode
+             domCode:(ui::DomCode)domCode
+          eventFlags:(int)eventFlags {
+  if (!hostedView_)
+    return;
+
+  // If there's an active TextInputClient, it ignores the key and processes the
+  // logical editing action.
+  if (commandId && textInputClient_ &&
+      textInputClient_->IsEditingCommandEnabled(commandId)) {
     textInputClient_->ExecuteEditingCommand(commandId);
+    return;
+  }
+
+  // Otherwise, process the action as a regular key event.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
+  hostedView_->GetWidget()->OnKeyEvent(&event);
 }
 
 // NSView implementation.
@@ -147,10 +178,8 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 // NSResponder implementation.
 
 - (void)keyDown:(NSEvent*)theEvent {
-  if (textInputClient_)
-    [self interpretKeyEvents:@[ theEvent ]];
-  else
-    [super keyDown:theEvent];
+  // Convert the event into an action message, according to OSX key mappings.
+  [self interpretKeyEvents:@[ theEvent ]];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -204,25 +233,164 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   hostedView_->GetWidget()->OnMouseEvent(&event);
 }
 
-- (void)deleteBackward:(id)sender {
-  [self doCommandByID:IDS_DELETE_BACKWARD];
+////////////////////////////////////////////////////////////////////////////////
+// NSResponder Action Messages. Keep sorted according NSResponder.h (from the
+// 10.9 SDK). The list should eventually be complete. Anything not defined will
+// beep when interpretKeyEvents: would otherwise call it.
+// TODO(tapted): Make this list complete.
+
+// The insertText action message forwards to the TextInputClient unless a menu
+// is active.
+- (void)insertText:(id)text {
+  [self insertText:text replacementRange:NSMakeRange(NSNotFound, 0)];
 }
 
-- (void)deleteForward:(id)sender {
-  [self doCommandByID:IDS_DELETE_FORWARD];
+// Selection movement and scrolling.
+
+- (void)moveRight:(id)sender {
+  [self handleAction:IDS_MOVE_RIGHT
+             keyCode:ui::VKEY_RIGHT
+             domCode:ui::DomCode::ARROW_RIGHT
+          eventFlags:0];
 }
 
 - (void)moveLeft:(id)sender {
-  [self doCommandByID:IDS_MOVE_LEFT];
+  [self handleAction:IDS_MOVE_LEFT
+             keyCode:ui::VKEY_LEFT
+             domCode:ui::DomCode::ARROW_LEFT
+          eventFlags:0];
 }
 
-- (void)moveRight:(id)sender {
-  [self doCommandByID:IDS_MOVE_RIGHT];
+- (void)moveUp:(id)sender {
+  [self handleAction:0
+             keyCode:ui::VKEY_UP
+             domCode:ui::DomCode::ARROW_UP
+          eventFlags:0];
 }
 
-- (void)insertText:(id)text {
-  if (textInputClient_)
-    textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+- (void)moveDown:(id)sender {
+  [self handleAction:0
+             keyCode:ui::VKEY_DOWN
+             domCode:ui::DomCode::ARROW_DOWN
+          eventFlags:0];
+}
+
+- (void)moveWordRight:(id)sender {
+  [self handleAction:IDS_MOVE_WORD_RIGHT
+             keyCode:ui::VKEY_RIGHT
+             domCode:ui::DomCode::ARROW_RIGHT
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)moveWordLeft:(id)sender {
+  [self handleAction:IDS_MOVE_WORD_LEFT
+             keyCode:ui::VKEY_LEFT
+             domCode:ui::DomCode::ARROW_LEFT
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)moveLeftAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_LEFT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_LEFT
+             domCode:ui::DomCode::ARROW_LEFT
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveRightAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_RIGHT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_RIGHT
+             domCode:ui::DomCode::ARROW_RIGHT
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveWordRightAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_RIGHT
+             domCode:ui::DomCode::ARROW_RIGHT
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveWordLeftAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_LEFT
+             domCode:ui::DomCode::ARROW_LEFT
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToLeftEndOfLine:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:0];
+}
+
+- (void)moveToRightEndOfLine:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:0];
+}
+
+- (void)moveToLeftEndOfLineAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToRightEndOfLineAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+// Insertions and Indentations.
+
+- (void)insertNewline:(id)sender {
+  [self handleAction:0
+             keyCode:ui::VKEY_RETURN
+             domCode:ui::DomCode::ENTER
+          eventFlags:0];
+}
+
+// Deletions.
+
+- (void)deleteForward:(id)sender {
+  [self handleAction:IDS_DELETE_FORWARD
+             keyCode:ui::VKEY_DELETE
+             domCode:ui::DomCode::DEL
+          eventFlags:0];
+}
+
+- (void)deleteBackward:(id)sender {
+  [self handleAction:IDS_DELETE_BACKWARD
+             keyCode:ui::VKEY_BACK
+             domCode:ui::DomCode::BACKSPACE
+          eventFlags:0];
+}
+
+- (void)deleteWordForward:(id)sender {
+  [self handleAction:IDS_DELETE_WORD_FORWARD
+             keyCode:ui::VKEY_DELETE
+             domCode:ui::DomCode::DEL
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)deleteWordBackward:(id)sender {
+  [self handleAction:IDS_DELETE_WORD_BACKWARD
+             keyCode:ui::VKEY_BACK
+             domCode:ui::DomCode::BACKSPACE
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+// Cancellation.
+
+- (void)cancelOperation:(id)sender {
+  [self handleAction:0
+             keyCode:ui::VKEY_ESCAPE
+             domCode:ui::DomCode::ESCAPE
+          eventFlags:0];
 }
 
 // Support for Services in context menus.

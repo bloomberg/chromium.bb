@@ -10,6 +10,7 @@
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -249,6 +250,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   // Overridden from ui::EventHandler (via ui::EventTarget):
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Overridden from ui::EventSource:
   ui::EventProcessor* GetEventProcessor() override { return this; }
@@ -317,6 +319,17 @@ void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
                                                event->type(),
                                                event->location(),
                                                event->changed_button_flags());
+  if (owner_->targeting_application())
+    [NSApp sendEvent:ns_event];
+  else
+    EmulateSendEvent(window_, ns_event);
+}
+
+void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
+  NSUInteger modifiers = EventFlagsToModifiers(event->flags());
+  NSEvent* ns_event = cocoa_test_event_utils::SynthesizeKeyEvent(
+      window_, event->type() == ui::ET_KEY_PRESSED, event->key_code(),
+      modifiers);
   if (owner_->targeting_application())
     [NSApp sendEvent:ns_event];
   else

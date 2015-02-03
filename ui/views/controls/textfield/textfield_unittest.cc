@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/render_text.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -202,7 +203,12 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     textfield_ = new TestTextfield();
     textfield_->set_controller(this);
     widget_ = new Widget();
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+
+    // The widget type must be an activatable type, and we don't want to worry
+    // about the non-client view, which leaves just TYPE_WINDOW_FRAMELESS.
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+
     params.bounds = gfx::Rect(100, 100, 100, 100);
     widget_->Init(params);
     View* container = new View();
@@ -224,8 +230,11 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     input_method_ = new MockInputMethod();
     widget_->ReplaceInputMethod(input_method_);
 
-    // Activate the widget and focus the textfield for input handling.
-    widget_->Activate();
+    // Since the window type is activatable, showing the widget will also
+    // activate it. Calling Activate directly is insufficient, since that does
+    // not also _focus_ an aura::Window (i.e. using the FocusClient). Both the
+    // widget and the textfield must have focus to properly handle input.
+    widget_->Show();
     textfield_->RequestFocus();
 
     // On Mac, activation is asynchronous since desktop widgets are used. We
@@ -233,6 +242,9 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 #if defined(OS_MACOSX) && !defined(USE_AURA)
     fake_activation_ = test::WidgetTest::FakeWidgetIsActiveAlways();
 #endif
+
+    event_generator_.reset(
+        new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
   }
 
   ui::MenuModel* GetContextMenuModel() {
@@ -240,22 +252,41 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     return test_api_->context_menu_contents();
   }
 
+  // True if native Mac keystrokes should be used (to avoid ifdef litter).
+  bool TestingNativeMac() {
+#if defined(OS_MACOSX)
+    return true;
+#else
+    return false;
+#endif
+  }
+
  protected:
   void SendKeyEvent(ui::KeyboardCode key_code,
                     bool alt,
                     bool shift,
-                    bool control,
+                    bool control_or_command,
                     bool caps_lock) {
-    int flags = (alt ? ui::EF_ALT_DOWN : 0) |
-                (shift ? ui::EF_SHIFT_DOWN : 0) |
+    bool control = control_or_command;
+    bool command = false;
+
+    // By default, swap control and command for native events on Mac. This
+    // handles most cases.
+    if (TestingNativeMac())
+      std::swap(control, command);
+
+    int flags = (alt ? ui::EF_ALT_DOWN : 0) | (shift ? ui::EF_SHIFT_DOWN : 0) |
                 (control ? ui::EF_CONTROL_DOWN : 0) |
+                (command ? ui::EF_COMMAND_DOWN : 0) |
                 (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
-    input_method_->DispatchKeyEvent(event);
+
+    event_generator_->PressKey(key_code, flags);
   }
 
-  void SendKeyEvent(ui::KeyboardCode key_code, bool shift, bool control) {
-    SendKeyEvent(key_code, false, shift, control, false);
+  void SendKeyEvent(ui::KeyboardCode key_code,
+                    bool shift,
+                    bool control_or_command) {
+    SendKeyEvent(key_code, false, shift, control_or_command, false);
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code) {
@@ -269,9 +300,44 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
           static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
       SendKeyEvent(code);
     } else {
+      // For unicode characters, assume they come from IME rather than the
+      // keyboard. So they are dispatched directly to the input method.
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::EF_NONE);
       input_method_->DispatchKeyEvent(event);
     }
+  }
+
+  // Sends a platform-specific move (and select) to start of line.
+  void SendHomeEvent(bool shift) {
+    if (TestingNativeMac()) {
+      // Use Cmd+Left on native Mac. An RTL-agnostic "end" doesn't have a
+      // default key-binding on Mac.
+      SendKeyEvent(ui::VKEY_LEFT, shift /* shift */, true /* command */);
+      return;
+    }
+    SendKeyEvent(ui::VKEY_HOME, shift /* shift */, false /* control */);
+  }
+
+  // Sends a platform-specific move (and select) to end of line.
+  void SendEndEvent(bool shift) {
+    if (TestingNativeMac()) {
+      SendKeyEvent(ui::VKEY_RIGHT, shift, true);  // Cmd+Right.
+      return;
+    }
+    SendKeyEvent(ui::VKEY_END, shift, false);
+  }
+
+  // Sends {delete, move, select} word {forward, backward}.
+  void SendWordEvent(ui::KeyboardCode key, bool shift) {
+    bool alt = false;
+    bool control = true;
+    bool caps = false;
+    if (TestingNativeMac()) {
+      // Use Alt+Left/Right/Backspace on native Mac.
+      alt = true;
+      control = false;
+    }
+    SendKeyEvent(key, alt, shift, control, caps);
   }
 
   View* GetFocusedView() {
@@ -357,6 +423,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
  private:
   ui::ClipboardType copied_to_clipboard_;
   scoped_ptr<test::WidgetTest::FakeActivation> fake_activation_;
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };
@@ -402,7 +469,7 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
   // Insert a test string in a textfield.
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("one two three"));
-  SendKeyEvent(ui::VKEY_HOME,  false /* shift */, false /* control */);
+  SendHomeEvent(false);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
@@ -410,13 +477,13 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
   EXPECT_STR_EQ("one", textfield_->GetSelectedText());
 
   // Test word select.
-  SendKeyEvent(ui::VKEY_RIGHT, true, true);
+  SendWordEvent(ui::VKEY_RIGHT, true);
   EXPECT_STR_EQ("one two", textfield_->GetSelectedText());
-  SendKeyEvent(ui::VKEY_RIGHT, true, true);
+  SendWordEvent(ui::VKEY_RIGHT, true);
   EXPECT_STR_EQ("one two three", textfield_->GetSelectedText());
-  SendKeyEvent(ui::VKEY_LEFT, true, true);
+  SendWordEvent(ui::VKEY_LEFT, true);
   EXPECT_STR_EQ("one two ", textfield_->GetSelectedText());
-  SendKeyEvent(ui::VKEY_LEFT, true, true);
+  SendWordEvent(ui::VKEY_LEFT, true);
   EXPECT_STR_EQ("one ", textfield_->GetSelectedText());
 
   // Replace the selected text.
@@ -427,9 +494,9 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
   SendKeyEvent(ui::VKEY_SPACE, false, false);
   EXPECT_STR_EQ("ZERO two three", textfield_->text());
 
-  SendKeyEvent(ui::VKEY_END, true, false);
+  SendEndEvent(true);
   EXPECT_STR_EQ("two three", textfield_->GetSelectedText());
-  SendKeyEvent(ui::VKEY_HOME, true, false);
+  SendHomeEvent(true);
   EXPECT_STR_EQ("ZERO ", textfield_->GetSelectedText());
 }
 
@@ -455,14 +522,17 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   EXPECT_STR_EQ("k", textfield_->text());
 
   // Delete the previous word from cursor.
+  bool shift = false;
   textfield_->SetText(ASCIIToUTF16("one two three four"));
-  SendKeyEvent(ui::VKEY_END);
-  SendKeyEvent(ui::VKEY_BACK, false, false, true, false);
+  SendEndEvent(shift);
+  SendWordEvent(ui::VKEY_BACK, shift);
   EXPECT_STR_EQ("one two three ", textfield_->text());
 
-  // Delete to a line break on Linux and ChromeOS, to a word break on Windows.
-  SendKeyEvent(ui::VKEY_LEFT, false, false, true, false);
-  SendKeyEvent(ui::VKEY_BACK, false, true, true, false);
+  // Delete to a line break on Linux and ChromeOS, to a word break on Windows
+  // and Mac.
+  SendWordEvent(ui::VKEY_LEFT, shift);
+  shift = true;
+  SendWordEvent(ui::VKEY_BACK, shift);
 #if defined(OS_LINUX)
   EXPECT_STR_EQ("three ", textfield_->text());
 #else
@@ -471,13 +541,16 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
 
   // Delete the next word from cursor.
   textfield_->SetText(ASCIIToUTF16("one two three four"));
-  SendKeyEvent(ui::VKEY_HOME);
-  SendKeyEvent(ui::VKEY_DELETE, false, false, true, false);
+  shift = false;
+  SendHomeEvent(shift);
+  SendWordEvent(ui::VKEY_DELETE, shift);
   EXPECT_STR_EQ(" two three four", textfield_->text());
 
-  // Delete to a line break on Linux and ChromeOS, to a word break on Windows.
-  SendKeyEvent(ui::VKEY_RIGHT, false, false, true, false);
-  SendKeyEvent(ui::VKEY_DELETE, false, true, true, false);
+  // Delete to a line break on Linux and ChromeOS, to a word break on Windows
+  // and Mac.
+  SendWordEvent(ui::VKEY_RIGHT, shift);
+  shift = true;
+  SendWordEvent(ui::VKEY_DELETE, shift);
 #if defined(OS_LINUX)
   EXPECT_STR_EQ(" two", textfield_->text());
 #else
@@ -1432,7 +1505,7 @@ TEST_F(TextfieldTest, TextCursorDisplayTest) {
 
   // Clear text.
   SendKeyEvent(ui::VKEY_A, false, true);
-  SendKeyEvent('\n');
+  SendKeyEvent(ui::VKEY_DELETE);
 
   // RTL-LTR string in LTR context.
   SendKeyEvent(0x05E1);
@@ -1486,8 +1559,9 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   x = GetCursorBounds().x();
   EXPECT_GT(prev_x, x);
 
+  // Clear text.
   SendKeyEvent(ui::VKEY_A, false, true);
-  SendKeyEvent('\n');
+  SendKeyEvent(ui::VKEY_DELETE);
 
   // RTL-LTR string in RTL context.
   SendKeyEvent(0x05E1);
@@ -1654,7 +1728,7 @@ TEST_F(TextfieldTest, OverflowTest) {
 
   // Clear text.
   SendKeyEvent(ui::VKEY_A, false, true);
-  SendKeyEvent('\n');
+  SendKeyEvent(ui::VKEY_DELETE);
 
   for (int i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
@@ -1682,7 +1756,7 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
 
   // Clear text.
   SendKeyEvent(ui::VKEY_A, false, true);
-  SendKeyEvent('\n');
+  SendKeyEvent(ui::VKEY_DELETE);
 
   for (int i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
