@@ -978,10 +978,14 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetClipChildren(nullptr);
   }
 
-  layer->PushScrollOffsetFromMainThread(scroll_offset_);
-  if (layer_animation_controller_->scroll_offset_animation_was_interrupted() &&
-      layer->IsActive())
-    layer->SetScrollDelta(gfx::Vector2dF());
+  // When a scroll offset animation is interrupted the new scroll position on
+  // the pending tree will clobber any impl-side scrolling occuring on the
+  // active tree. To do so, avoid scrolling the pending tree along with it
+  // instead of trying to undo that scrolling later.
+  if (layer_animation_controller_->scroll_offset_animation_was_interrupted())
+    layer->PushScrollOffsetFromMainThreadAndClobberActiveValue(scroll_offset_);
+  else
+    layer->PushScrollOffsetFromMainThread(scroll_offset_);
   layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
   // Wrap the copy_requests_ in a PostTask to the main thread.

@@ -24,7 +24,7 @@ namespace cc {
 template <typename T>
 class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
  public:
-  SyncedProperty() {}
+  SyncedProperty() : clobber_active_value_(false) {}
 
   // Returns the canonical value for the specified tree, including the sum of
   // all deltas.  The pending tree should use this for activation purposes and
@@ -84,6 +84,7 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
     active_base_ = pending_base_;
     active_delta_ = PendingDelta();
     sent_delta_ = T::Identity();
+    clobber_active_value_ = false;
 
     return true;
   }
@@ -105,7 +106,13 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   // The new delta we would use if we decide to activate now.  This delta
   // excludes the amount that we expect the main thread to reflect back at the
   // impl thread during the commit.
-  T PendingDelta() const { return active_delta_.InverseCombine(sent_delta_); }
+  T PendingDelta() const {
+    if (clobber_active_value_)
+      return T::Identity();
+    return active_delta_.InverseCombine(sent_delta_);
+  }
+
+  void set_clobber_active_value() { clobber_active_value_ = true; }
 
  private:
   // Value last committed to the pending tree.
@@ -117,6 +124,9 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   // The value sent to the main thread (on the last BeginFrame); this is always
   // identity outside of the BeginFrame-to-activation interval.
   T sent_delta_;
+  // When true the pending delta is always identity so that it does not change
+  // and will clobber the active value on push.
+  bool clobber_active_value_;
 
   friend class base::RefCounted<SyncedProperty<T>>;
   ~SyncedProperty() {}

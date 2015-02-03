@@ -399,6 +399,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
   void PushScrollOffsetFromMainThread(const gfx::ScrollOffset& scroll_offset);
+  // This method is similar to PushScrollOffsetFromMainThread but will cause the
+  // scroll offset given to clobber any scroll changes on the active tree in the
+  // time until this value is pushed to the active tree.
+  void PushScrollOffsetFromMainThreadAndClobberActiveValue(
+      const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset PullDeltaForMainThread();
   gfx::ScrollOffset CurrentScrollOffset() const;
   gfx::ScrollOffset BaseScrollOffset() const;

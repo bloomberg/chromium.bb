@@ -1096,13 +1096,21 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     host_impl->BlockNotifyReadyToActivateForTesting(false);
   }
 
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (!host_impl->settings().impl_side_painting)
+      return;
+    if (host_impl->pending_tree()->source_frame_number() != 1)
+      return;
+    LayerImpl* scroll_layer_impl =
+        host_impl->pending_tree()->root_layer()->children()[0];
+    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
+  }
+
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() != 1)
+      return;
     LayerImpl* scroll_layer_impl =
         host_impl->active_tree()->root_layer()->children()[0];
-    if (scroll_layer_impl->layer_animation_controller()->GetAnimation(
-            Animation::ScrollOffset))
-      return;
-
     EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
     EndTest();
   }

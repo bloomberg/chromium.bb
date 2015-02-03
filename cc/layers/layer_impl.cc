@@ -1080,6 +1080,12 @@ void LayerImpl::PushScrollOffsetFromMainThread(
   PushScrollOffset(&scroll_offset);
 }
 
+void LayerImpl::PushScrollOffsetFromMainThreadAndClobberActiveValue(
+    const gfx::ScrollOffset& scroll_offset) {
+  scroll_offset_->set_clobber_active_value();
+  PushScrollOffset(&scroll_offset);
+}
+
 gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
   RefreshFromScrollDelegate();
 
@@ -1140,8 +1146,6 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
   }
   if (IsActive()) {
     changed |= scroll_offset_->PushPendingToActive();
-    if (layer_animation_controller_->scroll_offset_animation_was_interrupted())
-      SetScrollDelta(gfx::Vector2dF());
   }
 
   if (changed)
