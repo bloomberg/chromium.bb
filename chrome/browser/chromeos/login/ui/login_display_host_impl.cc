@@ -49,6 +49,8 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
@@ -65,6 +67,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
@@ -667,6 +671,35 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
                                           bool diagnostic_mode) {
   VLOG(1) << "Login WebUI >> start app launch.";
   SetStatusAreaVisible(false);
+
+  // Wait for the |CrosSettings| to become either trusted or permanently
+  // untrusted.
+  const CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+          &LoginDisplayHostImpl::StartAppLaunch,
+          pointer_factory_.GetWeakPtr(),
+          app_id,
+          diagnostic_mode));
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
+
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // If the |CrosSettings| are permanently untrusted, refuse to launch a
+    // single-app kiosk mode session.
+    LOG(ERROR) << "Login WebUI >> Refusing to launch single-app kiosk mode.";
+    SetStatusAreaVisible(true);
+    return;
+  }
+
+  bool device_disabled = false;
+  CrosSettings::Get()->GetBoolean(kDeviceDisabled, &device_disabled);
+  if (device_disabled && system::DeviceDisablingManager::
+                             HonorDeviceDisablingDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+    return;
+  }
+
   finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_)
     LoadURL(GURL(kAppLaunchSplashURL));
