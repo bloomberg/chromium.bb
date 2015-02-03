@@ -86,6 +86,10 @@ MAX_LINUX_BUILD_TIME = 14400
 # The confidence percentage we require to consider the initial range a
 # regression based on the test results of the inital good and bad revisions.
 REGRESSION_CONFIDENCE = 80
+# How many times to repeat the test on the last known good and first known bad
+# revisions in order to assess a more accurate confidence score in the
+# regression culprit.
+BORDER_REVISIONS_EXTRA_RUNS = 2
 
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
@@ -1272,7 +1276,7 @@ class BisectPerformanceMetrics(object):
 
   def RunPerformanceTestAndParseResults(
       self, command_to_run, metric, reset_on_first_run=False,
-      upload_on_last_run=False, results_label=None):
+      upload_on_last_run=False, results_label=None, test_run_multiplier=1):
     """Runs a performance test on the current revision and parses the results.
 
     Args:
@@ -1285,6 +1289,8 @@ class BisectPerformanceMetrics(object):
       results_label: A value for the option flag --results-label.
           The arguments reset_on_first_run, upload_on_last_run and results_label
           are all ignored if the test is not a Telemetry test.
+      test_run_multiplier: Factor by which to multiply the number of test runs
+          and the timeout period specified in self.opts.
 
     Returns:
       (values dict, 0) if --debug_ignore_perf_test was passed.
@@ -1326,7 +1332,8 @@ class BisectPerformanceMetrics(object):
 
     metric_values = []
     output_of_all_runs = ''
-    for i in xrange(self.opts.repeat_test_count):
+    repeat_count = self.opts.repeat_test_count * test_run_multiplier
+    for i in xrange(repeat_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
       current_args = copy.copy(args)
       if is_telemetry:
@@ -1368,7 +1375,8 @@ class BisectPerformanceMetrics(object):
         metric_values.append(return_code)
 
       elapsed_minutes = (time.time() - start_time) / 60.0
-      if elapsed_minutes >= self.opts.max_time_minutes:
+      time_limit = self.opts.max_time_minutes *  test_run_multiplier
+      if elapsed_minutes >= time_limit:
         break
 
     if metric and len(metric_values) == 0:
@@ -1473,7 +1481,8 @@ class BisectPerformanceMetrics(object):
     return False
 
   def RunTest(self, revision, depot, command, metric, skippable=False,
-      skip_sync=False, create_patch=False, force_build=False):
+              skip_sync=False, create_patch=False, force_build=False,
+              test_run_multiplier=1):
     """Performs a full sync/build/run of the specified revision.
 
     Args:
@@ -1484,6 +1493,8 @@ class BisectPerformanceMetrics(object):
       skip_sync: Skip the sync step.
       create_patch: Create a patch with any locally modified files.
       force_build: Force a local build.
+      test_run_multiplier: Factor by which to multiply the given number of runs
+          and the set timeout period.
 
     Returns:
       On success, a tuple containing the results of the performance test.
@@ -1525,7 +1536,8 @@ class BisectPerformanceMetrics(object):
     command = self.GetCompatibleCommand(command, revision, depot)
 
     # Run the command and get the results.
-    results = self.RunPerformanceTestAndParseResults(command, metric)
+    results = self.RunPerformanceTestAndParseResults(
+        command, metric, test_run_multiplier=test_run_multiplier)
 
     # Restore build output directory once the tests are done, to avoid
     # any discrepancies.
@@ -2439,6 +2451,9 @@ class BisectPerformanceMetrics(object):
           self.printer.PrintPartialResults(bisect_state)
           bisect_utils.OutputAnnotationStepClosed()
 
+
+      self._ConfidenceExtraTestRuns(min_revision_state, max_revision_state,
+                                    command_to_run, metric)
       results = BisectResults(bisect_state, self.depot_registry, self.opts,
                               self.warnings)
 
@@ -2451,6 +2466,21 @@ class BisectPerformanceMetrics(object):
       error = ('An error occurred attempting to retrieve revision range: '
                '[%s..%s]' % (good_revision, bad_revision))
       return BisectResults(error=error)
+
+  def _ConfidenceExtraTestRuns(self, good_state, bad_state, command_to_run,
+                               metric):
+    if (bool(good_state.passed) != bool(bad_state.passed)
+       and good_state.passed not in ('Skipped', 'Build Failed')
+       and bad_state.passed not in ('Skipped', 'Build Failed')):
+      for state in (good_state, bad_state):
+        run_results = self.RunTest(
+            state.revision,
+            state.depot,
+            command_to_run,
+            metric,
+            test_run_multiplier=BORDER_REVISIONS_EXTRA_RUNS)
+        # Is extend the right thing to do here?
+        state.value['values'].extend(run_results[0]['values'])
 
 
 def _IsPlatformSupported():

@@ -230,6 +230,20 @@ class BisectResults(object):
 
   @staticmethod
   def FindBreakingRevRange(revision_states):
+    """Finds the last known good and first known bad revisions.
+
+    Note that since revision_states is expected to be in reverse chronological
+    order, the last known good revision is the first revision in the list that
+    has the passed property set to 1, therefore the name
+    `first_working_revision`. The inverse applies to `last_broken_revision`.
+
+    Args:
+      revision_states: A list of RevisionState instances.
+
+    Returns:
+      A tuple containing the two revision states at the border. (Last
+      known good and first known bad.)
+    """
     first_working_revision = None
     last_broken_revision = None
 
@@ -287,10 +301,13 @@ class BisectResults(object):
         [working_mean, broken_mean]) /
         max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
 
-    # Give a "confidence" in the bisect. At the moment we use how distinct the
-    # values are before and after the last broken revision, and how noisy the
-    # overall graph is.
-    confidence_params = (sum(working_means, []), sum(broken_means, []))
+    # Give a "confidence" in the bisect. Currently, we consider the values of
+    # only the revisions at the breaking range (last known good and first known
+    # bad) see the note in the docstring for FindBreakingRange.
+    confidence_params = (
+        sum([first_working_rev.value['values']], []),
+        sum([last_broken_rev.value['values']], [])
+    )
     confidence = cls.ConfidenceScore(*confidence_params)
 
     bad_greater_than_good = mean_of_bad_runs > mean_of_good_runs
