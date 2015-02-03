@@ -251,7 +251,7 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
   View* sibling = starting_view->GetPreviousFocusableView();
   if (sibling) {
     return FindPreviousFocusableViewImpl(sibling,
-                                         true, true, true,
+                                         true, can_go_up, true,
                                          skip_group_id,
                                          focus_traversable,
                                          focus_traversable_view);
