@@ -247,11 +247,6 @@
         'render_text_harfbuzz.h',
         'render_text_mac.cc',
         'render_text_mac.h',
-        'render_text_ozone.cc',
-        'render_text_pango.cc',
-        'render_text_pango.h',
-        'render_text_win.cc',
-        'render_text_win.h',
         'scoped_canvas.h',
         'scoped_cg_context_save_gstate_mac.h',
         'scoped_ns_graphics_context_save_gstate_mac.h',
@@ -407,7 +402,6 @@
           ],
           'sources!': [
             'platform_font_ozone.cc',
-            'render_text_ozone.cc',
           ],
         }],
         ['desktop_linux==1 or chromeos==1', {

@@ -28,6 +28,10 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
+#if defined(OS_MACOSX)
+#include "ui/gfx/render_text_mac.h"
+#endif  // defined(OS_MACOSX)
+
 namespace gfx {
 
 namespace {
@@ -400,22 +404,17 @@ RenderText::~RenderText() {
 
 RenderText* RenderText::CreateInstance() {
 #if defined(OS_MACOSX)
-  static const bool use_harfbuzz =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHarfBuzzRenderText);
-#else
-  static const bool use_harfbuzz =
+  static const bool use_native =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHarfBuzzRenderText);
-#endif
-  return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
+          switches::kEnableHarfBuzzRenderText);
+  if (use_native)
+    return new RenderTextMac;
+#endif  // defined(OS_MACOSX)
+  return new RenderTextHarfBuzz;
 }
 
 RenderText* RenderText::CreateInstanceForEditing() {
-  static const bool use_harfbuzz =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHarfBuzzRenderText);
-  return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
+  return new RenderTextHarfBuzz;
 }
 
 void RenderText::SetText(const base::string16& text) {

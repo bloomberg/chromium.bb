@@ -6,12 +6,6 @@
 
 namespace switches {
 
-// Disables the HarfBuzz port of RenderText on all platforms.
-const char kDisableHarfBuzzRenderText[] = "disable-harfbuzz-rendertext";
-
-// Enables the HarfBuzz port of RenderText on all platforms.
-const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
-
 // Enable text glyphs to have X-positions that aren't snapped to the pixel grid
 // in webkit renderers.
 const char kEnableWebkitTextSubpixelPositioning[] =
@@ -26,6 +20,12 @@ const char kDisableDirectWrite[] = "disable-direct-write";
 
 // Disables DirectWrite font rendering for general UI elements.
 const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
+#endif
+
+#if defined(OS_MACOSX)
+// Enables the HarfBuzz port of RenderText on Mac (it's already used only for
+// text editing; this enables it for everything else).
+const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 #endif
 
 }  // namespace switches

@@ -343,8 +343,4 @@ void RenderTextMac::ComputeRuns() {
   runs_valid_ = true;
 }
 
-RenderText* RenderText::CreateNativeInstance() {
-  return new RenderTextMac;
-}
-
 }  // namespace gfx

@@ -242,25 +242,16 @@ component("gfx") {
   if (is_android || is_ios) {
     # We don't support RenderText on these platforms.
   } else {
-    # These text rendering files are supported everywhere text rendering is.
+    # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
       "render_text.cc",
       "render_text.h",
       "render_text_harfbuzz.cc",
       "render_text_harfbuzz.h",
+      "render_text_mac.cc",
+      "render_text_mac.h",
       "text_utils_skia.cc",
     ]
-
-    # These are the "native" rendering routines, only one should apply.
-    if (is_win) {
-      sources += [ "render_text_win.cc" ]
-    } else if (is_mac) {
-      sources += [ "render_text_mac.cc" ]
-    } else if (use_pango) {
-      sources += [ "render_text_pango.cc" ]
-    } else if (use_ozone) {
-      sources += [ "render_text_ozone.cc" ]
-    }
   }
 
   # iOS.

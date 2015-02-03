@@ -11,14 +11,16 @@
 namespace switches {
 
 GFX_EXPORT extern const char kAllowArbitraryScaleFactorInImageSkia[];
-GFX_EXPORT extern const char kDisableHarfBuzzRenderText[];
-GFX_EXPORT extern const char kEnableHarfBuzzRenderText[];
 GFX_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
 GFX_EXPORT extern const char kForceDeviceScaleFactor[];
 
 #if defined(OS_WIN)
 GFX_EXPORT extern const char kDisableDirectWrite[];
 GFX_EXPORT extern const char kDisableDirectWriteForUI[];
+#endif
+
+#if defined(OS_MACOSX)
+GFX_EXPORT extern const char kEnableHarfBuzzRenderText[];
 #endif
 
 }  // namespace switches

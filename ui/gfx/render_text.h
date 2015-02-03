@@ -590,9 +590,6 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PangoAttributes);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StringFitsOwnWidth);
 
-  // Creates a platform-specific RenderText instance.
-  static RenderText* CreateNativeInstance();
-
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
   // If |select| is false, the selection start is moved to the same position.

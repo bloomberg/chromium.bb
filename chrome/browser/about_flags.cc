@@ -1872,14 +1872,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)
   },
 #endif
-  {
-    "harfbuzz-rendertext",
-    IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME,
-    IDS_FLAGS_HARFBUZZ_RENDERTEXT_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText,
-                              switches::kDisableHarfBuzzRenderText)
-  },
 #if defined(OS_ANDROID)
   {
     "answers-in-suggest",
@@ -2145,6 +2137,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kSitePerProcess)
   },
+#if defined(OS_MACOSX)
+  {
+    "enable-harfbuzz-rendertext",
+    IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_NAME,
+    IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText)
+  },
+#endif  // defined(OS_MACOSX)
 #if defined(OS_CHROMEOS)
   {
     "enable-timezone-tracking",

@@ -23,11 +23,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/gfx/platform_font_win.h"
-#include "ui/gfx/render_text_win.h"
-#endif
-
-#if defined(OS_LINUX) && !defined(USE_OZONE)
-#include "ui/gfx/render_text_pango.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -43,12 +38,10 @@ namespace {
 const wchar_t kWeak[] =      L" . ";
 const wchar_t kLtr[] =       L"abc";
 const wchar_t kRtl[] =       L"\x5d0\x5d1\x5d2";
-#if !defined(OS_MACOSX)
 const wchar_t kLtrRtl[] =    L"a" L"\x5d0\x5d1";
 const wchar_t kLtrRtlLtr[] = L"a" L"\x5d1" L"b";
 const wchar_t kRtlLtr[] =    L"\x5d0\x5d1" L"a";
 const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
-#endif
 
 // Checks whether |range| contains |index|. This is not the same as calling
 // range.Contains(Range(index)), which returns true if |index| == |range.end()|.
@@ -206,54 +199,6 @@ TEST_F(RenderTextTest, ApplyColorAndStyle) {
       expected_underline));
 #endif  // OS_MACOSX
 }
-
-#if defined(OS_LINUX) && !defined(USE_OZONE)
-TEST_F(RenderTextTest, PangoAttributes) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
-  render_text->SetText(ASCIIToUTF16("012345678"));
-
-  // Apply ranged BOLD/ITALIC styles and check the resulting Pango attributes.
-  render_text->ApplyStyle(BOLD, true, Range(2, 4));
-  render_text->ApplyStyle(ITALIC, true, Range(1, 3));
-
-  struct {
-    int start;
-    int end;
-    bool bold;
-    bool italic;
-  } cases[] = {
-    { 0, 1,       false, false },
-    { 1, 2,       false, true  },
-    { 2, 3,       true,  true  },
-    { 3, 4,       true,  false },
-    { 4, INT_MAX, false, false },
-  };
-
-  int start = 0, end = 0;
-  RenderTextPango* rt_linux = static_cast<RenderTextPango*>(render_text.get());
-  rt_linux->EnsureLayout();
-  PangoAttrList* attributes = pango_layout_get_attributes(rt_linux->layout_);
-  PangoAttrIterator* iter = pango_attr_list_get_iterator(attributes);
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    pango_attr_iterator_range(iter, &start, &end);
-    EXPECT_EQ(cases[i].start, start);
-    EXPECT_EQ(cases[i].end, end);
-    PangoFontDescription* font = pango_font_description_new();
-    pango_attr_iterator_get_font(iter, font, NULL, NULL);
-    char* description_string = pango_font_description_to_string(font);
-    const base::string16 desc = ASCIIToUTF16(description_string);
-    const bool bold = desc.find(ASCIIToUTF16("Bold")) != std::string::npos;
-    EXPECT_EQ(cases[i].bold, bold);
-    const bool italic = desc.find(ASCIIToUTF16("Italic")) != std::string::npos;
-    EXPECT_EQ(cases[i].italic, italic);
-    pango_attr_iterator_next(iter);
-    pango_font_description_free(font);
-    g_free(description_string);
-  }
-  EXPECT_FALSE(pango_attr_iterator_next(iter));
-  pango_attr_iterator_destroy(iter);
-}
-#endif
 
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
@@ -849,8 +794,9 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 #endif
 
 // TODO(ckocagil): Enable for RenderTextHarfBuzz. http://crbug.com/383265
+#if defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
   // (code point) has unique bounds, so mid-glyph cursoring should be possible.
   render_text->SetFontList(FontList("Meiryo UI, 12px"));
@@ -862,6 +808,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   }
   EXPECT_EQ(6U, render_text->cursor_position());
 }
+#endif  // defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, GraphemePositions) {
   // LTR 2-character grapheme, LTR abc, LTR 2-character grapheme.
@@ -1303,23 +1250,6 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   EXPECT_EQ(6U, render_text->cursor_position());
 }
 #endif
-
-// TODO(ckocagil): Remove when RenderTextWin goes away.
-#if defined(OS_WIN)
-TEST_F(RenderTextTest, Win_LogicalClusters) {
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
-
-  const base::string16 test_string =
-      WideToUTF16(L"\x0930\x0930\x0930\x0930\x0930");
-  render_text->SetText(test_string);
-  render_text->EnsureLayout();
-  ASSERT_EQ(1U, render_text->runs_.size());
-  WORD* logical_clusters = render_text->runs_[0]->logical_clusters.get();
-  for (size_t i = 0; i < test_string.length(); ++i)
-    EXPECT_EQ(i, logical_clusters[i]);
-}
-#endif  // defined(OS_WIN)
 
 TEST_F(RenderTextTest, StringSizeSanity) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1933,15 +1863,13 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
   }
 }
 
-#if defined(OS_WIN)
 // TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings wrap onto multiple lines for a small available width.
-TEST_F(RenderTextTest, Multiline_MinWidth) {
+TEST_F(RenderTextTest, DISABLED_Multiline_MinWidth) {
   const wchar_t* kTestStrings[] = { kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl,
                                     kRtlLtr, kRtlLtrRtl };
 
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(1, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -1956,7 +1884,7 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
 
 // TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings wrap onto multiple lines for a normal available width.
-TEST_F(RenderTextTest, Multiline_NormalWidth) {
+TEST_F(RenderTextTest, DISABLED_Multiline_NormalWidth) {
   const struct {
     const wchar_t* const text;
     const Range first_line_char_range;
@@ -1968,8 +1896,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
           Range(4, 10), Range(0, 4) }
   };
 
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(50, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -1991,12 +1918,11 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
 // TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings don't wrap onto multiple lines for a sufficient available
 // width.
-TEST_F(RenderTextTest, Multiline_SufficientWidth) {
+TEST_F(RenderTextTest, DISABLED_Multiline_SufficientWidth) {
   const wchar_t* kTestStrings[] = { L"", L" ", L".", L" . ", L"abc", L"a b c",
                                     L"\x62E\x628\x632", L"\x62E \x628 \x632" };
 
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(30, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -2010,7 +1936,7 @@ TEST_F(RenderTextTest, Multiline_SufficientWidth) {
 }
 
 // TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
-TEST_F(RenderTextTest, Multiline_Newline) {
+TEST_F(RenderTextTest, DISABLED_Multiline_Newline) {
   const struct {
     const wchar_t* const text;
     // Ranges of the characters on each line preceding the newline.
@@ -2022,8 +1948,7 @@ TEST_F(RenderTextTest, Multiline_Newline) {
     { L"\n" , Range::InvalidRange(), Range::InvalidRange() }
   };
 
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(200, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -2055,28 +1980,6 @@ TEST_F(RenderTextTest, Multiline_Newline) {
                 render_text->lines_[1].segments[0].char_range);
   }
 }
-
-// TODO(ckocagil): Remove when RenderTextWin goes away.
-TEST_F(RenderTextTest, BreakRunsByUnicodeBlocks) {
-  scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
-
-  // The '\x25B6' "play character" should break runs. http://crbug.com/278913
-  render_text->SetText(WideToUTF16(L"x\x25B6y"));
-  render_text->EnsureLayout();
-  ASSERT_EQ(3U, render_text->runs_.size());
-  EXPECT_EQ(Range(0, 1), render_text->runs_[0]->range);
-  EXPECT_EQ(Range(1, 2), render_text->runs_[1]->range);
-  EXPECT_EQ(Range(2, 3), render_text->runs_[2]->range);
-
-  render_text->SetText(WideToUTF16(L"x \x25B6 y"));
-  render_text->EnsureLayout();
-  ASSERT_EQ(3U, render_text->runs_.size());
-  EXPECT_EQ(Range(0, 2), render_text->runs_[0]->range);
-  EXPECT_EQ(Range(2, 3), render_text->runs_[1]->range);
-  EXPECT_EQ(Range(3, 5), render_text->runs_[2]->range);
-}
-#endif  // defined(OS_WIN)
 
 // Test TextRunHarfBuzz's cluster finding logic.
 TEST_F(RenderTextTest, HarfBuzz_Clusters) {
@@ -2268,26 +2171,7 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ(Range(4, 5), render_text.runs_[3]->range);
 }
 
-// Disabled on Mac because RenderTextMac doesn't implement GetGlyphBounds.
-#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, GlyphBounds) {
-  const wchar_t* kTestStrings[] = {
-      L"asdf 1234 qwer", L"\x0647\x0654", L"\x0645\x0631\x062D\x0628\x0627"
-  };
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
-    render_text->SetText(WideToUTF16(kTestStrings[i]));
-    render_text->EnsureLayout();
-
-    for (size_t j = 0; j < render_text->text().length(); ++j)
-      EXPECT_FALSE(render_text->GetGlyphBounds(j).is_empty());
-  }
-}
-#endif
-
-// Remove this after making RTHB default in favor of RenderTextTest.GlyphBounds.
-TEST_F(RenderTextTest, HarfBuzz_GlyphBounds) {
   const wchar_t* kTestStrings[] = {
       L"asdf 1234 qwer", L"\x0647\x0654", L"\x0645\x0631\x062D\x0628\x0627"
   };
