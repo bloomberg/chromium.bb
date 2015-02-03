@@ -37,18 +37,6 @@
 #include "core/plugins/DOMPluginArray.h"
 #include "platform/Language.h"
 
-#ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
-#define WEBCORE_NAVIGATOR_PRODUCT_SUB "20030107"
-#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
-
-#ifndef WEBCORE_NAVIGATOR_VENDOR
-#define WEBCORE_NAVIGATOR_VENDOR "Google Inc."
-#endif // ifndef WEBCORE_NAVIGATOR_VENDOR
-
-#ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
-#define WEBCORE_NAVIGATOR_VENDOR_SUB ""
-#endif // ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
-
 namespace blink {
 
 Navigator::Navigator(LocalFrame* frame)
@@ -62,17 +50,21 @@ Navigator::~Navigator()
 
 String Navigator::productSub() const
 {
-    return WEBCORE_NAVIGATOR_PRODUCT_SUB;
+    return "20030107";
 }
 
 String Navigator::vendor() const
 {
-    return WEBCORE_NAVIGATOR_VENDOR;
+    // Do not change without good cause. History:
+    // https://code.google.com/p/chromium/issues/detail?id=276813
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27786
+    // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/QrgyulnqvmE
+    return "Google Inc.";
 }
 
 String Navigator::vendorSub() const
 {
-    return WEBCORE_NAVIGATOR_VENDOR_SUB;
+    return "";
 }
 
 String Navigator::userAgent() const
