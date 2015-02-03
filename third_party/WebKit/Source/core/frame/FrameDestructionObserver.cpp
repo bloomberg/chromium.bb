@@ -54,12 +54,10 @@ void FrameDestructionObserver::observeFrame(LocalFrame* frame)
         m_frame->addDestructionObserver(this);
 }
 
-#if !ENABLE(OILPAN)
 void FrameDestructionObserver::frameDestroyed()
 {
     m_frame = nullptr;
 }
-#endif
 
 void FrameDestructionObserver::willDetachFrameHost()
 {

@@ -25,16 +25,16 @@ PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
 FAIL childWindow.isJsTest should be false (of type boolean). Was undefined (of type undefined).
 PASS childWindow.length is 0
-PASS childWindow.location.ancestorOrigins.length is 0
-PASS childWindow.location.hash is ''
-PASS childWindow.location.host is ''
-PASS childWindow.location.hostname is ''
-PASS childWindow.location.href is 'about:blank'
-PASS childWindow.location.origin is 'null'
-PASS childWindow.location.pathname is 'blank'
-PASS childWindow.location.port is ''
-PASS childWindow.location.protocol is 'about:'
-PASS childWindow.location.search is ''
+FAIL childWindow.location.ancestorOrigins.length should be 0. Threw exception TypeError: Cannot read property 'length' of undefined
+FAIL childWindow.location.hash should be  (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.host should be  (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.hostname should be  (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.href should be about:blank (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.origin should be null (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.pathname should be blank (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.port should be  (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.protocol should be about: (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.search should be  (of type string). Was undefined (of type undefined).
 PASS childWindow.locationbar.visible is false
 PASS childWindow.menubar.visible is false
 PASS childWindow.name is ''
@@ -182,9 +182,9 @@ PASS childWindow.screen.availTop is 0
 PASS childWindow.screen.availWidth is 0
 PASS childWindow.screen.colorDepth is 0
 PASS childWindow.screen.height is 0
-PASS childWindow.screen.orientation.angle is 0
-PASS childWindow.screen.orientation.onchange is null
-FAIL childWindow.screen.orientation.type should be . Was portrait-primary.
+FAIL childWindow.screen.orientation.angle should be 0. Threw exception TypeError: Cannot read property 'angle' of null
+FAIL childWindow.screen.orientation.onchange should be null. Threw exception TypeError: Cannot read property 'onchange' of null
+FAIL childWindow.screen.orientation.type should be . Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.screen.pixelDepth is 0
 PASS childWindow.screen.width is 0
 PASS childWindow.screenLeft is 0
@@ -194,10 +194,10 @@ PASS childWindow.screenY is 0
 PASS childWindow.scrollX is 0
 PASS childWindow.scrollY is 0
 PASS childWindow.scrollbars.visible is false
-PASS childWindow.speechSynthesis.onvoiceschanged is null
-PASS childWindow.speechSynthesis.paused is false
-PASS childWindow.speechSynthesis.pending is false
-PASS childWindow.speechSynthesis.speaking is false
+FAIL childWindow.speechSynthesis.onvoiceschanged should be null. Threw exception TypeError: Cannot read property 'onvoiceschanged' of null
+FAIL childWindow.speechSynthesis.paused should be false. Threw exception TypeError: Cannot read property 'paused' of null
+FAIL childWindow.speechSynthesis.pending should be false. Threw exception TypeError: Cannot read property 'pending' of null
+FAIL childWindow.speechSynthesis.speaking should be false. Threw exception TypeError: Cannot read property 'speaking' of null
 PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''
