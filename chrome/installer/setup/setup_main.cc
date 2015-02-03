@@ -170,15 +170,15 @@ bool UncompressAndPatchChromeArchive(
   archive_helper->set_patch_source(patch_source);
 
   // Try courgette first. Failing that, try bspatch.
-  if ((installer_state.UpdateStage(installer::ENSEMBLE_PATCHING),
-       !archive_helper->EnsemblePatch()) &&
-      (installer_state.UpdateStage(installer::BINARY_PATCHING),
-       !archive_helper->BinaryPatch())) {
-    *install_status = installer::APPLY_DIFF_PATCH_FAILED;
-    installer_state.WriteInstallerResult(*install_status,
-                                         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
-                                         NULL);
-    return false;
+  installer_state.UpdateStage(installer::ENSEMBLE_PATCHING);
+  if (!archive_helper->EnsemblePatch()) {
+    installer_state.UpdateStage(installer::BINARY_PATCHING);
+    if (!archive_helper->BinaryPatch()) {
+      *install_status = installer::APPLY_DIFF_PATCH_FAILED;
+      installer_state.WriteInstallerResult(
+          *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
+      return false;
+    }
   }
 
   *archive_type = installer::INCREMENTAL_ARCHIVE_TYPE;
