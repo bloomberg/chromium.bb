@@ -412,6 +412,7 @@ cr.define('print_preview', function() {
           this.onCancelButtonClick_.bind(this));
 
       this.tracker.add(window, 'keydown', this.onKeyDown_.bind(this));
+      this.previewArea_.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
 
       this.tracker.add(
           this.destinationSettings_,

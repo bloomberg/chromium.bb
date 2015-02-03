@@ -301,8 +301,18 @@ cr.define('print_preview', function() {
 
       // No scroll bar anywhere, or the active element is something else, like a
       // button. Note: buttons have a bigger scrollHeight than clientHeight.
-      this.plugin_.sendKeyEvent(e.keyCode);
+      this.plugin_.sendKeyEvent(e);
       e.preventDefault();
+    },
+
+    /**
+     * Set a callback that gets called when a key event is received that
+     * originates in the plugin.
+     * @param {function(Event)} callback The callback to be called with a key
+     *     event.
+     */
+    setPluginKeyEventCallback: function(callback) {
+      this.keyEventCallback_ = callback;
     },
 
     /**
@@ -564,6 +574,7 @@ cr.define('print_preview', function() {
       } else {
         this.plugin_ = /** @type {print_preview.PDFPlugin} */(
             PDFCreateOutOfProcessPlugin(srcUrl));
+        this.plugin_.setKeyEventCallback(this.keyEventCallback_);
       }
 
       this.plugin_.setAttribute('class', 'preview-area-plugin');

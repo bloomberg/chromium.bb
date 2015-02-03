@@ -3,6 +3,38 @@
 // found in the LICENSE file.
 
 /**
+ * Turn a dictionary received from postMessage into a key event.
+ * @param {Object} dict A dictionary representing the key event.
+ * @return {Event} A key event.
+ */
+function DeserializeKeyEvent(dict) {
+  var e = document.createEvent('Event');
+  e.initEvent('keydown');
+  e.keyCode = dict.keyCode;
+  e.shiftKey = dict.shiftKey;
+  e.ctrlKey = dict.ctrlKey;
+  e.altKey = dict.altKey;
+  e.metaKey = dict.metaKey;
+  e.fromScriptingAPI = true;
+  return e;
+}
+
+/**
+ * Turn a key event into a dictionary which can be sent over postMessage.
+ * @param {Event} event A key event.
+ * @return {Object} A dictionary representing the key event.
+ */
+function SerializeKeyEvent(event) {
+  return {
+    keyCode: event.keyCode,
+    shiftKey: event.shiftKey,
+    ctrlKey: event.ctrlKey,
+    altKey: event.altKey,
+    metaKey: event.metaKey
+  };
+}
+
+/**
  * Create a new PDFScriptingAPI. This provides a scripting interface to
  * the PDF viewer so that it can be customized by things like print preview.
  * @param {Window} window the window of the page containing the pdf viewer.
@@ -44,6 +76,10 @@ function PDFScriptingAPI(window, plugin) {
           this.selectedTextCallback_(event.data.selectedText);
           this.selectedTextCallback_ = null;
         }
+        break;
+      case 'sendKeyEvent':
+        if (this.keyEventCallback_)
+          this.keyEventCallback_(DeserializeKeyEvent(event.data.keyEvent));
         break;
     }
   }.bind(this), false);
@@ -101,6 +137,14 @@ PDFScriptingAPI.prototype = {
     this.loadCallback_ = callback;
     if (this.loaded_ && this.loadCallback_)
       this.loadCallback_();
+  },
+
+  /**
+   * Sets a callback that gets run when a key event is fired in the PDF viewer.
+   * @param {Function} callback the callback to be called with a key event.
+   */
+  setKeyEventCallback: function(callback) {
+    this.keyEventCallback_ = callback;
   },
 
   /**
@@ -196,12 +240,12 @@ PDFScriptingAPI.prototype = {
 
   /**
    * Send a key event to the extension.
-   * @param {number} keyCode the key code to send to the extension.
+   * @param {Event} keyEvent the key event to send to the extension.
    */
-  sendKeyEvent: function(keyCode) {
+  sendKeyEvent: function(keyEvent) {
     this.sendMessage_({
       type: 'sendKeyEvent',
-      keyCode: keyCode
+      keyEvent: SerializeKeyEvent(keyEvent)
     });
   },
 };
@@ -227,6 +271,7 @@ function PDFCreateOutOfProcessPlugin(src) {
   iframe.setViewportChangedCallback =
       client.setViewportChangedCallback.bind(client);
   iframe.setLoadCallback = client.setLoadCallback.bind(client);
+  iframe.setKeyEventCallback = client.setKeyEventCallback.bind(client);
   iframe.resetPrintPreviewMode = client.resetPrintPreviewMode.bind(client);
   iframe.loadPreviewPage = client.loadPreviewPage.bind(client);
   iframe.sendKeyEvent = client.sendKeyEvent.bind(client);

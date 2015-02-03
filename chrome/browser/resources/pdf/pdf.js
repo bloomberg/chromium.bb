@@ -206,7 +206,7 @@ PDFViewer.prototype = {
   handleKeyEvent_: function(e) {
     var position = this.viewport_.position;
     // Certain scroll events may be sent from outside of the extension.
-    var fromScriptingAPI = e.type == 'scriptingKeypress';
+    var fromScriptingAPI = e.fromScriptingAPI;
 
     var pageUpHandler = function() {
       // Go to the previous page if we are fit-to-page.
@@ -319,6 +319,14 @@ PDFViewer.prototype = {
           });
         }
         return;
+    }
+
+    // Give print preview a chance to handle the key event.
+    if (!fromScriptingAPI && this.isPrintPreview_) {
+      this.sendScriptingMessage_({
+        type: 'sendKeyEvent',
+        keyEvent: SerializeKeyEvent(e)
+      });
     }
   },
 
@@ -699,10 +707,7 @@ PDFViewer.prototype = {
         });
         return true;
       case 'sendKeyEvent':
-        var e = document.createEvent('Event');
-        e.initEvent('scriptingKeypress');
-        e.keyCode = message.data.keyCode;
-        this.handleKeyEvent_(e);
+        this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
         return true;
     }
 
