@@ -27,8 +27,8 @@ from memory_inspector.core import native_heap
 from memory_inspector.core import symbol
 
 
-_SUPPORTED_32BIT_ABIS = {'armeabi': 'arm', 'armeabi-v7a': 'arm'}
-_SUPPORTED_64BIT_ABIS = {'arm64-v8a': 'arm64'}
+_SUPPORTED_32BIT_ABIS = {'armeabi': 'arm', 'armeabi-v7a': 'arm', 'x86': 'x86'}
+_SUPPORTED_64BIT_ABIS = {'arm64-v8a': 'arm64', 'x86_64': 'x86_64'}
 _MEMDUMP_PREBUILT_PATH = os.path.join(constants.PREBUILTS_PATH,
                                       'memdump-android-%(arch)s')
 _MEMDUMP_PATH_ON_DEVICE = '/data/local/tmp/memdump'

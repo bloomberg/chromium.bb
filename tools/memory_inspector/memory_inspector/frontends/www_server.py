@@ -141,7 +141,7 @@ def _ListDevices(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], resp
 
 
-@AjaxHandler(r'/ajax/dump/mmap/(\w+)/(\w+)/(\d+)')
+@AjaxHandler(r'/ajax/dump/mmap/([^/]+)/([^/]+)/(\d+)')
 def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
   """Dumps memory maps for a process.
 
@@ -158,7 +158,7 @@ def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], {'table': table, 'id': cache_id}
 
 
-@AjaxHandler('/ajax/initialize/(\w+)/(\w+)$', 'POST')
+@AjaxHandler('/ajax/initialize/([^/]+)/([^/]+)$', 'POST')
 def _InitializeDevice(args, req_vars):  # pylint: disable=W0613
   device = _GetDevice(args)
   if not device:
@@ -258,7 +258,7 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
                         'rootBucket': first_snapshot.total.name + '/'}
 
 
-@AjaxHandler(r'/ajax/profile/(\w+)/tree/(\d+)/(\d+)')
+@AjaxHandler(r'/ajax/profile/([^/]+)/tree/(\d+)/(\d+)')
 def _GetProfileTreeDataForSnapshot(args, req_vars):  # pylint: disable=W0613
   """Gets the data for the tree chart for a given time and metric.
 
@@ -296,7 +296,7 @@ def _GetProfileTreeDataForSnapshot(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], resp
 
 
-@AjaxHandler(r'/ajax/profile/(\w+)/time_serie/(\d+)/(.*)$')
+@AjaxHandler(r'/ajax/profile/([^/]+)/time_serie/(\d+)/(.*)$')
 def _GetTimeSerieForSnapshot(args, req_vars):  # pylint: disable=W0613
   """Gets the data for the area chart for a given metric and bucket.
 
@@ -362,7 +362,7 @@ def _ListProfilingRules(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], resp
 
 
-@AjaxHandler(r'/ajax/ps/(\w+)/(\w+)$')  # /ajax/ps/Android/a0b1c2[?all=1]
+@AjaxHandler(r'/ajax/ps/([^/]+)/([^/]+)$')  # /ajax/ps/Android/a0b1c2[?all=1]
 def _ListProcesses(args, req_vars):  # pylint: disable=W0613
   """Lists processes and their CPU / mem stats.
 
@@ -395,7 +395,7 @@ def _ListProcesses(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], resp
 
 
-@AjaxHandler(r'/ajax/stats/(\w+)/(\w+)$')  # /ajax/stats/Android/a0b1c2
+@AjaxHandler(r'/ajax/stats/([^/]+)/([^/]+)$')  # /ajax/stats/Android/a0b1c2
 def _GetDeviceStats(args, req_vars):  # pylint: disable=W0613
   """Lists device CPU / mem stats.
 
@@ -440,7 +440,7 @@ def _GetDeviceStats(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], {'cpu': cpu_stats, 'mem': mem_stats}
 
 
-@AjaxHandler(r'/ajax/stats/(\w+)/(\w+)/(\d+)$')  # /ajax/stats/Android/a0b1c2/42
+@AjaxHandler(r'/ajax/stats/([^/]+)/([^/]+)/(\d+)$')  # /ajax/stats/Android/a0/3
 def _GetProcessStats(args, req_vars):  # pylint: disable=W0613
   """Lists CPU / mem stats for a given process (and keeps history).
 
@@ -490,7 +490,7 @@ def _GetProcessStats(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], {'cpu': cpu_stats, 'mem': mem_stats}
 
 
-@AjaxHandler(r'/ajax/settings/(\w+)/?(\w+)?$')  # /ajax/settings/Android[/id]
+@AjaxHandler(r'/ajax/settings/([^/]+)/?(\w+)?$')  # /ajax/settings/Android[/id]
 def _GetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
   backend = backends.GetBackend(args[0])
   if not backend:
@@ -511,7 +511,7 @@ def _GetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], resp
 
 
-@AjaxHandler(r'/ajax/settings/(\w+)/?(\w+)?$', 'POST')
+@AjaxHandler(r'/ajax/settings/([^/]+)/?(\w+)?$', 'POST')
 def _SetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
   backend = backends.GetBackend(args[0])
   if not backend:
@@ -617,7 +617,7 @@ def _LoadNheapFromStorage(args, req_vars):
 
 
 # /ajax/tracer/start/Android/device-id/pid
-@AjaxHandler(r'/ajax/tracer/start/(\w+)/(\w+)/(\d+)', 'POST')
+@AjaxHandler(r'/ajax/tracer/start/([^/]+)/([^/]+)/(\d+)', 'POST')
 def _StartTracer(args, req_vars):
   for arg in 'interval', 'count', 'traceNativeHeap':
     assert(arg in req_vars), 'Expecting %s argument in POST data' % arg
