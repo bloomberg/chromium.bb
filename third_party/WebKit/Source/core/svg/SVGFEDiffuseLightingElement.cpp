@@ -85,6 +85,11 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
         return diffuseLighting->setSurfaceScale(m_surfaceScale->currentValue()->value());
     if (attrName == SVGNames::diffuseConstantAttr)
         return diffuseLighting->setDiffuseConstant(m_diffuseConstant->currentValue()->value());
+    if (attrName == SVGNames::kernelUnitLengthAttr) {
+        bool changedX = diffuseLighting->setKernelUnitLengthX(m_kernelUnitLength->firstNumber()->currentValue()->value());
+        bool changedY = diffuseLighting->setKernelUnitLengthY(m_kernelUnitLength->secondNumber()->currentValue()->value());
+        return changedX || changedY;
+    }
 
     LightSource* lightSource = const_cast<LightSource*>(diffuseLighting->lightSource());
     const SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);

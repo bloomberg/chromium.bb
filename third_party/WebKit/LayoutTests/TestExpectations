@@ -635,6 +635,8 @@ crbug.com/454658 svg/dynamic-updates/SVGFESpecularLightingElement-dom-kernelUnit
 
 crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
 
+crbug.com/454628 svg/dynamic-updates/SVGFEDiffuseLightingElement-dom-kernelUnitLength-attr.html [ NeedsRebaseline ]
+
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
