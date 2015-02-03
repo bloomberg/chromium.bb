@@ -57,6 +57,7 @@ class GPUTimesTop25Sites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.top_25_smooth'
 
+@benchmark.Disabled
 class GPUTimesGpuRasterizationTop25Sites(_GPUTimes):
   """Measures GPU timeline metric for the top 25 sites with GPU rasterization.
   """
