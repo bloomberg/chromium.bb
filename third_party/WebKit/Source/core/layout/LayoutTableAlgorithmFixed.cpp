@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/FixedTableLayout.h"
+#include "core/layout/LayoutTableAlgorithmFixed.h"
 
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
@@ -71,12 +71,12 @@
 
 namespace blink {
 
-FixedTableLayout::FixedTableLayout(LayoutTable* table)
-    : TableLayout(table)
+LayoutTableAlgorithmFixed::LayoutTableAlgorithmFixed(LayoutTable* table)
+    : LayoutTableAlgorithm(table)
 {
 }
 
-int FixedTableLayout::calcWidthArray()
+int LayoutTableAlgorithmFixed::calcWidthArray()
 {
     // FIXME: We might want to wait until we have all of the first row before computing for the first time.
     int usedWidth = 0;
@@ -165,7 +165,7 @@ int FixedTableLayout::calcWidthArray()
             ++currentColumn;
         }
 
-        // FixedTableLayout doesn't use min/maxPreferredLogicalWidths, but we need to clear the
+        // LayoutTableAlgorithmFixed doesn't use min/maxPreferredLogicalWidths, but we need to clear the
         // dirty bit on the cell so that we'll correctly mark its ancestors dirty
         // in case we later call setPreferredLogicalWidthsDirty() on it later.
         if (cell->preferredLogicalWidthsDirty())
@@ -175,12 +175,12 @@ int FixedTableLayout::calcWidthArray()
     return usedWidth;
 }
 
-void FixedTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
+void LayoutTableAlgorithmFixed::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
     minWidth = maxWidth = calcWidthArray();
 }
 
-void FixedTableLayout::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
+void LayoutTableAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
     if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive())
@@ -202,7 +202,7 @@ void FixedTableLayout::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, La
         maxWidth = tableMaxWidth;
 }
 
-void FixedTableLayout::layout()
+void LayoutTableAlgorithmFixed::layout()
 {
     int tableLogicalWidth = m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection();
     unsigned nEffCols = m_table->numEffCols();
@@ -316,7 +316,7 @@ void FixedTableLayout::layout()
         m_table->setColumnPosition(colPositionsSize - 1, pos);
 }
 
-void FixedTableLayout::willChangeTableLayout()
+void LayoutTableAlgorithmFixed::willChangeTableLayout()
 {
     // When switching table layout algorithm, we need to dirty the preferred
     // logical widths as we cleared the bits without computing them.

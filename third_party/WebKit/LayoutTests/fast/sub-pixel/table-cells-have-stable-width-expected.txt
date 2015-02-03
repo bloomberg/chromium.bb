@@ -3,7 +3,7 @@ PASS Cell in FixedTable has expected size
 PASS successfullyParsed is true
 
 TEST COMPLETE
-Cc:	AutoTableLayout	
+Cc:	LayoutTableAlgorithmAuto	
 foo
-FixedTableLayout
+LayoutTableAlgorithmFixed
 Tests that setting the width of an element inside a cell to the computed width of said element does not change the width of the cell itself.

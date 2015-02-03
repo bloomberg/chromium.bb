@@ -31,14 +31,14 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutTableAlgorithmAuto.h"
+#include "core/layout/LayoutTableAlgorithmFixed.h"
 #include "core/layout/LayoutTableCaption.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableSection.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TablePainter.h"
-#include "core/rendering/AutoTableLayout.h"
-#include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"
@@ -93,9 +93,9 @@ void LayoutTable::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         // According to the CSS2 spec, you only use fixed table layout if an
         // explicit width is specified on the table.  Auto width implies auto table layout.
         if (style()->isFixedTableLayout())
-            m_tableLayout = adoptPtr(new FixedTableLayout(this));
+            m_tableLayout = adoptPtr(new LayoutTableAlgorithmFixed(this));
         else
-            m_tableLayout = adoptPtr(new AutoTableLayout(this));
+            m_tableLayout = adoptPtr(new LayoutTableAlgorithmAuto(this));
     }
 
     // If border was changed, invalidate collapsed borders cache.

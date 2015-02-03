@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/AutoTableLayout.h"
+#include "core/layout/LayoutTableAlgorithmAuto.h"
 
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
@@ -30,18 +30,18 @@
 
 namespace blink {
 
-AutoTableLayout::AutoTableLayout(LayoutTable* table)
-    : TableLayout(table)
+LayoutTableAlgorithmAuto::LayoutTableAlgorithmAuto(LayoutTable* table)
+    : LayoutTableAlgorithm(table)
     , m_hasPercent(false)
     , m_effectiveLogicalWidthDirty(true)
 {
 }
 
-AutoTableLayout::~AutoTableLayout()
+LayoutTableAlgorithmAuto::~LayoutTableAlgorithmAuto()
 {
 }
 
-void AutoTableLayout::recalcColumn(unsigned effCol)
+void LayoutTableAlgorithmAuto::recalcColumn(unsigned effCol)
 {
     Layout& columnLayout = m_layoutStruct[effCol];
 
@@ -137,7 +137,7 @@ void AutoTableLayout::recalcColumn(unsigned effCol)
     columnLayout.maxLogicalWidth = std::max(columnLayout.maxLogicalWidth, columnLayout.minLogicalWidth);
 }
 
-void AutoTableLayout::fullRecalc()
+void LayoutTableAlgorithmAuto::fullRecalc()
 {
     m_hasPercent = false;
     m_effectiveLogicalWidthDirty = true;
@@ -150,9 +150,9 @@ void AutoTableLayout::fullRecalc()
     Length groupLogicalWidth;
     unsigned currentColumn = 0;
     for (LayoutTableCol* column = m_table->firstColumn(); column; column = column->nextColumn()) {
-        if (column->isTableColumnGroupWithColumnChildren())
+        if (column->isTableColumnGroupWithColumnChildren()) {
             groupLogicalWidth = column->style()->logicalWidth();
-        else {
+        } else {
             Length colLogicalWidth = column->style()->logicalWidth();
             if (colLogicalWidth.isAuto())
                 colLogicalWidth = groupLogicalWidth;
@@ -187,27 +187,27 @@ static bool shouldScaleColumns(LayoutTable* table)
         Length tw = table->style()->width();
         if ((tw.isAuto() || tw.isPercent()) && !table->isOutOfFlowPositioned()) {
             RenderBlock* cb = table->containingBlock();
-            while (cb && !cb->isRenderView() && !cb->isTableCell() &&
-                cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
+            while (cb && !cb->isRenderView() && !cb->isTableCell()
+                && cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
                 cb = cb->containingBlock();
 
             table = 0;
-            if (cb && cb->isTableCell() &&
-                (cb->style()->width().isAuto() || cb->style()->width().isPercent())) {
+            if (cb && cb->isTableCell()
+                && (cb->style()->width().isAuto() || cb->style()->width().isPercent())) {
                 LayoutTableCell* cell = toLayoutTableCell(cb);
                 if (cell->colSpan() > 1 || cell->table()->style()->width().isAuto())
                     scale = false;
                 else
                     table = cell->table();
             }
-        }
-        else
+        } else {
             table = 0;
+        }
     }
     return scale;
 }
 
-void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
+void LayoutTableAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
     TextAutosizer::TableLayoutScope textAutosizerTableLayoutScope(m_table);
 
@@ -234,8 +234,9 @@ void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, Layout
                 float logicalWidth = static_cast<float>(m_layoutStruct[i].effectiveMaxLogicalWidth) * 100 / std::max(percent, epsilon);
                 maxPercent = std::max(logicalWidth,  maxPercent);
                 remainingPercent -= percent;
-            } else
+            } else {
                 maxNonPercent += m_layoutStruct[i].effectiveMaxLogicalWidth;
+            }
         }
     }
 
@@ -248,7 +249,7 @@ void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, Layout
     maxWidth = std::max<int>(maxWidth, spanMaxLogicalWidth);
 }
 
-void AutoTableLayout::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
+void LayoutTableAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
     if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
@@ -273,7 +274,7 @@ void AutoTableLayout::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, Lay
   This method takes care of colspans.
   effWidth is the same as width for cells without colspans. If we have colspans, they get modified.
  */
-int AutoTableLayout::calcEffectiveLogicalWidth()
+int LayoutTableAlgorithmAuto::calcEffectiveLogicalWidth()
 {
     int maxLogicalWidth = 0;
 
@@ -340,8 +341,9 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
                 if (!columnLayout.effectiveLogicalWidth.isPercent()) {
                     columnLayout.effectiveLogicalWidth = Length();
                     allColsArePercent = false;
-                } else
+                } else {
                     totalPercent += columnLayout.effectiveLogicalWidth.percent();
+                }
                 allColsAreFixed = false;
             }
             if (!columnLayout.emptyCellsOnly)
@@ -467,7 +469,7 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
 /* gets all cells that originate in a column and have a cellspan > 1
    Sorts them by increasing cellspan
 */
-void AutoTableLayout::insertSpanCell(LayoutTableCell *cell)
+void LayoutTableAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
 {
     ASSERT_ARG(cell, cell && cell->colSpan() != 1);
     if (!cell || cell->colSpan() == 1)
@@ -491,7 +493,7 @@ void AutoTableLayout::insertSpanCell(LayoutTableCell *cell)
 }
 
 
-void AutoTableLayout::layout()
+void LayoutTableAlgorithmAuto::layout()
 {
     // table layout based on the values collected in the layout structure.
     int tableLogicalWidth = m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection();
@@ -535,9 +537,9 @@ void AutoTableLayout::layout()
             // fall through
             break;
         case Auto:
-            if (m_layoutStruct[i].emptyCellsOnly)
+            if (m_layoutStruct[i].emptyCellsOnly) {
                 numAutoEmptyCellsOnly++;
-            else {
+            } else {
                 numAuto++;
                 totalAuto += m_layoutStruct[i].effectiveMaxLogicalWidth;
                 allocAuto += cellLogicalWidth;

@@ -1,4 +1,4 @@
-Bug 88676: Crash in FixedTableLayout::layout
+Bug 88676: Crash in LayoutTableAlgorithmFixed::layout
 
 PASSED, the test didn't crash.
 
