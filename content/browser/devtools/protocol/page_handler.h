@@ -45,7 +45,7 @@ class PageHandler {
 
   Response Reload(const bool* ignoreCache,
                   const std::string* script_to_evaluate_on_load,
-                  const std::string* script_preprocessor);
+                  const std::string* script_preprocessor = NULL);
 
   Response Navigate(const std::string& url, FrameId* frame_id);
 
