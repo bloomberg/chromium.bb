@@ -54,4 +54,3 @@ IPC_MESSAGE_CONTROL4(GuestViewHostMsg_CreateMimeHandlerViewGuest,
                      std::string /* view_id */,
                      int /* element_instance_id */,
                      gfx::Size /* element_size */)
-
