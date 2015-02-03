@@ -119,18 +119,20 @@
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-base::LazyInstance<chrome::ChromeContentBrowserClient>
-    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-#endif
-
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#include "chrome/child/pdf_child_init.h"
+
 base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
+#endif
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+base::LazyInstance<chrome::ChromeContentBrowserClient>
+    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 #if defined(OS_POSIX)
@@ -775,6 +777,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
         process_type == switches::kZygoteProcess) {
       ChromeContentUtilityClient::PreSandboxStartup();
     }
+
+    chrome::InitializePDF();
 #endif
   }
 

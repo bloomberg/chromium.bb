@@ -6,7 +6,7 @@
 
 #include "base/debug/alias.h"
 #include "base/process/process_metrics.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/child_process_messages.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -111,7 +111,7 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   if (!memory->Map(memory_size))
     CHECK(false);
 #else
-  memory = ChildThread::AllocateSharedMemory(memory_size, sender_.get());
+  memory = ChildThreadImpl::AllocateSharedMemory(memory_size, sender_.get());
 #if defined(OS_WIN)
   if (!memory)
     CollectMemoryUsageAndDie(size);

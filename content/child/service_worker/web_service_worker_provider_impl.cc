@@ -6,7 +6,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
-#include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"

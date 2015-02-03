@@ -31,7 +31,7 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/bluetooth/web_bluetooth_impl.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/child/navigator_connect/navigator_connect_provider.h"
@@ -436,15 +436,15 @@ BlinkPlatformImpl::BlinkPlatformImpl(
 
 void BlinkPlatformImpl::InternalInit() {
   // ChildThread may not exist in some tests.
-  if (ChildThread::current()) {
+  if (ChildThreadImpl::current()) {
     geofencing_provider_.reset(new WebGeofencingProviderImpl(
-        ChildThread::current()->thread_safe_sender()));
+        ChildThreadImpl::current()->thread_safe_sender()));
     bluetooth_.reset(
-        new WebBluetoothImpl(ChildThread::current()->thread_safe_sender()));
-    thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
+        new WebBluetoothImpl(ChildThreadImpl::current()->thread_safe_sender()));
+    thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
     notification_dispatcher_ =
-        ChildThread::current()->notification_dispatcher();
-    push_dispatcher_ = ChildThread::current()->push_dispatcher();
+        ChildThreadImpl::current()->notification_dispatcher();
+    push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
   }
 
   if (main_thread_task_runner_.get()) {
@@ -456,7 +456,7 @@ BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
 
 WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  ChildThread* child_thread = ChildThread::current();
+  ChildThreadImpl* child_thread = ChildThreadImpl::current();
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(

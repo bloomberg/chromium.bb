@@ -1752,6 +1752,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            'child',
             'plugin',
             'renderer',
             'utility',

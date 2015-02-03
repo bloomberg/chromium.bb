@@ -4,7 +4,7 @@
 
 #include "content/child/shared_worker_devtools_agent.h"
 
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/devtools_messages.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -95,7 +95,7 @@ void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
 }
 
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {
-  return ChildThread::current()->Send(message);
+  return ChildThreadImpl::current()->Send(message);
 }
 
 }  // namespace content

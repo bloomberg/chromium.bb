@@ -6,7 +6,6 @@
 
 #include "base/memory/discardable_shared_memory.h"
 #include "base/process/process_metrics.h"
-#include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
 
 namespace content {

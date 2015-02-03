@@ -168,7 +168,7 @@ blink::WebWorkerPermissionClientProxy*
       GURL(origin.toString()),
       origin.isUnique(),
       route_id_,
-      ChildThread::current()->thread_safe_sender());
+      ChildThreadImpl::current()->thread_safe_sender());
 }
 
 void EmbeddedSharedWorkerStub::sendDevToolsMessage(

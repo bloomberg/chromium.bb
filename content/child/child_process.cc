@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/debug/debugger.h"
@@ -72,11 +72,11 @@ ChildProcess::~ChildProcess() {
   io_thread_.Stop();
 }
 
-ChildThread* ChildProcess::main_thread() {
+ChildThreadImpl* ChildProcess::main_thread() {
   return main_thread_.get();
 }
 
-void ChildProcess::set_main_thread(ChildThread* thread) {
+void ChildProcess::set_main_thread(ChildThreadImpl* thread) {
   main_thread_.reset(thread);
 }
 

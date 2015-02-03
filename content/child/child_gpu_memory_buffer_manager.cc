@@ -4,7 +4,6 @@
 
 #include "content/child/child_gpu_memory_buffer_manager.h"
 
-#include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 

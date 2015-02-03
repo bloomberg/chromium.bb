@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 
 namespace content {
-class ChildThread;
+class ChildThreadImpl;
 
 // Base class for child processes of the browser process (i.e. renderer and
 // plugin host). This is a singleton object for each child process.
@@ -22,12 +22,12 @@ class ChildThread;
 //
 // 1. ChildProcess::~ChildProcess() is called.
 //   2. Shutdown event is fired. Background threads should stop.
-//   3. ChildThread::Shutdown() is called. ChildThread is also deleted.
+//   3. ChildThreadImpl::Shutdown() is called. ChildThread is also deleted.
 //   4. IO thread is stopped.
 // 5. Main message loop exits.
 // 6. Child process is now fully stopped.
 //
-// Note: IO thread outlives the ChildThread object.
+// Note: IO thread outlives the ChildThreadImpl object.
 class CONTENT_EXPORT ChildProcess {
  public:
   // Child processes should have an object that derives from this class.
@@ -36,11 +36,11 @@ class CONTENT_EXPORT ChildProcess {
   virtual ~ChildProcess();
 
   // May be NULL if the main thread hasn't been set explicitly.
-  ChildThread* main_thread();
+  ChildThreadImpl* main_thread();
 
   // Sets the object associated with the main thread of this process.
   // Takes ownership of the pointer.
-  void set_main_thread(ChildThread* thread);
+  void set_main_thread(ChildThreadImpl* thread);
 
   base::MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
   base::MessageLoopProxy* io_message_loop_proxy() {
@@ -81,7 +81,7 @@ class CONTENT_EXPORT ChildProcess {
   // NOTE: make sure that main_thread_ is listed after shutdown_event_, since
   // it depends on it (indirectly through IPC::SyncChannel).  Same for
   // io_thread_.
-  scoped_ptr<ChildThread> main_thread_;
+  scoped_ptr<ChildThreadImpl> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };

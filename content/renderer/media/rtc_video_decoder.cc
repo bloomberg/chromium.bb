@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
-#include "content/child/child_thread.h"
 #include "content/renderer/media/native_handle_impl.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"

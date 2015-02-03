@@ -103,7 +103,7 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
-      sender_(ChildThread::current()->thread_safe_sender()),
+      sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_proxy_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",

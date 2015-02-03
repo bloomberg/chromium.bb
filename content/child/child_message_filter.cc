@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/task_runner.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "ipc/message_filter.h"
 
@@ -52,7 +52,7 @@ base::TaskRunner* ChildMessageFilter::OverrideTaskRunnerForMessage(
 
 ChildMessageFilter::ChildMessageFilter()
     : internal_(NULL),
-      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
 
 ChildMessageFilter::~ChildMessageFilter() {}
 

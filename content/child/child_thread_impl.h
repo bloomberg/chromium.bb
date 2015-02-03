@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_CHILD_THREAD_H_
-#define CONTENT_CHILD_CHILD_THREAD_H_
+#ifndef CONTENT_CHILD_CHILD_THREAD_IMPL_H_
+#define CONTENT_CHILD_CHILD_THREAD_IMPL_H_
 
 #include <string>
 
@@ -16,6 +16,7 @@
 #include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
+#include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
 namespace base {
@@ -57,7 +58,9 @@ class WebSocketDispatcher;
 struct RequestInfo;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
+class CONTENT_EXPORT ChildThreadImpl
+    : public IPC::Listener,
+      virtual public ChildThread {
  public:
   struct CONTENT_EXPORT Options {
     Options();
@@ -72,20 +75,26 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   };
 
   // Creates the thread.
-  ChildThread();
+  ChildThreadImpl();
   // Allow to be used for single-process mode and for in process gpu mode via
   // options.
-  explicit ChildThread(const Options& options);
+  explicit ChildThreadImpl(const Options& options);
   // ChildProcess::main_thread() is reset after Shutdown(), and before the
   // destructor, so any subsystem that relies on ChildProcess::main_thread()
   // must be terminated before Shutdown returns. In particular, if a subsystem
   // has a thread that post tasks to ChildProcess::main_thread(), that thread
   // should be joined in Shutdown().
-  ~ChildThread() override;
+  ~ChildThreadImpl() override;
   virtual void Shutdown();
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
+
+  // ChildThread implementation:
+#if defined(OS_WIN)
+  void PreCacheFont(const LOGFONT& log_font) override;
+  void ReleaseCachedFonts() override;
+#endif
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -170,7 +179,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   base::MessageLoop* message_loop() const { return message_loop_; }
 
   // Returns the one child thread. Can only be called on the main thread.
-  static ChildThread* current();
+  static ChildThreadImpl* current();
 
 #if defined(OS_ANDROID)
   // Called on Android's service thread to shutdown the main thread of this
@@ -241,7 +250,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
-  // Implements message routing functionality to the consumers of ChildThread.
+  // Implements message routing functionality to the consumers of
+  // ChildThreadImpl.
   ChildThreadMessageRouter router_;
 
   // Handles resource loads for this process.
@@ -292,11 +302,11 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   bool in_browser_process_;
 
-  base::WeakPtrFactory<ChildThread> channel_connected_factory_;
+  base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChildThread);
+  DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_CHILD_THREAD_H_
+#endif  // CONTENT_CHILD_CHILD_THREAD_IMPL_H_

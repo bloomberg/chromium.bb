@@ -44,8 +44,8 @@ bool GpuProcessLogMessageHandler(int severity,
   return false;
 }
 
-ChildThread::Options GetOptions() {
-  ChildThread::Options options;
+ChildThreadImpl::Options GetOptions() {
+  ChildThreadImpl::Options options;
 
 #if defined(USE_OZONE)
   IPC::MessageFilter* message_filter = ui::OzonePlatform::GetInstance()
@@ -64,7 +64,7 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
                                bool dead_on_arrival,
                                const gpu::GPUInfo& gpu_info,
                                const DeferredMessages& deferred_messages)
-    : ChildThread(GetOptions()),
+    : ChildThreadImpl(GetOptions()),
       dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
@@ -77,7 +77,7 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
 }
 
 GpuChildThread::GpuChildThread(const std::string& channel_id)
-    : ChildThread(Options(channel_id, false)),
+    : ChildThreadImpl(Options(channel_id, false)),
       dead_on_arrival_(false),
       in_browser_process_(true) {
 #if defined(OS_WIN)
@@ -102,7 +102,7 @@ GpuChildThread::~GpuChildThread() {
 }
 
 void GpuChildThread::Shutdown() {
-  ChildThread::Shutdown();
+  ChildThreadImpl::Shutdown();
   logging::SetLogMessageHandler(NULL);
 }
 
@@ -115,7 +115,7 @@ bool GpuChildThread::Send(IPC::Message* msg) {
   // process. This could result in deadlock.
   DCHECK(!msg->is_sync());
 
-  return ChildThread::Send(msg);
+  return ChildThreadImpl::Send(msg);
 }
 
 bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {

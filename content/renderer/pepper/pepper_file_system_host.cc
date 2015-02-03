@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/common/pepper_file_util.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -102,7 +102,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
     return PP_ERROR_FAILED;
 
   FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
+      ChildThreadImpl::current()->file_system_dispatcher();
   reply_context_ = context->MakeReplyMessageContext();
   file_system_dispatcher->OpenFileSystem(
       document_url.GetOrigin(),

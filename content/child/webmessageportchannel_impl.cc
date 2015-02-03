@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_process.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/message_port_messages.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -56,7 +56,7 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
     Send(new MessagePortHostMsg_DestroyMessagePort(message_port_id_));
 
   if (route_id_ != MSG_ROUTING_NONE)
-    ChildThread::current()->GetRouter()->RemoveRoute(route_id_);
+    ChildThreadImpl::current()->GetRouter()->RemoveRoute(route_id_);
 }
 
 // static
@@ -169,7 +169,7 @@ void WebMessagePortChannelImpl::Init() {
     Send(new MessagePortHostMsg_ReleaseMessages(message_port_id_));
   }
 
-  ChildThread::current()->GetRouter()->AddRoute(route_id_, this);
+  ChildThreadImpl::current()->GetRouter()->AddRoute(route_id_, this);
 }
 
 void WebMessagePortChannelImpl::Entangle(
@@ -216,7 +216,7 @@ void WebMessagePortChannelImpl::Send(IPC::Message* message) {
     return;
   }
 
-  ChildThread::current()->GetRouter()->Send(message);
+  ChildThreadImpl::current()->GetRouter()->Send(message);
 }
 
 bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {

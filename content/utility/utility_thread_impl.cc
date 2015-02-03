@@ -40,7 +40,7 @@ UtilityThreadImpl::UtilityThreadImpl() : single_process_(false) {
 }
 
 UtilityThreadImpl::UtilityThreadImpl(const std::string& channel_name)
-    : ChildThread(Options(channel_name, false)),
+    : ChildThreadImpl(Options(channel_name, false)),
       single_process_(true) {
   Init();
 }
@@ -49,14 +49,10 @@ UtilityThreadImpl::~UtilityThreadImpl() {
 }
 
 void UtilityThreadImpl::Shutdown() {
-  ChildThread::Shutdown();
+  ChildThreadImpl::Shutdown();
 
   if (!single_process_)
     blink::shutdown();
-}
-
-bool UtilityThreadImpl::Send(IPC::Message* msg) {
-  return ChildThread::Send(msg);
 }
 
 void UtilityThreadImpl::ReleaseProcessIfNeeded() {
@@ -73,18 +69,6 @@ void UtilityThreadImpl::ReleaseProcessIfNeeded() {
     ChildProcess::current()->ReleaseProcess();
   }
 }
-
-#if defined(OS_WIN)
-
-void UtilityThreadImpl::PreCacheFont(const LOGFONT& log_font) {
-  Send(new ChildProcessHostMsg_PreCacheFont(log_font));
-}
-
-void UtilityThreadImpl::ReleaseCachedFonts() {
-  Send(new ChildProcessHostMsg_ReleaseCachedFonts());
-}
-
-#endif  // OS_WIN
 
 void UtilityThreadImpl::Init() {
   batch_mode_ = false;

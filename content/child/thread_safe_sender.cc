@@ -5,7 +5,7 @@
 #include "content/child/thread_safe_sender.h"
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace content {
@@ -21,7 +21,7 @@ ThreadSafeSender::~ThreadSafeSender() {
 
 bool ThreadSafeSender::Send(IPC::Message* msg) {
   if (main_loop_->BelongsToCurrentThread())
-    return ChildThread::current()->Send(msg);
+    return ChildThreadImpl::current()->Send(msg);
   return sync_filter_->Send(msg);
 }
 

@@ -51,7 +51,7 @@ class ChildMessageFilter
 
  private:
   class Internal;
-  friend class ChildThread;
+  friend class ChildThreadImpl;
   friend class RenderThreadImpl;
   friend class WorkerThread;
 

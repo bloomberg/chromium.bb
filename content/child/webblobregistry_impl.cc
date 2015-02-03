@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "storage/common/data_element.h"
@@ -158,7 +158,7 @@ void WebBlobRegistryImpl::SendOversizedDataForBlob(
   // writing it directly to the IPC channel.
   size_t shared_memory_size = std::min(data.size(), kMaxSharedMemoryBytes);
   scoped_ptr<base::SharedMemory> shared_memory(
-      ChildThread::AllocateSharedMemory(shared_memory_size, sender_.get()));
+      ChildThreadImpl::AllocateSharedMemory(shared_memory_size, sender_.get()));
   CHECK(shared_memory.get());
   if (!shared_memory->Map(shared_memory_size))
     CHECK(false);
@@ -179,19 +179,19 @@ void WebBlobRegistryImpl::SendOversizedDataForBlob(
 
 void WebBlobRegistryImpl::registerStreamURL(
     const WebURL& url, const WebString& content_type) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_StartBuilding(url, content_type.utf8()));
 }
 
 void WebBlobRegistryImpl::registerStreamURL(
     const WebURL& url, const WebURL& src_url) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Clone(url, src_url));
 }
 
 void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
                                           const char* data, size_t length) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   if (length == 0)
     return;
   if (length < kLargeThresholdBytes) {
@@ -204,8 +204,8 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
     size_t shared_memory_size = std::min(
         length, kMaxSharedMemoryBytes);
     scoped_ptr<base::SharedMemory> shared_memory(
-        ChildThread::AllocateSharedMemory(shared_memory_size,
-                                          sender_.get()));
+        ChildThreadImpl::AllocateSharedMemory(shared_memory_size,
+                                              sender_.get()));
     CHECK(shared_memory.get());
     if (!shared_memory->Map(shared_memory_size))
       CHECK(false);
@@ -224,22 +224,22 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
 }
 
 void WebBlobRegistryImpl::flushStream(const WebURL& url) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Flush(url));
 }
 
 void WebBlobRegistryImpl::finalizeStream(const WebURL& url) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_FinishBuilding(url));
 }
 
 void WebBlobRegistryImpl::abortStream(const WebURL& url) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_AbortBuilding(url));
 }
 
 void WebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Remove(url));
 }
 

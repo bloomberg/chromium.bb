@@ -32,6 +32,7 @@
           '../ppapi/ppapi_internal.gyp:ppapi_host',
         ],
         'chromium_child_dependencies': [
+          'child',
           'plugin',
           'renderer',
           'utility',
@@ -122,6 +123,7 @@
       'includes': [
         '../apps/apps.gypi',
         'app_installer/app_installer.gypi',
+        'chrome_child.gypi',
         'chrome_debugger.gypi',
         'chrome_dll.gypi',
         'chrome_exe.gypi',

@@ -8,7 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -48,7 +48,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
-      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
 
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 
@@ -239,7 +239,7 @@ scoped_ptr<base::SharedMemory>
 RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   scoped_ptr<base::SharedMemory> mem(
-      ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get()));
+      ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender_.get()));
   if (mem && !mem->Map(size))
     return nullptr;
   return mem;

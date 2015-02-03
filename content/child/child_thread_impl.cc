@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 
 #include <signal.h>
 
@@ -71,7 +71,7 @@ namespace {
 // How long to wait for a connection to the browser process before giving up.
 const int kConnectionTimeoutS = 15;
 
-base::LazyInstance<base::ThreadLocalPointer<ChildThread> > g_lazy_tls =
+base::LazyInstance<base::ThreadLocalPointer<ChildThreadImpl> > g_lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
 
 // This isn't needed on Windows because there the sandbox's job object
@@ -162,7 +162,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 #endif  // OS(POSIX)
 
 #if defined(OS_ANDROID)
-ChildThread* g_child_thread = NULL;
+ChildThreadImpl* g_child_thread = NULL;
 
 // A lock protects g_child_thread.
 base::LazyInstance<base::Lock> g_lazy_child_thread_lock =
@@ -199,50 +199,54 @@ void QuitMainThreadMessageLoop() {
 
 }  // namespace
 
-ChildThread::Options::Options()
+ChildThread* ChildThread::Get() {
+  return ChildThreadImpl::current();
+}
+
+ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(false),
       in_browser_process(false) {
 }
 
-ChildThread::Options::Options(bool mojo)
+ChildThreadImpl::Options::Options(bool mojo)
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(mojo),
       in_browser_process(true) {
 }
 
-ChildThread::Options::Options(std::string name, bool mojo)
+ChildThreadImpl::Options::Options(std::string name, bool mojo)
     : channel_name(name), use_mojo_channel(mojo), in_browser_process(true) {
 }
 
-ChildThread::Options::~Options() {
+ChildThreadImpl::Options::~Options() {
 }
 
-ChildThread::ChildThreadMessageRouter::ChildThreadMessageRouter(
+ChildThreadImpl::ChildThreadMessageRouter::ChildThreadMessageRouter(
     IPC::Sender* sender)
     : sender_(sender) {}
 
-bool ChildThread::ChildThreadMessageRouter::Send(IPC::Message* msg) {
+bool ChildThreadImpl::ChildThreadMessageRouter::Send(IPC::Message* msg) {
   return sender_->Send(msg);
 }
 
-ChildThread::ChildThread()
+ChildThreadImpl::ChildThreadImpl()
     : router_(this),
       in_browser_process_(false),
       channel_connected_factory_(this) {
   Init(Options());
 }
 
-ChildThread::ChildThread(const Options& options)
+ChildThreadImpl::ChildThreadImpl(const Options& options)
     : router_(this),
       in_browser_process_(options.in_browser_process),
       channel_connected_factory_(this) {
   Init(options);
 }
 
-void ChildThread::ConnectChannel(bool use_mojo_channel) {
+void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
@@ -255,7 +259,7 @@ void ChildThread::ConnectChannel(bool use_mojo_channel) {
   channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now);
 }
 
-void ChildThread::Init(const Options& options) {
+void ChildThreadImpl::Init(const Options& options) {
   channel_name_ = options.channel_name;
 
   g_lazy_tls.Pointer()->Set(this);
@@ -363,7 +367,7 @@ void ChildThread::Init(const Options& options) {
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ChildThread::EnsureConnected,
+      base::Bind(&ChildThreadImpl::EnsureConnected,
                  channel_connected_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(connection_timeout));
 
@@ -395,7 +399,7 @@ void ChildThread::Init(const Options& options) {
       new ChildDiscardableSharedMemoryManager(thread_safe_sender()));
 }
 
-ChildThread::~ChildThread() {
+ChildThreadImpl::~ChildThreadImpl() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
@@ -415,7 +419,7 @@ ChildThread::~ChildThread() {
   g_lazy_tls.Pointer()->Set(NULL);
 }
 
-void ChildThread::Shutdown() {
+void ChildThreadImpl::Shutdown() {
   // Delete objects that hold references to blink so derived classes can
   // safely shutdown blink in their Shutdown implementation.
   file_system_dispatcher_.reset();
@@ -423,16 +427,16 @@ void ChildThread::Shutdown() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
-void ChildThread::OnChannelConnected(int32 peer_pid) {
+void ChildThreadImpl::OnChannelConnected(int32 peer_pid) {
   channel_connected_factory_.InvalidateWeakPtrs();
 }
 
-void ChildThread::OnChannelError() {
+void ChildThreadImpl::OnChannelError() {
   set_on_channel_error_called(true);
   base::MessageLoop::current()->Quit();
 }
 
-bool ChildThread::Send(IPC::Message* msg) {
+bool ChildThreadImpl::Send(IPC::Message* msg) {
   DCHECK(base::MessageLoop::current() == message_loop());
   if (!channel_) {
     delete msg;
@@ -442,19 +446,29 @@ bool ChildThread::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-MessageRouter* ChildThread::GetRouter() {
+#if defined(OS_WIN)
+void ChildThreadImpl::PreCacheFont(const LOGFONT& log_font) {
+  Send(new ChildProcessHostMsg_PreCacheFont(log_font));
+}
+
+void ChildThreadImpl::ReleaseCachedFonts() {
+  Send(new ChildProcessHostMsg_ReleaseCachedFonts());
+}
+#endif
+
+MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
   return &router_;
 }
 
-scoped_ptr<base::SharedMemory> ChildThread::AllocateSharedMemory(
+scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size) {
   DCHECK(base::MessageLoop::current() == message_loop());
   return AllocateSharedMemory(buf_size, this);
 }
 
 // static
-scoped_ptr<base::SharedMemory> ChildThread::AllocateSharedMemory(
+scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender) {
   scoped_ptr<base::SharedMemory> shared_buf;
@@ -484,7 +498,7 @@ scoped_ptr<base::SharedMemory> ChildThread::AllocateSharedMemory(
   return shared_buf;
 }
 
-bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
+bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   if (mojo_application_->OnMessageReceived(msg))
     return true;
 
@@ -497,7 +511,7 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChildThread, msg)
+  IPC_BEGIN_MESSAGE_MAP(ChildThreadImpl, msg)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_Shutdown, OnShutdown)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIPCLoggingEnabled,
@@ -525,16 +539,16 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
   return router_.OnMessageReceived(msg);
 }
 
-bool ChildThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void ChildThread::OnShutdown() {
+void ChildThreadImpl::OnShutdown() {
   base::MessageLoop::current()->Quit();
 }
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
+void ChildThreadImpl::OnSetIPCLoggingEnabled(bool enable) {
   if (enable)
     IPC::Logging::GetInstance()->Enable();
   else
@@ -542,11 +556,11 @@ void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
 
-void ChildThread::OnSetProfilerStatus(ThreadData::Status status) {
+void ChildThreadImpl::OnSetProfilerStatus(ThreadData::Status status) {
   ThreadData::InitializeAndSetTrackingStatus(status);
 }
 
-void ChildThread::OnGetChildProfilerData(int sequence_number) {
+void ChildThreadImpl::OnGetChildProfilerData(int sequence_number) {
   tracked_objects::ProcessDataSnapshot process_data;
   ThreadData::Snapshot(false, &process_data);
 
@@ -554,7 +568,7 @@ void ChildThread::OnGetChildProfilerData(int sequence_number) {
                                                  process_data));
 }
 
-void ChildThread::OnDumpHandles() {
+void ChildThreadImpl::OnDumpHandles() {
 #if defined(OS_WIN)
   scoped_refptr<HandleEnumerator> handle_enum(
       new HandleEnumerator(
@@ -568,7 +582,7 @@ void ChildThread::OnDumpHandles() {
 }
 
 #if defined(USE_TCMALLOC)
-void ChildThread::OnGetTcmallocStats() {
+void ChildThreadImpl::OnGetTcmallocStats() {
   std::string result;
   char buffer[1024 * 32];
   base::allocator::GetStats(buffer, sizeof(buffer));
@@ -577,15 +591,15 @@ void ChildThread::OnGetTcmallocStats() {
 }
 #endif
 
-ChildThread* ChildThread::current() {
+ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_tls.Pointer()->Get();
 }
 
 #if defined(OS_ANDROID)
 // The method must NOT be called on the child thread itself.
 // It may block the child thread if so.
-void ChildThread::ShutdownThread() {
-  DCHECK(!ChildThread::current()) <<
+void ChildThreadImpl::ShutdownThread() {
+  DCHECK(!ChildThreadImpl::current()) <<
       "this method should NOT be called from child thread itself";
   {
     base::AutoLock lock(g_lazy_child_thread_lock.Get());
@@ -598,7 +612,7 @@ void ChildThread::ShutdownThread() {
 }
 #endif
 
-void ChildThread::OnProcessFinalRelease() {
+void ChildThreadImpl::OnProcessFinalRelease() {
   if (on_channel_error_called_) {
     base::MessageLoop::current()->Quit();
     return;
@@ -613,12 +627,12 @@ void ChildThread::OnProcessFinalRelease() {
   Send(new ChildProcessHostMsg_ShutdownRequest);
 }
 
-void ChildThread::EnsureConnected() {
-  VLOG(0) << "ChildThread::EnsureConnected()";
+void ChildThreadImpl::EnsureConnected() {
+  VLOG(0) << "ChildThreadImpl::EnsureConnected()";
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
 
-void ChildThread::OnProcessBackgrounded(bool background) {
+void ChildThreadImpl::OnProcessBackgrounded(bool background) {
   // Set timer slack to maximum on main thread when in background.
   base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
   if (background)

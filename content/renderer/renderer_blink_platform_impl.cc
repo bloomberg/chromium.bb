@@ -245,10 +245,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 
   // ChildThread may not exist in some tests.
-  if (ChildThread::current()) {
-    sync_message_filter_ = ChildThread::current()->sync_message_filter();
-    thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
-    quota_message_filter_ = ChildThread::current()->quota_message_filter();
+  if (ChildThreadImpl::current()) {
+    sync_message_filter_ = ChildThreadImpl::current()->sync_message_filter();
+    thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
+    quota_message_filter_ = ChildThreadImpl::current()->quota_message_filter();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
     web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_.get()));
     web_database_observer_impl_.reset(

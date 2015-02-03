@@ -5,7 +5,7 @@
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
@@ -15,7 +15,7 @@ namespace content {
 
 EmbeddedWorkerContextMessageFilter::EmbeddedWorkerContextMessageFilter()
     : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
 
 EmbeddedWorkerContextMessageFilter::~EmbeddedWorkerContextMessageFilter() {}
 

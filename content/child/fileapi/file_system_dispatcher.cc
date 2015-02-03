@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "storage/common/fileapi/file_system_info.h"
 
@@ -171,7 +171,7 @@ void FileSystemDispatcher::OpenFileSystem(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_OpenFileSystem(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_OpenFileSystem(
       request_id, origin_url, type));
 }
 
@@ -181,7 +181,7 @@ void FileSystemDispatcher::ResolveURL(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_ResolveURL(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_ResolveURL(
           request_id, filesystem_url));
 }
 
@@ -189,7 +189,7 @@ void FileSystemDispatcher::DeleteFileSystem(const GURL& origin_url,
                                             storage::FileSystemType type,
                                             const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_DeleteFileSystem(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_DeleteFileSystem(
           request_id, origin_url, type));
 }
 
@@ -198,7 +198,7 @@ void FileSystemDispatcher::Move(
     const GURL& dest_path,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_Move(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_Move(
           request_id, src_path, dest_path));
 }
 
@@ -207,7 +207,7 @@ void FileSystemDispatcher::Copy(
     const GURL& dest_path,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_Copy(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_Copy(
       request_id, src_path, dest_path));
 }
 
@@ -216,7 +216,7 @@ void FileSystemDispatcher::Remove(
     bool recursive,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_Remove(request_id, path, recursive));
 }
 
@@ -226,7 +226,7 @@ void FileSystemDispatcher::ReadMetadata(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_ReadMetadata(request_id, path));
 }
 
@@ -235,7 +235,7 @@ void FileSystemDispatcher::CreateFile(
     bool exclusive,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_Create(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_Create(
       request_id, path, exclusive,
       false /* is_directory */, false /* recursive */));
 }
@@ -246,7 +246,7 @@ void FileSystemDispatcher::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_Create(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_Create(
       request_id, path, exclusive, true /* is_directory */, recursive));
 }
 
@@ -255,7 +255,7 @@ void FileSystemDispatcher::Exists(
     bool is_directory,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_Exists(request_id, path, is_directory));
 }
 
@@ -265,7 +265,7 @@ void FileSystemDispatcher::ReadDirectory(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_ReadDirectory(request_id, path));
 }
 
@@ -275,7 +275,7 @@ void FileSystemDispatcher::Truncate(
     int* request_id_out,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_Truncate(request_id, path, offset));
 
   if (request_id_out)
@@ -291,7 +291,7 @@ void FileSystemDispatcher::Write(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_Write(request_id, path, blob_id, offset));
 
   if (request_id_out)
@@ -302,7 +302,7 @@ void FileSystemDispatcher::Cancel(
     int request_id_to_cancel,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_CancelWrite(
+  ChildThreadImpl::current()->Send(new FileSystemHostMsg_CancelWrite(
       request_id, request_id_to_cancel));
 }
 
@@ -312,7 +312,7 @@ void FileSystemDispatcher::TouchFile(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_TouchFile(
           request_id, path, last_access_time, last_modified_time));
 }
@@ -323,7 +323,7 @@ void FileSystemDispatcher::CreateSnapshotFile(
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_CreateSnapshotFile(
           request_id, file_path));
 }

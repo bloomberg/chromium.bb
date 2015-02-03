@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -110,6 +110,12 @@ class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
 
+#if defined(COMPILER_MSVC)
+// See explanation for other RenderViewHostImpl which is the same issue.
+#pragma warning(push)
+#pragma warning(disable: 4250)
+#endif
+
 // The RenderThreadImpl class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
@@ -121,7 +127,7 @@ class WebRTCIdentityService;
 // The routing IDs correspond to RenderView instances.
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
-      public ChildThread,
+      public ChildThreadImpl,
       public GpuChannelHostFactory,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
@@ -175,10 +181,6 @@ class CONTENT_EXPORT RenderThreadImpl
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
-#if defined(OS_WIN)
-  virtual void PreCacheFont(const LOGFONT& log_font) override;
-  virtual void ReleaseCachedFonts() override;
-#endif
   ServiceRegistry* GetServiceRegistry() override;
 
   // CompositorDependencies implementation.
@@ -624,6 +626,10 @@ class CONTENT_EXPORT RenderThreadImpl
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
 }  // namespace content
 

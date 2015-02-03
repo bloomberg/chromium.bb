@@ -5,7 +5,7 @@
 #include "content/child/notifications/notification_image_loader.h"
 
 #include "base/logging.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/image_decoder.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -29,7 +29,7 @@ NotificationImageLoader::~NotificationImageLoader() {}
 
 void NotificationImageLoader::StartOnMainThread(const WebURL& image_url,
                                                 int worker_thread_id) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   DCHECK(!url_loader_);
 
   worker_thread_id_ = worker_thread_id;

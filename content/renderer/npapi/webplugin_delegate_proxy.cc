@@ -640,7 +640,7 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
 bool WebPluginDelegateProxy::CreateSharedBitmap(
     scoped_ptr<SharedMemoryBitmap>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
-  *memory = ChildThread::current()
+  *memory = ChildThreadImpl::current()
                 ->shared_bitmap_manager()
                 ->AllocateSharedMemoryBitmap(plugin_rect_.size());
   if (!memory->get())

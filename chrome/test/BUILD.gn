@@ -124,6 +124,7 @@ source_set("test_support") {
 
   if (!is_ios) {
     deps += [
+      "//chrome/child",
       "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",

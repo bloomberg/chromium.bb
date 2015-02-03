@@ -32,7 +32,7 @@ PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
       connect_callback_(),
       pipe_handle_(PlatformFileToInt(base::SyncSocket::kInvalidHandle)),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
-  ChildThread::current()->GetRouter()->AddRoute(routing_id_, this);
+  ChildThreadImpl::current()->GetRouter()->AddRoute(routing_id_, this);
 }
 
 PPB_Broker_Impl::~PPB_Broker_Impl() {
@@ -43,7 +43,7 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
 
   // The plugin owns the handle.
   pipe_handle_ = PlatformFileToInt(base::SyncSocket::kInvalidHandle);
-  ChildThread::current()->GetRouter()->RemoveRoute(routing_id_);
+  ChildThreadImpl::current()->GetRouter()->RemoveRoute(routing_id_);
 }
 
 PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() { return this; }

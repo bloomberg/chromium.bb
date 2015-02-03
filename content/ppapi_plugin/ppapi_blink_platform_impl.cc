@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/child_process_messages.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"

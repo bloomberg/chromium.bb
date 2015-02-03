@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -638,7 +638,7 @@ void ServiceWorkerDispatcher::OnPostMessage(
     const std::vector<int>& new_routing_ids) {
   // Make sure we're on the main document thread. (That must be the only
   // thread we get this message)
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerDispatcher::OnPostMessage",
                "Thread ID", thread_id);

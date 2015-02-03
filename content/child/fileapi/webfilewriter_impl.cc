@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/worker_task_runner.h"
 
@@ -15,8 +15,8 @@ namespace content {
 namespace {
 
 FileSystemDispatcher* GetFileSystemDispatcher() {
-  return ChildThread::current() ?
-      ChildThread::current()->file_system_dispatcher() : NULL;
+  return ChildThreadImpl::current() ?
+      ChildThreadImpl::current()->file_system_dispatcher() : NULL;
 }
 
 }  // namespace
@@ -42,7 +42,7 @@ class WebFileWriterImpl::WriterBridge
     status_callback_ = status_callback;
     if (!GetFileSystemDispatcher())
       return;
-    ChildThread::current()->file_system_dispatcher()->Truncate(
+    ChildThreadImpl::current()->file_system_dispatcher()->Truncate(
         path, offset, &request_id_,
         base::Bind(&WriterBridge::DidFinish, this));
   }
@@ -54,7 +54,7 @@ class WebFileWriterImpl::WriterBridge
     status_callback_ = error_callback;
     if (!GetFileSystemDispatcher())
       return;
-    ChildThread::current()->file_system_dispatcher()->Write(
+    ChildThreadImpl::current()->file_system_dispatcher()->Write(
         path, id, offset, &request_id_,
         base::Bind(&WriterBridge::DidWrite, this),
         base::Bind(&WriterBridge::DidFinish, this));
@@ -64,7 +64,7 @@ class WebFileWriterImpl::WriterBridge
     status_callback_ = status_callback;
     if (!GetFileSystemDispatcher())
       return;
-    ChildThread::current()->file_system_dispatcher()->Cancel(
+    ChildThreadImpl::current()->file_system_dispatcher()->Cancel(
         request_id_,
         base::Bind(&WriterBridge::DidFinish, this));
   }

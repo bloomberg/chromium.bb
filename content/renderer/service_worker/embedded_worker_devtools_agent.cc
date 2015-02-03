@@ -4,7 +4,6 @@
 
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 
-#include "content/child/child_thread.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebCString.h"

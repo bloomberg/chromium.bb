@@ -282,8 +282,8 @@ void AddHistogramSample(void* hist, int sample) {
 
 scoped_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
     const gfx::Size& size) {
-  return ChildThread::current()->shared_bitmap_manager()->AllocateSharedBitmap(
-      size);
+  return ChildThreadImpl::current()->shared_bitmap_manager()->
+      AllocateSharedBitmap(size);
 }
 
 void EnableBlinkPlatformLogChannels(const std::string& channels) {
@@ -423,18 +423,18 @@ RenderThreadImpl* RenderThreadImpl::current() {
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl()
-    : ChildThread(Options(ShouldUseMojoChannel())) {
+    : ChildThreadImpl(Options(ShouldUseMojoChannel())) {
   Init();
 }
 
 RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
-    : ChildThread(Options(channel_name, ShouldUseMojoChannel())) {
+    : ChildThreadImpl(Options(channel_name, ShouldUseMojoChannel())) {
   Init();
 }
 
 RenderThreadImpl::RenderThreadImpl(
     scoped_ptr<base::MessageLoop> main_message_loop)
-    : ChildThread(Options(ShouldUseMojoChannel())),
+    : ChildThreadImpl(Options(ShouldUseMojoChannel())),
       main_message_loop_(main_message_loop.Pass()) {
   Init();
 }
@@ -655,7 +655,7 @@ void RenderThreadImpl::Init() {
   }
 
   base::DiscardableMemoryShmemAllocator::SetInstance(
-      ChildThread::discardable_shared_memory_manager());
+      ChildThreadImpl::discardable_shared_memory_manager());
 
   service_registry()->AddService<RenderFrameSetup>(
       base::Bind(CreateRenderFrameSetup));
@@ -670,7 +670,7 @@ void RenderThreadImpl::Shutdown() {
   FOR_EACH_OBSERVER(
       RenderProcessObserver, observers_, OnRenderProcessShutdown());
 
-  ChildThread::Shutdown();
+  ChildThreadImpl::Shutdown();
 
   if (memory_observer_) {
     message_loop()->RemoveTaskObserver(memory_observer_.get());
@@ -811,7 +811,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 #endif
   }
 
-  bool rv = ChildThread::Send(msg);
+  bool rv = ChildThreadImpl::Send(msg);
 
   if (pumping_events) {
 #if defined(ENABLE_PLUGINS)
@@ -860,7 +860,7 @@ scoped_refptr<base::MessageLoopProxy>
 }
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  ChildThread::GetRouter()->AddRoute(routing_id, listener);
+  ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
   PendingRenderFrameConnectMap::iterator it =
       pending_render_frame_connects_.find(routing_id);
   if (it == pending_render_frame_connects_.end())
@@ -881,7 +881,7 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
-  ChildThread::GetRouter()->RemoveRoute(routing_id);
+  ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
 }
 
 void RenderThreadImpl::AddEmbeddedWorkerRoute(int32 routing_id,
@@ -1112,7 +1112,7 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
 
 scoped_ptr<base::SharedMemory>
     RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
-  return ChildThread::AllocateSharedMemory(size, thread_safe_sender());
+  return ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender());
 }
 
 cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
@@ -1324,14 +1324,6 @@ base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
 void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
                                               const base::string16& str) {
   Send(new ViewHostMsg_PreCacheFontCharacters(log_font, str));
-}
-
-void RenderThreadImpl::PreCacheFont(const LOGFONT& log_font) {
-  Send(new ChildProcessHostMsg_PreCacheFont(log_font));
-}
-
-void RenderThreadImpl::ReleaseCachedFonts() {
-  Send(new ChildProcessHostMsg_ReleaseCachedFonts());
 }
 
 #endif  // OS_WIN

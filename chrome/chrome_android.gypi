@@ -24,6 +24,7 @@
       'dependencies': [
         'chrome.gyp:browser',
         'chrome.gyp:browser_ui',
+        'chrome.gyp:child',
         'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',

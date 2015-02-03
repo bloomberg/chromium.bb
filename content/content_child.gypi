@@ -23,6 +23,7 @@
   ],
   'variables': {
     'public_child_sources': [
+      'public/child/child_thread.h',
       'public/child/image_decoder_utils.h',
       'public/child/request_peer.h',
       'public/child/resource_dispatcher_delegate.h',
@@ -61,8 +62,8 @@
       'child/child_resource_message_filter.h',
       'child/child_shared_bitmap_manager.cc',
       'child/child_shared_bitmap_manager.h',
-      'child/child_thread.cc',
-      'child/child_thread.h',
+      'child/child_thread_impl.cc',
+      'child/child_thread_impl.h',
       'child/content_child_helpers.cc',
       'child/content_child_helpers.h',
       'child/database_util.cc',

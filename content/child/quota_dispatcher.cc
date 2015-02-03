@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
-#include "content/child/child_thread.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/quota_messages.h"

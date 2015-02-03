@@ -14,7 +14,7 @@
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/trusted/ppp_broker.h"
@@ -40,7 +40,13 @@ namespace content {
 
 class PpapiBlinkPlatformImpl;
 
-class PpapiThread : public ChildThread,
+#if defined(COMPILER_MSVC)
+// See explanation for other RenderViewHostImpl which is the same issue.
+#pragma warning(push)
+#pragma warning(disable: 4250)
+#endif
+
+class PpapiThread : public ChildThreadImpl,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
                     public ppapi::proxy::PluginProxyDelegate {
  public:
@@ -157,6 +163,10 @@ class PpapiThread : public ChildThread,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
 }  // namespace content
 

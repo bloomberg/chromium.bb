@@ -143,7 +143,7 @@ bool RendererClipboardDelegate::WriteImage(ui::ClipboardType clipboard_type,
 
     // Allocate a shared memory buffer to hold the bitmap bits.
     uint32 buf_size = checked_buf_size.ValueOrDie();
-    shared_buf = ChildThread::current()->AllocateSharedMemory(buf_size);
+    shared_buf = ChildThreadImpl::current()->AllocateSharedMemory(buf_size);
     if (!shared_buf)
       return false;
     if (!shared_buf->Map(buf_size))

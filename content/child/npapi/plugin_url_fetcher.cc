@@ -5,7 +5,7 @@
 #include "content/child/npapi/plugin_url_fetcher.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/multipart_response_delegate.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
@@ -146,7 +146,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       request_info.headers = std::string("Range: ") + range;
   }
 
-  bridge_.reset(ChildThread::current()->resource_dispatcher()->CreateBridge(
+  bridge_.reset(ChildThreadImpl::current()->resource_dispatcher()->CreateBridge(
       request_info));
   if (!body.empty()) {
     scoped_refptr<ResourceRequestBody> request_body =

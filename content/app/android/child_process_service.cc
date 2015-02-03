@@ -12,7 +12,7 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/android/surface_texture_manager.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
@@ -188,7 +188,7 @@ bool RegisterChildProcessService(JNIEnv* env) {
 }
 
 void ShutdownMainThread(JNIEnv* env, jobject obj) {
-  ChildThread::ShutdownThread();
+  ChildThreadImpl::ShutdownThread();
 }
 
 }  // namespace content

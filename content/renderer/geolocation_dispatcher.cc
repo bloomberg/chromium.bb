@@ -4,7 +4,6 @@
 
 #include "content/renderer/geolocation_dispatcher.h"
 
-#include "content/child/child_thread.h"
 #include "content/public/common/geoposition.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"

@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_local.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilewriter_impl.h"
@@ -86,8 +86,8 @@ base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl> >::Leaky
     g_webfilesystem_tls = LAZY_INSTANCE_INITIALIZER;
 
 void DidReceiveSnapshotFile(int request_id) {
-  if (ChildThread::current())
-    ChildThread::current()->Send(
+  if (ChildThreadImpl::current())
+    ChildThreadImpl::current()->Send(
         new FileSystemHostMsg_DidReceiveSnapshotFile(request_id));
 }
 
@@ -110,12 +110,12 @@ void CallDispatcherOnMainThread(
       return;
     waitable_results->WaitAndRun();
   }
-  if (!ChildThread::current() ||
-      !ChildThread::current()->file_system_dispatcher())
+  if (!ChildThreadImpl::current() ||
+      !ChildThreadImpl::current()->file_system_dispatcher())
     return;
 
   DCHECK(!waitable_results);
-  DispatchToMethod(ChildThread::current()->file_system_dispatcher(),
+  DispatchToMethod(ChildThreadImpl::current()->file_system_dispatcher(),
                    method, params);
 }
 

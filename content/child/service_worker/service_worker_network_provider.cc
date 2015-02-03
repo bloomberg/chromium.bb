@@ -5,7 +5,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
@@ -38,24 +38,24 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(int render_frame_id)
     : provider_id_(GetNextProviderId()),
       context_(new ServiceWorkerProviderContext(provider_id_)) {
-  if (!ChildThread::current())
+  if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new ServiceWorkerHostMsg_ProviderCreated(provider_id_, render_frame_id));
 }
 
 ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
-  if (!ChildThread::current())
+  if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new ServiceWorkerHostMsg_ProviderDestroyed(provider_id_));
 }
 
 void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
     int64 version_id) {
-  if (!ChildThread::current())
+  if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  ChildThread::current()->Send(
+  ChildThreadImpl::current()->Send(
       new ServiceWorkerHostMsg_SetVersionId(provider_id_, version_id));
 }
 

@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/npapi/plugin_lib.h"
 #include "content/plugin/plugin_channel.h"
 
@@ -22,7 +22,7 @@ class BlinkPlatformImpl;
 // The PluginThread class represents a background thread where plugin instances
 // live.  Communication occurs between WebPluginDelegateProxy in the renderer
 // process and WebPluginDelegateStub in this thread through IPC messages.
-class PluginThread : public ChildThread {
+class PluginThread : public ChildThreadImpl {
  public:
   PluginThread();
   ~PluginThread() override;

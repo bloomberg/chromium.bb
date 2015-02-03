@@ -5,7 +5,7 @@
 #include "content/child/threaded_data_provider.h"
 
 #include "content/child/child_process.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webthread_impl.h"
@@ -127,12 +127,12 @@ ThreadedDataProvider::ThreadedDataProvider(
       shm_size_(shm_size),
       background_thread_(static_cast<WebThreadImpl&>(
           *threaded_data_receiver->backgroundThread())),
-      ipc_channel_(ChildThread::current()->channel()),
+      ipc_channel_(ChildThreadImpl::current()->channel()),
       threaded_data_receiver_(threaded_data_receiver),
       resource_filter_active_(false),
       main_thread_task_runner_(main_thread_task_runner),
       main_thread_weak_factory_(this) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   DCHECK(ipc_channel_);
   DCHECK(threaded_data_receiver_);
   DCHECK(main_thread_task_runner_.get());
@@ -146,19 +146,19 @@ ThreadedDataProvider::ThreadedDataProvider(
       background_thread_weak_factory_->GetWeakPtr(),
       main_thread_weak_factory_.GetWeakPtr(), request_id);
 
-  ChildThread::current()->channel()->AddFilter(filter_.get());
+  ChildThreadImpl::current()->channel()->AddFilter(filter_.get());
 }
 
 ThreadedDataProvider::~ThreadedDataProvider() {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
 
-  ChildThread::current()->channel()->RemoveFilter(filter_.get());
+  ChildThreadImpl::current()->channel()->RemoveFilter(filter_.get());
 
   delete threaded_data_receiver_;
 }
 
 void DestructOnMainThread(ThreadedDataProvider* data_provider) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
 
   // The ThreadedDataProvider must be destructed on the main thread to
   // be threadsafe when removing the message filter and releasing the shared
@@ -167,7 +167,7 @@ void DestructOnMainThread(ThreadedDataProvider* data_provider) {
 }
 
 void ThreadedDataProvider::Stop() {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
 
   // Make sure we don't get called by on the main thread anymore via weak
   // pointers we've passed to the filter.
@@ -207,7 +207,7 @@ void ThreadedDataProvider::StopOnBackgroundThread() {
 }
 
 void ThreadedDataProvider::OnResourceMessageFilterAddedMainThread() {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
   DCHECK(background_thread_weak_factory_);
 
   // We bounce this message from the I/O thread via the main thread and then
@@ -264,7 +264,7 @@ void ThreadedDataProvider::OnReceivedDataOnBackgroundThread(
 
 void ThreadedDataProvider::OnReceivedDataOnForegroundThread(
     const char* data, int data_length, int encoded_data_length) {
-  DCHECK(ChildThread::current());
+  DCHECK(ChildThreadImpl::current());
 
   background_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&ThreadedDataProvider::ForwardAndACKData,

@@ -19,9 +19,9 @@ class SyncMessageFilter;
 }
 
 namespace content {
-class ChildThread;
+class ChildThreadImpl;
 
-// The class of Sender returned by ChildThread::thread_safe_sender().
+// The class of Sender returned by ChildThreadImpl::thread_safe_sender().
 class CONTENT_EXPORT ThreadSafeSender
     : public IPC::Sender,
       public base::RefCountedThreadSafe<ThreadSafeSender> {
@@ -29,7 +29,7 @@ class CONTENT_EXPORT ThreadSafeSender
   bool Send(IPC::Message* msg) override;
 
  private:
-  friend class ChildThread;  // for construction
+  friend class ChildThreadImpl;  // for construction
   friend class IndexedDBDispatcherTest;
   friend class WebIDBCursorImplTest;
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;

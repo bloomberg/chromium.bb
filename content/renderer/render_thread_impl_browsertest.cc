@@ -77,6 +77,12 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
   int count_;
 };
 
+#if defined(COMPILER_MSVC)
+// See explanation for other RenderViewHostImpl which is the same issue.
+#pragma warning(push)
+#pragma warning(disable: 4250)
+#endif
+
 class RenderThreadImplForTest : public RenderThreadImpl {
  public:
   RenderThreadImplForTest(const std::string& channel_id,
@@ -91,11 +97,15 @@ class RenderThreadImplForTest : public RenderThreadImpl {
     RenderThreadImpl::SetResourceDispatchTaskQueue(test_task_counter_);
   }
 
-  using ChildThread::OnMessageReceived;
+  using ChildThreadImpl::OnMessageReceived;
 
  private:
   scoped_refptr<TestTaskCounter> test_task_counter_;
 };
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
 void QuitTask(base::MessageLoop* message_loop) {
   message_loop->QuitWhenIdle();

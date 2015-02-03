@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "content/child/child_thread.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_loader_bridge.h"

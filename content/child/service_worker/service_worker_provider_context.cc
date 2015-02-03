@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "content/child/child_thread.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -20,9 +20,9 @@ namespace content {
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
     : provider_id_(provider_id),
       main_thread_loop_proxy_(base::MessageLoopProxy::current()) {
-  if (!ChildThread::current())
+  if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
+  thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           thread_safe_sender_.get());

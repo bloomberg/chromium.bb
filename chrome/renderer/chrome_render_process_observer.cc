@@ -43,10 +43,6 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-#if defined(OS_WIN)
-#include "base/win/iat_patch_function.h"
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #endif
@@ -111,43 +107,6 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
-
-#if defined(OS_WIN)
-static base::win::IATPatchFunction g_iat_patch_createdca;
-HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
-                          LPCSTR device_name,
-                          LPCSTR output,
-                          const void* init_data) {
-  DCHECK(std::string("DISPLAY") == std::string(driver_name));
-  DCHECK(!device_name);
-  DCHECK(!output);
-  DCHECK(!init_data);
-
-  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
-  return CreateCompatibleDC(NULL);
-}
-
-static base::win::IATPatchFunction g_iat_patch_get_font_data;
-DWORD WINAPI GetFontDataPatch(HDC hdc,
-                              DWORD table,
-                              DWORD offset,
-                              LPVOID buffer,
-                              DWORD length) {
-  int rv = GetFontData(hdc, table, offset, buffer, length);
-  if (rv == GDI_ERROR && hdc) {
-    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
-
-    LOGFONT logfont;
-    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
-      std::vector<char> font_data;
-      RenderThread::Get()->PreCacheFont(logfont);
-      rv = GetFontData(hdc, table, offset, buffer, length);
-      RenderThread::Get()->ReleaseCachedFonts();
-    }
-  }
-  return rv;
-}
-#endif  // OS_WIN
 
 static const int kWaitForWorkersStatsTimeoutMS = 20;
 
@@ -279,22 +238,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-
-#if defined(OS_WIN)
-  // TODO(scottmg): http://crbug.com/448473. This code should be removed once
-  // PDF is always OOP and/or PDF is made to use Skia instead of GDI directly.
-  if (!command_line.HasSwitch(switches::kEnableOutOfProcessPdf)) {
-    // Need to patch a few functions for font loading to work correctly.
-    base::FilePath pdf;
-    if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-        base::PathExists(pdf)) {
-      g_iat_patch_createdca.Patch(pdf.value().c_str(), "gdi32.dll", "CreateDCA",
-                                  CreateDCAPatch);
-      g_iat_patch_get_font_data.Patch(pdf.value().c_str(), "gdi32.dll",
-                                      "GetFontData", GetFontDataPatch);
-    }
-  }
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
   // On platforms where we use system NSS shared libraries,

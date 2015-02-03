@@ -17,7 +17,6 @@
 #include "printing/pdf_render_settings.h"
 
 #if defined(OS_WIN)
-#include "base/win/iat_patch_function.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif
@@ -138,39 +137,6 @@ class PdfFunctionsBase {
 };
 
 #if defined(OS_WIN)
-// The 2 below IAT patch functions are almost identical to the code in
-// render_process_impl.cc. This is needed to work around specific Windows APIs
-// used by the Chrome PDF plugin that will fail in the sandbox.
-static base::win::IATPatchFunction g_iat_patch_createdca;
-HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
-                                         LPCSTR device_name,
-                                         LPCSTR output,
-                                         const DEVMODEA* init_data) {
-  if (driver_name && (std::string("DISPLAY") == driver_name)) {
-    // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
-    return CreateCompatibleDC(NULL);
-  }
-
-  NOTREACHED();
-  return CreateDCA(driver_name, device_name, output, init_data);
-}
-
-static base::win::IATPatchFunction g_iat_patch_get_font_data;
-DWORD WINAPI UtilityProcess_GetFontDataPatch(
-    HDC hdc, DWORD table, DWORD offset, LPVOID buffer, DWORD length) {
-  int rv = GetFontData(hdc, table, offset, buffer, length);
-  if (rv == GDI_ERROR && hdc) {
-    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
-
-    LOGFONT logfont;
-    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
-      content::UtilityThread::Get()->PreCacheFont(logfont);
-      rv = GetFontData(hdc, table, offset, buffer, length);
-      content::UtilityThread::Get()->ReleaseCachedFonts();
-    }
-  }
-  return rv;
-}
 
 class PdfFunctionsWin : public PdfFunctionsBase {
  public:
@@ -180,18 +146,6 @@ class PdfFunctionsWin : public PdfFunctionsBase {
   bool PlatformInit(
       const base::FilePath& pdf_module_path,
       const base::ScopedNativeLibrary& pdf_lib) override {
-    // Patch the IAT for handling specific APIs known to fail in the sandbox.
-    if (!g_iat_patch_createdca.is_patched()) {
-      g_iat_patch_createdca.Patch(pdf_module_path.value().c_str(),
-                                  "gdi32.dll", "CreateDCA",
-                                  UtilityProcess_CreateDCAPatch);
-    }
-
-    if (!g_iat_patch_get_font_data.is_patched()) {
-      g_iat_patch_get_font_data.Patch(pdf_module_path.value().c_str(),
-                                      "gdi32.dll", "GetFontData",
-                                      UtilityProcess_GetFontDataPatch);
-    }
     render_pdf_to_dc_func_ =
       reinterpret_cast<RenderPDFPageToDCProc>(
           pdf_lib.GetFunctionPointer("RenderPDFPageToDC"));
