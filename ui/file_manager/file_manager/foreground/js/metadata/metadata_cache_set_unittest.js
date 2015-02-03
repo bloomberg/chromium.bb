@@ -12,7 +12,7 @@ var entryB = {
 
 function testMetadataCacheSetBasic() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
-  var loadRequested = set.startRequests(1, [entryA, entryB], ['property']);
+  var loadRequested = set.createRequests([entryA, entryB], ['property']);
   assertEquals(2, loadRequested.length);
   assertEquals(entryA, loadRequested[0].entry);
   assertEquals(1, loadRequested[0].names.length);
@@ -21,6 +21,7 @@ function testMetadataCacheSetBasic() {
   assertEquals(1, loadRequested[1].names.length);
   assertEquals('property', loadRequested[1].names[0]);
 
+  set.startRequests(1, loadRequested);
   assertTrue(set.storeProperties(
       1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]));
 
@@ -32,7 +33,7 @@ function testMetadataCacheSetBasic() {
 
 function testMetadataCacheSetStorePartial() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
-  set.startRequests(1, [entryA, entryB], ['property']);
+  set.startRequests(1, set.createRequests([entryA, entryB], ['property']));
 
   assertTrue(set.storeProperties(
       1, [entryA], [{property: 'valueA'}]));
@@ -51,11 +52,11 @@ function testMetadataCacheSetStorePartial() {
 
 function testMetadataCacheSetCachePartial() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
-  set.startRequests(1, [entryA], ['property']);
+  set.startRequests(1, set.createRequests([entryA], ['property']));
   set.storeProperties(1, [entryA], [{property: 'valueA'}]);
 
   // entryA has already been cached.
-  var loadRequested = set.startRequests(2, [entryA, entryB], ['property']);
+  var loadRequested = set.createRequests([entryA, entryB], ['property']);
   assertEquals(1, loadRequested.length);
   assertEquals(entryB, loadRequested[0].entry);
   assertEquals(1, loadRequested[0].names.length);
@@ -64,7 +65,7 @@ function testMetadataCacheSetCachePartial() {
 
 function testMetadataCacheSetInvalidatePartial() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
-  set.startRequests(1, [entryA, entryB], ['property']);
+  set.startRequests(1, set.createRequests([entryA, entryB], ['property']));
   set.invalidate(2, [entryA]);
 
   assertTrue(set.storeProperties(
@@ -75,7 +76,7 @@ function testMetadataCacheSetInvalidatePartial() {
   assertEquals(null, results[0].property);
   assertEquals('valueB', results[1].property);
 
-  var loadRequested = set.startRequests(3, [entryA, entryB], ['property']);
+  var loadRequested = set.createRequests([entryA, entryB], ['property']);
   assertEquals(1, loadRequested.length);
   assertEquals(entryA, loadRequested[0].entry);
   assertEquals(1, loadRequested[0].names.length);

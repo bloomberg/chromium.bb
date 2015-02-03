@@ -4,10 +4,11 @@
 
 function testMetadataCacheItemBasic() {
   var item = new MetadataCacheItem();
-  var loadRequested = item.startRequests(1, ['propertyA']);
+  var loadRequested = item.createRequests(['propertyA']);
   assertEquals(1, loadRequested.length);
   assertEquals('propertyA', loadRequested[0]);
 
+  item.startRequests(1, loadRequested);
   assertTrue(item.storeProperties(1, {propertyA: 'value'}));
 
   var result = item.get(['propertyA']);
@@ -17,9 +18,10 @@ function testMetadataCacheItemBasic() {
 function testMetadataCacheItemAvoidDoubleLoad() {
   var item = new MetadataCacheItem();
   item.startRequests(1, ['propertyA']);
-  var loadRequested = item.startRequests(2, ['propertyA']);
+  var loadRequested = item.createRequests(['propertyA']);
   assertEquals(0, loadRequested.length);
 
+  item.startRequests(2, loadRequested);
   assertTrue(item.storeProperties(1, {propertyA: 'value'}));
 
   var result = item.get(['propertyA']);
@@ -28,18 +30,18 @@ function testMetadataCacheItemAvoidDoubleLoad() {
 
 function testMetadataCacheItemInvalidate() {
   var item = new MetadataCacheItem();
-  item.startRequests(1, ['propertyA']);
+  item.startRequests(1, item.createRequests(['propertyA']));
   item.invalidate(2);
   assertFalse(item.storeProperties(1, {propertyA: 'value'}));
 
-  var loadRequested = item.startRequests(3, ['propertyA']);
+  var loadRequested = item.createRequests(['propertyA']);
   assertEquals(1, loadRequested.length);
 }
 
 function testMetadataCacheItemStoreInReverseOrder() {
   var item = new MetadataCacheItem();
-  item.startRequests(1, ['propertyA']);
-  item.startRequests(2, ['propertyA']);
+  item.startRequests(1, item.createRequests(['propertyA']));
+  item.startRequests(2, item.createRequests(['propertyA']));
 
   assertTrue(item.storeProperties(2, {propertyA: 'value2'}));
   assertFalse(item.storeProperties(1, {propertyA: 'value1'}));

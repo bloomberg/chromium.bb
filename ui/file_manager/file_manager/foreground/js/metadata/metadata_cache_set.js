@@ -7,7 +7,7 @@
  * @param {!MetadataCacheSetStorage} items Storage object containing
  *     MetadataCacheItem.
  * @constructor
- * @const
+ * @struct
  */
 function MetadataCacheSet(items) {
   /**
@@ -18,26 +18,38 @@ function MetadataCacheSet(items) {
 }
 
 /**
- * Starts requests for invalidated properties.
- * @param {number} requestId
+ * Creates list of MetadataRequest based on the cache state.
  * @param {!Array<!FileEntry>} entries
  * @param {!Array<string>} names
- * @return {!Array<!MetadataRequest>} Requests to be passed NewMetadataProvider.
+ * @return {!Array<!MetadataRequest>}
  */
-MetadataCacheSet.prototype.startRequests = function(requestId, entries, names) {
+MetadataCacheSet.prototype.createRequests = function(entries, names) {
   var requests = [];
   for (var i = 0; i < entries.length; i++) {
-    var url = entries[i].toURL();
-    var item = this.items_.get(url);
+    var item = this.items_.peek(entries[i].toURL());
+    var requestedNames = item ? item.createRequests(names) : names;
+    if (requestedNames.length)
+      requests.push(new MetadataRequest(entries[i], requestedNames));
+  }
+  return requests;
+};
+
+/**
+ * Updates cache states to start the given requests.
+ * @param {number} requestId
+ * @param {!Array<!MetadataRequest>} requests
+ */
+MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
+  for (var i = 0; i < requests.length; i++) {
+    var request = requests[i];
+    var url = request.entry.toURL();
+    var item = this.items_.peek(url);
     if (!item) {
       item = new MetadataCacheItem();
       this.items_.put(url, item);
     }
-    var loadRequested = item.startRequests(requestId, names);
-    if (loadRequested.length)
-      requests.push(new MetadataRequest(entries[i], loadRequested));
+    item.startRequests(requestId, request.names);
   }
-  return requests;
 };
 
 /**
@@ -131,7 +143,7 @@ function MetadataCacheSetStorage() {
 /**
  * Returns an item corresponding to the given URL.
  * @param {string} url Entry URL.
- * @return {!MetadataCacheItem}
+ * @return {MetadataCacheItem}
  */
 MetadataCacheSetStorage.prototype.get = function(url) {};
 
@@ -139,7 +151,7 @@ MetadataCacheSetStorage.prototype.get = function(url) {};
  * Returns an item corresponding to the given URL without changing orders in
  * the cache list.
  * @param {string} url Entry URL.
- * @return {!MetadataCacheItem}
+ * @return {MetadataCacheItem}
  */
 MetadataCacheSetStorage.prototype.peek = function(url) {};
 

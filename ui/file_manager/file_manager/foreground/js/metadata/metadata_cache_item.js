@@ -17,13 +17,11 @@ function MetadataCacheItem() {
 }
 
 /**
- * Marks invalidated properies as loading and returns property names that are
- * need to be loaded.
- * @param {number} requestId
+ * Creates requested names that need to be loaded.
  * @param {!Array<string>} names
- * @return {!Array<string>} Load requested names.
+ * @return {!Array<string>} Property names that need to be loaded.
  */
-MetadataCacheItem.prototype.startRequests = function(requestId, names) {
+MetadataCacheItem.prototype.createRequests = function(names) {
   var loadRequested = [];
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
@@ -33,13 +31,24 @@ MetadataCacheItem.prototype.startRequests = function(requestId, names) {
         MetadataCacheItemPropertyState.INVALIDATED) {
       continue;
     }
+    loadRequested.push(name);
+  }
+  return loadRequested;
+};
+
+/**
+ * Marks the given properies as loading.
+ * @param {number} requestId
+ * @param {!Array<string>} names
+ */
+MetadataCacheItem.prototype.startRequests = function(requestId, names) {
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
     if (!this.properties_[name])
       this.properties_[name] = new MetadataCacheItemProperty();
     this.properties_[name].requestId = requestId;
     this.properties_[name].state = MetadataCacheItemPropertyState.LOADING;
-    loadRequested.push(name);
   }
-  return loadRequested;
 };
 
 /**
