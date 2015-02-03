@@ -844,21 +844,20 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   DCHECK(resize_ack != SEND_RESIZE_ACK || next_paint_is_resize_ack());
 }
 
-void RenderWidget::ResizeSynchronously(
-    const gfx::Rect& new_position,
-    const gfx::Size& visible_viewport_size) {
-  Resize(new_position.size(),
-         new_position.size(),
+void RenderWidget::SetWindowRectSynchronously(
+    const gfx::Rect& new_window_rect) {
+  Resize(new_window_rect.size(),
+         new_window_rect.size(),
          top_controls_shrink_blink_size_,
          top_controls_height_,
-         visible_viewport_size,
+         new_window_rect.size(),
          gfx::Rect(),
          is_fullscreen_,
          NO_RESIZE_ACK);
-  view_screen_rect_ = new_position;
-  window_screen_rect_ = new_position;
+  view_screen_rect_ = new_window_rect;
+  window_screen_rect_ = new_window_rect;
   if (!did_show_)
-    initial_pos_ = new_position;
+    initial_rect_ = new_window_rect;
 }
 
 void RenderWidget::OnClose() {
@@ -1525,11 +1524,11 @@ void RenderWidget::show(WebNavigationPolicy) {
     return;
 
   did_show_ = true;
-  // NOTE: initial_pos_ may still have its default values at this point, but
+  // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if as_popup is false, or the browser
   // process will impose a default position otherwise.
-  Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
-  SetPendingWindowRect(initial_pos_);
+  Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_rect_));
+  SetPendingWindowRect(initial_rect_);
 }
 
 void RenderWidget::didFocus() {
@@ -1600,24 +1599,24 @@ void RenderWidget::setToolTipText(const blink::WebString& text,
 }
 
 void RenderWidget::setWindowRect(const WebRect& rect) {
-  WebRect pos = rect;
+  WebRect window_rect = rect;
   if (popup_origin_scale_for_emulation_) {
     float scale = popup_origin_scale_for_emulation_;
-    pos.x = popup_screen_origin_for_emulation_.x() +
-        (pos.x - popup_view_origin_for_emulation_.x()) * scale;
-    pos.y = popup_screen_origin_for_emulation_.y() +
-        (pos.y - popup_view_origin_for_emulation_.y()) * scale;
+    window_rect.x = popup_screen_origin_for_emulation_.x() +
+        (window_rect.x - popup_view_origin_for_emulation_.x()) * scale;
+    window_rect.y = popup_screen_origin_for_emulation_.y() +
+        (window_rect.y - popup_view_origin_for_emulation_.y()) * scale;
   }
 
   if (!resizing_mode_selector_->is_synchronous_mode()) {
     if (did_show_) {
-      Send(new ViewHostMsg_RequestMove(routing_id_, pos));
-      SetPendingWindowRect(pos);
+      Send(new ViewHostMsg_RequestMove(routing_id_, window_rect));
+      SetPendingWindowRect(window_rect);
     } else {
-      initial_pos_ = pos;
+      initial_rect_ = window_rect;
     }
   } else {
-    ResizeSynchronously(pos, visible_viewport_size_);
+    SetWindowRectSynchronously(window_rect);
   }
 }
 

@@ -19,7 +19,7 @@ void RenderWidgetFullscreen::show(blink::WebNavigationPolicy) {
   if (!did_show_) {
     did_show_ = true;
     Send(new ViewHostMsg_ShowFullscreenWidget(opener_id_, routing_id_));
-    SetPendingWindowRect(initial_pos_);
+    SetPendingWindowRect(initial_rect_);
   }
 }
 

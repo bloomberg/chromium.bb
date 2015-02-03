@@ -2014,13 +2014,13 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
 
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
-  // NOTE: initial_pos_ may still have its default values at this point, but
+  // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
   // browser process will impose a default position otherwise.
   Send(new ViewHostMsg_ShowView(opener_id_, routing_id_,
-      NavigationPolicyToDisposition(policy), initial_pos_,
+      NavigationPolicyToDisposition(policy), initial_rect_,
       opened_by_user_gesture_));
-  SetPendingWindowRect(initial_pos_);
+  SetPendingWindowRect(initial_rect_);
 }
 
 void RenderViewImpl::runModal() {
@@ -4034,11 +4034,11 @@ void RenderViewImpl::SetDeviceColorProfileForTesting(
 }
 
 void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {
-  gfx::Rect new_position(rootWindowRect().x,
-                         rootWindowRect().y,
-                         new_size.width(),
-                         new_size.height());
-  ResizeSynchronously(new_position, new_size);
+  gfx::Rect new_window_rect(rootWindowRect().x,
+                            rootWindowRect().y,
+                            new_size.width(),
+                            new_size.height());
+  SetWindowRectSynchronously(new_window_rect);
 }
 
 void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
