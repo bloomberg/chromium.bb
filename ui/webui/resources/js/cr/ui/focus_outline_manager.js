@@ -58,10 +58,7 @@ cr.define('cr.ui', function() {
      * @type {boolean}
      */
     set visible(visible) {
-      if (visible)
-        this.classList_.add(CLASS_NAME);
-      else
-        this.classList_.remove(CLASS_NAME);
+      this.classList_.toggle(CLASS_NAME, visible);
     },
     get visible() {
       return this.classList_.contains(CLASS_NAME);

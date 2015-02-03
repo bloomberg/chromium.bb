@@ -4,6 +4,10 @@
 
 /* This file contains styles specific to Android and iOS. */
 
+html:not(.focus-outline-visible) :focus {
+  outline: none;
+}
+
 html {
   height: 100%;
 }
