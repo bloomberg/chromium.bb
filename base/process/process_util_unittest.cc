@@ -1023,4 +1023,42 @@ TEST(ForkWithFlagsTest, UpdatesPidCache) {
   ASSERT_TRUE(WIFEXITED(status));
   EXPECT_EQ(kSuccess, WEXITSTATUS(status));
 }
+
+MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
+  base::FilePath expected;
+  CHECK(base::GetTempDir(&expected));
+  base::FilePath actual;
+  CHECK(base::GetCurrentDirectory(&actual));
+  CHECK(actual == expected);
+  return kSuccess;
+}
+
+TEST_F(ProcessUtilTest, CurrentDirectory) {
+  // TODO(rickyz): Add support for passing arguments to multiprocess children,
+  // then create a special directory for this test.
+  base::FilePath tmp_dir;
+  ASSERT_TRUE(base::GetTempDir(&tmp_dir));
+
+  base::LaunchOptions options;
+  options.current_directory = tmp_dir;
+
+  base::Process process(SpawnChildWithOptions("CheckCwdProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+
+TEST_F(ProcessUtilTest, InvalidCurrentDirectory) {
+  base::LaunchOptions options;
+  options.current_directory = base::FilePath("/dev/null");
+
+  base::Process process(SpawnChildWithOptions("SimpleChildProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = kSuccess;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_NE(kSuccess, exit_code);
+}
 #endif

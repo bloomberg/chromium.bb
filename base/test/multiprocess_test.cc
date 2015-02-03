@@ -6,6 +6,8 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 
 namespace base {
 
@@ -26,7 +28,9 @@ Process SpawnMultiProcessTestChild(
 #endif  // !defined(OS_ANDROID)
 
 CommandLine GetMultiProcessTestChildBaseCommandLine() {
-  return *CommandLine::ForCurrentProcess();
+  CommandLine cmd_line = *CommandLine::ForCurrentProcess();
+  cmd_line.SetProgram(MakeAbsoluteFilePath(cmd_line.GetProgram()));
+  return cmd_line;
 }
 
 // MultiProcessTest ------------------------------------------------------------

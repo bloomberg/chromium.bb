@@ -347,7 +347,12 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   fd_shuffle1.reserve(fd_shuffle_size);
   fd_shuffle2.reserve(fd_shuffle_size);
 
-  scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
+  scoped_ptr<char* []> argv_cstr(new char* [argv.size() + 1]);
+  for (size_t i = 0; i < argv.size(); i++) {
+    argv_cstr[i] = const_cast<char*>(argv[i].c_str());
+  }
+  argv_cstr[argv.size()] = NULL;
+
   scoped_ptr<char*[]> new_environ;
   char* const empty_environ = NULL;
   char* const* old_environ = GetEnvironment();
@@ -359,6 +364,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   sigset_t full_sigset;
   sigfillset(&full_sigset);
   const sigset_t orig_sigmask = SetSignalMask(full_sigset);
+
+  const char* current_directory = nullptr;
+  if (!options.current_directory.empty()) {
+    current_directory = options.current_directory.value().c_str();
+  }
 
   pid_t pid;
 #if defined(OS_LINUX)
@@ -515,15 +525,14 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     }
 #endif
 
-#if defined(OS_POSIX)
+    if (current_directory != nullptr) {
+      RAW_CHECK(chdir(current_directory) == 0);
+    }
+
     if (options.pre_exec_delegate != nullptr) {
       options.pre_exec_delegate->RunAsyncSafe();
     }
-#endif
 
-    for (size_t i = 0; i < argv.size(); i++)
-      argv_cstr[i] = const_cast<char*>(argv[i].c_str());
-    argv_cstr[argv.size()] = NULL;
     execvp(argv_cstr[0], argv_cstr.get());
 
     RAW_LOG(ERROR, "LaunchProcess: failed to execvp:");
