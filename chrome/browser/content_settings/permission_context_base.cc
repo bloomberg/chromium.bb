@@ -18,6 +18,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
+using chromeos::attestation::PlatformVerificationDialog;
+using chromeos::attestation::PlatformVerificationFlow;
+#endif
+
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
     const ContentSettingsType permission_type)
@@ -126,6 +132,19 @@ void PermissionContextBase::DecidePermission(
   PermissionContextUmaUtil::PermissionRequested(
       permission_type_, requesting_origin);
 
+#if defined(OS_CHROMEOS)
+  // TODO(xhwang): This is to use the existing platform verification UI. Remove
+  // it when the infobar/bubble UI can satisfy our requirements.
+  if (permission_type_ == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
+    PlatformVerificationDialog::ShowDialog(
+        web_contents,
+        base::Bind(&PermissionContextBase::OnPlatformVerificationResult,
+                   weak_factory_.GetWeakPtr(), id, requesting_origin,
+                   embedding_origin, callback));
+    return;
+  }
+#endif
+
   if (PermissionBubbleManager::Enabled()) {
     if (pending_bubbles_.get(id.ToString()) != NULL)
       return;
@@ -229,3 +248,25 @@ void PermissionContextBase::UpdateContentSetting(const GURL& requesting_origin,
       ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
       permission_type_, std::string(), content_setting);
 }
+
+#if defined(OS_CHROMEOS)
+void PermissionContextBase::OnPlatformVerificationResult(
+    const PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const BrowserPermissionCallback& callback,
+    chromeos::attestation::PlatformVerificationFlow::ConsentResponse response) {
+  if (response == PlatformVerificationFlow::CONSENT_RESPONSE_NONE) {
+    // Deny request and do not save to content settings.
+    PermissionDecided(id, requesting_origin, embedding_origin, callback,
+                      false,   // Do not save to content settings.
+                      false);  // Do not allow the permission.
+    return;
+  }
+
+  PermissionDecided(
+      id, requesting_origin, embedding_origin, callback,
+      true,  // Save to content settings.
+      response == PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
+}
+#endif

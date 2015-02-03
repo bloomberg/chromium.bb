@@ -15,6 +15,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
+#endif
+
 class PermissionQueueController;
 class PermissionRequestID;
 class Profile;
@@ -126,6 +130,16 @@ class PermissionContextBase : public KeyedService {
  private:
   // Called when a bubble is no longer used so it can be cleaned up.
   void CleanUpBubble(const PermissionRequestID& id);
+
+#if defined(OS_CHROMEOS)
+  void OnPlatformVerificationResult(
+      const PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const BrowserPermissionCallback& callback,
+      chromeos::attestation::PlatformVerificationFlow::ConsentResponse
+          response);
+#endif
 
   Profile* profile_;
   const ContentSettingsType permission_type_;
