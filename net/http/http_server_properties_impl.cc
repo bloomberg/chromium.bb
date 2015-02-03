@@ -179,10 +179,7 @@ bool HttpServerPropertiesImpl::SupportsRequestPriority(
   if (spdy_host_port != spdy_servers_map_.end() && spdy_host_port->second)
     return true;
 
-  if (!HasAlternateProtocol(host_port_pair))
-    return false;
-
-  AlternateProtocolInfo info = GetAlternateProtocol(host_port_pair);
+  const AlternateProtocolInfo info = GetAlternateProtocol(host_port_pair);
   return info.protocol == QUIC;
 }
 
@@ -228,16 +225,6 @@ void HttpServerPropertiesImpl::MaybeForceHTTP11(const HostPortPair& server,
   }
 }
 
-bool HttpServerPropertiesImpl::HasAlternateProtocol(
-    const HostPortPair& server) {
-  if (g_forced_alternate_protocol)
-    return true;
-  AlternateProtocolMap::const_iterator it =
-      GetAlternateProtocolIterator(server);
-  return it != alternate_protocol_map_.end() &&
-         it->second.probability >= alternate_protocol_probability_threshold_;
-}
-
 std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
     const std::string& host) {
   // If this host ends with a canonical suffix, then return the canonical
@@ -251,19 +238,19 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
   return std::string();
 }
 
-AlternateProtocolInfo
-HttpServerPropertiesImpl::GetAlternateProtocol(
+AlternateProtocolInfo HttpServerPropertiesImpl::GetAlternateProtocol(
     const HostPortPair& server) {
-  DCHECK(HasAlternateProtocol(server));
-
   AlternateProtocolMap::const_iterator it =
       GetAlternateProtocolIterator(server);
-  if (it != alternate_protocol_map_.end())
+  if (it != alternate_protocol_map_.end() &&
+      it->second.probability >= alternate_protocol_probability_threshold_)
     return it->second;
 
-  // We must be forcing an alternate.
-  DCHECK(g_forced_alternate_protocol);
-  return *g_forced_alternate_protocol;
+  if (g_forced_alternate_protocol)
+    return *g_forced_alternate_protocol;
+
+  AlternateProtocolInfo uninitialized_alternate_protocol;
+  return uninitialized_alternate_protocol;
 }
 
 void HttpServerPropertiesImpl::SetAlternateProtocol(
@@ -322,15 +309,16 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
 void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     const HostPortPair& server) {
   AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
+  const AlternateProtocolInfo alternate = GetAlternateProtocol(server);
   if (it == alternate_protocol_map_.end()) {
-    if (!HasAlternateProtocol(server)) {
+    if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
       LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
       return;
     }
     // This server's alternate protocol information is coming from a canonical
     // server. Add an entry in the map for this server explicitly so that
     // it can be marked as broken.
-    it = alternate_protocol_map_.Put(server, GetAlternateProtocol(server));
+    it = alternate_protocol_map_.Put(server, alternate);
   }
   it->second.is_broken = true;
   int count = ++broken_alternate_protocol_map_[server];

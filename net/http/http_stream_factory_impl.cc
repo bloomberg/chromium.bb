@@ -175,8 +175,7 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     const GURL& original_url,
     GURL* alternate_url) {
-  const AlternateProtocolInfo kNoAlternateProtocol =
-      AlternateProtocolInfo(0,  UNINITIALIZED_ALTERNATE_PROTOCOL, 0);
+  const AlternateProtocolInfo kNoAlternateProtocol;
 
   if (!session_->params().use_alternate_protocols)
     return kNoAlternateProtocol;
@@ -185,19 +184,17 @@ AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     return kNoAlternateProtocol;
 
   HostPortPair origin = HostPortPair::FromURL(original_url);
-
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
-  if (!http_server_properties.HasAlternateProtocol(origin))
-    return kNoAlternateProtocol;
-
-  AlternateProtocolInfo alternate =
+  const AlternateProtocolInfo alternate =
       http_server_properties.GetAlternateProtocol(origin);
+
+  if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    return kNoAlternateProtocol;
   if (alternate.is_broken) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
     return kNoAlternateProtocol;
   }
-
   if (!IsAlternateProtocolValid(alternate.protocol)) {
     NOTREACHED();
     return kNoAlternateProtocol;

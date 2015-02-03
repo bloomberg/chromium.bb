@@ -180,12 +180,6 @@ void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
   http_server_properties_impl_->MaybeForceHTTP11(server, ssl_config);
 }
 
-bool HttpServerPropertiesManager::HasAlternateProtocol(
-    const HostPortPair& server) {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->HasAlternateProtocol(server);
-}
-
 AlternateProtocolInfo HttpServerPropertiesManager::GetAlternateProtocol(
     const HostPortPair& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());

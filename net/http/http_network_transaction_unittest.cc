@@ -8508,8 +8508,9 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   HostPortPair http_host_port_pair("www.google.com", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
-  EXPECT_FALSE(
-      http_server_properties.HasAlternateProtocol(http_host_port_pair));
+  AlternateProtocolInfo alternate =
+      http_server_properties.GetAlternateProtocol(http_host_port_pair);
+  EXPECT_EQ(alternate.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -8524,12 +8525,10 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  ASSERT_TRUE(http_server_properties.HasAlternateProtocol(http_host_port_pair));
-  const AlternateProtocolInfo alternate =
-      http_server_properties.GetAlternateProtocol(http_host_port_pair);
-  AlternateProtocolInfo expected_alternate(
-      443, AlternateProtocolFromNextProto(GetParam()), 1);
-  EXPECT_TRUE(expected_alternate.Equals(alternate));
+  alternate = http_server_properties.GetAlternateProtocol(http_host_port_pair);
+  EXPECT_EQ(443, alternate.port);
+  EXPECT_EQ(AlternateProtocolFromNextProto(GetParam()), alternate.protocol);
+  EXPECT_EQ(1.0, alternate.probability);
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -8583,11 +8582,10 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  ASSERT_TRUE(http_server_properties->HasAlternateProtocol(
-      HostPortPair::FromURL(request.url)));
   const AlternateProtocolInfo alternate =
       http_server_properties->GetAlternateProtocol(
           HostPortPair::FromURL(request.url));
+  EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternate.protocol);
   EXPECT_TRUE(alternate.is_broken);
 }
 

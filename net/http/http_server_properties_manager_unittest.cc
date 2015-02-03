@@ -134,6 +134,12 @@ class HttpServerPropertiesManagerTest : public testing::Test {
                        UpdatePrefsFromCacheOnNetworkThreadConcrete));
   }
 
+  bool HasAlternateProtocol(const HostPortPair& server) {
+    const AlternateProtocolInfo alternate =
+        http_server_props_manager_->GetAlternateProtocol(server);
+    return alternate.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL;
+  }
+
   //base::RunLoop loop_;
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
@@ -230,8 +236,6 @@ TEST_F(HttpServerPropertiesManagerTest,
       HostPortPair::FromString("foo.google.com:1337")));
 
   // Verify AlternateProtocol.
-  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(google_server));
-  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(mail_server));
   AlternateProtocolInfo port_alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(google_server);
   EXPECT_EQ(443, port_alternate_protocol.port);
@@ -307,8 +311,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   // Verify that nothing is set.
   EXPECT_FALSE(http_server_props_manager_->SupportsRequestPriority(
       HostPortPair::FromString("www.google.com:65536")));
-  EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
-      HostPortPair::FromString("www.google.com:65536")));
+  EXPECT_FALSE(
+      HasAlternateProtocol(HostPortPair::FromString("www.google.com:65536")));
   SupportsQuic supports_quic2 = http_server_props_manager_->GetSupportsQuic(
       HostPortPair::FromString("www.google.com:65536"));
   EXPECT_FALSE(supports_quic2.used_quic);
@@ -352,8 +356,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify AlternateProtocol is not set.
-  EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
-      HostPortPair::FromString("www.google.com:80")));
+  EXPECT_FALSE(
+      HasAlternateProtocol(HostPortPair::FromString("www.google.com:80")));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
@@ -477,12 +481,11 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
+TEST_F(HttpServerPropertiesManagerTest, GetAlternateProtocol) {
   ExpectPrefsUpdate();
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
-  EXPECT_FALSE(
-      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
+  EXPECT_FALSE(HasAlternateProtocol(spdy_server_mail));
   http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
                                                    NPN_SPDY_3, 1.0);
 
@@ -490,12 +493,11 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  ASSERT_TRUE(
-      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  AlternateProtocolInfo port_alternate_protocol =
+  const AlternateProtocolInfo alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(spdy_server_mail);
-  EXPECT_EQ(443, port_alternate_protocol.port);
-  EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol.protocol);
+  EXPECT_EQ(443, alternate_protocol.port);
+  EXPECT_EQ(NPN_SPDY_3, alternate_protocol.protocol);
+  EXPECT_EQ(1.0, alternate_protocol.probability);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
@@ -561,8 +563,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_TRUE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
-  EXPECT_TRUE(
-      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
+  EXPECT_TRUE(HasAlternateProtocol(spdy_server_mail));
   SupportsQuic supports_quic =
       http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
   EXPECT_TRUE(supports_quic.used_quic);
@@ -591,8 +592,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_FALSE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
-  EXPECT_FALSE(
-      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
+  EXPECT_FALSE(HasAlternateProtocol(spdy_server_mail));
   SupportsQuic supports_quic1 =
       http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
   EXPECT_FALSE(supports_quic1.used_quic);
@@ -654,8 +654,6 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   // Verify AlternateProtocol.
   for (int i = 0; i < 200; ++i) {
     std::string server = StringPrintf("www.google.com:%d", i);
-    ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
-        HostPortPair::FromString(server)));
     AlternateProtocolInfo port_alternate_protocol =
         http_server_props_manager_->GetAlternateProtocol(
             HostPortPair::FromString(server));

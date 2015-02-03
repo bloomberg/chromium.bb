@@ -79,7 +79,6 @@ class NET_EXPORT HttpServerPropertiesImpl
   void SetHTTP11Required(const HostPortPair& server) override;
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
-  bool HasAlternateProtocol(const HostPortPair& server) override;
   AlternateProtocolInfo GetAlternateProtocol(
       const HostPortPair& server) override;
   void SetAlternateProtocol(const HostPortPair& server,

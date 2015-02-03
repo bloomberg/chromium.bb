@@ -86,14 +86,6 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   if (mapping_rules)
     mapping_rules->RewriteHost(&host_port);
 
-  if (http_server_properties->HasAlternateProtocol(host_port)) {
-    const AlternateProtocolInfo existing_alternate =
-        http_server_properties->GetAlternateProtocol(host_port);
-    // If we think the alternate protocol is broken, don't change it.
-    if (existing_alternate.is_broken)
-      return;
-  }
-
   http_server_properties->SetAlternateProtocol(
       host_port, static_cast<uint16>(port), protocol, probability);
 }

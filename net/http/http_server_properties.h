@@ -190,11 +190,9 @@ class NET_EXPORT HttpServerProperties {
   virtual void MaybeForceHTTP11(const HostPortPair& server,
                                 SSLConfig* ssl_config) = 0;
 
-  // Returns true if |server| has an Alternate-Protocol header.
-  virtual bool HasAlternateProtocol(const HostPortPair& server) = 0;
-
-  // Returns the Alternate-Protocol and port for |server|.
-  // HasAlternateProtocol(server) must be true.
+  // Returns the AlternateProtocol for |server| if it has probability equal to
+  // or exceeding threshold, or else the forced AlternateProtocol if there is
+  // one, or else one with UNINITIALIZED_ALTERNATE_PROTOCOL.
   virtual AlternateProtocolInfo GetAlternateProtocol(
       const HostPortPair& server) = 0;
 
