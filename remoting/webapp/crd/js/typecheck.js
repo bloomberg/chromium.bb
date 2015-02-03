@@ -41,7 +41,10 @@ function getArrayAttr(dict, key, opt_default) {
  */
 function getBooleanAttr(dict, key, opt_default) {
   var value = /** @type {boolean} */ (dict[key]);
-  if (typeof value != 'boolean') {
+  if (value == 'true' || value == 'false') {
+    return (value == 'true');
+  }
+  if (typeof value !== 'boolean') {
     if (opt_default === undefined) {
       throw 'Invalid data type for ' + key +
           ' (expected: boolean, actual: ' + typeof value + ')';

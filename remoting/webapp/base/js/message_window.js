@@ -45,20 +45,6 @@ MessageWindowImpl.prototype.sendReply_ = function(
 };
 
 /**
- * Size the window to its content vertically.
- * @private
- */
-MessageWindowImpl.prototype.updateSize_ = function() {
-  var outerBounds = chrome.app.window.current().outerBounds;
-  var innerBounds = chrome.app.window.current().innerBounds;
-  var borderY = outerBounds.height - innerBounds.height;
-  window.resizeTo(outerBounds.width, document.body.clientHeight + borderY);
-  // Sometimes, resizing the window causes its position to be reset to (0, 0),
-  // so restore it explicitly.
-  window.moveTo(outerBounds.left, outerBounds.top);
-};
-
-/**
  * Initializes the button with the label and the click handler.
  * Hides the button if the label is null or undefined.
  *
@@ -145,7 +131,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       chrome.app.window.current().onClosed.addListener(
           this.sendReply_.bind(this, event.source, messageId, 0));
 
-      this.updateSize_();
+      base.resizeWindowToContent();
       chrome.app.window.current().show();
       break;
 
@@ -159,7 +145,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       var messageDiv = document.getElementById('message');
       messageDiv.innerText = message;
 
-      this.updateSize_();
+      base.resizeWindowToContent();
       break;
 
     default:

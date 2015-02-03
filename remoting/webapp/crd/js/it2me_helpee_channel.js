@@ -250,6 +250,8 @@ remoting.It2MeHelpeeChannel.prototype.onHangoutDisconnect_ = function() {
 remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
     function(message) {
   var email = getStringAttr(message, 'email');
+  var bounds =
+      /** @type {Bounds} */ (getObjectAttr(message, 'hangoutBounds', null));
 
   if (!email) {
     throw new Error('Missing required parameter: email');
@@ -259,13 +261,20 @@ remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
     throw new Error('An existing connection is in progress.');
   }
 
-  this.showConfirmDialog_().then(
+  var that = this;
+  this.showConfirmDialog_(bounds).then(
     this.initializeHost_.bind(this)
   ).then(
     this.fetchOAuthToken_.bind(this)
   ).then(
-    /** @type {function(*):void} */(this.connectToHost_.bind(this, email)),
-    /** @type {function(*):void} */(this.sendErrorResponse_.bind(this, message))
+    /** @type {function(*):void} */(this.connectToHost_.bind(this, email))
+  ).catch(
+    /** @param {*} reason */
+    function(reason) {
+      var error = /** @type {Error} */ (reason);
+      that.sendErrorResponse_(message, error);
+      that.dispose();
+    }
   );
 };
 
@@ -274,21 +283,22 @@ remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
  * ensures that even if Hangouts is compromised, an attacker cannot start the
  * host without explicit user confirmation.
  *
- * @return {Promise} A promise that resolves to a boolean value, indicating
- *     whether the user accepts the remote assistance or not.
+ * @param {Bounds} bounds Bounds of the hangout window
+ * @return {Promise} A promise that will resolve if the user accepts remote
+ *   assistance or reject otherwise.
  * @private
  */
-remoting.It2MeHelpeeChannel.prototype.showConfirmDialog_ = function() {
+remoting.It2MeHelpeeChannel.prototype.showConfirmDialog_ = function(bounds) {
   if (base.isAppsV2()) {
-    return this.showConfirmDialogV2_();
+    return this.showConfirmDialogV2_(bounds);
   } else {
     return this.showConfirmDialogV1_();
   }
 };
 
 /**
- * @return {Promise} A promise that resolves to a boolean value, indicating
- *     whether the user accepts the remote assistance or not.
+ * @return {Promise}  A promise that will resolve if the user accepts remote
+ *   assistance or reject otherwise.
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV1_ = function() {
@@ -310,45 +320,22 @@ remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV1_ = function() {
 };
 
 /**
- * @return {Promise} A promise that resolves to a boolean value, indicating
- *     whether the user accepts the remote assistance or not.
+ * @param {Bounds} bounds the bounds of the Hangouts Window.  If set, the
+ *   confirm dialog will be centered within |bounds|.
+ * @return {Promise} A promise that will resolve if the user accepts remote
+ *   assistance or reject otherwise.
  * @private
  */
-remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV2_ = function() {
-  var messageHeader = l10n.getTranslationOrError(
-      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_1');
-  var message1 = l10n.getTranslationOrError(
-      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_2');
-  var message2 = l10n.getTranslationOrError(
-      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_3');
-  var message = '<div>' + base.escapeHTML(messageHeader) + '</div>' +
-                '<ul class="insetList">' +
-                  '<li>' + base.escapeHTML(message1) + '</li>' +
-                  '<li>' + base.escapeHTML(message2) + '</li>' +
-                '</ul>';
-  /**
-   * @param {function(*=):void} resolve
-   * @param {function(*=):void} reject
-   */
-  return new Promise(function(resolve, reject) {
-    /** @param {number} result */
-    function confirmDialogCallback(result) {
-      if (result === 1) {
-        resolve(true);
-      } else {
-        reject(new Error(remoting.Error.CANCELLED));
-      }
-    }
-    remoting.MessageWindow.showConfirmWindow(
-        '', // Empty string to use the package name as the dialog title.
-        message,
-        l10n.getTranslationOrError(
-            /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_ACCEPT'),
-        l10n.getTranslationOrError(
-            /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_DECLINE'),
-        confirmDialogCallback
-    );
-  });
+remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV2_ = function(bounds) {
+  var getToken =
+      base.Promise.as(chrome.identity.getAuthToken, [{interactive: false}]);
+
+  return getToken.then(
+    /** @param {string} token */
+    function(token) {
+      return remoting.HangoutConsentDialog.getInstance().show(Boolean(token),
+                                                              bounds);
+    });
 };
 
 /**
@@ -374,7 +361,8 @@ remoting.It2MeHelpeeChannel.prototype.initializeHost_ = function() {
 };
 
 /**
- * @return {Promise} Promise that resolves with the OAuth token as the value.
+ * @return {Promise<string>} Promise that resolves with the OAuth token as the
+ * value.
  */
 remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
   if (base.isAppsV2()) {
@@ -382,27 +370,25 @@ remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
      * @param {function(*=):void} resolve
      */
     return new Promise(function(resolve){
-      // TODO(jamiewalch): Make this work with {interactive: true} as well.
-      chrome.identity.getAuthToken({ 'interactive': false }, resolve);
+      chrome.identity.getAuthToken({'interactive': true}, resolve);
     });
   } else {
     /**
      * @param {function(*=):void} resolve
+     * @param {function(*=):void} reject
      */
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       /** @type {remoting.OAuth2} */
       var oauth2 = new remoting.OAuth2();
-      var onAuthenticated = function() {
-        oauth2.callWithToken(
-            resolve,
-            function() { throw new Error('Authentication failed.'); });
-      };
       /** @param {remoting.Error} error */
       var onError = function(error) {
-        if (error != remoting.Error.NOT_AUTHENTICATED) {
-          throw new Error('Unexpected error fetch auth token: ' + error);
+        if (error === remoting.Error.NOT_AUTHENTICATED) {
+          oauth2.doAuthRedirect(function() {
+            oauth2.callWithToken(resolve, reject);
+          });
+          return;
         }
-        oauth2.removeCachedAuthToken();
+        reject(new Error(remoting.Error.NOT_AUTHENTICATED));
       };
       oauth2.callWithToken(resolve, onError);
     });

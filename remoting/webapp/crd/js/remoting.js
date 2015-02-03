@@ -144,19 +144,6 @@ function pluginGotCopy_(event) {
 }
 
 /**
- * @return {Object.<string, string>} The URL parameters.
- */
-function getUrlParameters_() {
-  var result = {};
-  var parts = window.location.search.substring(1).split('&');
-  for (var i = 0; i < parts.length; i++) {
-    var pair = parts[i].split('=');
-    result[pair[0]] = decodeURIComponent(pair[1]);
-  }
-  return result;
-}
-
-/**
  * Return the current time as a formatted string suitable for logging.
  *
  * @return {string} The current time, formatted as [mmdd/hhmmss.xyz]

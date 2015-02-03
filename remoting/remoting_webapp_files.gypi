@@ -237,6 +237,7 @@
       'webapp/crd/js/background.js',
       'webapp/crd/js/client_session.js',
       'webapp/crd/js/error.js',
+      'webapp/crd/js/hangout_consent_dialog.js',
       'webapp/crd/js/host_installer.js',
       'webapp/crd/js/host_session.js',
       'webapp/crd/js/it2me_helpee_channel.js',
@@ -246,6 +247,7 @@
       'webapp/crd/js/l10n.js',
       'webapp/crd/js/oauth2.js',
       'webapp/crd/js/oauth2_api.js',
+      'webapp/crd/js/oauth2_api_impl.js',
       'webapp/crd/js/plugin_settings.js',
       'webapp/crd/js/typecheck.js',
       'webapp/crd/js/xhr.js',
@@ -265,6 +267,8 @@
       '<@(remoting_webapp_background_js_files)',
       # JS files for message_window.html
       'webapp/base/js/message_window.js',
+      # JS files for dialog_hangout_consent.html
+      'webapp/crd/js/hangout_consent_dialog_main.js',
       # JS files for wcs_sandbox.html.
       # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
       # so that we don't double include error.js and plugin_settings.js.
@@ -301,13 +305,15 @@
       'resources/reload.webp',
       'resources/tick.webp',
       'webapp/base/html/connection_stats.css',
-      'webapp/base/html/message_window.html',
       'webapp/base/html/main.css',
+      'webapp/base/html/message_window.html',
       'webapp/base/html/message_window.css',
       'webapp/base/resources/open_sans.css',
       'webapp/base/resources/open_sans.woff',
       'webapp/base/resources/spinner.gif',
       'webapp/crd/html/butter_bar.css',
+      'webapp/crd/html/dialog_hangout_consent.html',
+      'webapp/crd/html/dialog_hangout_consent.css',
       'webapp/crd/html/toolbar.css',
       'webapp/crd/html/menu_button.css',
       'webapp/crd/html/window_frame.css',

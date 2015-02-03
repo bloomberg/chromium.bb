@@ -56,7 +56,7 @@ remoting.initHostlist_ = function() {
 
   var onLoad = function() {
     // Parse URL parameters.
-    var urlParams = getUrlParameters_();
+    var urlParams = base.getUrlParameters();
     if ('mode' in urlParams) {
       if (urlParams['mode'] === 'me2me') {
         var hostId = urlParams['hostId'];
@@ -188,7 +188,7 @@ remoting.updateLocalHostState = function() {
  * hold in some corner cases.
  */
 remoting.startDesktopRemotingForTesting = function() {
-  var urlParams = getUrlParameters_();
+  var urlParams = base.getUrlParameters();
   if (urlParams['source'] === 'test') {
     document.getElementById('browser-test-continue-init').addEventListener(
         'click', remoting.startDesktopRemoting, false);

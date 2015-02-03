@@ -179,6 +179,20 @@ base.urlJoin = function(url, opt_params) {
   return url + '?' + queryParameters.join('&');
 };
 
+
+/**
+ * @return {Object.<string, string>} The URL parameters.
+ */
+base.getUrlParameters = function() {
+  var result = {};
+  var parts = window.location.search.substring(1).split('&');
+  for (var i = 0; i < parts.length; i++) {
+    var pair = parts[i].split('=');
+    result[pair[0]] = decodeURIComponent(pair[1]);
+  }
+  return result;
+};
+
 /**
  * Convert special characters (e.g. &, < and >) to HTML entities.
  *
@@ -581,4 +595,17 @@ base.jsonParseSafe = function(jsonString) {
   } catch (err) {
     return undefined;
   }
+};
+
+/**
+ * Size the current window to fit its content vertically.
+ */
+base.resizeWindowToContent = function() {
+  var appWindow = chrome.app.window.current();
+  var outerBounds = appWindow.outerBounds;
+  var borderY = outerBounds.height - appWindow.innerBounds.height;
+  appWindow.resizeTo(outerBounds.width, document.body.clientHeight + borderY);
+  // Sometimes, resizing the window causes its position to be reset to (0, 0),
+  // so restore it explicitly.
+  appWindow.moveTo(outerBounds.left, outerBounds.top);
 };

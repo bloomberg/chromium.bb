@@ -129,8 +129,11 @@ QUnit.asyncTest('connect() should return access code',
     function() {
   // Stubs authentication.
   sinon.stub(base, 'isAppsV2').returns(true);
-  sinon.stub(remoting.MessageWindow, 'showConfirmWindow')
-      .callsArgWith(4, 1 /* 1 for OK. */);
+  sinon.stub(remoting.HangoutConsentDialog, 'getInstance').returns({
+    show : function() {
+      return Promise.resolve();
+    }
+  });
   sinon.stub(chrome.identity, 'getAuthToken')
       .callsArgWith(1, 'token');
   // Stubs Host behavior.
@@ -142,7 +145,8 @@ QUnit.asyncTest('connect() should return access code',
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
     method: MessageTypes.CONNECT,
-    email: 'test@chromium.org'
+    email: 'test@chromium.org',
+    hangoutBounds: {widht: 10, height: 10, left:10, top: 10}
   });
 
   window.requestAnimationFrame(function(){
@@ -154,7 +158,6 @@ QUnit.asyncTest('connect() should return access code',
 
     chrome.identity.getAuthToken.restore();
     base.isAppsV2.restore();
-    remoting.MessageWindow.showConfirmWindow.restore();
     QUnit.start();
   });
 });

@@ -89,7 +89,7 @@ base.Ipc.Request_ = function(methodName, params) {
 
 /**
  * @param {string} methodName
- * @param {function(?)} handler The handler can be invoked by calling
+ * @param {function(...?)} handler The handler can be invoked by calling
  *   base.Ipc.invoke(|methodName|, arg1, arg2, ...)
  * Async handlers that return promises are currently not supported.
  * @return {boolean} Whether the handler is successfully registered.
