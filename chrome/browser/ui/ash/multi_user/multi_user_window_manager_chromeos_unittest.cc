@@ -180,6 +180,7 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
     window_[i]->Show();
   }
   multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS("A");
+  multi_user_window_manager_->Init();
   multi_user_window_manager_->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,

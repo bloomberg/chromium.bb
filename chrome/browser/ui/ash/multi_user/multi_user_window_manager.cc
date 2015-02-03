@@ -42,11 +42,13 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   if (!g_instance &&
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    g_instance =
+    MultiUserWindowManagerChromeOS* manager =
         new MultiUserWindowManagerChromeOS(ash::Shell::GetInstance()
                                                ->session_state_delegate()
                                                ->GetUserInfo(0)
                                                ->GetUserID());
+    g_instance = manager;
+    manager->Init();
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
     mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {

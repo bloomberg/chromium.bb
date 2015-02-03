@@ -215,20 +215,6 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
           message_center::MessageCenter::Get(), current_user_id)),
       suppress_visibility_changes_(false),
       animation_speed_(ANIMATION_SPEED_NORMAL) {
-  // Add a session state observer to be able to monitor session changes.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->session_state_delegate()->
-        AddSessionStateObserver(this);
-
-  // The BrowserListObserver would have been better to use then the old
-  // notification system, but that observer fires before the window got created.
-  registrar_.Add(this, NOTIFICATION_BROWSER_WINDOW_READY,
-                 content::NotificationService::AllSources());
-
-  // Add an app window observer & all already running apps.
-  Profile* profile = multi_user_util::GetProfileFromUserID(current_user_id);
-  if (profile)
-    AddUser(profile);
 }
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
@@ -262,6 +248,29 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->session_state_delegate()->
         RemoveSessionStateObserver(this);
+}
+
+void MultiUserWindowManagerChromeOS::Init() {
+  // Since we are setting the SessionStateObserver and adding the user, this
+  // function should get called only once.
+  DCHECK(user_id_to_app_observer_.find(current_user_id_) ==
+             user_id_to_app_observer_.end());
+
+  // Add a session state observer to be able to monitor session changes.
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->session_state_delegate()->
+        AddSessionStateObserver(this);
+  }
+
+  // The BrowserListObserver would have been better to use then the old
+  // notification system, but that observer fires before the window got created.
+  registrar_.Add(this, NOTIFICATION_BROWSER_WINDOW_READY,
+                 content::NotificationService::AllSources());
+
+  // Add an app window observer & all already running apps.
+  Profile* profile = multi_user_util::GetProfileFromUserID(current_user_id_);
+  if (profile)
+    AddUser(profile);
 }
 
 void MultiUserWindowManagerChromeOS::SetWindowOwner(

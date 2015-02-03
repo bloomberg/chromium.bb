@@ -72,6 +72,9 @@ class MultiUserWindowManagerChromeOS
   explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);
   ~MultiUserWindowManagerChromeOS() override;
 
+  // Initializes the manager after its creation. Should only be called once.
+  void Init();
+
   // MultiUserWindowManager overrides:
   void SetWindowOwner(
       aura::Window* window, const std::string& user_id) override;
