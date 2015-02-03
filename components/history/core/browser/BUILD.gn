@@ -66,8 +66,6 @@ static_library("browser") {
     "visit_tracker.h",
     "visitsegment_database.cc",
     "visitsegment_database.h",
-    "web_history_service.cc",
-    "web_history_service.h",
   ]
 
   deps = [
@@ -75,8 +73,6 @@ static_library("browser") {
     "//components/favicon_base",
     "//components/keyed_service/core",
     "//components/query_parser",
-    "//components/signin/core/browser",
-    "//google_apis",
     "//net",
     "//skia",
     "//sql",

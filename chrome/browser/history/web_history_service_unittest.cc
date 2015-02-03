@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/web_history_service.h"
+#include "chrome/browser/history/web_history_service.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,14 +25,13 @@ namespace {
 // TestRequest instead of a normal request.
 class TestingWebHistoryService : public WebHistoryService {
  public:
-  explicit TestingWebHistoryService(
-      ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context)
-      : WebHistoryService(token_service, signin_manager, request_context),
-        expected_url_(GURL()),
-        expected_audio_history_value_(false),
-        current_expected_post_data_("") {}
+  explicit TestingWebHistoryService(Profile* profile)
+    : WebHistoryService(profile),
+      profile_(profile),
+      expected_url_(GURL()),
+      expected_audio_history_value_(false),
+      current_expected_post_data_("") {
+  }
   ~TestingWebHistoryService() override {}
 
   WebHistoryService::Request* CreateRequest(
@@ -75,6 +69,7 @@ class TestingWebHistoryService : public WebHistoryService {
   }
 
  private:
+  Profile* profile_;
   GURL expected_url_;
   bool expected_audio_history_value_;
   std::string current_expected_post_data_;
@@ -86,11 +81,13 @@ class TestingWebHistoryService : public WebHistoryService {
 // A testing request class that allows expected values to be filled in.
 class TestRequest : public WebHistoryService::Request {
  public:
-  TestRequest(const GURL& url,
+  TestRequest(Profile* profile,
+              const GURL& url,
               const WebHistoryService::CompletionCallback& callback,
               int response_code,
               const std::string& response_body)
-      : web_history_service_(nullptr),
+      : profile_(profile),
+        web_history_service_(nullptr),
         url_(url),
         callback_(callback),
         response_code_(response_code),
@@ -99,10 +96,12 @@ class TestRequest : public WebHistoryService::Request {
         is_pending_(false) {
   }
 
-  TestRequest(const GURL& url,
+  TestRequest(Profile* profile,
+              const GURL& url,
               const WebHistoryService::CompletionCallback& callback,
               TestingWebHistoryService* web_history_service)
-      : web_history_service_(web_history_service),
+      : profile_(profile),
+        web_history_service_(web_history_service),
         url_(url),
         callback_(callback),
         response_code_(net::HTTP_OK),
@@ -139,6 +138,7 @@ class TestRequest : public WebHistoryService::Request {
   }
 
  private:
+  Profile* profile_;
   TestingWebHistoryService* web_history_service_;
   GURL url_;
   WebHistoryService::CompletionCallback callback_;
@@ -154,7 +154,7 @@ WebHistoryService::Request* TestingWebHistoryService::CreateRequest(
     const GURL& url, const CompletionCallback& callback) {
   EXPECT_EQ(expected_url_, url);
   WebHistoryService::Request* request =
-      new TestRequest(url, callback, this);
+      new TestRequest(profile_, url, callback, this);
   expected_post_data_[request] = current_expected_post_data_;
   return request;
 }
@@ -195,12 +195,8 @@ std::string TestingWebHistoryService::GetExpectedAudioHistoryValue() {
   return "false";
 }
 
-static KeyedService* BuildWebHistoryService(content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  return new TestingWebHistoryService(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext());
+static KeyedService* BuildWebHistoryService(content::BrowserContext* profile) {
+  return new TestingWebHistoryService(static_cast<Profile*>(profile));
 }
 
 }  // namespace
@@ -348,6 +344,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   WebHistoryService::CompletionCallback completion_callback;
   scoped_ptr<WebHistoryService::Request> request(
       new TestRequest(
+          profile(),
           GURL("http://history.google.com/"),
           completion_callback,
           net::HTTP_OK, /* response code */
@@ -365,6 +362,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // as expected.
   scoped_ptr<WebHistoryService::Request> request2(
       new TestRequest(
+          profile(),
           GURL("http://history.google.com/"),
           completion_callback,
           net::HTTP_OK,
@@ -381,6 +379,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Test that a bad response code returns false.
   scoped_ptr<WebHistoryService::Request> request3(
       new TestRequest(
+          profile(),
           GURL("http://history.google.com/"),
           completion_callback,
           net::HTTP_UNAUTHORIZED,
@@ -398,6 +397,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // This test tests how that situation is handled.
   scoped_ptr<WebHistoryService::Request> request4(
       new TestRequest(
+          profile(),
           GURL("http://history.google.com/"),
           completion_callback,
           net::HTTP_OK,
@@ -412,6 +412,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Test that improperly formatted response returns false.
   scoped_ptr<WebHistoryService::Request> request5(
       new TestRequest(
+          profile(),
           GURL("http://history.google.com/"),
           completion_callback,
           net::HTTP_OK,

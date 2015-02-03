@@ -1514,6 +1514,8 @@
       'browser/history/typed_url_syncable_service.h',
       'browser/history/url_index_private_data.cc',
       'browser/history/url_index_private_data.h',
+      'browser/history/web_history_service.cc',
+      'browser/history/web_history_service.h',
       'browser/history/web_history_service_factory.cc',
       'browser/history/web_history_service_factory.h',
     ],

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_WEB_HISTORY_SERVICE_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_WEB_HISTORY_SERVICE_H_
+#ifndef CHROME_BROWSER_HISTORY_WEB_HISTORY_SERVICE_H_
+#define CHROME_BROWSER_HISTORY_WEB_HISTORY_SERVICE_H_
 
 #include <set>
-#include <string>
-#include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -19,11 +17,8 @@ class DictionaryValue;
 }
 
 namespace net {
-class URLRequestContextGetter;
+class URLFetcher;
 }
-
-class OAuth2TokenService;
-class SigninManagerBase;
 
 namespace history {
 
@@ -72,10 +67,7 @@ class WebHistoryService : public KeyedService {
 
   typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
-  WebHistoryService(
-      OAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  explicit WebHistoryService(Profile* profile);
   ~WebHistoryService() override;
 
   // Searches synced history for visits matching |text_query|. The timeframe to
@@ -149,13 +141,7 @@ class WebHistoryService : public KeyedService {
  private:
   friend class WebHistoryServiceTest;
 
-  // Stores pointer to OAuth2TokenService and SigninManagerBase instance. They
-  // must outlive the WebHistoryService and can be null during tests.
-  OAuth2TokenService* token_service_;
-  SigninManagerBase* signin_manager_;
-
-  // Request context getter to use.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  Profile* profile_;
 
   // Stores the version_info token received from the server in response to
   // a mutation operation (e.g., deleting history). This is used to ensure that
@@ -176,4 +162,4 @@ class WebHistoryService : public KeyedService {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_WEB_HISTORY_SERVICE_H_
+#endif  // CHROME_BROWSER_HISTORY_WEB_HISTORY_SERVICE_H_

@@ -7,22 +7,17 @@
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/history/core/browser/web_history_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -33,10 +28,7 @@ const char kHotwordTestExtensionId[] = "cpfhkdbjfdgdebcjlifoldbijinjfifp";
 class MockWebHistoryService : public history::WebHistoryService {
  public:
   explicit MockWebHistoryService(Profile* profile)
-      : WebHistoryService(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            SigninManagerFactory::GetForProfile(profile),
-            profile->GetRequestContext()),
+      : WebHistoryService(profile),
         expected_success_(true),
         expected_value_(false) {}
   ~MockWebHistoryService() override {}

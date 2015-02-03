@@ -2,8 +2,6 @@ include_rules = [
   "+components/favicon_base",
   "+components/keyed_service",
   "+components/query_parser",
-  "+components/signin/core",
-  "+google_apis/gaia",
   "+net",
   "+sql",
   "+third_party/skia",
