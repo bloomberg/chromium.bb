@@ -355,6 +355,14 @@ bool RenderStyle::inheritedDataShared(const RenderStyle* other) const
         && rareInheritedData.get() == other->rareInheritedData.get();
 }
 
+static bool dependenceOnContentHeightHasChanged(const RenderStyle& a, const RenderStyle& b)
+{
+    // If top or bottom become auto/non-auto then it means we either have to solve height based
+    // on the content or stop doing so (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
+    // - either way requires a layout.
+    return a.logicalTop().isAuto() != b.logicalTop().isAuto() || a.logicalBottom().isAuto() != b.logicalBottom().isAuto();
+}
+
 StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) const
 {
     // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
@@ -383,7 +391,10 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) co
 
     if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
-        diff.setNeedsPositionedMovementLayout();
+        if (dependenceOnContentHeightHasChanged(*this, other))
+            diff.setNeedsFullLayout();
+        else
+            diff.setNeedsPositionedMovementLayout();
     }
 
     if (diffNeedsPaintInvalidationLayer(other))
