@@ -79,6 +79,17 @@ void Module::AddFunction(Function *function) {
   // FUNC lines must not hold an empty name, so catch the problem early if
   // callers try to add one.
   assert(!function->name.empty());
+
+  // FUNCs are better than PUBLICs as they come with sizes, so remove an extern
+  // with the same address if present.
+  Extern ext(function->address);
+  ExternSet::iterator it_ext = externs_.lower_bound(&ext);
+  if (it_ext != externs_.end() &&
+      (*it_ext)->address < function->address + function->size) {
+    delete *it_ext;
+    externs_.erase(it_ext);
+  }
+
   std::pair<FunctionSet::iterator,bool> ret = functions_.insert(function);
   if (!ret.second && (*ret.first != function)) {
     // Free the duplicate that was not inserted because this Module
@@ -98,19 +109,10 @@ void Module::AddStackFrameEntry(StackFrameEntry *stack_frame_entry) {
 }
 
 void Module::AddExtern(Extern *ext) {
-  Function func(ext->name, ext->address);
-
-  // Since parsing debug section and public info are not necessarily
-  // mutually exclusive, check if the symbol has already been read
-  // as a function to avoid duplicates.
-  if (functions_.find(&func) == functions_.end()) {
-    std::pair<ExternSet::iterator,bool> ret = externs_.insert(ext);
-    if (!ret.second) {
-      // Free the duplicate that was not inserted because this Module
-      // now owns it.
-      delete ext;
-    }
-  } else {
+  std::pair<ExternSet::iterator,bool> ret = externs_.insert(ext);
+  if (!ret.second) {
+    // Free the duplicate that was not inserted because this Module
+    // now owns it.
     delete ext;
   }
 }
