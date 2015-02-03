@@ -1,6 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from benchmarks import silk_flags
 from metrics import gpu_timeline
 import page_sets
 from telemetry import benchmark
@@ -31,7 +32,37 @@ class GPUTimesKeyMobileSites(_GPUTimes):
   """Measures GPU timeline metric on key mobile sites."""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'gpu_times.key_mobile_sites_smooth'
+
+@benchmark.Enabled('android')
+class GPUTimesGpuRasterizationKeyMobileSites(_GPUTimes):
+  """Measures GPU timeline metric on key mobile sites with GPU rasterization.
+  """
+  page_set = page_sets.KeyMobileSitesSmoothPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'gpu_times.gpu_rasterization.key_mobile_sites_smooth'
 
 class GPUTimesTop25Sites(_GPUTimes):
   """Measures GPU timeline metric for the top 25 sites."""
   page_set = page_sets.Top25SmoothPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'gpu_times.top_25_smooth'
+
+class GPUTimesGpuRasterizationTop25Sites(_GPUTimes):
+  """Measures GPU timeline metric for the top 25 sites with GPU rasterization.
+  """
+  page_set = page_sets.Top25SmoothPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'gpu_times.gpu_rasterization.top_25_smooth'
