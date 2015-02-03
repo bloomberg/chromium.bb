@@ -32,6 +32,8 @@ ExtensionsTest::ExtensionsTest()
   content::SetUtilityClientForTesting(content_utility_client_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+  extensions_browser_client_->set_extension_system_factory(
+      &extension_system_factory_);
 }
 
 ExtensionsTest::~ExtensionsTest() {

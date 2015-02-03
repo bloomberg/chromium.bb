@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_renderer_host.h"
+#include "extensions/browser/mock_extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -60,6 +61,8 @@ class ExtensionsTest : public testing::Test {
   // The existence of this object enables tests via
   // RenderViewHostTester.
   content::RenderViewHostTestEnabler rvh_test_enabler_;
+
+  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsTest);
 };

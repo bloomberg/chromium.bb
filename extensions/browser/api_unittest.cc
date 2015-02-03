@@ -32,8 +32,6 @@ namespace extensions {
 
 ApiUnitTest::ApiUnitTest()
     : notification_service_(content::NotificationService::Create()) {
-  extensions_browser_client()->set_extension_system_factory(
-      &extension_system_factory_);
 }
 
 ApiUnitTest::~ApiUnitTest() {

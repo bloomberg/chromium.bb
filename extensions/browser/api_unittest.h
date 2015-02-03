@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "extensions/browser/extensions_test.h"
-#include "extensions/browser/mock_extension_system.h"
 
 namespace base {
 class Value;
@@ -91,8 +90,6 @@ class ApiUnitTest : public ExtensionsTest {
 
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   TestingPrefServiceSimple testing_pref_service_;
-
-  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
 
   // The WebContents used to associate a RenderViewHost with API function calls,
   // or null.
