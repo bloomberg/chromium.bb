@@ -69,6 +69,10 @@ ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
   DCHECK(!popup_);  // We should never have a visible popup at shutdown.
   if (context_menu_owner == this)
     context_menu_owner = nullptr;
+  // Since the popup close process is asynchronous, it might not be fully closed
+  // at shutdown. We still need to cleanup, though.
+  if (popup_)
+    CleanupPopup(true);
   UnregisterCommand(false);
 }
 
