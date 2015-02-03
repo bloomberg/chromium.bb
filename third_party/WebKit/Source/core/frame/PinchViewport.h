@@ -153,6 +153,7 @@ private:
     virtual bool isScrollCornerVisible() const override { return false; }
     virtual IntRect scrollCornerRect() const override { return IntRect(); }
     virtual IntPoint scrollPosition() const override { return flooredIntPoint(m_offset); }
+    virtual DoublePoint scrollPositionDouble() const override { return m_offset; }
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
     virtual int visibleHeight() const override { return visibleRect().height(); };
