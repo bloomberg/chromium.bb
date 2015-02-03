@@ -311,7 +311,7 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
 
   def AddResults(self, tab, results):
-    self._metrics.AddResultsForHTTPToDirectFallback(tab, results)
+    self._metrics.AddResultsForHTTPToDirectFallback(tab, results, _TEST_SERVER)
 
 
 class ChromeProxyReenableAfterBypass(ChromeProxyValidation):

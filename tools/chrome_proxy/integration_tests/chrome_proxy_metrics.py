@@ -307,36 +307,46 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'via_fallback', 'count', via_fallback_count))
 
-  def AddResultsForHTTPToDirectFallback(self, tab, results):
+  def AddResultsForHTTPToDirectFallback(self, tab, results,
+                                        fallback_response_host):
     via_fallback_count = 0
     bypass_count = 0
     responses = self.IterResponses(tab)
 
-    # The very first response should be through the HTTP fallback proxy.
-    fallback_resp = next(responses, None)
-    if not fallback_resp:
-      raise ChromeProxyMetricException, 'There should be at least one response.'
-    elif (not fallback_resp.HasChromeProxyViaHeader() or
-          fallback_resp.remote_port != 80):
-      r = fallback_resp.response
-      raise ChromeProxyMetricException, (
-          'Response for %s should have come through the fallback proxy.\n'
-          'Reponse: remote_port=%s status=(%d, %s)\nHeaders:\n %s' % (
-              r.url, str(fallback_resp.remote_port), r.status, r.status_text,
-              r.headers))
-    else:
-      via_fallback_count += 1
+    # The first response(s) coming from fallback_response_host should be
+    # through the HTTP fallback proxy.
+    resp = next(responses, None)
+    while resp and fallback_response_host in resp.response.url:
+      if fallback_response_host in resp.response.url:
+        if (not resp.HasChromeProxyViaHeader() or resp.remote_port != 80):
+          r = resp.response
+          raise ChromeProxyMetricException, (
+              'Response for %s should have come through the fallback proxy.\n'
+              'Response: remote_port=%s status=(%d, %s)\nHeaders:\n %s' % (
+                r.url, str(fallback_resp.remote_port), r.status, r.status_text,
+                r.headers))
+        else:
+          via_fallback_count += 1
+      resp = next(responses, None)
 
-    # All other responses should have been bypassed.
-    for resp in responses:
+    # All other responses should be bypassed.
+    while resp:
       if resp.HasChromeProxyViaHeader():
         r = resp.response
         raise ChromeProxyMetricException, (
             'Response for %s should not have via header.\n'
-            'Reponse: status=(%d, %s)\nHeaders:\n %s' % (
+            'Response: status=(%d, %s)\nHeaders:\n %s' % (
                 r.url, r.status, r.status_text, r.headers))
       else:
         bypass_count += 1
+      resp = next(responses, None)
+
+    # At least one response should go through the http proxy and be bypassed.
+    if via_fallback_count == 0 or bypass_count == 0:
+      raise ChromeProxyMetricException(
+          'There should be at least one response through the fallback proxy '
+          '(actual %s) and at least one bypassed response (actual %s)' %
+          (via_fallback_count, bypass_count))
 
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'via_fallback', 'count', via_fallback_count))
