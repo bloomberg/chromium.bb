@@ -127,7 +127,7 @@
       'dbus/fake_bluetooth_input_client.cc',
       'dbus/fake_bluetooth_input_client.h',
       'dbus/fake_bluetooth_media_client.cc',
-      'dbus/face_bluetooth_media_client.h',
+      'dbus/fake_bluetooth_media_client.h',
       'dbus/fake_bluetooth_media_transport_client.cc',
       'dbus/fake_bluetooth_media_transport_client.h',
       'dbus/fake_bluetooth_media_endpoint_service_provider.cc',

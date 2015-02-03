@@ -92,6 +92,9 @@ class CHROMEOS_EXPORT BluetoothMediaClient : public DBusClient {
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];
 
+  // The string representation for the 128-bit UUID for A2DP Sink.
+  static const char kBluetoothAudioSinkUUID[];
+
  protected:
   BluetoothMediaClient();
 

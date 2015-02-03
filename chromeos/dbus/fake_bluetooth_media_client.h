@@ -15,6 +15,9 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
  public:
+  // The default codec is SBC(0x00).
+  static const uint8_t kDefaultCodec;
+
   FakeBluetoothMediaClient();
   ~FakeBluetoothMediaClient() override;
 

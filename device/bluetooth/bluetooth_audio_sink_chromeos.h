@@ -18,7 +18,6 @@
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -31,7 +30,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       public BluetoothMediaTransportClient::Observer,
       public BluetoothMediaEndpointServiceProvider::Delegate {
  public:
-  explicit BluetoothAudioSinkChromeOS(BluetoothAdapterChromeOS* adapter);
+  explicit BluetoothAudioSinkChromeOS(
+      scoped_refptr<device::BluetoothAdapter> adapter);
 
   // device::BluetoothAudioSink overrides.
   void AddObserver(BluetoothAudioSink::Observer* observer) override;
@@ -42,8 +42,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // device::BluetoothAdapter::Observer overrides.
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
-  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                             bool powered) override;
 
   // BluetoothMediaClient::Observer overrides.
   void MediaRemoved(const dbus::ObjectPath& object_path) override;
@@ -65,7 +63,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // Registers a BluetoothAudioSink. User applications can use |options| to
   // configure the audio sink. |callback| will be executed if the audio sink is
   // successfully registered, otherwise |error_callback| will be called. Called
-  // from BluetoothAdapterChromeOS.
+  // by BluetoothAdapterChromeOS.
   void Register(
       const device::BluetoothAudioSink::Options& options,
       const base::Closure& callback,
@@ -88,6 +86,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // updated.
   void VolumeChanged(uint16_t volume);
 
+  // Called when the registration of Media Endpoint has succeeded.
+  void OnRegisterSucceeded(const base::Closure& callback);
+
+  // Called when the registration of Media Endpoint failed.
+  void OnRegisterFailed(const BluetoothAudioSink::ErrorCallback& error_callback,
+                        const std::string& error_name,
+                        const std::string& error_message);
+
   // Reads from the file descriptor acquired via Media Transport object and
   // notify |observer_| while the audio data is available.
   void ReadFromFD();
@@ -95,12 +101,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // The connection state between the BluetoothAudioSinkChromeOS and the remote
   // device.
   device::BluetoothAudioSink::State state_;
-
-  // Indicates whether the adapter is present.
-  bool present_;
-
-  // Indicates whether the adapter is powered.
-  bool powered_;
 
   // The volume control by the remote device during the streaming.
   uint16_t volume_;
@@ -125,7 +125,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
 
   // BT adapter which the audio sink binds to. |adapter_| should outlive
   // a BluetoothAudioSinkChromeOS object.
-  BluetoothAdapterChromeOS* adapter_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Options used to initiate Media Endpoint and select configuration for the
   // transport.

@@ -21,6 +21,7 @@
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
+#include "device/bluetooth/bluetooth_audio_sink_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
@@ -33,6 +34,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothAdapter;
+using device::BluetoothAudioSink;
 using device::BluetoothDevice;
 using device::BluetoothSocket;
 using device::BluetoothUUID;
@@ -303,14 +305,21 @@ void BluetoothAdapterChromeOS::CreateL2capService(
 }
 
 void BluetoothAdapterChromeOS::RegisterAudioSink(
-    const device::BluetoothAudioSink::Options& options,
+    const BluetoothAudioSink::Options& options,
     const device::BluetoothAdapter::AcquiredCallback& callback,
-    const device::BluetoothAudioSink::ErrorCallback& error_callback) {
-  // TODO(mcchou): Create and register a BluetoothAudioSink. Add the
-  // newly-created audio sink as an observer of the adapter.
-  // Add OnRegisterAudioSink(AcquiredCallback& , BluetoothAudioSink*) and pass
-  // it as an argument to BluetoothAudioSinkChromeOS::Register.
-  error_callback.Run(device::BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM);
+    const BluetoothAudioSink::ErrorCallback& error_callback) {
+  VLOG(1) << "Registering audio sink";
+  if (!this->IsPresent()) {
+    error_callback.Run(BluetoothAudioSink::ERROR_INVALID_ADAPTER);
+    return;
+  }
+  scoped_refptr<BluetoothAudioSinkChromeOS> audio_sink(
+      new BluetoothAudioSinkChromeOS(this));
+  audio_sink->Register(
+      options,
+      base::Bind(&BluetoothAdapterChromeOS::OnRegisterAudioSink,
+                 weak_ptr_factory_.GetWeakPtr(), callback, audio_sink),
+      error_callback);
 }
 
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(
@@ -650,6 +659,13 @@ void BluetoothAdapterChromeOS::OnRequestDefaultAgentError(
   DCHECK(IsPresent());
   LOG(WARNING) << ": Failed to make pairing agent default: "
                << error_name << ": " << error_message;
+}
+
+void BluetoothAdapterChromeOS::OnRegisterAudioSink(
+    const device::BluetoothAdapter::AcquiredCallback& callback,
+    scoped_refptr<BluetoothAudioSink> audio_sink) {
+  DCHECK(audio_sink.get());
+  callback.Run(audio_sink);
 }
 
 BluetoothDeviceChromeOS*
@@ -1055,7 +1071,7 @@ void BluetoothAdapterChromeOS::AddDiscoverySession(
   }
 
   // There are no active discovery sessions.
-  DCHECK(num_discovery_sessions_ == 0);
+  DCHECK_EQ(num_discovery_sessions_, 0);
 
   // This is the first request to start device discovery.
   discovery_request_pending_ = true;
@@ -1105,7 +1121,7 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
 
   // There is exactly one active discovery session. Request BlueZ to stop
   // discovery.
-  DCHECK(num_discovery_sessions_ == 1);
+  DCHECK_EQ(num_discovery_sessions_, 1);
   discovery_request_pending_ = true;
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       StopDiscovery(
@@ -1123,7 +1139,7 @@ void BluetoothAdapterChromeOS::OnStartDiscovery(const base::Closure& callback) {
   // Report success on the original request and increment the count.
   VLOG(1) << __func__;
   DCHECK(discovery_request_pending_);
-  DCHECK(num_discovery_sessions_ == 0);
+  DCHECK_EQ(num_discovery_sessions_, 0);
   discovery_request_pending_ = false;
   num_discovery_sessions_++;
   callback.Run();
@@ -1142,7 +1158,7 @@ void BluetoothAdapterChromeOS::OnStartDiscoveryError(
                << error_name << ": " << error_message;
 
   // Failed to start discovery. This can only happen if the count is at 0.
-  DCHECK(num_discovery_sessions_ == 0);
+  DCHECK_EQ(num_discovery_sessions_, 0);
   DCHECK(discovery_request_pending_);
   discovery_request_pending_ = false;
 
@@ -1166,7 +1182,7 @@ void BluetoothAdapterChromeOS::OnStopDiscovery(const base::Closure& callback) {
   // Report success on the original request and decrement the count.
   VLOG(1) << __func__;
   DCHECK(discovery_request_pending_);
-  DCHECK(num_discovery_sessions_ == 1);
+  DCHECK_EQ(num_discovery_sessions_, 1);
   discovery_request_pending_ = false;
   num_discovery_sessions_--;
   callback.Run();
@@ -1185,7 +1201,7 @@ void BluetoothAdapterChromeOS::OnStopDiscoveryError(
 
   // Failed to stop discovery. This can only happen if the count is at 1.
   DCHECK(discovery_request_pending_);
-  DCHECK(num_discovery_sessions_ == 1);
+  DCHECK_EQ(num_discovery_sessions_, 1);
   discovery_request_pending_ = false;
   error_callback.Run();
 

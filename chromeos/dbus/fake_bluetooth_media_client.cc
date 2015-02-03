@@ -4,7 +4,25 @@
 
 #include "chromeos/dbus/fake_bluetooth_media_client.h"
 
+#include <string>
+
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+
+using dbus::ObjectPath;
+
+namespace {
+
+// Except for |kFailedError|, the other error is defined in BlueZ D-Bus Media
+// API.
+const char kFailedError[] = "org.chromium.Error.Failed";
+const char kInvalidArgumentsError[] = "org.chromium.Error.InvalidArguments";
+
+}  // namespace
+
 namespace chromeos {
+
+// static
+const uint8_t FakeBluetoothMediaClient::kDefaultCodec = 0x00;
 
 FakeBluetoothMediaClient::FakeBluetoothMediaClient() {
 }
@@ -27,23 +45,32 @@ void FakeBluetoothMediaClient::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-// TODO(mcchou): Add method definition for |RegisterEndpoint|,
-// |UnregisterEndpoint|, |RegisterPlayer| and |UnregisterPlayer|.
 void FakeBluetoothMediaClient::RegisterEndpoint(
-    const dbus::ObjectPath& object_path,
-    const dbus::ObjectPath& endpoint_path,
+    const ObjectPath& object_path,
+    const ObjectPath& endpoint_path,
     const EndpointProperties& properties,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run("org.bluez.NotImplemented", "");
+  VLOG(1) <<  "RegisterEndpoint: " << endpoint_path.value();
+
+  // The object paths of the media client and adapter client should be the same.
+  if (object_path != ObjectPath(FakeBluetoothAdapterClient::kAdapterPath) ||
+      properties.uuid != BluetoothMediaClient::kBluetoothAudioSinkUUID ||
+      properties.codec != kDefaultCodec ||
+      properties.capabilities.empty()) {
+    error_callback.Run(kInvalidArgumentsError, "");
+    return;
+  }
+  callback.Run();
 }
 
 void FakeBluetoothMediaClient::UnregisterEndpoint(
-    const dbus::ObjectPath& object_path,
-    const dbus::ObjectPath& endpoint_path,
+    const ObjectPath& object_path,
+    const ObjectPath& endpoint_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run("org.bluez.NotImplemented", "");
+  // TODO(mcchou): Come up with some corresponding actions.
+  error_callback.Run(kFailedError, "");
 }
 
 }  // namespace chromeos

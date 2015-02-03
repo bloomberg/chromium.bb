@@ -208,6 +208,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   void OnRequestDefaultAgentError(const std::string& error_name,
                                   const std::string& error_message);
 
+  // Called by BluetoothAudioSinkChromeOS on completion of registering an audio
+  // sink.
+  void OnRegisterAudioSink(
+      const device::BluetoothAdapter::AcquiredCallback& callback,
+      scoped_refptr<device::BluetoothAudioSink> audio_sink);
+
   // Internal method to obtain a BluetoothPairingChromeOS object for the device
   // with path |object_path|. Returns the existing pairing object if the device
   // already has one (usually an outgoing connection in progress) or a new

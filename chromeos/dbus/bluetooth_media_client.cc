@@ -38,8 +38,13 @@ const char kCapabilitiesEndpointProperty[] = "Capabilities";
 
 namespace chromeos {
 
+// static
 const char BluetoothMediaClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
+
+// static
+const char BluetoothMediaClient::kBluetoothAudioSinkUUID[] =
+    "0000110b-0000-1000-8000-00805f9b34fb";
 
 BluetoothMediaClient::EndpointProperties::EndpointProperties() : codec(0x00) {
 }

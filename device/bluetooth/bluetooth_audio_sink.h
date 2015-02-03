@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -23,7 +24,8 @@ namespace device {
 // the interface provided by BluetoothAdapter. The validity of a
 // BluetoothAudioSink depends on whether BluetoothAdapter is present and whether
 // it is powered.
-class BluetoothAudioSink : public base::RefCounted<BluetoothAudioSink> {
+class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
+    : public base::RefCounted<BluetoothAudioSink> {
  public:
   // Possible values indicating the connection states between the
   // BluetoothAudioSink and the remote device.
@@ -98,6 +100,9 @@ class BluetoothAudioSink : public base::RefCounted<BluetoothAudioSink> {
  protected:
   friend class base::RefCounted<BluetoothAudioSink>;
   BluetoothAudioSink();
+
+  // The destructor invokes Unregister() to ensure the audio sink will be
+  // unregistered even if the user applications fail to do so.
   virtual ~BluetoothAudioSink();
 
  private:
