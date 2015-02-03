@@ -47,13 +47,11 @@ bool AccessibilityTreeIsLoaded(BrowserAccessibilityManager* manager) {
           root->GetStringAttribute(ui::AX_ATTR_DOC_URL) != url::kAboutBlankURL);
 }
 
-// TODO(nasko): try enabling this test on more platforms once
-// SitePerProcessBrowserTest.CrossSiteIframe is enabled everywhere.
-// http://crbug.com/399775
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CrossSiteIframeAccessibility CrossSiteIframeAccessibility
-#else
+// Times out on Android, not clear if it's an actual bug or just slow.
+#if defined(OS_ANDROID)
 #define MAYBE_CrossSiteIframeAccessibility DISABLED_CrossSiteIframeAccessibility
+#else
+#define MAYBE_CrossSiteIframeAccessibility CrossSiteIframeAccessibility
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
                        MAYBE_CrossSiteIframeAccessibility) {
