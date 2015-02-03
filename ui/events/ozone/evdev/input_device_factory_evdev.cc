@@ -430,7 +430,7 @@ void InputDeviceFactoryEvdev::NotifyDeviceChange(
     NotifyMouseDevicesUpdated();
 
   if (converter.HasTouchpad())
-    NotifyMouseDevicesUpdated();
+    NotifyTouchpadDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
