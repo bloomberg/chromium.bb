@@ -31,6 +31,7 @@
 #include "content/public/common/manifest.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
@@ -59,10 +60,8 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
                                content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
-      url_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-          web_contents->GetURL())),
-      display_(content::Manifest::DISPLAY_MODE_BROWSER),
-      orientation_(blink::WebScreenOrientationLockDefault),
+      shortcut_info_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+                     web_contents->GetURL())),
       add_shortcut_requested_(false),
       manifest_icon_status_(MANIFEST_ICON_STATUS_NONE),
       preferred_icon_size_in_px_(kPreferredIconSizeInDp *
@@ -88,12 +87,12 @@ void ShortcutHelper::OnDidGetWebApplicationInfo(
   web_app_info.description =
       web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
-  title_ = web_app_info.title.empty() ? web_contents()->GetTitle()
-                                      : web_app_info.title;
+  shortcut_info_.title = web_app_info.title.empty() ? web_contents()->GetTitle()
+                                                    : web_app_info.title;
 
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
       web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
-    display_ = content::Manifest::DISPLAY_MODE_STANDALONE;
+    shortcut_info_.display = content::Manifest::DISPLAY_MODE_STANDALONE;
   }
 
   // Record what type of shortcut was added by the user.
@@ -122,35 +121,7 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
           base::UserMetricsAction("webapps.AddShortcut.Manifest"));
   }
 
-  // Set the title based on the manifest value, if any.
-  if (!manifest.short_name.is_null())
-    title_ = manifest.short_name.string();
-  else if (!manifest.name.is_null())
-    title_ = manifest.name.string();
-
-  // Set the url based on the manifest value, if any.
-  if (manifest.start_url.is_valid())
-    url_ = manifest.start_url;
-
-  // Set the display based on the manifest value, if any.
-  if (manifest.display != content::Manifest::DISPLAY_MODE_UNSPECIFIED)
-    display_ = manifest.display;
-
-  // 'fullscreen' and 'minimal-ui' are not yet supported, fallback to the right
-  // mode in those cases.
-  if (manifest.display == content::Manifest::DISPLAY_MODE_FULLSCREEN)
-    display_ = content::Manifest::DISPLAY_MODE_STANDALONE;
-  if (manifest.display == content::Manifest::DISPLAY_MODE_MINIMAL_UI)
-    display_ = content::Manifest::DISPLAY_MODE_BROWSER;
-
-  // Set the orientation based on the manifest value, if any.
-  if (manifest.orientation != blink::WebScreenOrientationLockDefault) {
-    // Ignore the orientation if the display mode is different from
-    // 'standalone'.
-    // TODO(mlamouri): send a message to the developer console about this.
-    if (display_ == content::Manifest::DISPLAY_MODE_STANDALONE)
-      orientation_ = manifest.orientation;
-  }
+  shortcut_info_.UpdateFromManifest(manifest);
 
   GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons,
@@ -172,7 +143,7 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   ScopedJavaLocalRef<jstring> j_title =
-      base::android::ConvertUTF16ToJavaString(env, title_);
+      base::android::ConvertUTF16ToJavaString(env, shortcut_info_.title);
 
   Java_ShortcutHelper_onInitialized(env, j_obj.obj(), j_title.obj());
 }
@@ -228,7 +199,7 @@ void ShortcutHelper::AddShortcut(
 
   base::string16 title = base::android::ConvertJavaStringToUTF16(env, jtitle);
   if (!title.empty())
-    title_ = title;
+    shortcut_info_.title = title;
 
   switch (manifest_icon_status_) {
     case MANIFEST_ICON_STATUS_NONE:
@@ -250,11 +221,8 @@ void ShortcutHelper::AddShortcutUsingManifestIcon() {
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
-                 url_,
-                 title_,
-                 display_,
-                 manifest_icon_,
-                 orientation_),
+                 shortcut_info_,
+                 manifest_icon_),
       true);
 
   Destroy();
@@ -277,7 +245,9 @@ void ShortcutHelper::AddShortcutUsingFavicon() {
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.
   int threshold_to_get_any_largest_icon = preferred_icon_size_in_px_ - 1;
-  favicon_service->GetLargestRawFaviconForPageURL(url_, icon_types,
+  favicon_service->GetLargestRawFaviconForPageURL(
+      shortcut_info_.url,
+      icon_types,
       threshold_to_get_any_largest_icon,
       base::Bind(&ShortcutHelper::OnDidGetFavicon,
                  base::Unretained(this)),
@@ -292,11 +262,8 @@ void ShortcutHelper::OnDidGetFavicon(
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithRawBitmap,
-                 url_,
-                 title_,
-                 display_,
-                 bitmap_result,
-                 orientation_),
+                 shortcut_info_,
+                 bitmap_result),
       true);
 
   Destroy();
@@ -323,11 +290,8 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
 }
 
 void ShortcutHelper::AddShortcutInBackgroundWithRawBitmap(
-    const GURL& url,
-    const base::string16& title,
-    content::Manifest::DisplayMode display,
-    const favicon_base::FaviconRawBitmapResult& bitmap_result,
-    blink::WebScreenOrientationLockType orientation) {
+    const ShortcutInfo& info,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   SkBitmap icon_bitmap;
@@ -337,16 +301,12 @@ void ShortcutHelper::AddShortcutInBackgroundWithRawBitmap(
                           &icon_bitmap);
   }
 
-  AddShortcutInBackgroundWithSkBitmap(
-      url, title, display, icon_bitmap, orientation);
+  AddShortcutInBackgroundWithSkBitmap(info, icon_bitmap);
 }
 
 void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
-    const GURL& url,
-    const base::string16& title,
-    content::Manifest::DisplayMode display,
-    const SkBitmap& icon_bitmap,
-    blink::WebScreenOrientationLockType orientation) {
+    const ShortcutInfo& info,
+    const SkBitmap& icon_bitmap) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   SkColor color = color_utils::CalculateKMeanColorOfBitmap(icon_bitmap);
@@ -357,9 +317,9 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
   // Send the data to the Java side to create the shortcut.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
+      base::android::ConvertUTF8ToJavaString(env, info.url.spec());
   ScopedJavaLocalRef<jstring> java_title =
-      base::android::ConvertUTF16ToJavaString(env, title);
+      base::android::ConvertUTF16ToJavaString(env, info.title);
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
@@ -373,6 +333,6 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       r_value,
       g_value,
       b_value,
-      display == content::Manifest::DISPLAY_MODE_STANDALONE,
-      orientation);
+      info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
+      info.orientation);
 }

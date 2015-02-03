@@ -143,6 +143,8 @@
       'browser/android/resource_id.h',
       'browser/android/shortcut_helper.cc',
       'browser/android/shortcut_helper.h',
+      'browser/android/shortcut_info.cc',
+      'browser/android/shortcut_info.h',
       'browser/android/signin/account_management_screen_helper.cc',
       'browser/android/signin/account_management_screen_helper.h',
       'browser/android/signin/signin_manager_android.cc',

@@ -87,6 +87,11 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(const GURL& image_url);
 
+  // Installs the app defined by the manifest.
+  // TODO(dfalcantara): Fold into Install() when more CLs land.
+  static void InstallManifestApp(const content::Manifest& manifest,
+                                 const SkBitmap& icon);
+
   // WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

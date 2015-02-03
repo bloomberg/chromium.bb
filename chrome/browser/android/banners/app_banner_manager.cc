@@ -9,10 +9,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/android/manifest_icon_selector.h"
+#include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -77,7 +80,7 @@ void AppBannerManager::Install() const {
     return;
 
   if (!manifest_.IsEmpty()) {
-    // TODO(dfalcantara): Trigger shortcut creation.
+    InstallManifestApp(manifest_, *app_icon_.get());
   }
 }
 
@@ -127,8 +130,10 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
   if (web_contents()->IsBeingDestroyed())
     return;
 
-  if (manifest.IsEmpty()) {
-    // No manifest, see if there is a play store meta tag.
+  if (manifest.IsEmpty()
+      || !manifest.start_url.is_valid()
+      || (manifest.name.is_null() && manifest.short_name.is_null())) {
+    // No usable manifest, see if there is a play store meta tag.
     Send(new ChromeViewMsg_RetrieveMetaTagContent(routing_id(),
                                                   validated_url_,
                                                   kBannerTag));
@@ -264,6 +269,20 @@ int AppBannerManager::GetPreferredIconSize() {
     return 0;
 
   return Java_AppBannerManager_getPreferredIconSize(env, jobj.obj());
+}
+
+// static
+void AppBannerManager::InstallManifestApp(const content::Manifest& manifest,
+                                          const SkBitmap& icon) {
+  ShortcutInfo info;
+  info.UpdateFromManifest(manifest);
+
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
+                 info,
+                 icon),
+      true);
 }
 
 void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {

@@ -8,13 +8,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/basictypes.h"
-#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/common/web_application_info.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
 class WebContents;
@@ -85,20 +84,14 @@ class ShortcutHelper : public content::WebContentsObserver {
   // Adds a shortcut to the launcher using a FaviconRawBitmapResult.
   // Must be called from a WorkerPool task.
   static void AddShortcutInBackgroundWithRawBitmap(
-      const GURL& url,
-      const base::string16& title,
-      content::Manifest::DisplayMode display,
-      const favicon_base::FaviconRawBitmapResult& bitmap_result,
-      blink::WebScreenOrientationLockType orientation);
+      const ShortcutInfo& info,
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Adds a shortcut to the launcher using a SkBitmap.
   // Must be called from a WorkerPool task.
   static void AddShortcutInBackgroundWithSkBitmap(
-      const GURL& url,
-      const base::string16& title,
-      content::Manifest::DisplayMode display,
-      const SkBitmap& icon_bitmap,
-      blink::WebScreenOrientationLockType orientation);
+      const ShortcutInfo& info,
+      const SkBitmap& icon_bitmap);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);
@@ -116,12 +109,9 @@ class ShortcutHelper : public content::WebContentsObserver {
 
   JavaObjectWeakGlobalRef java_ref_;
 
-  GURL url_;
-  base::string16 title_;
-  content::Manifest::DisplayMode display_;
+  ShortcutInfo shortcut_info_;
   SkBitmap manifest_icon_;
   base::CancelableTaskTracker cancelable_task_tracker_;
-  blink::WebScreenOrientationLockType orientation_;
 
   bool add_shortcut_requested_;
 
