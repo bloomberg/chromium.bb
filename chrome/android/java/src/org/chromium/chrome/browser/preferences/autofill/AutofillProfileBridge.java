@@ -60,6 +60,8 @@ public class AutofillProfileBridge {
         }
     }
 
+    private String mCurrentBestLanguageCode;
+
     /**
      * @return The CLDR region code for the default locale.
      */
@@ -97,27 +99,44 @@ public class AutofillProfileBridge {
     }
 
     /**
-     * Returns the UI components for the CLDR countryCode provided.
+     * Returns the UI components for the CLDR countryCode and languageCode provided. If no language
+     * code is provided, the application's default locale is used instead. Also stores the
+     * currentBestLanguageCode, retrievable via getCurrentBestLanguageCode, to be used when saving
+     * an autofill profile.
      *
      * @param countryCode The CLDR code used to retrieve address components.
+     * @param languageCode The language code associated with the saved autofill profile that ui
+     *                     components are being retrieved for; can be null if ui components are
+     *                     being retrieved for a new profile.
      * @return A list containing pairs where the first element in the pair is an Integer
      *         representing the component id (one of the constants in AddressField), and the second
      *         element in the pair is the localized component name (intended for use as labels in
      *         the UI). The ordering in the list of pairs specifies the order these components
      *         should appear in the UI.
      */
-    static List<Pair<Integer, String>> getAddressUiComponents(String countryCode) {
+    List<Pair<Integer, String>> getAddressUiComponents(String countryCode,
+            String languageCode) {
         List<Integer> componentIds = new ArrayList<Integer>();
         List<String> componentNames = new ArrayList<String>();
         List<Pair<Integer, String>> uiComponents = new ArrayList<Pair<Integer, String>>();
 
-        nativeGetAddressUiComponents(countryCode, componentIds, componentNames);
+        mCurrentBestLanguageCode =
+                nativeGetAddressUiComponents(countryCode, languageCode, componentIds,
+                        componentNames);
 
         for (int i = 0; i < componentIds.size(); i++) {
             uiComponents.add(new Pair<Integer, String>(componentIds.get(i), componentNames.get(i)));
         }
 
         return uiComponents;
+    }
+
+    /**
+     * @return The language code associated with the most recently retrieved address ui components.
+     *         Will return null if getAddressUiComponents() has not been called yet.
+     */
+    String getCurrentBestLanguageCode() {
+        return mCurrentBestLanguageCode;
     }
 
     @CalledByNative
@@ -137,6 +156,6 @@ public class AutofillProfileBridge {
     private static native String nativeGetDefaultCountryCode();
     private static native void nativeGetSupportedCountries(List<String> countryCodes,
             List<String> countryNames);
-    private static native void nativeGetAddressUiComponents(String countryCode,
-            List<Integer> componentIds, List<String> componentNames);
+    private static native String nativeGetAddressUiComponents(String countryCode,
+            String languageCode, List<Integer> componentIds, List<String> componentNames);
 }

@@ -47,10 +47,10 @@ enum AddressField {
 
 static jstring GetDefaultCountryCode(JNIEnv* env,
                                     jclass clazz) {
-  std::string defaultCountryCode =
+  std::string default_country_code =
       autofill::AutofillCountry::CountryCodeForLocale(
           g_browser_process->GetApplicationLocale());
-  return ConvertUTF8ToJavaString(env, defaultCountryCode).Release();
+  return ConvertUTF8ToJavaString(env, default_country_code).Release();
 }
 
 static void GetSupportedCountries(JNIEnv* env,
@@ -76,9 +76,10 @@ static void GetSupportedCountries(JNIEnv* env,
                                                j_country_name_list);
 }
 
-static void GetAddressUiComponents(JNIEnv* env,
+static jstring GetAddressUiComponents(JNIEnv* env,
                                    jclass clazz,
                                    jstring j_country_code,
+                                   jstring j_language_code,
                                    jobject j_id_list,
                                    jobject j_name_list) {
   std::string best_language_tag;
@@ -87,10 +88,18 @@ static void GetAddressUiComponents(JNIEnv* env,
   ::i18n::addressinput::Localization localization;
   localization.SetGetter(l10n_util::GetStringUTF8);
 
+  std::string language_code;
+  if (j_language_code != NULL) {
+    language_code = ConvertJavaStringToUTF8(env, j_language_code);
+  }
+  if (language_code.empty()) {
+    language_code = g_browser_process->GetApplicationLocale();
+  }
+
   std::vector<::i18n::addressinput::AddressUiComponent> ui_components =
       ::i18n::addressinput::BuildComponents(
           ConvertJavaStringToUTF8(env, j_country_code), localization,
-          g_browser_process->GetApplicationLocale(), &best_language_tag);
+          language_code, &best_language_tag);
 
   for (auto ui_component : ui_components) {
     component_labels.push_back(ui_component.name);
@@ -136,6 +145,8 @@ static void GetAddressUiComponents(JNIEnv* env,
                                                ToJavaArrayOfStrings(
                                                    env, component_labels).obj(),
                                                j_name_list);
+
+  return ConvertUTF8ToJavaString(env, best_language_tag).Release();
 }
 
 // static

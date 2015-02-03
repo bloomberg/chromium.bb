@@ -51,6 +51,8 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     private Spinner mCountriesSpinner;
     private ViewGroup mWidgetRoot;
     private FloatLabelLayout[] mAddressFields;
+    private AutofillProfileBridge mAutofillProfileBridge;
+    private boolean mUseSavedProfileLanguage;
 
     @Override
     public void onCreate(Bundle savedState) {
@@ -85,6 +87,8 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
         mEmailLabel = (FloatLabelLayout) v.findViewById(R.id.email_address_label);
         mWidgetRoot = (ViewGroup) v.findViewById(R.id.autofill_profile_widget_root);
         mCountriesSpinner = (Spinner) v.findViewById(R.id.countries);
+
+        mAutofillProfileBridge = new AutofillProfileBridge();
 
         populateCountriesSpinner();
         createAndPopulateEditFields();
@@ -123,6 +127,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (position != mCurrentCountryPos) {
             mCurrentCountryPos = position;
+            mUseSavedProfileLanguage = false;
             // If all fields are empty (e.g. the user just entered the form and the first thing
             // they did was select a country), focus on the first form element. Otherwise, don't.
             resetFormFields(position, allFieldsEmpty());
@@ -161,6 +166,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
             }
 
             mLanguageCodeString = profile.getLanguageCode();
+            mUseSavedProfileLanguage = true;
 
             mCurrentCountryPos = mCountryCodes.indexOf(profile.getCountryCode());
             if (mCurrentCountryPos == -1) {
@@ -213,8 +219,12 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
         mWidgetRoot.removeAllViews();
 
         // Get address fields for the selected country.
-        List<Pair<Integer, String>> fields = AutofillProfileBridge.getAddressUiComponents(
-                mCountryCodes.get(countryCodeIndex));
+        List<Pair<Integer, String>> fields = mAutofillProfileBridge.getAddressUiComponents(
+                mCountryCodes.get(countryCodeIndex),
+                mLanguageCodeString);
+        if (!mUseSavedProfileLanguage) {
+            mLanguageCodeString = mAutofillProfileBridge.getCurrentBestLanguageCode();
+        }
 
         // Create form fields and focus the first field if autoFocusFirstField is true.
         boolean firstField = true;
