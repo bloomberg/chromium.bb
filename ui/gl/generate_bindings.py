@@ -817,18 +817,6 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glReleaseShaderCompiler'],
   'arguments': 'void', },
-# Multisampling API is different in different GL versions, some require an
-# explicit resolve step for renderbuffers and/or FBO texture attachments and
-# some do not. Multiple alternatives might be present in a single
-# implementation, which require different use of the API and may have
-# different performance (explicit resolve performing worse, for example).
-# So even though the function signature is the same across versions, we split
-# their definitions so that the function to use can be chosen correctly at a
-# higher level.
-# TODO(oetuaho@nvidia.com): Some of these might still be possible to combine.
-# This could also fix weirdness in the mock bindings that's caused by the same
-# function name appearing multiple times.
-# This is the ES3 function, which requires explicit resolve:
 { 'return_type': 'void',
   'names': ['glRenderbufferStorageEXT', 'glRenderbufferStorage'],
   'arguments':
@@ -838,18 +826,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisampleANGLE',
-            'glRenderbufferStorageMultisample'],
+  'names': ['glRenderbufferStorageMultisampleANGLE'],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
-# In desktop GL, EXT and core versions both have an explicit resolve step,
-# though desktop core GL implicitly resolves when drawing to a window.
-# TODO(oetuaho@nvidia.com): Right now this function also doubles as ES2 EXT
-# function, which has implicit resolve, and for which the fallback is wrong.
-# Fix this.
 { 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisampleEXT',
-            'glRenderbufferStorageMultisample'],
+  'names': ['glRenderbufferStorageMultisampleEXT'],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',

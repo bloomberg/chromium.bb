@@ -1829,8 +1829,8 @@ MockGLInterface::Mock_glRenderbufferStorageMultisample(GLenum target,
                                                        GLsizei width,
                                                        GLsizei height) {
   MakeFunctionUnique("glRenderbufferStorageMultisample");
-  interface_->RenderbufferStorageMultisampleEXT(target, samples, internalformat,
-                                                width, height);
+  interface_->RenderbufferStorageMultisample(target, samples, internalformat,
+                                             width, height);
 }
 
 void GL_BINDING_CALL

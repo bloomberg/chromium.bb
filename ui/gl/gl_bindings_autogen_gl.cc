@@ -1692,12 +1692,7 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glRenderbufferStorageMultisampleANGLEFn = 0;
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
-    fn.glRenderbufferStorageMultisampleANGLEFn =
-        reinterpret_cast<glRenderbufferStorageMultisampleANGLEProc>(
-            GetGLProcAddress("glRenderbufferStorageMultisample"));
-    DCHECK(fn.glRenderbufferStorageMultisampleANGLEFn);
-  } else if (ext.b_GL_ANGLE_framebuffer_multisample) {
+  if (ext.b_GL_ANGLE_framebuffer_multisample) {
     fn.glRenderbufferStorageMultisampleANGLEFn =
         reinterpret_cast<glRenderbufferStorageMultisampleANGLEProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleANGLE"));
@@ -1705,13 +1700,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glRenderbufferStorageMultisampleEXTFn = 0;
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
-    fn.glRenderbufferStorageMultisampleEXTFn =
-        reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
-            GetGLProcAddress("glRenderbufferStorageMultisample"));
-    DCHECK(fn.glRenderbufferStorageMultisampleEXTFn);
-  } else if (ext.b_GL_EXT_multisampled_render_to_texture ||
-             ext.b_GL_EXT_framebuffer_multisample) {
+  if (ext.b_GL_EXT_multisampled_render_to_texture ||
+      ext.b_GL_EXT_framebuffer_multisample) {
     fn.glRenderbufferStorageMultisampleEXTFn =
         reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleEXT"));
