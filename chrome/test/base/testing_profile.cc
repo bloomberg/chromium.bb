@@ -569,21 +569,15 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
           this, BuildHistoryService));
   if (!history_service->Init(
           no_db, history::HistoryDatabaseParamsForPath(this->GetPath()))) {
-    HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
+    HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
+    return false;
   }
   // Disable WebHistoryService by default, since it makes network requests.
-  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
+  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
   return true;
 }
 
 void TestingProfile::DestroyHistoryService() {
-  // TODO(sdefresne): remove this once ChromeHistoryClient is no longer an
-  // HistoryServiceObserver, http://crbug.com/373326
-  ChromeHistoryClient* history_client =
-      ChromeHistoryClientFactory::GetForProfileWithoutCreating(this);
-  if (history_client)
-    history_client->Shutdown();
-
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   if (!history_service)
