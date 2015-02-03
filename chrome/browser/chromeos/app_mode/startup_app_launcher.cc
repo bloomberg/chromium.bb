@@ -272,8 +272,13 @@ void StartupAppLauncher::MaybeLaunchApp() {
 
 void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
                                             bool success) {
-  if (extension_id != app_id_)
+  // Wait for pending updates or dependent extensions to download.
+  if (extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->pending_extension_manager()
+          ->HasPendingExtensions()) {
     return;
+  }
 
   extensions::InstallTracker* tracker =
       extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
