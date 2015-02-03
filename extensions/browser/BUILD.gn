@@ -10,7 +10,6 @@ source_set("browser") {
   sources = []
 
   deps = [
-    "//components/copresence_endpoints",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -109,10 +108,6 @@ source_set("browser") {
       "api/cast_channel/logger.h",
       "api/cast_channel/logger_util.cc",
       "api/cast_channel/logger_util.h",
-      "api/copresence_endpoints/copresence_endpoints_api.cc",
-      "api/copresence_endpoints/copresence_endpoints_api.h",
-      "api/copresence_endpoints/copresence_endpoint_resource.cc",
-      "api/copresence_endpoints/copresence_endpoint_resource.h",
       "api/declarative/declarative_api.cc",
       "api/declarative/declarative_api.h",
       "api/declarative/declarative_rule.h",

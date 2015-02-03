@@ -106,11 +106,6 @@
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
   },
-  "copresenceEndpoints": {
-    "channel" : "canary",
-    "dependencies": ["permission:copresence"],
-    "contexts": ["blessed_extension"]
-  },
   "diagnostics": {
     "dependencies": ["permission:diagnostics"],
     "extension_types": ["platform_app"],

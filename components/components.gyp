@@ -72,7 +72,6 @@
       'includes': [
         'app_modal.gypi',
         'cdm.gypi',
-        'copresence_endpoints.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',
         'power.gypi',
