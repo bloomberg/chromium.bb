@@ -28811,6 +28811,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Renderer.LineLayoutMs" units="milliseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    Amount of time spent doing line layout during FrameView::performLayout.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PixelIncreaseFromTransitions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
