@@ -352,7 +352,7 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeString(
     case dwarf2reader::DW_AT_MIPS_linkage_name: {
       char* demangled = NULL;
       int status = -1;
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__)  // Android NDK doesn't provide abi::__cxa_demangle.
       demangled = abi::__cxa_demangle(data.c_str(), NULL, NULL, &status);
 #endif
       if (status != 0) {
