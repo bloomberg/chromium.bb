@@ -810,6 +810,19 @@
         } \
     } while (0)
 
+// Implementation detail: internal macro to create static category and add
+// event if the category is enabled.
+#define INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(phase, category, name, \
+                                                timestamp, flags, ...) \
+    do { \
+        INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
+        if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+            blink::TraceEvent::addTraceEvent( \
+                phase, INTERNALTRACEEVENTUID(categoryGroupEnabled), name, \
+                blink::TraceEvent::noEventId, timestamp, flags, ##__VA_ARGS__); \
+        } \
+    } while (0)
+
 // Notes regarding the following definitions:
 // New values can be added and propagated to third party libraries, but existing
 // definitions must never be changed, because third party libraries may use old
@@ -1040,10 +1053,11 @@ static inline TraceEventHandle addTraceEvent(
     const unsigned char* categoryEnabled,
     const char* name,
     unsigned long long id,
+    double timestamp,
     unsigned char flags)
 {
     return TRACE_EVENT_API_ADD_TRACE_EVENT(
-        phase, categoryEnabled, name, id,
+        phase, categoryEnabled, name, id, timestamp,
         zeroNumArgs, 0, 0, 0,
         flags);
 }
@@ -1054,6 +1068,7 @@ static inline TraceEventHandle addTraceEvent(
     const unsigned char* categoryEnabled,
     const char* name,
     unsigned long long id,
+    double timestamp,
     unsigned char flags,
     const char* arg1Name,
     const ARG1_TYPE& arg1Val)
@@ -1066,13 +1081,13 @@ static inline TraceEventHandle addTraceEvent(
         ConvertableToTraceFormat* convertableValues[1];
         assignIfConvertableToTraceFormat(convertableValues[0], arg1Val);
         return TRACE_EVENT_API_ADD_TRACE_EVENT(
-            phase, categoryEnabled, name, id,
+            phase, categoryEnabled, name, id, timestamp,
             numArgs, &arg1Name, argTypes, argValues,
             convertableValues,
             flags);
     }
     return TRACE_EVENT_API_ADD_TRACE_EVENT(
-        phase, categoryEnabled, name, id,
+        phase, categoryEnabled, name, id, timestamp,
         numArgs, &arg1Name, argTypes, argValues,
         flags);
 }
@@ -1083,6 +1098,7 @@ static inline TraceEventHandle addTraceEvent(
     const unsigned char* categoryEnabled,
     const char* name,
     unsigned long long id,
+    double timestamp,
     unsigned char flags,
     const char* arg1Name,
     const ARG1_TYPE& arg1Val,
@@ -1100,15 +1116,54 @@ static inline TraceEventHandle addTraceEvent(
         assignIfConvertableToTraceFormat(convertableValues[0], arg1Val);
         assignIfConvertableToTraceFormat(convertableValues[1], arg2Val);
         return TRACE_EVENT_API_ADD_TRACE_EVENT(
-            phase, categoryEnabled, name, id,
+            phase, categoryEnabled, name, id, timestamp,
             numArgs, argNames, argTypes, argValues,
             convertableValues,
             flags);
     }
     return TRACE_EVENT_API_ADD_TRACE_EVENT(
-        phase, categoryEnabled, name, id,
+        phase, categoryEnabled, name, id, timestamp,
         numArgs, argNames, argTypes, argValues,
         flags);
+}
+
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags)
+{
+    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags);
+}
+
+template<typename ARG1_TYPE>
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1Name,
+    const ARG1_TYPE& arg1Val)
+{
+    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags, arg1Name, arg1Val);
+}
+
+
+template<typename ARG1_TYPE, typename ARG2_TYPE>
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1Name,
+    const ARG1_TYPE& arg1Val,
+    const char* arg2Name,
+    const ARG2_TYPE& arg2Val)
+{
+    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags, arg1Name, arg1Val, arg2Name, arg2Val);
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.

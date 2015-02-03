@@ -522,6 +522,7 @@ public:
         const unsigned char* categoryEnabledFlag,
         const char* name,
         unsigned long long id,
+        double timestamp,
         int numArgs,
         const char** argNames,
         const unsigned char* argTypes,

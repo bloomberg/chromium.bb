@@ -74,8 +74,9 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, int numArgs, const char* argNames[],
-    const unsigned char argTypes[], const unsigned long long argValues[],
+    const char* name, unsigned long long id, double timestamp,
+    int numArgs, const char* argNames[], const unsigned char argTypes[],
+    const unsigned long long argValues[],
     TraceEvent::ConvertableToTraceFormat* convertableValues[],
     unsigned char flags)
 {
@@ -88,15 +89,15 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     } else {
         ASSERT_NOT_REACHED();
     }
-    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, timestamp, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, int numArgs, const char** argNames,
-    const unsigned char* argTypes, const unsigned long long* argValues,
-    unsigned char flags)
+    const char* name, unsigned long long id, double timestamp,
+    int numArgs, const char** argNames, const unsigned char* argTypes,
+    const unsigned long long* argValues, unsigned char flags)
 {
-    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, 0, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, timestamp, numArgs, argNames, argTypes, argValues, 0, flags);
 }
 
 void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)
