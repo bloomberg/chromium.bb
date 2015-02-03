@@ -18,18 +18,19 @@ namespace documentScan {
     // an image tag.
     DOMString[] dataUrls;
 
-    // The MIME type of |dataUrls|.
+    // The MIME type of <code>dataUrls</code>.
     DOMString mimeType;
   };
 
-  // Callback from the <code>scan</code> method; on success
-  // the results from the scan is returned in |results|.
-  callback ScanCallback = void (ScanResults results);
+  // Callback from the <code>scan</code> method.
+  // |result| The results from the scan, if successful.
+  // Otherwise will return null and set runtime.lastError.
+  callback ScanCallback = void (ScanResults result);
 
   interface Functions {
     // Performs a document scan.  On success, the PNG data will be
     // sent to the callback.
-    // |options| : <code>Options</code> object containing scan parameters.
+    // |options| : Object containing scan parameters.
     // |callback| : Called with the result and data from the scan.
     static void scan(ScanOptions options, ScanCallback callback);
   };
