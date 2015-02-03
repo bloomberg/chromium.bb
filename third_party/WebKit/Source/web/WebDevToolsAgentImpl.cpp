@@ -479,6 +479,8 @@ void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
 
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 {
+    if (!m_attached)
+        return;
     inspectorController()->dispatchMessageFromFrontend(message);
 }
 
@@ -524,6 +526,8 @@ void WebDevToolsAgentImpl::hideHighlight()
 
 void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)
 {
+    if (!m_attached)
+        return;
     flushPendingProtocolNotifications();
     m_client->sendProtocolMessage(callId, message->toJSONString(), m_stateCookie);
     m_stateCookie = String();
@@ -531,6 +535,8 @@ void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObjec
 
 void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<JSONObject> message)
 {
+    if (!m_attached)
+        return;
     m_notificationQueue.append(message);
 }
 
@@ -563,6 +569,8 @@ void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& 
 
 void WebDevToolsAgentImpl::flushPendingProtocolNotifications()
 {
+    if (!m_attached)
+        return;
     InspectorController* ic = inspectorController();
     ic->flushPendingProtocolNotifications();
 
