@@ -274,7 +274,7 @@ deps = {
     Var('chromium_git') + '/external/pywebsocket/src.git' + '@' + 'cb349e87ddb30ff8d1fa1a89be39cec901f4a29c',
 
   'src/third_party/opus/src':
-   Var('chromium_git') + '/chromium/deps/opus.git' + '@' + '7245f1704acd521caa51be952df0fc9d7107bdff',
+   Var('chromium_git') + '/chromium/deps/opus.git' + '@' + 'cae696156f1e60006e39821e79a1811ae1933c69',
 
   'src/media/cdm/ppapi/api':
    Var('chromium_git') + '/chromium/cdm.git' + '@' + '7b7c6cc620e13c8057b4b6bff19e5955feb2c8fa', # from svn revision 293617

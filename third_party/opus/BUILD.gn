@@ -3,19 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/arm.gni")
-import("//build/config/mips.gni")
 
 # If fixed point implementation shall be used (otherwise float).
-# TODO(wtc): change "mipselx" to "mipsel" in this file when the compilation
-# errors in the MIPS optimizations are fixed.
-use_opus_fixed_point =
-    cpu_arch == "arm" || cpu_arch == "arm64" || cpu_arch == "mipselx"
+use_opus_fixed_point = cpu_arch == "arm" || cpu_arch == "arm64"
 
 # If ARM optimizations shall be used to accelerate performance.
 use_opus_arm_optimization = cpu_arch == "arm"
-
-# If MIPS optimizations shall be used to accelerate performance.
-use_opus_mips_optimization = cpu_arch == "mipselx"
 
 # If OPUS Run Time CPU Detections (RTCD) shall be used.
 # Based on the conditions in celt/arm/armcpu.c:
@@ -141,29 +134,6 @@ source_set("opus") {
         ":convert_rtcd_assembler",
       ]
     }
-  }
-
-  if (use_opus_mips_optimization) {
-    sources += [
-      "src/celt/mips/celt_mipsr1.h",
-      "src/celt/mips/fixed_generic_mipsr1.h",
-      "src/celt/mips/kiss_fft_mipsr1.h",
-      "src/celt/mips/mdct_mipsr1.h",
-      "src/celt/mips/pitch_mipsr1.h",
-      "src/celt/mips/vq_mipsr1.c",
-      "src/celt/mips/vq_mipsr1.h",
-      "src/silk/fixed/mips/noise_shape_analysis_FIX_mipsr1.h",
-      "src/silk/fixed/mips/prefilter_FIX_mipsr1.h",
-      "src/silk/fixed/mips/warped_autocorrelation_FIX_mipsr1.h",
-      "src/silk/mips/NSQ_del_dec_mipsr1.h",
-      "src/silk/mips/macros_mipsr1.h",
-      "src/silk/mips/sigproc_fix_mipsr1.h",
-    ]
-
-    defines += [
-      "MIPSr1_ASM",
-      "USE_ALLOCA",
-    ]
   }
 }
 

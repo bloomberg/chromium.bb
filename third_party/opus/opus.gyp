@@ -5,9 +5,7 @@
 {
   'variables': {
     'conditions': [
-      # TODO(wtc): change "mipselx" to "mipsel" in this file when the
-      # compilation errors in the MIPS optimizations are fixed.
-      ['target_arch=="arm" or target_arch=="arm64" or target_arch=="mipselx"', {
+      ['target_arch=="arm" or target_arch=="arm64"', {
         'use_opus_fixed_point%': 1,
       }, {
         'use_opus_fixed_point%': 0,
@@ -16,11 +14,6 @@
         'use_opus_arm_optimization%': 1,
       }, {
         'use_opus_arm_optimization%': 0,
-      }],
-      ['target_arch=="mipselx"', {
-        'use_opus_mips_optimization%': 1,
-      }, {
-        'use_opus_mips_optimization%': 0,
       }],
       ['target_arch=="arm" and (OS=="win" or OS=="android" or OS=="linux")', {
         # Based on the conditions in celt/arm/armcpu.c:
@@ -129,16 +122,6 @@
                     'opus_srcs_rtcd.gypi',
                   ],
                 }],
-              ],
-            }],
-            ['use_opus_mips_optimization==1', {
-              'defines': [
-                'MIPSr1_ASM',
-                'USE_ALLOCA',
-              ],
-
-              'includes': [
-                'opus_srcs_mips.gypi',
               ],
             }],
           ],
