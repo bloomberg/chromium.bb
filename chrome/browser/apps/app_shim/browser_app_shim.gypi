@@ -10,8 +10,9 @@
       'target_name': 'browser_app_shim',
       'type': 'static_library',
       'dependencies': [
-        # Since browser_app_shim and browser depend on each other, we omit the
-        # dependency on browser here.
+        # Since browser_app_shim and chrome.gyp:browser depend on each other,
+        # we omit the dependency on browser here.
+        '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
       ],
       'sources': [
