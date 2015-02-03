@@ -23,3 +23,7 @@ body {
   font-family: $2;
   font-size: $3;
 }
+
+button {
+  font-family: $2;
+}
