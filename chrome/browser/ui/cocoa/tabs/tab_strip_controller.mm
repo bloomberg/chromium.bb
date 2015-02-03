@@ -276,9 +276,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return NO;
 }
 
-- (void)drawRect:(NSRect)rect {
-}
-
 - (id)initWithFrame:(NSRect)frameRect
          controller:(TabStripController*)controller {
   if ((self = [super initWithFrame:frameRect])) {
