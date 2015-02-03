@@ -287,6 +287,8 @@ PDFViewer.prototype = {
           this.plugin_.postMessage({
             type: 'selectAll'
           });
+          // Since we do selection ourselves.
+          e.preventDefault();
         }
         return;
       case 80:  // p key.
