@@ -476,9 +476,9 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
 
   const std::string extension_id(extension_->id());
   std::string notification_id;
-  if (!params_->notification_id.empty()) {
+  if (params_->notification_id.get() && !params_->notification_id->empty()) {
     // If the caller provided a notificationId, use that.
-    notification_id = params_->notification_id;
+    notification_id = *params_->notification_id;
   } else {
     // Otherwise, use a randomly created GUID. In case that GenerateGUID returns
     // the empty string, simply generate a random string.

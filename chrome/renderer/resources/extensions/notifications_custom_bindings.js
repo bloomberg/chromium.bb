@@ -7,6 +7,7 @@
 var binding = require('binding').Binding.create('notifications');
 
 var sendRequest = require('sendRequest').sendRequest;
+var exceptionHandler = require('uncaught_exception_handler');
 var imageUtil = require('imageUtil');
 var lastError = require('lastError');
 var notificationsPrivate = requireNative('notifications_private');
@@ -111,20 +112,21 @@ function genHandle(name, failure_function) {
   return function(id, input_notification_details, callback) {
     // TODO(dewittj): Remove this hack. This is used as a way to deep
     // copy a complex JSON object.
-    var notification_details = JSON.parse(
-        JSON.stringify(input_notification_details));
+    var notification_details = $JSON.parse(
+        $JSON.stringify(input_notification_details));
     var that = this;
+    var stack = exceptionHandler.getExtensionStackTrace();
     replaceNotificationOptionURLs(notification_details, function(success) {
       if (success) {
         sendRequest(that.name,
             [id, notification_details, callback],
-            that.definition.parameters);
+            that.definition.parameters, {stack: stack});
         return;
       }
       lastError.run(name,
                     'Unable to download all specified images.',
-                    null,
-                    failure_function, [callback, id])
+                    stack,
+                    failure_function, [callback || function() {}, id]);
     });
   };
 }

@@ -325,7 +325,32 @@ function testLargeImage() {
   create("largeImage", options).then(succeed, fail);
 }
 
+function testOptionalParameters() {
+  var testName = "testOptionalParameters";
+  var succeed = succeedTest(testName);
+  var fail = failTest(testName);
+  function createCallback(notificationId) {
+    new Promise(function() {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq("string", typeof notificationId);
+      // Optional callback - should run without problems
+      chrome.notifications.clear(notificationId);
+      // Note: The point of the previous line is to show that a callback can be
+      // optional. Because .clear is asynchronous, we have to be careful with
+      // calling .clear again. Since .clear is processed in order, calling
+      // clear() synchronously is okay.
+      // If this assumption does not hold and leaks to flaky tests, file a bug
+      // report and/or put the following call in a setTimeout call.
+
+      // The notification should not exist any more, so clear() should fail.
+      clear(notificationId).then(fail, succeed);
+    }).then(null, fail);
+  }
+  // .create should succeed even when notificationId is omitted.
+  chrome.notifications.create(basicNotificationOptions, createCallback);
+}
+
 chrome.test.runTests([
     testIdUsage, testBaseFormat, testListItem, testGetAll, testProgress,
-    testLargeImage
+    testLargeImage, testOptionalParameters
 ]);
