@@ -171,9 +171,8 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
   if (rwhv)
     rwhv->SetBackgroundColor(profiles::kUserManagerBackgroundColor);
 
-  web_view_->RequestFocus();
-
   GetWidget()->Show();
+  web_view_->RequestFocus();
 }
 
 bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
