@@ -38,8 +38,16 @@ const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 // true, then kAutofillMacAddressBookQueried is expected to also be true.
 const char kAutofillUseMacAddressBook[] = "autofill.use_mac_address_book";
 
-// Boolean that's true when Wallet card and address import is enabled.
+// Boolean that's true when Wallet card and address import is enabled by the
+// user. This will only be available to the user if the overall feature is
+// enabled.
 const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
+
+// Enables/disables the Wallet card and address feature. Set via sync
+// experiment. Even if this is false, the feature can still be enabled via the
+// command line flag flags::kEnableWalletCardImport.
+const char kAutofillWalletSyncExperimentEnabled[] =
+    "autofill.wallet_import_sync_experiment_enabled";
 
 }  // namespace prefs
 }  // namespace autofill

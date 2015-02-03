@@ -62,6 +62,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
@@ -1153,6 +1154,9 @@ void ProfileSyncService::OnExperimentsChanged(
 
   profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                     experiments.gcm_invalidations_enabled);
+  profile()->GetPrefs()->SetBoolean(
+      autofill::prefs::kAutofillWalletSyncExperimentEnabled,
+      experiments.wallet_sync_enabled);
 
   if (experiments.enhanced_bookmarks_enabled) {
     profile_->GetPrefs()->SetString(

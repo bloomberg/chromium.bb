@@ -422,6 +422,7 @@ base::DictionaryValue* ExperimentsSpecificsToValue(
   SET_EXPERIMENT_ENABLED_FIELD(gcm_channel);
   SET(enhanced_bookmarks, EnhancedBookmarksFlagsToValue);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
+  SET_EXPERIMENT_ENABLED_FIELD(wallet_sync);
   return value;
 }
 

@@ -332,13 +332,16 @@ void AutofillOptionsHandler::GetLocalizedValues(
                 IDS_AUTOFILL_OPTIONS_TITLE);
 
   localized_strings->SetString("helpUrl", autofill::kHelpURL);
+
+  personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+
   SetAddressOverlayStrings(localized_strings);
   SetCreditCardOverlayStrings(localized_strings);
 
   localized_strings->SetBoolean(
       "enableAutofillWalletIntegration",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kEnableWalletCardImport));
+      personal_data_->IsExperimentalWalletIntegrationEnabled());
   localized_strings->SetString(
       "manageWalletAddressesUrl",
       autofill::wallet::GetManageAddressesUrl(0).spec());
@@ -359,9 +362,6 @@ void AutofillOptionsHandler::InitializePage() {
 }
 
 void AutofillOptionsHandler::RegisterMessages() {
-  personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   web_ui()->RegisterMessageCallback(
       "accessAddressBook",

@@ -675,8 +675,7 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   credit_cards_.clear();
   credit_cards_.insert(credit_cards_.end(), local_credit_cards_.begin(),
                        local_credit_cards_.end());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWalletCardImport) &&
+  if (IsExperimentalWalletIntegrationEnabled() &&
       pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     credit_cards_.insert(credit_cards_.end(), server_credit_cards_.begin(),
                          server_credit_cards_.end());
@@ -958,6 +957,13 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     default_country_code_ = AutofillCountry::CountryCodeForLocale(app_locale());
 
   return default_country_code_;
+}
+
+bool PersonalDataManager::IsExperimentalWalletIntegrationEnabled() const {
+  // The feature can be enabled by sync experiment *or* command line flag.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableWalletCardImport) ||
+         pref_service_->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled);
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {

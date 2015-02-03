@@ -55,6 +55,11 @@ message GcmInvalidationsFlags {
   optional bool enabled = 1;
 }
 
+// Flags for enabling wallet data syncing.
+message WalletSyncFlags {
+  optional bool enabled = 1;
+}
+
 // Contains one flag or set of related flags.  Each node of the experiments type
 // will have a unique_client_tag identifying which flags it contains.  By
 // convention, the tag name should match the sub-message name.
@@ -67,4 +72,5 @@ message ExperimentsSpecifics {
   optional GcmChannelFlags gcm_channel = 6;
   optional EnhancedBookmarksFlags enhanced_bookmarks = 7;
   optional GcmInvalidationsFlags gcm_invalidations = 8;
+  optional WalletSyncFlags wallet_sync = 9;
 }

@@ -219,6 +219,10 @@ class PersonalDataManager : public KeyedService,
   void BinaryChanging();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+  // Returns true if the wallet integration feature is enabled. Note that the
+  // feature can still disabled by a user pref.
+  bool IsExperimentalWalletIntegrationEnabled() const;
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
