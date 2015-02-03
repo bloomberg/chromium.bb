@@ -451,6 +451,10 @@ bool InlineFlowBox::requiresIdeographicBaseline(const GlyphOverflowAndFallbackFo
     if (isHorizontal())
         return false;
 
+    // FIXME: primaryFont should never be 0 here but can be in some
+    // cases. crbug.com/445450
+    RELEASE_ASSERT(renderer().style(isFirstLineStyle())->font().primaryFont());
+
     if (renderer().style(isFirstLineStyle())->fontDescription().nonCJKGlyphOrientation() == NonCJKGlyphOrientationUpright
         || renderer().style(isFirstLineStyle())->font().primaryFont()->hasVerticalGlyphs())
         return true;
