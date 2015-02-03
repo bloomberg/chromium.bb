@@ -48,12 +48,14 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
     // object gets associated with the wrapper.
     ScriptWrappableProtector protect(this, wrapperTypeInfo);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    RELEASE_ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
+    // See crbug.com/389445.
+    RELEASE_ASSERT(!DOMDataStore::containsWrapper(this, isolate));
     wrapperTypeInfo->installConditionallyEnabledProperties(wrapper, isolate);
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
