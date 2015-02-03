@@ -83,12 +83,27 @@ void Module::AddFunction(Function *function) {
   // FUNCs are better than PUBLICs as they come with sizes, so remove an extern
   // with the same address if present.
   Extern ext(function->address);
-  ExternSet::iterator it_ext = externs_.lower_bound(&ext);
-  if (it_ext != externs_.end() &&
-      (*it_ext)->address < function->address + function->size) {
+  ExternSet::iterator it_ext = externs_.find(&ext);
+  if (it_ext == externs_.end() &&
+      architecture_ == "arm" &&
+      (function->address & 0x1) == 0) {
+    // ARM THUMB functions have bit 0 set. ARM64 does not have THUMB.
+    Extern arm_thumb_ext(function->address | 0x1);
+    it_ext = externs_.find(&arm_thumb_ext);
+  }
+  if (it_ext != externs_.end()) {
     delete *it_ext;
     externs_.erase(it_ext);
   }
+#if _DEBUG
+  {
+    // There should be no other PUBLIC symbols that overlap with the function.
+    Extern debug_ext(function->address);
+    ExternSet::iterator it_debug = externs_.lower_bound(&ext);
+    assert(it_debug == externs_.end() ||
+           (*it_debug)->address >= function->address + function->size);
+  }
+#endif
 
   std::pair<FunctionSet::iterator,bool> ret = functions_.insert(function);
   if (!ret.second && (*ret.first != function)) {
