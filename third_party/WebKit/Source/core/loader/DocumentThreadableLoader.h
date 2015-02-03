@@ -104,7 +104,9 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         void loadActualRequest();
         // Clears m_actualRequest and reports access control check failure to
         // m_client.
-        void handlePreflightFailure(const String& url, const String& errorDescription);
+        // In DocumentThreadableLoader, call handleAccessControlCheckFailure()
+        // instead of m_client->didFailAccessControlCheck().
+        void handleAccessControlCheckFailure(const String& url, const String& errorDescription);
         // Investigates the response for the preflight request. If successful,
         // the actual request will be made later in handleSuccessfulFinish().
         void handlePreflightResponse(const ResourceResponse&);
@@ -154,6 +156,8 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         // But this value is not the max number of total redirects allowed,
         // because same-origin redirects are not counted here.
         int m_corsRedirectLimit;
+
+        bool m_accessControlCheckFailed;
     };
 
 } // namespace blink

@@ -92,6 +92,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
     , m_requestStartedSeconds(0.0)
     , m_corsRedirectLimit(kMaxCORSRedirects)
+    , m_accessControlCheckFailed(false)
 {
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
@@ -162,7 +163,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
     // is no reason to send a request, preflighted or not, that's guaranteed
     // to be denied.
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
-        m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
+        handleAccessControlCheckFailure(request.url().string(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + ".");
         return;
     }
 
@@ -335,8 +336,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
             return;
         }
 
-        ResourceError error(errorDomainBlinkInternal, 0, redirectResponse.url().string(), accessControlErrorDescription);
-        m_client->didFailAccessControlCheck(error);
+        handleAccessControlCheckFailure(redirectResponse.url().string(), accessControlErrorDescription);
     } else {
         m_client->didFailRedirectCheck();
     }
@@ -379,12 +379,12 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     String accessControlErrorDescription;
 
     if (!passesAccessControlCheck(&m_document, response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handleAccessControlCheckFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
     if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handleAccessControlCheckFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
@@ -392,7 +392,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     if (!preflightResult->parse(response, accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handleAccessControlCheckFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
@@ -436,7 +436,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         String accessControlErrorDescription;
         if (!passesAccessControlCheck(&m_document, response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
             reportResponseReceived(identifier, response);
-            m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
+            handleAccessControlCheckFailure(response.url().string(), accessControlErrorDescription);
             return;
         }
     }
@@ -462,7 +462,8 @@ void DocumentThreadableLoader::handleReceivedData(const char* data, unsigned dat
 
     ASSERT(!m_fallbackRequestForServiceWorker);
 
-    m_client->didReceiveData(data, dataLength);
+    if (!m_accessControlCheckFailed)
+        m_client->didReceiveData(data, dataLength);
 }
 
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
@@ -490,7 +491,8 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
     } else {
         // FIXME: Should prevent timeout from being overridden after finished loading, without
         // resetting m_requestStartedSeconds to 0.0
-        m_client->didFinishLoading(identifier, finishTime);
+        if (!m_accessControlCheckFailed)
+            m_client->didFinishLoading(identifier, finishTime);
     }
 }
 
@@ -527,12 +529,18 @@ void DocumentThreadableLoader::loadActualRequest()
     loadRequest(*actualRequest, *actualOptions);
 }
 
-void DocumentThreadableLoader::handlePreflightFailure(const String& url, const String& errorDescription)
+void DocumentThreadableLoader::handleAccessControlCheckFailure(const String& url, const String& errorDescription)
 {
     ResourceError error(errorDomainBlinkInternal, 0, url, errorDescription);
 
     // Prevent handleSuccessfulFinish() from bypassing access check.
     m_actualRequest = nullptr;
+
+    // Prevent m_client->didReceiveData()/didFinishLoading() from being called
+    // after m_client->didFailAccessControlCheck() is called here.
+    // FIXME: It is cleaner to call clearResource() etc. where we should not
+    // proceed any more.
+    m_accessControlCheckFailed = true;
 
     // FIXME: Should prevent timeout from being overridden after preflight failure, without
     // resetting m_requestStartedSeconds to 0.0
