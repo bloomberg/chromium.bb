@@ -451,7 +451,7 @@ DesktopCaptureDevice::~DesktopCaptureDevice() {
 void DesktopCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
-  thread_.message_loop_proxy()->PostTask(
+  thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&Core::AllocateAndStart, base::Unretained(core_.get()), params,
                  base::Passed(&client)));
@@ -459,16 +459,20 @@ void DesktopCaptureDevice::AllocateAndStart(
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
   if (core_) {
-    thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, core_.release());
+    thread_.task_runner()->DeleteSoon(FROM_HERE, core_.release());
     thread_.Stop();
   }
 }
 
 void DesktopCaptureDevice::SetNotificationWindowId(
     gfx::NativeViewId window_id) {
-  thread_.message_loop_proxy()->PostTask(
+  // This may be called after the capturer has been stopped.
+  if (!core_)
+    return;
+  thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&Core::SetNotificationWindowId, base::Unretained(core_.get()),
+      base::Bind(&Core::SetNotificationWindowId,
+                 base::Unretained(core_.get()),
                  window_id));
 }
 
@@ -485,7 +489,7 @@ DesktopCaptureDevice::DesktopCaptureDevice(
 
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
 
-  core_.reset(new Core(thread_.message_loop_proxy(), capturer.Pass(), type));
+  core_.reset(new Core(thread_.task_runner(), capturer.Pass(), type));
 }
 
 }  // namespace content
