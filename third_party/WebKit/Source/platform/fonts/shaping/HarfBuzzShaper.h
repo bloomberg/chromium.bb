@@ -56,14 +56,13 @@ public:
         ForTextEmphasis
     };
 
-    HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0);
+    HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0);
 
     void setDrawRange(int from, int to);
     bool shape(GlyphBuffer* = 0);
     float totalWidth() { return m_totalWidth; }
     int offsetForPosition(float targetX);
     FloatRect selectionRect(const FloatPoint&, int height, int from, int to);
-    const FloatRect& glyphBoundingBox() const { return m_glyphBoundingBox; }
 
 private:
     class HarfBuzzRun {
@@ -154,7 +153,7 @@ private:
     ForTextEmphasisOrNot m_forTextEmphasis;
 
     float m_totalWidth;
-    FloatRect m_glyphBoundingBox;
+    FloatRect* m_glyphBoundingBox;
     HashSet<const SimpleFontData*>* m_fallbackFonts;
 
     friend struct CachedShapingResults;

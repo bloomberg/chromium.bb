@@ -108,7 +108,7 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyph
     }
 
     SimpleShaper shaper(this, runInfo.run, nullptr /* fallbackFonts */,
-        nullptr /* GlyphBounds */, forTextEmphasis);
+        nullptr, forTextEmphasis);
     shaper.advance(runInfo.from);
     shaper.advance(runInfo.to, &glyphBuffer);
     float width = shaper.runWidthSoFar();
@@ -768,14 +768,15 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
-    HarfBuzzShaper shaper(this, run, HarfBuzzShaper::NotForTextEmphasis, fallbackFonts);
+    FloatRect bounds;
+    HarfBuzzShaper shaper(this, run, HarfBuzzShaper::NotForTextEmphasis, fallbackFonts, glyphBounds ? &bounds : 0);
     if (!shaper.shape())
         return 0;
 
-    glyphBounds->setTop(ceilf(-shaper.glyphBoundingBox().y()));
-    glyphBounds->setBottom(ceilf(shaper.glyphBoundingBox().maxY()));
-    glyphBounds->setLeft(std::max<int>(0, ceilf(-shaper.glyphBoundingBox().x())));
-    glyphBounds->setRight(std::max<int>(0, ceilf(shaper.glyphBoundingBox().maxX() - shaper.totalWidth())));
+    glyphBounds->setTop(ceilf(-bounds.y()));
+    glyphBounds->setBottom(ceilf(bounds.maxY()));
+    glyphBounds->setLeft(std::max<int>(0, ceilf(-bounds.x())));
+    glyphBounds->setRight(std::max<int>(0, ceilf(bounds.maxX() - shaper.totalWidth())));
 
     return shaper.totalWidth();
 }
@@ -874,23 +875,23 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
-    SimpleShaper::GlyphBounds bounds;
+    FloatRect bounds;
     SimpleShaper shaper(this, run, fallbackFonts, glyphBounds ? &bounds : 0);
     shaper.advance(run.length());
+    float runWidth = shaper.runWidthSoFar();
 
     if (glyphBounds) {
-        glyphBounds->setTop(ceilf(-bounds.minGlyphBoundingBoxY));
-        glyphBounds->setBottom(ceilf(bounds.maxGlyphBoundingBoxY));
-        glyphBounds->setLeft(ceilf(bounds.firstGlyphOverflow));
-        glyphBounds->setRight(ceilf(bounds.lastGlyphOverflow));
+        glyphBounds->setTop(ceilf(-bounds.y()));
+        glyphBounds->setBottom(ceilf(bounds.maxY()));
+        glyphBounds->setLeft(std::max<int>(0, ceilf(-bounds.x())));
+        glyphBounds->setRight(std::max<int>(0, ceilf(bounds.maxX() - runWidth)));
     }
-
-    return shaper.runWidthSoFar();
+    return runWidth;
 }
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
-    SimpleShaper::GlyphBounds bounds;
+    FloatRect bounds;
     SimpleShaper shaper(this, run, 0, accountForGlyphBounds ? &bounds : 0);
     shaper.advance(from);
     float fromX = shaper.runWidthSoFar();
@@ -907,9 +908,9 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
     }
 
     return FloatRect(point.x() + fromX,
-        accountForGlyphBounds ? bounds.minGlyphBoundingBoxY : point.y(),
+        accountForGlyphBounds ? bounds.y(): point.y(),
         toX - fromX,
-        accountForGlyphBounds ? bounds.maxGlyphBoundingBoxY - bounds.minGlyphBoundingBoxY : h);
+        accountForGlyphBounds ? bounds.maxY()- bounds.y(): h);
 }
 
 int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool includePartialGlyphs) const

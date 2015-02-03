@@ -376,7 +376,7 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
     }
 }
 
-HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts)
+HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
     : m_font(font)
     , m_normalizedBufferLength(0)
     , m_run(run)
@@ -389,6 +389,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmph
     , m_fromIndex(0)
     , m_toIndex(m_run.length())
     , m_forTextEmphasis(forTextEmphasis)
+    , m_glyphBoundingBox(bounds)
     , m_fallbackFonts(fallbackFonts)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
@@ -930,10 +931,12 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
 
         currentRun->setGlyphAndPositions(i, glyph, advance, offsetX, offsetY);
 
-        FloatRect glyphBounds = currentFontData->boundsForGlyph(glyph);
-        glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
-        m_glyphBoundingBox.unite(glyphBounds);
-        glyphOrigin += FloatSize(advance + offsetX, offsetY);
+        if (m_glyphBoundingBox) {
+            FloatRect glyphBounds = currentFontData->boundsForGlyph(glyph);
+            glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
+            m_glyphBoundingBox->unite(glyphBounds);
+            glyphOrigin += FloatSize(advance + offsetX, offsetY);
+        }
 
         totalAdvance += advance;
     }

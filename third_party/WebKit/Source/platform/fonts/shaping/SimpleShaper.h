@@ -24,6 +24,8 @@
 #define SimpleShaper_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/unicode/Unicode.h"
@@ -39,22 +41,7 @@ struct GlyphData;
 struct PLATFORM_EXPORT SimpleShaper {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    class GlyphBounds {
-    public:
-        GlyphBounds()
-        {
-            maxGlyphBoundingBoxY = std::numeric_limits<float>::min();
-            minGlyphBoundingBoxY = std::numeric_limits<float>::max();
-            firstGlyphOverflow = 0;
-            lastGlyphOverflow = 0;
-        }
-        float maxGlyphBoundingBoxY;
-        float minGlyphBoundingBoxY;
-        float firstGlyphOverflow;
-        float lastGlyphOverflow;
-    };
-
-    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphBounds* = 0, bool forTextEmphasis = false);
+    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0, bool forTextEmphasis = false);
 
     unsigned advance(unsigned to, GlyphBuffer* = 0);
     bool advanceOneCharacter(float& width);
@@ -82,13 +69,12 @@ private:
     float characterWidth(UChar32, const GlyphData&) const;
     void cacheFallbackFont(const SimpleFontData*, const SimpleFontData* primaryFont);
     float adjustSpacing(float, const CharacterData&);
-    void updateGlyphBounds(const GlyphData&, float width, bool firstCharacter);
 
     template <typename TextIterator>
     unsigned advanceInternal(TextIterator&, GlyphBuffer*);
 
     HashSet<const SimpleFontData*>* m_fallbackFonts;
-    GlyphBounds* m_bounds;
+    FloatRect* m_glyphBoundingBox;
     bool m_forTextEmphasis : 1;
 };
 

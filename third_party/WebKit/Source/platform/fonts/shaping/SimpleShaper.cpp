@@ -38,15 +38,14 @@ using namespace Unicode;
 namespace blink {
 
 SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
-    HashSet<const SimpleFontData*>* fallbackFonts, GlyphBounds* bounds,
-    bool forTextEmphasis)
+    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds, bool forTextEmphasis)
     : m_font(font)
     , m_run(run)
     , m_currentCharacter(0)
     , m_runWidthSoFar(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
     , m_fallbackFonts(fallbackFonts)
-    , m_bounds(bounds)
+    , m_glyphBoundingBox(bounds)
     , m_forTextEmphasis(forTextEmphasis)
 {
     // If the padding is non-zero, count the number of spaces in the run
@@ -139,19 +138,6 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
     return width;
 }
 
-void SimpleShaper::updateGlyphBounds(const GlyphData& glyphData, float width, bool firstCharacter)
-{
-    ASSERT(glyphData.fontData);
-    FloatRect bounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
-
-    ASSERT(m_bounds);
-    if (firstCharacter)
-        m_bounds->firstGlyphOverflow = std::max<float>(0, -bounds.x());
-    m_bounds->lastGlyphOverflow = std::max<float>(0, bounds.maxX() - width);
-    m_bounds->maxGlyphBoundingBoxY = std::max(m_bounds->maxGlyphBoundingBoxY, bounds.maxY());
-    m_bounds->minGlyphBoundingBoxY = std::min(m_bounds->minGlyphBoundingBoxY, bounds.y());
-}
-
 template <typename TextIterator>
 unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
 {
@@ -161,6 +147,8 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
     const SimpleFontData* primaryFont = m_font->primaryFont();
     const SimpleFontData* lastFontData = primaryFont;
     bool normalizeSpace = m_run.normalizeSpace();
+    FloatPoint glyphOrigin;
+    FloatRect glyphBounds;
 
     CharacterData charData;
     while (textIterator.consume(charData.character, charData.clusterLength)) {
@@ -193,8 +181,12 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)
             width = adjustSpacing(width, charData);
 
-        if (m_bounds)
-            updateGlyphBounds(glyphData, width, !charData.characterOffset);
+        if (m_glyphBoundingBox) {
+            ASSERT(glyphData.fontData);
+            glyphBounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
+            glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
+            m_glyphBoundingBox->unite(glyphBounds);
+        }
 
         if (m_forTextEmphasis) {
             if (!Character::canReceiveTextEmphasis(charData.character))
@@ -211,6 +203,8 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         // Advance past the character we just dealt with.
         textIterator.advance(charData.clusterLength);
         m_runWidthSoFar += width;
+        // We are handling simple text run here, so Y-Offset will be zero.
+        glyphOrigin += FloatSize(width, 0);
     }
 
     unsigned consumedCharacters = textIterator.currentCharacter() - m_currentCharacter;
