@@ -5,7 +5,6 @@
 #include "base/message_loop/message_loop.h"
 
 #include <algorithm>
-#include <limits>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -43,12 +42,6 @@ namespace {
 // loop, if one exists.  This should be safe and free of static constructors.
 LazyInstance<base::ThreadLocalPointer<MessageLoop> >::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
-
-// Delays larger than this many microseconds are likely bogus, and a warning
-// should be emitted in debug builds to warn developers.
-// http://crbug.com/450045
-const int kTaskDelayWarningThresholdInMicroseconds =
-    std::numeric_limits<int>::max() / 2;
 
 // Logical events for Histogram profiling. Run with -message-loop-histogrammer
 // to get an accounting of messages and actions taken on each thread.
@@ -286,10 +279,6 @@ void MessageLoop::PostDelayedTask(
     const Closure& task,
     TimeDelta delay) {
   DCHECK(!task.is_null()) << from_here.ToString();
-  DLOG_IF(WARNING,
-          delay.InMicroseconds() > kTaskDelayWarningThresholdInMicroseconds)
-      << "Requesting super-long task delay period of " << delay.InMicroseconds()
-      << " usec from " << from_here.ToString();
   incoming_task_queue_->AddToIncomingQueue(from_here, task, delay, true);
 }
 
@@ -305,10 +294,6 @@ void MessageLoop::PostNonNestableDelayedTask(
     const Closure& task,
     TimeDelta delay) {
   DCHECK(!task.is_null()) << from_here.ToString();
-  DLOG_IF(WARNING,
-          delay.InMicroseconds() > kTaskDelayWarningThresholdInMicroseconds)
-      << "Requesting super-long task delay period of " << delay.InMicroseconds()
-      << " usec from " << from_here.ToString();
   incoming_task_queue_->AddToIncomingQueue(from_here, task, delay, false);
 }
 

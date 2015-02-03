@@ -4,6 +4,8 @@
 
 #include "base/message_loop/incoming_task_queue.h"
 
+#include <limits>
+
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -14,6 +16,12 @@ namespace base {
 namespace internal {
 
 namespace {
+
+// Delays larger than this many microseconds are often bogus, and a warning
+// should be emitted in debug builds to warn developers.
+// http://crbug.com/450045
+const int kTaskDelayWarningThresholdInMicroseconds =
+    std::numeric_limits<int>::max() / 2;  // A little less than 18 minutes.
 
 // Returns true if MessagePump::ScheduleWork() must be called one
 // time for every task that is added to the MessageLoop incoming queue.
@@ -43,6 +51,11 @@ bool IncomingTaskQueue::AddToIncomingQueue(
     const Closure& task,
     TimeDelta delay,
     bool nestable) {
+  DLOG_IF(WARNING,
+          delay.InMicroseconds() > kTaskDelayWarningThresholdInMicroseconds)
+      << "Requesting super-long task delay period of " << delay.InMicroseconds()
+      << " usec from here: " << from_here.ToString();
+
   AutoLock locked(incoming_queue_lock_);
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(delay), nestable);
