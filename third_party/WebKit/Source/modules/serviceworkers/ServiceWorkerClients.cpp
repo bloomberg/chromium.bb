@@ -54,6 +54,11 @@ ServiceWorkerClients::ServiceWorkerClients()
 
 ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ClientQueryOptions& options)
 {
+    ExecutionContext* executionContext = scriptState->executionContext();
+    // FIXME: May be null due to worker termination: http://crbug.com/413518.
+    if (!executionContext)
+        return ScriptPromise();
+
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -69,7 +74,7 @@ ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Clien
         return promise;
     }
 
-    ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
+    ServiceWorkerGlobalScopeClient::from(executionContext)->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
     return promise;
 }
 
@@ -77,7 +82,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
 
-    // FIXME: May be null due to worker termination: http://crbug.coma/413518.
+    // FIXME: May be null due to worker termination: http://crbug.com/413518.
     if (!executionContext)
         return ScriptPromise();
 
