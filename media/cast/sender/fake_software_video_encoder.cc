@@ -33,6 +33,11 @@ void FakeSoftwareVideoEncoder::Encode(
     EncodedFrame* encoded_frame) {
   DCHECK(encoded_frame);
 
+  if (video_frame->visible_rect().size() != last_frame_size_) {
+    next_frame_is_key_ = true;
+    last_frame_size_ = video_frame->visible_rect().size();
+  }
+
   encoded_frame->frame_id = frame_id_++;
   if (next_frame_is_key_) {
     encoded_frame->dependency = EncodedFrame::KEY;

@@ -100,17 +100,11 @@ VideoSender::VideoSender(
         create_video_encode_mem_cb));
   } else if (!video_encoder_) {
     // Software encoder is initialized immediately.
-    video_encoder_.reset(new VideoEncoderImpl(cast_environment, video_config));
+    video_encoder_.reset(new VideoEncoderImpl(
+        cast_environment, video_config, initialization_cb));
     cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
   }
 #endif  // !defined(OS_IOS)
-
-  if (cast_initialization_status_ == STATUS_VIDEO_INITIALIZED) {
-    cast_environment->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(initialization_cb, cast_initialization_status_));
-  }
 
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = video_config.ssrc;

@@ -11,6 +11,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 class VideoFrame;
@@ -56,10 +57,16 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   };
 
   bool is_initialized() const {
-    // Initialize() sets the timebase denominator value to non-zero if the
-    // encoder is successfully initialized, and it is zero otherwise.
+    // ConfigureForNewFrameSize() sets the timebase denominator value to
+    // non-zero if the encoder is successfully initialized, and it is zero
+    // otherwise.
     return config_.g_timebase.den != 0;
   }
+
+  // If the |encoder_| is live, attempt reconfiguration to allow it to encode
+  // frames at a new |frame_size|.  Otherwise, tear it down and re-create a new
+  // |encoder_| instance.
+  void ConfigureForNewFrameSize(const gfx::Size& frame_size);
 
   // Calculate which next Vp8 buffers to update with the next frame.
   Vp8Buffers GetNextBufferToUpdate();
@@ -80,11 +87,12 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   vpx_codec_enc_cfg_t config_;
   vpx_codec_ctx_t encoder_;
 
-  // Wrapper for access to YUV data planes in a media::VideoFrame.
-  vpx_image_t* raw_image_;
-
   // Set to true to request the next frame emitted by Vp8Encoder be a key frame.
   bool key_frame_requested_;
+
+  // Saves the current bitrate setting, for when the |encoder_| is reconfigured
+  // for different frame sizes.
+  int bitrate_kbit_;
 
   // The |VideoFrame::timestamp()| of the last encoded frame.  This is used to
   // predict the duration of the next frame.

@@ -54,7 +54,8 @@ void EncodeVideoFrameOnEncoderThread(
 
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
-    const VideoSenderConfig& video_config)
+    const VideoSenderConfig& video_config,
+    const CastInitializationCallback& initialization_cb)
     : cast_environment_(cast_environment) {
   CHECK(cast_environment_->HasVideoThread());
   if (video_config.codec == CODEC_VIDEO_VP8) {
@@ -75,6 +76,15 @@ VideoEncoderImpl::VideoEncoderImpl(
   dynamic_config_.key_frame_requested = false;
   dynamic_config_.latest_frame_id_to_reference = kStartFrameId;
   dynamic_config_.bit_rate = video_config.start_bitrate;
+
+  if (!initialization_cb.is_null()) {
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(initialization_cb,
+                   encoder_.get() ? STATUS_VIDEO_INITIALIZED :
+                                    STATUS_UNSUPPORTED_VIDEO_CODEC));
+  }
 }
 
 VideoEncoderImpl::~VideoEncoderImpl() {
@@ -88,11 +98,20 @@ VideoEncoderImpl::~VideoEncoderImpl() {
   }
 }
 
+bool VideoEncoderImpl::CanEncodeVariedFrameSizes() const {
+  // Both the VP8Encoder and FakeSoftwareVideoEncoder support calls to
+  // EncodeVideoFrame() with different frame sizes.
+  return true;
+}
+
 bool VideoEncoderImpl::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  DCHECK(!video_frame->visible_rect().IsEmpty());
+  DCHECK(!frame_encoded_callback.is_null());
+
   cast_environment_->PostTask(CastEnvironment::VIDEO,
                               FROM_HERE,
                               base::Bind(&EncodeVideoFrameOnEncoderThread,
