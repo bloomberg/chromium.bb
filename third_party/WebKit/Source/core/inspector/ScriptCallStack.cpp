@@ -36,8 +36,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
-
 PassRefPtrWillBeRawPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
 {
     return adoptRefWillBeNoop(new ScriptCallStack(frames));
@@ -46,6 +44,10 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCal
 ScriptCallStack::ScriptCallStack(Vector<ScriptCallFrame>& frames)
 {
     m_frames.swap(frames);
+}
+
+ScriptCallStack::~ScriptCallStack()
+{
 }
 
 const ScriptCallFrame &ScriptCallStack::at(size_t index) const

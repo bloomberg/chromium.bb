@@ -44,11 +44,12 @@ class ScriptAsyncCallStack;
 class TracedValue;
 
 class ScriptCallStack final : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 
     static PassRefPtrWillBeRawPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
+
+    ~ScriptCallStack();
 
     const ScriptCallFrame &at(size_t) const;
     size_t size() const;

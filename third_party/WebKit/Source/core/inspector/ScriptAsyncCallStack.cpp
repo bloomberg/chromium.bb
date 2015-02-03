@@ -7,8 +7,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptAsyncCallStack);
-
 PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> ScriptAsyncCallStack::create(const String& description, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncStackTrace)
 {
     return adoptRefWillBeNoop(new ScriptAsyncCallStack(description, callStack, asyncStackTrace));
@@ -20,6 +18,10 @@ ScriptAsyncCallStack::ScriptAsyncCallStack(const String& description, PassRefPtr
     , m_asyncStackTrace(asyncStackTrace)
 {
     ASSERT(m_callStack);
+}
+
+ScriptAsyncCallStack::~ScriptAsyncCallStack()
+{
 }
 
 PassRefPtr<TypeBuilder::Console::AsyncStackTrace> ScriptAsyncCallStack::buildInspectorObject() const

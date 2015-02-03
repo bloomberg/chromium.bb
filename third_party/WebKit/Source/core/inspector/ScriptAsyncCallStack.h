@@ -14,9 +14,10 @@
 namespace blink {
 
 class ScriptAsyncCallStack : public RefCountedWillBeGarbageCollectedFinalized<ScriptAsyncCallStack> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptAsyncCallStack);
 public:
     static PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> create(const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
+
+    ~ScriptAsyncCallStack();
 
     PassRefPtr<TypeBuilder::Console::AsyncStackTrace> buildInspectorObject() const;
 

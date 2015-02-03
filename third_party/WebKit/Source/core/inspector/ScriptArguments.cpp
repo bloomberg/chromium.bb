@@ -162,8 +162,6 @@ private:
 
 } // namespace
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptArguments)
-
 PassRefPtrWillBeRawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
 {
     return adoptRefWillBeNoop(new ScriptArguments(scriptState, arguments));
@@ -173,6 +171,10 @@ ScriptArguments::ScriptArguments(ScriptState* scriptState, Vector<ScriptValue>& 
     : m_scriptState(scriptState)
 {
     m_arguments.swap(arguments);
+}
+
+ScriptArguments::~ScriptArguments()
+{
 }
 
 const ScriptValue &ScriptArguments::argumentAt(size_t index) const
