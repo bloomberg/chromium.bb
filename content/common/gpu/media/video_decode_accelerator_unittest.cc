@@ -52,6 +52,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gl/gl_image.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -334,6 +335,10 @@ class GLRenderingVDAClient
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
 
+  void BindImage(uint32 client_texture_id,
+                 uint32 texture_target,
+                 scoped_refptr<gfx::GLImage> image);
+
   void SetState(ClientState new_state);
   void FinishInitialization();
   void ReturnPicture(int32 picture_buffer_id);
@@ -515,14 +520,21 @@ GLRenderingVDAClient::CreateV4L2SliceVDA() {
 #endif
   return decoder.Pass();
 }
+
 scoped_ptr<media::VideoDecodeAccelerator>
 GLRenderingVDAClient::CreateVaapiVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder.reset(
-      new VaapiVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
+  decoder.reset(new VaapiVideoDecodeAccelerator(
+      base::Bind(&DoNothingReturnTrue),
+      base::Bind(&GLRenderingVDAClient::BindImage, base::Unretained(this))));
 #endif
   return decoder.Pass();
+}
+
+void GLRenderingVDAClient::BindImage(uint32 client_texture_id,
+                                     uint32 texture_target,
+                                     scoped_refptr<gfx::GLImage> image) {
 }
 
 void GLRenderingVDAClient::CreateAndStartDecoder() {

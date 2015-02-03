@@ -74,4 +74,8 @@ bool VaapiTFPPicture::DownloadFromSurface(
                                               va_surface->size());
 }
 
+scoped_refptr<gfx::GLImage> VaapiTFPPicture::GetImageToBind() {
+  return nullptr;
+}
+
 }  // namespace content

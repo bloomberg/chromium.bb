@@ -21,6 +21,10 @@ class MEDIA_EXPORT PictureBuffer {
   PictureBuffer(int32 id,
                 gfx::Size size,
                 uint32 texture_id,
+                uint32 internal_texture_id);
+  PictureBuffer(int32 id,
+                gfx::Size size,
+                uint32 texture_id,
                 const gpu::Mailbox& texture_mailbox);
 
   // Returns the client-specified id of the buffer.
@@ -40,6 +44,8 @@ class MEDIA_EXPORT PictureBuffer {
     return texture_id_;
   }
 
+  uint32 internal_texture_id() const { return internal_texture_id_; }
+
   const gpu::Mailbox& texture_mailbox() const {
     return texture_mailbox_;
   }
@@ -48,6 +54,7 @@ class MEDIA_EXPORT PictureBuffer {
   int32 id_;
   gfx::Size size_;
   uint32 texture_id_;
+  uint32 internal_texture_id_;
   gpu::Mailbox texture_mailbox_;
 };
 

@@ -161,10 +161,19 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
     }
     pixmap = it->second.get();
   }
+  return CreateImageForPixmap(pixmap, size, format, internalformat);
+}
+
+scoped_refptr<gfx::GLImage>
+GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForPixmap(
+    scoped_refptr<NativePixmap> pixmap,
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    unsigned internalformat) {
   if (pixmap->GetEGLClientBuffer()) {
     scoped_refptr<GLImageOzoneNativePixmap> image =
         new GLImageOzoneNativePixmap(size);
-    if (!image->Initialize(pixmap)) {
+    if (!image->Initialize(pixmap.get())) {
       return scoped_refptr<gfx::GLImage>();
     }
     return image;
@@ -172,7 +181,7 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
   if (pixmap->GetDmaBufFd() > 0) {
     scoped_refptr<GLImageOzoneNativePixmapDmaBuf> image =
         new GLImageOzoneNativePixmapDmaBuf(size, internalformat);
-    if (!image->Initialize(pixmap, format)) {
+    if (!image->Initialize(pixmap.get(), format)) {
       return scoped_refptr<gfx::GLImage>();
     }
     return image;

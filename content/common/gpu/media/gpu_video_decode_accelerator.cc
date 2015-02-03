@@ -22,6 +22,7 @@
 #include "ipc/message_filter.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #if defined(OS_WIN)
@@ -336,11 +337,24 @@ GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
   return decoder.Pass();
 }
 
+void GpuVideoDecodeAccelerator::BindImage(uint32 client_texture_id,
+                                          uint32 texture_target,
+                                          scoped_refptr<gfx::GLImage> image) {
+  gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
+  gpu::gles2::TextureManager* texture_manager =
+      command_decoder->GetContextGroup()->texture_manager();
+  gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
+  if (ref)
+    texture_manager->SetLevelImage(ref, texture_target, 0, image.get());
+}
+
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateVaapiVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder.reset(new VaapiVideoDecodeAccelerator(make_context_current_));
+  decoder.reset(new VaapiVideoDecodeAccelerator(
+      make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                                        base::Unretained(this))));
 #endif
   return decoder.Pass();
 }
@@ -467,15 +481,9 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
                                       width, height, 1, 0, format, 0, false);
       }
     }
-    uint32 service_texture_id;
-    if (!command_decoder->GetServiceTextureId(
-            texture_ids[i], &service_texture_id)) {
-      DLOG(ERROR) << "Failed to translate texture!";
-      NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-      return;
-    }
-    buffers.push_back(media::PictureBuffer(
-        buffer_ids[i], texture_dimensions_, service_texture_id));
+    buffers.push_back(media::PictureBuffer(buffer_ids[i], texture_dimensions_,
+                                           texture_ref->service_id(),
+                                           texture_ids[i]));
     textures.push_back(texture_ref);
   }
   video_decode_accelerator_->AssignPictureBuffers(buffers);

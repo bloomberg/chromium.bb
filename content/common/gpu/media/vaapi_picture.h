@@ -16,6 +16,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace gfx {
+class GLImage;
+}
+
 namespace content {
 
 class VASurface;
@@ -32,6 +36,11 @@ class VaapiPicture : public base::NonThreadSafe {
   int32 picture_buffer_id() const { return picture_buffer_id_; }
   uint32 texture_id() const { return texture_id_; }
   const gfx::Size& size() const { return size_; }
+
+  virtual bool AllowOverlay() const;
+
+  // Returns the |GLImage|, if any, to bind to the texture.
+  virtual scoped_refptr<gfx::GLImage> GetImageToBind() = 0;
 
   // Downloads the |va_surface| into the picture, potentially scaling
   // it if needed.

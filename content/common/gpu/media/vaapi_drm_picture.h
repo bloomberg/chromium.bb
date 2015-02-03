@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
-class GLImageLinuxDMABuffer;
+class GLImage;
 }
 
 namespace ui {
@@ -41,6 +41,10 @@ class VaapiDrmPicture : public VaapiPicture {
 
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
 
+  scoped_refptr<gfx::GLImage> GetImageToBind() override;
+
+  bool AllowOverlay() const override;
+
  private:
   VaapiWrapper* vaapi_wrapper_;  // Not owned.
   base::Callback<bool(void)> make_context_current_;
@@ -49,7 +53,7 @@ class VaapiDrmPicture : public VaapiPicture {
   scoped_refptr<ui::NativePixmap> pixmap_;
 
   // EGLImage bound to the GL textures used by the VDA client.
-  scoped_refptr<gfx::GLImageLinuxDMABuffer> gl_image_;
+  scoped_refptr<gfx::GLImage> gl_image_;
 
   // VASurface used to transfer from the decoder's pixel format.
   scoped_refptr<VASurface> va_surface_;

@@ -104,6 +104,11 @@ class GpuVideoDecodeAccelerator
   // Helper for replying to the creation request.
   void SendCreateDecoderReply(IPC::Message* message, bool succeeded);
 
+  // Helper to bind |image| to the texture specified by |client_texture_id|.
+  void BindImage(uint32 client_texture_id,
+                 uint32 texture_target,
+                 scoped_refptr<gfx::GLImage> image);
+
   // Route ID to communicate with the host.
   int32 host_route_id_;
 
