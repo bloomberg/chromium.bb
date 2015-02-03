@@ -62,6 +62,25 @@ base.Disposable = function() {};
 base.Disposable.prototype.dispose = function() {};
 
 /**
+ * @constructor
+ * @param {...base.Disposable} var_args
+ * @implements {base.Disposable}
+ */
+base.Disposables = function(var_args) {
+  /**
+   * @type {Array.<base.Disposable>}
+   * @private
+   */
+  this.disposables_ = Array.prototype.slice.call(arguments, 0);
+};
+
+base.Disposables.prototype.dispose = function() {
+  for (var i = 0; i < this.disposables_.length; i++) {
+    this.disposables_[i].dispose();
+  }
+};
+
+/**
  * A utility function to invoke |obj|.dispose without a null check on |obj|.
  * @param {base.Disposable} obj
  */
@@ -116,7 +135,7 @@ base.values = function(dict) {
  * @return {*} a recursive copy of |value| or null if |value| is not copyable
  *   (e.g. undefined, NaN).
  */
-base.deepCopy = function (value) {
+base.deepCopy = function(value) {
   try {
     return JSON.parse(JSON.stringify(value));
   } catch (e) {}
@@ -432,6 +451,89 @@ base.EventSource.prototype = {
   }
 };
 
+
+/**
+  * A lightweight object that helps manage the lifetime of an event listener.
+  *
+  * For example, do the following if you want to automatically unhook events
+  * when your object is disposed:
+  *
+  * var MyConstructor = function(domElement) {
+  *   this.eventHooks_ = new base.Disposables(
+  *     new base.EventHook(domElement, 'click', this.onClick_.bind(this)),
+  *     new base.EventHook(domElement, 'keydown', this.onClick_.bind(this)),
+  *     new base.ChromeEventHook(chrome.runtime.onMessage,
+  *                              this.onMessage_.bind(this))
+  *   );
+  * }
+  *
+  * MyConstructor.prototype.dispose = function() {
+  *   this.eventHooks_.dispose();
+  *   this.eventHooks_ = null;
+  * }
+  *
+  * @param {base.EventSource} src
+  * @param {string} eventName
+  * @param {function(...?)} listener
+  *
+  * @constructor
+  * @implements {base.Disposable}
+  */
+base.EventHook = function(src, eventName, listener) {
+  this.src_ = src;
+  this.eventName_ = eventName;
+  this.listener_ = listener;
+  src.addEventListener(eventName, listener);
+};
+
+base.EventHook.prototype.dispose = function() {
+  this.src_.removeEventListener(this.eventName_, this.listener_);
+};
+
+/**
+  * An event hook implementation for DOM Events.
+  *
+  * @param {HTMLElement} src
+  * @param {string} eventName
+  * @param {function(...?)} listener
+  * @param {boolean} capture
+  *
+  * @constructor
+  * @implements {base.Disposable}
+  */
+base.DomEventHook = function(src, eventName, listener, capture) {
+  this.src_ = src;
+  this.eventName_ = eventName;
+  this.listener_ = listener;
+  this.capture_ = capture;
+  src.addEventListener(eventName, listener, capture);
+};
+
+base.DomEventHook.prototype.dispose = function() {
+  this.src_.removeEventListener(this.eventName_, this.listener_, this.capture_);
+};
+
+
+/**
+  * An event hook implementation for Chrome Events.
+  *
+  * @param {chrome.Event} src
+  * @param {function(...?)} listener
+  *
+  * @constructor
+  * @implements {base.Disposable}
+  */
+base.ChromeEventHook = function(src, listener) {
+  this.src_ = src;
+  this.listener_ = listener;
+  src.addListener(listener);
+};
+
+base.ChromeEventHook.prototype.dispose = function() {
+  this.src_.removeListener(this.listener_);
+};
+
+
 /**
   * Converts UTF-8 string to ArrayBuffer.
   *
@@ -444,7 +546,7 @@ base.encodeUtf8 = function(string) {
   for (var i = 0; i < utf8String.length; i++)
     result[i] = utf8String.charCodeAt(i);
   return result.buffer;
-}
+};
 
 /**
   * Decodes UTF-8 string from ArrayBuffer.
@@ -455,7 +557,7 @@ base.encodeUtf8 = function(string) {
 base.decodeUtf8 = function(buffer) {
   return decodeURIComponent(
       escape(String.fromCharCode.apply(null, new Uint8Array(buffer))));
-}
+};
 
 /**
  * Generate a nonce, to be used as an xsrf protection token.
@@ -479,4 +581,4 @@ base.jsonParseSafe = function(jsonString) {
   } catch (err) {
     return undefined;
   }
-}
+};

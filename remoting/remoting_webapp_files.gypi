@@ -178,6 +178,7 @@
       'webapp/unittests/apps_v2_migration_unittest.js',
       'webapp/unittests/base_unittest.js',
       'webapp/unittests/dns_blackhole_checker_unittest.js',
+      'webapp/unittests/event_hook_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',
       'webapp/unittests/ipc_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
