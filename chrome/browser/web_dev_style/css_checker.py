@@ -258,18 +258,18 @@ class CSSChecker(object):
     def webkit_before_or_after(line):
       return webkit_before_or_after_reg.search(line)
 
-    def zero_length_values(contents):
+    def zero_width_lengths(contents):
       hsl_reg = re.compile(r"""
           hsl\([^\)]*       # hsl(<maybe stuff>
           (?:[, ]|(?<=\())  # a comma or space not followed by a (
           (?:0?\.?)?0%      # some equivalent to 0%""",
           re.VERBOSE)
       zeros_reg = re.compile(r"""
-          ^.*(?:^|[^0-9.])                                 # start/non-number
-          (?:\.0|0(?:\.0?                                  # .0, 0, or 0.0
-          |px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))  # a length unit
-          (?:\D|$)                                         # non-number/end
-          (?=[^{}]+?}).*$                                  # only { rules }""",
+          ^.*(?:^|[^0-9.])              # start/non-number
+          (?:\.0|0(?:\.0?               # .0, 0, or 0.0
+          |px|em|%|in|cm|mm|pc|pt|ex))  # a length unit
+          (?:\D|$)                      # non-number/end
+          (?=[^{}]+?}).*$               # only { rules }""",
           re.MULTILINE | re.VERBOSE)
       errors = []
       for z in re.finditer(zeros_reg, contents):
@@ -336,9 +336,8 @@ class CSSChecker(object):
           'test': webkit_before_or_after,
           'after': suggest_top_or_bottom,
         },
-        { 'desc': 'Make all zero length terms (i.e. 0px) 0 unless inside of '
-                  'hsl() or part of @keyframe.',
-          'test': zero_length_values,
+        { 'desc': 'Use "0" for zero-width lengths (i.e. 0px -> 0)',
+          'test': zero_width_lengths,
           'multiline': True,
         },
     ]

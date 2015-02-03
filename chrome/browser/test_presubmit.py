@@ -804,7 +804,7 @@ b:before,
     -webkit-margin-before: 10px; (replace with margin-top)
     -webkit-padding-after: 3px; (replace with padding-bottom)""")
 
-  def testCssZeroLengthTerms(self):
+  def testCssZeroWidthLengths(self):
     self.VerifyContentsProducesOutput("""
 @-webkit-keyframe anim {
   0% { /* Ignore key frames */
@@ -836,10 +836,7 @@ body.alternate-logo #logo {
 .media-button[state='0']:not(.disabled):hover > .state0.hover {
   -webkit-animation: anim 0s;
   -webkit-animation-duration: anim 0ms;
-  -webkit-transform: scale(0%),
-                     translateX(0deg),
-                     translateY(0rad),
-                     translateZ(0grad);
+  -webkit-transform: scale(0%);
   background-position-x: 0em;
   background-position-y: 0ex;
   border-width: 0em;
@@ -854,15 +851,9 @@ body.alternate-logo #logo {
   height: 0cm;
   width: 0in;
 }""", """
-- Make all zero length terms (i.e. 0px) 0 unless inside of hsl() or part of"""
-""" @keyframe.
+- Use "0" for zero-width lengths (i.e. 0px -> 0)
     width: 0px;
-    -webkit-animation: anim 0s;
-    -webkit-animation-duration: anim 0ms;
-    -webkit-transform: scale(0%),
-    translateX(0deg),
-    translateY(0rad),
-    translateZ(0grad);
+    -webkit-transform: scale(0%);
     background-position-x: 0em;
     background-position-y: 0ex;
     border-width: 0em;
