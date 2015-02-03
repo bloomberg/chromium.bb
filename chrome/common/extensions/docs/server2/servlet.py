@@ -96,6 +96,12 @@ class Response(object):
     return Response(headers={'Location': url}, status=status)
 
   @staticmethod
+  def BadRequest(content, headers=None):
+    '''Returns a bad request (400) response.
+    '''
+    return Response(content=content, headers=headers, status=400)
+
+  @staticmethod
   def NotFound(content, headers=None):
     '''Returns a not found (404) response.
     '''

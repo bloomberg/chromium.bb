@@ -22,6 +22,10 @@ handlers:
   script: appengine_main.py
   secure: always
   login: admin
+- url: /_reset_commit/.*
+  script: appengine_main.py
+  secure: always
+  login: admin
 - url: /.*
   script: appengine_main.py
   secure: always

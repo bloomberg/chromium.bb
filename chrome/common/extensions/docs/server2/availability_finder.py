@@ -174,7 +174,7 @@ class AvailabilityFinder(object):
     schema_fs = self._CreateAPISchemaFileSystem(file_system)
     api_schemas = schema_fs.GetFromFile(api_filename).Get()
     matching_schemas = [api for api in api_schemas
-                        if api['namespace'] == api_name]
+                        if api and api['namespace'] == api_name]
     # There should only be a single matching schema per file, or zero in the
     # case of no API data being found in _EXTENSION_API.
     assert len(matching_schemas) <= 1
