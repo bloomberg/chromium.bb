@@ -490,7 +490,12 @@ void TextAutosizer::updatePageInfoInAllFrames()
     for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        if (TextAutosizer* textAutosizer = toLocalFrame(frame)->document()->textAutosizer())
+
+        Document* document = toLocalFrame(frame)->document();
+        // If document is being detached, skip updatePageInfo.
+        if (!document || !document->isActive())
+            continue;
+        if (TextAutosizer* textAutosizer = document->textAutosizer())
             textAutosizer->updatePageInfo();
     }
 }
