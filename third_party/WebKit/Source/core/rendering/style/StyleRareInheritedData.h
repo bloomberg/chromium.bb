@@ -29,6 +29,7 @@
 #include "core/rendering/style/DataRef.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
+#include "platform/text/TabSize.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefVector.h"
@@ -142,11 +143,10 @@ public:
     AtomicString textEmphasisCustomMark;
     RefPtr<QuotesData> quotes;
 
-    unsigned m_tabSize;
-
     Color tapHighlightColor;
 
     RefPtr<AppliedTextDecorationList> appliedTextDecorations;
+    TabSize m_tabSize;
 
 private:
     StyleRareInheritedData();

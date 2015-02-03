@@ -15,8 +15,8 @@
     tab-size: calc(2 / 4);
 }
 .px-invalid {
-    tab-size: 12345;
-    tab-size: calc((2 + 4) * 1px);
+    opacity: 0.9;
+    opacity: calc((2 / 4) * 1px);
 }
 </style>
 <div class="default int"></div>
@@ -35,7 +35,7 @@ function getComputedValue(selector, property) {
 
 shouldBe('getComputedValue(".int", "tabSize")', '"8"');
 shouldBe('getComputedValue(".int-non-neg-invalid", "tabSize")', '"12345"');
-shouldBe('getComputedValue(".float", "opacity")', '"0.5"');
+shouldBeCloseTo('Number(getComputedValue(".float", "opacity"))', 0.5, .0001);
 shouldBe('getComputedValue(".float-invalid", "tabSize")', '"12345"');
-shouldBe('getComputedValue(".px-invalid", "tabSize")', '"12345"');
+shouldBeCloseTo('Number(getComputedValue(".px-invalid", "opacity"))', 0.9, .0001);
 </script>

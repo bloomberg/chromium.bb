@@ -543,6 +543,14 @@ Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, 
     return convertLengthSizing(state, value);
 }
 
+TabSize StyleBuilderConverter::convertLengthOrTabSpaces(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->isNumber())
+        return TabSize(primitiveValue->getIntValue());
+    return TabSize(primitiveValue->computeLength<float>(state.cssToLengthConversionData()));
+}
+
 LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

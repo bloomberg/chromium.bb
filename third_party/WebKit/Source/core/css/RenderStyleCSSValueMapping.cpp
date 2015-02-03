@@ -1483,7 +1483,8 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID p
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return zoomAdjustedPixelValue(style.columnWidth(), style);
     case CSSPropertyTabSize:
-        return cssValuePool().createValue(style.tabSize(), CSSPrimitiveValue::CSS_NUMBER);
+        return cssValuePool().createValue(
+            style.tabSize().getPixelSize(1.0), style.tabSize().isSpaces() ? CSSPrimitiveValue::CSS_NUMBER : CSSPrimitiveValue::CSS_PX);
     case CSSPropertyCursor: {
         RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
         CursorList* cursors = style.cursors();

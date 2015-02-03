@@ -37,9 +37,9 @@ struct ExpectedTextRunSize {
     float float2;
     float float3;
     uint32_t bitfields : 10;
-    unsigned anUnsigned;
     bool b;
     RefPtr<TextRun::RenderingContext> renderingContext;
+    TabSize tabSize;
 };
 
 static_assert(sizeof(TextRun) == sizeof(ExpectedTextRunSize), "TextRun should have expected size");

@@ -37,6 +37,7 @@
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/text/TabSize.h"
 
 namespace blink {
 
@@ -64,6 +65,7 @@ public:
     static Length convertLengthOrAuto(StyleResolverState&, CSSValue*);
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
+    static TabSize convertLengthOrTabSpaces(StyleResolverState&, CSSValue*);
     static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
     static Length convertLineHeight(StyleResolverState&, CSSValue*);

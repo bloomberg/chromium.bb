@@ -115,8 +115,8 @@ public:
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }
     float spaceWidth() const { return primaryFont()->spaceWidth() + fontDescription().letterSpacing(); }
-    float tabWidth(const SimpleFontData&, unsigned tabSize, float position) const;
-    float tabWidth(unsigned tabSize, float position) const { return tabWidth(*primaryFont(), tabSize, position); }
+    float tabWidth(const SimpleFontData&, const TabSize&, float position) const;
+    float tabWidth(const TabSize& tabSize, float position) const { return tabWidth(*primaryFont(), tabSize, position); }
 
     int emphasisMarkAscent(const AtomicString&) const;
     int emphasisMarkDescent(const AtomicString&) const;
@@ -213,17 +213,17 @@ inline FontSelector* Font::fontSelector() const
     return m_fontFallbackList ? m_fontFallbackList->fontSelector() : 0;
 }
 
-inline float Font::tabWidth(const SimpleFontData& fontData, unsigned tabSize, float position) const
+inline float Font::tabWidth(const SimpleFontData& fontData, const TabSize& tabSize, float position) const
 {
-    if (!tabSize)
+    float baseTabWidth = tabSize.getPixelSize(fontData.spaceWidth());
+    if (!baseTabWidth)
         return fontDescription().letterSpacing();
-    float tabWidth = tabSize * fontData.spaceWidth();
-    float distanceToTabStop = tabWidth - fmodf(position, tabWidth);
+    float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
 
     // The smallest allowable tab space is letterSpacing(); if the distance
     // to the next tab stop is less than that, advance an additional tab stop.
     if (distanceToTabStop < fontDescription().letterSpacing())
-        distanceToTabStop += tabWidth;
+        distanceToTabStop += baseTabWidth;
 
     return distanceToTabStop;
 }

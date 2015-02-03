@@ -1040,7 +1040,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return true;
     }
     case CSSPropertyTabSize:
+        // May be specified as a unit-less non-negative integer indicating number of space characters...
         validPrimitive = validUnit(value, FInteger | FNonNeg);
+        // ... or as a Length.
+        if (!validPrimitive)
+            validPrimitive = validUnit(value, FLength | FNonNeg);
         break;
     case CSSPropertyBorderRadius:
     case CSSPropertyWebkitBorderRadius:

@@ -28,6 +28,7 @@
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Heap.h"
+#include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "wtf/RefCounted.h"
@@ -76,8 +77,8 @@ public:
         , m_directionalOverride(directionalOverride)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
-        , m_tabSize(0)
         , m_normalizeSpace(false)
+        , m_tabSize(0)
     {
         m_data.characters8 = c;
     }
@@ -96,8 +97,8 @@ public:
         , m_directionalOverride(directionalOverride)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
-        , m_tabSize(0)
         , m_normalizeSpace(false)
+        , m_tabSize(0)
     {
         m_data.characters16 = c;
     }
@@ -115,8 +116,8 @@ public:
         , m_directionalOverride(directionalOverride)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
-        , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
+        , m_tabSize(0)
     {
         if (!m_charactersLength) {
             m_is8Bit = true;
@@ -143,8 +144,8 @@ public:
         , m_directionalOverride(directionalOverride)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
-        , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
+        , m_tabSize(0)
     {
         if (!m_charactersLength) {
             m_is8Bit = true;
@@ -196,8 +197,8 @@ public:
     void setHorizontalGlyphStretch(float scale) { m_horizontalGlyphStretch = scale; }
 
     bool allowTabs() const { return m_allowTabs; }
-    unsigned tabSize() const { return m_tabSize; }
-    void setTabSize(bool, unsigned);
+    TabSize tabSize() const { return m_tabSize; }
+    void setTabSize(bool, TabSize);
 
     float xPos() const { return m_xpos; }
     void setXPos(float xPos) { m_xpos = xPos; }
@@ -254,12 +255,12 @@ private:
     unsigned m_directionalOverride : 1; // Was this direction set by an override character.
     unsigned m_disableSpacing : 1;
     unsigned m_textJustify : 2;
-    unsigned m_tabSize;
     bool m_normalizeSpace;
     RefPtr<RenderingContext> m_renderingContext;
+    TabSize m_tabSize;
 };
 
-inline void TextRun::setTabSize(bool allow, unsigned size)
+inline void TextRun::setTabSize(bool allow, TabSize size)
 {
     m_allowTabs = allow;
     m_tabSize = size;

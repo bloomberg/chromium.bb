@@ -857,7 +857,7 @@ public:
     TextCombine textCombine() const { return static_cast<TextCombine>(rareNonInheritedData->m_textCombine); }
     bool hasTextCombine() const { return textCombine() != TextCombineNone; }
 
-    unsigned tabSize() const { return rareInheritedData->m_tabSize; }
+    TabSize tabSize() const { return rareInheritedData->m_tabSize; }
 
     // End CSS3 Getters
 
@@ -1306,7 +1306,7 @@ public:
 
     void setFilter(const FilterOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_filter, m_operations, ops); }
 
-    void setTabSize(unsigned size) { SET_VAR(rareInheritedData, m_tabSize, size); }
+    void setTabSize(TabSize size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 
     // End CSS3 Setters
 
@@ -1647,7 +1647,7 @@ public:
     static GridPosition initialGridRowStart() { return GridPosition(); }
     static GridPosition initialGridRowEnd() { return GridPosition(); }
 
-    static unsigned initialTabSize() { return 8; }
+    static TabSize initialTabSize() { return TabSize(8); }
 
     static WrapFlow initialWrapFlow() { return WrapFlowAuto; }
     static WrapThrough initialWrapThrough() { return WrapThroughWrap; }

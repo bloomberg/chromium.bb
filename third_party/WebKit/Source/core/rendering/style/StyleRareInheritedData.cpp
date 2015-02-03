@@ -45,10 +45,10 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     float secondFloat;
     unsigned m_bitfields[2];
     short pagedMediaShorts[2];
-    unsigned unsigneds[1];
     short hyphenationShorts[3];
 
     Color touchColors;
+    TabSize tabSize;
 };
 
 static_assert(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
@@ -91,8 +91,8 @@ StyleRareInheritedData::StyleRareInheritedData()
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
-    , m_tabSize(RenderStyle::initialTabSize())
     , tapHighlightColor(RenderStyle::initialTapHighlightColor())
+    , m_tabSize(RenderStyle::initialTabSize())
 {
 }
 
@@ -147,9 +147,9 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , hyphenationLimitLines(o.hyphenationLimitLines)
     , locale(o.locale)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
-    , m_tabSize(o.m_tabSize)
     , tapHighlightColor(o.tapHighlightColor)
     , appliedTextDecorations(o.appliedTextDecorations)
+    , m_tabSize(o.m_tabSize)
 {
 }
 
