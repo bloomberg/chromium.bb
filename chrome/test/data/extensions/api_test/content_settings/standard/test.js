@@ -14,6 +14,7 @@ var default_content_settings = {
   "popups": "block",
   "location": "ask",
   "notifications": "ask",
+  "fullscreen": "ask",
   "mouselock": "ask",
   "microphone": "ask",
   "camera": "ask",
@@ -27,6 +28,7 @@ var settings = {
   "popups": "allow",
   "location": "block",
   "notifications": "block",
+  "fullscreen": "allow",
   "mouselock": "block",
   "microphone": "block",
   "camera": "block"

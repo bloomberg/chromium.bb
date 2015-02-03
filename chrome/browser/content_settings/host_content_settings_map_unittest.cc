@@ -958,6 +958,18 @@ TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
                    extension, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
+TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  EXPECT_TRUE(HostContentSettingsMap::IsSettingAllowedForType(
+                  prefs, CONTENT_SETTING_ASK,
+                  CONTENT_SETTINGS_TYPE_FULLSCREEN));
+
+  // TODO(msramek): Add more checks for setting type - setting pairs where
+  // it is not obvious whether or not they are allowed.
+}
+
 TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =

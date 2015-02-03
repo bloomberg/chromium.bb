@@ -229,6 +229,14 @@
           {"type":"string", "enum": ["allow", "block", "ask"]}
         ]
       },
+      "fullscreen": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow sites to toggle the fullscreen mode. One of<br><var>allow</var>: Allow sites to toggle the fullscreen mode,<br><var>ask</var>: Ask when a site wants to toggle the fullscreen mode. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested to toggle the fullscreen mode. The secondary URL is the URL of the top-level frame (which may or may not differ from the requesting URL).",
+        "value": [
+          "fullscreen",
+          {"type":"string", "enum": ["allow", "ask"]}
+        ]
+      },
       "mouselock": {
         "$ref": "ContentSetting",
         "description": "Whether to allow sites to disable the mouse cursor. One of <br><var>allow</var>: Allow sites to disable the mouse cursor,<br><var>block</var>: Don't allow sites to disable the mouse cursor,<br><var>ask</var>: Ask when a site wants to disable the mouse cursor. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
