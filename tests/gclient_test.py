@@ -994,6 +994,7 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     try:
       obj.RunOnDeps('None', [])
+      self.fail()
     except gclient_utils.Error, e:
       self.assertIn('allowed_hosts must be', str(e))
     finally:
@@ -1018,6 +1019,7 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     try:
       obj.RunOnDeps('None', [])
+      self.fail()
     except gclient_utils.Error, e:
       self.assertIn('allowed_hosts must be', str(e))
     finally:
