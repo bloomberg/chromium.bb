@@ -159,8 +159,12 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/fake_affiliation_api.cc',
+        'password_manager/core/browser/fake_affiliation_api.h',
         'password_manager/core/browser/fake_affiliation_fetcher.cc',
         'password_manager/core/browser/fake_affiliation_fetcher.h',
+        'password_manager/core/browser/mock_affiliation_consumer.cc',
+        'password_manager/core/browser/mock_affiliation_consumer.h',
         'password_manager/core/browser/mock_password_store.cc',
         'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_form_data.cc',

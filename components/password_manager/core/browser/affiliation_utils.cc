@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 
 #include <algorithm>
+#include <ostream>
 
 #include "base/base64.h"
 #include "base/strings/string_piece.h"
@@ -267,6 +268,10 @@ AffiliatedFacetsWithUpdateTime::~AffiliatedFacetsWithUpdateTime() {
 
 
 // Helpers --------------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri) {
+  return os << facet_uri.potentially_invalid_spec();
+}
 
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b) {

@@ -16,8 +16,13 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 
 namespace base {
+class FilePath;
 class SingleThreadTaskRunner;
-}
+}  // namespace base
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace password_manager {
 
@@ -97,7 +102,8 @@ class AffiliationService : public KeyedService {
 
   // Initializes the service by creating its backend and transferring it to the
   // thread corresponding to |backend_task_runner_|.
-  void Initialize();
+  void Initialize(net::URLRequestContextGetter* request_context_getter,
+                  const base::FilePath& db_path);
 
   // Looks up facets affiliated with the facet identified by |facet_uri|. If
   // |cached_only| is true, the results will be based solely on prefetched

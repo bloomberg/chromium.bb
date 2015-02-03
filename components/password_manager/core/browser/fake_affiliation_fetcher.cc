@@ -39,11 +39,16 @@ password_manager::ScopedFakeAffiliationFetcherFactory::
   AffiliationFetcher::SetFactoryForTesting(nullptr);
 }
 
-FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::GetNextFetcher() {
+FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::PopNextFetcher() {
   DCHECK(!pending_fetchers_.empty());
   FakeAffiliationFetcher* first = pending_fetchers_.front();
   pending_fetchers_.pop();
   return first;
+}
+
+FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::PeekNextFetcher() {
+  DCHECK(!pending_fetchers_.empty());
+  return pending_fetchers_.front();
 }
 
 AffiliationFetcher* ScopedFakeAffiliationFetcherFactory::CreateInstance(

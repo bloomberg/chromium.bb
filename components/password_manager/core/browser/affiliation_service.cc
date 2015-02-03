@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "components/password_manager/core/browser/affiliation_backend.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace password_manager {
 
@@ -28,13 +31,16 @@ AffiliationService::~AffiliationService() {
   }
 }
 
-void AffiliationService::Initialize() {
+void AffiliationService::Initialize(
+    net::URLRequestContextGetter* request_context_getter,
+    const base::FilePath& db_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!backend_);
-  backend_ = new AffiliationBackend();
+  backend_ = new AffiliationBackend(request_context_getter,
+                                    make_scoped_ptr(new base::DefaultClock));
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AffiliationBackend::Initialize, base::Unretained(backend_)));
+      FROM_HERE, base::Bind(&AffiliationBackend::Initialize,
+                            base::Unretained(backend_), db_path));
 }
 
 void AffiliationService::GetAffiliations(

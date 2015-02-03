@@ -50,12 +50,17 @@ class ScopedFakeAffiliationFetcherFactory
 
   // Returns the next FakeAffiliationFetcher instance previously produced, so
   // that that the testing code can inject a response and simulate completion
-  // or failure of the request.
+  // or failure of the request. The fetcher is removed from the queue of pending
+  // fetchers.
   //
   // Note that the factory does not retain ownership of the produced fetchers,
   // so that the tests should ensure that the corresponding production code will
   // not destroy them before they are accessed here.
-  FakeAffiliationFetcher* GetNextFetcher();
+  FakeAffiliationFetcher* PopNextFetcher();
+
+  // Same as above, but the fetcher is not removed from the queue of pending
+  // fetchers.
+  FakeAffiliationFetcher* PeekNextFetcher();
 
   bool has_pending_fetchers() const { return !pending_fetchers_.empty(); }
 

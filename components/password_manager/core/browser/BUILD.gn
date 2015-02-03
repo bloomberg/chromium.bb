@@ -122,8 +122,12 @@ proto_library("proto") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_affiliation_api.cc",
+    "fake_affiliation_api.h",
     "fake_affiliation_fetcher.cc",
     "fake_affiliation_fetcher.h",
+    "mock_affiliation_consumer.cc",
+    "mock_affiliation_consumer.h",
     "mock_password_store.cc",
     "mock_password_store.h",
     "password_form_data.cc",

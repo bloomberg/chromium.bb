@@ -44,9 +44,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_UTILS_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_UTILS_H_
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "url/url_parse.h"
@@ -118,6 +120,11 @@ class FacetURI {
     return canonical_spec_;
   }
 
+  // Returns the text of the encapsulated canonical URI, even if it is invalid.
+  const std::string& potentially_invalid_spec() const {
+    return canonical_spec_;
+  }
+
  private:
   // Internal constructor to be used by the static factory methods.
   FacetURI(const std::string& canonical_spec, bool is_valid);
@@ -154,6 +161,21 @@ struct AffiliatedFacetsWithUpdateTime {
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b);
 
+// For logging use only.
+std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);
+
 }  // namespace password_manager
+
+// Provide a hash function so that hash_sets and maps can contain FacetURIs.
+namespace BASE_HASH_NAMESPACE {
+
+template <>
+struct hash<password_manager::FacetURI> {
+  size_t operator()(const password_manager::FacetURI& facet_uri) const {
+    return hash<std::string>()(facet_uri.potentially_invalid_spec());
+  }
+};
+
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_UTILS_H_
