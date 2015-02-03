@@ -61,14 +61,14 @@ void SerialServiceImpl::Connect(
     serial::ConnectionOptionsPtr options,
     mojo::InterfaceRequest<serial::Connection> connection_request,
     mojo::InterfaceRequest<serial::DataSink> sink,
-    mojo::InterfaceRequest<serial::DataSource> source) {
+    mojo::InterfacePtr<serial::DataSinkClient> sink_client,
+    mojo::InterfaceRequest<serial::DataSource> source,
+    mojo::InterfacePtr<serial::DataSourceClient> source_client) {
   if (!IsValidPath(path))
     return;
-  connection_factory_->CreateConnection(path,
-                                        options.Pass(),
-                                        connection_request.Pass(),
-                                        sink.Pass(),
-                                        source.Pass());
+  connection_factory_->CreateConnection(
+      path, options.Pass(), connection_request.Pass(), sink.Pass(),
+      sink_client.Pass(), source.Pass(), source_client.Pass());
 }
 
 SerialDeviceEnumerator* SerialServiceImpl::GetDeviceEnumerator() {

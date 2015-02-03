@@ -84,12 +84,15 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
         &service);
     mojo::InterfacePtr<serial::Connection> connection;
     mojo::InterfacePtr<serial::DataSink> sink;
+    mojo::InterfacePtr<serial::DataSinkClient> sink_client;
+    mojo::GetProxy(&sink_client);
     mojo::InterfacePtr<serial::DataSource> source;
-    service->Connect(path,
-                     serial::ConnectionOptions::New(),
-                     mojo::GetProxy(&connection),
-                     mojo::GetProxy(&sink),
-                     mojo::GetProxy(&source));
+    mojo::InterfacePtr<serial::DataSourceClient> source_client;
+    mojo::GetProxy(&source_client);
+    service->Connect(path, serial::ConnectionOptions::New(),
+                     mojo::GetProxy(&connection), mojo::GetProxy(&sink),
+                     sink_client.Pass(), mojo::GetProxy(&source),
+                     source_client.Pass());
     connection.set_error_handler(this);
     expecting_error_ = !expecting_success;
     connection->GetInfo(

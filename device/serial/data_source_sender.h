@@ -19,7 +19,8 @@ namespace device {
 // A DataSourceSender is an interface between a source of data and a
 // DataSourceClient.
 class DataSourceSender : public base::RefCounted<DataSourceSender>,
-                         public mojo::InterfaceImpl<serial::DataSource> {
+                         public serial::DataSource,
+                         public mojo::ErrorHandler {
  public:
   typedef base::Callback<void(scoped_ptr<WritableBuffer>)> ReadyCallback;
   typedef base::Callback<void()> ErrorCallback;
@@ -29,7 +30,9 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
   // |ready_callback| will not be called again until the previous WritableBuffer
   // is destroyed. If a connection error occurs, |error_callback| will be
   // called and the DataSourceSender will act as if ShutDown() had been called.
-  DataSourceSender(const ReadyCallback& ready_callback,
+  DataSourceSender(mojo::InterfaceRequest<serial::DataSource> source,
+                   mojo::InterfacePtr<serial::DataSourceClient> client,
+                   const ReadyCallback& ready_callback,
                    const ErrorCallback& error_callback);
 
   // Shuts down this DataSourceSender. After shut down, |ready_callback| and
@@ -64,6 +67,9 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
 
   // Reports a fatal error to the client and shuts down.
   void DispatchFatalError();
+
+  mojo::Binding<serial::DataSource> binding_;
+  mojo::InterfacePtr<serial::DataSourceClient> client_;
 
   // The callback to call when the client is ready for more data.
   ReadyCallback ready_callback_;

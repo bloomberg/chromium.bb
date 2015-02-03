@@ -18,7 +18,8 @@
 namespace device {
 
 class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
-                         public mojo::InterfaceImpl<serial::DataSink> {
+                         public serial::DataSink,
+                         public mojo::ErrorHandler {
  public:
   typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReadyCallback;
   typedef base::Callback<void(int32_t error)> CancelCallback;
@@ -31,7 +32,9 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // and the DataSinkReceiver will act as if ShutDown() had been called. If
   // |cancel_callback| is valid, it will be called when the DataSinkClient
   // requests cancellation of the in-progress read.
-  DataSinkReceiver(const ReadyCallback& ready_callback,
+  DataSinkReceiver(mojo::InterfaceRequest<serial::DataSink> request,
+                   mojo::InterfacePtr<serial::DataSinkClient> client,
+                   const ReadyCallback& ready_callback,
                    const CancelCallback& cancel_callback,
                    const ErrorCallback& error_callback);
 
@@ -74,6 +77,9 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
 
   // Reports a fatal error to the client and shuts down.
   void DispatchFatalError();
+
+  mojo::Binding<serial::DataSink> binding_;
+  mojo::InterfacePtr<serial::DataSinkClient> client_;
 
   // The callback to call when there is data ready to read.
   const ReadyCallback ready_callback_;

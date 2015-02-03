@@ -107,16 +107,19 @@ struct DataReceiver::DataFrame {
   bool dispatched;
 };
 
-DataReceiver::DataReceiver(mojo::InterfacePtr<serial::DataSource> source,
-                           uint32_t buffer_size,
-                           int32_t fatal_error_value)
+DataReceiver::DataReceiver(
+    mojo::InterfacePtr<serial::DataSource> source,
+    mojo::InterfaceRequest<serial::DataSourceClient> client,
+    uint32_t buffer_size,
+    int32_t fatal_error_value)
     : source_(source.Pass()),
+      client_(this, client.Pass()),
       fatal_error_value_(fatal_error_value),
       shut_down_(false),
       weak_factory_(this) {
-  source_.set_client(this);
   source_.set_error_handler(this);
   source_->Init(buffer_size);
+  client_.set_error_handler(this);
 }
 
 bool DataReceiver::Receive(const ReceiveDataCallback& callback,

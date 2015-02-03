@@ -134,14 +134,17 @@ define('serial_service', [
       clientOptions.bufferSize = options.bufferSize;
   };
 
-  function Connection(connection, router, receivePipe, sendPipe, id, options) {
+  function Connection(connection, router, receivePipe, receiveClientPipe,
+                      sendPipe, sendClientPipe, id, options) {
     var state = new serialization.ConnectionState();
     state.connectionId = id;
     updateClientOptions(state, options);
     var receiver = new dataReceiver.DataReceiver(
-        receivePipe, state.bufferSize, serialMojom.ReceiveError.DISCONNECTED);
-    var sender = new dataSender.DataSender(
-        sendPipe, state.bufferSize, serialMojom.SendError.DISCONNECTED);
+        receivePipe, receiveClientPipe, state.bufferSize,
+        serialMojom.ReceiveError.DISCONNECTED);
+    var sender =
+        new dataSender.DataSender(sendPipe, sendClientPipe, state.bufferSize,
+                                  serialMojom.SendError.DISCONNECTED);
     this.init_(state,
                connection,
                router,
@@ -187,12 +190,16 @@ define('serial_service', [
     var serviceOptions = getServiceOptions(options);
     var pipe = core.createMessagePipe();
     var sendPipe = core.createMessagePipe();
+    var sendPipeClient = core.createMessagePipe();
     var receivePipe = core.createMessagePipe();
+    var receivePipeClient = core.createMessagePipe();
     service.connect(path,
                     serviceOptions,
                     pipe.handle0,
                     sendPipe.handle0,
-                    receivePipe.handle0);
+                    sendPipeClient.handle0,
+                    receivePipe.handle0,
+                    receivePipeClient.handle0);
     var router = new routerModule.Router(pipe.handle1);
     var connection = new serialMojom.Connection.proxyClass(router);
     return connection.getInfo().then(convertServiceInfo).then(function(info) {
@@ -200,7 +207,9 @@ define('serial_service', [
     }).catch(function(e) {
       router.close();
       core.close(sendPipe.handle1);
+      core.close(sendPipeClient.handle1);
       core.close(receivePipe.handle1);
+      core.close(receivePipeClient.handle1);
       throw e;
     }).then(function(results) {
       var info = results[0];
@@ -208,7 +217,9 @@ define('serial_service', [
       var serialConnectionClient = new Connection(connection,
                                                   router,
                                                   receivePipe.handle1,
+                                                  receivePipeClient.handle1,
                                                   sendPipe.handle1,
+                                                  sendPipeClient.handle1,
                                                   id,
                                                   options);
       var clientInfo = serialConnectionClient.getClientInfo_();
