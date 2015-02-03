@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources>
+    <!-- Data Reduction Colors -->
+    <color name="data_reduction_compressed_color">@color/pref_accent_color</color>
+    <color name="data_reduction_original_color">#E1E1E1</color>
+    <color name="data_reduction_chart_background_color">#FAFAFA</color>
+    <color name="pref_accent_color">#03a9f4</color>
+</resources>
