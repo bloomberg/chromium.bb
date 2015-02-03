@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
-import org.chromium.sync.notifier.SyncStatusHelper;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -388,7 +388,7 @@ public class AccountManagementFragment extends PreferenceFragment
                                 ProfileAccountManagementMetrics.CLICK_PRIMARY_ACCOUNT,
                                 mGaiaServiceType);
 
-                        if (SyncStatusHelper.get(activity).isMasterSyncAutomaticallyEnabled()) {
+                        if (AndroidSyncSettings.get(activity).isMasterSyncEnabled()) {
                             getDelegate().openSyncCustomizationFragment(activity, account);
                         } else {
                             Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
@@ -470,7 +470,7 @@ public class AccountManagementFragment extends PreferenceFragment
         ChromeSigninController signinController = ChromeSigninController.get(activity);
         if (!signinController.isSignedIn()) return "";
 
-        SyncStatusHelper syncStatusHelper = SyncStatusHelper.get(activity);
+        AndroidSyncSettings androidSyncSettings = AndroidSyncSettings.get(activity);
         ProfileSyncService profileSyncService = ProfileSyncService.get(activity);
         Resources res = activity.getResources();
 
@@ -478,7 +478,7 @@ public class AccountManagementFragment extends PreferenceFragment
             return res.getString(R.string.kids_account);
         }
 
-        if (!syncStatusHelper.isMasterSyncAutomaticallyEnabled()) {
+        if (!androidSyncSettings.isMasterSyncEnabled()) {
             return res.getString(R.string.sync_android_master_sync_disabled);
         }
 
@@ -486,7 +486,7 @@ public class AccountManagementFragment extends PreferenceFragment
             return res.getString(profileSyncService.getAuthError().getMessage());
         }
 
-        if (syncStatusHelper.isSyncEnabled()) {
+        if (androidSyncSettings.isSyncEnabled()) {
             if (!profileSyncService.isSyncInitialized()) {
                 return res.getString(R.string.sync_setup_progress);
             }
@@ -504,7 +504,7 @@ public class AccountManagementFragment extends PreferenceFragment
             }
         }
 
-        return syncStatusHelper.isSyncEnabled(signinController.getSignedInUser())
+        return androidSyncSettings.isSyncEnabled(signinController.getSignedInUser())
                 ? res.getString(R.string.sync_is_enabled)
                 : res.getString(R.string.sync_is_disabled);
     }
