@@ -51,6 +51,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     super(TestRunner, self).__init__(device, test_options.tool,
                                      test_options.cleanup_test_files)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
+    self._logcat_monitor = None
 
     self.coverage_device_file = None
     self.coverage_dir = test_options.coverage_dir
@@ -174,9 +175,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     if not self._IsPerfTest(test):
       return
-    self.device.old_interface.Adb().SendCommand(
-        'shell rm ' + TestRunner._DEVICE_PERF_OUTPUT_SEARCH_PREFIX)
-    self.device.old_interface.StartMonitoringLogcat()
+    self.device.RunShellCommand(
+        ['rm', TestRunner._DEVICE_PERF_OUTPUT_SEARCH_PREFIX])
+    self._logcat_monitor = self.device.GetLogcatMonitor()
+    self._logcat_monitor.Start()
 
   def TestTeardown(self, test, result):
     """Cleans up the test harness after running a particular test.
@@ -219,9 +221,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     raw_test_name = test.split('#')[1]
 
     # Wait and grab annotation data so we can figure out which traces to parse
-    regex = self.device.old_interface.WaitForLogMatch(
-        re.compile(r'\*\*PERFANNOTATION\(' + raw_test_name + r'\)\:(.*)'),
-        None)
+    regex = self._logcat_monitor.WaitFor(
+        re.compile(r'\*\*PERFANNOTATION\(' + raw_test_name + r'\)\:(.*)'))
 
     # If the test is set to run on a specific device type only (IE: only
     # tablet or phone) and it is being run on the wrong device, the test

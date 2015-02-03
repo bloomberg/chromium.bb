@@ -285,7 +285,8 @@ class AdbWrapper(object):
           cmd, 'path does not specify an accessible directory in the device',
           device_serial=self._device_serial)
 
-  def Logcat(self, filter_spec=None, timeout=None):
+  def Logcat(self, clear=False, dump=False, filter_spec=None,
+             logcat_format=None, timeout=None):
     """Get an iterator over the logcat output.
 
     Args:
@@ -296,6 +297,12 @@ class AdbWrapper(object):
       logcat output line by line.
     """
     cmd = ['logcat']
+    if clear:
+      cmd.append('-c')
+    if dump:
+      cmd.append('-d')
+    if logcat_format:
+      cmd.extend(['-v', logcat_format])
     if filter_spec is not None:
       cmd.append(filter_spec)
     return self._IterRunDeviceAdbCmd(cmd, timeout)

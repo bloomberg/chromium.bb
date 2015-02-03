@@ -9,7 +9,7 @@ import time
 
 from profile_chrome import controllers
 
-from pylib import pexpect
+from pylib.device import device_errors
 from pylib.device import intent
 
 
@@ -23,6 +23,7 @@ class ChromeTracingController(controllers.BaseController):
     self._package_info = package_info
     self._categories = categories
     self._ring_buffer = ring_buffer
+    self._logcat_monitor = self._device.GetLogcatMonitor()
     self._trace_file = None
     self._trace_interval = None
     self._trace_memory = trace_memory
@@ -31,21 +32,21 @@ class ChromeTracingController(controllers.BaseController):
        re.compile(r'Logging performance trace to file')
     self._trace_finish_re = \
        re.compile(r'Profiler finished[.] Results are in (.*)[.]')
-    self._device.old_interface.StartMonitoringLogcat(clear=False)
 
   def __repr__(self):
     return 'chrome trace'
 
   @staticmethod
   def GetCategories(device, package_info):
-    device.BroadcastIntent(intent.Intent(
-        action='%s.GPU_PROFILER_LIST_CATEGORIES' % package_info.package))
-    try:
-      json_category_list = device.old_interface.WaitForLogMatch(
-          re.compile(r'{"traceCategoriesList(.*)'), None, timeout=5).group(0)
-    except pexpect.TIMEOUT:
-      raise RuntimeError('Performance trace category list marker not found. '
-                         'Is the correct version of the browser running?')
+    with device.GetLogcatMonitor() as logmon:
+      device.BroadcastIntent(intent.Intent(
+          action='%s.GPU_PROFILER_LIST_CATEGORIES' % package_info.package))
+      try:
+        json_category_list = logmon.WaitFor(
+            re.compile(r'{"traceCategoriesList(.*)'), timeout=5).group(0)
+      except device_errors.CommandTimeoutError:
+        raise RuntimeError('Performance trace category list marker not found. '
+                           'Is the correct version of the browser running?')
 
     record_categories = set()
     disabled_by_default_categories = set()
@@ -61,7 +62,7 @@ class ChromeTracingController(controllers.BaseController):
 
   def StartTracing(self, interval):
     self._trace_interval = interval
-    self._device.old_interface.SyncLogCat()
+    self._logcat_monitor.Start()
     start_extras = {'categories': ','.join(self._categories)}
     if self._ring_buffer:
       start_extras['continuous'] = None
@@ -70,7 +71,7 @@ class ChromeTracingController(controllers.BaseController):
         extras=start_extras))
 
     if self._trace_memory:
-      self._device.old_interface.EnableAdbRoot()
+      self._device.EnableRoot()
       self._device.SetProp(_HEAP_PROFILE_MMAP_PROPERTY, 1)
 
     # Chrome logs two different messages related to tracing:
@@ -81,10 +82,9 @@ class ChromeTracingController(controllers.BaseController):
     # The first one is printed when tracing starts and the second one indicates
     # that the trace file is ready to be pulled.
     try:
-      self._device.old_interface.WaitForLogMatch(
-          self._trace_start_re, None, timeout=5)
+      self._logcat_monitor.WaitFor(self._trace_start_re, timeout=5)
       self._is_tracing = True
-    except pexpect.TIMEOUT:
+    except device_errors.CommandTimeoutError:
       raise RuntimeError('Trace start marker not found. Is the correct version '
                          'of the browser running?')
 
@@ -92,8 +92,8 @@ class ChromeTracingController(controllers.BaseController):
     if self._is_tracing:
       self._device.BroadcastIntent(intent.Intent(
           action='%s.GPU_PROFILER_STOP' % self._package_info.package))
-      self._trace_file = self._device.old_interface.WaitForLogMatch(
-          self._trace_finish_re, None, timeout=120).group(1)
+      self._trace_file = self._logcat_monitor.WaitFor(
+          self._trace_finish_re, timeout=120).group(1)
       self._is_tracing = False
     if self._trace_memory:
       self._device.SetProp(_HEAP_PROFILE_MMAP_PROPERTY, 0)

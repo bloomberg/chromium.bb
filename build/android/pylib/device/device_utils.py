@@ -6,7 +6,7 @@
 
 Eventually, this will be based on adb_wrapper.
 """
-# pylint: disable=W0613
+# pylint: disable=unused-argument
 
 import logging
 import multiprocessing
@@ -24,6 +24,7 @@ from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
 from pylib.device import intent
+from pylib.device import logcat_monitor
 from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
 from pylib.utils import device_temp_file
@@ -1289,6 +1290,19 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
     """
     return self.old_interface.GetMemoryUsageForPid(pid)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetLogcatMonitor(self, timeout=None, retries=None, *args, **kwargs):
+    """Returns a new LogcatMonitor associated with this device.
+
+    Parameters passed to this function are passed directly to
+    |logcat_monitor.LogcatMonitor| and are documented there.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    return logcat_monitor.LogcatMonitor(self.adb, *args, **kwargs)
 
   def __str__(self):
     """Returns the device serial."""

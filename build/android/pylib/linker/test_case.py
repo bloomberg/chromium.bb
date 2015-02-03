@@ -42,6 +42,7 @@ import time
 
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.device import device_errors
 from pylib.device import intent
 
 
@@ -70,10 +71,11 @@ _LOGCAT_FILTERS = ['*:s', 'chromium:v', 'chromium_android_linker:v']
 #_LOGCAT_FILTERS = ['*:v']  ## DEBUG
 
 # Regular expression used to match status lines in logcat.
-re_status_line = re.compile(r'(BROWSER|RENDERER)_LINKER_TEST: (FAIL|SUCCESS)')
+_RE_BROWSER_STATUS_LINE = re.compile(r' BROWSER_LINKER_TEST: (FAIL|SUCCESS)$')
+_RE_RENDERER_STATUS_LINE = re.compile(r' RENDERER_LINKER_TEST: (FAIL|SUCCESS)$')
 
 # Regular expression used to mach library load addresses in logcat.
-re_library_address = re.compile(
+_RE_LIBRARY_ADDRESS = re.compile(
     r'(BROWSER|RENDERER)_LIBRARY_ADDRESS: (\S+) ([0-9A-Fa-f]+)')
 
 
@@ -109,46 +111,6 @@ def _GetBrowserSharedRelroConfig():
     return configs[0]
 
 
-def _WriteCommandLineFile(device, command_line, command_line_file):
-  """Create a command-line file on the device. This does not use FlagChanger
-     because its implementation assumes the device has 'su', and thus does
-     not work at all with production devices."""
-  device.RunShellCommand(
-      'echo "%s" > %s' % (command_line, command_line_file))
-
-
-def _CheckLinkerTestStatus(logcat):
-  """Parse the content of |logcat| and checks for both a browser and
-     renderer status line.
-
-  Args:
-    logcat: A string to parse. Can include line separators.
-
-  Returns:
-    A tuple, result[0] is True if there is a complete match, then
-    result[1] and result[2] will be True or False to reflect the
-    test status for the browser and renderer processes, respectively.
-  """
-  browser_found = False
-  renderer_found = False
-  for m in re_status_line.finditer(logcat):
-    process_type, status = m.groups()
-    if process_type == 'BROWSER':
-      browser_found = True
-      browser_success = (status == 'SUCCESS')
-    elif process_type == 'RENDERER':
-      renderer_found = True
-      renderer_success = (status == 'SUCCESS')
-    else:
-      assert False, 'Invalid process type ' + process_type
-
-  if browser_found and renderer_found:
-    return (True, browser_success, renderer_success)
-
-  # Didn't find anything.
-  return (False, None, None)
-
-
 def _StartActivityAndWaitForLinkerTestStatus(device, timeout):
   """Force-start an activity and wait up to |timeout| seconds until the full
      linker test status lines appear in the logcat, recorded through |device|.
@@ -159,38 +121,30 @@ def _StartActivityAndWaitForLinkerTestStatus(device, timeout):
     A (status, logs) tuple, where status is a ResultType constant, and logs
     if the final logcat output as a string.
   """
-  # 1. Start recording logcat with appropriate filters.
-  device.old_interface.StartRecordingLogcat(
-      clear=True, filters=_LOGCAT_FILTERS)
 
-  try:
+  # 1. Start recording logcat with appropriate filters.
+  with device.GetLogcatMonitor(filters=_LOGCAT_FILTERS) as logmon:
+
     # 2. Force-start activity.
     device.StartActivity(
         intent.Intent(package=_PACKAGE_NAME, activity=_ACTIVITY_NAME),
         force_stop=True)
 
     # 3. Wait up to |timeout| seconds until the test status is in the logcat.
-    num_tries = 0
-    max_tries = timeout
-    found = False
-    while num_tries < max_tries:
-      time.sleep(1)
-      num_tries += 1
-      found, browser_ok, renderer_ok = _CheckLinkerTestStatus(
-          device.old_interface.GetCurrentRecordedLogcat())
-      if found:
-        break
+    result = ResultType.PASS
+    try:
+      browser_match = logmon.WaitFor(_RE_BROWSER_STATUS_LINE, timeout=timeout)
+      logging.debug('Found browser match: %s', browser_match.group(0))
+      renderer_match = logmon.WaitFor(_RE_RENDERER_STATUS_LINE,
+                                      timeout=timeout)
+      logging.debug('Found renderer match: %s', renderer_match.group(0))
+      if (browser_match.group(1) != 'SUCCESS'
+          or renderer_match.group(1) != 'SUCCESS'):
+        result = ResultType.FAIL
+    except device_errors.CommandTimeoutError:
+      result = ResultType.TIMEOUT
 
-  finally:
-    logs = device.old_interface.StopRecordingLogcat()
-
-  if num_tries >= max_tries:
-    return ResultType.TIMEOUT, logs
-
-  if browser_ok and renderer_ok:
-    return ResultType.PASS, logs
-
-  return ResultType.FAIL, logs
+    return result, '\n'.join(device.adb.Logcat(dump=True))
 
 
 class LibraryLoadMap(dict):
@@ -226,7 +180,7 @@ def _ExtractLibraryLoadAddressesFromLogcat(logs):
   """
   browser_libs = LibraryLoadMap()
   renderer_libs = LibraryLoadMap()
-  for m in re_library_address.finditer(logs):
+  for m in _RE_LIBRARY_ADDRESS.finditer(logs):
     process_type, lib_name, lib_address = m.groups()
     lib_address = int(lib_address, 16)
     if process_type == 'BROWSER':
@@ -323,7 +277,7 @@ class LinkerTestCaseBase(object):
     command_line_flags = ''
     if self.is_low_memory:
       command_line_flags = '--low-memory-device'
-    _WriteCommandLineFile(device, command_line_flags, _COMMAND_LINE_FILE)
+    device.WriteFile(_COMMAND_LINE_FILE, command_line_flags)
 
     # Run the test.
     status, logs = self._RunTest(device)

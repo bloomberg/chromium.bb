@@ -16,10 +16,10 @@ class ChromeStartupTracingController(controllers.BaseController):
     self._device = device
     self._package_info = package_info
     self._cold = cold
+    self._logcat_monitor = self._device.GetLogcatMonitor()
     self._url = url
     self._trace_file = None
     self._trace_finish_re = re.compile(r' Completed startup tracing to (.*)')
-    self._device.old_interface.StartMonitoringLogcat(clear=False)
 
   def __repr__(self):
     return 'Browser Startup Trace'
@@ -30,15 +30,16 @@ class ChromeStartupTracingController(controllers.BaseController):
     changer = flag_changer.FlagChanger(
         self._device, self._package_info.cmdline_file)
     changer.AddFlags(['--trace-startup'])
-    self._device.old_interface.CloseApplication(self._package_info.package)
+    self._device.ForceStop(self._package_info.package)
     if self._cold:
-      self._device.old_interface.EnableAdbRoot()
+      self._device.EnableRoot()
       cache_control.CacheControl(self._device).DropRamCaches()
-    self._device.old_interface.StartActivity(
-        package=self._package_info.package,
-        activity=self._package_info.activity,
-        data=self._url,
-        extras={'create_new_tab' : True})
+    self._device.StartActivity(
+        intent.Intent(
+            package=self._package_info.package,
+            activity=self._package_info.activity,
+            data=self._url,
+            extras={'create_new_tab' : True}))
 
   def _TearDownTracing(self):
     changer = flag_changer.FlagChanger(
@@ -47,12 +48,12 @@ class ChromeStartupTracingController(controllers.BaseController):
 
   def StartTracing(self, interval):
     self._SetupTracing()
-    self._device.old_interface.SyncLogCat()
+    self._logcat_monitor.Start()
 
   def StopTracing(self):
     try:
-      self._trace_file = self._device.old_interface.WaitForLogMatch(
-          self._trace_finish_re, None, timeout=10).group(1)
+      self._trace_file = self._logcat_monitor.WaitFor(
+          self._trace_finish_re).group(1)
     finally:
       self._TearDownTracing()
 
