@@ -442,7 +442,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, root, text1, text2),
+          MakeAXTreeUpdate(root, text1, text2),
           NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
@@ -547,7 +547,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
   const std::string embed = base::UTF16ToUTF8(
-      BrowserAccessibilityWin::kEmbeddedCharacter);
+      base::string16(1, BrowserAccessibilityWin::kEmbeddedCharacter));
   EXPECT_EQ(text1_name + embed + text2_name + embed,
             base::UTF16ToUTF8(base::string16(text)));
   text.Reset();

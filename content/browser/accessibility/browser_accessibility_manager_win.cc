@@ -306,17 +306,39 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     OnWindowFocused();
   }
 
-  // BrowserAccessibilityManager::OnAtomicUpdateFinished calls
-  // OnUpdateFinished() on each node in |changes|. However, the
-  // IAccessibleText text for a node is a concatenatenation of all of its child
-  // text nodes, so we can't compute a node's IAccessibleText in
-  // OnUpdateFinished because its children may not have been updated yet.
-  //
-  // So we make a second pass here to update IAccessibleText.
+  // Do a sequence of Windows-specific updates on each node. Each one is
+  // done in a single pass that must complete before the next step starts.
+  // The first step moves win_attributes_ to old_win_attributes_ and then
+  // recomputes all of win_attributes_ other than IAccessibleText.
   for (size_t i = 0; i < changes.size(); ++i) {
     BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
-    if (obj && obj->IsNative())
-      obj->ToBrowserAccessibilityWin()->UpdateIAccessibleText();
+    if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
+      obj->ToBrowserAccessibilityWin()->UpdateStep1ComputeWinAttributes();
+  }
+
+  // The next step updates the hypertext of each node, which is a
+  // concatenation of all of its child text nodes, so it can't run until
+  // the text of all of the nodes was computed in the previous step.
+  for (size_t i = 0; i < changes.size(); ++i) {
+    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
+      obj->ToBrowserAccessibilityWin()->UpdateStep2ComputeHypertext();
+  }
+
+  // The third step fires events on nodes based on what's changed - like
+  // if the name, value, or description changed, or if the hypertext had
+  // text inserted or removed. It's able to figure out exactly what changed
+  // because we still have old_win_attributes_ populated.
+  // This step has to run after the previous two steps complete because the
+  // client may walk the tree when it receives any of these events.
+  // At the end, it deletes old_win_attributes_ since they're not needed
+  // anymore.
+  for (size_t i = 0; i < changes.size(); ++i) {
+    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
+      obj->ToBrowserAccessibilityWin()->UpdateStep3FireEvents(
+          changes[i].type == AXTreeDelegate::SUBTREE_CREATED);
+    }
   }
 }
 

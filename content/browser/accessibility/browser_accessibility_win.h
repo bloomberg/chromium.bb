@@ -82,7 +82,7 @@ BrowserAccessibilityWin
   // Represents a non-static text node in IAccessibleHypertext. This character
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
-  CONTENT_EXPORT static const base::char16 kEmbeddedCharacter[];
+  CONTENT_EXPORT static const base::char16 kEmbeddedCharacter;
 
   // Mappings from roles and states to human readable strings. Initialize
   // with |InitializeStringMaps|.
@@ -97,15 +97,18 @@ BrowserAccessibilityWin
   // like NotifyWinEvent, and as the unique ID for IAccessible2 and ISimpleDOM.
   LONG unique_id_win() const { return unique_id_win_; }
 
-  CONTENT_EXPORT void UpdateIAccessibleText();
+  // Called after an atomic tree update completes. See
+  // BrowserAccessibilityManagerWin::OnAtomicUpdateFinished for more
+  // details on what these do.
+  CONTENT_EXPORT void UpdateStep1ComputeWinAttributes();
+  CONTENT_EXPORT void UpdateStep2ComputeHypertext();
+  CONTENT_EXPORT void UpdateStep3FireEvents(bool is_subtree_creation);
+  CONTENT_EXPORT void UpdateStep4DeleteOldWinAttributes();
 
   //
   // BrowserAccessibility methods.
   //
-  CONTENT_EXPORT virtual void OnDataChanged() override;
-  CONTENT_EXPORT virtual void OnUpdateFinished() override;
   CONTENT_EXPORT virtual void OnSubtreeWillBeDeleted() override;
-  CONTENT_EXPORT virtual void OnSubtreeCreationFinished() override;
   CONTENT_EXPORT virtual void NativeAddReference() override;
   CONTENT_EXPORT virtual void NativeReleaseReference() override;
   CONTENT_EXPORT virtual bool IsNative() const override;
@@ -791,6 +794,11 @@ BrowserAccessibilityWin
   base::string16 description() const { return win_attributes_->description; }
   base::string16 help() const { return win_attributes_->help; }
   base::string16 value() const { return win_attributes_->value; }
+  base::string16 hypertext() const { return win_attributes_->hypertext; }
+  std::map<int32, int32>& hyperlink_offset_to_index() const {
+    return win_attributes_->hyperlink_offset_to_index;
+  }
+  std::vector<int32>& hyperlinks() const { return win_attributes_->hyperlinks; }
 
  private:
   // Add one to the reference count and return the same object. Always
@@ -842,6 +850,7 @@ BrowserAccessibilityWin
   // be the name, it may be the value, etc. depending on the role.
   base::string16 TextForIAccessibleText();
 
+  bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(
       int* start, int* old_len, int* new_len);
 
@@ -889,6 +898,16 @@ BrowserAccessibilityWin
 
     // IAccessible2 attributes.
     std::vector<base::string16> ia2_attributes;
+
+    // Hypertext.
+    base::string16 hypertext;
+
+    // Maps the |hypertext_| embedded character offset to an index in
+    // |hyperlinks_|.
+    std::map<int32, int32> hyperlink_offset_to_index;
+
+    // The id of a BrowserAccessibilityWin for each hyperlink.
+    std::vector<int32> hyperlinks;
   };
 
   scoped_ptr<WinAttributes> win_attributes_;
@@ -899,19 +918,6 @@ BrowserAccessibilityWin
 
   // Relationships between this node and other nodes.
   std::vector<BrowserAccessibilityRelation*> relations_;
-
-  // IAccessibleText text of this node including
-  // embedded hyperlink characters.
-  base::string16 old_hypertext_;
-  base::string16 hypertext_;
-
-  // Maps the |hypertext_| embedded character offset to an index in
-  // |hyperlinks_|.
-  std::map<int32, int32> hyperlink_offset_to_index_;
-
-  // Collection of non-static text child indicies, each of which corresponds to
-  // a hyperlink.
-  std::vector<int32> hyperlinks_;
 
   // The previous scroll position, so we can tell if this object scrolled.
   int previous_scroll_x_;

@@ -58,13 +58,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // its data changes.
   virtual void OnDataChanged() {}
 
-  // Called after an atomic update to the tree finished and this object
-  // was created or changed in this update.
-  virtual void OnUpdateFinished() {}
-
   virtual void OnSubtreeWillBeDeleted() {}
-
-  virtual void OnSubtreeCreationFinished() {}
 
   // Called when the location changed.
   virtual void OnLocationChanged() {}

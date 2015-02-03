@@ -1,0 +1,6 @@
+EVENT_OBJECT_HIDE on role=h1 name="A"
+EVENT_OBJECT_HIDE on role=P
+IA2_EVENT_TEXT_REMOVED on role=ROLE_SYSTEM_GROUPING old_text={'<obj><obj>' start=0 end=2}
+IA2_EVENT_TEXT_INSERTED on role=ROLE_SYSTEM_GROUPING new_text={'<obj><obj>' start=0 end=2}
+EVENT_OBJECT_SHOW on role=h1 name="C"
+EVENT_OBJECT_SHOW on role=P

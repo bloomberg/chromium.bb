@@ -35,7 +35,7 @@ const GUID GUID_IAccessibleContentDocument = {
     0xa5d8e1f3, 0x3571, 0x4d8f,
     0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e};
 
-const base::char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
+const base::char16 BrowserAccessibilityWin::kEmbeddedCharacter = L'\xfffc';
 
 // static
 LONG BrowserAccessibilityWin::next_unique_id_win_ =
@@ -2174,12 +2174,15 @@ STDMETHODIMP BrowserAccessibilityWin::get_newText(IA2TextSegment* new_text) {
   if (!new_text)
     return E_INVALIDARG;
 
+  if (!old_win_attributes_)
+    return E_FAIL;
+
   int start, old_len, new_len;
   ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
   if (new_len == 0)
     return E_FAIL;
 
-  base::string16 substr = hypertext_.substr(start, new_len);
+  base::string16 substr = hypertext().substr(start, new_len);
   new_text->text = SysAllocString(substr.c_str());
   new_text->start = static_cast<long>(start);
   new_text->end = static_cast<long>(start + new_len);
@@ -2193,12 +2196,16 @@ STDMETHODIMP BrowserAccessibilityWin::get_oldText(IA2TextSegment* old_text) {
   if (!old_text)
     return E_INVALIDARG;
 
+  if (!old_win_attributes_)
+    return E_FAIL;
+
   int start, old_len, new_len;
   ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
   if (old_len == 0)
     return E_FAIL;
 
-  base::string16 substr = old_hypertext_.substr(start, old_len);
+  base::string16 old_hypertext = old_win_attributes_->hypertext;
+  base::string16 substr = old_hypertext.substr(start, old_len);
   old_text->text = SysAllocString(substr.c_str());
   old_text->start = static_cast<long>(start);
   old_text->end = static_cast<long>(start + old_len);
@@ -2302,7 +2309,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nHyperlinks(long* hyperlink_count) {
   if (!hyperlink_count)
     return E_INVALIDARG;
 
-  *hyperlink_count = hyperlink_offset_to_index_.size();
+  *hyperlink_count = hyperlink_offset_to_index().size();
   return S_OK;
 }
 
@@ -2314,14 +2321,19 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
 
   if (!hyperlink ||
       index < 0 ||
-      index >= static_cast<long>(hyperlinks_.size())) {
+      index >= static_cast<long>(hyperlinks().size())) {
     return E_INVALIDARG;
   }
 
+  int32 id = hyperlinks()[index];
   BrowserAccessibilityWin* child =
-      InternalGetChild(hyperlinks_[index])->ToBrowserAccessibilityWin();
-  *hyperlink = static_cast<IAccessibleHyperlink*>(child->NewReference());
-  return S_OK;
+      manager()->GetFromID(id)->ToBrowserAccessibilityWin();
+  if (child) {
+    *hyperlink = static_cast<IAccessibleHyperlink*>(child->NewReference());
+    return S_OK;
+  }
+
+  return E_FAIL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
@@ -2336,13 +2348,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
   *hyperlink_index = -1;
 
   if (char_index < 0 ||
-      char_index >= static_cast<long>(hypertext_.size())) {
+      char_index >= static_cast<long>(hypertext().size())) {
     return E_INVALIDARG;
   }
 
   std::map<int32, int32>::iterator it =
-      hyperlink_offset_to_index_.find(char_index);
-  if (it == hyperlink_offset_to_index_.end())
+      hyperlink_offset_to_index().find(char_index);
+  if (it == hyperlink_offset_to_index().end())
     return E_FAIL;
 
   *hyperlink_index = it->second;
@@ -2943,21 +2955,10 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
 // Private methods.
 //
 
-// Called every time this node's data changes, while the tree update is
-// still in progress.
-void BrowserAccessibilityWin::OnDataChanged() {
-  BrowserAccessibility::OnDataChanged();
-}
-
-// Called every time this node's data changes, after an atomic tree update.
-void BrowserAccessibilityWin::OnUpdateFinished() {
-  BrowserAccessibility::OnUpdateFinished();
-
-  if (PlatformIsChildOfLeaf())
-    return;
-
-  bool is_new_object = ia_role() == 0 && role_name().empty();
-
+void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
+  // Swap win_attributes_ to old_win_attributes_, allowing us to see
+  // exactly what changed and fire appropriate events. Note that
+  // old_win_attributes_ is cleared at the end of UpdateStep3FireEvents.
   old_win_attributes_.swap(win_attributes_);
   win_attributes_.reset(new WinAttributes());
 
@@ -3195,7 +3196,31 @@ void BrowserAccessibilityWin::OnUpdateFinished() {
     win_attributes_->ia_role = ROLE_SYSTEM_GROUPING;
     win_attributes_->ia2_role = ROLE_SYSTEM_GROUPING;
   }
+}
 
+void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
+  // Construct the hypertext for this node, which contains the concatenation
+  // of all of the static text of this node's children and an embedded object
+  // character for all non-static-text children. Build up a map from the
+  // character index of each embedded object character to the id of the
+  // child object it points to.
+  for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
+    BrowserAccessibilityWin* child =
+        PlatformGetChild(i)->ToBrowserAccessibilityWin();
+    if (child->GetRole() == ui::AX_ROLE_STATIC_TEXT) {
+      win_attributes_->hypertext += child->name();
+    } else {
+      int32 char_offset = hypertext().size();
+      int32 child_id = child->GetId();
+      int32 index = hyperlinks().size();
+      win_attributes_->hyperlink_offset_to_index[char_offset] = index;
+      win_attributes_->hyperlinks.push_back(child_id);
+      win_attributes_->hypertext += kEmbeddedCharacter;
+    }
+  }
+}
+
+void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
   BrowserAccessibilityManagerWin* manager =
       this->manager()->ToBrowserAccessibilityManagerWin();
 
@@ -3205,22 +3230,24 @@ void BrowserAccessibilityWin::OnUpdateFinished() {
     manager->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, this);
   }
 
-  // Fire an event if the name, description, help, or value changes.
-  if (!is_new_object) {
-    if (name != old_win_attributes_->name)
+  // Fire an event when a new subtree is created.
+  if (is_subtree_creation)
+    manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SHOW, this);
+
+  // The rest of the events only fire on changes, not on new objects.
+  if (old_win_attributes_->ia_role != 0 ||
+      !old_win_attributes_->role_name.empty()) {
+    // Fire an event if the name, description, help, or value changes.
+    if (name() != old_win_attributes_->name)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_NAMECHANGE, this);
-    if (description != old_win_attributes_->description)
+    if (description() != old_win_attributes_->description)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_DESCRIPTIONCHANGE, this);
-    if (help != old_win_attributes_->help)
+    if (help() != old_win_attributes_->help)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_HELPCHANGE, this);
-    if (value != old_win_attributes_->value)
+    if (value() != old_win_attributes_->value)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_VALUECHANGE, this);
-    if (ia_state() != old_win_attributes_->ia_state) {
-      LOG(INFO) << "State change:"
-                << " from " << old_win_attributes_->ia_state
-                << " to " << ia_state();
+    if (ia_state() != old_win_attributes_->ia_state)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_STATECHANGE, this);
-    }
 
     // Normally focus events are handled elsewhere, however
     // focus for managed descendants is platform-specific.
@@ -3256,67 +3283,37 @@ void BrowserAccessibilityWin::OnUpdateFinished() {
     }
 
     // Changing a static text node can affect the IAccessibleText hypertext
-    // of the parent node, so force it to be recomputed here.
-    if (GetParent() &&
+    // of the parent node, so force an update on the parent.
+    BrowserAccessibilityWin* parent = GetParent()->ToBrowserAccessibilityWin();
+    if (parent &&
         GetRole() == ui::AX_ROLE_STATIC_TEXT &&
-        name != old_win_attributes_->name) {
-      GetParent()->ToBrowserAccessibilityWin()->UpdateIAccessibleText();
+        name() != old_win_attributes_->name) {
+      parent->UpdateStep1ComputeWinAttributes();
+      parent->UpdateStep2ComputeHypertext();
+      parent->UpdateStep3FireEvents(false);
+    }
+
+    // Fire hypertext-related events.
+    int start, old_len, new_len;
+    ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
+    if (old_len > 0) {
+      // In-process screen readers may call IAccessibleText::get_oldText
+      // in reaction to this event to retrieve the text that was removed.
+      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_REMOVED, this);
+    }
+    if (new_len > 0) {
+      // In-process screen readers may call IAccessibleText::get_newText
+      // in reaction to this event to retrieve the text that was inserted.
+      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_INSERTED, this);
     }
   }
 
   old_win_attributes_.reset(nullptr);
 }
 
-void BrowserAccessibilityWin::UpdateIAccessibleText() {
-  old_hypertext_ = hypertext_;
-  hypertext_.clear();
-
-  // Construct the hypertext for this node.
-  hyperlink_offset_to_index_.clear();
-  hyperlinks_.clear();
-  for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
-    BrowserAccessibilityWin* child =
-        PlatformGetChild(i)->ToBrowserAccessibilityWin();
-    if (child->GetRole() == ui::AX_ROLE_STATIC_TEXT) {
-      hypertext_ += child->name();
-    } else {
-      hyperlink_offset_to_index_[hypertext_.size()] =
-          hyperlinks_.size();
-      hypertext_ += kEmbeddedCharacter;
-      hyperlinks_.push_back(i);
-    }
-  }
-  DCHECK_EQ(hyperlink_offset_to_index_.size(), hyperlinks_.size());
-
-  if (hypertext_ != old_hypertext_) {
-    BrowserAccessibilityManagerWin* manager =
-        this->manager()->ToBrowserAccessibilityManagerWin();
-
-    int start, old_len, new_len;
-    ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
-    if (old_len) {
-      // In-process screen readers may call IAccessibleText::get_oldText
-      // to retrieve the text that was removed.
-      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_REMOVED, this);
-    }
-    if (new_len) {
-      // In-process screen readers may call IAccessibleText::get_newText
-      // to retrieve the text that was inserted.
-      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_INSERTED, this);
-    }
-  }
-
-  old_hypertext_.clear();
-}
-
 void BrowserAccessibilityWin::OnSubtreeWillBeDeleted() {
   manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
       EVENT_OBJECT_HIDE, this);
-}
-
-void BrowserAccessibilityWin::OnSubtreeCreationFinished() {
-  manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
-      EVENT_OBJECT_SHOW, this);
 }
 
 void BrowserAccessibilityWin::NativeAddReference() {
@@ -3433,30 +3430,70 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
 base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText())
     return value();
-  return (GetRole() == ui::AX_ROLE_STATIC_TEXT) ? name() : hypertext_;
+  return (GetRole() == ui::AX_ROLE_STATIC_TEXT) ? name() : hypertext();
+}
+
+bool BrowserAccessibilityWin::IsSameHypertextCharacter(size_t old_char_index,
+                                                       size_t new_char_index) {
+  CHECK(old_win_attributes_);
+
+  // For anything other than the "embedded character", we just compare the
+  // characters directly.
+  base::char16 old_ch = old_win_attributes_->hypertext[old_char_index];
+  base::char16 new_ch = win_attributes_->hypertext[new_char_index];
+  if (old_ch != new_ch)
+    return false;
+  if (old_ch == new_ch && new_ch != kEmbeddedCharacter)
+    return true;
+
+  // If it's an embedded character, they're only identical if the child id
+  // the hyperlink points to is the same.
+  std::map<int32, int32>& old_offset_to_index =
+      old_win_attributes_->hyperlink_offset_to_index;
+  std::vector<int32>& old_hyperlinks = old_win_attributes_->hyperlinks;
+  int32 old_hyperlinks_count = static_cast<int32>(old_hyperlinks.size());
+  std::map<int32, int32>::iterator iter;
+  iter = old_offset_to_index.find(old_char_index);
+  int old_index = (iter != old_offset_to_index.end()) ? iter->second : -1;
+  int old_child_id = (old_index >= 0 && old_index < old_hyperlinks_count) ?
+      old_hyperlinks[old_index] : -1;
+
+  std::map<int32, int32>& new_offset_to_index =
+      win_attributes_->hyperlink_offset_to_index;
+  std::vector<int32>& new_hyperlinks = win_attributes_->hyperlinks;
+  int32 new_hyperlinks_count = static_cast<int32>(new_hyperlinks.size());
+  iter = new_offset_to_index.find(new_char_index);
+  int new_index = (iter != new_offset_to_index.end()) ? iter->second : -1;
+  int new_child_id = (new_index >= 0 && new_index < new_hyperlinks_count) ?
+      new_hyperlinks[new_index] : -1;
+
+  return old_child_id == new_child_id;
 }
 
 void BrowserAccessibilityWin::ComputeHypertextRemovedAndInserted(
     int* start, int* old_len, int* new_len) {
+  CHECK(old_win_attributes_);
+
   *start = 0;
   *old_len = 0;
   *new_len = 0;
 
-  const base::string16& old_text = old_hypertext_;
-  const base::string16& new_text = hypertext_;
+  const base::string16& old_text = old_win_attributes_->hypertext;
+  const base::string16& new_text = hypertext();
 
   size_t common_prefix = 0;
   while (common_prefix < old_text.size() &&
          common_prefix < new_text.size() &&
-         old_text[common_prefix] == new_text[common_prefix]) {
+         IsSameHypertextCharacter(common_prefix, common_prefix)) {
     ++common_prefix;
   }
 
   size_t common_suffix = 0;
   while (common_prefix + common_suffix < old_text.size() &&
          common_prefix + common_suffix < new_text.size() &&
-         old_text[old_text.size() - common_suffix - 1] ==
-         new_text[new_text.size() - common_suffix - 1]) {
+         IsSameHypertextCharacter(
+             old_text.size() - common_suffix - 1,
+             new_text.size() - common_suffix - 1)) {
     ++common_suffix;
   }
 
