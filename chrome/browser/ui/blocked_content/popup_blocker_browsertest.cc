@@ -31,10 +31,12 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
@@ -43,8 +45,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 using content::WebContents;
+using content::NativeWebKeyboardEvent;
 
 namespace {
 
@@ -587,6 +591,89 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   }
   ASSERT_EQ(popup_browser, chrome::FindLastActiveWithHostDesktopType(
                                popup_browser->host_desktop_type()));
+}
+
+void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
+                            ui::KeyboardCode key_code,
+                            int native_key_code,
+                            int modifiers,
+                            NativeWebKeyboardEvent* event) {
+  event->nativeKeyCode = native_key_code;
+  event->windowsKeyCode = key_code;
+  event->setKeyIdentifierFromWindowsKeyCode();
+  event->type = type;
+  event->modifiers = modifiers;
+  event->isSystemKey = false;
+  event->timeStampSeconds = base::Time::Now().ToDoubleT();
+  event->skip_in_browser = true;
+
+  if (type == blink::WebInputEvent::Char ||
+      type == blink::WebInputEvent::RawKeyDown) {
+    event->text[0] = key_code;
+    event->unmodifiedText[0] = key_code;
+  }
+}
+
+void InjectRawKeyEvent(WebContents* web_contents,
+                       blink::WebInputEvent::Type type,
+                       ui::KeyboardCode key_code,
+                       int native_key_code,
+                       int modifiers) {
+  NativeWebKeyboardEvent event;
+  BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event);
+}
+
+// Tests that Ctrl+Enter/Cmd+Enter keys on a link open the backgournd tab.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-simulated-click-on-anchor.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WindowedNotificationObserver wait_for_new_tab(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+
+#if defined(OS_MACOSX)
+  int modifiers = blink::WebInputEvent::MetaKey;
+  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
+                    ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
+                    modifiers);
+#else
+  int modifiers = blink::WebInputEvent::ControlKey;
+  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
+                    ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
+                    modifiers);
+#endif
+
+  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_RETURN,
+                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+
+  InjectRawKeyEvent(tab, blink::WebInputEvent::Char, ui::VKEY_RETURN,
+                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+
+  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_RETURN,
+                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+
+#if defined(OS_MACOSX)
+  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
+                    ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
+                    modifiers);
+#else
+  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
+                    ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
+                    modifiers);
+#endif
+
+  wait_for_new_tab.Wait();
+
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  // Check that we create the background tab.
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
 }  // namespace
