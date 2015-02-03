@@ -50,8 +50,14 @@ public class ChromeSwitchPreference extends SwitchPreference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
+
         ChromeSwitchCompat switchView = (ChromeSwitchCompat) view.findViewById(R.id.switch_widget);
-        switchView.setChecked(isChecked());
+        // On BLU Life Play devices SwitchPreference.setWidgetLayoutResource() does nothing. As a
+        // result, the user will see a non-material Switch and switchView will be null, hence the
+        // null check below. http://crbug.com/451447
+        if (switchView != null) {
+            switchView.setChecked(isChecked());
+        }
 
         TextView title = (TextView) view.findViewById(android.R.id.title);
         title.setSingleLine(false);
