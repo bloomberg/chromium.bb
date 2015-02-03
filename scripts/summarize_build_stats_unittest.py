@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for gather_builder_stats."""
+"""Unit tests for summarize_build_stats."""
 
 from __future__ import print_function
 
@@ -16,11 +16,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.scripts import gather_builder_stats
+from chromite.scripts import summarize_build_stats
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 
 
-REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
+REASON_BAD_CL = summarize_build_stats.CLStats.REASON_BAD_CL
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
 
@@ -35,17 +36,17 @@ class TestHelperMethods(cros_test_lib.TestCase):
     bad_build = metadata_lib.BuildData('url', {})
 
     # Test No Builds.
-    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
         [], 'Test No Builds')
     self.assertEqual(result, [])
 
     # Test Good Builds.
-    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
         [good_build1, good_build2], 'Test No Builds')
     self.assertEqual(result, [good_build1, good_build2])
 
     # Test No Builds.
-    result = gather_builder_stats._RemoveBuildsWithNoBuildId(
+    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
         [good_build1, good_build2, bad_build], 'Test No Builds')
     self.assertEqual(result, [good_build1, good_build2])
 
@@ -196,11 +197,10 @@ class TestCLActionLogic(cros_test_lib.TestCase):
       cq_builddata = self._getTestBuildData(cq=True)
       stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
                 '_FetchBuildData', side_effect=[cq_builddata, pre_cq_builddata])
-      stack.Add(mock.patch.object, gather_builder_stats, '_PrepareCreds')
-      stack.Add(mock.patch.object, gather_builder_stats.CLStats,
+      stack.Add(mock.patch.object, gather_builder_stats, 'PrepareCreds')
+      stack.Add(mock.patch.object, summarize_build_stats.CLStats,
                 'GatherFailureReasons')
-      cl_stats = gather_builder_stats.CLStats('foo@bar.com')
-      cl_stats.db = self.fake_db
+      cl_stats = summarize_build_stats.CLStats('foo@bar.com', self.fake_db)
       cl_stats.Gather(datetime.date.today(), datetime.date.today())
       cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
       cl_stats.blames = {1: '', 2: '', 3: 'crosreview.com/1',
@@ -258,5 +258,5 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 'crosreview.com/i/6789',
                 't/1234',
                 't/4321']
-    self.assertEqual(gather_builder_stats.CLStats.ProcessBlameString(blame),
+    self.assertEqual(summarize_build_stats.CLStats.ProcessBlameString(blame),
                      expected)
