@@ -4,11 +4,16 @@
 <script>
 description('This test ensures that a plugin which wants to receive wheel ' +
             'events is included in the non-fast scrollable region.');
+window.jsTestIsAsync = true;
 
 onload = function() {
     if (window.internals) {
         shouldBe('internals.nonFastScrollableRects(document).length', '1');
+    } else {
+        debug('This test requires access to window.internals.nonFastScrollableRects.');
     }
+
+    finishJSTest();
 }
 </script>
 

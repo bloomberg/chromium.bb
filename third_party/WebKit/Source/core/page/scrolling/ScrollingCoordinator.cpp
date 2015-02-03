@@ -773,8 +773,11 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
                 continue;
 
             PluginView* pluginView = toPluginView(child.get());
-            if (pluginView->wantsWheelEvents())
-                shouldHandleScrollGestureOnMainThreadRegion.unite(pluginView->frameRect());
+            if (pluginView->wantsWheelEvents()) {
+                IntRect box = pluginView->frameRect();
+                box.moveBy(offset);
+                shouldHandleScrollGestureOnMainThreadRegion.unite(box);
+            }
         }
     }
 
