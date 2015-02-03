@@ -53,23 +53,35 @@
         ],
       },
     }],
+    # Copy the VS runtime DLLs into the isolate so that they
+    # don't have to be preinstalled on the target machine.
+    ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/x64/msvcp120d.dll',
+          '<(PRODUCT_DIR)/x64/msvcr120d.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Release"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/x64/msvcp120.dll',
+          '<(PRODUCT_DIR)/x64/msvcr120.dll',
+        ],
+      },
+    }],
     ['OS=="win" and component=="shared_library" and (CONFIGURATION_NAME=="Debug" or CONFIGURATION_NAME=="Debug_x64")', {
       'variables': {
         'files': [
-          # Copy the VS runtime DLLs into the isolate so that they
-          # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120d.dll',
           '<(PRODUCT_DIR)/msvcr120d.dll',
-          '<(PRODUCT_DIR)/x64/msvcp120d.dll',
-          '<(PRODUCT_DIR)/x64/msvcr120d.dll',
         ],
       },
     }],
     ['OS=="win" and component=="shared_library" and (CONFIGURATION_NAME=="Release" or CONFIGURATION_NAME=="Release_x64")', {
       'variables': {
         'files': [
-          # Copy the VS runtime DLLs into the isolate so that they
-          # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120.dll',
           '<(PRODUCT_DIR)/msvcr120.dll',
         ],
