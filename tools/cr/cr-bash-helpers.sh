@@ -19,7 +19,12 @@ if [[ -x `which greadlink` ]]; then
   READLINK_e=("greadlink" "-e")
 fi
 
-cr_base_dir=$(dirname $(${READLINK_e[@]} "${BASH_SOURCE:-$0}"))
+if [[ $(uname) == "Darwin" ]]; then
+  cr_base_dir=$(dirname "${BASH_SOURCE:-$0}")
+else
+  cr_base_dir=$(dirname $(${READLINK_e[@]} "${BASH_SOURCE:-$0}"))
+fi
+
 cr_main="${cr_base_dir}/main.py"
 cr_exec=("PYTHONDONTWRITEBYTECODE=1" "python" "${cr_main}")
 
