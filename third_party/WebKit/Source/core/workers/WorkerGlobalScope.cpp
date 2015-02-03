@@ -91,7 +91,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
     , m_timeOrigin(timeOrigin)
-    , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
+    , m_messageStorage(ConsoleMessageStorage::create())
     , m_workerExceptionUniqueIdentifier(0)
 {
     setSecurityOrigin(SecurityOrigin::create(url));
@@ -306,7 +306,7 @@ void WorkerGlobalScope::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
 void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT(isContextThread());
-    m_messageStorage->reportMessage(consoleMessage);
+    m_messageStorage->reportMessage(this, consoleMessage);
 }
 
 bool WorkerGlobalScope::isContextThread() const

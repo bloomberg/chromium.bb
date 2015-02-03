@@ -19,18 +19,13 @@ class ConsoleMessageStorage final : public NoBaseWillBeGarbageCollected<ConsoleM
     WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForWorker(ExecutionContext* context)
+    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> create()
     {
-        return adoptPtrWillBeNoop(new ConsoleMessageStorage(context));
+        return adoptPtrWillBeNoop(new ConsoleMessageStorage());
     }
 
-    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForFrameHost(FrameHost* frameHost)
-    {
-        return adoptPtrWillBeNoop(new ConsoleMessageStorage(frameHost));
-    }
-
-    void reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
-    void clear();
+    void reportMessage(ExecutionContext*, PassRefPtrWillBeRawPtr<ConsoleMessage>);
+    void clear(ExecutionContext*);
 
     Vector<unsigned> argumentCounts() const;
 
@@ -45,13 +40,10 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit ConsoleMessageStorage(ExecutionContext*);
-    explicit ConsoleMessageStorage(FrameHost*);
+    ConsoleMessageStorage();
 
     int m_expiredCount;
     WillBeHeapDeque<RefPtrWillBeMember<ConsoleMessage> > m_messages;
-    RawPtrWillBeMember<ExecutionContext> m_context;
-    RawPtrWillBeMember<FrameHost> m_frameHost;
 };
 
 } // namespace blink

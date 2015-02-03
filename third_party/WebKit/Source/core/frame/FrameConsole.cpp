@@ -98,7 +98,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
         messageURL = consoleMessage->url();
     }
 
-    messageStorage()->reportMessage(consoleMessage);
+    messageStorage()->reportMessage(m_frame->document(), consoleMessage);
 
     if (consoleMessage->source() == CSSMessageSource || consoleMessage->source() == NetworkMessageSource)
         return;
@@ -176,7 +176,7 @@ void FrameConsole::clearMessages()
 {
     ConsoleMessageStorage* storage = messageStorage();
     if (storage)
-        storage->clear();
+        storage->clear(m_frame->document());
 }
 
 void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)
@@ -201,7 +201,7 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
     }
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
     consoleMessage->setRequestIdentifier(requestIdentifier);
-    storage->reportMessage(consoleMessage.release());
+    storage->reportMessage(m_frame->document(), consoleMessage.release());
 }
 
 void FrameConsole::trace(Visitor* visitor)

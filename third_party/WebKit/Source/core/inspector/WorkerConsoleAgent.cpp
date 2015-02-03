@@ -32,6 +32,7 @@
 #include "core/inspector/WorkerConsoleAgent.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -58,6 +59,11 @@ void WorkerConsoleAgent::enable(ErrorString* error)
 {
     InspectorConsoleAgent::enable(error);
     m_workerGlobalScope->thread()->workerReportingProxy().postWorkerConsoleAgentEnabled();
+}
+
+void WorkerConsoleAgent::clearMessages(ErrorString*)
+{
+    messageStorage()->clear(m_workerGlobalScope.get());
 }
 
 ConsoleMessageStorage* WorkerConsoleAgent::messageStorage()

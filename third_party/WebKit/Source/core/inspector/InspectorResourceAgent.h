@@ -45,6 +45,7 @@ class Resource;
 struct FetchInitiatorInfo;
 class Document;
 class DocumentLoader;
+class ExecutionContext;
 class FormData;
 class LocalFrame;
 class HTTPHeaderMap;
@@ -96,7 +97,7 @@ public:
     void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient*);
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didFailXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*);
-    void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&);
+    void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&);
 
     void willSendEventSourceRequest(ThreadableLoaderClient*);
     void willDispachEventSourceEvent(ThreadableLoaderClient*, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data);

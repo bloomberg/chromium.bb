@@ -87,7 +87,7 @@ void PageConsoleAgent::disable(ErrorString* errorString)
 void PageConsoleAgent::clearMessages(ErrorString* errorString)
 {
     m_inspectorDOMAgent->releaseDanglingNodes();
-    InspectorConsoleAgent::clearMessages(errorString);
+    messageStorage()->clear(m_page->deprecatedLocalMainFrame()->document());
 }
 
 void PageConsoleAgent::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)

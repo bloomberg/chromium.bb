@@ -48,7 +48,7 @@ FrameHost::FrameHost(Page& page)
     : m_page(&page)
     , m_pinchViewport(PinchViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
-    , m_consoleMessageStorage(ConsoleMessageStorage::createForFrameHost(this))
+    , m_consoleMessageStorage(ConsoleMessageStorage::create())
     , m_subframeCount(0)
 {
 }

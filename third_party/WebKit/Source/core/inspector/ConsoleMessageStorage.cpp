@@ -14,32 +14,20 @@ namespace blink {
 
 static const unsigned maxConsoleMessageCount = 1000;
 
-ConsoleMessageStorage::ConsoleMessageStorage(ExecutionContext* context)
+ConsoleMessageStorage::ConsoleMessageStorage()
     : m_expiredCount(0)
-    , m_context(context)
-    , m_frameHost(nullptr)
 {
 }
 
-ConsoleMessageStorage::ConsoleMessageStorage(FrameHost* frameHost)
-    : m_expiredCount(0)
-    , m_context(nullptr)
-    , m_frameHost(frameHost)
-{
-}
-
-void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpMessage)
+void ConsoleMessageStorage::reportMessage(ExecutionContext* context, PassRefPtrWillBeRawPtr<ConsoleMessage> prpMessage)
 {
     RefPtrWillBeRawPtr<ConsoleMessage> message = prpMessage;
     message->collectCallStack();
 
     if (message->type() == ClearMessageType)
-        clear();
+        clear(context);
 
-    if (m_frameHost)
-        InspectorInstrumentation::addMessageToConsole(m_frameHost, message.get());
-    else
-        InspectorInstrumentation::addMessageToConsole(m_context, message.get());
+    InspectorInstrumentation::addMessageToConsole(context, message.get());
 
     ASSERT(m_messages.size() <= maxConsoleMessageCount);
     if (m_messages.size() == maxConsoleMessageCount) {
@@ -49,12 +37,9 @@ void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
     m_messages.append(message);
 }
 
-void ConsoleMessageStorage::clear()
+void ConsoleMessageStorage::clear(ExecutionContext* context)
 {
-    if (m_frameHost)
-        InspectorInstrumentation::consoleMessagesCleared(m_frameHost);
-    else
-        InspectorInstrumentation::consoleMessagesCleared(m_context);
+    InspectorInstrumentation::consoleMessagesCleared(context);
     m_messages.clear();
     m_expiredCount = 0;
 }
@@ -99,8 +84,6 @@ int ConsoleMessageStorage::expiredCount() const
 void ConsoleMessageStorage::trace(Visitor* visitor)
 {
     visitor->trace(m_messages);
-    visitor->trace(m_context);
-    visitor->trace(m_frameHost);
 }
 
 } // namespace blink

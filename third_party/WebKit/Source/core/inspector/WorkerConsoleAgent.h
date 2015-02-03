@@ -49,6 +49,7 @@ public:
     virtual void trace(Visitor*) override;
 
     virtual void enable(ErrorString*) override;
+    virtual void clearMessages(ErrorString*) override;
 
     virtual bool isWorkerAgent() override { return true; }
 

@@ -114,11 +114,6 @@ void InspectorConsoleAgent::disable(ErrorString*)
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, false);
 }
 
-void InspectorConsoleAgent::clearMessages(ErrorString*)
-{
-    messageStorage()->clear();
-}
-
 void InspectorConsoleAgent::restore()
 {
     if (m_state->getBoolean(ConsoleAgentState::consoleMessagesEnabled)) {
@@ -142,24 +137,22 @@ void InspectorConsoleAgent::clearFrontend()
 
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
-    if (m_frontend)
-        sendConsoleMessageToFrontend(consoleMessage, true);
+    sendConsoleMessageToFrontend(consoleMessage, true);
 }
 
 void InspectorConsoleAgent::consoleMessagesCleared()
 {
     m_injectedScriptManager->releaseObjectGroup("console");
-    if (m_frontend)
-        m_frontend->messagesCleared();
+    m_frontend->messagesCleared();
 }
 
-void InspectorConsoleAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url)
+void InspectorConsoleAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url)
 {
-    if (m_frontend && m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
+    if (m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
         String message = "XHR finished loading: " + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(requestIdentifier);
-        messageStorage()->reportMessage(consoleMessage.release());
+        messageStorage()->reportMessage(context, consoleMessage.release());
     }
 }
 
