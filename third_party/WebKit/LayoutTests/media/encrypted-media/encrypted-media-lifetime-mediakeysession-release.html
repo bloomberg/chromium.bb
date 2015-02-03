@@ -30,7 +30,7 @@
                 }
 
                 // Create 2 sessions.
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;

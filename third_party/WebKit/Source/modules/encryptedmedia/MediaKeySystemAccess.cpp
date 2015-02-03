@@ -16,7 +16,6 @@
 #include "platform/Logging.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
-#include "public/platform/WebMediaKeySystemConfiguration.h"
 
 namespace blink {
 
@@ -57,45 +56,6 @@ private:
     const String m_keySystem;
 };
 
-// These methods are the inverses of those with the same names in
-// NavigatorRequestMediaKeySystemAccess.
-static Vector<String> convertInitDataTypes(const WebVector<WebString>& initDataTypes)
-{
-    Vector<String> result;
-    result.reserveCapacity(initDataTypes.size());
-    for (size_t i = 0; i < initDataTypes.size(); i++)
-        result.append(initDataTypes[i]);
-    return result;
-}
-
-static Vector<MediaKeySystemMediaCapability> convertCapabilities(const WebVector<WebMediaKeySystemMediaCapability>& capabilities)
-{
-    Vector<MediaKeySystemMediaCapability> result;
-    result.reserveCapacity(capabilities.size());
-    for (size_t i = 0; i < capabilities.size(); i++) {
-        MediaKeySystemMediaCapability capability;
-        capability.setContentType(capabilities[i].contentType);
-        capability.setRobustness(capabilities[i].robustness);
-        result.append(capability);
-    }
-    return result;
-}
-
-static String convertMediaKeysRequirement(WebMediaKeySystemConfiguration::Requirement requirement)
-{
-    switch (requirement) {
-    case blink::WebMediaKeySystemConfiguration::Requirement::Required:
-        return "required";
-    case blink::WebMediaKeySystemConfiguration::Requirement::Optional:
-        return "optional";
-    case blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed:
-        return "not-allowed";
-    }
-
-    ASSERT_NOT_REACHED();
-    return "not-allowed";
-}
-
 } // namespace
 
 MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, PassOwnPtr<WebContentDecryptionModuleAccess> access)
@@ -106,16 +66,6 @@ MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, PassOwnPtr<W
 
 MediaKeySystemAccess::~MediaKeySystemAccess()
 {
-}
-
-void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
-{
-    WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
-    result.setInitDataTypes(convertInitDataTypes(configuration.initDataTypes));
-    result.setAudioCapabilities(convertCapabilities(configuration.audioCapabilities));
-    result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
-    result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
-    result.setPersistentState(convertMediaKeysRequirement(configuration.persistentState));
 }
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)

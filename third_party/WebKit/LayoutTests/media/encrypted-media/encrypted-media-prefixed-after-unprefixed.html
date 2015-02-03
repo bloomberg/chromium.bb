@@ -18,7 +18,7 @@
 
                 function loadStarted()
                 {
-                    navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                    navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
                         assert_equals(access.keySystem, 'org.w3.clearkey');
                         return access.createMediaKeys();
                     }).then(function(mediaKeys) {

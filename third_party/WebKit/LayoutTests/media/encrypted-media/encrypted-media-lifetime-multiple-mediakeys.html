@@ -44,7 +44,7 @@
                 // MediaKeySession object.
                 function createMediaKeyWithMediaKeySession()
                 {
-                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
                         return access.createMediaKeys();
                     }).then(function(result) {
                         mediaKeys = result;

@@ -11,32 +11,25 @@
         <script>
             function expect_error(keySystem, configurations, expectedError, testName) {
                 promise_test(function(test) {
-                    return navigator.requestMediaKeySystemAccess(keySystem, configurations).then(function(a) {
-                        assert_unreached('Unexpected requestMediaKeySystemAccess() success.');
-                    }, function(e) {
-                        assert_equals(e.name, expectedError);
-                    });
+                  return navigator.requestMediaKeySystemAccess(keySystem, configurations).then(function(a) {
+                      assert_unreached('Unexpected requestMediaKeySystemAccess() success.');
+                  }, function(e) {
+                      assert_equals(e.name, expectedError);
+                  });
                 }, testName);
             }
 
-            function assert_subset(actual, expected, path) {
-                if (typeof expected == 'string') {
-                    assert_equals(actual, expected, path);
-                } else {
-                    if (expected.hasOwnProperty('length'))
-                        assert_equals(actual.length, expected.length, path + '.length');
-                    for (property in expected)
-                        assert_subset(actual[property], expected[property], path + '.' + property);
-                }
-            }
-
-            function expect_config(keySystem, configurations, expectedConfiguration, testName) {
+            function expect_success(keySystem, configurations, testName) {
+                // FIXME: Check the resulting accumulated configuration. http://crbug.com/447059.
                 promise_test(function(test) {
-                    return navigator.requestMediaKeySystemAccess(keySystem, configurations).then(function(a) {
-                        assert_subset(a.getConfiguration(), expectedConfiguration, 'getConfiguration()');
-                    });
+                  return navigator.requestMediaKeySystemAccess(keySystem, configurations);
                 }, testName);
             }
+
+            // Tests for single-parameter version.
+            promise_test(function(test) {
+              return navigator.requestMediaKeySystemAccess('org.w3.clearkey');
+            }, 'Single-parameter');
 
             // Tests for keySystem.
             expect_error('', [{}], 'InvalidAccessError', 'Empty keySystem');
@@ -47,40 +40,24 @@
 
             // Tests for trivial configurations.
             expect_error('org.w3.clearkey', [], 'InvalidAccessError', 'Empty supportedConfigurations');
-            expect_config('org.w3.clearkey', [{}], {}, 'Empty configuration');
+            expect_success('org.w3.clearkey', [{}], 'Empty configuration');
 
             // Various combinations of supportedConfigurations.
-            expect_config('org.w3.clearkey', [{
+            expect_success('org.w3.clearkey', [{
                 initDataTypes: ['webm'],
                 audioCapabilities: [{contentType: 'audio/webm'}],
                 videoCapabilities: [{contentType: 'video/webm'}],
-            }], {
-                initDataTypes: ['webm'],
-                audioCapabilities: [{contentType: 'audio/webm'}],
-                videoCapabilities: [{contentType: 'video/webm'}],
-            }, 'Basic supported configuration');
+            }], 'Basic supported configuration');
 
-            expect_config('org.w3.clearkey', [{
+            expect_success('org.w3.clearkey', [{
                 initDataTypes: ['fakeidt', 'webm'],
                 audioCapabilities: [{contentType: 'audio/fake'}, {contentType: 'audio/webm'}],
                 videoCapabilities: [{contentType: 'video/fake'}, {contentType: 'video/webm'}],
-            }], {
-                initDataTypes: ['webm'],
-                audioCapabilities: [{contentType: 'audio/webm'}],
-                videoCapabilities: [{contentType: 'video/webm'}],
-            }, 'Partially supported configuration');
+            }], 'Partially supported configuration');
 
-            expect_config('org.w3.clearkey', [{
+            expect_success('org.w3.clearkey', [{
                 audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
-            }], {
-                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
-            }, 'Supported audio codec');
-
-            expect_config('org.w3.clearkey', [{
-                audioCapabilities: [{contentType: 'audio/webm;  codecs="vorbis"'}],
-            }], {
-                audioCapabilities: [{contentType: 'audio/webm;  codecs="vorbis"'}],
-            }, 'ContentType formatting must be preserved');
+            }], 'Supported audio codec');
 
             expect_error('org.w3.clearkey', [{
                 audioCapabilities: [{contentType: 'audio/webm; codecs=fake'}],
@@ -93,11 +70,9 @@
                 ],
             }], 'NotSupportedError', 'Mismatched audio container/codec');
 
-            expect_config('org.w3.clearkey', [{
+            expect_success('org.w3.clearkey', [{
                 audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
-            }], {
-                audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
-            }, 'Supported video codec');
+            }], 'Supported video codec');
 
             expect_error('org.w3.clearkey', [{
                 audioCapabilities: [{contentType: 'video/webm; codecs=fake'}],
@@ -110,15 +85,13 @@
                 ],
             }], 'NotSupportedError', 'Mismatched video container/codec');
 
-            expect_config('org.w3.clearkey', [
+            expect_success('org.w3.clearkey', [
                 {initDataTypes: ['fakeidt']},
                 {initDataTypes: ['webm']}
-            ], {initDataTypes: ['webm']}, 'Two configurations, one supported');
+            ], 'Two configurations, one supported');
 
-            expect_config('org.w3.clearkey', [
-                {initDataTypes: ['webm']},
-                {}
-            ], {initDataTypes: ['webm']}, 'Two configurations, both supported');
+            // FIXME: Test for an empty config before and after a supported config,
+            // once empty configs are considered invalid.
         </script>
     </body>
 </html>

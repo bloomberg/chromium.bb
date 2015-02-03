@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
 #include "public/platform/WebContentDecryptionModuleAccess.h"
 #include "wtf/Forward.h"
 
@@ -21,7 +20,6 @@ public:
     virtual ~MediaKeySystemAccess();
 
     const String& keySystem() const { return m_keySystem; }
-    void getConfiguration(MediaKeySystemConfiguration& result);
     ScriptPromise createMediaKeys(ScriptState*);
 
     void trace(Visitor*);

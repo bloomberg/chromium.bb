@@ -9,21 +9,38 @@
 #include "bindings/modules/v8/V8MediaKeySystemConfiguration.h"
 #include "core/frame/Navigator.h"
 #include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
+#include "platform/Supplementable.h"
 #include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class NavigatorRequestMediaKeySystemAccess {
+class NavigatorRequestMediaKeySystemAccess final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorRequestMediaKeySystemAccess>, public WillBeHeapSupplement<Navigator> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorRequestMediaKeySystemAccess);
 public:
+    virtual ~NavigatorRequestMediaKeySystemAccess();
+
+    static NavigatorRequestMediaKeySystemAccess& from(Navigator&);
+
+    static ScriptPromise requestMediaKeySystemAccess(
+        ScriptState*,
+        Navigator&,
+        const String& keySystem);
     static ScriptPromise requestMediaKeySystemAccess(
         ScriptState*,
         Navigator&,
         const String& keySystem,
         const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
 
+    ScriptPromise requestMediaKeySystemAccess(
+        ScriptState*,
+        const String& keySystem,
+        const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
+
+    virtual void trace(Visitor*) override;
+
 private:
     NavigatorRequestMediaKeySystemAccess();
+    static const char* supplementName();
 };
 
 } // namespace blink

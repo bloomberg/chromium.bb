@@ -15,7 +15,7 @@
                 setInterval(asyncGC, 0);
 
                 var mediaKeySession;
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var initDataType = getInitDataType();
