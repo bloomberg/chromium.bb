@@ -10,9 +10,6 @@
 #include "url/gurl.h"
 
 TEST(TranslateServiceIOSTest, CheckTranslatableURL) {
-  // TODO(droger): Remove this once http://crbug.com/437332 is fixed.
-  ios::TestChromeProviderInitializer test_chrome_provider_initializer;
-
   GURL empty_url = GURL(std::string());
   EXPECT_FALSE(TranslateServiceIOS::IsTranslatableURL(empty_url));
 
