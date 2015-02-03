@@ -13,14 +13,21 @@
 var remoting = remoting || {};
 
 /**
+ * @param {Array.<string>} app_capabilities Array of application capabilities.
  * @constructor
  */
-remoting.Application = function() {
+remoting.Application = function(app_capabilities) {
   /**
    * @type {remoting.Application.Delegate}
    * @private
    */
   this.delegate_ = null;
+
+  /**
+   * @type {Array.<string>}
+   * @private
+   */
+  this.app_capabilities_ = app_capabilities;
 
   /**
    * @type {remoting.SessionConnector}
@@ -35,6 +42,30 @@ remoting.Application = function() {
  */
 remoting.Application.prototype.setDelegate = function(appDelegate) {
   this.delegate_ = appDelegate;
+};
+
+/**
+ * @return {Array.<string>} A list of |ClientSession.Capability|s required
+ *     by this application.
+ */
+remoting.Application.prototype.getRequiredCapabilities_ = function() {
+  var capabilities = [
+    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
+    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
+    remoting.ClientSession.Capability.VIDEO_RECORDER
+  ];
+  // Append the app-specific capabilities.
+  capabilities.push.apply(capabilities, this.app_capabilities_);
+  return capabilities;
+};
+
+/**
+ * @param {remoting.ClientSession.Capability} capability
+ * @return {boolean}
+ */
+remoting.Application.prototype.hasCapability = function(capability) {
+  var capabilities = remoting.app.getRequiredCapabilities_();
+  return capabilities.indexOf(capability) != -1;
 };
 
 /**
@@ -153,7 +184,7 @@ remoting.Application.prototype.getSessionConnector = function() {
         this.onError.bind(this),
         this.onExtensionMessage.bind(this),
         this.onConnectionFailed.bind(this),
-        this.delegate_.getRequiredCapabilities(),
+        this.getRequiredCapabilities_(),
         this.delegate_.getDefaultRemapKeys());
   }
   return this.session_connector_;
@@ -178,12 +209,6 @@ remoting.Application.Delegate.prototype.init = function(connector) {};
  * @return {string} The default remap keys for the current platform.
  */
 remoting.Application.Delegate.prototype.getDefaultRemapKeys = function() {};
-
-/**
- * @return {Array.<string>} A list of |ClientSession.Capability|s required
- *     by this application.
- */
-remoting.Application.Delegate.prototype.getRequiredCapabilities = function() {};
 
 /**
  * Called when a new session has been connected.

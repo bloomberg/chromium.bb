@@ -214,19 +214,6 @@ remoting.AppRemoting.prototype.getDefaultRemapKeys = function() {
 };
 
 /**
- * @return {Array.<string>} A list of |ClientSession.Capability|s required
- *     by this application.
- */
-remoting.AppRemoting.prototype.getRequiredCapabilities = function() {
-  return [
-    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
-    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
-    remoting.ClientSession.Capability.VIDEO_RECORDER,
-    remoting.ClientSession.Capability.GOOGLE_DRIVE
-  ];
-};
-
-/**
  * Called when a new session has been connected.
  *
  * @param {remoting.ClientSession} clientSession

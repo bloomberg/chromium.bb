@@ -32,13 +32,6 @@ var remoting = remoting || {};
 remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
- * True if Cast capability is supported.
- *
- * @type {boolean}
- */
-remoting.enableCast = false;
-
-/**
  * True to enable mouse lock.
  * This is currently disabled because the current client plugin does not
  * properly handle mouse lock and delegated large cursors at the same time.
@@ -1677,7 +1670,8 @@ remoting.ClientSession.prototype.processCastExtensionMessage_ = function(data) {
  * @private
  */
 remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
-  if (remoting.enableCast && this.mode_ == remoting.ClientSession.Mode.ME2ME) {
+  if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST) &&
+      this.mode_ == remoting.ClientSession.Mode.ME2ME) {
     this.castExtensionHandler_ = new remoting.CastExtensionHandler(this);
   }
 };

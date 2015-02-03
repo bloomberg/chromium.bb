@@ -200,7 +200,7 @@ remoting.startDesktopRemotingForTesting = function() {
 
 
 remoting.startDesktopRemoting = function() {
-  remoting.app = new remoting.Application();
+  remoting.app = new remoting.Application(remoting.app_capabilities());
   var desktop_remoting = new remoting.DesktopRemoting(remoting.app);
   remoting.app.start();
 };

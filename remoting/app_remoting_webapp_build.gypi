@@ -122,6 +122,8 @@
           '<(remoting_app_name)',
           '--app_description',
           '<(remoting_app_description)',
+          '--app_capabilities',
+          '>@(_app_capabilities)',
           '--service_environment',
           '<@(ar_service_environment)',
         ],

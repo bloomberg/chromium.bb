@@ -69,10 +69,12 @@
 
   'targets': [
     {
+      # Sample AppRemoting app.
       'target_name': 'ar_sample_app',
       'app_id': 'ljacajndfccfgnfohlgkdphmbnpkjflk',
       'app_name': 'App Remoting Client',
       'app_description': 'App Remoting client',
+      'app_capabilities': ['GOOGLE_DRIVE'],
     },
   ],  # end of targets
 }

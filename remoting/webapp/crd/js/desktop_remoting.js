@@ -156,21 +156,6 @@ remoting.DesktopRemoting.prototype.getDefaultRemapKeys = function() {
 };
 
 /**
- * @return {Array.<string>} A list of |ClientSession.Capability|s required
- *     by this application.
- */
-remoting.DesktopRemoting.prototype.getRequiredCapabilities = function() {
-  return [
-    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
-    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
-    remoting.ClientSession.Capability.VIDEO_RECORDER,
-    // TODO(aiguha): Add this capability based on a gyp/command-line flag,
-    // rather than by default.
-    remoting.ClientSession.Capability.CAST
-  ];
-};
-
-/**
  * Called when a new session has been connected.
  *
  * @param {remoting.ClientSession} clientSession

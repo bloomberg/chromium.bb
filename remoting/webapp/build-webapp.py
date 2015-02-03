@@ -75,10 +75,9 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
   rendered = template.render(context)
   io.open(output_file, 'w', encoding='utf-8').write(rendered)
 
-
 def buildWebApp(buildtype, version, destination, zip_path,
                 manifest_template, webapp_type, app_id, app_name,
-                app_description, files, locales, jinja_paths,
+                app_description, app_capabilities, files, locales, jinja_paths,
                 service_environment):
   """Does the main work of building the webapp directory and zipfile.
 
@@ -95,6 +94,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
              test API server.
     app_name: A string with the name of the application.
     app_description: A string with the description of the application.
+    app_capabilities: A set of strings naming the capabilities that should be
+                      enabled for this application.
     files: An array of strings listing the paths for resources to include
            in this webapp.
     locales: An array of strings listing locales, which are copied, along
@@ -316,6 +317,12 @@ def buildWebApp(buildtype, version, destination, zip_path,
   replaceString(destination, 'API_CLIENT_ID', apiClientId)
   replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
 
+  # Write the application capabilities.
+  appCapabilities = ','.join(
+      ['remoting.ClientSession.Capability.' + x for x in app_capabilities])
+  findAndReplace(os.path.join(destination, 'app_capabilities.js'),
+                 "'APPLICATION_CAPABILITIES'", appCapabilities)
+
   # Use a consistent extension id for dev builds.
   # AppRemoting builds always use the dev app id - the correct app id gets
   # written into the manifest later.
@@ -342,7 +349,11 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'GOOGLE_API_HOSTS': googleApiHosts,
         'APP_NAME': app_name,
         'APP_DESCRIPTION': app_description,
+        'OAUTH_GDRIVE_SCOPE': '',
     }
+    if 'GOOGLE_DRIVE' in app_capabilities:
+      context['OAUTH_GDRIVE_SCOPE'] = ('https://docs.google.com/feeds/ '
+                                       'https://www.googleapis.com/auth/drive')
     processJinjaTemplate(manifest_template,
                          jinja_paths,
                          os.path.join(destination, 'manifest.json'),
@@ -361,6 +372,7 @@ def main():
            '<webapp_type> <other files...> '
            '--app_name <name> '
            '--app_description <description> '
+           '--app_capabilities <capabilities...> '
            '[--appid <appid>] '
            '[--locales <locales...>] '
            '[--jinja_paths <paths...>] '
@@ -374,6 +386,7 @@ def main():
   app_id = None
   app_name = None
   app_description = None
+  app_capabilities = set([])
   service_environment = ''
 
   for arg in sys.argv[7:]:
@@ -382,6 +395,7 @@ def main():
                '--appid',
                '--app_name',
                '--app_description',
+               '--app_capabilities',
                '--service_environment']:
       arg_type = arg
     elif arg_type == '--locales':
@@ -397,6 +411,8 @@ def main():
     elif arg_type == '--app_description':
       app_description = arg
       arg_type = ''
+    elif arg_type == '--app_capabilities':
+      app_capabilities.add(arg)
     elif arg_type == '--service_environment':
       service_environment = arg
       arg_type = ''
@@ -405,8 +421,8 @@ def main():
 
   return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
                      sys.argv[5], sys.argv[6], app_id, app_name,
-                     app_description, files, locales, jinja_paths,
-                     service_environment)
+                     app_description, app_capabilities, files, locales,
+                     jinja_paths, service_environment)
 
 
 if __name__ == '__main__':
