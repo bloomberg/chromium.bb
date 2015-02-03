@@ -29,6 +29,7 @@ NON_PERL_FILES = {
     ('linux', 'arm'): [
         'src/crypto/poly1305/poly1305_arm_asm.S',
         'src/crypto/chacha/chacha_vec_arm.S',
+        'src/crypto/cpu-arm-asm.S',
     ],
 }
 
