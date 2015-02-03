@@ -171,10 +171,6 @@
         <include name="IDR_PDF_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
         <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
 
-        <include name="IDR_PDF_PDF_PANE_CSS" file="pdf/elements/pdf-pane/pdf-pane.css" type="BINDATA" />
-        <include name="IDR_PDF_PDF_PANE_HTML" file="pdf/elements/pdf-pane/pdf-pane.html" type="BINDATA" />
-        <include name="IDR_PDF_PDF_PANE_JS" file="pdf/elements/pdf-pane/pdf-pane.js" type="BINDATA" />
-
         <include name="IDR_PDF_VIEWER_BOOKMARK_CSS" file="pdf/elements/viewer-bookmark/viewer-bookmark.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark/viewer-bookmark.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark/viewer-bookmark.js" type="BINDATA" />
@@ -192,6 +188,9 @@
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_CSS" file="pdf/elements/viewer-page-selector/viewer-page-selector.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_HTML" file="pdf/elements/viewer-page-selector/viewer-page-selector.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="pdf/elements/viewer-page-selector/viewer-page-selector.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PANE_CSS" file="pdf/elements/viewer-pane/viewer-pane.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PANE_HTML" file="pdf/elements/viewer-pane/viewer-pane.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PANE_JS" file="pdf/elements/viewer-pane/viewer-pane.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_CSS" file="pdf/elements/viewer-password-screen/viewer-password-screen.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML" file="pdf/elements/viewer-password-screen/viewer-password-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="pdf/elements/viewer-password-screen/viewer-password-screen.js" type="BINDATA" />

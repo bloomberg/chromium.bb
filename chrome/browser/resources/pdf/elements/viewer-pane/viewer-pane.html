@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/paper-dialog/paper-dialog.html">
 
-<polymer-element name="pdf-pane" attributes="heading">
+<polymer-element name="viewer-pane" attributes="heading">
 <template>
-  <link rel="stylesheet" href="pdf-pane.css">
+  <link rel="stylesheet" href="viewer-pane.css">
   <!-- We set layered to false so that we can apply css in our file. -->
   <paper-dialog id="dialog" heading="{{heading}}" transition="core-transition-right" class="scrolling pane" layered="false">
     <hr>
@@ -12,5 +12,5 @@
     </div>
   </paper-dialog>
 </template>
-<script src="pdf-pane.js"></script>
+<script src="viewer-pane.js"></script>
 </polymer-element>

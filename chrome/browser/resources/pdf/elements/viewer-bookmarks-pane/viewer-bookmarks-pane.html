@@ -1,14 +1,14 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="../viewer-bookmark/viewer-bookmark.html">
-<link rel="import" href="../pdf-pane/pdf-pane.html">
+<link rel="import" href="../viewer-pane/viewer-pane.html">
 
 <polymer-element name="viewer-bookmarks-pane">
 <template>
-  <pdf-pane id="pane" heading="Bookmarks">
+  <viewer-pane id="pane" heading="Bookmarks">
     <template repeat="{{bookmarkNode in bookmarks}}">
       <viewer-bookmark bookmark="{{bookmarkNode}}"></viewer-bookmark>
     </template>
-  </pdf-pane>
+  </viewer-pane>
 </template>
 <script src="viewer-bookmarks-pane.js"></script>
 </polymer-element>
