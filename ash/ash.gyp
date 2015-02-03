@@ -934,6 +934,7 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
+            '../ui/events/ozone/events_ozone.gyp:events_ozone',
             '../ui/ozone/ozone.gyp:ozone',
           ],
         }],

@@ -84,7 +84,10 @@ component("ash") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/events/ozone:events_ozone",
+      "//ui/ozone",
+    ]
   }
 
   if (is_chromeos) {
