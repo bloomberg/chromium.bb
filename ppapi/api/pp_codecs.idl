@@ -115,3 +115,56 @@ struct PP_VideoPicture_0_1 {
    */
   PP_Size texture_size;
 };
+
+/**
+ * Supported video profile information. See the PPB_VideoEncoder function
+ * GetSupportedProfiles() for more details.
+ */
+struct PP_VideoProfileDescription {
+  /**
+   * The codec profile.
+   */
+  PP_VideoProfile profile;
+
+  /**
+   * Dimensions of the maximum resolution of video frames, in pixels.
+   */
+  PP_Size max_resolution;
+
+  /**
+   * The numerator of the maximum frame rate.
+   */
+  uint32_t max_framerate_numerator;
+
+  /**
+   * The denominator of the maximum frame rate.
+   */
+  uint32_t max_framerate_denominator;
+
+  /**
+   * A value indicating if the profile is available in hardware, software, or
+   * both.
+   */
+  PP_HardwareAcceleration acceleration;
+};
+
+/**
+ * Struct describing a bitstream buffer.
+ */
+struct PP_BitstreamBuffer {
+  /**
+   * The size, in bytes, of the bitstream data.
+   */
+  uint32_t size;
+
+  /**
+   * The base address of the bitstream data.
+   */
+  mem_t buffer;
+
+  /**
+   * Whether the buffer represents a key frame.
+   */
+  PP_Bool key_frame;
+};
+

@@ -245,6 +245,8 @@
       'cpp/var_dictionary.h',
       'cpp/video_decoder.cc',
       'cpp/video_decoder.h',
+      'cpp/video_encoder.cc',
+      'cpp/video_encoder.h',
       'cpp/video_frame.cc',
       'cpp/video_frame.h',
       'cpp/view.cc',

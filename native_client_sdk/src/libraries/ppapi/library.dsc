@@ -62,6 +62,7 @@
         'ppb_var_dictionary.h',
         'ppb_var.h',
         'ppb_video_decoder.h',
+        'ppb_video_encoder.h',
         'ppb_video_frame.h',
         'ppb_view.h',
         'ppb_websocket.h',

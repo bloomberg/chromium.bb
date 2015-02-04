@@ -50,6 +50,7 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_video_decoder.h"
+#include "ppapi/c/ppb_video_encoder.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -148,6 +149,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoEncoder_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
@@ -2185,6 +2187,70 @@ static int32_t Pnacl_M40_PPB_VideoDecoder_Reset(PP_Resource video_decoder, struc
 }
 
 /* End wrapper methods for PPB_VideoDecoder_1_0 */
+
+/* Begin wrapper methods for PPB_VideoEncoder_0_1 */
+
+static PP_Resource Pnacl_M42_PPB_VideoEncoder_Create(PP_Instance instance) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M42_PPB_VideoEncoder_IsVideoEncoder(PP_Resource resource) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->IsVideoEncoder(resource);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_GetSupportedProfiles(PP_Resource video_encoder, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->GetSupportedProfiles(video_encoder, *output, *callback);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_Initialize(PP_Resource video_encoder, PP_VideoFrame_Format input_format, const struct PP_Size* input_visible_size, PP_VideoProfile output_profile, uint32_t initial_bitrate, PP_HardwareAcceleration acceleration, struct PP_CompletionCallback* callback) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->Initialize(video_encoder, input_format, input_visible_size, output_profile, initial_bitrate, acceleration, *callback);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_GetFramesRequired(PP_Resource video_encoder) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->GetFramesRequired(video_encoder);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_GetFrameCodedSize(PP_Resource video_encoder, struct PP_Size* coded_size) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->GetFrameCodedSize(video_encoder, coded_size);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_GetVideoFrame(PP_Resource video_encoder, PP_Resource* video_frame, struct PP_CompletionCallback* callback) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->GetVideoFrame(video_encoder, video_frame, *callback);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_Encode(PP_Resource video_encoder, PP_Resource video_frame, PP_Bool force_keyframe, struct PP_CompletionCallback* callback) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->Encode(video_encoder, video_frame, force_keyframe, *callback);
+}
+
+static int32_t Pnacl_M42_PPB_VideoEncoder_GetBitstreamBuffer(PP_Resource video_encoder, struct PP_BitstreamBuffer* bitstream_buffer, struct PP_CompletionCallback* callback) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  return iface->GetBitstreamBuffer(video_encoder, bitstream_buffer, *callback);
+}
+
+static void Pnacl_M42_PPB_VideoEncoder_RecycleBitstreamBuffer(PP_Resource video_encoder, const struct PP_BitstreamBuffer* bitstream_buffer) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  iface->RecycleBitstreamBuffer(video_encoder, bitstream_buffer);
+}
+
+static void Pnacl_M42_PPB_VideoEncoder_RequestEncodingParametersChange(PP_Resource video_encoder, uint32_t bitrate, uint32_t framerate) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  iface->RequestEncodingParametersChange(video_encoder, bitrate, framerate);
+}
+
+static void Pnacl_M42_PPB_VideoEncoder_Close(PP_Resource video_encoder) {
+  const struct PPB_VideoEncoder_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoEncoder_0_1.real_iface;
+  iface->Close(video_encoder);
+}
+
+/* End wrapper methods for PPB_VideoEncoder_0_1 */
 
 /* Not generating wrapper methods for PPB_VideoFrame_0_1 */
 
@@ -5140,6 +5206,21 @@ static const struct PPB_VideoDecoder_1_0 Pnacl_Wrappers_PPB_VideoDecoder_1_0 = {
     .Reset = (int32_t (*)(PP_Resource video_decoder, struct PP_CompletionCallback callback))&Pnacl_M40_PPB_VideoDecoder_Reset
 };
 
+static const struct PPB_VideoEncoder_0_1 Pnacl_Wrappers_PPB_VideoEncoder_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M42_PPB_VideoEncoder_Create,
+    .IsVideoEncoder = (PP_Bool (*)(PP_Resource resource))&Pnacl_M42_PPB_VideoEncoder_IsVideoEncoder,
+    .GetSupportedProfiles = (int32_t (*)(PP_Resource video_encoder, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_VideoEncoder_GetSupportedProfiles,
+    .Initialize = (int32_t (*)(PP_Resource video_encoder, PP_VideoFrame_Format input_format, const struct PP_Size* input_visible_size, PP_VideoProfile output_profile, uint32_t initial_bitrate, PP_HardwareAcceleration acceleration, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_VideoEncoder_Initialize,
+    .GetFramesRequired = (int32_t (*)(PP_Resource video_encoder))&Pnacl_M42_PPB_VideoEncoder_GetFramesRequired,
+    .GetFrameCodedSize = (int32_t (*)(PP_Resource video_encoder, struct PP_Size* coded_size))&Pnacl_M42_PPB_VideoEncoder_GetFrameCodedSize,
+    .GetVideoFrame = (int32_t (*)(PP_Resource video_encoder, PP_Resource* video_frame, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_VideoEncoder_GetVideoFrame,
+    .Encode = (int32_t (*)(PP_Resource video_encoder, PP_Resource video_frame, PP_Bool force_keyframe, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_VideoEncoder_Encode,
+    .GetBitstreamBuffer = (int32_t (*)(PP_Resource video_encoder, struct PP_BitstreamBuffer* bitstream_buffer, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_VideoEncoder_GetBitstreamBuffer,
+    .RecycleBitstreamBuffer = (void (*)(PP_Resource video_encoder, const struct PP_BitstreamBuffer* bitstream_buffer))&Pnacl_M42_PPB_VideoEncoder_RecycleBitstreamBuffer,
+    .RequestEncodingParametersChange = (void (*)(PP_Resource video_encoder, uint32_t bitrate, uint32_t framerate))&Pnacl_M42_PPB_VideoEncoder_RequestEncodingParametersChange,
+    .Close = (void (*)(PP_Resource video_encoder))&Pnacl_M42_PPB_VideoEncoder_Close
+};
+
 /* Not generating wrapper interface for PPB_VideoFrame_0_1 */
 
 /* Not generating wrapper interface for PPB_View_1_0 */
@@ -6146,6 +6227,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoEncoder_0_1 = {
+  .iface_macro = PPB_VIDEOENCODER_INTERFACE_0_1,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_VideoEncoder_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0 = {
   .iface_macro = PPB_WEBSOCKET_INTERFACE_1_0,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_WebSocket_1_0,
@@ -6559,6 +6646,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VideoDecoder_0_1,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_0_2,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_1_0,
+  &Pnacl_WrapperInfo_PPB_VideoEncoder_0_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4,
