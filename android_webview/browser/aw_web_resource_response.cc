@@ -22,33 +22,32 @@ class StreamReaderJobDelegateImpl
     DCHECK(aw_web_resource_response_);
   }
 
-  virtual scoped_ptr<InputStream> OpenInputStream(JNIEnv* env,
-                                                  const GURL& url) override {
+  scoped_ptr<InputStream> OpenInputStream(JNIEnv* env,
+                                          const GURL& url) override {
     return aw_web_resource_response_->GetInputStream(env).Pass();
   }
 
-  virtual void OnInputStreamOpenFailed(net::URLRequest* request,
-                                       bool* restart) override {
+  void OnInputStreamOpenFailed(net::URLRequest* request,
+                               bool* restart) override {
     *restart = false;
   }
 
-  virtual bool GetMimeType(JNIEnv* env,
-                           net::URLRequest* request,
-                           android_webview::InputStream* stream,
-                           std::string* mime_type) override {
+  bool GetMimeType(JNIEnv* env,
+                   net::URLRequest* request,
+                   android_webview::InputStream* stream,
+                   std::string* mime_type) override {
     return aw_web_resource_response_->GetMimeType(env, mime_type);
   }
 
-  virtual bool GetCharset(JNIEnv* env,
-                          net::URLRequest* request,
-                          android_webview::InputStream* stream,
-                          std::string* charset) override {
+  bool GetCharset(JNIEnv* env,
+                  net::URLRequest* request,
+                  android_webview::InputStream* stream,
+                  std::string* charset) override {
     return aw_web_resource_response_->GetCharset(env, charset);
   }
 
-  virtual void AppendResponseHeaders(
-      JNIEnv* env,
-      net::HttpResponseHeaders* headers) override {
+  void AppendResponseHeaders(JNIEnv* env,
+                             net::HttpResponseHeaders* headers) override {
     int status_code;
     std::string reason_phrase;
     if (aw_web_resource_response_->GetStatusInfo(

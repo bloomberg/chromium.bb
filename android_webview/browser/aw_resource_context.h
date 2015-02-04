@@ -20,14 +20,14 @@ namespace android_webview {
 class AwResourceContext : public content::ResourceContext {
  public:
   explicit AwResourceContext(net::URLRequestContextGetter* getter);
-  virtual ~AwResourceContext();
+  ~AwResourceContext() override;
 
   void SetExtraHeaders(const GURL& url, const std::string& headers);
   std::string GetExtraHeaders(const GURL& url);
 
   // content::ResourceContext implementation.
-  virtual net::HostResolver* GetHostResolver() override;
-  virtual net::URLRequestContext* GetRequestContext() override;
+  net::HostResolver* GetHostResolver() override;
+  net::URLRequestContext* GetRequestContext() override;
 
  private:
   net::URLRequestContextGetter* getter_;

@@ -33,7 +33,7 @@ class AwFormDatabaseServiceTest : public Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     env_ = AttachCurrentThread();
     ASSERT_TRUE(env_ != NULL);
@@ -42,9 +42,7 @@ class AwFormDatabaseServiceTest : public Test {
     service_.reset(new AwFormDatabaseService(temp_dir_.path()));
   }
 
-  virtual void TearDown() {
-    service_->Shutdown();
-  }
+  void TearDown() override { service_->Shutdown(); }
 
   // The path to the temporary directory used for the test operations.
   base::ScopedTempDir temp_dir_;

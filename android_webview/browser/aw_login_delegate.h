@@ -29,10 +29,10 @@ class AwLoginDelegate :
   virtual void Cancel();
 
   // from ResourceDispatcherHostLoginDelegate
-  virtual void OnRequestCancelled() override;
+  void OnRequestCancelled() override;
 
  private:
-  virtual ~AwLoginDelegate();
+  ~AwLoginDelegate() override;
   void HandleHttpAuthRequestOnUIThread(bool first_auth_attempt);
   void CancelOnIOThread();
   void ProceedOnIOThread(const base::string16& user,

@@ -14,13 +14,12 @@ class AwQuotaPermissionContext : public content::QuotaPermissionContext {
  public:
   AwQuotaPermissionContext();
 
-  virtual void RequestQuotaPermission(
-      const content::StorageQuotaParams& params,
-      int render_process_id,
-      const PermissionCallback& callback) override;
+  void RequestQuotaPermission(const content::StorageQuotaParams& params,
+                              int render_process_id,
+                              const PermissionCallback& callback) override;
 
  private:
-  virtual ~AwQuotaPermissionContext();
+  ~AwQuotaPermissionContext() override;
 
   DISALLOW_COPY_AND_ASSIGN(AwQuotaPermissionContext);
 };

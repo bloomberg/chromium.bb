@@ -37,14 +37,14 @@ class IconHelper : public content::WebContentsObserver {
   };
 
   explicit IconHelper(content::WebContents* web_contents);
-  virtual ~IconHelper();
+  ~IconHelper() override;
 
   void SetListener(Listener* listener);
 
   // From WebContentsObserver
-  virtual void DidUpdateFaviconURL(
+  void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
 

@@ -25,7 +25,7 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
  public:
   AwFormDatabaseService(const base::FilePath path);
 
-  virtual ~AwFormDatabaseService();
+  ~AwFormDatabaseService() override;
 
   void Shutdown();
 
@@ -40,9 +40,8 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
       get_autofill_webdata_service();
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(
-      WebDataServiceBase::Handle h,
-      const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
+                                   const WDTypedResult* result) override;
 
  private:
   struct PendingQuery {

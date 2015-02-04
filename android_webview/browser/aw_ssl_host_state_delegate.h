@@ -41,7 +41,7 @@ class CertPolicy {
 class AwSSLHostStateDelegate : public content::SSLHostStateDelegate {
  public:
   AwSSLHostStateDelegate();
-  virtual ~AwSSLHostStateDelegate();
+  ~AwSSLHostStateDelegate() override;
 
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specified |error| type.

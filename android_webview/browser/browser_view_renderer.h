@@ -32,7 +32,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
       BrowserViewRendererClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
-  virtual ~BrowserViewRenderer();
+  ~BrowserViewRenderer() override;
 
   SharedRendererState* GetAwDrawGLViewContext();
   bool RequestDrawGL(bool wait_for_completion);
@@ -80,24 +80,23 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   void TrimMemory(const int level, const bool visible);
 
   // SynchronousCompositorClient overrides.
-  virtual void DidInitializeCompositor(
+  void DidInitializeCompositor(
       content::SynchronousCompositor* compositor) override;
-  virtual void DidDestroyCompositor(content::SynchronousCompositor* compositor)
-      override;
-  virtual void SetContinuousInvalidate(bool invalidate) override;
-  virtual void DidUpdateContent() override;
-  virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() override;
-  virtual void UpdateRootLayerState(
-      const gfx::Vector2dF& total_scroll_offset_dip,
-      const gfx::Vector2dF& max_scroll_offset_dip,
-      const gfx::SizeF& scrollable_size_dip,
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) override;
-  virtual bool IsExternalFlingActive() const override;
-  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                             gfx::Vector2dF latest_overscroll_delta,
-                             gfx::Vector2dF current_fling_velocity) override;
+  void DidDestroyCompositor(
+      content::SynchronousCompositor* compositor) override;
+  void SetContinuousInvalidate(bool invalidate) override;
+  void DidUpdateContent() override;
+  gfx::Vector2dF GetTotalRootLayerScrollOffset() override;
+  void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset_dip,
+                            const gfx::Vector2dF& max_scroll_offset_dip,
+                            const gfx::SizeF& scrollable_size_dip,
+                            float page_scale_factor,
+                            float min_page_scale_factor,
+                            float max_page_scale_factor) override;
+  bool IsExternalFlingActive() const override;
+  void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                     gfx::Vector2dF latest_overscroll_delta,
+                     gfx::Vector2dF current_fling_velocity) override;
 
   void UpdateParentDrawConstraints();
   void DidSkipCommitFrame();

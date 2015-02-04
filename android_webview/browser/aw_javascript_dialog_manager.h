@@ -12,27 +12,24 @@ namespace android_webview {
 class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
  public:
   explicit AwJavaScriptDialogManager();
-  virtual ~AwJavaScriptDialogManager();
+  ~AwJavaScriptDialogManager() override;
 
   // Overridden from content::JavaScriptDialogManager:
-  virtual void RunJavaScriptDialog(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& accept_lang,
-      content::JavaScriptMessageType message_type,
-      const base::string16& message_text,
-      const base::string16& default_prompt_text,
-      const DialogClosedCallback& callback,
-      bool* did_suppress_message) override;
-  virtual void RunBeforeUnloadDialog(
-      content::WebContents* web_contents,
-      const base::string16& message_text,
-      bool is_reload,
-      const DialogClosedCallback& callback) override;
-  virtual void CancelActiveAndPendingDialogs(
+  void RunJavaScriptDialog(content::WebContents* web_contents,
+                           const GURL& origin_url,
+                           const std::string& accept_lang,
+                           content::JavaScriptMessageType message_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override;
+  void RunBeforeUnloadDialog(content::WebContents* web_contents,
+                             const base::string16& message_text,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override;
+  void CancelActiveAndPendingDialogs(
       content::WebContents* web_contents) override;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) override;
+  void WebContentsDestroyed(content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwJavaScriptDialogManager);

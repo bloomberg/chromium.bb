@@ -54,11 +54,9 @@ public:
   explicit AwContentsMessageFilter(int process_id);
 
   // BrowserMessageFilter methods.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnShouldOverrideUrlLoading(int routing_id,
                                   const base::string16& url,
@@ -66,7 +64,7 @@ public:
   void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
 private:
-  virtual ~AwContentsMessageFilter();
+ ~AwContentsMessageFilter() override;
 
   int process_id_;
 
@@ -126,18 +124,17 @@ class AwAccessTokenStore : public content::AccessTokenStore {
   AwAccessTokenStore() { }
 
   // content::AccessTokenStore implementation
-  virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& request) override {
+  void LoadAccessTokens(const LoadAccessTokensCallbackType& request) override {
     AccessTokenStore::AccessTokenSet access_token_set;
     // AccessTokenSet and net::URLRequestContextGetter not used on Android,
     // but Run needs to be called to finish the geolocation setup.
     request.Run(access_token_set, NULL);
   }
-  virtual void SaveAccessToken(const GURL& server_url,
-                               const base::string16& access_token) override { }
+  void SaveAccessToken(const GURL& server_url,
+                       const base::string16& access_token) override {}
 
  private:
-  virtual ~AwAccessTokenStore() { }
+  ~AwAccessTokenStore() override {}
 
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };

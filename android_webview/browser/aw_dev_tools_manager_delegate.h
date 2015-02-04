@@ -13,22 +13,19 @@ namespace android_webview {
 class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
   AwDevToolsManagerDelegate();
-  virtual ~AwDevToolsManagerDelegate();
+  ~AwDevToolsManagerDelegate() override;
 
   // content::DevToolsManagerDelegate implementation.
-  virtual void Inspect(
-      content::BrowserContext* browser_context,
-      content::DevToolsAgentHost* agent_host) override {}
-  virtual void DevToolsAgentStateChanged(
-      content::DevToolsAgentHost* agent_host,
-      bool attached) override {}
-  virtual base::DictionaryValue* HandleCommand(
+  void Inspect(content::BrowserContext* browser_context,
+               content::DevToolsAgentHost* agent_host) override {}
+  void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
+                                 bool attached) override {}
+  base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
-  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL& url) override;
-  virtual void EnumerateTargets(TargetCallback callback) override;
-  virtual std::string GetPageThumbnailData(const GURL& url) override;
+  scoped_ptr<content::DevToolsTarget> CreateNewTarget(const GURL& url) override;
+  void EnumerateTargets(TargetCallback callback) override;
+  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsManagerDelegate);

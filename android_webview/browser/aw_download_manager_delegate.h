@@ -13,19 +13,18 @@ namespace android_webview {
 // unconditionally cancel the download.
 class AwDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
-  virtual ~AwDownloadManagerDelegate();
+  ~AwDownloadManagerDelegate() override;
 
   // content::DownloadManagerDelegate implementation.
-  virtual bool DetermineDownloadTarget(
+  bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
-  virtual bool ShouldCompleteDownload(
-      content::DownloadItem* item,
-      const base::Closure& complete_callback) override;
-  virtual bool ShouldOpenDownload(
+  bool ShouldCompleteDownload(content::DownloadItem* item,
+                              const base::Closure& complete_callback) override;
+  bool ShouldOpenDownload(
       content::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
-  virtual void GetNextId(const content::DownloadIdCallback& callback) override;
+  void GetNextId(const content::DownloadIdCallback& callback) override;
 };
 
 }  // namespace android_webview

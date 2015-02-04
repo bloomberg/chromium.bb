@@ -25,7 +25,7 @@ class FindHelper : public content::WebContentsObserver {
   };
 
   explicit FindHelper(content::WebContents* web_contents);
-  virtual ~FindHelper();
+  ~FindHelper() override;
 
   // Sets the listener to receive find result updates.
   // Does not own the listener and must set to NULL when invalid.
