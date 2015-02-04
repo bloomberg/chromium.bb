@@ -1342,47 +1342,64 @@ _x86_internal_release_boards = frozenset([
   'beltino',
   'bobcat',
   'butterfly',
+  'butterfly_freon',
   'candy',
+  'candy_freon',
   'cid',
   'cranky',
   'clapper',
+  'clapper_freon',
   'enguarde',
+  'enguarde_freon',
   'expresso',
+  'expresso_freon',
   'falco',
   'falco_li',
   'glimmer',
+  'glimmer_freon',
   'gnawty',
+  'gnawty_freon',
   'guado',
   'jecht',
   'kip',
+  'kip_freon',
   'lemmings',
   'leon',
   'link',
   'lulu',
   'lumpy',
+  'lumpy_freon',
   'mccloud',
   'monroe',
   'panther',
   'panther_moblab',
   'parrot',
+  'parrot_freon',
   'parrot_ivb',
   'parry',
   'peppy',
   'peppy_freon',
   'quawks',
+  'quawks_freon',
   'rambi',
+  'rambi_freon',
   'rikku',
   'samus',
   'slippy',
   'squawks',
+  'squawks_freon',
   'stout',
+  'stout_freon',
   'strago',
   'stumpy',
+  'stumpy_freon',
   'stumpy_moblab',
   'swanky',
+  'swanky_freon',
   'tidus',
   'tricky',
   'winky',
+  'winky_freon',
   'wolf',
   'x86-alex',
   'x86-alex_he',
@@ -1497,20 +1514,37 @@ _freon_boards = frozenset([
   'auron',
   'auron_paine',
   'auron_yuna',
+  'butterfly_freon',
+  'candy_freon',
   'cid',
+  'clapper_freon',
+  'enguarde_freon',
+  'expresso_freon',
+  'glimmer_freon',
   'guado',
+  'gnawty_freon',
   'jecht',
+  'kip_freon',
   'link',
+  'lumpy_freon',
   'lulu',
   'mccloud',
   'monroe',
   'panther',
+  'parrot_freon',
   'peppy',
   'peppy_freon',
+  'rambi_freon',
   'strago',
+  'stumpy_freon',
+  'quawks_freon',
   'rikku',
+  'stout_freon',
+  'squawks_freon',
+  'swanky_freon',
   'tidus',
   'tricky',
+  'tricky_freon',
   'zako',
   'samus',
 ])
@@ -2482,6 +2516,11 @@ _release.add_config('quawks-release',
   useflags=append_useflags(['highdpi']),
 )
 
+_release.add_config('quawks_freon-release',
+  _base_configs['quawks_freon'],
+  useflags=append_useflags(['highdpi']),
+)
+
 _release.add_config('samus-release',
   _base_configs['samus'],
   useflags=append_useflags(['highdpi']),
@@ -2490,6 +2529,11 @@ _release.add_config('samus-release',
 
 _release.add_config('swanky-release',
   boards=['swanky'],
+  useflags=append_useflags(['highdpi']),
+)
+
+_release.add_config('swanky_freon-release',
+  _base_configs['swanky_freon'],
   useflags=append_useflags(['highdpi']),
 )
 
@@ -2745,12 +2789,27 @@ _AddGroupConfig('sandybridge', 'parrot', (
     'stumpy',
 ))
 
+# sandybridge chipset boards (freon variant)
+_AddGroupConfig('sandybridge-freon', 'parrot_freon', (
+    'lumpy_freon',
+    'butterfly_freon',
+    'stumpy_freon',
+),
+  important=False,
+)
+
 # ivybridge chipset boards
 _AddGroupConfig('ivybridge', 'stout', (
-    'link',
 ), (
     'parrot_ivb',
 ))
+
+# ivybridge chipset boards (freon variant)
+_AddGroupConfig('ivybridge-freon', 'stout_freon', (
+  'link',
+),
+  important=False,
+)
 
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
@@ -2802,6 +2861,31 @@ _AddGroupConfig('rambi-d', 'cranky', (
     'banjo',
     ),
     important=False,
+)
+
+# rambi-based boards (freon variant)
+_AddGroupConfig('rambi-freon-a', 'rambi_freon', (
+    'clapper_freon',
+    'enguarde_freon',
+    'expresso_freon',
+),
+  important=False,
+)
+
+_AddGroupConfig('rambi-freon-b', 'glimmer_freon', (
+    'gnawty_freon',
+    'kip_freon',
+    'quawks_freon',
+),
+  important=False,
+)
+
+_AddGroupConfig('rambi-freon-c', 'squawks_freon', (
+    'swanky_freon',
+    'winky_freon',
+    'candy_freon',
+),
+  important=False,
 )
 
 # daisy-based boards
