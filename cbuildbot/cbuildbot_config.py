@@ -841,19 +841,41 @@ class HWTestConfig(object):
     return cls.DefaultListNonCanary(**default_dict)
 
   @classmethod
+  def SharedPoolPFQ(cls, **kwargs):
+    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
+
+    The returned suites will run in pool:critical by default, which is
+    shared with other types of builders (canaries, cq). The first suite in the
+    list is a blocking sanity suite that verifies the build will not break dut.
+    """
+    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
+                       retry=False, max_retries=None)
+    sanity_dict.update(kwargs)
+    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                            blocking=True))
+    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+                        suite_min_duts=6)
+    default_dict.update(kwargs)
+    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+    suite_list.extend(cls.DefaultListPFQ(**default_dict))
+    return suite_list
+
+  @classmethod
   def SharedPoolCQ(cls, **kwargs):
     """Return a list of HWTestConfigs for CQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
-    shared with canaries. The first suite in the list is a blocking
-    sanity suite that verifies the build will not break dut.
+    shared with other types of builder (canaries, pfq). The first suite in the
+    list is a blocking sanity suite that verifies the build will not break dut.
     """
     sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL, timeout=120 * 60,
                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
-    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL)
+    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+                        suite_min_duts=10)
     default_dict.update(kwargs)
     suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
     suite_list.extend(cls.DefaultListCQ(**default_dict))
@@ -871,7 +893,8 @@ class HWTestConfig(object):
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
-    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL)
+    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+                        suite_min_duts=6)
     default_dict.update(kwargs)
     suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
     suite_list.extend(cls.DefaultListCanary(**default_dict))
@@ -1744,22 +1767,22 @@ chrome_pfq.add_config('alex-chrome-pfq',
 chrome_pfq.add_config('lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
-  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(),
+  hw_tests=[AFDORecordTest()] + HWTestConfig.SharedPoolPFQ(),
 )
 
 chrome_pfq.add_config('daisy_skate-chrome-pfq',
   _base_configs['daisy_skate'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
+  hw_tests=HWTestConfig.SharedPoolPFQ(),
 )
 
 chrome_pfq.add_config('falco-chrome-pfq',
   _base_configs['falco'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
+  hw_tests=HWTestConfig.SharedPoolPFQ(),
 )
 
 chrome_pfq.add_config('peach_pit-chrome-pfq',
   _base_configs['peach_pit'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
+  hw_tests=HWTestConfig.SharedPoolPFQ(),
   important=False,
 )
 
@@ -2107,7 +2130,7 @@ internal_paladin.add_config('wolf-tot-paladin',
   boards=['wolf'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
-  hw_tests=HWTestConfig.SharedPoolCQ(suite_min_duts=20),
+  hw_tests=HWTestConfig.SharedPoolCQ(),
 )
 
 _paladin_boards = _all_boards
@@ -2282,7 +2305,6 @@ def ShardHWTestsBetweenBuilders(*args):
   """
   # List of config names.
   names = args
-
   # Verify sanity before sharding the HWTests.
   for name in names:
     assert len(config[name].hw_tests) == len(names), \
@@ -2411,7 +2433,7 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
             constants.CROS_VM_TEST_TYPE],
-  hw_tests=HWTestConfig.DefaultListCanary(),
+  hw_tests=HWTestConfig.SharedPoolCanary(),
   paygen=True,
   signer_tests=True,
   trybot_list=True,
@@ -2588,14 +2610,6 @@ _release.add_config('swanky_freon-release',
   _base_configs['swanky_freon'],
   useflags=append_useflags(['highdpi']),
 )
-
-# TODO(fdeng): As a pilot experiment of crbug.com/441606
-# make wolf-tot-paladin share duts with canary. Once it proves to work
-# we will begin sharing pool for more boards.
-wolf_release_config = _base_configs['wolf'].derive()
-wolf_release_config['hw_tests'] = HWTestConfig.SharedPoolCanary(
-  suite_min_duts=6)
-_release.add_config('wolf-release', wolf_release_config)
 
 ### Arm release configs.
 
