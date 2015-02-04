@@ -7,8 +7,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Interpolation);
-
 namespace {
 
 bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
@@ -42,6 +40,10 @@ Interpolation::Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, Pa
     , m_cachedValue(m_start->clone())
 {
     RELEASE_ASSERT(typesMatch(m_start.get(), m_end.get()));
+}
+
+Interpolation::~Interpolation()
+{
 }
 
 void Interpolation::interpolate(int iteration, double fraction) const
