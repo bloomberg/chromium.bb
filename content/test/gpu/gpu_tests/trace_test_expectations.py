@@ -12,6 +12,9 @@ class TraceTestExpectations(GpuTestExpectations):
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    # Temporarily skip everything while bot recipes are being put in place.
-    self.Skip('*')
     pass
+
+class DeviceTraceTestExpectations(GpuTestExpectations):
+  def SetExpectations(self):
+    # Device traces are not supported on all machines.
+    self.Skip('*')

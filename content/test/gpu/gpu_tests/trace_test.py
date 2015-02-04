@@ -8,11 +8,12 @@ from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
-from telemetry.timeline import model
+from telemetry.timeline import model as model_module
 
 TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'
-TOPLEVEL_CATEGORIES = ['disabled-by-default-gpu.device',
-                       'disabled-by-default-gpu.service']
+TOPLEVEL_SERVICE_CATEGORY = 'disabled-by-default-gpu.service'
+TOPLEVEL_DEVICE_CATEGORY = 'disabled-by-default-gpu.device'
+TOPLEVEL_CATEGORIES = [TOPLEVEL_SERVICE_CATEGORY, TOPLEVEL_DEVICE_CATEGORY]
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -28,19 +29,24 @@ test_harness_script = r"""
   window.domAutomationController = domAutomationController;
 """
 
-class _TraceValidator(page_test.PageTest):
+
+class _TraceValidatorBase(page_test.PageTest):
+  def GetCategoryName(self):
+    raise NotImplementedError("GetCategoryName() Not implemented!")
+
   def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.platform.tracing_controller.Stop()
-    timeline_model = model.TimelineModel(timeline_data)
+    timeline_model = model_module.TimelineModel(timeline_data)
 
-    categories_set = set(TOPLEVEL_CATEGORIES)
-    for event in timeline_model.IterAllEvents():
-      if event.args.get('gl_category', None) == TOPLEVEL_GL_CATEGORY:
-        categories_set.discard(event.category)
-      if not categories_set:
+    category_name = self.GetCategoryName()
+    event_iter = timeline_model.IterAllEvents(
+        event_type_predicate=model_module.IsSliceOrAsyncSlice)
+    for event in event_iter:
+      if (event.args.get('gl_category', None) == TOPLEVEL_GL_CATEGORY and
+          event.category == category_name):
         break
     else:
-      raise page_test.Failure(self._FormatException(sorted(categories_set)))
+      raise page_test.Failure(self._FormatException(category_name))
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')
@@ -52,11 +58,32 @@ class _TraceValidator(page_test.PageTest):
     options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(options, cat_filter, 60)
 
-  def _FormatException(self, categories):
-    return 'Trace markers for GPU categories were not found: %s' % categories
+  def _FormatException(self, category):
+    return 'Trace markers for GPU category was not found: %s' % category
 
-class TraceTest(benchmark.Benchmark):
-  """Tests GPU traces"""
+
+class _TraceValidator(_TraceValidatorBase):
+  def GetCategoryName(self):
+    return TOPLEVEL_SERVICE_CATEGORY
+
+
+class _DeviceTraceValidator(_TraceValidatorBase):
+  def GetCategoryName(self):
+    return TOPLEVEL_DEVICE_CATEGORY
+
+
+class _TraceTestBase(benchmark.Benchmark):
+  """Base class for the trace tests."""
+  def CreatePageSet(self, options):
+    # Utilize pixel tests page set as a set of simple pages to load.
+    page_set = page_sets.PixelTestsPageSet()
+    for page in page_set.pages:
+      page.script_to_evaluate_on_commit = test_harness_script
+    return page_set
+
+
+class TraceTest(_TraceTestBase):
+  """Tests GPU traces are plumbed through properly."""
   test = _TraceValidator
 
   @classmethod
@@ -66,9 +93,14 @@ class TraceTest(benchmark.Benchmark):
   def CreateExpectations(self):
     return trace_test_expectations.TraceTestExpectations()
 
-  def CreatePageSet(self, options):
-    # Utilize pixel tests page set as a set of simple pages to load.
-    page_set = page_sets.PixelTestsPageSet()
-    for page in page_set.pages:
-      page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+
+class DeviceTraceTest(_TraceTestBase):
+  """Tests GPU Device traces show up on devices that support it."""
+  test = _DeviceTraceValidator
+
+  @classmethod
+  def Name(cls):
+    return 'device_trace_test'
+
+  def CreateExpectations(self):
+    return trace_test_expectations.DeviceTraceTestExpectations()
