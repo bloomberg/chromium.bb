@@ -53,6 +53,7 @@ public:
     ~PageDebuggerAgent() override;
     void trace(Visitor*) override;
 
+    void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 

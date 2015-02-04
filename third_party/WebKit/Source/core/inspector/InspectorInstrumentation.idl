@@ -341,6 +341,9 @@ interface InspectorInstrumentation {
     [Resource]
     void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
 
+    [PageDebugger]
+    void didStartProvisionalLoad([Keep] LocalFrame*);
+
     [Timeline, Inspector, DOM, Page]
     void domContentLoadedEventFired([Keep] LocalFrame*);
 

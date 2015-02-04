@@ -409,14 +409,6 @@ bool InspectorController::screencastEnabled()
     return m_pageAgent->screencastEnabled();
 }
 
-void InspectorController::resume()
-{
-    if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents->inspectorDebuggerAgent()) {
-        ErrorString error;
-        debuggerAgent->resume(&error);
-    }
-}
-
 void InspectorController::setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize)
 {
     if (m_resourceAgent)

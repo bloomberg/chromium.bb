@@ -134,6 +134,14 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
     return injectedScript;
 }
 
+void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
+{
+    if (frame == m_pageAgent->inspectedFrame()) {
+        ErrorString error;
+        resume(&error);
+    }
+}
+
 void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     // FIXME: what about nested objects?

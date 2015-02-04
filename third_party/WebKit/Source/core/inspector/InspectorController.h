@@ -108,8 +108,6 @@ public:
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);
 
-    void resume();
-
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
     PassRefPtr<JSONObject> highlightJSONForNode(Node*);
 

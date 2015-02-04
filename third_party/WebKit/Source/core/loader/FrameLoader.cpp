@@ -1245,8 +1245,8 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     if (!m_frame->page() || !m_policyDocumentLoader)
         return;
 
-    if (isLoadingMainFrame())
-        m_frame->page()->inspectorController().resume();
+    InspectorInstrumentation::didStartProvisionalLoad(m_frame);
+
     m_frame->navigationScheduler().cancel();
 
     m_provisionalDocumentLoader = m_policyDocumentLoader.release();
