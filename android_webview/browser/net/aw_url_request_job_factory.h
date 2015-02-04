@@ -23,7 +23,7 @@ namespace android_webview {
 class AwURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   AwURLRequestJobFactory();
-  virtual ~AwURLRequestJobFactory();
+  ~AwURLRequestJobFactory() override;
 
   bool SetProtocolHandler(const std::string& scheme,
                           ProtocolHandler* protocol_handler);
@@ -43,9 +43,9 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const override;
-  virtual bool IsHandledURL(const GURL& url) const override;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
+  bool IsHandledProtocol(const std::string& scheme) const override;
+  bool IsHandledURL(const GURL& url) const override;
+  bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   // By default calls are forwarded to this factory, to avoid having to

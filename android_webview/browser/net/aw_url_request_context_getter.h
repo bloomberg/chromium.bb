@@ -39,9 +39,9 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
       scoped_ptr<net::ProxyConfigService> config_service);
 
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override;
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
 
   data_reduction_proxy::DataReductionProxyAuthRequestHandler*
       GetDataReductionProxyAuthRequestHandler() const;
@@ -56,7 +56,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   friend class AwBrowserContext;
-  virtual ~AwURLRequestContextGetter();
+  ~AwURLRequestContextGetter() override;
 
   // Prior to GetURLRequestContext() being called, this is called to hand over
   // the objects that GetURLRequestContext() will later install into
