@@ -47,7 +47,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
-#include "native_client/src/trusted/service_runtime/nacl_reverse_quota_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -200,7 +199,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
   nap->syscall_table = table;
 
-  nap->runtime_host_interface = NULL;
   nap->desc_quota_interface = NULL;
 
   nap->module_initialization_state = NACL_MODULE_UNINITIALIZED;
@@ -1071,41 +1069,6 @@ void NaClAppLoadModule(struct NaClApp   *nap,
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(nap);
-}
-
-int NaClAppRuntimeHostSetup(struct NaClApp                  *nap,
-                            struct NaClRuntimeHostInterface *host_itf) {
-  NaClErrorCode status = LOAD_OK;
-
-  NaClLog(4,
-          ("Entered NaClAppRuntimeHostSetup, nap 0x%"NACL_PRIxPTR","
-           " host_itf 0x%"NACL_PRIxPTR"\n"),
-          (uintptr_t) nap, (uintptr_t) host_itf);
-
-  NaClXMutexLock(&nap->mu);
-  if (nap->module_initialization_state > NACL_MODULE_STARTING) {
-    NaClLog(LOG_ERROR, "NaClAppRuntimeHostSetup: too late\n");
-    status = LOAD_INTERNAL;
-    goto cleanup_status_mu;
-  }
-
-  nap->runtime_host_interface = (struct NaClRuntimeHostInterface *)
-      NaClRefCountRef((struct NaClRefCount *) host_itf);
-
-  /*
-   * Hook up runtime host enabled resources, e.g.,
-   * DEBUG_ONLY:dev://postmessage.  NB: Resources specified by
-   * file:path should have been taken care of earlier, in
-   * NaClAppInitialDescriptorHookup.
-   */
-  nap->resource_phase = NACL_RESOURCE_PHASE_RUNTIME_HOST;
-  NaClLog(4, "Processing dev I/O redirection/inheritance from environment\n");
-  NaClProcessRedirControl(nap);
-  NaClLog(4, "... done.\n");
-
- cleanup_status_mu:
-  NaClXMutexUnlock(&nap->mu);
-  return (int) status;
 }
 
 int NaClAppDescQuotaSetup(struct NaClApp                 *nap,

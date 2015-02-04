@@ -31,14 +31,6 @@ struct NaClSecureService {
   struct NaClCondVar              cv;
   struct NaClMutex                mu;
 
-  enum NaClReverseChannelInitializationState {
-    NACL_REVERSE_CHANNEL_UNINITIALIZED = 0,
-    NACL_REVERSE_CHANNEL_INITIALIZATING,
-    NACL_REVERSE_CHANNEL_INITIALIZED
-  }                               reverse_channel_initialization_state;
-  struct NaClSrpcChannel          reverse_channel;
-  struct NaClSecureReverseClient  *reverse_client;
-
   uint32_t                        conn_count;
 };
 
@@ -53,55 +45,6 @@ void NaClSecureServiceDtor(struct NaClRefCount *vself);
 extern struct NaClSimpleServiceVtbl const kNaClSecureServiceVtbl;
 
 void NaClSecureCommandChannel(struct NaClApp *nap);
-
-struct NaClSecureRevClientConnHandler;  /* fwd */
-
-struct NaClSecureReverseClient {
-  struct NaClSimpleRevClient              base;
-
-  struct NaClMutex                        mu;
-  /*
-   * |mu| protects the service entries hanging off of |queue_head|.
-   */
-  struct NaClSecureRevClientConnHandler   *queue_head;
-  struct NaClSecureRevClientConnHandler   **queue_insert;
-};
-
-struct NaClSecureReverseClientVtbl {
-  struct NaClSimpleRevClientVtbl  vbase;
-
-  int                             (*InsertHandler)(
-      struct NaClSecureReverseClient *self,
-      void                           (*handler)(
-          void                                  *handler_state,
-          struct NaClThreadInterface            *thread_id,
-          struct NaClDesc                       *new_conn),
-      void                           *state);
-
-  struct NaClSecureRevClientConnHandler   *(*RemoveHandler)(
-     struct NaClSecureReverseClient *self);
-};
-
-int NaClSecureReverseClientCtor(
-    struct NaClSecureReverseClient *self,
-    void                            (*client_callback)(
-        void *, struct NaClThreadInterface *, struct NaClDesc *),
-    void                            *state);
-
-void NaClSecureReverseClientDtor(struct NaClRefCount *vself);
-
-int NaClSecureReverseClientInsertHandler(
-    struct NaClSecureReverseClient  *self,
-    void                            (*handler)(
-        void                                   *handler_state,
-        struct NaClThreadInterface             *thread_if,
-        struct NaClDesc                        *new_conn),
-    void                            *state) NACL_WUR;
-
-struct NaClSecureRevClientConnHandler *NaClSecureReverseClientRemoveHandler(
-    struct NaClSecureReverseClient *self);
-
-extern struct NaClSecureReverseClientVtbl const kNaClSecureReverseClientVtbl;
 
 EXTERN_C_END
 

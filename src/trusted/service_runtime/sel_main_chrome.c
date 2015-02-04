@@ -365,13 +365,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
     }
   }
 
-  if (has_bootstrap_channel) {
-    if (NACL_FI_ERROR_COND("LaunchServiceThreads",
-                           !NaClAppLaunchServiceThreads(nap))) {
-      NaClLog(LOG_FATAL, "Launch service threads failed\n");
-    }
-  }
-
   if (args->enable_debug_stub) {
 #if NACL_LINUX || NACL_OSX
     if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {

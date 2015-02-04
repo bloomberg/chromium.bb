@@ -68,7 +68,6 @@ EXTERN_C_BEGIN
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
-struct NaClRuntimeHostInterface;
 struct NaClDescQuotaInterface;
 struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
@@ -249,7 +248,6 @@ struct NaClApp {
   struct NaClResourceNaClApp        resources;
   enum NaClResourcePhase            resource_phase;
 
-  struct NaClRuntimeHostInterface   *runtime_host_interface;
   struct NaClDescQuotaInterface     *desc_quota_interface;
 
   /*
@@ -551,17 +549,6 @@ void NaClAddImcHandle(struct NaClApp  *nap,
                       int             nacl_desc);
 
 /*
- * Launch system-level service threads.  After this, access to the
- * NaClApp object must be done in a thread-safe manner, using nap->mu
- * etc, or access only read-only data.
- *
- * NB: the "secure command channel" thread should have already started
- * (if enabled); that thread must take care to not race with the main
- * thread that is continuing to set up the NaCl module as well.
- */
-int NaClAppLaunchServiceThreads(struct NaClApp *nap);
-
-/*
  * Report the low eight bits of |exit_status| via the reverse channel
  * in |nap|, if one exists, to whomever is interested.  This usually
  * involves an RPC.  Returns true if successfully reported.
@@ -672,9 +659,6 @@ void NaClAppLoadModule(struct NaClApp      *self,
                        void                (*load_cb)(void *instance_data,
                                                       NaClErrorCode status),
                        void                *instance_data);
-
-int NaClAppRuntimeHostSetup(struct NaClApp                  *self,
-                            struct NaClRuntimeHostInterface *host_itf);
 
 int NaClAppDescQuotaSetup(struct NaClApp                *self,
                           struct NaClDescQuotaInterface *rev_quota);

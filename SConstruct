@@ -2231,7 +2231,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/nonnacl_util/build.scons',
       'src/trusted/perf_counter/build.scons',
       'src/trusted/platform_qualify/build.scons',
-      'src/trusted/reverse_service/build.scons',
       'src/trusted/seccomp_bpf/build.scons',
       'src/trusted/sel_universal/build.scons',
       'src/trusted/service_runtime/build.scons',

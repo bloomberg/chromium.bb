@@ -26,9 +26,8 @@
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
-
-#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -36,7 +35,6 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -474,30 +472,6 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
   }
 
   return addr < nap->static_text_end;
-}
-
-int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
-  NaClLog(4, "NaClAppLaunchServiceThreads: Entered, nap 0x%"NACL_PRIxPTR"\n",
-          (uintptr_t) nap);
-
-  if (LOAD_OK != NaClWaitForStartModuleCommand(nap)) {
-    return 0;
-  }
-
-  NaClXMutexLock(&nap->mu);
-  if (NULL == nap->runtime_host_interface) {
-    nap->runtime_host_interface = malloc(sizeof *nap->runtime_host_interface);
-    if (NULL == nap->runtime_host_interface ||
-        !NaClRuntimeHostInterfaceCtor_protected(nap->runtime_host_interface)) {
-      NaClLog(LOG_ERROR, "NaClAppLaunchServiceThreads:"
-              " Failed to initialise runtime host interface\n");
-      NaClXMutexUnlock(&nap->mu);
-      return 0;
-    }
-  }
-  NaClXMutexUnlock(&nap->mu);
-
-  return 1;
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
