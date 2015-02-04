@@ -204,6 +204,14 @@ void BridgedNativeWidget::AcquireCapture() {
     return;  // Capture on hidden windows is disallowed.
 
   mouse_capture_.reset(new CocoaMouseCapture(this));
+
+  // Initiating global event capture with addGlobalMonitorForEventsMatchingMask:
+  // will reset the mouse cursor to an arrow. Asking the window for an update
+  // here will restore what we want. However, it can sometimes cause the cursor
+  // to flicker, once, on the initial mouseDown.
+  // TOOD(tapted): Make this unnecessary by only asking for global mouse capture
+  // for the cases that need it (e.g. menus, but not drag and drop).
+  [window_ cursorUpdate:[NSApp currentEvent]];
 }
 
 void BridgedNativeWidget::ReleaseCapture() {
@@ -228,6 +236,10 @@ void BridgedNativeWidget::SetNativeWindowProperty(const char* name,
 void* BridgedNativeWidget::GetNativeWindowProperty(const char* name) const {
   NSString* key = [NSString stringWithUTF8String:name];
   return [[GetWindowProperties() objectForKey:key] pointerValue];
+}
+
+void BridgedNativeWidget::SetCursor(NSCursor* cursor) {
+  [window_delegate_ setCursor:cursor];
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {

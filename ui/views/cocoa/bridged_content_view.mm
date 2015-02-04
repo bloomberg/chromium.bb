@@ -79,13 +79,14 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   if ((self = [super initWithFrame:initialFrame])) {
     hostedView_ = viewToHost;
 
-    trackingArea_.reset(
-        [[CrTrackingArea alloc] initWithRect:NSZeroRect
-                                     options:NSTrackingMouseMoved |
-                                             NSTrackingActiveAlways |
-                                             NSTrackingInVisibleRect
-                                       owner:self
-                                    userInfo:nil]);
+    // Apple's documentation says that NSTrackingActiveAlways is incompatible
+    // with NSTrackingCursorUpdate, so use NSTrackingActiveInActiveApp.
+    trackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:NSZeroRect
+             options:NSTrackingMouseMoved | NSTrackingCursorUpdate |
+                     NSTrackingActiveInActiveApp | NSTrackingInVisibleRect
+               owner:self
+            userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
   }
   return self;

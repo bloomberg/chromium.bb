@@ -59,4 +59,26 @@
   [[self viewsNSWindowDelegate] onWindowOrderChanged:nil];
 }
 
+// NSResponder implementation.
+
+- (void)cursorUpdate:(NSEvent*)theEvent {
+  // The cursor provided by the delegate should only be applied within the
+  // content area. This is because we rely on the contentView to track the
+  // mouse cursor and forward cursorUpdate: messages up the responder chain.
+  // The cursorUpdate: isn't handled in BridgedContentView because views-style
+  // SetCapture() conflicts with the way tracking events are processed for
+  // the view during a drag. Since the NSWindow is still in the responder chain
+  // overriding cursorUpdate: here handles both cases.
+  if (!NSPointInRect([theEvent locationInWindow], [[self contentView] frame])) {
+    [super cursorUpdate:theEvent];
+    return;
+  }
+
+  NSCursor* cursor = [[self viewsNSWindowDelegate] cursor];
+  if (cursor)
+    [cursor set];
+  else
+    [super cursorUpdate:theEvent];
+}
+
 @end

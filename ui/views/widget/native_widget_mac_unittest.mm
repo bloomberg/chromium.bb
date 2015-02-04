@@ -7,6 +7,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/run_loop.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/native_cursor.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 
@@ -254,6 +257,83 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_TRUE(widget->IsMinimized());
 
   // Test closing while minimized.
+  widget->CloseNow();
+}
+
+// Simple view for the SetCursor test that overrides View::GetCursor().
+class CursorView : public View {
+ public:
+  CursorView(int x, NSCursor* cursor) : cursor_(cursor) {
+    SetBounds(x, 0, 100, 300);
+  }
+
+  // View:
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
+    return cursor_;
+  }
+
+ private:
+  NSCursor* cursor_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorView);
+};
+
+// Test for Widget::SetCursor(). There is no Widget::GetCursor(), so this uses
+// -[NSCursor currentCursor] to validate expectations. Note that currentCursor
+// is just "the top cursor on the application's cursor stack.", which is why it
+// is safe to use this in a non-interactive UI test with the EventGenerator.
+TEST_F(NativeWidgetMacTest, SetCursor) {
+  NSCursor* arrow = [NSCursor arrowCursor];
+  NSCursor* hand = GetNativeHandCursor();
+  NSCursor* ibeam = GetNativeIBeamCursor();
+
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->SetBounds(gfx::Rect(0, 0, 300, 300));
+  widget->GetContentsView()->AddChildView(new CursorView(0, hand));
+  widget->GetContentsView()->AddChildView(new CursorView(100, ibeam));
+  widget->Show();
+
+  // Events used to simulate tracking rectangle updates. These are not passed to
+  // toolkit-views, so it only matters whether they are inside or outside the
+  // content area.
+  NSEvent* event_in_content = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(100, 100), NSMouseMoved, 0);
+  NSEvent* event_out_of_content = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(-50, -50), NSMouseMoved, 0);
+
+  EXPECT_NE(arrow, hand);
+  EXPECT_NE(arrow, ibeam);
+
+  // At the start of the test, the cursor stack should be empty.
+  EXPECT_FALSE([NSCursor currentCursor]);
+
+  // Use an event generator to ask views code to set the cursor. However, note
+  // that this does not cause Cocoa to generate tracking rectangle updates.
+  ui::test::EventGenerator event_generator(GetContext(),
+                                           widget->GetNativeWindow());
+
+  // Move the mouse over the first view, then simulate a tracking rectangle
+  // update.
+  event_generator.MoveMouseTo(gfx::Point(50, 50));
+  [widget->GetNativeWindow() cursorUpdate:event_in_content];
+  EXPECT_EQ(hand, [NSCursor currentCursor]);
+
+  // A tracking rectangle update not in the content area should forward to
+  // the native NSWindow implementation, which sets the arrow cursor.
+  [widget->GetNativeWindow() cursorUpdate:event_out_of_content];
+  EXPECT_EQ(arrow, [NSCursor currentCursor]);
+
+  // Now move to the second view.
+  event_generator.MoveMouseTo(gfx::Point(150, 50));
+  [widget->GetNativeWindow() cursorUpdate:event_in_content];
+  EXPECT_EQ(ibeam, [NSCursor currentCursor]);
+
+  // Moving to the third view (but remaining in the content area) should also
+  // forward to the native NSWindow implementation.
+  event_generator.MoveMouseTo(gfx::Point(250, 50));
+  [widget->GetNativeWindow() cursorUpdate:event_in_content];
+  EXPECT_EQ(arrow, [NSCursor currentCursor]);
+
   widget->CloseNow();
 }
 

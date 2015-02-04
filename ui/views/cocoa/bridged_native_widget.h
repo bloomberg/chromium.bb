@@ -83,6 +83,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   void SetNativeWindowProperty(const char* key, void* value);
   void* GetNativeWindowProperty(const char* key) const;
 
+  // Sets the cursor associated with the NSWindow. Retains |cursor|.
+  void SetCursor(NSCursor* cursor);
+
   // Called internally by the NSWindowDelegate when the window is closing.
   void OnWindowWillClose();
 

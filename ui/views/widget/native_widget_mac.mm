@@ -471,7 +471,8 @@ void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  if (bridge_)
+    bridge_->SetCursor(cursor);
 }
 
 bool NativeWidgetMac::IsMouseEventsEnabled() const {
