@@ -18,7 +18,6 @@
 #include "core/fileapi/FileList.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobInfo.h"
-#include "wtf/DateMath.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
@@ -382,10 +381,10 @@ void SerializedScriptValueWriter::doWriteFile(const File& file)
         doWriteUint32(static_cast<uint8_t>(1));
 
         long long size;
-        double lastModifiedMS;
-        file.captureSnapshot(size, lastModifiedMS);
+        double lastModified;
+        file.captureSnapshot(size, lastModified);
         doWriteUint64(static_cast<uint64_t>(size));
-        doWriteNumber(lastModifiedMS);
+        doWriteNumber(lastModified);
     } else {
         doWriteUint32(static_cast<uint8_t>(0));
     }
@@ -990,11 +989,9 @@ bool ScriptValueSerializer::appendFileInfo(const File* file, int* index)
         return false;
 
     long long size = -1;
-    double lastModifiedMS = invalidFileTime();
-    file->captureSnapshot(size, lastModifiedMS);
+    double lastModified = invalidFileTime();
+    file->captureSnapshot(size, lastModified);
     *index = m_blobInfo->size();
-    // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
-    double lastModified = lastModifiedMS / msPerSecond;
     m_blobInfo->append(WebBlobInfo(file->uuid(), file->path(), file->name(), file->type(), lastModified, size));
     return true;
 }
@@ -1601,7 +1598,7 @@ File* SerializedScriptValueReader::readFileHelper()
     String type;
     uint32_t hasSnapshot = 0;
     uint64_t size = 0;
-    double lastModifiedMS = 0;
+    double lastModified = 0;
     if (!readWebCoreString(&path))
         return nullptr;
     if (m_version >= 4 && !readWebCoreString(&name))
@@ -1617,16 +1614,14 @@ File* SerializedScriptValueReader::readFileHelper()
     if (hasSnapshot) {
         if (!doReadUint64(&size))
             return nullptr;
-        if (!doReadNumber(&lastModifiedMS))
+        if (!doReadNumber(&lastModified))
             return nullptr;
-        if (m_version < 8)
-            lastModifiedMS *= msPerSecond;
     }
     uint32_t isUserVisible = 1;
     if (m_version >= 7 && !doReadUint32(&isUserVisible))
         return nullptr;
     const File::UserVisibility userVisibility = (isUserVisible > 0) ? File::IsUserVisible : File::IsNotUserVisible;
-    return File::createFromSerialization(path, name, relativePath, userVisibility, hasSnapshot > 0, size, lastModifiedMS, getOrCreateBlobDataHandle(uuid, type));
+    return File::createFromSerialization(path, name, relativePath, userVisibility, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
 }
 
 File* SerializedScriptValueReader::readFileIndexHelper()
@@ -1638,9 +1633,7 @@ File* SerializedScriptValueReader::readFileIndexHelper()
     if (!doReadUint32(&index) || index >= m_blobInfo->size())
         return nullptr;
     const WebBlobInfo& info = (*m_blobInfo)[index];
-    // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
-    double lastModifiedMS = info.lastModified() * msPerSecond;
-    return File::createFromIndexedSerialization(info.filePath(), info.fileName(), info.size(), lastModifiedMS, getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+    return File::createFromIndexedSerialization(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
 }
 
 bool SerializedScriptValueReader::doReadUint32(uint32_t* value)

@@ -84,7 +84,7 @@ void WebFileSystemCallbacks::didReadMetadata(const WebFileInfo& webFileInfo)
 {
     ASSERT(!m_private.isNull());
     FileMetadata fileMetadata;
-    fileMetadata.modificationTimeMS = webFileInfo.modificationTimeMS;
+    fileMetadata.modificationTime = webFileInfo.modificationTime;
     fileMetadata.length = webFileInfo.length;
     fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     fileMetadata.platformPath = webFileInfo.platformPath;
@@ -102,7 +102,7 @@ void WebFileSystemCallbacks::didCreateSnapshotFile(const WebFileInfo& webFileInf
     RefPtr<BlobDataHandle> snapshotBlob = BlobDataHandle::create(blobData.release(), webFileInfo.length);
 
     FileMetadata fileMetadata;
-    fileMetadata.modificationTimeMS = webFileInfo.modificationTimeMS;
+    fileMetadata.modificationTime = webFileInfo.modificationTime;
     fileMetadata.length = webFileInfo.length;
     fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     fileMetadata.platformPath = webFileInfo.platformPath;

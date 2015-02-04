@@ -50,7 +50,7 @@ class EntryCallback;
 class ErrorCallback;
 class File;
 class FileError;
-class FileMetadata;
+struct FileMetadata;
 class MetadataCallback;
 class ExecutionContext;
 class SecurityOrigin;

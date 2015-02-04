@@ -51,7 +51,7 @@ bool getFileModificationTime(const String& path, time_t& result)
     FileMetadata metadata;
     if (!getFileMetadata(path, metadata))
         return false;
-    result = metadata.modificationTimeMS;
+    result = metadata.modificationTime;
     return true;
 }
 
@@ -60,7 +60,7 @@ bool getFileMetadata(const String& path, FileMetadata& metadata)
     WebFileInfo webFileInfo;
     if (!Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
         return false;
-    metadata.modificationTimeMS = webFileInfo.modificationTimeMS;
+    metadata.modificationTime = webFileInfo.modificationTime;
     metadata.length = webFileInfo.length;
     metadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     return true;

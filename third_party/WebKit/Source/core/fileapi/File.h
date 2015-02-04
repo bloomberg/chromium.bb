@@ -35,7 +35,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class FileMetadata;
+struct FileMetadata;
 class KURL;
 
 class File final : public Blob {
@@ -132,7 +132,7 @@ public:
     const String& webkitRelativePath() const { return m_relativePath; }
 
     // Note that this involves synchronous file operation. Think twice before calling this function.
-    void captureSnapshot(long long& snapshotSize, double& snapshotModificationTimeMS) const;
+    void captureSnapshot(long long& snapshotSize, double& snapshotModificationTime) const;
 
     // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
     bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
@@ -172,7 +172,7 @@ private:
     // If m_snapshotSize is negative (initialized to -1 by default), the snapshot metadata is invalid and we retrieve the latest metadata synchronously in size(), lastModifiedTime() and slice().
     // Otherwise, the snapshot metadata are used directly in those methods.
     long long m_snapshotSize;
-    const double m_snapshotModificationTimeMS;
+    const double m_snapshotModificationTime;
 
     String m_relativePath;
 };

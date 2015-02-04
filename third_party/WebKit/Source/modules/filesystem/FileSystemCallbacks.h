@@ -45,7 +45,7 @@ class EntriesCallback;
 class EntryCallback;
 class ErrorCallback;
 class FileCallback;
-class FileMetadata;
+struct FileMetadata;
 class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;

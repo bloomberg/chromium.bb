@@ -31,7 +31,6 @@
 #include "config.h"
 #include "web/WebFileChooserCompletionImpl.h"
 #include "platform/FileMetadata.h"
-#include "wtf/DateMath.h"
 
 namespace blink {
 
@@ -62,7 +61,7 @@ void WebFileChooserCompletionImpl::didChooseFile(const WebVector<SelectedFileInf
             fileInfo.append(FileChooserFileInfo(files[i].path, files[i].displayName));
         } else {
             FileMetadata metadata;
-            metadata.modificationTimeMS = files[i].modificationTime * msPerSecond;
+            metadata.modificationTime = files[i].modificationTime;
             metadata.length = files[i].length;
             metadata.type = files[i].isDirectory ? FileMetadata::TypeDirectory : FileMetadata::TypeFile;
             fileInfo.append(FileChooserFileInfo(files[i].fileSystemURL, metadata));

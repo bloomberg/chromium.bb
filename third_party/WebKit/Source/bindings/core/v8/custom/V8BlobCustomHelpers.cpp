@@ -65,7 +65,7 @@ void ParsedProperties::setLastModified(double lastModified)
 
 void ParsedProperties::setDefaultLastModified()
 {
-    setLastModified(currentTimeMS());
+    setLastModified(currentTime());
 }
 
 bool ParsedProperties::parseBlobPropertyBag(v8::Isolate* isolate, v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState)
@@ -99,7 +99,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Isolate* isolate, v8::Local<v8::
     TONATIVE_DEFAULT(bool, containsLastModified, DictionaryHelper::get(dictionary, "lastModified", lastModified), false);
     if (containsLastModified) {
         TONATIVE_DEFAULT(long long, lastModifiedInt, toInt64(lastModified), false);
-        setLastModified(static_cast<double>(lastModifiedInt));
+        setLastModified(static_cast<double>(lastModifiedInt) / msPerSecond);
     } else {
         setDefaultLastModified();
     }

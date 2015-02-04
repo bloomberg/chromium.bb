@@ -50,8 +50,8 @@ public:
         return new Metadata(metadata->m_platformMetadata);
     }
 
-    // Return Epoch time in milliseconds for Date.
-    double modificationTime() const { return m_platformMetadata.modificationTimeMS; }
+    // Needs to return epoch time in milliseconds for Date while FileMetadata's modificationTime is in seconds.
+    double modificationTime() const { return m_platformMetadata.modificationTime * 1000.0; }
     unsigned long long size() const { return static_cast<unsigned long long>(m_platformMetadata.length); }
 
     void trace(Visitor*) { }
