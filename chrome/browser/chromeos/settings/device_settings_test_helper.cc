@@ -200,7 +200,8 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : user_manager_(new FakeChromeUserManager()),
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      user_manager_(new FakeChromeUserManager()),
       user_manager_enabler_(user_manager_),
       owner_key_util_(new ownership::MockOwnerKeyUtil()) {
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(

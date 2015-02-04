@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
+#include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
 
 #include <string>
 
@@ -68,9 +68,9 @@ class MockConsumer : public AffiliatedInvalidationServiceProvider::Consumer {
   DISALLOW_COPY_AND_ASSIGN(MockConsumer);
 };
 
-class AffiliatedInvalidationServiceProviderTest : public testing::Test {
+class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
  public:
-  AffiliatedInvalidationServiceProviderTest();
+  AffiliatedInvalidationServiceProviderImplTest();
 
   // testing::Test:
   virtual void SetUp() override;
@@ -105,7 +105,7 @@ class AffiliatedInvalidationServiceProviderTest : public testing::Test {
       bool create);
 
  protected:
-  scoped_ptr<AffiliatedInvalidationServiceProvider> provider_;
+  scoped_ptr<AffiliatedInvalidationServiceProviderImpl> provider_;
   StrictMock<MockConsumer> consumer_;
   invalidation::TiclInvalidationService* device_invalidation_service_;
   invalidation::FakeInvalidationService* profile_invalidation_service_;
@@ -127,8 +127,8 @@ MockConsumer::MockConsumer() {
 MockConsumer::~MockConsumer() {
 }
 
-AffiliatedInvalidationServiceProviderTest::
-AffiliatedInvalidationServiceProviderTest()
+AffiliatedInvalidationServiceProviderImplTest::
+AffiliatedInvalidationServiceProviderImplTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
@@ -140,7 +140,7 @@ AffiliatedInvalidationServiceProviderTest()
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
 }
 
-void AffiliatedInvalidationServiceProviderTest::SetUp() {
+void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   chromeos::SystemSaltGetter::Initialize();
   chromeos::DBusThreadManager::Initialize();
   ASSERT_TRUE(profile_manager_.SetUp());
@@ -153,10 +153,10 @@ void AffiliatedInvalidationServiceProviderTest::SetUp() {
   invalidation::ProfileInvalidationProviderFactory::GetInstance()->
       RegisterTestingFactory(BuildProfileInvalidationProvider);
 
-  provider_.reset(new AffiliatedInvalidationServiceProvider);
+  provider_.reset(new AffiliatedInvalidationServiceProviderImpl);
 }
 
-void AffiliatedInvalidationServiceProviderTest::TearDown() {
+void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   provider_->Shutdown();
   provider_.reset();
 
@@ -167,7 +167,7 @@ void AffiliatedInvalidationServiceProviderTest::TearDown() {
   chromeos::SystemSaltGetter::Shutdown();
 }
 
-Profile* AffiliatedInvalidationServiceProviderTest::LogInAndReturnProfile(
+Profile* AffiliatedInvalidationServiceProviderImplTest::LogInAndReturnProfile(
     const std::string& user_id) {
   fake_user_manager_->AddUser(user_id);
   Profile* profile = profile_manager_.CreateTestingProfile(user_id);
@@ -178,7 +178,7 @@ Profile* AffiliatedInvalidationServiceProviderTest::LogInAndReturnProfile(
   return profile;
 }
 
-void AffiliatedInvalidationServiceProviderTest::
+void AffiliatedInvalidationServiceProviderImplTest::
     LogInAsAffiliatedUserAndConnectInvalidationService() {
   Mock::VerifyAndClearExpectations(&consumer_);
 
@@ -209,7 +209,7 @@ void AffiliatedInvalidationServiceProviderTest::
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-void AffiliatedInvalidationServiceProviderTest::
+void AffiliatedInvalidationServiceProviderImplTest::
     LogInAsUnaffiliatedUserAndConnectInvalidationService() {
   Mock::VerifyAndClearExpectations(&consumer_);
 
@@ -236,7 +236,7 @@ void AffiliatedInvalidationServiceProviderTest::
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-void AffiliatedInvalidationServiceProviderTest::
+void AffiliatedInvalidationServiceProviderImplTest::
     ConnectDeviceGlobalInvalidationService() {
   Mock::VerifyAndClearExpectations(&consumer_);
 
@@ -255,7 +255,7 @@ void AffiliatedInvalidationServiceProviderTest::
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-void AffiliatedInvalidationServiceProviderTest::
+void AffiliatedInvalidationServiceProviderImplTest::
     DisconnectPerProfileInvalidationService() {
   Mock::VerifyAndClearExpectations(&consumer_);
 
@@ -274,7 +274,7 @@ void AffiliatedInvalidationServiceProviderTest::
 }
 
 invalidation::FakeInvalidationService*
-AffiliatedInvalidationServiceProviderTest::GetProfileInvalidationService(
+AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
     Profile* profile, bool create) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       static_cast<invalidation::ProfileInvalidationProvider*>(
@@ -286,10 +286,11 @@ AffiliatedInvalidationServiceProviderTest::GetProfileInvalidationService(
       invalidation_provider->GetInvalidationService());
 }
 
-// No consumers are registered with the AffiliatedInvalidationServiceProvider.
-// Verifies that no device-global invalidation service is created, whether an
-// affiliated user is logged in or not.
-TEST_F(AffiliatedInvalidationServiceProviderTest, NoConsumers) {
+// No consumers are registered with the
+// AffiliatedInvalidationServiceProviderImpl. Verifies that no device-global
+// invalidation service is created, whether an affiliated user is logged in or
+// not.
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoConsumers) {
   // Verify that no device-global invalidation service has been created.
   EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
 
@@ -300,12 +301,12 @@ TEST_F(AffiliatedInvalidationServiceProviderTest, NoConsumers) {
   EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider.
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
 // Verifies that when no per-profile invalidation service belonging to an
 // affiliated user is available, a device-global invalidation service is
 // created. Further verifies that when the device-global invalidation service
 // connects, it is made available to the consumer.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseDeviceInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -330,10 +331,10 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider.
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
 // Verifies that when a per-profile invalidation service belonging to an
 // affiliated user connects, it is made available to the consumer.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseAffiliatedProfileInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -358,10 +359,10 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider.
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
 // Verifies that when a per-profile invalidation service belonging to an
 // unaffiliated user connects, it is ignored.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotUseUnaffiliatedProfileInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -381,12 +382,12 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// device-global invalidation service exists, is connected and is made available
-// to the consumer. Verifies that when a per-profile invalidation service
-// belonging to an affiliated user connects, it is made available to the
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A device-global invalidation service exists, is connected and is made
+// available to the consumer. Verifies that when a per-profile invalidation
+// service belonging to an affiliated user connects, it is made available to the
 // consumer instead and the device-global invalidation service is destroyed.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToAffiliatedProfileInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -407,13 +408,13 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// device-global invalidation service exists, is connected and is made available
-// to the consumer. Verifies that when a per-profile invalidation service
-// belonging to an unaffiliated user connects, it is ignored and the
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A device-global invalidation service exists, is connected and is made
+// available to the consumer. Verifies that when a per-profile invalidation
+// service belonging to an unaffiliated user connects, it is ignored and the
 // device-global invalidation service continues to be made available to the
 // consumer.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotSwitchToUnaffiliatedProfileInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -434,13 +435,13 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// per-profile invalidation service belonging to an affiliated user exists, is
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A per-profile invalidation service belonging to an affiliated user exists, is
 // connected and is made available to the consumer. Verifies that when the
 // per-profile invalidation service disconnects, a device-global invalidation
 // service is created. Further verifies that when the device-global invalidation
 // service connects, it is made available to the consumer.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToDeviceInvalidationService) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -469,14 +470,14 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// per-profile invalidation service belonging to a first affiliated user exists,
-// is connected and is made available to the consumer. A per-profile
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A per-profile invalidation service belonging to a first affiliated user
+// exists, is connected and is made available to the consumer. A per-profile
 // invalidation service belonging to a second affiliated user also exists and is
 // connected. Verifies that when the per-profile invalidation service belonging
 // to the first user disconnects, the per-profile invalidation service belonging
 // to the second user is made available to the consumer instead.
-TEST_F(AffiliatedInvalidationServiceProviderTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchBetweenAffiliatedProfileInvalidationServices) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -529,15 +530,15 @@ TEST_F(AffiliatedInvalidationServiceProviderTest,
   Mock::VerifyAndClearExpectations(&consumer_);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// device-global invalidation service exists, is connected and is made available
-// to the consumer. Verifies that when a second consumer registers, the
-// device-global invalidation service is made available to it as well. Further
-// verifies that when the first consumer unregisters, the device-global
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A device-global invalidation service exists, is connected and is made
+// available to the consumer. Verifies that when a second consumer registers,
+// the device-global invalidation service is made available to it as well.
+// Further verifies that when the first consumer unregisters, the device-global
 // invalidation service is not destroyed and remains available to the second
 // consumer. Further verifies that when the second consumer also unregisters,
 // the device-global invalidation service is destroyed.
-TEST_F(AffiliatedInvalidationServiceProviderTest, MultipleConsumers) {
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
   // Register a first consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
   provider_->RegisterConsumer(&consumer_);
@@ -569,14 +570,15 @@ TEST_F(AffiliatedInvalidationServiceProviderTest, MultipleConsumers) {
   Mock::VerifyAndClearExpectations(&second_consumer);
 }
 
-// A consumer is registered with the AffiliatedInvalidationServiceProvider. A
-// per-profile invalidation service belonging to a first affiliated user exists,
-// is connected and is made available to the consumer. Verifies that when the
-// provider is shut down, the consumer is informed that no invalidation service
-// is available for use anymore. Also verifies that no device-global
-// invalidation service is created and a per-profile invalidation service
-// belonging to a second affiliated user that subsequently connects is ignored.
-TEST_F(AffiliatedInvalidationServiceProviderTest, NoServiceAfterShutdown) {
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A per-profile invalidation service belonging to a first affiliated user
+// exists, is connected and is made available to the consumer. Verifies that
+// when the provider is shut down, the consumer is informed that no
+// invalidation service is available for use anymore. Also verifies that no
+// device-global invalidation service is created and a per-profile invalidation
+// service belonging to a second affiliated user that subsequently connects is
+// ignored.
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
   provider_->RegisterConsumer(&consumer_);

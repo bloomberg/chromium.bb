@@ -17,10 +17,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
+#include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -49,6 +50,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 using content::BrowserThread;
 
@@ -155,7 +157,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
 
   affiliated_invalidation_service_provider_.reset(
-      new AffiliatedInvalidationServiceProvider);
+      new AffiliatedInvalidationServiceProviderImpl);
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -185,6 +187,7 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
           chromeos::DeviceSettingsService::Get(),
           chromeos::CrosSettings::Get(),
+          affiliated_invalidation_service_provider_.get(),
           GetBackgroundTaskRunner(),
           GetBackgroundTaskRunner(),
           GetBackgroundTaskRunner(),
@@ -192,8 +195,12 @@ void BrowserPolicyConnectorChromeOS::Init(
               content::BrowserThread::IO),
           request_context));
   device_local_account_policy_service_->Connect(device_management_service());
-  device_cloud_policy_invalidator_.reset(new DeviceCloudPolicyInvalidator(
-      affiliated_invalidation_service_provider_.get()));
+  if (device_cloud_policy_manager_) {
+    device_cloud_policy_invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
+        enterprise_management::DeviceRegisterRequest::DEVICE,
+        device_cloud_policy_manager_->core(),
+        affiliated_invalidation_service_provider_.get()));
+  }
 
   SetTimezoneIfPolicyAvailable();
 

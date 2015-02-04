@@ -18,7 +18,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
@@ -120,8 +122,10 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
     scoped_ptr<DeviceLocalAccountPolicyStore> store,
     scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager,
     const base::Closure& policy_update_callback,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : account_id_(account.account_id),
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    AffiliatedInvalidationServiceProvider* invalidation_service_provider)
+    : invalidation_service_provider_(invalidation_service_provider),
+      account_id_(account.account_id),
       user_id_(account.user_id),
       component_policy_cache_path_(component_policy_cache_path),
       store_(store.Pass()),
@@ -160,6 +164,10 @@ void DeviceLocalAccountPolicyBroker::Initialize() {
   store_->Load();
 }
 
+bool DeviceLocalAccountPolicyBroker::HasInvalidatorForTest() const {
+  return invalidator_;
+}
+
 void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
     chromeos::DeviceSettingsService* device_settings_service,
     DeviceManagementService* device_management_service,
@@ -178,6 +186,10 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
   external_data_manager_->Connect(request_context);
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
+  invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
+      em::DeviceRegisterRequest::DEVICE,
+      &core_,
+      invalidation_service_provider_));
 }
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
@@ -243,6 +255,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     chromeos::SessionManagerClient* session_manager_client,
     chromeos::DeviceSettingsService* device_settings_service,
     chromeos::CrosSettings* cros_settings,
+    AffiliatedInvalidationServiceProvider* invalidation_service_provider,
     scoped_refptr<base::SequencedTaskRunner> store_background_task_runner,
     scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner>
@@ -252,6 +265,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     : session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
       cros_settings_(cros_settings),
+      invalidation_service_provider_(invalidation_service_provider),
       device_management_service_(nullptr),
       waiting_for_cros_settings_(false),
       orphan_extension_cache_deletion_state_(NOT_STARTED),
@@ -462,7 +476,8 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
           base::Bind(&DeviceLocalAccountPolicyService::NotifyPolicyUpdated,
                      base::Unretained(this),
                      it->user_id),
-          base::MessageLoopProxy::current()));
+          base::ThreadTaskRunnerHandle::Get(),
+          invalidation_service_provider_));
     }
 
     // Fire up the cloud connection for fetching policy for the account from

@@ -10,8 +10,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace policy {
-class AffiliatedInvalidationServiceProviderTest;
-class DeviceCloudPolicyInvalidatorTest;
+class AffiliatedInvalidationServiceProviderImplTest;
 }
 
 namespace user_prefs {
@@ -49,8 +48,7 @@ class ProfileInvalidationProviderFactory
 
  private:
   friend class ProfileInvalidationProviderFactoryTestBase;
-  friend class policy::AffiliatedInvalidationServiceProviderTest;
-  friend class policy::DeviceCloudPolicyInvalidatorTest;
+  friend class policy::AffiliatedInvalidationServiceProviderImplTest;
   friend struct DefaultSingletonTraits<ProfileInvalidationProviderFactory>;
 
   ProfileInvalidationProviderFactory();

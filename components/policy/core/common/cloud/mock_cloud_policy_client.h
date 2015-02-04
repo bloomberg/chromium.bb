@@ -43,6 +43,10 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                  const std::string& settings_entity_id,
                  const enterprise_management::PolicyFetchResponse& policy);
 
+  // Inject invalidation version.
+  void SetFetchedInvalidationVersion(
+      int64_t fetched_invalidation_version);
+
   // Sets the status field.
   void SetStatus(DeviceManagementStatus status);
 

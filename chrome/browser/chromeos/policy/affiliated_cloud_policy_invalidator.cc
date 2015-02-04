@@ -2,34 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
+#include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
-DeviceCloudPolicyInvalidator::DeviceCloudPolicyInvalidator(
+AffiliatedCloudPolicyInvalidator::AffiliatedCloudPolicyInvalidator(
+    enterprise_management::DeviceRegisterRequest::Type type,
+    CloudPolicyCore* core,
     AffiliatedInvalidationServiceProvider* invalidation_service_provider)
-    : invalidation_service_provider_(invalidation_service_provider),
+    : type_(type),
+      core_(core),
+      invalidation_service_provider_(invalidation_service_provider),
       highest_handled_invalidation_version_(0) {
   invalidation_service_provider_->RegisterConsumer(this);
 }
 
-DeviceCloudPolicyInvalidator::~DeviceCloudPolicyInvalidator() {
+AffiliatedCloudPolicyInvalidator::~AffiliatedCloudPolicyInvalidator() {
   DestroyInvalidator();
   invalidation_service_provider_->UnregisterConsumer(this);
 }
 
-void DeviceCloudPolicyInvalidator::OnInvalidationServiceSet(
+void AffiliatedCloudPolicyInvalidator::OnInvalidationServiceSet(
     invalidation::InvalidationService* invalidation_service) {
   DestroyInvalidator();
   if (invalidation_service)
@@ -37,24 +36,23 @@ void DeviceCloudPolicyInvalidator::OnInvalidationServiceSet(
 }
 
 CloudPolicyInvalidator*
-DeviceCloudPolicyInvalidator::GetInvalidatorForTest() const {
+AffiliatedCloudPolicyInvalidator::GetInvalidatorForTest() const {
   return invalidator_.get();
 }
 
-void DeviceCloudPolicyInvalidator::CreateInvalidator(
+void AffiliatedCloudPolicyInvalidator::CreateInvalidator(
     invalidation::InvalidationService* invalidation_service) {
   DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
-      enterprise_management::DeviceRegisterRequest::DEVICE,
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-          GetDeviceCloudPolicyManager()->core(),
-      base::MessageLoopProxy::current(),
+      type_,
+      core_,
+      base::ThreadTaskRunnerHandle::Get(),
       scoped_ptr<base::Clock>(new base::DefaultClock()),
       highest_handled_invalidation_version_));
   invalidator_->Initialize(invalidation_service);
 }
 
-void DeviceCloudPolicyInvalidator::DestroyInvalidator() {
+void AffiliatedCloudPolicyInvalidator::DestroyInvalidator() {
   if (!invalidator_)
     return;
 

@@ -6,15 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_INVALIDATION_SERVICE_PROVIDER_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
-#include "base/observer_list.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace invalidation {
 class InvalidationService;
-class TiclInvalidationService;
 }
 
 namespace policy {
@@ -34,11 +28,12 @@ namespace policy {
 // between them whenever the service currently in use disconnects or the
 // device-global invalidation service can be replaced with another service that
 // just connected.
-class AffiliatedInvalidationServiceProvider
-    : public content::NotificationObserver {
+class AffiliatedInvalidationServiceProvider {
  public:
   class Consumer {
    public:
+    Consumer();
+
     // This method is called when the invalidation service that the consumer
     // should use changes:
     // * If |invalidation_service| is a nullptr, no invalidation service is
@@ -51,15 +46,12 @@ class AffiliatedInvalidationServiceProvider
 
    protected:
     virtual ~Consumer();
+
+    DISALLOW_ASSIGN(Consumer);
   };
 
   AffiliatedInvalidationServiceProvider();
-  ~AffiliatedInvalidationServiceProvider() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  virtual ~AffiliatedInvalidationServiceProvider();
 
   // Indicates that |consumer| is interested in using the shared
   // |InvalidationService|. The consumer's OnInvalidationServiceSet() method
@@ -67,72 +59,20 @@ class AffiliatedInvalidationServiceProvider
   // available. If an invalidation service is available already, the callback
   // will occur synchronously. The |consumer| must be unregistered before |this|
   // is destroyed.
-  void RegisterConsumer(Consumer* consumer);
+  virtual void RegisterConsumer(Consumer* consumer) = 0;
 
   // Indicates that |consumer| is no longer interested in using the
   // shared |InvalidationService|.
-  void UnregisterConsumer(Consumer* consumer);
+  virtual void UnregisterConsumer(Consumer* consumer) = 0;
 
   // Shuts down the provider. Once the provider is shut down, it no longer makes
   // any invalidation service available to consumers, no longer observes any
   // per-profile invalidation services and no longer maintains a device-global
   // invalidation service.
-  void Shutdown();
-
-  invalidation::TiclInvalidationService*
-      GetDeviceInvalidationServiceForTest() const;
+  virtual void Shutdown() = 0;
 
  private:
-  // Helper that monitors the status of a single |InvalidationService|.
-  class InvalidationServiceObserver;
-
-  // Status updates received from |InvalidationServiceObserver|s.
-  void OnInvalidationServiceConnected(
-      invalidation::InvalidationService* invalidation_service);
-  void OnInvalidationServiceDisconnected(
-      invalidation::InvalidationService* invalidation_service);
-
-  // Checks whether a connected |InvalidationService| affiliated with the
-  // device's enrollment domain is available. If so, notifies the consumers.
-  // Otherwise, consumers will be notified once such an invalidation service
-  // becomes available.
-  // Further ensures that a device-global invalidation service is running iff
-  // there is no other connected service available for use and there is at least
-  // one registered consumer.
-  void FindConnectedInvalidationService();
-
-  // Choose |invalidation_service| as the shared invalidation service and notify
-  // consumers.
-  void SetInvalidationService(
-      invalidation::InvalidationService* invalidation_service);
-
-  // Destroy the device-global invalidation service, if any.
-  void DestroyDeviceInvalidationService();
-
-  content::NotificationRegistrar registrar_;
-
-  // Device-global invalidation service.
-  scoped_ptr<invalidation::TiclInvalidationService>
-      device_invalidation_service_;
-
-  // State observer for the device-global invalidation service.
-  scoped_ptr<InvalidationServiceObserver> device_invalidation_service_observer_;
-
-  // State observers for logged-in users' invalidation services.
-  ScopedVector<InvalidationServiceObserver>
-      profile_invalidation_service_observers_;
-
-  // The invalidation service currently used by consumers. nullptr if there are
-  // no registered consumers or no connected invalidation service is available
-  // for use.
-  invalidation::InvalidationService* invalidation_service_;
-
-  ObserverList<Consumer, true> consumers_;
-  int consumer_count_;
-
-  bool is_shut_down_;
-
-  DISALLOW_COPY_AND_ASSIGN(AffiliatedInvalidationServiceProvider);
+  DISALLOW_ASSIGN(AffiliatedInvalidationServiceProvider);
 };
 
 }  // namespace policy

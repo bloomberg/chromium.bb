@@ -35,6 +35,11 @@ void MockCloudPolicyClient::SetPolicy(const std::string& policy_type,
   response = new enterprise_management::PolicyFetchResponse(policy);
 }
 
+void MockCloudPolicyClient::SetFetchedInvalidationVersion(
+    int64_t fetched_invalidation_version) {
+  fetched_invalidation_version_ = fetched_invalidation_version;
+}
+
 void MockCloudPolicyClient::SetStatus(DeviceManagementStatus status) {
   status_ = status;
 }

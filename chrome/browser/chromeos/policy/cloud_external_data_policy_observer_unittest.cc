@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -140,6 +141,8 @@ class CloudExternalDataPolicyObserverTest
   chromeos::CrosSettings cros_settings_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
+  FakeAffiliatedInvalidationServiceProvider
+      affiliated_invalidation_service_provider_;
   net::TestURLFetcherFactory url_fetcher_factory_;
 
   scoped_ptr<DeviceLocalAccountPolicyProvider>
@@ -177,16 +180,20 @@ CloudExternalDataPolicyObserverTest::~CloudExternalDataPolicyObserverTest() {
 
 void CloudExternalDataPolicyObserverTest::SetUp() {
   chromeos::DeviceSettingsTestBase::SetUp();
+
   ASSERT_TRUE(profile_manager_.SetUp());
+
   device_local_account_policy_service_.reset(
-      new DeviceLocalAccountPolicyService(&device_settings_test_helper_,
-                                          &device_settings_service_,
-                                          &cros_settings_,
-                                          base::MessageLoopProxy::current(),
-                                          base::MessageLoopProxy::current(),
-                                          base::MessageLoopProxy::current(),
-                                          base::MessageLoopProxy::current(),
-                                          NULL));
+      new DeviceLocalAccountPolicyService(
+          &device_settings_test_helper_,
+          &device_settings_service_,
+          &cros_settings_,
+          &affiliated_invalidation_service_provider_,
+          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current(),
+          nullptr));
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 
   EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))
