@@ -42,6 +42,8 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     private final ChromeSigninController mChromeSigninController;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ProfileSyncService mProfileSyncService;
+    // TODO(maxbogue): Make final once it's constructed in this class.
+    private SyncNotificationController mSyncNotificationController = null;
 
     private SyncController(Context context) {
         mContext = context;
@@ -185,5 +187,25 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 updateSyncStateFromAndroid();
             }
         });
+    }
+
+    /**
+     * Sets the SyncNotificationController.
+     *
+     * This is a temporary method for transferring ownership of SyncNotificationController
+     * upstream. Once all of SNC's dependencies are upstreamed, it will be created in the
+     * SyncController constructor and this method won't exist.
+     */
+    public void setSyncNotificationController(SyncNotificationController snc) {
+        assert mSyncNotificationController == null;
+        mSyncNotificationController = snc;
+        mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
+    }
+
+    /**
+     * Returns the SyncNotificationController.
+     */
+    public SyncNotificationController getSyncNotificationController() {
+        return mSyncNotificationController;
     }
 }

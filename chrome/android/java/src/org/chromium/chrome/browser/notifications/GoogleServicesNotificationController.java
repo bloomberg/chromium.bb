@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -27,29 +26,31 @@ public class GoogleServicesNotificationController {
     private static final Object LOCK = new Object();
 
     private static GoogleServicesNotificationController sInstance;
-    private static NotificationManagerProxy sNotificationManagerProxyOverride;
 
     private final Context mApplicationContext;
-    private final NotificationManagerProxy mNotificationManager;
+    private NotificationManagerProxy mNotificationManager;
 
-    @VisibleForTesting
-    public static void overrideNotificationManagerForTests(NotificationManagerProxy managerProxy) {
-        sNotificationManagerProxyOverride = managerProxy;
-    }
-
-    public static GoogleServicesNotificationController createNewInstance(Context context) {
+    /**
+     * Retrieve the singleton instance of this class.
+     *
+     * @param context the current context.
+     * @return the singleton instance.
+     */
+    public static GoogleServicesNotificationController get(Context context) {
         synchronized (LOCK) {
             if (sInstance == null) {
                 sInstance = new GoogleServicesNotificationController(context);
-            } else {
-                Log.e(TAG, "GoogleServicesNotificationController already created. "
-                                + "Currently on thread: " + Thread.currentThread());
             }
             return sInstance;
         }
     }
 
-    @VisibleForTesting
+    @Deprecated
+    public static GoogleServicesNotificationController createNewInstance(Context context) {
+        return get(context);
+    }
+
+    @Deprecated
     public static GoogleServicesNotificationController getInstance() {
         synchronized (LOCK) {
             return sInstance;
@@ -63,13 +64,9 @@ public class GoogleServicesNotificationController {
 
     private GoogleServicesNotificationController(Context context) {
         mApplicationContext = context.getApplicationContext();
-        if (sNotificationManagerProxyOverride == null) {
-            mNotificationManager = new NotificationManagerProxyImpl(
-                    (NotificationManager) mApplicationContext.getSystemService(
-                            Context.NOTIFICATION_SERVICE));
-        } else {
-            mNotificationManager = sNotificationManagerProxyOverride;
-        }
+        mNotificationManager = new NotificationManagerProxyImpl(
+                (NotificationManager) mApplicationContext.getSystemService(
+                        Context.NOTIFICATION_SERVICE));
     }
 
     public void updateSingleNotification(int id, String message, Intent intent) {
@@ -106,5 +103,10 @@ public class GoogleServicesNotificationController {
 
     public void cancelNotification(int id) {
         mNotificationManager.cancel(id);
+    }
+
+    @VisibleForTesting
+    public void overrideNotificationManagerForTests(NotificationManagerProxy managerProxy) {
+        mNotificationManager = managerProxy;
     }
 }
