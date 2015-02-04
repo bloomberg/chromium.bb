@@ -7,10 +7,12 @@
 from __future__ import print_function
 
 import mock
+import sys
 import time
 import unittest
 
 from chromite.lib import cros_test_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
@@ -194,3 +196,43 @@ class TestCaseTest(unittest.TestCase):
     # Run the test case, verifying it raises a TimeoutError.
     test = TimeoutTestCase(methodName='testSleeping')
     self.assertRaises(timeout_util.TimeoutError, test.testSleeping)
+
+
+class OutputTestCaseTest(cros_test_lib.OutputTestCase):
+  """Tests OutputTestCase functionality."""
+
+  def testStdoutAndStderr(self):
+    """Check capturing stdout and stderr."""
+    with self.OutputCapturer():
+      print('foo')
+      print('bar', file=sys.stderr)
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
+
+  def testStdoutReadDuringCapture(self):
+    """Check reading stdout mid-capture."""
+    with self.OutputCapturer():
+      print('foo')
+      self.AssertOutputContainsLine('foo')
+      print('bar')
+      self.AssertOutputContainsLine('bar')
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar')
+
+  def testClearCaptured(self):
+    """Check writing data, clearing it, then writing more data."""
+    with self.OutputCapturer() as cap:
+      print('foo')
+      self.AssertOutputContainsLine('foo')
+      cap.ClearCaptured()
+      self.AssertOutputContainsLine('foo', invert=True)
+      print('bar')
+    self.AssertOutputContainsLine('bar')
+
+  def testRunCommandCapture(self):
+    """Check capturing RunCommand() subprocess output."""
+    with self.OutputCapturer():
+      cros_build_lib.RunCommand(['sh', '-c', 'echo foo; echo bar >&2'],
+                                mute_output=False)
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)

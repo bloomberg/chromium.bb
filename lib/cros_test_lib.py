@@ -24,6 +24,7 @@ import re
 import socket
 import stat
 import sys
+import tempfile
 import time
 import unittest
 import urllib
@@ -496,8 +497,74 @@ class LoggingCapturer(object):
     return self.LogsMatch(re.escape(msg))
 
 
+class _FdCapturer(object):
+  """Helper class to capture output at the file descriptor level.
+
+  This is meant to be used with sys.stdout or sys.stderr. By capturing
+  file descriptors, this will also intercept subprocess output, which
+  reassigning sys.stdout or sys.stderr will not do.
+
+  Output will only be captured, it will no longer be printed while
+  the capturer is active.
+  """
+
+  def __init__(self, source):
+    """Construct the _FdCapturer object.
+
+    Does not start capturing until Start() is called.
+
+    Args:
+      source: A file object to capture. Typically sys.stdout or
+        sys.stderr, but will work with anything that implements flush()
+        and fileno().
+    """
+    self._source = source
+    self._captured = ''
+    self._saved_fd = None
+    self._tempfile = None
+    self._tempfile_reader = None
+
+  def Start(self):
+    """Begin capturing output."""
+    self._tempfile = tempfile.NamedTemporaryFile(delete=False)
+    self._tempfile_reader = open(self._tempfile.name)
+    os.unlink(self._tempfile.name)
+    # Save the original fd so we can revert in Stop().
+    self._saved_fd = os.dup(self._source.fileno())
+    os.dup2(self._tempfile.file.fileno(), self._source.fileno())
+
+  def Stop(self):
+    """Stop capturing output."""
+    self.GetCaptured()
+    if self._saved_fd is not None:
+      os.dup2(self._saved_fd, self._source.fileno())
+      os.close(self._saved_fd)
+      self._saved_fd = None
+    if self._tempfile_reader is not None:
+      self._tempfile_reader.close()
+      self._tempfile_reader = None
+    if self._tempfile is not None:
+      self._tempfile.close()
+      self._tempfile = None
+
+  def GetCaptured(self):
+    """Return all output captured up to this point.
+
+    Can be used while capturing or after Stop() has been called.
+    """
+    self._source.flush()
+    if self._tempfile_reader is not None:
+      self._captured += self._tempfile_reader.read()
+    return self._captured
+
+  def ClearCaptured(self):
+    """Erase all captured output."""
+    self.GetCaptured()
+    self._captured = ''
+
+
 class OutputCapturer(object):
-  """Class with limited support for capturing test stdout/stderr output.
+  """Class for capturing test stdout/stderr output.
 
   Class is designed as a 'ContextManager'.  Example usage in a test method
   of an object of TestCase:
@@ -522,12 +589,11 @@ class OutputCapturer(object):
   WARNING_MSG_RE = re.compile(r'^\033\[1;%dm(.+?)(?:\033\[0m)+$' %
                               (30 + terminal.Color.YELLOW,), re.DOTALL)
 
-  __slots__ = ['_stderr', '_stderr_cap', '_stdout', '_stdout_cap']
+  __slots__ = ['_stdout_capturer', '_stderr_capturer']
 
   def __init__(self):
-    self._stdout = mock.patch('sys.stdout', new_callable=cStringIO.StringIO)
-    self._stderr = mock.patch('sys.stderr', new_callable=cStringIO.StringIO)
-    self._stderr_cap = self._stdout_cap = None
+    self._stdout_capturer = _FdCapturer(sys.stdout)
+    self._stderr_capturer = _FdCapturer(sys.stderr)
 
   def __enter__(self):
     # This method is called with entering 'with' block.
@@ -553,26 +619,26 @@ class OutputCapturer(object):
 
   def StartCapturing(self):
     """Begin capturing stdout and stderr."""
-    self._stdout_cap = self._stdout.start()
-    self._stderr_cap = self._stderr.start()
+    self._stdout_capturer.Start()
+    self._stderr_capturer.Start()
 
   def StopCapturing(self):
     """Stop capturing stdout and stderr."""
-    self._stdout.stop()
-    self._stderr.stop()
+    self._stdout_capturer.Stop()
+    self._stderr_capturer.Stop()
 
   def ClearCaptured(self):
     """Clear any captured stdout/stderr content."""
-    self._stdout_cap = None
-    self._stderr_cap = None
+    self._stdout_capturer.ClearCaptured()
+    self._stderr_capturer.ClearCaptured()
 
   def GetStdout(self):
     """Return captured stdout so far."""
-    return self._stdout_cap.getvalue()
+    return self._stdout_capturer.GetCaptured()
 
   def GetStderr(self):
     """Return captured stderr so far."""
-    return self._stderr_cap.getvalue()
+    return self._stderr_capturer.GetCaptured()
 
   def _GetOutputLines(self, output, include_empties):
     """Split |output| into lines, optionally |include_empties|.
@@ -832,7 +898,7 @@ class OutputTestCase(TestCase):
     If |regexp| is non-null, then the error line must also match it.
     If |invert| is true, then assert the line is NOT found.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(OutputCapturer.ERROR_MSG_RE, regexp)
     return self._AssertOutputContainsMsg(check_msg_func, invert,
@@ -845,7 +911,7 @@ class OutputTestCase(TestCase):
     If |regexp| is non-null, then the warning line must also match it.
     If |invert| is true, then assert the line is NOT found.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(OutputCapturer.WARNING_MSG_RE,
                                            regexp)
@@ -858,7 +924,7 @@ class OutputTestCase(TestCase):
 
     If |invert| is true, then assert the line is NOT found.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(None, regexp)
     return self._AssertOutputContainsMsg(check_msg_func, invert,
@@ -894,7 +960,7 @@ class OutputTestCase(TestCase):
 
     If |regexp| is non-null, then the error line must also match it.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(OutputCapturer.ERROR_MSG_RE, regexp)
     return self._AssertOutputEndsInMsg(check_msg_func,
@@ -906,7 +972,7 @@ class OutputTestCase(TestCase):
 
     If |regexp| is non-null, then the warning line must also match it.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(OutputCapturer.WARNING_MSG_RE,
                                            regexp)
@@ -917,7 +983,7 @@ class OutputTestCase(TestCase):
                              check_stdout=True, check_stderr=False):
     """Assert requested output ends in line matching |regexp|.
 
-    Raises RuntimeError if output capturing was never one for this test.
+    Raises RuntimeError if output capturing was never on for this test.
     """
     check_msg_func = self._GenCheckMsgFunc(None, regexp)
     return self._AssertOutputEndsInMsg(check_msg_func,
