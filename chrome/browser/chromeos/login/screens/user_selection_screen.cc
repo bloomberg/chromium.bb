@@ -37,6 +37,7 @@ const char kKeyEnterpriseDomain[] = "enterpriseDomain";
 const char kKeyPublicAccount[] = "publicAccount";
 const char kKeySupervisedUser[] = "supervisedUser";
 const char kKeyChildUser[] = "childUser";
+const char kKeyDesktopUser[] = "isDesktopUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -150,6 +151,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeyPublicAccount, is_public_session);
   user_dict->SetBoolean(kKeySupervisedUser, is_supervised_user);
   user_dict->SetBoolean(kKeyChildUser, is_child_user);
+  user_dict->SetBoolean(kKeyDesktopUser, false);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);

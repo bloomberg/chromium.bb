@@ -1033,9 +1033,9 @@ cr.define('login', function() {
     },
 
     customizeUserPodPerUserType: function() {
-      if (this.user_.isChildUser && !this.user_.isDesktopUser) {
+      if (this.user_.childUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('child');
-      } else if (this.user_.isSupervisedUser && !this.user_.isDesktopUser) {
+      } else if (this.user_.supervisedUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('supervised');
       } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
@@ -1931,9 +1931,8 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
-      var isSupervisedUser = this.user.supervisedUser;
+      var isLegacySupervisedUser = this.user.supervisedUser;
       var isChildUser = this.user.childUser;
-      var isLegacySupervisedUser = isSupervisedUser && !isChildUser;
       this.classList.toggle('locked', isLockedUser);
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
       this.classList.toggle('child', isChildUser);
