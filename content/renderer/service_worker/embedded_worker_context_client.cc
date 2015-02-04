@@ -392,6 +392,12 @@ void EmbeddedWorkerContextClient::skipWaiting(
   script_context_->SkipWaiting(callbacks);
 }
 
+void EmbeddedWorkerContextClient::claim(
+    blink::WebServiceWorkerClientsClaimCallbacks* callbacks) {
+  DCHECK(script_context_);
+  script_context_->ClaimClients(callbacks);
+}
+
 void EmbeddedWorkerContextClient::OnMessageToWorker(
     int thread_id,
     int embedded_worker_id,

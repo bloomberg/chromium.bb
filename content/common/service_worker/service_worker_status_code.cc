@@ -37,6 +37,8 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
       return "ServiceWorker failed to handle event (event.waitUntil "
              "Promise rejected)";
+    case SERVICE_WORKER_ERROR_STATE:
+      return "The ServiceWorker state was not valid";
   }
   NOTREACHED();
   return "";

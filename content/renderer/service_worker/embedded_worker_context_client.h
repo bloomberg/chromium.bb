@@ -10,11 +10,6 @@
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "url/gurl.h"
 
@@ -117,6 +112,7 @@ class EmbeddedWorkerContextClient
                      blink::WebServiceWorkerClientFocusCallback*);
   virtual void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
+  virtual void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
 
   // TODO: Implement DevTools related method overrides.
 

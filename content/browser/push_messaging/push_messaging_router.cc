@@ -114,6 +114,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_NETWORK:
     case SERVICE_WORKER_ERROR_SECURITY:
+    case SERVICE_WORKER_ERROR_STATE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
       delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;

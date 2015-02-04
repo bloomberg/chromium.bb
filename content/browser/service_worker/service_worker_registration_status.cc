@@ -53,6 +53,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_EXISTS:
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+    case SERVICE_WORKER_ERROR_STATE:
       // Unexpected, or should have bailed out before calling this, or we don't
       // have a corresponding blink error code yet.
       break;  // Fall through to NOTREACHED().

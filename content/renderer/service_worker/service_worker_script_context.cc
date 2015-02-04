@@ -106,6 +106,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FocusClientResponse,
                         OnFocusClientResponse)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidClaimClients, OnDidClaimClients)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ClaimClientsError, OnClaimClientsError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -241,6 +243,13 @@ void ServiceWorkerScriptContext::FocusClient(
   int request_id = pending_focus_client_callbacks_.Add(callback);
   Send(new ServiceWorkerHostMsg_FocusClient(
       GetRoutingID(), request_id, client_id));
+}
+
+void ServiceWorkerScriptContext::ClaimClients(
+    blink::WebServiceWorkerClientsClaimCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_claim_clients_callbacks_.Add(callbacks);
+  Send(new ServiceWorkerHostMsg_ClaimClients(GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::SkipWaiting(
@@ -458,6 +467,37 @@ void ServiceWorkerScriptContext::OnDidSkipWaiting(int request_id) {
   }
   callbacks->onSuccess();
   pending_skip_waiting_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnDidClaimClients(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnDidClaimClients");
+  blink::WebServiceWorkerClientsClaimCallbacks* callbacks =
+      pending_claim_clients_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  callbacks->onSuccess();
+  pending_claim_clients_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnClaimClientsError(
+    int request_id,
+    blink::WebServiceWorkerError::ErrorType error_type,
+    const base::string16& message) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnClaimClientsError");
+  blink::WebServiceWorkerClientsClaimCallbacks* callbacks =
+      pending_claim_clients_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerError> error(
+      new blink::WebServiceWorkerError(error_type, message));
+  callbacks->onError(error.release());
+  pending_claim_clients_callbacks_.Remove(request_id);
 }
 
 }  // namespace content

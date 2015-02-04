@@ -346,11 +346,11 @@ void ServiceWorkerDispatcher::OnDisassociateRegistration(
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider == provider_contexts_.end())
     return;
-  provider->second->OnDisassociateRegistration();
   worker_to_provider_.erase(provider->second->installing_handle_id());
   worker_to_provider_.erase(provider->second->waiting_handle_id());
   worker_to_provider_.erase(provider->second->active_handle_id());
   worker_to_provider_.erase(provider->second->controller_handle_id());
+  provider->second->OnDisassociateRegistration();
 }
 
 void ServiceWorkerDispatcher::OnRegistered(

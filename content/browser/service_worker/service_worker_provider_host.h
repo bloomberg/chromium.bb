@@ -152,6 +152,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // be removed in destructor.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);
 
+  // |registration| claims the document to be controlled.
+  void ClaimedByRegistration(ServiceWorkerRegistration* registration);
+
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer();
   void CompleteCrossSiteTransfer(
@@ -220,6 +223,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
+  bool is_claiming_;
 
   std::vector<base::Closure> queued_events_;
 

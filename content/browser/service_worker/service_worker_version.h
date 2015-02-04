@@ -357,9 +357,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                const std::vector<int>& sent_message_port_ids);
   void OnFocusClient(int request_id, int client_id);
   void OnSkipWaiting(int request_id);
+  void OnClaimClients(int request_id);
 
   void OnFocusClientFinished(int request_id, bool result);
   void DidSkipWaiting(int request_id);
+  void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
   void DidGetClientInfo(int client_id,
                         scoped_refptr<GetClientDocumentsCallback> callback,
                         ServiceWorkerStatusCode status,

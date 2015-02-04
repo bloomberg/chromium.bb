@@ -102,6 +102,9 @@ TEST(ServiceWorkerUtilsTest, FindLongestScopeMatch) {
   // "/xxx" should be matched longer than "/xx".
   ASSERT_TRUE(matcher.MatchLongest(GURL("http://www.example.com/xxx")));
 
+  // The second call with the same URL should return false.
+  ASSERT_FALSE(matcher.MatchLongest(GURL("http://www.example.com/xxx")));
+
   ASSERT_FALSE(matcher.MatchLongest(GURL("http://www.example.com/xxxx")));
 }
 

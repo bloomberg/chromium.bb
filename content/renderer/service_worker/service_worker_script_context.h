@@ -20,7 +20,9 @@
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 
@@ -83,6 +85,7 @@ class ServiceWorkerScriptContext {
   void FocusClient(int client_id,
                    blink::WebServiceWorkerClientFocusCallback* callback);
   void SkipWaiting(blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
+  void ClaimClients(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
 
   // Send a message to the browser. Takes ownership of |message|.
   void Send(IPC::Message* message);
@@ -98,6 +101,8 @@ class ServiceWorkerScriptContext {
  private:
   typedef IDMap<blink::WebServiceWorkerClientsCallbacks, IDMapOwnPointer>
       ClientsCallbacksMap;
+  typedef IDMap<blink::WebServiceWorkerClientsClaimCallbacks, IDMapOwnPointer>
+      ClaimClientsCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerClientFocusCallback, IDMapOwnPointer>
       FocusClientCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>
@@ -130,6 +135,10 @@ class ServiceWorkerScriptContext {
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnFocusClientResponse(int request_id, bool result);
   void OnDidSkipWaiting(int request_id);
+  void OnDidClaimClients(int request_id);
+  void OnClaimClientsError(int request_id,
+                           blink::WebServiceWorkerError::ErrorType error_type,
+                           const base::string16& message);
 
   scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;
 
@@ -152,6 +161,9 @@ class ServiceWorkerScriptContext {
 
   // Pending callbacks for SkipWaiting().
   SkipWaitingCallbacksMap pending_skip_waiting_callbacks_;
+
+  // Pending callbacks for ClaimClients().
+  ClaimClientsCallbacksMap pending_claim_clients_callbacks_;
 
   // Capture timestamps for UMA
   std::map<int, base::TimeTicks> activate_start_timings_;

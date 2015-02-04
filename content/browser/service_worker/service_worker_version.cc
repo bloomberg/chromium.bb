@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -70,6 +71,12 @@ const int64 kStopDoomedWorkerDelay = 5;  // 5 secs.
 
 // Default delay for scheduled update.
 const int kUpdateDelaySeconds = 1;
+
+const char kClaimClientsStateErrorMesage[] =
+    "Only the active worker can claim clients.";
+
+const char kClaimClientsShutdownErrorMesage[] =
+    "Failed to claim clients due to Service Worker system shutdown.";
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
@@ -800,6 +807,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnGetClientInfoError)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
                         OnSkipWaiting)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
+                        OnClaimClients)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1103,6 +1112,45 @@ void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
 void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
   if (running_status() == STARTING || running_status() == RUNNING)
     embedded_worker_->SendMessage(ServiceWorkerMsg_DidSkipWaiting(request_id));
+}
+
+void ServiceWorkerVersion::OnClaimClients(int request_id) {
+  StatusCallback callback = base::Bind(&ServiceWorkerVersion::DidClaimClients,
+                                       weak_factory_.GetWeakPtr(), request_id);
+  if (status_ != ACTIVATING && status_ != ACTIVATED) {
+    callback.Run(SERVICE_WORKER_ERROR_STATE);
+    return;
+  }
+  if (!context_) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (!registration) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+  registration->ClaimClients(callback);
+}
+
+void ServiceWorkerVersion::DidClaimClients(
+    int request_id, ServiceWorkerStatusCode status) {
+  if (status == SERVICE_WORKER_ERROR_STATE) {
+    embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
+        request_id, blink::WebServiceWorkerError::ErrorTypeState,
+        base::ASCIIToUTF16(kClaimClientsStateErrorMesage)));
+    return;
+  }
+  if (status == SERVICE_WORKER_ERROR_ABORT) {
+    embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
+        request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
+        base::ASCIIToUTF16(kClaimClientsShutdownErrorMesage)));
+    return;
+  }
+  DCHECK(status == SERVICE_WORKER_OK);
+  embedded_worker_->SendMessage(ServiceWorkerMsg_DidClaimClients(request_id));
 }
 
 void ServiceWorkerVersion::DidGetClientInfo(

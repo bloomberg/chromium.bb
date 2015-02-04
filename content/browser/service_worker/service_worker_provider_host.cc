@@ -57,7 +57,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       provider_id_(provider_id),
       context_(context),
       dispatcher_host_(dispatcher_host),
-      allow_association_(true) {
+      allow_association_(true),
+      is_claiming_(false) {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   if (render_frame_id == MSG_ROUTING_NONE) {
     // Actual thread id is set when the worker context gets started.
@@ -124,7 +125,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     return;  // Could be NULL in some tests.
 
   bool should_notify_controllerchange =
-      previous_version && version && version->skip_waiting();
+      is_claiming_ || (previous_version && version && version->skip_waiting());
 
   // SetController message should be sent only for the document context.
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
@@ -159,10 +160,7 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 void ServiceWorkerProviderHost::AssociateRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(CanAssociateRegistration(registration));
-  if (associated_registration_.get())
-    DecreaseProcessReference(associated_registration_->pattern());
   IncreaseProcessReference(registration->pattern());
-
   associated_registration_ = registration;
   associated_registration_->AddListener(this);
   SendAssociateRegistrationMessage();
@@ -280,6 +278,19 @@ void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
     const GURL& pattern) {
   associated_patterns_.push_back(pattern);
   IncreaseProcessReference(pattern);
+}
+
+void ServiceWorkerProviderHost::ClaimedByRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(registration->active_version());
+  is_claiming_ = true;
+  if (registration == associated_registration_) {
+    SetControllerVersionAttribute(registration->active_version());
+  } else if (allow_association_) {
+    DisassociateRegistration();
+    AssociateRegistration(registration);
+  }
+  is_claiming_ = false;
 }
 
 void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {

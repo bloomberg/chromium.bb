@@ -240,6 +240,11 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientInfoError,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
                     int /* request_id */)
 
+// Asks the browser to have this worker take control of pages that match
+// its scope.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
+                    int /* request_id */)
+
 // CacheStorage operations in the browser.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
                     int /* request_id */,
@@ -442,6 +447,12 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_CrossOriginMessageToWorker,
                      std::vector<int> /* new_routing_ids */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,
+                     int /* request_id */)
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     base::string16 /* message */)
 
 // Sent via EmbeddedWorker as a response of GetClientDocuments.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
