@@ -90,11 +90,6 @@ private:
     // See http://www.w3.org/TR/html4/interact/forms.html#h-17.11.1
     inline Node* findFocusableNode(WebFocusType, const FocusNavigationScope&, Node* start);
 
-    Node* nextFocusableNode(const FocusNavigationScope&, Node* start);
-    Node* previousFocusableNode(const FocusNavigationScope&, Node* start);
-
-    Node* findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType);
-
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);
 

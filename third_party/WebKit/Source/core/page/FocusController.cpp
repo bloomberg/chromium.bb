@@ -539,12 +539,7 @@ Node* FocusController::findFocusableNodeRecursively(WebFocusType type, const Foc
     return &found;
 }
 
-Node* FocusController::findFocusableNode(WebFocusType type, const FocusNavigationScope& scope, Node* node)
-{
-    return type == WebFocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
-}
-
-Node* FocusController::findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
+static Node* findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
 {
     // Search is inclusive of start
     for (Node* node = start; node; node = type == WebFocusTypeForward ? NodeTraversal::next(*node) : NodeTraversal::previous(*node)) {
@@ -585,7 +580,7 @@ static Node* previousNodeWithLowerTabIndex(Node* start, int tabIndex)
     return winner;
 }
 
-Node* FocusController::nextFocusableNode(const FocusNavigationScope& scope, Node* start)
+static Node* nextFocusableNode(const FocusNavigationScope& scope, Node* start)
 {
     if (start) {
         int tabIndex = adjustedTabIndex(*start);
@@ -617,7 +612,7 @@ Node* FocusController::nextFocusableNode(const FocusNavigationScope& scope, Node
     return findNodeWithExactTabIndex(scope.rootNode(), 0, WebFocusTypeForward);
 }
 
-Node* FocusController::previousFocusableNode(const FocusNavigationScope& scope, Node* start)
+static Node* previousFocusableNode(const FocusNavigationScope& scope, Node* start)
 {
     Node* last = nullptr;
     for (Node* node = scope.rootNode(); node; node = node->lastChild())
@@ -652,6 +647,11 @@ Node* FocusController::previousFocusableNode(const FocusNavigationScope& scope, 
     // 2) comes last in the scope, if there's a tie.
     startingTabIndex = (start && startingTabIndex) ? startingTabIndex : std::numeric_limits<short>::max();
     return previousNodeWithLowerTabIndex(last, startingTabIndex);
+}
+
+Node* FocusController::findFocusableNode(WebFocusType type, const FocusNavigationScope& scope, Node* node)
+{
+    return type == WebFocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
 }
 
 static bool relinquishesEditingFocus(const Element& element)
