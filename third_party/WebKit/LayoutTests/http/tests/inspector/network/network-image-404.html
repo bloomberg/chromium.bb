@@ -17,16 +17,9 @@ function resourceLoaded()
 
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
-
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("loadData()");
-    }
+    InspectorTest.recordNetwork();
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("loadData()");
 
     function step2()
     {

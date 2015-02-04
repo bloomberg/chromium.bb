@@ -5,10 +5,6 @@
 <script>
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
-
     function dumpRequest(request, callback)
     {
         if (!request)
@@ -24,15 +20,12 @@ function test()
         request.requestContent(contentLoaded);
     }
 
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        InspectorTest.makeSimpleXHR("GET", "resources/empty.html?sync", false, firstXHRLoaded);
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHR("GET", "resources/empty.html?sync", false, firstXHRLoaded);
 
-        function firstXHRLoaded()
-        {
-            InspectorTest.makeSimpleXHR("GET", "resources/empty.html?async", true, step2);
-        }
+    function firstXHRLoaded()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/empty.html?async", true, step2);
     }
 
     function step2()

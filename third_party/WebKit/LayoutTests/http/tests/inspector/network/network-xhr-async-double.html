@@ -5,10 +5,6 @@
 <script>
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
-
     function initArgs(method, url, async, payload)
     {
         var args = {};
@@ -20,14 +16,11 @@ function test()
         return jsonArgs;
     }
 
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        var jsonArgs1 = initArgs("POST", "resources/echo-payload.php", true, 'request1');
-        var jsonArgs2 = initArgs("POST", "resources/echo-payload.php", true, 'request2');
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs1 + "\"); makeXHRForJSONArguments(\"" + jsonArgs2 + "\")");
-    }
+    InspectorTest.recordNetwork();
+    var jsonArgs1 = initArgs("POST", "resources/echo-payload.php", true, 'request1');
+    var jsonArgs2 = initArgs("POST", "resources/echo-payload.php", true, 'request2');
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs1 + "\"); makeXHRForJSONArguments(\"" + jsonArgs2 + "\")");
 
     var totalXHRs = 2;
     function step2(msg)

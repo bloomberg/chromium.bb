@@ -1469,16 +1469,6 @@ Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadB
     return result;
 }
 
-void Internals::setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionState& exceptionState)
-{
-    Page* page = contextDocument()->frame()->page();
-    if (!page) {
-        exceptionState.throwDOMException(InvalidAccessError, "No page can be obtained from the current context document.");
-        return;
-    }
-    page->inspectorController().setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
-}
-
 String Internals::inspectorHighlightJSON(Node* node, ExceptionState& exceptionState)
 {
     Page* page = contextDocument()->frame()->page();

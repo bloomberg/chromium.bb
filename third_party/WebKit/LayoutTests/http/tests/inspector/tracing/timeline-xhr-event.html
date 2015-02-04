@@ -16,17 +16,13 @@ function performActions(callback)
 
 function test()
 {
-    InspectorTest.resetInspectorResourcesData(step1);
-    function step1()
-    {
-        InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
-        function finish()
-        {
-            InspectorTest.printTimelineRecords("XHRReadyStateChange");
-            InspectorTest.printTimelineRecords("XHRLoad");
-            InspectorTest.completeTest();
-        }
+    function finish()
+    {
+        InspectorTest.printTimelineRecords("XHRReadyStateChange");
+        InspectorTest.printTimelineRecords("XHRLoad");
+        InspectorTest.completeTest();
     }
 }
 

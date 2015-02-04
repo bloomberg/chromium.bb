@@ -31,12 +31,7 @@ function test()
 
     function testXHRReplay(method, url, async, user, password, headers, withCredentials, payload, type, callback)
     {
-        InspectorTest.resetInspectorResourcesData(step1);
-
-        function step1()
-        {
-            InspectorTest.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, step2);
-        }
+        InspectorTest.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, step2);
 
         var originalRequest;
         function step2()

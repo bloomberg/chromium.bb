@@ -409,12 +409,6 @@ bool InspectorController::screencastEnabled()
     return m_pageAgent->screencastEnabled();
 }
 
-void InspectorController::setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize)
-{
-    if (m_resourceAgent)
-        m_resourceAgent->setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
-}
-
 PassRefPtr<JSONObject> InspectorController::highlightJSONForNode(Node* node)
 {
     return m_overlay->highlightJSONForNode(node);

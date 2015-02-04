@@ -5,16 +5,10 @@
 <script>
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
     var payload = "\u201AFoo\u201B";
 
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        InspectorTest.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
-    }
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
 
     function step2()
     {

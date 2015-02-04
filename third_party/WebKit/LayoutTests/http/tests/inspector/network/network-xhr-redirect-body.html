@@ -8,15 +8,10 @@ function test()
 {
     var offset;
 
-    InspectorTest.resetInspectorResourcesData(step1);
-
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        offset = InspectorTest.networkRequests().length;
-        InspectorTest.makeSimpleXHRWithPayload("POST",
-            "resources/redirect.cgi?status=301&ttl=1", true, "LOST", step2);
-    }
+    InspectorTest.recordNetwork();
+    offset = InspectorTest.networkRequests().length;
+    InspectorTest.makeSimpleXHRWithPayload("POST",
+        "resources/redirect.cgi?status=301&ttl=1", true, "LOST", step2);
 
     function step2()
     {

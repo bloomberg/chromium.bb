@@ -1,5 +1,5 @@
-CONSOLE MESSAGE: line 23: Done1.
-CONSOLE MESSAGE: line 33: Done2.
+CONSOLE MESSAGE: line 18: Done1.
+CONSOLE MESSAGE: line 28: Done2.
 Tests cached resource content is discarded when cached resource is destroyed if content size is too big for the resource agent's data storage.
 
 Bug 92108  

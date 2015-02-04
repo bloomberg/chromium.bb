@@ -29,20 +29,6 @@ InspectorTest.dumpNetworkRequests = function()
         InspectorTest.addResult(requests[i].url);
 }
 
-InspectorTest.resetInspectorResourcesData = function(callback)
-{
-    InspectorTest.evaluateInPage("resetInspectorResourcesData()", nextStep);
-
-    function nextStep(result)
-    {
-        if (!result) {
-            InspectorTest.addResult("This test can not be run as window.internals is not available.");
-            Inspector.completeTest();
-        } else
-            callback();
-    }
-}
-
 InspectorTest.makeSimpleXHR = function(method, url, async, callback)
 {
     InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, undefined, undefined, callback);
@@ -137,14 +123,3 @@ function makeXHRForJSONArguments(jsonArgs)
     var args = JSON.parse(jsonArgs);
     makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, args.type, xhrLoadedCallback);
 }
-
-
-function resetInspectorResourcesData()
-{
-    if (!window.internals)
-        return false;
-
-    internals.setInspectorResourcesDataSizeLimits(10 * 1000 * 1000, 1000 * 1000);
-    return true;
-}
-

@@ -782,12 +782,6 @@ void InspectorResourceAgent::didReceiveWebSocketFrameError(unsigned long identif
     m_frontend->webSocketFrameError(IdentifiersFactory::requestId(identifier), currentTime(), errorMessage);
 }
 
-// called from Internals for layout test purposes.
-void InspectorResourceAgent::setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize)
-{
-    m_resourcesData->setResourcesDataSizeLimits(maximumResourcesContentSize, maximumSingleResourceContentSize);
-}
-
 void InspectorResourceAgent::enable(ErrorString*)
 {
     enable();
@@ -968,6 +962,11 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
     if (!callback->isActive())
         return;
     inspectorThreadableLoaderClient->setLoader(loader.release());
+}
+
+void InspectorResourceAgent::setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource)
+{
+    m_resourcesData->setResourcesDataSizeLimits(maxTotal, maxResource);
 }
 
 void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)

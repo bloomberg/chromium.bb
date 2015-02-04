@@ -5,19 +5,12 @@
 <script>
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, firstXHRLoaded);
 
-    function step1()
+    function firstXHRLoaded()
     {
-        InspectorTest.recordNetwork();
-        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, firstXHRLoaded);
-
-        function firstXHRLoaded()
-        {
-            InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step2);
-        }
+        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step2);
     }
 
     function step2(msg)

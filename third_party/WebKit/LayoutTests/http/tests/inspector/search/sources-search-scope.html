@@ -6,19 +6,6 @@
 <script src="../../inspector/network-test.js"></script>
 <script src="../../inspector/debugger-test.js"></script>
 <script>
-function onload()
-{
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    resetInspectorResourcesData();
-
-    if (window.testRunner)
-        testRunner.showWebInspector();
-    runTest();
-}
-
 function test()
 {
     WebInspector.inspectorView.showViewInDrawer("search");
@@ -196,7 +183,7 @@ function test()
 
 </script>
 </head>
-<body onload="onload()">
+<body onload="runTest()">
 <iframe src="../../inspector/search/resources/search.html">
 <p>Tests that ScriptSearchScope performs search across all sources correctly.</p>
 See <a href="https://bugs.webkit.org/show_bug.cgi?id=41350">bug 41350</a>.

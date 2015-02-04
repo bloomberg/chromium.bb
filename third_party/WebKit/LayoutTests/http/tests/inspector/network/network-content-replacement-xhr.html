@@ -3,30 +3,16 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function setInspectorResourcesDataSizeLimits()
-{
-    if (!window.internals) {
-        console.log("This test can not be run as window.internals is not available.");
-        return;
-    }
-    internals.setInspectorResourcesDataSizeLimits(300, 200);
-    console.log("Done.");
-}
 
 function test()
 {
     InspectorTest.recordNetwork();
-    InspectorTest.addConsoleSniffer(dataSizeLimitsSet);
-    InspectorTest.evaluateInPage("setInspectorResourcesDataSizeLimits()");
+    InspectorTest.NetworkAgent.setDataSizeLimitsForTest(300, 200);
+    // Here we test replacement logic. We save first two resources content,
+    // discard third resource content once we see its size exceeds limit,
+    // and finally replace first resource content with the last resource content.
 
-    function dataSizeLimitsSet()
-    {
-        // Here we test replacement logic. We save first two resources content,
-        // discard third resource content once we see its size exceeds limit,
-        // and finally replace first resource content with the last resource content.
-
-        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=200", false, xhrLoaded1);
-    }
+    InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=200", false, xhrLoaded1);
 
     function xhrLoaded1()
     {

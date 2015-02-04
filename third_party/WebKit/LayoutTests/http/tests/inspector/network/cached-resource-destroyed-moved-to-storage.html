@@ -33,17 +33,10 @@ function forceCachedResourceLoaderGC() {
 
 function test()
 {
-    // Since this test could be run together with other inspector backend cache
-    // tests, we need to reset size limits to default ones.
-    InspectorTest.resetInspectorResourcesData(step1);
-
     var imageRequest;
-    function step1()
-    {
-        InspectorTest.recordNetwork();
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("loadFirstImage()");
-    }
+    InspectorTest.recordNetwork();
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("loadFirstImage()");
 
     function step2()
     {
@@ -92,11 +85,6 @@ function test()
         InspectorTest.addResult("request.content.length after requesting content: " + imageRequest.content.length);
         originalContentLength = imageRequest.content.length;
         InspectorTest.assertTrue(imageRequest.content.length === originalContentLength, "Content changed after cached resource was destroyed");
-        InspectorTest.resetInspectorResourcesData(step8);
-    }
-
-    function step8()
-    {
         InspectorTest.completeTest();
     }
 }

@@ -14,13 +14,8 @@ function readBlob()
 
 function test()
 {
-    InspectorTest.resetInspectorResourcesData(main);
-
-    function main()
-    {
-        InspectorTest.addConsoleSniffer(messageAdded);
-        InspectorTest.evaluateInPage("readBlob();");
-    }
+    InspectorTest.addConsoleSniffer(messageAdded);
+    InspectorTest.evaluateInPage("readBlob();");
 
     function messageAdded(payload)
     {

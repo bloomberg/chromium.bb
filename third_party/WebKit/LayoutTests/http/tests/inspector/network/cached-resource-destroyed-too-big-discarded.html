@@ -4,14 +4,9 @@
 <script src="../network-test.js"></script>
 <script>
 var image;
-function loadFirstImage() {
-    if (!window.internals) {
-        console.log("This test can not be run as window.internals is not available.");
-        return;
-    }
-    // Make sure there is no enough space to save content in resource agent's storage.
-    internals.setInspectorResourcesDataSizeLimits(100, 100);
 
+function loadFirstImage()
+{
     image = new Image();
     image.onload = firstImageLoaded;
     document.body.appendChild(image);
@@ -38,6 +33,7 @@ function test()
     var imageRequest;
     InspectorTest.recordNetwork();
     InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.NetworkAgent.setDataSizeLimitsForTest(100, 100);
     InspectorTest.evaluateInPage("loadFirstImage()");
 
     function step2()
@@ -83,11 +79,6 @@ function test()
     {
         InspectorTest.addResult("request.content after requesting content: " + imageRequest.content);
         InspectorTest.assertTrue(!imageRequest.content, "Content available after CachedResource was destroyed.");
-        InspectorTest.resetInspectorResourcesData(step8);
-    }
-
-    function step8()
-    {
         InspectorTest.completeTest();
     }
 }

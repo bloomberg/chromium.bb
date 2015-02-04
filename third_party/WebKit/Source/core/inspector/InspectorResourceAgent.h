@@ -125,9 +125,6 @@ public:
     void didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
-    // called from Internals for layout test purposes.
-    void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
-
     // Called from frontend
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;
@@ -143,6 +140,7 @@ public:
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
 
     virtual void loadResourceForFrontend(ErrorString*, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback>) override;
+    virtual void setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource) override;
 
     // Called from other agents.
     void setHostId(const String&);
