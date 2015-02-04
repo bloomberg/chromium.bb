@@ -170,12 +170,6 @@ FirstLetterPseudoElement::~FirstLetterPseudoElement()
 {
 }
 
-void FirstLetterPseudoElement::trace(Visitor* visitor)
-{
-    visitor->trace(m_remainingTextRenderer);
-    PseudoElement::trace(visitor);
-}
-
 void FirstLetterPseudoElement::updateTextFragments()
 {
     String oldText =  m_remainingTextRenderer->completeText();

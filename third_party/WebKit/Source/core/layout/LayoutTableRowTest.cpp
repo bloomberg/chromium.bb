@@ -51,7 +51,7 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RawPtrWillBePersistent<LayoutTableRow> m_row;
+    LayoutTableRow* m_row;
 };
 
 TEST_F(LayoutTableRowDeathTest, CanSetRow)

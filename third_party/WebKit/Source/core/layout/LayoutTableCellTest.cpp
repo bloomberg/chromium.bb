@@ -45,7 +45,7 @@ protected:
         m_cell->destroy();
     }
 
-    RawPtrWillBePersistent<LayoutTableCell> m_cell;
+    LayoutTableCell* m_cell;
 };
 
 TEST_F(LayoutTableCellDeathTest, CanSetColumn)

@@ -278,10 +278,10 @@ private:
     RefPtrWillBePersistent<Scrollbar> m_vBar;
 
     // Renderers to hold our custom scroll corner.
-    RawPtrWillBePersistent<RenderScrollbarPart> m_scrollCorner;
+    RenderScrollbarPart* m_scrollCorner;
 
     // Renderers to hold our custom resizer.
-    RawPtrWillBePersistent<RenderScrollbarPart> m_resizer;
+    RenderScrollbarPart* m_resizer;
 };
 
 } // namespace blink

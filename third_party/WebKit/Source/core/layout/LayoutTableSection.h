@@ -67,7 +67,6 @@ class LayoutTableSection final : public RenderBox {
 public:
     LayoutTableSection(Element*);
     virtual ~LayoutTableSection();
-    virtual void trace(Visitor*) override;
 
     LayoutTableRow* firstRow() const;
     LayoutTableRow* lastRow() const;
@@ -87,47 +86,43 @@ public:
 
     LayoutTable* table() const { return toLayoutTable(parent()); }
 
-    typedef WillBeHeapVector<RawPtrWillBeMember<LayoutTableCell>, 2> SpanningLayoutTableCells;
+    typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
     struct CellStruct {
-        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        WillBeHeapVector<RawPtrWillBeMember<LayoutTableCell>, 1> cells;
+        Vector<LayoutTableCell*, 1> cells;
         bool inColSpan; // true for columns after the first in a colspan
 
         CellStruct()
             : inColSpan(false)
         {
         }
-        void trace(Visitor*);
 
         LayoutTableCell* primaryCell()
         {
-            return hasCells() ? cells[cells.size() - 1].get() : 0;
+            return hasCells() ? cells[cells.size() - 1] : 0;
         }
 
         const LayoutTableCell* primaryCell() const
         {
-            return hasCells() ? cells[cells.size() - 1].get() : 0;
+            return hasCells() ? cells[cells.size() - 1] : 0;
         }
 
         bool hasCells() const { return cells.size() > 0; }
     };
 
-    typedef WillBeHeapVector<CellStruct> Row;
+    typedef Vector<CellStruct> Row;
 
     struct RowStruct {
-        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         RowStruct()
             : rowRenderer(nullptr)
             , baseline()
         {
         }
-        void trace(Visitor*);
 
         Row row;
-        RawPtrWillBeMember<LayoutTableRow> rowRenderer;
+        LayoutTableRow* rowRenderer;
         LayoutUnit baseline;
         Length logicalHeight;
     };
@@ -232,7 +227,7 @@ public:
 
     CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
     CellSpan dirtiedColumns(const LayoutRect& paintInvalidationRect) const;
-    WillBeHeapHashSet<RawPtrWillBeMember<LayoutTableCell> >& overflowingCells() { return m_overflowingCells; }
+    HashSet<LayoutTableCell*>& overflowingCells() { return m_overflowingCells; }
     bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
 
 protected:
@@ -292,7 +287,7 @@ private:
 
     RenderObjectChildList m_children;
 
-    WillBeHeapVector<RowStruct> m_grid;
+    Vector<RowStruct> m_grid;
     Vector<int> m_rowPos;
 
     // the current insertion position
@@ -309,32 +304,18 @@ private:
     // This HashSet holds the overflowing cells for faster painting.
     // If we have more than gMaxAllowedOverflowingCellRatio * total cells, it will be empty
     // and m_forceSlowPaintPathWithOverflowingCell will be set to save memory.
-    WillBeHeapHashSet<RawPtrWillBeMember<LayoutTableCell> > m_overflowingCells;
+    HashSet<LayoutTableCell*> m_overflowingCells;
     bool m_forceSlowPaintPathWithOverflowingCell;
 
     bool m_hasMultipleCellLevels;
 
     // This map holds the collapsed border values for cells with collapsed borders.
     // It is held at LayoutTableSection level to spare memory consumption by table cells.
-    WillBeHeapHashMap<pair<RawPtrWillBeMember<const LayoutTableCell>, int>, CollapsedBorderValue > m_cellsCollapsedBorders;
+    HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue> m_cellsCollapsedBorders;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());
 
 } // namespace blink
-
-#if ENABLE(OILPAN)
-namespace WTF {
-
-template<> struct VectorTraits<blink::LayoutTableSection::CellStruct> : VectorTraitsBase<blink::LayoutTableSection::CellStruct> {
-    static const bool needsDestruction = false;
-};
-
-template<> struct VectorTraits<blink::LayoutTableSection::RowStruct> : VectorTraitsBase<blink::LayoutTableSection::RowStruct> {
-    static const bool needsDestruction = false;
-};
-
-} // namespace WTF
-#endif
 
 #endif // LayoutTableSection_h

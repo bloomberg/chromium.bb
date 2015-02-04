@@ -39,7 +39,6 @@ public:
 
     virtual ~RenderListMarker();
     virtual void destroy() override;
-    virtual void trace(Visitor*) override;
 
     const String& text() const { return m_text; }
 
@@ -51,7 +50,7 @@ public:
     LayoutRect localSelectionRect();
     virtual bool isImage() const override;
     const StyleImage* image() { return m_image.get(); }
-    const RenderListItem* listItem() { return m_listItem.get(); }
+    const RenderListItem* listItem() { return m_listItem; }
 
     static UChar listMarkerSuffix(EListStyleType, int value);
 
@@ -90,7 +89,7 @@ private:
 
     String m_text;
     RefPtr<StyleImage> m_image;
-    RawPtrWillBeMember<RenderListItem> m_listItem;
+    RenderListItem* m_listItem;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());

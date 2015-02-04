@@ -36,7 +36,6 @@ class RenderQuote final : public RenderInline {
 public:
     RenderQuote(Document*, const QuoteType);
     virtual ~RenderQuote();
-    virtual void trace(Visitor*) override;
     void attachQuote();
 
 private:
@@ -58,13 +57,11 @@ private:
 
     QuoteType m_type;
     int m_depth;
-    RawPtrWillBeMember<RenderQuote> m_next;
-    RawPtrWillBeMember<RenderQuote> m_previous;
+    RenderQuote* m_next;
+    RenderQuote* m_previous;
     bool m_attached;
     String m_text;
 };
-
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(RenderQuote);
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
 

@@ -48,9 +48,6 @@ static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), "NodeRareD
 
 void NodeRareData::traceAfterDispatch(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
-    visitor->trace(m_renderer);
-#endif
     visitor->trace(m_mutationObserverData);
     // Do not keep empty NodeListsNodeData objects around.
     if (m_nodeLists && m_nodeLists->isEmpty())

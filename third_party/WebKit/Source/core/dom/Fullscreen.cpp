@@ -606,7 +606,6 @@ void Fullscreen::trace(Visitor* visitor)
 {
     visitor->trace(m_fullScreenElement);
     visitor->trace(m_fullScreenElementStack);
-    visitor->trace(m_fullScreenRenderer);
     visitor->trace(m_eventQueue);
     DocumentSupplement::trace(visitor);
     DocumentLifecycleObserver::trace(visitor);

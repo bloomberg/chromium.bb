@@ -69,7 +69,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
     CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
     CellSpan dirtiedColumns = m_layoutTableSection.dirtiedColumns(tableAlignedRect);
 
-    WillBeHeapHashSet<RawPtrWillBeMember<LayoutTableCell> > overflowingCells = m_layoutTableSection.overflowingCells();
+    HashSet<LayoutTableCell*> overflowingCells = m_layoutTableSection.overflowingCells();
     if (dirtiedColumns.start() < dirtiedColumns.end()) {
         if (!m_layoutTableSection.hasMultipleCellLevels() && !overflowingCells.size()) {
             if (paintInfo.phase == PaintPhaseCollapsedTableBorders) {

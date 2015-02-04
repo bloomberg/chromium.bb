@@ -256,18 +256,19 @@ public:
 
 class RenderObjectProxy : public RenderObject {
 public:
-    static PassOwnPtrWillBeRawPtr<RenderObjectProxy> create(Node* node)
+    static RenderObjectProxy* create(Node* node)
     {
-        return adoptPtrWillBeNoop(new RenderObjectProxy(node));
+        return new RenderObjectProxy(node);
     }
 
-    static void dispose(PassOwnPtrWillBeRawPtr<RenderObjectProxy> object)
+    static void dispose(RenderObjectProxy* proxy)
     {
-        object.leakPtr()->destroy();
+        proxy->destroy();
     }
 
     const char* renderName() const override { return nullptr; }
     void layout() override { }
+
 private:
     explicit RenderObjectProxy(Node* node)
         : RenderObject(node)
@@ -1202,8 +1203,8 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
 
     RefPtrWillBePersistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
 
-    OwnPtrWillBePersistent<RenderObjectProxy> renderer = RenderObjectProxy::create(element.get());
-    element->setRenderer(renderer.get());
+    RenderObjectProxy* renderer = RenderObjectProxy::create(element.get());
+    element->setRenderer(renderer);
 
     AnimatableValueKeyframeVector keyFrames;
     keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
@@ -1242,7 +1243,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     simulateFrame(1.);
 
     element->setRenderer(nullptr);
-    RenderObjectProxy::dispose(renderer.release());
+    RenderObjectProxy::dispose(renderer);
 
     player1.release();
     player2.release();

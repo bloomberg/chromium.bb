@@ -43,7 +43,6 @@ public:
     }
 
     virtual ~FirstLetterPseudoElement();
-    virtual void trace(Visitor*) override;
 
     static RenderObject* firstLetterTextRenderer(const Element&);
     static unsigned firstLetterLength(const String&);
@@ -64,7 +63,7 @@ private:
     void attachFirstLetterTextRenderers();
     RenderStyle* styleForFirstLetter(RenderObject*);
 
-    RawPtrWillBeMember<RenderTextFragment> m_remainingTextRenderer;
+    RenderTextFragment* m_remainingTextRenderer;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement, isFirstLetterPseudoElement());

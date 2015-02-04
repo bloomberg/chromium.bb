@@ -213,12 +213,9 @@ void FrameView::dispose()
 void FrameView::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_partUpdateSet);
-    visitor->trace(m_parts);
     visitor->trace(m_frame);
     visitor->trace(m_nodeToDraw);
     visitor->trace(m_maintainScrollPositionAnchor);
-    visitor->trace(m_scrollCorner);
     visitor->trace(m_autoSizeInfo);
     visitor->trace(m_horizontalScrollbar);
     visitor->trace(m_verticalScrollbar);
@@ -1166,7 +1163,7 @@ void FrameView::removePart(RenderPart* object)
 
 void FrameView::updateWidgetPositions()
 {
-    WillBeHeapVector<RefPtrWillBeMember<RenderPart>> parts;
+    Vector<RefPtr<RenderPart>> parts;
     copyToVector(m_parts, parts);
 
     // Script or plugins could detach the frame so abort processing if that happens.

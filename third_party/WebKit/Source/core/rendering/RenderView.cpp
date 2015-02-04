@@ -78,15 +78,6 @@ RenderView::~RenderView()
 {
 }
 
-void RenderView::trace(Visitor* visitor)
-{
-    visitor->trace(m_selectionStart);
-    visitor->trace(m_selectionEnd);
-    visitor->trace(m_renderQuoteHead);
-    visitor->trace(m_pendingSelection);
-    RenderBlockFlow::trace(visitor);
-}
-
 bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)
 {
     return hitTest(request, result.hitTestLocation(), result);
@@ -470,7 +461,7 @@ IntRect RenderView::selectionBounds()
     // Now create a single bounding box rect that encloses the whole selection.
     LayoutRect selRect;
 
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<const RenderBlock> > VisitedContainingBlockSet;
+    typedef HashSet<const RenderBlock*> VisitedContainingBlockSet;
     VisitedContainingBlockSet visitedContainingBlocks;
 
     commitPendingSelection();
@@ -562,7 +553,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     int oldEndPos = m_selectionEndPos;
 
     // Objects each have a single selection rect to examine.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, SelectionState > SelectedObjectMap;
+    typedef HashMap<RenderObject*, SelectionState> SelectedObjectMap;
     SelectedObjectMap oldSelectedObjects;
     // FIXME: |newSelectedObjects| doesn't really need to store the SelectionState, it's just more convenient
     // to have it use the same data structure as |oldSelectedObjects|.
@@ -571,7 +562,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Blocks contain selected objects and fill gaps between them, either on the left, right, or in between lines and blocks.
     // In order to get the paint invalidation rect right, we have to examine left, middle, and right rects individually, since otherwise
     // the union of those rects might remain the same even when changes have occurred.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderBlock>, SelectionState > SelectedBlockMap;
+    typedef HashMap<RenderBlock*, SelectionState> SelectedBlockMap;
     SelectedBlockMap oldSelectedBlocks;
     // FIXME: |newSelectedBlocks| doesn't really need to store the SelectionState, it's just more convenient
     // to have it use the same data structure as |oldSelectedBlocks|.

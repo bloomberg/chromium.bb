@@ -51,14 +51,6 @@ RenderSVGResourceFilter::~RenderSVGResourceFilter()
 {
 }
 
-void RenderSVGResourceFilter::trace(Visitor* visitor)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_filter);
-#endif
-    RenderSVGResourceContainer::trace(visitor);
-}
-
 void RenderSVGResourceFilter::destroy()
 {
     m_filter.clear();

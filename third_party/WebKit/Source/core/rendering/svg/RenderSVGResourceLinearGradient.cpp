@@ -28,6 +28,9 @@ namespace blink {
 
 RenderSVGResourceLinearGradient::RenderSVGResourceLinearGradient(SVGLinearGradientElement* node)
     : RenderSVGResourceGradient(node)
+#if ENABLE(OILPAN)
+    , m_attributesWrapper(LinearGradientAttributesWrapper::create())
+#endif
 {
 }
 
@@ -35,16 +38,14 @@ RenderSVGResourceLinearGradient::~RenderSVGResourceLinearGradient()
 {
 }
 
-void RenderSVGResourceLinearGradient::trace(Visitor* visitor)
-{
-    visitor->trace(m_attributes);
-    RenderSVGResourceGradient::trace(visitor);
-}
-
 bool RenderSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
+#if ENABLE(OILPAN)
+    m_attributesWrapper->set(LinearGradientAttributes());
+#else
     m_attributes = LinearGradientAttributes();
-    return toSVGLinearGradientElement(gradientElement)->collectGradientAttributes(m_attributes);
+#endif
+    return toSVGLinearGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
 }
 
 FloatPoint RenderSVGResourceLinearGradient::startPoint(const LinearGradientAttributes& attributes) const
@@ -59,9 +60,10 @@ FloatPoint RenderSVGResourceLinearGradient::endPoint(const LinearGradientAttribu
 
 void RenderSVGResourceLinearGradient::buildGradient(GradientData* gradientData) const
 {
-    gradientData->gradient = Gradient::create(startPoint(m_attributes), endPoint(m_attributes));
-    gradientData->gradient->setSpreadMethod(platformSpreadMethodFromSVGType(m_attributes.spreadMethod()));
-    addStops(gradientData, m_attributes.stops());
+    const LinearGradientAttributes& attributes = this->attributes();
+    gradientData->gradient = Gradient::create(startPoint(attributes), endPoint(attributes));
+    gradientData->gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
+    addStops(gradientData, attributes.stops());
 }
 
 }

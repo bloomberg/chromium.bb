@@ -41,24 +41,20 @@ namespace blink {
 
 RenderPart::RenderPart(Element* element)
     : RenderReplaced(element)
-#if !ENABLE(OILPAN)
     // Reference counting is used to prevent the part from being destroyed
     // while inside the Widget code, which might not be able to handle that.
     , m_refCount(1)
-#endif
 {
     ASSERT(element);
     frameView()->addPart(this);
     setInline(false);
 }
 
-#if !ENABLE(OILPAN)
 void RenderPart::deref()
 {
     if (--m_refCount <= 0)
         postDestroy();
 }
-#endif
 
 void RenderPart::willBeDestroyed()
 {
@@ -78,26 +74,14 @@ void RenderPart::willBeDestroyed()
 
 void RenderPart::destroy()
 {
-#if ENABLE(ASSERT) && ENABLE(OILPAN)
-    ASSERT(!m_didCallDestroy);
-    m_didCallDestroy = true;
-#endif
     willBeDestroyed();
     clearNode();
-#if ENABLE(OILPAN)
-    // In Oilpan, postDestroy doesn't delete |this|. So calling it here is safe
-    // though |this| will be referred in FrameView.
-    postDestroy();
-#else
     deref();
-#endif
 }
 
 RenderPart::~RenderPart()
 {
-#if !ENABLE(OILPAN)
     ASSERT(m_refCount <= 0);
-#endif
 }
 
 Widget* RenderPart::widget() const

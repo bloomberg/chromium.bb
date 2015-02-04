@@ -42,12 +42,6 @@ RenderMedia::~RenderMedia()
 {
 }
 
-void RenderMedia::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderImage::trace(visitor);
-}
-
 HTMLMediaElement* RenderMedia::mediaElement() const
 {
     return toHTMLMediaElement(node());

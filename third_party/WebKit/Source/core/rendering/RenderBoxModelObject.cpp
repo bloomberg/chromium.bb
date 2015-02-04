@@ -57,8 +57,8 @@ namespace blink {
 // an anonymous block (that houses other blocks) or it will be an inline flow.
 // <b><i><p>Hello</p></i></b>. In this example the <i> will have a block as
 // its continuation but the <b> will just have an inline as its continuation.
-typedef WillBeHeapHashMap<RawPtrWillBeMember<const RenderBoxModelObject>, RawPtrWillBeMember<RenderBoxModelObject> > ContinuationMap;
-static OwnPtrWillBePersistent<ContinuationMap>* continuationMap = 0;
+typedef HashMap<const RenderBoxModelObject*, RenderBoxModelObject*> ContinuationMap;
+static ContinuationMap* continuationMap = nullptr;
 
 void RenderBoxModelObject::setSelectionState(SelectionState state)
 {
@@ -465,18 +465,18 @@ RenderBoxModelObject* RenderBoxModelObject::continuation() const
 {
     if (!continuationMap)
         return 0;
-    return (*continuationMap)->get(this);
+    return continuationMap->get(this);
 }
 
 void RenderBoxModelObject::setContinuation(RenderBoxModelObject* continuation)
 {
     if (continuation) {
         if (!continuationMap)
-            continuationMap = new OwnPtrWillBePersistent<ContinuationMap>(adoptPtrWillBeNoop(new ContinuationMap));
-        (*continuationMap)->set(this, continuation);
+            continuationMap = new ContinuationMap;
+        continuationMap->set(this, continuation);
     } else {
         if (continuationMap)
-            (*continuationMap)->remove(this);
+            continuationMap->remove(this);
     }
 }
 

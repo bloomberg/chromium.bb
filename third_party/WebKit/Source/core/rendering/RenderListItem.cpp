@@ -47,12 +47,6 @@ RenderListItem::RenderListItem(Element* element)
     setInline(false);
 }
 
-void RenderListItem::trace(Visitor* visitor)
-{
-    visitor->trace(m_marker);
-    RenderBlockFlow::trace(visitor);
-}
-
 void RenderListItem::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);

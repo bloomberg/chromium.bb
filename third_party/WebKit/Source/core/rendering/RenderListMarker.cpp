@@ -1067,12 +1067,6 @@ void RenderListMarker::destroy()
     RenderBox::destroy();
 }
 
-void RenderListMarker::trace(Visitor* visitor)
-{
-    visitor->trace(m_listItem);
-    RenderBox::trace(visitor);
-}
-
 RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
 {
     Document& document = item->document();

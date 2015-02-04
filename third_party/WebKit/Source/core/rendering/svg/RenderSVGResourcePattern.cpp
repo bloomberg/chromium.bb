@@ -43,13 +43,10 @@ public:
 RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
     : RenderSVGResourcePaintServer(node)
     , m_shouldCollectPatternAttributes(true)
+#if ENABLE(OILPAN)
+    , m_attributesWrapper(PatternAttributesWrapper::create())
+#endif
 {
-}
-
-void RenderSVGResourcePattern::trace(Visitor* visitor)
-{
-    visitor->trace(m_attributes);
-    RenderSVGResourcePaintServer::trace(visitor);
 }
 
 void RenderSVGResourcePattern::removeAllClientsFromCache(bool markForInvalidation)
@@ -82,31 +79,32 @@ PatternData* RenderSVGResourcePattern::patternForRenderer(const RenderObject& ob
 PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const RenderObject& object)
 {
     // If we couldn't determine the pattern content element root, stop here.
-    if (!m_attributes.patternContentElement())
+    const PatternAttributes& attributes = this->attributes();
+    if (!attributes.patternContentElement())
         return nullptr;
 
     // An empty viewBox disables rendering.
-    if (m_attributes.hasViewBox() && m_attributes.viewBox().isEmpty())
+    if (attributes.hasViewBox() && attributes.viewBox().isEmpty())
         return nullptr;
 
     ASSERT(element());
     // Compute tile metrics.
     FloatRect clientBoundingBox = object.objectBoundingBox();
     FloatRect tileBounds = SVGLengthContext::resolveRectangle(element(),
-        m_attributes.patternUnits(), clientBoundingBox,
-        m_attributes.x(), m_attributes.y(), m_attributes.width(), m_attributes.height());
+        attributes.patternUnits(), clientBoundingBox,
+        attributes.x(), attributes.y(), attributes.width(), attributes.height());
     if (tileBounds.isEmpty())
         return nullptr;
 
     AffineTransform tileTransform;
-    if (m_attributes.hasViewBox()) {
-        if (m_attributes.viewBox().isEmpty())
+    if (attributes.hasViewBox()) {
+        if (attributes.viewBox().isEmpty())
             return nullptr;
-        tileTransform = SVGFitToViewBox::viewBoxToViewTransform(m_attributes.viewBox(),
-            m_attributes.preserveAspectRatio(), tileBounds.width(), tileBounds.height());
+        tileTransform = SVGFitToViewBox::viewBoxToViewTransform(attributes.viewBox(),
+            attributes.preserveAspectRatio(), tileBounds.width(), tileBounds.height());
     } else {
         // A viewbox overrides patternContentUnits, per spec.
-        if (m_attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+        if (attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
             tileTransform.scale(clientBoundingBox.width(), clientBoundingBox.height());
     }
 
@@ -115,7 +113,7 @@ PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const RenderO
 
     // Compute pattern space transformation.
     patternData->transform.translate(tileBounds.x(), tileBounds.y());
-    AffineTransform patternTransform = m_attributes.patternTransform();
+    AffineTransform patternTransform = attributes.patternTransform();
     if (!patternTransform.isIdentity())
         patternData->transform = patternTransform * patternData->transform;
 
@@ -133,15 +131,19 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& 
     if (m_shouldCollectPatternAttributes) {
         patternElement->synchronizeAnimatedSVGAttribute(anyQName());
 
+#if ENABLE(OILPAN)
+        m_attributesWrapper->set(PatternAttributes());
+#else
         m_attributes = PatternAttributes();
-        patternElement->collectPatternAttributes(m_attributes);
+#endif
+        patternElement->collectPatternAttributes(mutableAttributes());
         m_shouldCollectPatternAttributes = false;
     }
 
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
     FloatRect objectBoundingBox = object.objectBoundingBox();
-    if (m_attributes.patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
+    if (attributes().patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
     PatternData* patternData = patternForRenderer(object);
@@ -159,7 +161,7 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
     ASSERT(!m_shouldCollectPatternAttributes);
 
     AffineTransform contentTransform;
-    if (m_attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    if (attributes().patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         contentTransform = tileTransform;
 
     // Draw the content into a Picture.
@@ -169,9 +171,9 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
     GraphicsContext recordingContext(nullptr, displayItemList.get());
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
 
-    ASSERT(m_attributes.patternContentElement());
+    ASSERT(attributes().patternContentElement());
     RenderSVGResourceContainer* patternRenderer =
-        toRenderSVGResourceContainer(m_attributes.patternContentElement()->renderer());
+        toRenderSVGResourceContainer(attributes().patternContentElement()->renderer());
     ASSERT(patternRenderer);
     ASSERT(!patternRenderer->needsLayout());
 

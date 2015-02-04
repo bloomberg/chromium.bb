@@ -38,14 +38,13 @@ class RenderVTTCue final : public RenderBlockFlow {
 public:
     explicit RenderVTTCue(VTTCueBox*);
 
-    virtual void trace(Visitor*) override;
 private:
     virtual void layout() override;
 
     void adjustForTopAndBottomMarginBorderAndPadding();
     void repositionCueSnapToLinesNotSet();
 
-    RawPtrWillBeMember<VTTCue> m_cue;
+    VTTCue* m_cue;
 };
 
 } // namespace blink

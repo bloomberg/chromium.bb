@@ -126,7 +126,7 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class RenderObject : public NoBaseWillBeGarbageCollectedFinalized<RenderObject>, public ImageResourceClient {
+class RenderObject : public ImageResourceClient {
     friend class RenderBlock;
     friend class RenderBlockFlow;
     friend class RenderLayerReflectionInfo; // For setParent
@@ -138,7 +138,6 @@ public:
     // marked as anonymous in the constructor.
     explicit RenderObject(Node*);
     virtual ~RenderObject();
-    virtual void trace(Visitor*);
 
     virtual const char* renderName() const = 0;
 
@@ -325,11 +324,9 @@ public:
     static RenderObject* createObject(Element*, RenderStyle*);
     static unsigned instanceCount() { return s_instanceCount; }
 
-#if !ENABLE(OILPAN)
     // RenderObjects are allocated out of the rendering partition.
     void* operator new(size_t);
     void operator delete(void*);
-#endif
 
 public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
@@ -616,7 +613,7 @@ public:
 
     Node* node() const
     {
-        return isAnonymous() ? 0 : m_node.get();
+        return isAnonymous() ? 0 : m_node;
     }
 
     Node* nonPseudoNode() const
@@ -1229,20 +1226,16 @@ private:
 
     RefPtr<RenderStyle> m_style;
 
-    RawPtrWillBeMember<Node> m_node;
+    // Oilpan: raw pointer back to the owning Node is considered safe.
+    Node* m_node;
 
-    RawPtrWillBeMember<RenderObject> m_parent;
-    RawPtrWillBeMember<RenderObject> m_previous;
-    RawPtrWillBeMember<RenderObject> m_next;
+    RenderObject* m_parent;
+    RenderObject* m_previous;
+    RenderObject* m_next;
 
 #if ENABLE(ASSERT)
     unsigned m_hasAXObject             : 1;
     unsigned m_setNeedsLayoutForbidden : 1;
-#if ENABLE(OILPAN)
-protected:
-    unsigned m_didCallDestroy          : 1;
-private:
-#endif
 #endif
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
@@ -1406,8 +1399,6 @@ private:
 
     static unsigned s_instanceCount;
 };
-
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(RenderObject);
 
 // FIXME: remove this once the render object lifecycle ASSERTS are no longer hit.
 class DeprecatedDisableModifyRenderTreeStructureAsserts {

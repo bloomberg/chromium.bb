@@ -158,12 +158,6 @@ RenderBlock::RenderBlock(ContainerNode* node)
     // By default, subclasses do not have inline children.
 }
 
-void RenderBlock::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderBox::trace(visitor);
-}
-
 static void removeBlockFromDescendantAndContainerMaps(RenderBlock* block, TrackedDescendantsMap*& descendantMap, TrackedContainerMap*& containerMap)
 {
     if (OwnPtr<TrackedRendererListHashSet> descendantSet = descendantMap->take(block)) {
@@ -226,18 +220,7 @@ void RenderBlock::removeFromGlobalMaps()
 
 RenderBlock::~RenderBlock()
 {
-#if !ENABLE(OILPAN)
     removeFromGlobalMaps();
-#endif
-}
-
-void RenderBlock::destroy()
-{
-    RenderBox::destroy();
-#if ENABLE(OILPAN)
-    // RenderObject::removeChild called in destory() depends on gColumnInfoMap.
-    removeFromGlobalMaps();
-#endif
 }
 
 void RenderBlock::willBeDestroyed()

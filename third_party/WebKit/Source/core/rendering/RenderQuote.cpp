@@ -48,13 +48,6 @@ RenderQuote::~RenderQuote()
     ASSERT(!m_next && !m_previous);
 }
 
-void RenderQuote::trace(Visitor* visitor)
-{
-    visitor->trace(m_next);
-    visitor->trace(m_previous);
-    RenderInline::trace(visitor);
-}
-
 void RenderQuote::willBeDestroyed()
 {
     detachQuote();

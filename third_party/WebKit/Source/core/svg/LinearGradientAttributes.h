@@ -78,6 +78,28 @@ private:
     bool m_y2Set : 1;
 };
 
+#if ENABLE(OILPAN)
+// Wrapper object for the LinearGradientAttributes part object.
+class LinearGradientAttributesWrapper : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
+public:
+    static LinearGradientAttributesWrapper* create()
+    {
+        return new LinearGradientAttributesWrapper;
+    }
+
+    LinearGradientAttributes& attributes() { return m_attributes; }
+    void set(const LinearGradientAttributes& attributes) { m_attributes = attributes; }
+    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+
+private:
+    LinearGradientAttributesWrapper()
+    {
+    }
+
+    LinearGradientAttributes m_attributes;
+};
+#endif
+
 } // namespace blink
 
 #endif

@@ -56,7 +56,6 @@ class RenderBlockFlow : public RenderBlock {
 public:
     explicit RenderBlockFlow(ContainerNode*);
     virtual ~RenderBlockFlow();
-    virtual void trace(Visitor*) override;
 
     static RenderBlockFlow* createAnonymous(Document*);
 
@@ -170,7 +169,7 @@ public:
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
     }
 
-    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread.get() : 0; }
+    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
     void resetMultiColumnFlowThread()
     {
         if (m_rareData)
@@ -385,8 +384,8 @@ public:
     MarginValues marginValuesForChild(RenderBox& child) const;
 
     // Allocated only when some of these fields have non-default values
-    struct RenderBlockFlowRareData : public NoBaseWillBeGarbageCollected<RenderBlockFlowRareData> {
-        WTF_MAKE_NONCOPYABLE(RenderBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    struct RenderBlockFlowRareData {
+        WTF_MAKE_NONCOPYABLE(RenderBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
     public:
         RenderBlockFlowRareData(const RenderBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
@@ -398,7 +397,6 @@ public:
             , m_discardMarginAfter(false)
         {
         }
-        void trace(Visitor*);
 
         static LayoutUnit positiveMarginBeforeDefault(const RenderBlockFlow* block)
         {
@@ -420,7 +418,7 @@ public:
         MarginValues m_margins;
         LayoutUnit m_paginationStrut;
 
-        RawPtrWillBeMember<RenderMultiColumnFlowThread> m_multiColumnFlowThread;
+        RenderMultiColumnFlowThread* m_multiColumnFlowThread;
 
         int m_lineBreakToAvoidWidow;
         bool m_didBreakAtLineToAvoidWidow : 1;
@@ -496,7 +494,7 @@ private:
     virtual bool isSelfCollapsingBlock() const override;
 
 protected:
-    OwnPtrWillBeMember<RenderBlockFlowRareData> m_rareData;
+    OwnPtr<RenderBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;
 
     friend class BreakingContext; // FIXME: It uses insertFloatingObject and positionNewFloatOnLine, if we move those out from the private scope/add a helper to LineBreaker, we can remove this friend

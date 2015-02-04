@@ -33,7 +33,6 @@ class RenderListMarker;
 class RenderListItem final : public RenderBlockFlow {
 public:
     explicit RenderListItem(Element*);
-    virtual void trace(Visitor*) override;
 
     int value() const { if (!m_isValueUpToDate) updateValueNow(); return m_value; }
     void updateValue();
@@ -84,7 +83,7 @@ private:
     void explicitValueChanged();
 
     int m_explicitValue;
-    RawPtrWillBeMember<RenderListMarker> m_marker;
+    RenderListMarker* m_marker;
     mutable int m_value;
 
     bool m_hasExplicitValue : 1;

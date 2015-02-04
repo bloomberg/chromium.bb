@@ -699,11 +699,11 @@ private:
 
     LayoutSize m_size;
 
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject>> EmbeddedObjectSet;
-    WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject>> m_partUpdateSet;
+    typedef HashSet<RefPtr<RenderEmbeddedObject>> EmbeddedObjectSet;
+    EmbeddedObjectSet m_partUpdateSet;
 
     // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.
-    WillBeHeapHashSet<RefPtrWillBeMember<RenderPart>> m_parts;
+    HashSet<RefPtr<RenderPart>> m_parts;
 
     // The RefPtr cycle between LocalFrame and FrameView is broken
     // when a LocalFrame is detached by FrameLoader::detachFromParent().
@@ -770,7 +770,7 @@ private:
     RefPtrWillBeMember<Node> m_maintainScrollPositionAnchor;
 
     // Renderer to hold our custom scroll corner.
-    RawPtrWillBeMember<RenderScrollbarPart> m_scrollCorner;
+    RenderScrollbarPart* m_scrollCorner;
 
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ScrollableAreaSet> m_animatingScrollableAreas;

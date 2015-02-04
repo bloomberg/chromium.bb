@@ -64,21 +64,9 @@ RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrient
 
     setFrameRect(rect);
 
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
 }
 
 RenderScrollbar::~RenderScrollbar()
-{
-    // Oilpan: to be able to access the hash map that's
-    // also on the heap, a pre-destruction finalizer is used.
-#if !ENABLE(OILPAN)
-    destroyParts();
-#endif
-}
-
-void RenderScrollbar::destroyParts()
 {
     if (m_parts.isEmpty())
         return;
@@ -97,7 +85,6 @@ void RenderScrollbar::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_owner);
     visitor->trace(m_owningFrame);
-    visitor->trace(m_parts);
 #endif
     Scrollbar::trace(visitor);
 }

@@ -173,6 +173,28 @@ private:
     bool m_patternContentElementSet : 1;
 };
 
+#if ENABLE(OILPAN)
+// Wrapper object for the PatternAttributes part object.
+class PatternAttributesWrapper : public GarbageCollectedFinalized<PatternAttributesWrapper> {
+public:
+    static PatternAttributesWrapper* create()
+    {
+        return new PatternAttributesWrapper;
+    }
+
+    PatternAttributes& attributes() { return m_attributes; }
+    void set(const PatternAttributes& attributes) { m_attributes = attributes; }
+    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+
+private:
+    PatternAttributesWrapper()
+    {
+    }
+
+    PatternAttributes m_attributes;
+};
+#endif
+
 } // namespace blink
 
 #endif // PatternAttributes_h

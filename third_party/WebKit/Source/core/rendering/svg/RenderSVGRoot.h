@@ -33,7 +33,6 @@ class RenderSVGRoot final : public RenderReplaced {
 public:
     explicit RenderSVGRoot(SVGElement*);
     virtual ~RenderSVGRoot();
-    virtual void trace(Visitor*) override;
 
     bool isEmbeddedThroughSVGImage() const;
     bool isEmbeddedThroughFrameContainingSVGDocument() const;

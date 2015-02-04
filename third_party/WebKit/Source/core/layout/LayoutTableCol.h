@@ -36,7 +36,6 @@ class LayoutTableCell;
 class LayoutTableCol final : public RenderBox {
 public:
     explicit LayoutTableCol(Element*);
-    virtual void trace(Visitor*) override;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
 

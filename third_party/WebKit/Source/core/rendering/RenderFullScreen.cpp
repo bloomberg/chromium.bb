@@ -70,12 +70,6 @@ RenderFullScreen* RenderFullScreen::createAnonymous(Document* document)
     return renderer;
 }
 
-void RenderFullScreen::trace(Visitor* visitor)
-{
-    visitor->trace(m_placeholder);
-    RenderFlexibleBox::trace(visitor);
-}
-
 void RenderFullScreen::willBeDestroyed()
 {
     if (m_placeholder) {

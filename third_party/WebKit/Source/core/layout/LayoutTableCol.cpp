@@ -44,12 +44,6 @@ LayoutTableCol::LayoutTableCol(Element* element)
     updateFromElement();
 }
 
-void LayoutTableCol::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderBox::trace(visitor);
-}
-
 void LayoutTableCol::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);

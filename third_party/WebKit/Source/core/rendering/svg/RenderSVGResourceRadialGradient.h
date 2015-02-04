@@ -38,8 +38,8 @@ public:
     static const RenderSVGResourceType s_resourceType = RadialGradientResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = m_attributes.gradientTransform(); }
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
     virtual bool collectGradientAttributes(SVGGradientElement*) override;
     virtual void buildGradient(GradientData*) const override;
 
@@ -48,10 +48,18 @@ public:
     float radius(const RadialGradientAttributes&) const;
     float focalRadius(const RadialGradientAttributes&) const;
 
-    virtual void trace(Visitor*) override;
-
 private:
+#if ENABLE(OILPAN)
+    Persistent<RadialGradientAttributesWrapper> m_attributesWrapper;
+
+    RadialGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
+    const RadialGradientAttributes& attributes() const { return m_attributesWrapper->attributes(); }
+#else
     RadialGradientAttributes m_attributes;
+
+    RadialGradientAttributes& mutableAttributes() { return m_attributes; }
+    const RadialGradientAttributes& attributes() const { return m_attributes; }
+#endif
 };
 
 DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceRadialGradient, RadialGradientResourceType);

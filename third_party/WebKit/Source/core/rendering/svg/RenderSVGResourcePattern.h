@@ -52,15 +52,23 @@ public:
     static const RenderSVGResourceType s_resourceType = PatternResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
-    virtual void trace(Visitor*) override;
-
 private:
     PassOwnPtr<PatternData> buildPatternData(const RenderObject&);
     PassRefPtr<const SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForRenderer(const RenderObject&);
 
     bool m_shouldCollectPatternAttributes : 1;
+#if ENABLE(OILPAN)
+    Persistent<PatternAttributesWrapper> m_attributesWrapper;
+
+    PatternAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
+    const PatternAttributes& attributes() const { return m_attributesWrapper->attributes(); }
+#else
     PatternAttributes m_attributes;
+
+    PatternAttributes& mutableAttributes() { return m_attributes; }
+    const PatternAttributes& attributes() const { return m_attributes; }
+#endif
 
     // FIXME: we can almost do away with this per-object map, but not quite: the tile size can be
     // relative to the client bounding box, and it gets captured in the cached Pattern shader.
@@ -68,7 +76,7 @@ private:
     // should be able to cache a single display list per RenderSVGResourcePattern + one
     // Pattern(shader) for each client -- this would avoid re-recording when multiple clients
     // share the same pattern.
-    HashMap<const RenderObject*, OwnPtr<PatternData> > m_patternMap;
+    HashMap<const RenderObject*, OwnPtr<PatternData>> m_patternMap;
 };
 
 }

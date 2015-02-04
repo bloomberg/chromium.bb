@@ -33,7 +33,6 @@ class RenderSVGContainer : public RenderSVGModelObject {
 public:
     explicit RenderSVGContainer(SVGElement*);
     virtual ~RenderSVGContainer();
-    virtual void trace(Visitor*) override;
 
     // If you have a RenderSVGContainer, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;

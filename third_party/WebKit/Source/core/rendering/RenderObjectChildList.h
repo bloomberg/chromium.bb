@@ -41,10 +41,9 @@ public:
         , m_lastChild(nullptr)
     {
     }
-    void trace(Visitor*);
 
-    RenderObject* firstChild() const { return m_firstChild.get(); }
-    RenderObject* lastChild() const { return m_lastChild.get(); }
+    RenderObject* firstChild() const { return m_firstChild; }
+    RenderObject* lastChild() const { return m_lastChild; }
 
     // FIXME: Temporary while RenderBox still exists. Eventually this will just happen during insert/append/remove methods on the child list, and nobody
     // will need to manipulate firstChild or lastChild directly.
@@ -63,8 +62,8 @@ public:
 private:
     void invalidatePaintOnRemoval(const RenderObject& oldChild);
 
-    RawPtrWillBeMember<RenderObject> m_firstChild;
-    RawPtrWillBeMember<RenderObject> m_lastChild;
+    RenderObject* m_firstChild;
+    RenderObject* m_lastChild;
 };
 
 } // namespace blink

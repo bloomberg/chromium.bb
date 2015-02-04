@@ -709,7 +709,7 @@ private:
 
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
-    OwnPtrWillBePersistent<RenderLayerReflectionInfo> m_reflectionInfo;
+    OwnPtr<RenderLayerReflectionInfo> m_reflectionInfo;
 
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 };

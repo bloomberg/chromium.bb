@@ -57,7 +57,7 @@
 namespace blink {
 
 RenderLayerReflectionInfo::RenderLayerReflectionInfo(RenderBox& renderer)
-    : m_box(renderer)
+    : m_box(&renderer)
     , m_isPaintingInsideReflection(false)
 {
     UseCounter::count(box().document(), UseCounter::Reflection);
@@ -74,12 +74,6 @@ void RenderLayerReflectionInfo::destroy()
     m_reflection->setParent(0);
     m_reflection->destroy();
     m_reflection = nullptr;
-}
-
-void RenderLayerReflectionInfo::trace(Visitor* visitor)
-{
-    visitor->trace(m_box);
-    visitor->trace(m_reflection);
 }
 
 RenderLayer* RenderLayerReflectionInfo::reflectionLayer() const

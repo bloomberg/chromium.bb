@@ -248,7 +248,7 @@ public:
 
     // Performance optimization: hold onto these Vectors until the end of Layout to avoid repeated malloc / free.
     Vector<GridTrack*> filteredTracks;
-    WillBeHeapVector<GridItemWithSpan> itemsSortedByIncreasingSpan;
+    Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
     Vector<GridTrack*> growBeyondGrowthLimitsTracks;
 };
 
@@ -666,10 +666,9 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox& child, GridTrackSizingDirec
 // std::pair<RenderBox*, size_t> does not work either because we still need the GridCoordinate so we'd have to add an
 // extra hash lookup for each item at the beginning of RenderGrid::resolveContentBasedTrackSizingFunctionsForItems().
 class GridItemWithSpan {
-    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     GridItemWithSpan(RenderBox& gridItem, const GridCoordinate& coordinate, GridTrackSizingDirection direction)
-        : m_gridItem(gridItem)
+        : m_gridItem(&gridItem)
         , m_coordinate(coordinate)
     {
         const GridSpan& span = (direction == ForRows) ? coordinate.rows : coordinate.columns;
@@ -684,13 +683,8 @@ public:
 
     bool operator<(const GridItemWithSpan other) const { return m_span < other.m_span; }
 
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_gridItem);
-    }
-
 private:
-    RawPtrWillBeMember<RenderBox> m_gridItem;
+    RenderBox* m_gridItem;
     GridCoordinate m_coordinate;
     size_t m_span;
 };

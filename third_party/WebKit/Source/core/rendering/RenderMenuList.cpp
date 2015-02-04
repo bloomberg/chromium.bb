@@ -76,14 +76,6 @@ void RenderMenuList::destroy()
     RenderFlexibleBox::destroy();
 }
 
-void RenderMenuList::trace(Visitor* visitor)
-{
-    visitor->trace(m_buttonText);
-    visitor->trace(m_innerBlock);
-    visitor->trace(m_popup);
-    RenderFlexibleBox::trace(visitor);
-}
-
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
 bool RenderMenuList::isChildAllowed(RenderObject* object, RenderStyle*) const
@@ -521,7 +513,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 
 PopupMenuStyle RenderMenuList::menuStyle() const
 {
-    const RenderObject* o = m_innerBlock ? m_innerBlock.get() : this;
+    const RenderObject* o = m_innerBlock ? m_innerBlock : this;
     const RenderStyle* s = o->style();
     return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), s->font(), s->visibility() == VISIBLE,
         s->display() == NONE, s->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()));

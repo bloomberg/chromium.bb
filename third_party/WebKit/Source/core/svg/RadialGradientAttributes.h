@@ -94,6 +94,28 @@ private:
     bool m_frSet : 1;
 };
 
+#if ENABLE(OILPAN)
+// Wrapper object for the RadialGradientAttributes part object.
+class RadialGradientAttributesWrapper : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
+public:
+    static RadialGradientAttributesWrapper* create()
+    {
+        return new RadialGradientAttributesWrapper;
+    }
+
+    RadialGradientAttributes& attributes() { return m_attributes; }
+    void set(const RadialGradientAttributes& attributes) { m_attributes = attributes; }
+    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+
+private:
+    RadialGradientAttributesWrapper()
+    {
+    }
+
+    RadialGradientAttributes m_attributes;
+};
+#endif
+
 } // namespace blink
 
 #endif

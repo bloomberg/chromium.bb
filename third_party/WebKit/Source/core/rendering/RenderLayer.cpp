@@ -1514,7 +1514,7 @@ void RenderLayer::updateReflectionInfo(const RenderStyle* oldStyle)
     ASSERT(!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle));
     if (renderer()->hasReflection()) {
         if (!m_reflectionInfo)
-            m_reflectionInfo = adoptPtrWillBeNoop(new RenderLayerReflectionInfo(*renderBox()));
+            m_reflectionInfo = adoptPtr(new RenderLayerReflectionInfo(*renderBox()));
         m_reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_reflectionInfo) {
         m_reflectionInfo->destroy();

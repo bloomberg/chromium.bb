@@ -29,6 +29,9 @@ namespace blink {
 
 RenderSVGResourceRadialGradient::RenderSVGResourceRadialGradient(SVGRadialGradientElement* node)
     : RenderSVGResourceGradient(node)
+#if ENABLE(OILPAN)
+    , m_attributesWrapper(RadialGradientAttributesWrapper::create())
+#endif
 {
 }
 
@@ -36,16 +39,14 @@ RenderSVGResourceRadialGradient::~RenderSVGResourceRadialGradient()
 {
 }
 
-void RenderSVGResourceRadialGradient::trace(Visitor* visitor)
-{
-    visitor->trace(m_attributes);
-    RenderSVGResourceGradient::trace(visitor);
-}
-
 bool RenderSVGResourceRadialGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
+#if ENABLE(OILPAN)
+    m_attributesWrapper->set(RadialGradientAttributes());
+#else
     m_attributes = RadialGradientAttributes();
-    return toSVGRadialGradientElement(gradientElement)->collectGradientAttributes(m_attributes);
+#endif
+    return toSVGRadialGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
 }
 
 FloatPoint RenderSVGResourceRadialGradient::centerPoint(const RadialGradientAttributes& attributes) const
@@ -70,14 +71,15 @@ float RenderSVGResourceRadialGradient::focalRadius(const RadialGradientAttribute
 
 void RenderSVGResourceRadialGradient::buildGradient(GradientData* gradientData) const
 {
-    gradientData->gradient = Gradient::create(this->focalPoint(m_attributes),
-        this->focalRadius(m_attributes),
-        this->centerPoint(m_attributes),
-        this->radius(m_attributes));
+    const RadialGradientAttributes& attributes = this->attributes();
+    gradientData->gradient = Gradient::create(this->focalPoint(attributes),
+        this->focalRadius(attributes),
+        this->centerPoint(attributes),
+        this->radius(attributes));
 
-    gradientData->gradient->setSpreadMethod(platformSpreadMethodFromSVGType(m_attributes.spreadMethod()));
+    gradientData->gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
 
-    addStops(gradientData, m_attributes.stops());
+    addStops(gradientData, attributes.stops());
 }
 
 }

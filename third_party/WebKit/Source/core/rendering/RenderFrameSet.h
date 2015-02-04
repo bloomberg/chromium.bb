@@ -57,7 +57,6 @@ class RenderFrameSet final : public RenderBox {
 public:
     RenderFrameSet(HTMLFrameSetElement*);
     virtual ~RenderFrameSet();
-    virtual void trace(Visitor*) override;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }

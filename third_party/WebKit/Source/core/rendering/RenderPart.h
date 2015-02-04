@@ -40,10 +40,8 @@ public:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-#if !ENABLE(OILPAN)
     void ref() { ++m_refCount; }
     void deref();
-#endif
 
     Widget* widget() const;
 
@@ -75,9 +73,7 @@ private:
 
     bool nodeAtPointOverWidget(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
-#if !ENABLE(OILPAN)
     int m_refCount;
-#endif
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());

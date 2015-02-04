@@ -77,19 +77,6 @@ row, const LayoutTableCell* cell)
     }
 }
 
-void LayoutTableSection::CellStruct::trace(Visitor* visitor)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(cells);
-#endif
-}
-
-void LayoutTableSection::RowStruct::trace(Visitor* visitor)
-{
-    visitor->trace(row);
-    visitor->trace(rowRenderer);
-}
-
 LayoutTableSection::LayoutTableSection(Element* element)
     : RenderBox(element)
     , m_cCol(0)
@@ -108,17 +95,6 @@ LayoutTableSection::LayoutTableSection(Element* element)
 
 LayoutTableSection::~LayoutTableSection()
 {
-}
-
-void LayoutTableSection::trace(Visitor* visitor)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_children);
-    visitor->trace(m_grid);
-    visitor->trace(m_overflowingCells);
-    visitor->trace(m_cellsCollapsedBorders);
-#endif
-    RenderBox::trace(visitor);
 }
 
 void LayoutTableSection::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -1084,7 +1060,7 @@ void LayoutTableSection::layoutRows()
             for (unsigned rowIndex = r + 1; rowIndex <= totalRows; rowIndex++)
                 m_rowPos[rowIndex] += rowHeightIncreaseForPagination;
             for (unsigned c = 0; c < nEffCols; ++c) {
-                WillBeHeapVector<RawPtrWillBeMember<LayoutTableCell>, 1>& cells = cellAt(r, c).cells;
+                Vector<LayoutTableCell*, 1>& cells = cellAt(r, c).cells;
                 for (size_t i = 0; i < cells.size(); ++i) {
                     LayoutUnit oldLogicalHeight = cells[i]->logicalHeight();
                     cells[i]->setLogicalHeight(oldLogicalHeight + rowHeightIncreaseForPagination);
@@ -1606,7 +1582,7 @@ void LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, C
 CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side)
 {
     ASSERT(table()->collapseBorders());
-    WillBeHeapHashMap<pair<RawPtrWillBeMember<const LayoutTableCell>, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
+    HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
     ASSERT_WITH_SECURITY_IMPLICATION(it != m_cellsCollapsedBorders.end());
     return it->value;
 }

@@ -174,7 +174,6 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 // FOR_EACH_TYPED_HEAP macro below.
 #define FOR_EACH_TYPED_HEAP(H)              \
     H(Node)                                 \
-    H(RenderObject)                         \
     H(CSSValue)
 
 #define TypedHeapEnumName(Type) Type##Heap,

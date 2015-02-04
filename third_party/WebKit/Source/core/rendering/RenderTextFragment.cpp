@@ -65,12 +65,6 @@ void RenderTextFragment::destroy()
     RenderText::destroy();
 }
 
-void RenderTextFragment::trace(Visitor* visitor)
-{
-    visitor->trace(m_firstLetterPseudoElement);
-    RenderText::trace(visitor);
-}
-
 PassRefPtr<StringImpl> RenderTextFragment::completeText() const
 {
     Text* text = associatedTextNode();

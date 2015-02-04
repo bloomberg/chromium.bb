@@ -40,7 +40,6 @@ class RenderScrollbarPart;
 class RenderStyle;
 
 class RenderScrollbar final : public Scrollbar {
-    WILL_BE_USING_PRE_FINALIZER(RenderScrollbar, destroyParts);
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~RenderScrollbar();
@@ -80,8 +79,6 @@ private:
     PassRefPtr<RenderStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
     void updateScrollbarPart(ScrollbarPart, bool destroy = false);
 
-    void destroyParts();
-
     // This Scrollbar(Widget) may outlive the DOM which created it (during tear down),
     // so we keep a reference to the Node which caused this custom scrollbar creation.
     // This will not create a reference cycle as the Widget tree is owned by our containing
@@ -90,7 +87,7 @@ private:
 
     RawPtrWillBeMember<LocalFrame> m_owningFrame;
 
-    WillBeHeapHashMap<unsigned, RawPtrWillBeMember<RenderScrollbarPart> > m_parts;
+    HashMap<unsigned, RenderScrollbarPart*> m_parts;
 };
 
 DEFINE_TYPE_CASTS(RenderScrollbar, ScrollbarThemeClient, scrollbar, scrollbar->isCustomScrollbar(), scrollbar.isCustomScrollbar());

@@ -35,7 +35,6 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 class LayoutTableRow final : public RenderBox {
 public:
     explicit LayoutTableRow(Element*);
-    virtual void trace(Visitor*) override;
 
     LayoutTableCell* firstCell() const;
     LayoutTableCell* lastCell() const;

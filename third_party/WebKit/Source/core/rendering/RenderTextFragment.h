@@ -38,7 +38,6 @@ public:
     RenderTextFragment(Node*, StringImpl*, int startOffset, int length);
     RenderTextFragment(Node*, StringImpl*);
     virtual ~RenderTextFragment();
-    virtual void trace(Visitor*) override;
     virtual void destroy() override;
 
     virtual bool isTextFragment() const override { return true; }
@@ -83,7 +82,9 @@ private:
     unsigned m_end;
     bool m_isRemainingTextRenderer;
     RefPtr<StringImpl> m_contentString;
-    RawPtrWillBeMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
+    // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detach() if
+    // it goes away first.
+    FirstLetterPseudoElement* m_firstLetterPseudoElement;
 };
 
 DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());

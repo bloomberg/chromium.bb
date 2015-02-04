@@ -2366,8 +2366,7 @@ void Node::trace(Visitor* visitor)
     // only one of them.
     if (hasRareData())
         visitor->trace(rareData());
-    else
-        visitor->trace(m_data.m_renderer);
+
     visitor->trace(m_treeScope);
 #endif
     EventTarget::trace(visitor);

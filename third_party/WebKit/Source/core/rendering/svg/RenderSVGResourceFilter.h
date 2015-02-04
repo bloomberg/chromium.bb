@@ -74,7 +74,6 @@ public:
     explicit RenderSVGResourceFilter(SVGFilterElement*);
 
     virtual ~RenderSVGResourceFilter();
-    virtual void trace(Visitor*) override;
     virtual void destroy() override;
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
@@ -103,7 +102,7 @@ public:
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, OwnPtrWillBeMember<FilterData> > FilterMap;
+    typedef WillBePersistentHeapHashMap<RenderObject*, OwnPtrWillBeMember<FilterData>> FilterMap;
     FilterMap m_filter;
 };
 

@@ -38,18 +38,30 @@ public:
     static const RenderSVGResourceType s_resourceType = LinearGradientResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = m_attributes.gradientTransform(); }
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
     virtual bool collectGradientAttributes(SVGGradientElement*) override;
     virtual void buildGradient(GradientData*) const override;
 
     FloatPoint startPoint(const LinearGradientAttributes&) const;
     FloatPoint endPoint(const LinearGradientAttributes&) const;
 
-    virtual void trace(Visitor*) override;
-
 private:
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: the RenderObject hierarchy isn't on the heap, but
+    // the SVG property hierarchy is. And the two meet here, so keep a
+    // persistent reference to the SVG part object by way of a heap-allocated
+    // wrapper object.
+    Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
+
+    LinearGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
+    const LinearGradientAttributes& attributes() const { return m_attributesWrapper->attributes(); }
+#else
     LinearGradientAttributes m_attributes;
+
+    LinearGradientAttributes& mutableAttributes() { return m_attributes; }
+    const LinearGradientAttributes& attributes() const { return m_attributes; }
+#endif
 };
 
 } // namespace blink
