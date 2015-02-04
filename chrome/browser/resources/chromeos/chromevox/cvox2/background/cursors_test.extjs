@@ -70,7 +70,6 @@ CursorsTest.prototype = {
       range = range.move(move[0], move[1]);
       var expectedStart = move[2];
       var expectedEnd = move[3];
-
       this.makeCursorAssertion(expectedStart, range.getStart());
       this.makeCursorAssertion(expectedEnd, range.getEnd());
     }
@@ -94,25 +93,27 @@ CursorsTest.prototype = {
    * @param {string=} opt_testType Either CURSOR or RANGE.
    */
   runCursorMovesOnDocument: function(doc, moves, opt_testType) {
-    this.runWithAutomation(doc,
-    function(root) {
-      var start = null;
+    this.runWithDocument(doc,
+    function() {
+      chrome.automation.getTree(function(root) {
+        var start = null;
 
-      // This occurs as a result of a load complete.
-      var start = AutomationUtil.findNodePost(root,
-          FORWARD,
-          AutomationPredicate.leaf);
+        // This occurs as a result of a load complete.
+        var start = AutomationUtil.findNodePost(root,
+            FORWARD,
+            AutomationPredicate.leaf);
 
-      var cursor = new cursors.Cursor(start, 0);
-      if (!opt_testType || opt_testType == this.CURSOR) {
         var cursor = new cursors.Cursor(start, 0);
-        this.cursorMoveAndAssert(cursor, moves);
-        testDone();
-      } else if (opt_testType == this.RANGE) {
-        var range = new cursors.Range(cursor, cursor);
-        this.rangeMoveAndAssert(range, moves);
-        testDone();
-      }
+        if (!opt_testType || opt_testType == this.CURSOR) {
+          var cursor = new cursors.Cursor(start, 0);
+          this.cursorMoveAndAssert(cursor, moves);
+          testDone();
+        } else if (opt_testType == this.RANGE) {
+          var range = new cursors.Range(cursor, cursor);
+          this.rangeMoveAndAssert(range, moves);
+          testDone();
+        }
+      }.bind(this));
     }.bind(this));
   },
 
