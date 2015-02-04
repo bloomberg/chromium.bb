@@ -30,8 +30,17 @@ using data_reduction_proxy::DataReductionProxySettings;
 // hierarchy. This method removes the Data Reduction Proxy configuration from
 // prefs, if present. |proxy_pref_name| is the name of the proxy pref.
 void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs) {
-  DictionaryPrefUpdate update(prefs, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict =
+      (base::DictionaryValue*) prefs->GetUserPrefValue(prefs::kProxy);
+  if (!dict)
+    return;
+
+  // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172
+  if (dict->empty()) {
+    prefs->ClearPref(prefs::kProxy);
+    return;
+  }
+
   std::string mode;
   if (!dict->GetString("mode", &mode))
     return;
@@ -46,9 +55,7 @@ void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs) {
           ContainsDataReductionProxy(proxy_rules)) {
     return;
   }
-  dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-  dict->SetString("server", "");
-  dict->SetString("bypass_list", "");
+  prefs->ClearPref(prefs::kProxy);
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings(
