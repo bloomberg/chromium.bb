@@ -9,7 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebNotificationPermissionCallback.h"
+#include "public/web/modules/notifications/WebNotificationPermissionCallback.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {

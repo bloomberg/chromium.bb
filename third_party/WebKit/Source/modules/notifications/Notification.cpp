@@ -42,9 +42,9 @@
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebNotificationData.h"
-#include "public/platform/WebNotificationManager.h"
 #include "public/platform/WebSerializedOrigin.h"
+#include "public/platform/modules/notifications/WebNotificationData.h"
+#include "public/platform/modules/notifications/WebNotificationManager.h"
 
 namespace blink {
 namespace {

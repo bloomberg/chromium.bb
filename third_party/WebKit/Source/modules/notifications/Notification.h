@@ -37,8 +37,8 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebNotificationDelegate.h"
-#include "public/platform/WebNotificationPermission.h"
+#include "public/platform/modules/notifications/WebNotificationDelegate.h"
+#include "public/platform/modules/notifications/WebNotificationPermission.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
