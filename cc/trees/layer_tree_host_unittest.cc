@@ -2068,7 +2068,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void AfterTest() override {
-    EXPECT_GE(3, num_will_begin_impl_frame_);
+    EXPECT_GE(num_will_begin_impl_frame_, 3);
     EXPECT_EQ(2, num_send_begin_main_frame_);
   }
 
