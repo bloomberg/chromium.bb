@@ -359,6 +359,69 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
       '\n'.join(problems))]
 
 
+def _FindHistogramNameInLine(histogram_name, line):
+  """Tries to find a histogram name or prefix in a line."""
+  if not "affected-histogram" in line:
+    return histogram_name in line
+  # A histogram_suffixes tag type has an affected-histogram name as a prefix of
+  # the histogram_name.
+  if not '"' in line:
+    return False
+  histogram_prefix = line.split('\"')[1]
+  return histogram_prefix in histogram_name
+
+
+def _CheckUmaHistogramChanges(input_api, output_api):
+  """Check that UMA histogram names in touched lines can still be found in other
+  lines of the patch or in histograms.xml. Note that this check would not catch
+  the reverse: changes in histograms.xml not matched in the code itself."""
+  touched_histograms = []
+  histograms_xml_modifications = []
+  pattern = input_api.re.compile('UMA_HISTOGRAM.*\("(.*)"')
+  for f in input_api.AffectedFiles():
+    # If histograms.xml itself is modified, keep the modified lines for later.
+    if f.LocalPath().endswith(('histograms.xml')):
+      histograms_xml_modifications = f.ChangedContents()
+      continue
+    if not f.LocalPath().endswith(('cc', 'mm', 'cpp')):
+      continue
+    for line_num, line in f.ChangedContents():
+      found = pattern.search(line)
+      if found:
+        touched_histograms.append([found.group(1), f, line_num])
+
+  # Search for the touched histogram names in the local modifications to
+  # histograms.xml, and, if not found, on the base histograms.xml file.
+  unmatched_histograms = []
+  for histogram_info in touched_histograms:
+    histogram_name_found = False
+    for line_num, line in histograms_xml_modifications:
+      histogram_name_found = _FindHistogramNameInLine(histogram_info[0], line)
+      if histogram_name_found:
+        break
+    if not histogram_name_found:
+      unmatched_histograms.append(histogram_info)
+
+  problems = []
+  if unmatched_histograms:
+    with open('tools/metrics/histograms/histograms.xml') as histograms_xml:
+      for histogram_name, f, line_num in unmatched_histograms:
+        histogram_name_found = False
+        for line in histograms_xml:
+          histogram_name_found = _FindHistogramNameInLine(histogram_name, line)
+          if histogram_name_found:
+            break
+        if not histogram_name_found:
+          problems.append(' [%s:%d] %s' %
+                          (f.LocalPath(), line_num, histogram_name))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('Some UMA_HISTOGRAM lines have '
+    'been modified and the associated histogram name has no match in either '
+    'metrics/histograms.xml or the modifications of it:',  problems)]
+
+
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
   problems = []
@@ -1585,6 +1648,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
+  results.extend(_CheckUmaHistogramChanges(input_api, output_api))
   return results
 
 

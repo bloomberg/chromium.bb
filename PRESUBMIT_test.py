@@ -270,6 +270,73 @@ class VersionControlConflictsTest(unittest.TestCase):
     self.assertTrue('3' in errors[1])
     self.assertTrue('5' in errors[2])
 
+class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
+  def testTypicalCorrectlyMatchedChange(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_xml = ['<histogram name="Bla.Foo.Dummy"> </histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testTypicalNotMatchedChange(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('some/path/foo.cc', diff_cc)]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual('warning', warnings[0].type)
+
+  def testTypicalNotMatchedChangeViaSuffixes(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_xml = ['<histogram_suffixes name="SuperHistogram">',
+                '  <suffix name="Dummy"/>',
+                '  <affected-histogram name="Snafu.Dummy"/>',
+                '</histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual('warning', warnings[0].type)
+
+  def testTypicalCorrectlyMatchedChangeViaSuffixes(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_xml = ['<histogram_suffixes name="SuperHistogram">',
+                '  <suffix name="Dummy"/>',
+                '  <affected-histogram name="Bla.Foo"/>',
+                '</histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testTypicalCorrectlyMatchedChangeViaSuffixesWithSeparator(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Snafu_Dummy", true)']
+    diff_xml = ['<histogram_suffixes name="SuperHistogram" separator="_">',
+                '  <suffix name="Dummy"/>',
+                '  <affected-histogram name="Snafu"/>',
+                '</histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
 
 class BadExtensionsTest(unittest.TestCase):
   def testBadRejFile(self):
