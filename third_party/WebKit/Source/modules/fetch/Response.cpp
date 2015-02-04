@@ -218,6 +218,13 @@ unsigned short Response::status() const
     return m_response->status();
 }
 
+bool Response::ok() const
+{
+    // "The ok attribute's getter must return true
+    // if response's status is in the range 200 to 299, and false otherwise."
+    return 200 <= status() && status() <= 299;
+}
+
 String Response::statusText() const
 {
     // "The statusText attribute's getter must return response's status message."

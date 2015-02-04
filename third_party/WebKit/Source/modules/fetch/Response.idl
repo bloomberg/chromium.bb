@@ -18,10 +18,13 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or USVString) BodyInit;
     GarbageCollected,
     TypeChecking=Interface,
 ] interface Response {
+    // FIXME: Implement error();
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;
     readonly attribute USVString url;
+    // FIXME: Implement attribute boolean finalURL;
     readonly attribute unsigned short status;
+    readonly attribute boolean ok;
     readonly attribute ByteString statusText;
     readonly attribute Headers headers;
 

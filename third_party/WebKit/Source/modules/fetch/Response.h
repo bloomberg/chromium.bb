@@ -46,6 +46,7 @@ public:
     String type() const;
     String url() const;
     unsigned short status() const;
+    bool ok() const;
     String statusText() const;
     Headers* headers() const;
 

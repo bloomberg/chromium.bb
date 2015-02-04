@@ -17,6 +17,7 @@ test(function() {
     assert_equals(response.url, '', 'Response.url should be the empty string');
     assert_equals(response.status, 200,
                   'Default Response.status should be 200');
+    assert_true(response.ok, 'Default Response.ok must be true');
     assert_equals(response.statusText, 'OK',
                   'Default Response.statusText should be \'OK\'');
     assert_equals(size(response.headers), 0,
@@ -25,8 +26,13 @@ test(function() {
     response.status = 394;
     response.statusText = 'Sesame Street';
     assert_equals(response.status, 200, 'Response.status should be readonly');
+    assert_true(response.ok, 'Response.ok must remain unchanged ' +
+                             'when Response.status is attempted ' +
+                             'unsuccessfully to change');
     assert_equals(response.statusText, 'OK',
                   'Response.statusText should be readonly');
+    response.ok = false;
+    assert_true(response.ok, 'Response.ok must be readonly');
   }, 'Response default value test');
 
 test(function() {
@@ -69,6 +75,7 @@ test(function() {
                      })];
     responses.forEach(function(response) {
         assert_equals(response.status, 303, 'Response.status should match');
+        assert_false(response.ok, 'Response.ok must be false for 303');
         assert_equals(response.statusText, 'See Other',
                       'Response.statusText should match');
         assert_true(response.headers instanceof Headers,
@@ -177,6 +184,10 @@ test(function() {
     [200, 300, 400, 500, 599].forEach(function(status) {
         var response = new Response(new Blob(), {status: status});
         assert_equals(response.status, status, 'Response.status should match');
+        if (200 <= status && status <= 299)
+          assert_true(response.ok, 'Response.ok must be true for ' + status);
+        else
+          assert_false(response.ok, 'Response.ok must be false for ' + status);
       });
 
     var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
