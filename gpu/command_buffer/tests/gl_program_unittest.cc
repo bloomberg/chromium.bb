@@ -121,6 +121,35 @@ TEST_F(GLProgramTest, NewShaderInCurrentProgram) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
+TEST_F(GLProgramTest, ShaderLengthSpecified) {
+  const std::string valid_shader_str = SHADER(
+      attribute vec4 a_position;
+      void main()
+      {
+         gl_Position = a_position;
+      }
+  );
+
+  const std::string invalid_shader = valid_shader_str + "invalid suffix";
+
+  // Compiling invalid program should fail.
+  const char* invalid_shader_strings[] = { invalid_shader.c_str() };
+  GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vs, 1, invalid_shader_strings, NULL);
+  glCompileShader(vs);
+
+  GLint compile_state = 0;
+  glGetShaderiv(vs, GL_COMPILE_STATUS, &compile_state);
+  EXPECT_EQ(GL_FALSE, compile_state);
+
+  // Compiling program cutting off invalid parts should succeed.
+  const GLint lengths[] = { valid_shader_str.length() };
+  glShaderSource(vs, 1, invalid_shader_strings, lengths);
+  glCompileShader(vs);
+  glGetShaderiv(vs, GL_COMPILE_STATUS, &compile_state);
+  EXPECT_EQ(GL_TRUE, compile_state);
+}
+
 TEST_F(GLProgramTest, UniformsInCurrentProgram) {
   static const char* v_shader_str = SHADER(
       attribute vec4 a_position;

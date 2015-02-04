@@ -61,13 +61,14 @@ void Shader::DoCompile(ShaderTranslatorInterface* translator,
     glGetShaderiv(service_id_,
                   GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
                   &max_len);
-    scoped_ptr<char[]> buffer(new char[max_len]);
+    translated_source_.resize(max_len);
     GLint len = 0;
     glGetTranslatedShaderSourceANGLE(
-        service_id_, max_len, &len, buffer.get());
+        service_id_, translated_source_.size(),
+        &len, &translated_source_.at(0));
     DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || buffer[len] == '\0');
-    translated_source_ = std::string(buffer.get(), len);
+    DCHECK(len == 0 || translated_source_[len] == '\0');
+    translated_source_.resize(len);
   }
 
   GLint status = GL_FALSE;
@@ -78,13 +79,13 @@ void Shader::DoCompile(ShaderTranslatorInterface* translator,
     // All translated shaders must compile.
     GLint max_len = 0;
     glGetShaderiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
-    scoped_ptr<char[]> buffer(new char[max_len]);
+    log_info_.resize(max_len);
     GLint len = 0;
-    glGetShaderInfoLog(service_id_, max_len, &len, buffer.get());
+    glGetShaderInfoLog(service_id_, log_info_.size(), &len, &log_info_.at(0));
     DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || buffer[len] == '\0');
+    DCHECK(len == 0 || log_info_[len] == '\0');
     valid_ = false;
-    log_info_ = std::string(buffer.get(), len);
+    log_info_.resize(len);
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"

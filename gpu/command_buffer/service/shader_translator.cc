@@ -123,7 +123,6 @@ bool ShaderTranslator::Init(
     compiler_ = ShConstructCompiler(
         shader_type, shader_spec, shader_output, resources);
   }
-  compiler_options_ = *resources;
   implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
   driver_bug_workarounds_ = driver_bug_workarounds;
   return compiler_ != NULL;

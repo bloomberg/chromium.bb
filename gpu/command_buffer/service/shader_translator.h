@@ -110,7 +110,6 @@ class GPU_EXPORT ShaderTranslator
   int GetCompileOptions() const;
 
   ShHandle compiler_;
-  ShBuiltInResources compiler_options_;
   bool implementation_is_glsl_es_;
   ShCompileOptions driver_bug_workarounds_;
   ObserverList<DestructionObserver> destruction_observers_;
