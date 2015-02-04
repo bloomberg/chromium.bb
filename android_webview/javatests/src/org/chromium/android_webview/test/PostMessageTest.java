@@ -12,7 +12,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.MessageChannel;
 import org.chromium.android_webview.MessagePort;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisabledTest;
@@ -152,17 +151,17 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
                     @Override
-                    public void onReceiveValue(MessageChannel channel) {
+                    public void onReceiveValue(MessagePort[] channel) {
                         mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
                                 mWebServer.getBaseUrl(),
-                                new MessagePort[]{channel.port2()});
+                                new MessagePort[]{channel[1]});
                         // retransfer the port. This should fail with an exception
                         try {
                             mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
                                     mWebServer.getBaseUrl(),
-                                    new MessagePort[]{channel.port2()});
+                                    new MessagePort[]{channel[1]});
                         } catch (IllegalStateException ex) {
                             latch.countDown();
                             return;
@@ -178,14 +177,14 @@ public class PostMessageTest extends AwTestBase {
 
     private static class ChannelContainer {
         private boolean mReady;
-        private MessageChannel mChannel;
+        private MessagePort[] mChannel;
         private Object mLock = new Object();
         private String mMessage;
 
-        public void set(MessageChannel channel) {
+        public void set(MessagePort[] channel) {
             mChannel = channel;
         }
-        public MessageChannel get() {
+        public MessagePort[] get() {
             return mChannel;
         }
 
@@ -225,19 +224,19 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
                     @Override
-                    public void onReceiveValue(MessageChannel channel) {
+                    public void onReceiveValue(MessagePort[] channel) {
                         // verify communication from JS to Java.
                         channelContainer.set(channel);
-                        channel.port1().setMessageHandler(new MessagePort.MessageHandler() {
+                        channel[0].setMessageHandler(new MessagePort.MessageHandler() {
                             @Override
                             public void onMessage(String message) {
                                 channelContainer.setMessage(message);
                             }
                         });
                         mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(), new MessagePort[]{channel.port2()});
+                                mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
                     }
                 };
                 mAwContents.createMessageChannel(callback);
@@ -285,18 +284,18 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
                     @Override
-                    public void onReceiveValue(MessageChannel channel) {
-                        channel.port1().setMessageHandler(new MessagePort.MessageHandler() {
+                    public void onReceiveValue(MessagePort[] channel) {
+                        channel[0].setMessageHandler(new MessagePort.MessageHandler() {
                             @Override
                             public void onMessage(String message) {
                                 channelContainer.setMessage(message);
                             }
                         });
                         mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(), new MessagePort[]{channel.port2()});
-                        channel.port1().postMessage(hello, null);
+                                mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                        channel[0].postMessage(hello, null);
                     }
                 };
                 mAwContents.createMessageChannel(callback);
@@ -348,12 +347,12 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
                     @Override
-                    public void onReceiveValue(MessageChannel channel) {
+                    public void onReceiveValue(MessagePort[] channel) {
                         mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
                                 mWebServer.getBaseUrl(),
-                                new MessagePort[]{channel.port1(), channel.port2()});
+                                new MessagePort[]{channel[0], channel[1]});
                     }
                 };
                 mAwContents.createMessageChannel(callback);

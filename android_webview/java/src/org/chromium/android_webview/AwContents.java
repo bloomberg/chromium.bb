@@ -94,7 +94,7 @@ public class AwContents implements SmartClipProvider {
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
     /**
-     * WebKit hit test related data strcutre. These are used to implement
+     * WebKit hit test related data structure. These are used to implement
      * getHitTestResult, requestFocusNodeHref, requestImageRef methods in WebView.
      * All values should be updated together. The native counterpart is
      * AwHitTestData.
@@ -1803,11 +1803,12 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Creates a message channel.
+     * Creates a message channel and asynchronously returns the ports that
+     * forms the ports for each end of the channel.
      *
      * @param callback The message channel created.
      */
-    public void createMessageChannel(ValueCallback<MessageChannel> callback) {
+    public void createMessageChannel(ValueCallback<MessagePort[]> callback) {
         if (isDestroyed()) return;
         // Make sure the message port service is created.
         mBrowserContext.createMessagePortServiceIfNecessary();
@@ -2708,5 +2709,5 @@ public class AwContents implements SmartClipProvider {
             String message, String sourceOrigin, String targetOrigin, int[] msgPorts);
 
     private native void nativeCreateMessageChannel(long nativeAwContents,
-            ValueCallback<MessageChannel> callback);
+            ValueCallback<MessagePort[]> callback);
 }

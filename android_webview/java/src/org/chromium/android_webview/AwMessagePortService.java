@@ -142,8 +142,8 @@ public class AwMessagePortService {
 
     @CalledByNative
     private void onMessageChannelCreated(int portId1, int portId2,
-            ValueCallback<MessageChannel> callback) {
-        callback.onReceiveValue(new MessageChannel(addPort(portId1), addPort(portId2)));
+            ValueCallback<MessagePort[]> callback) {
+        callback.onReceiveValue(new MessagePort[]{addPort(portId1), addPort(portId2)});
     }
 
     // Called on IO thread.
