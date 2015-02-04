@@ -157,7 +157,7 @@
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #else
-#include "webkit/common/gpu/context_provider_web_context.h"
+#include "cc/blink/context_provider_web_context.h"
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -4439,7 +4439,7 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
           SynchronousCompositorFactory::GetInstance()) {
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
-    scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider =
+    scoped_refptr<cc_blink::ContextProviderWebContext> context_provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider();
 
     if (!context_provider.get()) {

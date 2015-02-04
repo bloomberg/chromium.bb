@@ -19,14 +19,12 @@ class ContextProvider;
 class OutputSurface;
 }
 
-namespace gpu_blink {
-class WebGraphicsContext3DInProcessCommandBufferImpl;
-}
-
-namespace webkit {
-namespace gpu {
+namespace cc_blink {
 class ContextProviderWebContext;
 }
+
+namespace gpu_blink {
+class WebGraphicsContext3DInProcessCommandBufferImpl;
 }
 
 namespace content {
@@ -59,10 +57,10 @@ class SynchronousCompositorFactory {
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
 
-  virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      CreateOffscreenContextProvider(
-          const blink::WebGraphicsContext3D::Attributes& attributes,
-          const std::string& debug_name) = 0;
+  virtual scoped_refptr<cc_blink::ContextProviderWebContext>
+  CreateOffscreenContextProvider(
+      const blink::WebGraphicsContext3D::Attributes& attributes,
+      const std::string& debug_name) = 0;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int frame_id) = 0;
   virtual gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*

@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_FACTORY_IMPL_H_
 
 #include "base/synchronization/lock.h"
+#include "cc/blink/context_provider_web_context.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/stream_texture_factory_synchronous_impl.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
 
 namespace gpu {
 class GLInProcessContext;
@@ -38,10 +38,10 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
-  virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      CreateOffscreenContextProvider(
-          const blink::WebGraphicsContext3D::Attributes& attributes,
-          const std::string& debug_name) override;
+  virtual scoped_refptr<cc_blink::ContextProviderWebContext>
+  CreateOffscreenContextProvider(
+      const blink::WebGraphicsContext3D::Attributes& attributes,
+      const std::string& debug_name) override;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) override;
   virtual gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*

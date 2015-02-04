@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/blink",
   # Required for SynchronousCompositor (in --single-process mode only).
   "+content/public/renderer/android",
   "+content/renderer",

@@ -1270,7 +1270,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
           NULL));
 }
 
-scoped_refptr<webkit::gpu::ContextProviderWebContext>
+scoped_refptr<cc_blink::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (!shared_main_thread_contexts_.get() ||

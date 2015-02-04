@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/blink/context_provider_web_context.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -24,7 +25,6 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
 
 namespace content {
 

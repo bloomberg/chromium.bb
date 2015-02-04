@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
+#include "cc/blink/context_provider_web_context.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace blink { class WebGraphicsContext3D; }
@@ -25,7 +25,7 @@ namespace gpu {
 class GrContextForWebGraphicsContext3D;
 
 class WEBKIT_GPU_EXPORT ContextProviderInProcess
-    : NON_EXPORTED_BASE(public ContextProviderWebContext) {
+    : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
       scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
@@ -43,7 +43,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
       const std::string& debug_name);
   ~ContextProviderInProcess() override;
 
-  // ContextProviderWebContext:
+  // cc_blink::ContextProviderWebContext:
   blink::WebGraphicsContext3D* WebContext3D() override;
 
   // cc::ContextProvider:

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_WEB_CONTEXT_H_
-#define WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_WEB_CONTEXT_H_
+#ifndef CC_BLINK_CONTEXT_PROVIDER_WEB_CONTEXT_H_
+#define CC_BLINK_CONTEXT_PROVIDER_WEB_CONTEXT_H_
 
 #include "cc/output/context_provider.h"
 
 namespace blink { class WebGraphicsContext3D; }
 
-namespace webkit {
-namespace gpu {
+namespace cc_blink {
 
 class ContextProviderWebContext : public cc::ContextProvider {
  public:
@@ -20,7 +19,6 @@ class ContextProviderWebContext : public cc::ContextProvider {
   ~ContextProviderWebContext() override {}
 };
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace cc_blink
 
-#endif  // WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_WEB_CONTEXT_H_
+#endif  // CC_BLINK_CONTEXT_PROVIDER_WEB_CONTEXT_H_

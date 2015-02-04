@@ -18,9 +18,9 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 
+using cc_blink::ContextProviderWebContext;
 using gpu_blink::WebGraphicsContext3DImpl;
 using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
-using webkit::gpu::ContextProviderWebContext;
 
 namespace content {
 

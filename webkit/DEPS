@@ -1,6 +1,7 @@
 # Do NOT add chrome to the list below. We shouldn't be including files from
 # src/chrome in src/webkit.
 include_rules = [
+  "+cc/blink",
   "+cc/output",
   "+gpu/GLES2",
   "+gpu/blink",

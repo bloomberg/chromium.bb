@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/blink/context_provider_web_context.h"
 #include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
@@ -79,7 +80,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/synchronous_compositor_factory.h"
@@ -1009,7 +1009,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
 
 blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
-  scoped_refptr<webkit::gpu::ContextProviderWebContext> provider =
+  scoped_refptr<cc_blink::ContextProviderWebContext> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
   if (!provider.get())
     return NULL;

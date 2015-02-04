@@ -56,6 +56,10 @@ namespace cc {
 class ContextProvider;
 }
 
+namespace cc_blink {
+class ContextProviderWebContext;
+}
+
 namespace IPC {
 class MessageFilter;
 }
@@ -67,13 +71,6 @@ class GpuVideoAcceleratorFactories;
 
 namespace v8 {
 class Extension;
-}
-
-namespace webkit {
-namespace gpu {
-class ContextProviderWebContext;
-class GrContextForWebGraphicsContext3D;
-}
 }
 
 namespace content {
@@ -327,8 +324,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<media::GpuVideoAcceleratorFactories> GetGpuFactories();
 
-  scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      SharedMainThreadContextProvider();
+  scoped_refptr<cc_blink::ContextProviderWebContext>
+  SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
@@ -569,7 +566,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<CompositorForwardingMessageFilter> compositor_message_filter_;
 
-  scoped_refptr<webkit::gpu::ContextProviderWebContext>
+  scoped_refptr<cc_blink::ContextProviderWebContext>
       shared_main_thread_contexts_;
 
   ObserverList<RenderProcessObserver> observers_;

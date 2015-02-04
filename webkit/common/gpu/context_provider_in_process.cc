@@ -4,8 +4,6 @@
 
 #include "webkit/common/gpu/context_provider_in_process.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"

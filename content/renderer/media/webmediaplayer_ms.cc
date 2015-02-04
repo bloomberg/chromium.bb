@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "cc/blink/context_provider_web_context.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/renderer/render_view.h"
@@ -32,7 +33,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;

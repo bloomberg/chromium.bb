@@ -1,3 +1,7 @@
+include_rules = [
+  "+cc/blink",
+]
+
 specific_include_rules = {
   # Tests can make use of content/browser/ infrastructure.
   ".*browsertest\.cc": [

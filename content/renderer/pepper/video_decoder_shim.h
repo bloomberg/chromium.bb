@@ -23,6 +23,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace cc_blink {
+class ContextProviderWebContext;
+}
+
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -31,12 +35,6 @@ class GLES2Interface;
 
 namespace media {
 class DecoderBuffer;
-}
-
-namespace webkit {
-namespace gpu {
-class ContextProviderWebContext;
-}
 }
 
 namespace content {
@@ -92,7 +90,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
 
   PepperVideoDecoderHost* host_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider_;
+  scoped_refptr<cc_blink::ContextProviderWebContext> context_provider_;
 
   // The current decoded frame size.
   gfx::Size texture_size_;

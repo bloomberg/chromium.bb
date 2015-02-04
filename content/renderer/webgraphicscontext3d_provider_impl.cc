@@ -4,13 +4,14 @@
 
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 
-#include "webkit/common/gpu/context_provider_web_context.h"
+#include "cc/blink/context_provider_web_context.h"
 
 namespace content {
 
 WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
-    scoped_refptr<webkit::gpu::ContextProviderWebContext> provider)
-    : provider_(provider) {}
+    scoped_refptr<cc_blink::ContextProviderWebContext> provider)
+    : provider_(provider) {
+}
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
 
