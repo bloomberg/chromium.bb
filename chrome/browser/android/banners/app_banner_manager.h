@@ -64,7 +64,7 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                          public AppBannerInfoBarDelegate::AppDelegate {
  public:
   AppBannerManager(JNIEnv* env, jobject obj);
-  virtual ~AppBannerManager();
+  ~AppBannerManager() override;
 
   // Destroys the AppBannerManager.
   void Destroy(JNIEnv* env, jobject obj);
@@ -93,20 +93,20 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                                  const SkBitmap& icon);
 
   // WebContentsObserver overrides.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // BitmapFetcherDelegate overrides.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
   // AppBannerInfoBarDelegate::AppDelegate overrides.
-  virtual void Block() const override;
-  virtual void Install() const override;
-  virtual gfx::Image GetIcon() const override;
+  void Block() const override;
+  void Install() const override;
+  gfx::Image GetIcon() const override;
 
  private:
   // Gets the preferred icon size for the banner icons.

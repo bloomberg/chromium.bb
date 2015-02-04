@@ -71,7 +71,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
           jlong elapsed_time_since_input_change);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -82,26 +82,26 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
     static Factory* GetInstance();
 
    protected:
-    virtual content::BrowserContext* GetBrowserContextToUse(
+    content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
 
    private:
     friend struct DefaultSingletonTraits<Factory>;
 
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     // BrowserContextKeyedServiceFactory
-    virtual KeyedService* BuildServiceInstanceFor(
+    KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const override;
   };
 
  private:
-  virtual ~AutocompleteControllerAndroid();
+  ~AutocompleteControllerAndroid() override;
   void InitJNI(JNIEnv* env, jobject obj);
 
   // AutocompleteControllerDelegate implementation.
-  virtual void OnResultChanged(bool default_match_changed) override;
+  void OnResultChanged(bool default_match_changed) override;
 
   // Notifies the Java AutocompleteController that suggestions were received
   // based on the text the user typed in last.

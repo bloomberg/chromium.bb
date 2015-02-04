@@ -58,18 +58,16 @@ class LogoDecoderDelegate : public ImageDecoder::Delegate {
         base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
   }
 
-  virtual ~LogoDecoderDelegate() {
-    image_decoder_->set_delegate(NULL);
-  }
+  ~LogoDecoderDelegate() override { image_decoder_->set_delegate(NULL); }
 
   // ImageDecoder::Delegate:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override {
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override {
     image_decoded_callback_.Run(decoded_image);
     delete this;
   }
 
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override {
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
     image_decoded_callback_.Run(SkBitmap());
     delete this;
   }
@@ -85,10 +83,10 @@ class LogoDecoderDelegate : public ImageDecoder::Delegate {
 class ChromeLogoDelegate : public search_provider_logos::LogoDelegate {
  public:
   ChromeLogoDelegate() {}
-  virtual ~ChromeLogoDelegate() {}
+  ~ChromeLogoDelegate() override {}
 
   // search_provider_logos::LogoDelegate:
-  virtual void DecodeUntrustedImage(
+  void DecodeUntrustedImage(
       const scoped_refptr<base::RefCountedString>& encoded_image,
       base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
     scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(

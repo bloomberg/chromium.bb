@@ -37,14 +37,14 @@ class ForeignSessionHelper : public content::NotificationObserver {
   void DeleteForeignSession(JNIEnv* env, jobject obj, jstring session_tag);
 
   // NotificationObserver implemenation
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   static bool RegisterForeignSessionHelper(JNIEnv* env);
 
  private:
-  virtual ~ForeignSessionHelper();
+  ~ForeignSessionHelper() override;
 
   Profile* profile_;  // weak
   base::android::ScopedJavaGlobalRef<jobject> callback_;

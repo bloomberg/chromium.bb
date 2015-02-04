@@ -284,7 +284,7 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
       : weak_chrome_native_preferences_(env, obj) {
   }
 
-  virtual void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone() override {
     // Just as a BrowsingDataRemover deletes itself when done, we delete ourself
     // when done.  No need to remove ourself as an observer given the lifetime
     // of BrowsingDataRemover.

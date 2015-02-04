@@ -121,7 +121,7 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
 
  private:
   explicit PartnerBookmarksShim(PrefService* prefs);
-  virtual ~PartnerBookmarksShim();
+  ~PartnerBookmarksShim() override;
 
   const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64 id) const;
   void ReloadNodeMapping();

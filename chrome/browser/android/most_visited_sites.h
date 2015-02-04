@@ -45,7 +45,7 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);
@@ -57,7 +57,7 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
     SUGGESTIONS_SERVICE
   };
 
-  virtual ~MostVisitedSites();
+  ~MostVisitedSites() override;
   void QueryMostVisitedURLs();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService is not

@@ -172,14 +172,13 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                                                              jstring url);
 
  private:
-  virtual ~ChromeBrowserProvider();
+  ~ChromeBrowserProvider() override;
 
   // Override bookmarks::BaseBookmarkModelObserver.
-  virtual void BookmarkModelChanged() override;
-  virtual void ExtensiveBookmarkChangesBeginning(
+  void BookmarkModelChanged() override;
+  void ExtensiveBookmarkChangesBeginning(
       bookmarks::BookmarkModel* model) override;
-  virtual void ExtensiveBookmarkChangesEnded(
-      bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
 
   // Deals with updates to the history service.
   void OnHistoryChanged();

@@ -71,7 +71,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   static void AttachTabHelpers(content::WebContents* web_contents);
 
   TabAndroid(JNIEnv* env, jobject obj);
-  virtual ~TabAndroid();
+  ~TabAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -111,25 +111,25 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // CoreTabHelperDelegate ----------------------------------------------------
 
-  virtual void SwapTabContents(content::WebContents* old_contents,
-                               content::WebContents* new_contents,
-                               bool did_start_load,
-                               bool did_finish_load) override;
+  void SwapTabContents(content::WebContents* old_contents,
+                       content::WebContents* new_contents,
+                       bool did_start_load,
+                       bool did_finish_load) override;
 
   // Overridden from InstantServiceObserver:
   void DefaultSearchProviderChanged() override;
 
   // Overridden from SearchTabHelperDelegate:
-  virtual void OnWebContentsInstantSupportDisabled(
+  void OnWebContentsInstantSupportDisabled(
       const content::WebContents* web_contents) override;
 
   // NotificationObserver -----------------------------------------------------
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // FaviconTabHelperObserver -----------------------------------------------
-  virtual void OnFaviconAvailable(const gfx::Image& image) override;
+  void OnFaviconAvailable(const gfx::Image& image) override;
 
   // Methods called from Java via JNI -----------------------------------------
 

@@ -42,7 +42,7 @@ class Thumbnail : public ui::UIResourceClientAndroid {
       float scale,
       ui::UIResourceProvider* ui_resource_provider,
       ThumbnailDelegate* thumbnail_delegate);
-  virtual ~Thumbnail();
+  ~Thumbnail() override;
 
   TabId tab_id() const { return tab_id_; }
   base::Time time_stamp() const { return time_stamp_; }
@@ -57,11 +57,11 @@ class Thumbnail : public ui::UIResourceClientAndroid {
   void CreateUIResource();
 
   // content::UIResourceClient implementation.
-  virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
-                                         bool resource_lost) override;
+  cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
+                                 bool resource_lost) override;
 
   // ui::UIResourceClientAndroid implementation.
-  virtual void UIResourceIsInvalid() override;
+  void UIResourceIsInvalid() override;
 
  protected:
   Thumbnail(TabId tab_id,

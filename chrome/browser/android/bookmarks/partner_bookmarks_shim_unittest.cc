@@ -60,7 +60,7 @@ class PartnerBookmarksShimTest : public testing::Test {
 
  protected:
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
 
@@ -68,7 +68,7 @@ class PartnerBookmarksShimTest : public testing::Test {
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     PartnerBookmarksShim::ClearInBrowserContextForTesting(profile_.get());
     PartnerBookmarksShim::ClearPartnerModelForTesting();
     PartnerBookmarksShim::EnablePartnerBookmarksEditing();

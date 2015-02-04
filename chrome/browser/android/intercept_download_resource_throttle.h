@@ -25,11 +25,11 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
                                     int request_id);
 
   // content::ResourceThrottle implementation:
-  virtual void WillProcessResponse(bool* defer) override;
-  virtual const char* GetNameForLogging() const override;
+  void WillProcessResponse(bool* defer) override;
+  const char* GetNameForLogging() const override;
 
  private:
-  virtual ~InterceptDownloadResourceThrottle();
+  ~InterceptDownloadResourceThrottle() override;
 
   void ProcessDownloadRequest();
   // Set to true when if we want chrome to handle the download.

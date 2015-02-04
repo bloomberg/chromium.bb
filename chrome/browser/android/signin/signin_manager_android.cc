@@ -61,7 +61,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
     remover_->Remove(BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
   }
 
-  virtual ~ProfileDataRemover() {}
+  ~ProfileDataRemover() override {}
 
   void OnBrowsingDataRemoverDone() override {
     remover_->RemoveObserver(this);

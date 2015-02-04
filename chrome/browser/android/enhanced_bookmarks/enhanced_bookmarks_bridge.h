@@ -21,7 +21,7 @@ namespace android {
 class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
  public:
   EnhancedBookmarksBridge(JNIEnv* env, jobject obj, Profile* profile);
-  virtual ~EnhancedBookmarksBridge();
+  ~EnhancedBookmarksBridge() override;
   void Destroy(JNIEnv*, jobject);
 
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkDescription(
@@ -73,7 +73,7 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
 
   // BookmarkServerServiceObserver
   // Called on changes to cluster data or search results are returned.
-  virtual void OnChange(BookmarkServerService* service) override;
+  void OnChange(BookmarkServerService* service) override;
 
  private:
   bool IsEditable(const BookmarkNode* node) const;

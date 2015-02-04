@@ -50,7 +50,7 @@ class ThumbnailStore : ThumbnailDelegate {
                  size_t write_queue_max_size,
                  bool use_approximation_thumbnail);
 
-  virtual ~ThumbnailStore();
+  ~ThumbnailStore() override;
 
   void SetUIResourceProvider(ui::UIResourceProvider* ui_resource_provider);
 
@@ -72,7 +72,7 @@ class ThumbnailStore : ThumbnailDelegate {
           post_decompress_callback);
 
   // ThumbnailDelegate implementation
-  virtual void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
+  void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
 
  private:
   class ThumbnailMetaData {

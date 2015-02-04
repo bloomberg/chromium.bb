@@ -248,7 +248,7 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
       : BookmarkModelObserverTask(model),
         deleted_(0),
         id_to_delete_(kInvalidBookmarkId) {}
-  virtual ~RemoveBookmarkTask() {}
+  ~RemoveBookmarkTask() override {}
 
   int Run(const int64 id) {
     id_to_delete_ = id;
@@ -267,12 +267,11 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   }
 
   // Verify that the bookmark was actually removed. Called synchronously.
-  virtual void BookmarkNodeRemoved(
-      BookmarkModel* bookmark_model,
-      const BookmarkNode* parent,
-      int old_index,
-      const BookmarkNode* node,
-      const std::set<GURL>& removed_urls) override {
+  void BookmarkNodeRemoved(BookmarkModel* bookmark_model,
+                           const BookmarkNode* parent,
+                           int old_index,
+                           const BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override {
     if (bookmark_model == model() && node->id() == id_to_delete_)
         ++deleted_;
   }
@@ -290,7 +289,7 @@ class RemoveAllUserBookmarksTask : public BookmarkModelObserverTask {
   explicit RemoveAllUserBookmarksTask(BookmarkModel* model)
       : BookmarkModelObserverTask(model) {}
 
-  virtual ~RemoveAllUserBookmarksTask() {}
+  ~RemoveAllUserBookmarksTask() override {}
 
   void Run() {
     RunOnUIThreadBlocking::Run(
@@ -313,7 +312,7 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
       : BookmarkModelObserverTask(model),
         updated_(0),
         id_to_update_(kInvalidBookmarkId){}
-  virtual ~UpdateBookmarkTask() {}
+  ~UpdateBookmarkTask() override {}
 
   int Run(const int64 id,
           const base::string16& title,
@@ -355,8 +354,8 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
   }
 
   // Verify that the bookmark was actually updated. Called synchronously.
-  virtual void BookmarkNodeChanged(BookmarkModel* bookmark_model,
-                                   const BookmarkNode* node) override {
+  void BookmarkNodeChanged(BookmarkModel* bookmark_model,
+                           const BookmarkNode* node) override {
     if (bookmark_model == model() && node->id() == id_to_update_)
       ++updated_;
   }

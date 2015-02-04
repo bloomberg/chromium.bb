@@ -31,11 +31,11 @@ class AnswersImageObserverAndroid : public BitmapFetcherService::Observer {
     java_answers_image_observer_.Reset(env, java_answers_image_observer);
   }
 
-  virtual ~AnswersImageObserverAndroid() {}
+  ~AnswersImageObserverAndroid() override {}
 
   // AnswersImageObserver:
-  virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                              const SkBitmap& answers_image) override {
+  void OnImageChanged(BitmapFetcherService::RequestId request_id,
+                      const SkBitmap& answers_image) override {
     DCHECK(!answers_image.empty());
 
     JNIEnv* env = base::android::AttachCurrentThread();

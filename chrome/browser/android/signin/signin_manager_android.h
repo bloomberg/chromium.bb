@@ -67,7 +67,7 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env, jobject obj);
 
  private:
-  virtual ~SigninManagerAndroid();
+  ~SigninManagerAndroid() override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   void OnPolicyRegisterDone(const std::string& dm_token,

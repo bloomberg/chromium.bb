@@ -73,11 +73,11 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
   explicit ZeroSuggestPrefetcher(Profile* profile);
 
  private:
-  virtual ~ZeroSuggestPrefetcher();
+  ~ZeroSuggestPrefetcher() override;
   void SelfDestruct();
 
   // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed) override;
+  void OnResultChanged(bool default_match_changed) override;
 
   scoped_ptr<AutocompleteController> controller_;
   base::OneShotTimer<ZeroSuggestPrefetcher> expire_timer_;

@@ -152,7 +152,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   base::string16 GetTitle(const BookmarkNode* node) const;
 
  private:
-  virtual ~BookmarksBridge();
+  ~BookmarksBridge() override;
 
   base::android::ScopedJavaLocalRef<jobject> CreateJavaBookmark(
       const BookmarkNode* node);

@@ -23,7 +23,7 @@ namespace android {
 class FeedbackReporterAndroid : content::WebContentsObserver {
  public:
   FeedbackReporterAndroid(JNIEnv* env, jobject obj);
-  virtual ~FeedbackReporterAndroid();
+  ~FeedbackReporterAndroid() override;
 
   // Destroys the FeedbackReporterAndroid.
   void Destroy(JNIEnv* env, jobject obj);
@@ -32,7 +32,7 @@ class FeedbackReporterAndroid : content::WebContentsObserver {
   void ReplaceWebContents(JNIEnv* env, jobject obj, jobject jweb_contents);
 
   // WebContentsObserver implementation:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 

@@ -366,7 +366,7 @@ class SiteDataDeleteHelper :
  private:
   friend class base::RefCountedThreadSafe<SiteDataDeleteHelper>;
 
-  virtual ~SiteDataDeleteHelper() {}
+  ~SiteDataDeleteHelper() override {}
 
   Profile* profile_;
 

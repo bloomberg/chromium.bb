@@ -34,16 +34,16 @@ class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
 
   // Observer callback for TabRestoreServiceObserver. Notifies the registered
   // callback that the recently closed tabs list has changed.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(TabRestoreService* service) override;
 
   // Observer callback when our associated TabRestoreService is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);
 
  private:
-  virtual ~RecentlyClosedTabsBridge();
+  ~RecentlyClosedTabsBridge() override;
 
   // Construct and initialize tab_restore_service_ if it's NULL.
   // tab_restore_service_ may still be NULL, however, in incognito mode.

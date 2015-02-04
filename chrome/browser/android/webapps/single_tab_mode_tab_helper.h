@@ -30,7 +30,7 @@ class SingleTabModeTabHelper
   // Checks if the ID pair is blocked from creating new windows. IO-thread only.
   static bool IsRegistered(int32 process_id, int32 routing_id);
 
-  virtual ~SingleTabModeTabHelper();
+  ~SingleTabModeTabHelper() override;
 
   // Handles opening the given URL through the TabModel.
   void HandleOpenUrl(const BlockedWindowParams& params);
@@ -40,10 +40,8 @@ class SingleTabModeTabHelper
   void PermanentlyBlockAllNewWindows();
 
   // content::WebContentsObserver
-  virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
-      override;
-  virtual void RenderViewDeleted(content::RenderViewHost* render_view_host)
-      override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
  private:
   explicit SingleTabModeTabHelper(content::WebContents* web_contents);
