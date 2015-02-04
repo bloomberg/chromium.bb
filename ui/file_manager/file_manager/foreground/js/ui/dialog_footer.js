@@ -71,7 +71,9 @@ function DialogFooter(dialogType, container, filenameInput) {
 
 DialogFooter.prototype = {
   /**
-   * @return {number} Selected filter index.
+   * @return {number} Selected filter index. The index is 1 based and 0 means
+   *     'any file types'. Keep the meaniing consistent with the index passed to
+   *     chrome.fileManagerPrivate.selectFile.
    */
   get selectedFilterIndex() {
     return ~~this.fileTypeSelector.value;
@@ -129,13 +131,6 @@ DialogFooter.getOKButtonLabel_ = function(dialogType) {
  */
 DialogFooter.prototype.initFileTypeFilter = function(
     fileTypes, includeAllFiles) {
-  if (includeAllFiles) {
-    var option = document.createElement('option');
-    option.innerText = str('ALL_FILES_FILTER');
-    option.value = 0;
-    this.fileTypeSelector.appendChild(option);
-  }
-
   for (var i = 0; i < fileTypes.length; i++) {
     var fileType = fileTypes[i];
     var option = document.createElement('option');
@@ -168,6 +163,13 @@ DialogFooter.prototype.initFileTypeFilter = function(
     if (fileType.selected)
       option.selected = true;
 
+    this.fileTypeSelector.appendChild(option);
+  }
+
+  if (includeAllFiles) {
+    var option = document.createElement('option');
+    option.innerText = str('ALL_FILES_FILTER');
+    option.value = 0;
     this.fileTypeSelector.appendChild(option);
   }
 
