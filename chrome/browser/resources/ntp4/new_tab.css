@@ -299,8 +299,8 @@ html[dir='rtl'] .login-status-icon {
 
 #trash {
   -webkit-padding-start: 10px;
-  -webkit-transition: top 200ms, opacity 0;
-  -webkit-transition-delay: 0, 200ms;
+  -webkit-transition: top 200ms, opacity 0ms;
+  -webkit-transition-delay: 0ms, 200ms;
   color: #222;
   height: 100%;
   opacity: 0;
@@ -316,8 +316,8 @@ html[dir='rtl'] #trash {
 }
 
 #footer.showing-trash-mode #trash {
-  -webkit-transition-delay: 0, 0;
-  -webkit-transition-duration: 0, 200ms;
+  -webkit-transition-delay: 0ms, 0ms;
+  -webkit-transition-duration: 0ms, 200ms;
   opacity: 0.75;
   top: 0;
 }
@@ -433,7 +433,7 @@ html[dir='rtl'] #chrome-web-store-title {
 
 /* In trash mode, hide the menus and web store link. */
 #footer.showing-trash-mode .menu-container {
-  -webkit-transition-delay: 0;
+  -webkit-transition-delay: 0ms;
   opacity: 0;
   visibility: hidden;
 }

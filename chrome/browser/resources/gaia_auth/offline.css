@@ -167,14 +167,14 @@ input[type=submit].g-button {
   overflow: visible;
 }
 .g-button:hover {
-  -webkit-transition: all 0;
+  -webkit-transition: all 0ms;
   background-color: #f8f8f8;
   background-image: linear-gradient(to bottom, #f8f8f8, #f1f1f1);
   border: 1px solid #c6c6c6;
   box-shadow: 0 1px 1px rgba(0,0,0,0.1);
   color: #333;
   text-decoration: none;
-  transition: all 0;
+  transition: all 0ms;
 }
 .g-button:active {
   background-color: #f6f6f6;

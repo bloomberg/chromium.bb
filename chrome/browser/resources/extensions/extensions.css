@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 html.loading * {
-  transition-duration: 0 !important;
+  transition-duration: 0ms !important;
 }
 
 html:not(.focus-outline-visible)

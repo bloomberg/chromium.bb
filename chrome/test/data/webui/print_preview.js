@@ -192,10 +192,10 @@ PrintPreviewWebUITest.prototype = {
     var noAnimationStyle = document.createElement('style');
     noAnimationStyle.textContent =
       '* {' +
-      '  -webkit-transition-duration: 0s !important;' +
-      '  -webkit-transition-delay: 0s !important;' +
-      '  -webkit-animation-duration: 0s !important;' +
-      '  -webkit-animation-delay: 0s !important;' +
+      '  -webkit-transition-duration: 0ms !important;' +
+      '  -webkit-transition-delay: 0ms !important;' +
+      '  -webkit-animation-duration: 0ms !important;' +
+      '  -webkit-animation-delay: 0ms !important;' +
       '}';
     document.querySelector('head').appendChild(noAnimationStyle);
   }

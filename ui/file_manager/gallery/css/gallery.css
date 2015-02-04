@@ -190,7 +190,7 @@ input[type='checkbox']:checked {
 
 /* Hide immediately when entering the slideshow. */
 .gallery[tools][slideshow] > .toolbar {
-  transition-duration: 0;
+  transition-duration: 0ms;
 }
 
 .gallery[tools][locked] > .toolbar {
@@ -294,7 +294,7 @@ input[type='checkbox']:checked {
   background-color: transparent;
   overflow: hidden;
   position: absolute;
-  transition: visibility 0 linear 180ms, all 180ms linear;
+  transition: visibility 0ms linear 180ms, all 180ms linear;
   width: 260px;
 }
 
@@ -440,13 +440,13 @@ input[type='checkbox']:checked {
 .gallery .toolbar .ribbon {
   height: 100%;
   overflow: hidden;
-  transition: opacity 180ms linear, visibility 0 linear;
+  transition: opacity 180ms linear, visibility 0ms linear;
   z-index: 0;
 }
 
 .gallery[editing] .toolbar .ribbon {
   opacity: 0;
-  transition-delay: 0, 180ms;
+  transition-delay: 0ms, 180ms;
   visibility: hidden;
 }
 
@@ -518,7 +518,7 @@ input[type='checkbox']:checked {
   left: 280px;
   opacity: 0;
   right: 280px;
-  transition: opacity 180ms linear, visibility 0 linear 180ms;
+  transition: opacity 180ms linear, visibility 0ms linear 180ms;
   visibility: hidden;
   margin-bottom: -55px;
 }
