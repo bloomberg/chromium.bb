@@ -1743,6 +1743,8 @@ crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pas
 
 crbug.com/455111 [ Win7 ] fast/forms/date-multiple-fields/date-multiple-fields-mouse-events.html [ Pass Failure ]
 
+crbug.com/455192 svg/animations/smil-leak-element-instances-noBaseValRef.svg [ Pass Failure ]
+
 crbug.com/444921 fast/block/lineboxcontain/glyphs-clipping.html [ NeedsRebaseline ]
 crbug.com/444921 fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
 crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
