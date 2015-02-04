@@ -17,10 +17,6 @@ class WorkerThreadTaskRunner : public base::TaskRunner {
  public:
   explicit WorkerThreadTaskRunner(int worker_thread_id);
 
-  // Gets the WorkerThreadTaskRunner for the current worker thread.
-  // This returns non-null value only when it is called on a worker thread.
-  static scoped_refptr<WorkerThreadTaskRunner> current();
-
   // TaskRunner overrides.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,

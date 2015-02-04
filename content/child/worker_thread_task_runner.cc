@@ -13,13 +13,6 @@ WorkerThreadTaskRunner::WorkerThreadTaskRunner(int worker_thread_id)
     : worker_thread_id_(worker_thread_id) {
 }
 
-scoped_refptr<WorkerThreadTaskRunner> WorkerThreadTaskRunner::current() {
-  int worker_thread_id = WorkerTaskRunner::Instance()->CurrentWorkerId();
-  if (!worker_thread_id)
-    return scoped_refptr<WorkerThreadTaskRunner>();
-  return make_scoped_refptr(new WorkerThreadTaskRunner(worker_thread_id));
-}
-
 bool WorkerThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& /* from_here */,
     const base::Closure& task,

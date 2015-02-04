@@ -30,8 +30,7 @@ class RunClosureTask : public WebWorkerRunLoop::Task {
 } // namespace
 
 struct WorkerTaskRunner::ThreadLocalState {
-  explicit ThreadLocalState(int id) : id_(id) {}
-  int id_;
+  ThreadLocalState() {}
   ObserverList<WorkerTaskRunner::Observer> stop_observers_;
 };
 
@@ -59,7 +58,7 @@ int WorkerTaskRunner::PostTaskToAllThreads(const base::Closure& closure) {
 int WorkerTaskRunner::CurrentWorkerId() {
   if (!current_tls_.Get())
     return 0;
-  return current_tls_.Get()->id_;
+  return base::PlatformThread::CurrentId();
 }
 
 WorkerTaskRunner* WorkerTaskRunner::Instance() {
@@ -84,9 +83,9 @@ WorkerTaskRunner::~WorkerTaskRunner() {
 void WorkerTaskRunner::OnWorkerRunLoopStarted(const WebWorkerRunLoop& loop) {
   DCHECK(!current_tls_.Get());
   DCHECK(!base::PlatformThread::CurrentRef().is_null());
-  int id = base::PlatformThread::CurrentId();
-  current_tls_.Set(new ThreadLocalState(id));
+  current_tls_.Set(new ThreadLocalState());
 
+  int id = base::PlatformThread::CurrentId();
   base::AutoLock locker_(loop_map_lock_);
   loop_map_[id] = loop;
 }
