@@ -63,7 +63,7 @@ class CONTENT_EXPORT CompositorImpl
   ui::ResourceManager& GetResourceManager() override;
 
   // LayerTreeHostClient implementation.
-  void WillBeginMainFrame(int frame_id) override {}
+  void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
   void Layout() override;

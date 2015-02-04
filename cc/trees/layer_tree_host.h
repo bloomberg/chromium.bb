@@ -110,9 +110,7 @@ class CC_EXPORT LayerTreeHost {
   void SetLayerTreeHostClientReady();
 
   // LayerTreeHost interface to Proxy.
-  void WillBeginMainFrame() {
-    client_->WillBeginMainFrame(source_frame_number_);
-  }
+  void WillBeginMainFrame();
   void DidBeginMainFrame();
   void BeginMainFrame(const BeginFrameArgs& args);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);

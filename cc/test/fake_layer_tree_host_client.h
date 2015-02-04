@@ -30,7 +30,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void SetLayerTreeHost(LayerTreeHost* host) { host_ = host; }
 
   // LayerTreeHostClient implementation.
-  void WillBeginMainFrame(int frame_id) override {}
+  void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const BeginFrameArgs& args) override {}
   void Layout() override {}

@@ -255,11 +255,6 @@ class CONTENT_EXPORT RenderWidget
   // Returns whether we currently should handle an IME event.
   bool ShouldHandleImeEvent();
 
-  virtual void InstrumentWillBeginFrame(int frame_id) {}
-  virtual void InstrumentDidBeginFrame() {}
-  virtual void InstrumentDidCancelFrame() {}
-  virtual void InstrumentWillComposite() {}
-
   // Called by the compositor when page scale animation completed.
   virtual void DidCompletePageScaleAnimation() {}
 

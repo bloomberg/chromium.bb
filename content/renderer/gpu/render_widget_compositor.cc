@@ -753,13 +753,11 @@ void RenderWidgetCompositor::setTopControlsContentOffset(float offset) {
   layer_tree_host_->SetTopControlsContentOffset(offset);
 }
 
-void RenderWidgetCompositor::WillBeginMainFrame(int frame_id) {
-  widget_->InstrumentWillBeginFrame(frame_id);
+void RenderWidgetCompositor::WillBeginMainFrame() {
   widget_->willBeginCompositorFrame();
 }
 
 void RenderWidgetCompositor::DidBeginMainFrame() {
-  widget_->InstrumentDidBeginFrame();
 }
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
@@ -842,7 +840,6 @@ void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
 }
 
 void RenderWidgetCompositor::WillCommit() {
-  widget_->InstrumentWillComposite();
 }
 
 void RenderWidgetCompositor::DidCommit() {

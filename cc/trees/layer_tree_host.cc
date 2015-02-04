@@ -222,6 +222,12 @@ void LayerTreeHost::DeleteContentsTexturesOnImplThread(
     contents_texture_manager_->ClearAllMemory(resource_provider);
 }
 
+void LayerTreeHost::WillBeginMainFrame() {
+  devtools_instrumentation::WillBeginMainThreadFrame(id(),
+                                                     source_frame_number());
+  client_->WillBeginMainFrame();
+}
+
 void LayerTreeHost::DidBeginMainFrame() {
   client_->DidBeginMainFrame();
 }

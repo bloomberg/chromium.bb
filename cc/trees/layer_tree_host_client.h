@@ -22,7 +22,7 @@ struct BeginFrameArgs;
 
 class LayerTreeHostClient {
  public:
-  virtual void WillBeginMainFrame(int frame_id) = 0;
+  virtual void WillBeginMainFrame() = 0;
   // Marks finishing compositing-related tasks on the main thread. In threaded
   // mode, this corresponds to DidCommit().
   virtual void BeginMainFrame(const BeginFrameArgs& args) = 0;

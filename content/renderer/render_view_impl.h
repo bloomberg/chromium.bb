@@ -501,10 +501,6 @@ class CONTENT_EXPORT RenderViewImpl
   void GetCompositionRange(gfx::Range* range) override;
   bool CanComposeInline() override;
   void DidCommitCompositorFrame() override;
-  void InstrumentWillBeginFrame(int frame_id) override;
-  void InstrumentDidBeginFrame() override;
-  void InstrumentDidCancelFrame() override;
-  void InstrumentWillComposite() override;
   void DidCompletePageScaleAnimation() override;
 
  protected:

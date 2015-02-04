@@ -796,6 +796,8 @@ void ThreadProxy::BeginMainFrame(
   bool updated = layer_tree_host()->UpdateLayers(queue.get());
 
   layer_tree_host()->WillCommit();
+  devtools_instrumentation::ScopedCommitTrace commit_task(
+      layer_tree_host()->id());
 
   // Before calling animate, we set main().animate_requested to false. If it is
   // true now, it means SetNeedAnimate was called again, but during a state when

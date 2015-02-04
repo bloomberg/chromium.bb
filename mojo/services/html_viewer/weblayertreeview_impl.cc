@@ -59,7 +59,7 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {
 }
 
-void WebLayerTreeViewImpl::WillBeginMainFrame(int frame_id) {
+void WebLayerTreeViewImpl::WillBeginMainFrame() {
 }
 
 void WebLayerTreeViewImpl::DidBeginMainFrame() {

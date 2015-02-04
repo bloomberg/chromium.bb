@@ -3669,39 +3669,6 @@ bool RenderViewImpl::CanComposeInline() {
   return true;
 }
 
-void RenderViewImpl::InstrumentWillBeginFrame(int frame_id) {
-  if (!webview())
-    return;
-  if (!webview()->devToolsAgent())
-    return;
-  webview()->devToolsAgent()->didBeginFrame(frame_id);
-}
-
-void RenderViewImpl::InstrumentDidBeginFrame() {
-  if (!webview())
-    return;
-  if (!webview()->devToolsAgent())
-    return;
-  // TODO(jamesr/caseq): Decide if this needs to be renamed.
-  webview()->devToolsAgent()->didComposite();
-}
-
-void RenderViewImpl::InstrumentDidCancelFrame() {
-  if (!webview())
-    return;
-  if (!webview()->devToolsAgent())
-    return;
-  webview()->devToolsAgent()->didCancelFrame();
-}
-
-void RenderViewImpl::InstrumentWillComposite() {
-  if (!webview())
-    return;
-  if (!webview()->devToolsAgent())
-    return;
-  webview()->devToolsAgent()->willComposite();
-}
-
 void RenderViewImpl::DidCompletePageScaleAnimation() {
   FocusChangeComplete();
 }

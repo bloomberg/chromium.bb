@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
@@ -204,6 +205,8 @@ void SingleThreadProxy::DoCommit() {
 
   commit_requested_ = false;
   layer_tree_host_->WillCommit();
+  devtools_instrumentation::ScopedCommitTrace commit_task(
+      layer_tree_host_->id());
 
   // Commit immediately.
   {

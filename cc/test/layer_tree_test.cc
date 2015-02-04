@@ -381,9 +381,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   }
   ~LayerTreeHostClientForTesting() override {}
 
-  void WillBeginMainFrame(int frame_id) override {
-    test_hooks_->WillBeginMainFrame();
-  }
+  void WillBeginMainFrame() override { test_hooks_->WillBeginMainFrame(); }
 
   void DidBeginMainFrame() override { test_hooks_->DidBeginMainFrame(); }
 

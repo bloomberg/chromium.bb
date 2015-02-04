@@ -54,7 +54,7 @@ class LayerTreeHostNoMessageLoopTest
   ~LayerTreeHostNoMessageLoopTest() override {}
 
   // LayerTreeHostClient overrides.
-  void WillBeginMainFrame(int frame_id) override {}
+  void WillBeginMainFrame() override {}
   void BeginMainFrame(const BeginFrameArgs& args) override {}
   void DidBeginMainFrame() override {}
   void Layout() override {}

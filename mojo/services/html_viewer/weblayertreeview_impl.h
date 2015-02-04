@@ -48,7 +48,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void set_view(mojo::View* view) { view_ = view; }
 
   // cc::LayerTreeHostClient implementation.
-  void WillBeginMainFrame(int frame_id) override;
+  void WillBeginMainFrame() override;
   void DidBeginMainFrame() override;
   void BeginMainFrame(const cc::BeginFrameArgs& args) override;
   void Layout() override;

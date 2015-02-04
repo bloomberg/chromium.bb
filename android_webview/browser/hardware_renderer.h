@@ -39,7 +39,7 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   void CommitFrame();
 
   // cc::LayerTreeHostClient overrides.
-  void WillBeginMainFrame(int frame_id) override {}
+  void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override;
   void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
   void Layout() override {}
