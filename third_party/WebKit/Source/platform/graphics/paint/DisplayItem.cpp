@@ -25,8 +25,7 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
     case 9: return "PaintPhaseCollapsedTableBorders";
     case 10: return "PaintPhaseTextClip";
     case 11: return "PaintPhaseMask";
-    case 12: return "PaintPhaseClippingMask";
-    case 13: return "PaintPhaseCaret";
+    case DisplayItem::PaintPhaseMax: return "PaintPhaseClippingMask";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";
@@ -43,6 +42,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
 
     switch (type) {
     case DisplayItem::BoxDecorationBackground: return "DrawingBoxDecorationBackground";
+    case DisplayItem::Caret: return "DrawingCaret";
     case DisplayItem::ColumnRules: return "DrawingColumnRules";
     case DisplayItem::DragImage: return "DrawingDragImage";
     case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";

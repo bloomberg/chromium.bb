@@ -517,7 +517,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseCaret)));
+        TestDisplayItem(divRenderer, DisplayItem::Caret));
 }
 
 } // anonymous namespace
