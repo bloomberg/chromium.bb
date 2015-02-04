@@ -41,37 +41,50 @@ function generateSampleImageDataUrl(document) {
   return canvas.toDataURL('image/jpeg', 0.5);
 }
 
-/**
- * Story test for list thumbnail loader.
- */
-function testStory(callback) {
+var listThumbnailLoader;
+var getOneCallbacks;
+var thumbnailLoadedEvents;
+var fileListModel;
+var fileSystem = new MockFileSystem('volume-id');
+var directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
+var entry1 = new MockEntry(fileSystem, '/Test1.jpg');
+var entry2 = new MockEntry(fileSystem, '/Test2.jpg');
+var entry3 = new MockEntry(fileSystem, '/Test3.jpg');
+var entry4 = new MockEntry(fileSystem, '/Test4.jpg');
+var entry5 = new MockEntry(fileSystem, '/Test5.jpg');
+
+function setUp() {
   ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 2;
   MockThumbnailLoader.setTestImageDataUrl(generateSampleImageDataUrl(document));
 
-  var getOneCallbacks = {};
+  getOneCallbacks = {};
   var metadataCache = {
     getOne: function(entry, type, callback) {
       getOneCallbacks[entry.toURL()] = callback;
     }
   };
 
-  var fileListModel = new FileListModel(metadataCache);
+  fileListModel = new FileListModel(metadataCache);
 
-  var listThumbnailLoader = new ListThumbnailLoader(fileListModel,
-      metadataCache, document, MockThumbnailLoader);
-  var thumbnailLoadedEvents = [];
+  listThumbnailLoader = new ListThumbnailLoader(fileListModel, metadataCache,
+      document, MockThumbnailLoader);
+
+  thumbnailLoadedEvents = [];
   listThumbnailLoader.addEventListener('thumbnailLoaded', function(event) {
     thumbnailLoadedEvents.push(event);
   });
+}
 
-  // Add 1 directory and 5 entries.
-  var fileSystem = new MockFileSystem('volume-id');
-  var directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
-  var entry1 = new MockEntry(fileSystem, '/Test1.jpg');
-  var entry2 = new MockEntry(fileSystem, '/Test2.jpg');
-  var entry3 = new MockEntry(fileSystem, '/Test3.jpg');
-  var entry4 = new MockEntry(fileSystem, '/Test4.jpg');
-  var entry5 = new MockEntry(fileSystem, '/Test5.jpg');
+function resolveGetOneCallback(url) {
+  assert(getOneCallbacks[url]);
+  getOneCallbacks[url]();
+  delete getOneCallbacks[url];
+}
+
+/**
+ * Story test for list thumbnail loader.
+ */
+function testStory(callback) {
   fileListModel.push(directory1, entry1, entry2, entry3, entry4, entry5);
 
   // Set high priority range to 0 - 2.
@@ -91,9 +104,7 @@ function testStory(callback) {
   assertArrayEquals([entry1.toURL(), entry2.toURL()],
       Object.keys(getOneCallbacks));
 
-  // Resolve metadataCache.getOne for Test2.jpg.
-  getOneCallbacks[entry2.toURL()]();
-  delete getOneCallbacks[entry2.toURL()];
+  resolveGetOneCallback(entry2.toURL());
 
   reportPromise(waitUntil(function() {
     // Assert that thumbnailLoaded event is fired for Test2.jpg.
@@ -123,9 +134,7 @@ function testStory(callback) {
     // Set high priority range to 2 - 4.
     listThumbnailLoader.setHighPriorityRange(2, 4);
 
-    // Resolve metadataCache.getOne for Test1.jpg.
-    getOneCallbacks[entry1.toURL()]();
-    delete getOneCallbacks[entry1.toURL()];
+    resolveGetOneCallback(entry1.toURL());
 
     // Assert that task for (Test3.jpg) is enqueued.
     return waitUntil(function() {
@@ -142,4 +151,19 @@ function testStory(callback) {
       return listThumbnailLoader.getThumbnailFromCache(entry2) === null;
     });
   }), callback);
+}
+
+/**
+ * Do not enqueue prefetch task when high priority range is at the end of list.
+ */
+function testRangeIsAtTheEndOfList() {
+  // Set high priority range to 5 - 6.
+  listThumbnailLoader.setHighPriorityRange(5, 6);
+
+  fileListModel.push(directory1, entry1, entry2, entry3, entry4, entry5);
+
+  // Assert that a task is enqueued for entry5.
+  assertEquals(1, Object.keys(getOneCallbacks).length);
+  assertEquals('filesystem:volume-id/Test5.jpg',
+      Object.keys(getOneCallbacks)[0]);
 }

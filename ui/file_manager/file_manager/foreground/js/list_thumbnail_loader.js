@@ -86,7 +86,7 @@ function ListThumbnailLoader(
   this.endIndex_ = 0;
 
   /**
-   * Cursor begins from 0, and the origin in the list is beginIndex_.
+   * Cursor.
    * @type {number}
    * @private
    */
@@ -118,7 +118,7 @@ ListThumbnailLoader.prototype.onSplice_ = function(event) {
       delete this.cache_[removedItem.toURL()];
   }
 
-  this.cursor_ = 0;
+  this.cursor_ = this.beginIndex_;
   this.continue_();
 }
 
@@ -135,7 +135,7 @@ ListThumbnailLoader.prototype.setHighPriorityRange = function(
 
   this.beginIndex_ = beginIndex;
   this.endIndex_ = endIndex;
-  this.cursor_ = 0;
+  this.cursor_ = this.beginIndex_;
 
   this.continue_();
 }
@@ -143,7 +143,7 @@ ListThumbnailLoader.prototype.setHighPriorityRange = function(
 /**
  * Returns a thumbnail of an entry if it is in cache.
  *
- * @return {!Object} If the thumbnail is not in cache, this returns null.
+ * @return {Object} If the thumbnail is not in cache, this returns null.
  */
 ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
   return this.cache_[entry.toURL()] || null;
@@ -160,10 +160,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
     return;
   }
 
-  var index = (this.beginIndex_ + this.cursor_) % this.dataModel_.length;
-  this.cursor_ += 1;
-
-  var entry = /** @type {Entry} */ (this.dataModel_.item(index));
+  var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_++));
 
   // If the entry is a directory, already in cache or fetching, skip it.
   if (entry.isDirectory ||
