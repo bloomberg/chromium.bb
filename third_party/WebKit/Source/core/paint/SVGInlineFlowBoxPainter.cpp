@@ -10,7 +10,6 @@
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -30,10 +29,6 @@ void SVGInlineFlowBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
 void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
-
-    // FIXME: Remove this state saver when SVGRenderSupport::updateGraphicsContext
-    // no longer affects the global alpha state. See crbug.com/453225
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
     SVGRenderingContext renderingContext(m_svgInlineFlowBox.renderer(), paintInfo);
     if (renderingContext.applyClipMaskAndFilterIfNecessary()) {

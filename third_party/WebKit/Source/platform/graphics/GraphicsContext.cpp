@@ -239,7 +239,7 @@ void GraphicsContext::setInDrawingRecorder(bool val)
 }
 #endif
 
-void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
+void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern, float alpha)
 {
     if (contextDisabled())
         return;
@@ -250,10 +250,10 @@ void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
         return;
     }
 
-    mutableState()->setStrokePattern(pattern);
+    mutableState()->setStrokePattern(pattern, alpha);
 }
 
-void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient)
+void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient, float alpha)
 {
     if (contextDisabled())
         return;
@@ -263,10 +263,10 @@ void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient)
         setStrokeColor(Color::black);
         return;
     }
-    mutableState()->setStrokeGradient(gradient);
+    mutableState()->setStrokeGradient(gradient, alpha);
 }
 
-void GraphicsContext::setFillPattern(PassRefPtr<Pattern> pattern)
+void GraphicsContext::setFillPattern(PassRefPtr<Pattern> pattern, float alpha)
 {
     if (contextDisabled())
         return;
@@ -277,10 +277,10 @@ void GraphicsContext::setFillPattern(PassRefPtr<Pattern> pattern)
         return;
     }
 
-    mutableState()->setFillPattern(pattern);
+    mutableState()->setFillPattern(pattern, alpha);
 }
 
-void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
+void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient, float alpha)
 {
     if (contextDisabled())
         return;
@@ -291,7 +291,7 @@ void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
         return;
     }
 
-    mutableState()->setFillGradient(gradient);
+    mutableState()->setFillGradient(gradient, alpha);
 }
 
 void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color,

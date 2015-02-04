@@ -120,10 +120,10 @@ public:
     SkColor effectiveStrokeColor() const { return immutableState()->effectiveStrokeColor(); }
 
     Pattern* strokePattern() const { return immutableState()->strokePattern(); }
-    void setStrokePattern(PassRefPtr<Pattern>);
+    void setStrokePattern(PassRefPtr<Pattern>, float alpha = 1);
 
     Gradient* strokeGradient() const { return immutableState()->strokeGradient(); }
-    void setStrokeGradient(PassRefPtr<Gradient>);
+    void setStrokeGradient(PassRefPtr<Gradient>, float alpha = 1);
 
     void setLineCap(LineCap cap) { mutableState()->setLineCap(cap); }
     void setLineDash(const DashArray& dashes, float dashOffset) { mutableState()->setLineDash(dashes, dashOffset); }
@@ -137,10 +137,10 @@ public:
     void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
     SkColor effectiveFillColor() const { return immutableState()->effectiveFillColor(); }
 
-    void setFillPattern(PassRefPtr<Pattern>);
+    void setFillPattern(PassRefPtr<Pattern>, float alpha = 1);
     Pattern* fillPattern() const { return immutableState()->fillPattern(); }
 
-    void setFillGradient(PassRefPtr<Gradient>);
+    void setFillGradient(PassRefPtr<Gradient>, float alpha = 1);
     Gradient* fillGradient() const { return immutableState()->fillGradient(); }
 
     SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }

@@ -407,7 +407,6 @@ bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (paintInfo.isRenderingClipPathAsMaskImage()) {
         if (resourceMode == ApplyToStrokeMode)
             return false;
-        context->setAlphaAsFloat(1);
         context->setFillColor(SVGRenderStyle::initialFillPaintColor());
         return true;
     }
@@ -419,17 +418,15 @@ bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (additionalPaintServerTransform && paintServer.isTransformDependent())
         paintServer.prependTransform(*additionalPaintServerTransform);
 
-    paintServer.apply(*context, resourceMode, &stateSaver);
-
     const SVGRenderStyle& svgStyle = style.svgStyle();
+    float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
+    paintServer.apply(*context, resourceMode, paintAlpha, stateSaver);
 
-    if (resourceMode == ApplyToFillMode) {
-        context->setAlphaAsFloat(svgStyle.fillOpacity());
+    if (resourceMode == ApplyToFillMode)
         context->setFillRule(svgStyle.fillRule());
-    } else {
-        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+    else
         applyStrokeStyleToContext(context, style, &renderer);
-    }
+
     return true;
 }
 

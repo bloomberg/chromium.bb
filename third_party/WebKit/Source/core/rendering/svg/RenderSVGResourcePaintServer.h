@@ -47,7 +47,7 @@ public:
     static SVGPaintServer requestForRenderer(const RenderObject&, const RenderStyle&, RenderSVGResourceMode);
     static bool existsForRenderer(const RenderObject&, const RenderStyle&, RenderSVGResourceMode);
 
-    void apply(GraphicsContext&, RenderSVGResourceMode, GraphicsContextStateSaver* = 0);
+    void apply(GraphicsContext&, RenderSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
     static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
     bool isValid() const { return m_color != Color::transparent; }

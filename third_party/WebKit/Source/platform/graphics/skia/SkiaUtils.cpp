@@ -360,4 +360,25 @@ bool shouldDrawAntiAliased(const GraphicsContext* context, const SkRect& destRec
     return destRect.width() * fabs(widthExpansion) < 1 || destRect.height() * fabs(heightExpansion) < 1;
 }
 
+int clampedAlphaForBlending(float alpha)
+{
+    if (alpha < 0)
+        return 0;
+    int roundedAlpha = roundf(alpha * 256);
+    if (roundedAlpha > 256)
+        roundedAlpha = 256;
+    return roundedAlpha;
+}
+
+SkColor multiplyAlpha(SkColor color, float alpha)
+{
+    return multiplyAlpha(color, clampedAlphaForBlending(alpha));
+}
+
+SkColor multiplyAlpha(SkColor color, int alpha)
+{
+    int a = (SkColorGetA(color) * alpha) >> 8;
+    return (color & 0x00FFFFFF) | (a << 24);
+}
+
 }  // namespace blink

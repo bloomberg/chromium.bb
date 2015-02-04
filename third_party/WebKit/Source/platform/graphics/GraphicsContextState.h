@@ -35,6 +35,7 @@
 #include "platform/graphics/Path.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/graphics/StrokeData.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -74,11 +75,11 @@ public:
     void setStrokeColor(const Color&);
 
     Gradient* strokeGradient() const { return m_strokeGradient.get(); }
-    void setStrokeGradient(const PassRefPtr<Gradient>);
+    void setStrokeGradient(const PassRefPtr<Gradient>, float);
     void clearStrokeGradient();
 
     Pattern* strokePattern() const { return m_strokePattern.get(); }
-    void setStrokePattern(const PassRefPtr<Pattern>);
+    void setStrokePattern(const PassRefPtr<Pattern>, float);
     void clearStrokePattern();
 
     const StrokeData& strokeData() const { return m_strokeData; }
@@ -95,11 +96,11 @@ public:
     void setFillColor(const Color&);
 
     Gradient* fillGradient() const { return m_fillGradient.get(); }
-    void setFillGradient(const PassRefPtr<Gradient>);
+    void setFillGradient(const PassRefPtr<Gradient>, float);
     void clearFillGradient();
 
     Pattern* fillPattern() const { return m_fillPattern.get(); }
-    void setFillPattern(const PassRefPtr<Pattern>);
+    void setFillPattern(const PassRefPtr<Pattern>, float);
     void clearFillPattern();
 
     // Path fill rule
@@ -152,10 +153,9 @@ private:
 
     // Helper function for applying the state's alpha value to the given input
     // color to produce a new output color.
-    SkColor applyAlpha(SkColor c) const
+    SkColor applyAlpha(SkColor color) const
     {
-        int a = SkAlphaMul(SkColorGetA(c), m_alpha);
-        return (c & 0x00FFFFFF) | (a << 24);
+        return multiplyAlpha(color, m_alpha);
     }
 
     // These are mutbale to enable gradient updates when the paints are fetched for use.

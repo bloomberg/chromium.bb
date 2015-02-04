@@ -48,26 +48,27 @@ SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern)
 {
 }
 
-void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resourceMode, GraphicsContextStateSaver* stateSaver)
+void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resourceMode, float paintAlpha, GraphicsContextStateSaver& stateSaver)
 {
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
-    if (stateSaver && (m_gradient || m_pattern))
-        stateSaver->saveIfNeeded();
+
+    if (m_gradient || m_pattern)
+        stateSaver.saveIfNeeded();
 
     if (resourceMode == ApplyToFillMode) {
         if (m_pattern)
-            context.setFillPattern(m_pattern);
+            context.setFillPattern(m_pattern, paintAlpha);
         else if (m_gradient)
-            context.setFillGradient(m_gradient);
+            context.setFillGradient(m_gradient, paintAlpha);
         else
-            context.setFillColor(m_color);
+            context.setFillColor(multiplyAlpha(m_color.rgb(), paintAlpha));
     } else {
         if (m_pattern)
-            context.setStrokePattern(m_pattern);
+            context.setStrokePattern(m_pattern, paintAlpha);
         else if (m_gradient)
-            context.setStrokeGradient(m_gradient);
+            context.setStrokeGradient(m_gradient, paintAlpha);
         else
-            context.setStrokeColor(m_color);
+            context.setStrokeColor(multiplyAlpha(m_color.rgb(), paintAlpha));
     }
 }
 

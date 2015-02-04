@@ -52,6 +52,17 @@ SkXfermode::Mode PLATFORM_EXPORT WebCoreCompositeToSkiaComposite(CompositeOperat
 CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkXfermode::Mode);
 WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkXfermode::Mode);
 
+// Map alpha values from [0, 1] to [0, 256] for alpha blending.
+int PLATFORM_EXPORT clampedAlphaForBlending(float);
+
+// Multiply a color's alpha channel by an additional alpha factor where
+// alpha is in the range [0, 1].
+SkColor PLATFORM_EXPORT multiplyAlpha(SkColor, float);
+
+// Multiply a color's alpha channel by an additional alpha factor where
+// alpha is in the range [0, 256].
+SkColor PLATFORM_EXPORT multiplyAlpha(SkColor, int);
+
 inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
 {
     // FIXME: this reflects existing client mappings, but should probably
