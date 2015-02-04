@@ -126,6 +126,11 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
                                      example_url,
                                      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                                      std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(example_url,
+                                     example_url,
+                                     CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+                                     std::string()));
 
     // Check content settings for www.google.com
     GURL url("http://www.google.com");
@@ -161,6 +166,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
   }
 
   void CheckContentSettingsDefault() {
@@ -205,6 +213,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_ASK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
   }
 
  private:

@@ -31,7 +31,9 @@ const char* const kContentSettingsTypeNames[] = {
   "mixed-script",
   "media-stream",
   "media-stream-mic",
-  "media-stream-camera"
+  "media-stream-camera",
+  "register-protocol-handler",
+  "ppapi-broker"
 };
 
 // TODO(msramek): Assert that |kContentSettingsTypeNames| is synced with

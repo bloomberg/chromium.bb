@@ -18,6 +18,7 @@ var default_content_settings = {
   "mouselock": "ask",
   "microphone": "ask",
   "camera": "ask",
+  "unsandboxedPlugins": "ask",
 };
 
 var settings = {
@@ -31,7 +32,8 @@ var settings = {
   "fullscreen": "allow",
   "mouselock": "block",
   "microphone": "block",
-  "camera": "block"
+  "camera": "block",
+  "unsandboxedPlugins": "block",
 };
 
 Object.prototype.forEach = function(f) {
