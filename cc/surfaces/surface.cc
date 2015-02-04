@@ -46,7 +46,11 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   current_frame_ = frame.Pass();
   factory_->ReceiveFromChild(
       current_frame_->delegated_frame_data->resource_list);
-  ++frame_index_;
+  // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
+  // increment frame index for them.
+  if (!current_frame_ ||
+      !current_frame_->delegated_frame_data->render_pass_list.empty())
+    ++frame_index_;
 
   if (previous_frame) {
     ReturnedResourceArray previous_resources;

@@ -360,6 +360,21 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   }
 }
 
+TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
+  SurfaceId surface_id(6);
+  factory_.Create(surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_EQ(2, surface->frame_index());
+  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data.reset(new DelegatedFrameData);
+
+  factory_.SubmitFrame(surface_id, frame.Pass(),
+                       SurfaceFactory::DrawCallback());
+  EXPECT_EQ(2, surface->frame_index());
+  factory_.Destroy(surface_id);
+}
+
 void DrawCallback(uint32* execute_count,
                   SurfaceDrawStatus* result,
                   SurfaceDrawStatus drawn) {
