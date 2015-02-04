@@ -579,6 +579,15 @@
     'safe_browsing': {
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/',
     },
+    'sandbox': {
+      'filepath': 'sandbox/'\
+                  '|content/browser/bootstrap_sandbox_mac'\
+                  '|content/browser/renderer_host/render_sandbox_host_linux'\
+                  '|content/browser/renderer_host/sandbox_ipc_linux'\
+                  '|content/browser/zygote_host/'\
+                  '|content/common/sandbox_'\
+                  '|content/zygote/'\
+    },
     'scheduler': {
       'filepath': 'cc/scheduler|'\
                   'content/renderer/scheduler'
@@ -976,6 +985,7 @@
                'erikwright+watch@chromium.org',
                'robertshield+watch@chromium.org'],
     'safe_browsing': ['grt+watch@chromium.org'],
+    'sandbox': ['rickyz+watch@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'service_worker': ['tzik@chromium.org',
