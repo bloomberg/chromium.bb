@@ -19,7 +19,6 @@
 
 namespace blink {
 
-class ExclusiveStreamReader;
 // We define the default ChunkTypeTraits for frequently used types.
 template<typename ChunkType>
 class ReadableStreamChunkTypeTraits { };
@@ -83,7 +82,7 @@ public:
     ~ReadableStreamImpl() override { }
 
     // ReadableStream methods
-    ScriptValue readInternal(ScriptState*, ExceptionState&) override;
+    ScriptValue read(ScriptState*, ExceptionState&) override;
 
     bool enqueue(typename ChunkTypeTraits::PassType);
 
@@ -91,7 +90,7 @@ public:
     // queued data. This pulls all data from this stream's queue, but
     // ReadableStream public APIs can work with the behavior (i.e. it behaves
     // as if multiple read-one-buffer calls were made).
-    void readInternal(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue);
+    void read(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue);
 
     void trace(Visitor* visitor) override
     {
@@ -129,33 +128,33 @@ bool ReadableStreamImpl<ChunkTypeTraits>::enqueue(typename ChunkTypeTraits::Pass
 }
 
 template <typename ChunkTypeTraits>
-ScriptValue ReadableStreamImpl<ChunkTypeTraits>::readInternal(ScriptState* scriptState, ExceptionState& exceptionState)
+ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    readInternalPreliminaryCheck(exceptionState);
+    readPreliminaryCheck(exceptionState);
     if (exceptionState.hadException())
         return ScriptValue();
-    ASSERT(stateInternal() == Readable);
+    ASSERT(state() == Readable);
     ASSERT(!m_queue.isEmpty());
     auto pair = m_queue.takeFirst();
     typename ChunkTypeTraits::HoldType chunk = pair.first;
     size_t size = pair.second;
     ASSERT(m_totalQueueSize >= size);
     m_totalQueueSize -= size;
-    readInternalPostAction();
+    readPostAction();
     return ChunkTypeTraits::toScriptValue(scriptState, chunk);
 }
 
 template <typename ChunkTypeTraits>
-void ReadableStreamImpl<ChunkTypeTraits>::readInternal(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue)
+void ReadableStreamImpl<ChunkTypeTraits>::read(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue)
 {
     // We omit the preliminary check. Check it by yourself.
-    ASSERT(stateInternal() == Readable);
+    ASSERT(state() == Readable);
     ASSERT(!m_queue.isEmpty());
     ASSERT(queue.isEmpty());
 
     queue.swap(m_queue);
     m_totalQueueSize = 0;
-    readInternalPostAction();
+    readPostAction();
 }
 
 } // namespace blink

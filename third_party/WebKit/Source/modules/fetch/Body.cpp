@@ -113,8 +113,8 @@ public:
         }
         // Take back the data in |m_stream|.
         Deque<std::pair<RefPtr<DOMArrayBuffer>, size_t>> tmp_queue;
-        if (m_stream->stateInternal() == ReadableStream::Readable)
-            m_stream->readInternal(tmp_queue);
+        if (m_stream->state() == ReadableStream::Readable)
+            m_stream->read(tmp_queue);
         *dataLost = m_queueCount != tmp_queue.size();
         while (!tmp_queue.isEmpty()) {
             std::pair<RefPtr<DOMArrayBuffer>, size_t> data = tmp_queue.takeFirst();
@@ -379,7 +379,7 @@ bool Body::hasPendingActivity() const
 {
     if (m_resolver)
         return true;
-    if (m_stream && m_stream->hasPendingActivity())
+    if (m_stream && (m_stream->state() == ReadableStream::Readable || m_stream->state() == ReadableStream::Waiting))
         return true;
     return false;
 }

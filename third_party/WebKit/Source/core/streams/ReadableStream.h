@@ -21,7 +21,6 @@ namespace blink {
 
 class DOMException;
 class ExceptionState;
-class ExclusiveStreamReader;
 class UnderlyingSource;
 
 class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
@@ -44,48 +43,31 @@ public:
     bool isStarted() const { return m_isStarted; }
     bool isDraining() const { return m_isDraining; }
     bool isPulling() const { return m_isPulling; }
-    State stateInternal() const { return m_state; }
-    DOMException* storedException() { return m_exception.get(); }
-
-    // |stateString|, |read| and |ready| are affected by an exclusive lock. Use
-    // |stateInternal|, |readInternal| and |readyInternal| if you want to avoid
-    // that.
+    State state() const { return m_state; }
     String stateString() const;
-    ScriptValue read(ScriptState*, ExceptionState&);
+
+    virtual ScriptValue read(ScriptState*, ExceptionState&) = 0;
     ScriptPromise ready(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise closed(ScriptState*);
-
-    virtual ScriptValue readInternal(ScriptState*, ExceptionState&) = 0;
-    ScriptPromise readyInternal(ScriptState*);
 
     void close();
     void error(PassRefPtrWillBeRawPtr<DOMException>);
 
     void didSourceStart();
 
-    // This function is not a getter. It creates an ExclusiveStreamReader and
-    // returns it.
-    ExclusiveStreamReader* getReader(ExceptionState&);
-    // Only ExclusiveStreamReader methods should call this function.
-    void setReader(ExclusiveStreamReader*);
-    bool isLockedTo(const ExclusiveStreamReader* reader) const { return m_reader == reader; }
-
     bool hasPendingActivity() const override;
-    void trace(Visitor*) override;
-
-    // Returns the string representation of the given State.
-    static String stateToString(State);
+    virtual void trace(Visitor*) override;
 
 protected:
     bool enqueuePreliminaryCheck();
     bool enqueuePostAction();
-    void readInternalPreliminaryCheck(ExceptionState&);
-    void readInternalPostAction();
+    void readPreliminaryCheck(ExceptionState&);
+    void readPostAction();
 
 private:
-    using WaitPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
-    using ClosedPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException> > WaitPromise;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException> > ClosedPromise;
 
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;
@@ -102,9 +84,7 @@ private:
 
     Member<WaitPromise> m_ready;
     Member<ClosedPromise> m_closed;
-
     RefPtrWillBeMember<DOMException> m_exception;
-    Member<ExclusiveStreamReader> m_reader;
 };
 
 } // namespace blink
