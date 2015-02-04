@@ -3401,10 +3401,10 @@
    bug_431213
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3gin22CreateFunctionTemplateIFSsPN4mojo2js13HandleWrapperEEEEN2v85LocalINS6_16FunctionTemplateEEEPNS6_7IsolateEN4base8CallbackIT_EEi
-   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIMN4mojo2js13HandleWrapperEFSsvEvE14CreateTemplateEPN2v87IsolateES6_
-   fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIMN4mojo2js13HandleWrapperEFSsvEEERS0_RKN4base16BasicStringPieceISsEERKT_
-   fun:_ZN4mojo2js13HandleWrapper24GetObjectTemplateBuilderEPN2v87IsolateE
+   fun:_ZN3gin22CreateFunctionTemplateIF*LocalINS6_16FunctionTemplateEEEPNS6_7IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIMN*CreateTemplateEPN2v87IsolateES6_
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIMN*0_RKN4base16BasicStringPieceISsEERKT_
+   fun:_ZN*24GetObjectTemplateBuilderEPN2v87IsolateE
 }
 {
    bug_436110
