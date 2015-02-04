@@ -345,6 +345,7 @@
       'browser/database_util_unittest.cc',
       'browser/device_sensors/data_fetcher_shared_memory_base_unittest.cc',
       'browser/device_sensors/sensor_manager_android_unittest.cc',
+      'browser/device_sensors/sensor_manager_chromeos_unittest.cc',
       'browser/devtools/devtools_http_handler_unittest.cc',
       'browser/devtools/devtools_manager_unittest.cc',
       'browser/devtools/shared_worker_devtools_manager_unittest.cc',
