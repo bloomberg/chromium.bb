@@ -469,23 +469,29 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
       NOTREACHED();
   }
 
-  libyuv::ConvertToI420(data,
-                        length,
-                        yplane,
-                        yplane_stride,
-                        uplane,
-                        uv_plane_stride,
-                        vplane,
-                        uv_plane_stride,
-                        crop_x,
-                        crop_y,
-                        frame_format.frame_size.width(),
-                        (flip ? -frame_format.frame_size.height() :
+  if (libyuv::ConvertToI420(data,
+                            length,
+                            yplane,
+                            yplane_stride,
+                            uplane,
+                            uv_plane_stride,
+                            vplane,
+                            uv_plane_stride,
+                            crop_x,
+                            crop_y,
+                            frame_format.frame_size.width(),
+                            (flip ? -frame_format.frame_size.height() :
                                 frame_format.frame_size.height()),
-                        new_unrotated_width,
-                        new_unrotated_height,
-                        rotation_mode,
-                        origin_colorspace);
+                            new_unrotated_width,
+                            new_unrotated_height,
+                            rotation_mode,
+                            origin_colorspace) != 0) {
+    DLOG(WARNING) << "Failed to convert buffer from"
+                  << media::VideoCaptureFormat::PixelFormatToString(
+                         frame_format.pixel_format)
+                  << "to I420.";
+    return;
+  }
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
