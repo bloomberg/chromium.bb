@@ -219,7 +219,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     private void assertScrollInJs(final AwContents awContents,
             final TestAwContentsClient contentsClient,
-            final int xCss, final int yCss) throws Exception {
+            final double xCss, final double yCss) throws Exception {
         poll(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -227,8 +227,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                         "window.scrollX");
                 String y = executeJavaScriptAndWaitForResult(awContents, contentsClient,
                         "window.scrollY");
-                return (Integer.toString(xCss).equals(x)
-                        && Integer.toString(yCss).equals(y));
+                return (Math.abs(xCss - Double.parseDouble(x)) < 0.001
+                    && Math.abs(yCss - Double.parseDouble(y)) < 0.001);
             }
         });
     }
@@ -421,8 +421,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         // Make sure we can't hit these values simply as a result of scrolling.
         assert (maxScrollXPix % dragStepSize) != 0;
         assert (maxScrollYPix % dragStepSize) != 0;
-        final int maxScrollXCss = (int) Math.floor(maxScrollXPix / deviceDIPScale);
-        final int maxScrollYCss = (int) Math.floor(maxScrollYPix / deviceDIPScale);
+        final double maxScrollXCss = maxScrollXPix / deviceDIPScale;
+        final double maxScrollYCss = maxScrollYPix / deviceDIPScale;
 
         setMaxScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
 

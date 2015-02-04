@@ -5542,8 +5542,8 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
     EndTest();
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2d& inner,
-                           const gfx::Vector2d& outer,
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner,
+                           const gfx::Vector2dF& outer,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float scale_delta,
                            float top_controls_delta) override {

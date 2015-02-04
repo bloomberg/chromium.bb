@@ -58,8 +58,8 @@ class LayerTreeHostNoMessageLoopTest
   void BeginMainFrame(const BeginFrameArgs& args) override {}
   void DidBeginMainFrame() override {}
   void Layout() override {}
-  void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
-                           const gfx::Vector2d& outer_delta,
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
+                           const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}

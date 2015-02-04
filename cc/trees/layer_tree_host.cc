@@ -43,6 +43,7 @@
 #include "cc/trees/thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace {
 static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
@@ -1093,8 +1094,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     QueueSwapPromise(swap_promise.Pass());
   }
 
-  gfx::Vector2d inner_viewport_scroll_delta;
-  gfx::Vector2d outer_viewport_scroll_delta;
+  gfx::Vector2dF inner_viewport_scroll_delta;
+  gfx::Vector2dF outer_viewport_scroll_delta;
 
   if (root_layer_.get()) {
     for (size_t i = 0; i < info->scrolls.size(); ++i) {
@@ -1137,10 +1138,13 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
     elastic_overscroll_ += info->elastic_overscroll_delta;
     if (!settings_.use_pinch_virtual_viewport) {
+      // TODO(miletus): Make sure either this code path is totally gone,
+      // or revisit the flooring here if the old pinch viewport code path
+      // is causing problems with fractional scroll offset.
       client_->ApplyViewportDeltas(
-          inner_viewport_scroll_delta + outer_viewport_scroll_delta,
-          info->page_scale_delta,
-          info->top_controls_delta);
+          gfx::ToFlooredVector2d(inner_viewport_scroll_delta +
+                                 outer_viewport_scroll_delta),
+          info->page_scale_delta, info->top_controls_delta);
     } else {
       // TODO(ccameron): pass the elastic overscroll here so that input events
       // may be translated appropriately.
