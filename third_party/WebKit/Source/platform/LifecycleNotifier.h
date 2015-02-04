@@ -91,7 +91,7 @@ inline LifecycleNotifier<T>::~LifecycleNotifier()
     // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
 
 #if !ENABLE(OILPAN)
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
         ASSERT(observer->lifecycleContext() == m_context);
         observer->clearLifecycleContext();
@@ -106,7 +106,7 @@ inline void LifecycleNotifier<T>::notifyContextDestroyed()
     if (m_didCallContextDestroyed)
         return;
 
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     Vector<Observer*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {

@@ -59,7 +59,7 @@ void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer
 
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
@@ -80,7 +80,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
@@ -96,7 +96,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
