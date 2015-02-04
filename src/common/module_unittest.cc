@@ -476,3 +476,71 @@ TEST(Construct, DuplicateExterns) {
                "PUBLIC ffff 0 _xyz\n",
                contents.c_str());
 }
+
+// If there exists an extern and a function at the same address, only write
+// out the FUNC entry.
+TEST(Construct, FunctionsAndExternsWithSameAddress) {
+  stringstream s;
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Two externs.
+  Module::Extern* extern1 = new Module::Extern(0xabc0);
+  extern1->name = "abc";
+  Module::Extern* extern2 = new Module::Extern(0xfff0);
+  extern2->name = "xyz";
+
+  m.AddExtern(extern1);
+  m.AddExtern(extern2);
+
+  Module::Function* function = new Module::Function("_xyz", 0xfff0);
+  function->size = 0x10;
+  function->parameter_size = 0;
+  m.AddFunction(function);
+
+  m.Write(s, ALL_SYMBOL_DATA);
+  string contents = s.str();
+
+  EXPECT_STREQ("MODULE " MODULE_OS " " MODULE_ARCH " "
+               MODULE_ID " " MODULE_NAME "\n"
+               "FUNC fff0 10 0 _xyz\n"
+               "PUBLIC abc0 0 abc\n",
+               contents.c_str());
+}
+
+// If there exists an extern and a function at the same address, only write
+// out the FUNC entry. For ARM THUMB, the extern that comes from the ELF
+// symbol section has bit 0 set.
+TEST(Construct, FunctionsAndThumbExternsWithSameAddress) {
+  stringstream s;
+  Module m(MODULE_NAME, MODULE_OS, "arm", MODULE_ID);
+
+  // Two THUMB externs.
+  Module::Extern* thumb_extern1 = new Module::Extern(0xabc1);
+  thumb_extern1->name = "thumb_abc";
+  Module::Extern* thumb_extern2 = new Module::Extern(0xfff1);
+  thumb_extern2->name = "thumb_xyz";
+
+  Module::Extern* arm_extern1 = new Module::Extern(0xcc00);
+  arm_extern1->name = "arm_func";
+
+  m.AddExtern(thumb_extern1);
+  m.AddExtern(thumb_extern2);
+  m.AddExtern(arm_extern1);
+
+  // The corresponding function from the DWARF debug data have the actual
+  // address.
+  Module::Function* function = new Module::Function("_thumb_xyz", 0xfff0);
+  function->size = 0x10;
+  function->parameter_size = 0;
+  m.AddFunction(function);
+
+  m.Write(s, ALL_SYMBOL_DATA);
+  string contents = s.str();
+
+  EXPECT_STREQ("MODULE " MODULE_OS " arm "
+               MODULE_ID " " MODULE_NAME "\n"
+               "FUNC fff0 10 0 _thumb_xyz\n"
+               "PUBLIC abc1 0 thumb_abc\n"
+               "PUBLIC cc00 0 arm_func\n",
+               contents.c_str());
+}
