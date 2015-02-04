@@ -18,6 +18,7 @@ var remoting = remoting || {};
 
 /**
  * @constructor
+ * @implements {base.Disposable}
  */
 remoting.HostSession = function() {
   /** @type {remoting.It2MeHostFacade} @private */
@@ -39,6 +40,11 @@ remoting.HostSession.State = {
   INVALID_DOMAIN_ERROR: 7
 };
 
+remoting.HostSession.prototype.dispose = function() {
+  base.dispose(this.hostFacade_);
+  this.hostFacade_ = null;
+};
+
 /**
  * @param {string} stateString The string representation of the host state.
  * @return {remoting.HostSession.State} The HostSession.State enum value
@@ -50,7 +56,7 @@ remoting.HostSession.State.fromString = function(stateString) {
     return remoting.HostSession.State.UNKNOWN;
   }
   return remoting.HostSession.State[stateString];
-}
+};
 
 /**
  * Initiates a connection.
