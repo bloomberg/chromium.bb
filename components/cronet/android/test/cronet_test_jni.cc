@@ -9,8 +9,8 @@
 #include "base/android/jni_registrar.h"
 #include "components/cronet/android/cronet_loader.h"
 #include "mock_url_request_job_factory.h"
+#include "native_test_server.h"
 #include "network_change_notifier_util.h"
-#include "upload_test_server.h"
 
 namespace {
 

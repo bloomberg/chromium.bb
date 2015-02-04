@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRONET_UPLOAD_TEST_SERVER_H_
-#define CRONET_UPLOAD_TEST_SERVER_H_
+#ifndef CRONET_NATIVE_TEST_SERVER_H_
+#define CRONET_NATIVE_TEST_SERVER_H_
 
 #include <jni.h>
 
@@ -13,4 +13,4 @@ bool RegisterNativeTestServer(JNIEnv* env);
 
 }  // namespace cronet
 
-#endif  // CRONET_UPLOAD_TEST_SERVER_H_
+#endif  // CRONET_NATIVE_TEST_SERVER_H_
