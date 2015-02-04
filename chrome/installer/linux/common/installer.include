@@ -172,11 +172,6 @@ stage_install_common() {
   install -m 644 "${PEPPERFLASH_SRCDIR}/manifest.json" \
     "${PEPPERFLASH_DESTDIR}/"
 
-  # pdf plugin
-  if [ -f "${BUILDDIR}/libpdf.so" ]; then
-    install -m 644 -s "${BUILDDIR}/libpdf.so" "${STAGEDIR}/${INSTALLDIR}/"
-  fi
-
   # peerconnection shared library
   if [ -f "${BUILDDIR}/lib/libpeerconnection.so" ]; then
     install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
