@@ -116,6 +116,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
   COMMIT_QUEUE_SUBDIR = 'paladin'
+  PROJECT_SDK_SUBDIR = 'project-sdk'
 
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
@@ -153,6 +154,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.CHROME_PFQ_SUBDIR
     elif cbuildbot_config.IsCQType(self.build_type):
       self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
+    elif self.build_type == constants.PROJECT_SDK_TYPE:
+      self.rel_working_dir = self.PROJECT_SDK_SUBDIR
     else:
       assert cbuildbot_config.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR

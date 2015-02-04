@@ -16840,16 +16840,6 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
-    "gizmo-project-sdk": {
-        "boards": [
-            "gizmo"
-        ],
-        "build_type": "project-sdk",
-        "description": "Produce Project SDK build artifacts.",
-        "name": "gizmo-project-sdk",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "gizmo-release": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -31822,6 +31812,24 @@
             "-highdpi",
             "chrome_internal"
         ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "panther_embedded-project-sdk": {
+        "boards": [
+            "panther_embedded"
+        ],
+        "build_type": "project-sdk",
+        "description": "Produce Project SDK build artifacts.",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "manifest": "project_sdk.xml",
+        "manifest_version": true,
+        "name": "panther_embedded-project-sdk",
+        "profile": "minimal",
+        "sync_chrome": false,
+        "uprev": false,
         "usepkg_build_packages": false,
         "vm_tests": []
     },

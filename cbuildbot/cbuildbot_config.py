@@ -1163,18 +1163,32 @@ project_sdk = _config(
   build_type=constants.PROJECT_SDK_TYPE,
   description='Produce Project SDK build artifacts.',
 
+  profile='minimal',
+
   # These are test builds, they shouldn't break anything (yet).
   important=False,
 
+  usepkg_build_packages=False,
   sync_chrome=False,
   chrome_sdk=False,
+  uprev=False,
 
+  # Use the SDK manifest published by the Canary master for most builds.
+  manifest=constants.PROJECT_SDK_MANIFEST,
+  manifest_version=True,
+
+  # Tests probably don't work yet.
   vm_tests=[],
   hw_tests=[],
+
+  # Factory stuff not needed here.
+  factory_install_netboot=False,
+  factory_toolkit=False,
+  factory=False,
 )
 
 _project_sdk_boards = frozenset([
-    'gizmo',
+    'panther_embedded',
 ])
 
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
