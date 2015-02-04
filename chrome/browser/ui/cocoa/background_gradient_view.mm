@@ -121,10 +121,39 @@
   }
 }
 
+- (void)viewWillStartLiveResize {
+  [super viewWillStartLiveResize];
+
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (themeProvider && themeProvider->UsingSystemTheme()) {
+    // The default theme's background image is a subtle texture pattern that
+    // we can scale without being easily noticed. Optimize this case by
+    // skipping redraws during live resize.
+    [self setLayerContentsRedrawPolicy:
+        NSViewLayerContentsRedrawOnSetNeedsDisplay];
+  }
+}
+
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+
+  if ([self layerContentsRedrawPolicy] !=
+      NSViewLayerContentsRedrawDuringViewResize) {
+    // If we have been scaling the layer during live resize, now is the time to
+    // redraw the layer.
+    [self setLayerContentsRedrawPolicy:
+        NSViewLayerContentsRedrawDuringViewResize];
+    [self setNeedsDisplay:YES];
+  }
+}
+
 - (void)setFrameOrigin:(NSPoint)origin {
   // The background color depends on the view's vertical position. This impacts
   // any child views that draw using this view's functions.
-  if (NSMinY([self frame]) != origin.y)
+  // When resizing the window, the view's vertical position (NSMinY) may change
+  // even though our relative position to the nearest window edge is still the
+  // same. Don't redraw unnecessarily in this case.
+  if (![self inLiveResize] && NSMinY([self frame]) != origin.y)
     [self cr_recursivelySetNeedsDisplay:YES];
 
   [super setFrameOrigin:origin];
