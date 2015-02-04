@@ -22,11 +22,11 @@ class DataReductionProxyInfoBar : public ConfirmInfoBar {
   explicit DataReductionProxyInfoBar(
       scoped_ptr<DataReductionProxyInfoBarDelegate> delegate);
 
-  virtual ~DataReductionProxyInfoBar();
+  ~DataReductionProxyInfoBar() override;
 
  private:
   // ConfirmInfoBar:
-  virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
+  base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
 
   DataReductionProxyInfoBarDelegate* GetDelegate();

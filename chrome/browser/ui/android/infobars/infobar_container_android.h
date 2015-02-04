@@ -31,16 +31,14 @@ class InfoBarContainerAndroid : public infobars::InfoBarContainer {
   }
 
  private:
-  virtual ~InfoBarContainerAndroid() override;
+  ~InfoBarContainerAndroid() override;
 
   // InfobarContainer:
-  virtual void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
-                                          size_t position) override;
-  virtual void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar)
-      override;
-  virtual void PlatformSpecificReplaceInfoBar(
-      infobars::InfoBar* old_infobar,
-      infobars::InfoBar* new_infobar) override;
+  void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
+                                  size_t position) override;
+  void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar) override;
+  void PlatformSpecificReplaceInfoBar(infobars::InfoBar* old_infobar,
+                                      infobars::InfoBar* new_infobar) override;
 
   // Create the Java equivalent of |android_bar| and add it to the java
   // container.

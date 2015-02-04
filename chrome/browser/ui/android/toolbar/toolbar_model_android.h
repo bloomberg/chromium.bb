@@ -21,7 +21,7 @@ class WebContents;
 class ToolbarModelAndroid : public ToolbarModelDelegate {
  public:
   explicit ToolbarModelAndroid(JNIEnv* env, jobject jdelegate);
-  virtual ~ToolbarModelAndroid();
+  ~ToolbarModelAndroid() override;
 
   void Destroy(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetText(
@@ -35,8 +35,8 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
       jobject obj);
 
   // ToolbarDelegate:
-  virtual content::WebContents* GetActiveWebContents() const override;
-  virtual bool InTabbedBrowser() const override;
+  content::WebContents* GetActiveWebContents() const override;
+  bool InTabbedBrowser() const override;
 
   static bool RegisterToolbarModelAndroid(JNIEnv* env);
 

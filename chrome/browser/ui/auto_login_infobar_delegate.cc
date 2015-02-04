@@ -49,15 +49,15 @@ class AutoLoginRedirector : public UbertokenConsumer,
  public:
   AutoLoginRedirector(content::WebContents* web_contents,
                       const std::string& args);
-  virtual ~AutoLoginRedirector();
+  ~AutoLoginRedirector() override;
 
  private:
   // Overriden from UbertokenConsumer:
-  virtual void OnUbertokenSuccess(const std::string& token) override;
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
+  void OnUbertokenSuccess(const std::string& token) override;
+  void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
 
   // Implementation of content::WebContentsObserver
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.

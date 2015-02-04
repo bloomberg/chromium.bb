@@ -22,7 +22,7 @@ class WebsiteSettingsPopupLegacyAndroid : public WebsiteSettingsUI {
   WebsiteSettingsPopupLegacyAndroid(JNIEnv* env,
                                     jobject java_website_settings,
                                     content::WebContents* web_contents);
-  virtual ~WebsiteSettingsPopupLegacyAndroid();
+  ~WebsiteSettingsPopupLegacyAndroid() override;
   void Destroy(JNIEnv* env, jobject obj);
 
   // Revokes any current user exceptions for bypassing SSL error interstitials
@@ -30,12 +30,12 @@ class WebsiteSettingsPopupLegacyAndroid : public WebsiteSettingsUI {
   void ResetCertDecisions(JNIEnv* env, jobject obj, jobject java_web_contents);
 
   // WebsiteSettingsUI implementations.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  virtual void SetPermissionInfo(
+  void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
+  void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  virtual void SetFirstVisit(const base::string16& first_visit) override;
-  virtual void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
+  void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetFirstVisit(const base::string16& first_visit) override;
+  void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
 
   static bool RegisterWebsiteSettingsPopupLegacyAndroid(JNIEnv* env);
 

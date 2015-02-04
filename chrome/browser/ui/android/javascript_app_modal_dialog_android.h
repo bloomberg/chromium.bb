@@ -21,13 +21,13 @@ class JavascriptAppModalDialogAndroid
       gfx::NativeWindow parent);
 
   // NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const override;
-  virtual void ShowAppModalDialog() override;
-  virtual void ActivateAppModalDialog() override;
-  virtual void CloseAppModalDialog() override;
-  virtual void AcceptAppModalDialog() override;
-  virtual void CancelAppModalDialog() override;
-  virtual bool IsShowing() const override;
+  int GetAppModalDialogButtons() const override;
+  void ShowAppModalDialog() override;
+  void ActivateAppModalDialog() override;
+  void CloseAppModalDialog() override;
+  void AcceptAppModalDialog() override;
+  void CancelAppModalDialog() override;
+  bool IsShowing() const override;
 
   // Called when java confirms or cancels the dialog.
   void DidAcceptAppModalDialog(JNIEnv* env,
@@ -42,7 +42,7 @@ class JavascriptAppModalDialogAndroid
 
  private:
   // The object deletes itself.
-  virtual ~JavascriptAppModalDialogAndroid();
+  ~JavascriptAppModalDialogAndroid() override;
 
   scoped_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
   base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;

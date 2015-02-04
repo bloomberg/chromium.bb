@@ -19,7 +19,7 @@ class WebContents;
 class ContextMenuHelper
     : public content::WebContentsUserData<ContextMenuHelper> {
  public:
-  virtual ~ContextMenuHelper();
+  ~ContextMenuHelper() override;
 
   void ShowContextMenu(const content::ContextMenuParams& params);
 

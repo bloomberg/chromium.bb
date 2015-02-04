@@ -15,7 +15,7 @@ class WindowAndroid;
 class WindowAndroidHelper
     : public content::WebContentsUserData<WindowAndroidHelper> {
  public:
-  virtual ~WindowAndroidHelper();
+  ~WindowAndroidHelper() override;
 
   void SetWindowAndroid(ui::WindowAndroid* window_android);
   ui::WindowAndroid* GetWindowAndroid();

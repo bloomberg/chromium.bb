@@ -35,7 +35,7 @@ class InfoBarAndroid : public infobars::InfoBar {
   };
 
   explicit InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate);
-  virtual ~InfoBarAndroid();
+  ~InfoBarAndroid() override;
 
   // InfoBar:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

@@ -18,7 +18,7 @@ class TranslateInfoBar : public InfoBarAndroid {
  public:
   explicit TranslateInfoBar(
       scoped_ptr<translate::TranslateInfoBarDelegate> delegate);
-  virtual ~TranslateInfoBar();
+  ~TranslateInfoBar() override;
 
   // JNI methods specific to translate.
   void ApplyTranslateOptions(JNIEnv* env,
@@ -31,11 +31,10 @@ class TranslateInfoBar : public InfoBarAndroid {
 
  private:
   // InfoBarAndroid:
-  virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
+  base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-  virtual void ProcessButton(int action,
-                             const std::string& action_value) override;
-  virtual void PassJavaInfoBar(InfoBarAndroid* source) override;
+  void ProcessButton(int action, const std::string& action_value) override;
+  void PassJavaInfoBar(InfoBarAndroid* source) override;
 
   void TransferOwnership(TranslateInfoBar* destination,
                          translate::TranslateStep new_type);

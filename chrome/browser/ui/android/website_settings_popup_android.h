@@ -33,7 +33,7 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
   WebsiteSettingsPopupAndroid(JNIEnv* env,
                               jobject java_website_settings,
                               content::WebContents* web_contents);
-  virtual ~WebsiteSettingsPopupAndroid();
+  ~WebsiteSettingsPopupAndroid() override;
   void Destroy(JNIEnv* env, jobject obj);
   void OnPermissionSettingChanged(JNIEnv* env,
                                   jobject obj,
@@ -41,12 +41,12 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
                                   jint setting);
 
   // WebsiteSettingsUI implementations.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  virtual void SetPermissionInfo(
+  void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
+  void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  virtual void SetFirstVisit(const base::string16& first_visit) override;
-  virtual void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
+  void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetFirstVisit(const base::string16& first_visit) override;
+  void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
 
   static bool RegisterWebsiteSettingsPopupAndroid(JNIEnv* env);
 

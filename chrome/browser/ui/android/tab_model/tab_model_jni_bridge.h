@@ -28,7 +28,7 @@ class TabModelJniBridge : public TabModel {
  public:
   TabModelJniBridge(JNIEnv* env, jobject obj, bool is_incognito);
   void Destroy(JNIEnv* env, jobject obj);
-  virtual ~TabModelJniBridge();
+  ~TabModelJniBridge() override;
 
   // Registers the JNI bindings.
   static bool Register(JNIEnv* env);
@@ -39,22 +39,21 @@ class TabModelJniBridge : public TabModel {
   void TabAddedToModel(JNIEnv* env, jobject obj, jobject jtab);
 
   // TabModel::
-  virtual int GetTabCount() const override;
-  virtual int GetActiveIndex() const override;
-  virtual content::WebContents* GetWebContentsAt(int index) const override;
-  virtual TabAndroid* GetTabAt(int index) const override;
+  int GetTabCount() const override;
+  int GetActiveIndex() const override;
+  content::WebContents* GetWebContentsAt(int index) const override;
+  TabAndroid* GetTabAt(int index) const override;
 
-  virtual void SetActiveIndex(int index) override;
-  virtual void CloseTabAt(int index) override;
+  void SetActiveIndex(int index) override;
+  void CloseTabAt(int index) override;
 
-  virtual void CreateTab(content::WebContents* web_contents,
-                         int parent_tab_id) override;
+  void CreateTab(content::WebContents* web_contents,
+                 int parent_tab_id) override;
 
-  virtual content::WebContents* CreateNewTabForDevTools(
-      const GURL& url) override;
+  content::WebContents* CreateNewTabForDevTools(const GURL& url) override;
 
   // Return true if we are currently restoring sessions asynchronously.
-  virtual bool IsSessionRestoreInProgress() const override;
+  bool IsSessionRestoreInProgress() const override;
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.

@@ -35,13 +35,13 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
 
  protected:
   // AutofillPopupView implementation.
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void InvalidateRow(size_t row) override;
-  virtual void UpdateBoundsAndRedrawPopup() override;
+  void Show() override;
+  void Hide() override;
+  void InvalidateRow(size_t row) override;
+  void UpdateBoundsAndRedrawPopup() override;
 
  private:
-  virtual ~AutofillPopupViewAndroid();
+  ~AutofillPopupViewAndroid() override;
 
   AutofillPopupController* controller_;  // weak.
 

@@ -13,7 +13,7 @@
 class ConfirmInfoBar : public InfoBarAndroid {
  public:
   explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
-  virtual ~ConfirmInfoBar();
+  ~ConfirmInfoBar() override;
 
  protected:
   base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);

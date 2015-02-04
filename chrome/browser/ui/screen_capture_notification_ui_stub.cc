@@ -10,10 +10,9 @@
 class ScreenCaptureNotificationUIStub : public ScreenCaptureNotificationUI {
  public:
   ScreenCaptureNotificationUIStub() {}
-  virtual ~ScreenCaptureNotificationUIStub() {}
+  ~ScreenCaptureNotificationUIStub() override {}
 
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
-      override {
+  gfx::NativeViewId OnStarted(const base::Closure& stop_callback) override {
     NOTIMPLEMENTED();
     return 0;
   }

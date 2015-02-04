@@ -30,12 +30,12 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       const GURL& source_url,
       const AutofillClient::ResultCallback& callback);
 
-  virtual ~AutofillDialogControllerAndroid();
+  ~AutofillDialogControllerAndroid() override;
 
   // AutofillDialogController implementation:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void TabActivated() override;
+  void Show() override;
+  void Hide() override;
+  void TabActivated() override;
 
   // JNI bindings for Java-side AutofillDialogDelegate:
   void DialogCancel(JNIEnv* env, jobject obj);

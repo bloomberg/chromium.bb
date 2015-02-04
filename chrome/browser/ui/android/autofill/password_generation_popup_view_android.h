@@ -39,12 +39,12 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
   virtual ~PasswordGenerationPopupViewAndroid();
 
   // PasswordGenerationPopupView implementation.
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual gfx::Size GetPreferredSizeOfPasswordView() override;
-  virtual void UpdateBoundsAndRedrawPopup() override;
-  virtual void PasswordSelectionUpdated() override;
-  virtual bool IsPointInPasswordBounds(const gfx::Point& point) override;
+  void Show() override;
+  void Hide() override;
+  gfx::Size GetPreferredSizeOfPasswordView() override;
+  void UpdateBoundsAndRedrawPopup() override;
+  void PasswordSelectionUpdated() override;
+  bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
   // Weak pointer to the controller.
   PasswordGenerationPopupController* controller_;

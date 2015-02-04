@@ -17,21 +17,20 @@ class TestTabModel : public TabModel {
  public:
   explicit TestTabModel(Profile* profile) : TabModel(profile), tab_count_(0) {}
 
-  virtual int GetTabCount() const override { return tab_count_; }
-  virtual int GetActiveIndex() const override { return 0; }
-  virtual content::WebContents* GetWebContentsAt(int index) const override {
+  int GetTabCount() const override { return tab_count_; }
+  int GetActiveIndex() const override { return 0; }
+  content::WebContents* GetWebContentsAt(int index) const override {
     return nullptr;
   }
-  virtual void CreateTab(content::WebContents* web_contents,
-                         int parent_tab_id) override {}
-  virtual content::WebContents* CreateNewTabForDevTools(
-      const GURL& url) override {
+  void CreateTab(content::WebContents* web_contents,
+                 int parent_tab_id) override {}
+  content::WebContents* CreateNewTabForDevTools(const GURL& url) override {
     return nullptr;
   }
-  virtual bool IsSessionRestoreInProgress() const override { return false; }
-  virtual TabAndroid* GetTabAt(int index) const override { return nullptr; }
-  virtual void SetActiveIndex(int index) override {}
-  virtual void CloseTabAt(int index) override {}
+  bool IsSessionRestoreInProgress() const override { return false; }
+  TabAndroid* GetTabAt(int index) const override { return nullptr; }
+  void SetActiveIndex(int index) override {}
+  void CloseTabAt(int index) override {}
 
   // A fake value for the current number of tabs.
   int tab_count_;

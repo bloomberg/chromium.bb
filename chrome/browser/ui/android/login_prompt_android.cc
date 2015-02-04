@@ -28,19 +28,17 @@ class LoginHandlerAndroid : public LoginHandler {
 
   // LoginHandler methods:
 
-  virtual void OnAutofillDataAvailable(
-      const base::string16& username,
-      const base::string16& password) override {
+  void OnAutofillDataAvailable(const base::string16& username,
+                               const base::string16& password) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(chrome_http_auth_handler_.get() != NULL);
     chrome_http_auth_handler_->OnAutofillDataAvailable(
         username, password);
   }
-  virtual void OnLoginModelDestroying() override {}
+  void OnLoginModelDestroying() override {}
 
-  virtual void BuildViewForPasswordManager(
-      password_manager::PasswordManager* manager,
-      const base::string16& explanation) override {
+  void BuildViewForPasswordManager(password_manager::PasswordManager* manager,
+                                   const base::string16& explanation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Get pointer to TabAndroid
@@ -68,9 +66,9 @@ class LoginHandlerAndroid : public LoginHandler {
   }
 
  protected:
-  virtual ~LoginHandlerAndroid() {}
+  ~LoginHandlerAndroid() override {}
 
-  virtual void CloseDialog() override {}
+  void CloseDialog() override {}
 
  private:
   scoped_ptr<ChromeHttpAuthHandler> chrome_http_auth_handler_;

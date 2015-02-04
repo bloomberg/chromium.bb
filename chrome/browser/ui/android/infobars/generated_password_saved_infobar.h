@@ -24,11 +24,10 @@ class GeneratedPasswordSavedInfoBar : public InfoBarAndroid {
 
  private:
   // InfoBarAndroid implementation:
-  virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
+  base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-  virtual void OnLinkClicked(JNIEnv* env, jobject obj) override;
-  virtual void ProcessButton(int action,
-                             const std::string& action_value) override;
+  void OnLinkClicked(JNIEnv* env, jobject obj) override;
+  void ProcessButton(int action, const std::string& action_value) override;
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedPasswordSavedInfoBar);
 };

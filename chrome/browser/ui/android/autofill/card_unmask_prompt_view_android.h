@@ -36,7 +36,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   static bool Register(JNIEnv* env);
 
  private:
-  virtual ~CardUnmaskPromptViewAndroid();
+  ~CardUnmaskPromptViewAndroid() override;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
