@@ -123,11 +123,11 @@ SANDBOX_TEST(Credentials, NestedUserNS) {
 }
 
 // Test the WorkingDirectoryIsRoot() helper.
-TEST(Credentials, CanDetectRoot) {
-  ASSERT_EQ(0, chdir("/proc/"));
-  ASSERT_FALSE(WorkingDirectoryIsRoot());
-  ASSERT_EQ(0, chdir("/"));
-  ASSERT_TRUE(WorkingDirectoryIsRoot());
+SANDBOX_TEST(Credentials, CanDetectRoot) {
+  PCHECK(0 == chdir("/proc/"));
+  CHECK(!WorkingDirectoryIsRoot());
+  PCHECK(0 == chdir("/"));
+  CHECK(WorkingDirectoryIsRoot());
 }
 
 // Disabled on ASAN because of crbug.com/451603.
