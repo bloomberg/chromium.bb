@@ -6,11 +6,18 @@
 // APIs.
 [ implemented_in = "chrome/browser/extensions/api/platform_keys/platform_keys_api.h" ]
 namespace platformKeysInternal {
+  callback SelectCallback = void (platformKeys.Match[] certs);
+
   // Invoked by <code>sign</code>.
   // |signature| The signature, a octet string.
   callback SignCallback = void(ArrayBuffer signature);
 
   interface Functions {
+    // See documentation in platformKeys.
+    static void selectClientCertificates(
+        platformKeys.SelectDetails details,
+        SelectCallback callback);
+
     // Internal version of platformKeys.subtleCrypto.sign and
     // enterprise.platformKeys.Token.subtleCrypto.sign.
     // |tokenId| The id of a Token returned by |getTokens|.

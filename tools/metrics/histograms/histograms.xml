@@ -47296,6 +47296,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="954" label="EXTENSIONVIEWINTERNAL_NAVIGATE"/>
   <int value="955" label="NETWORKING_CONFIG_SETNETWORKFILTER"/>
   <int value="956" label="NETWORKING_CONFIG_FINISHAUTHENTICATION"/>
+  <int value="957" label="PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -47484,6 +47485,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="67" label="kU2fDevices"/>
   <int value="68" label="kDocumentScan"/>
   <int value="69" label="kNetworkingConfig"/>
+  <int value="70" label="kPlatformKeys"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

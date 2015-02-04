@@ -114,6 +114,7 @@
       'file_system_provider_internal.idl',
       'first_run_private.json',
       'log_private.idl',
+      'platform_keys.idl',
       'platform_keys_internal.idl',
       'wallpaper.json',
       'wallpaper_private.json',

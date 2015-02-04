@@ -17,6 +17,7 @@
 
 namespace extensions {
 
+namespace api_pk = api::platform_keys;
 namespace api_pki = api::platform_keys_internal;
 
 namespace platform_keys {
@@ -52,6 +53,59 @@ std::string PlatformKeysTokenIdToApiId(
 }
 
 }  // namespace platform_keys
+
+PlatformKeysInternalSelectClientCertificatesFunction::
+    ~PlatformKeysInternalSelectClientCertificatesFunction() {
+}
+
+ExtensionFunction::ResponseAction
+PlatformKeysInternalSelectClientCertificatesFunction::Run() {
+  scoped_ptr<api_pki::SelectClientCertificates::Params> params(
+      api_pki::SelectClientCertificates::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  chromeos::PlatformKeysService* service =
+      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  chromeos::platform_keys::ClientCertificateRequest request;
+  for (const std::vector<char>& cert_authority :
+       params->details.request.certificate_authorities) {
+    request.certificate_authorities.push_back(
+        std::string(cert_authority.begin(), cert_authority.end()));
+  }
+
+  service->SelectClientCertificates(
+      request, extension_id(),
+      base::Bind(&PlatformKeysInternalSelectClientCertificatesFunction::
+                     OnSelectedCertificates,
+                 this));
+  return RespondLater();
+}
+
+void PlatformKeysInternalSelectClientCertificatesFunction::
+    OnSelectedCertificates(scoped_ptr<net::CertificateList> matches,
+                           const std::string& error_message) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!error_message.empty()) {
+    Respond(Error(error_message));
+    return;
+  }
+  DCHECK(matches);
+  std::vector<linked_ptr<api_pk::Match>> result_matches;
+  for (const scoped_refptr<net::X509Certificate>& match : *matches) {
+    linked_ptr<api_pk::Match> result_match(new api_pk::Match);
+    std::string der_encoded_cert;
+    net::X509Certificate::GetDEREncoded(match->os_cert_handle(),
+                                        &der_encoded_cert);
+    result_match->certificate.assign(der_encoded_cert.begin(),
+                                     der_encoded_cert.end());
+    result_matches.push_back(result_match);
+  }
+  Respond(ArgumentList(
+      api_pki::SelectClientCertificates::Results::Create(result_matches)));
+}
 
 PlatformKeysInternalSignFunction::~PlatformKeysInternalSignFunction() {
 }

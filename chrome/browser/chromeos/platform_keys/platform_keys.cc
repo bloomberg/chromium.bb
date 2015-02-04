@@ -11,6 +11,12 @@ namespace platform_keys {
 const char kTokenIdUser[] = "user";
 const char kTokenIdSystem[] = "system";
 
+ClientCertificateRequest::ClientCertificateRequest() {
+}
+
+ClientCertificateRequest::~ClientCertificateRequest() {
+}
+
 }  // namespace platform_keys
 
 }  // namespace chromeos

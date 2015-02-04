@@ -742,6 +742,11 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "platformKeys": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension", "platform_app"]
+  },
   "plugin": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

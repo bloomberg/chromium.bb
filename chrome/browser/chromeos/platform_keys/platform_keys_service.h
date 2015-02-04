@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -27,6 +28,11 @@ namespace extensions {
 class StateStore;
 }
 
+namespace net {
+class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
+}
+
 namespace chromeos {
 
 class PlatformKeysService : public KeyedService {
@@ -41,6 +47,11 @@ class PlatformKeysService : public KeyedService {
   explicit PlatformKeysService(content::BrowserContext* browser_context,
                                extensions::StateStore* state_store);
   ~PlatformKeysService() override;
+
+  // Disables the checks whether an extension is allowed to read client
+  // certificates.
+  // TODO(pneubeck): Remove this once a permissions are implemented.
+  void DisablePermissionCheckForTesting();
 
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key and
@@ -84,6 +95,24 @@ class PlatformKeysService : public KeyedService {
             const std::string& extension_id,
             const SignCallback& callback);
 
+  // If the certificate request could be processed successfully, |matches| will
+  // contain the list of matching certificates (maybe empty) and |error_message|
+  // will be empty. If an error occurred, |matches| will be null and
+  // |error_message| contain an error message.
+  typedef base::Callback<void(scoped_ptr<net::CertificateList> matches,
+                              const std::string& error_message)>
+      SelectCertificatesCallback;
+
+  // Returns the list of all certificates that match |request|. |callback| will
+  // be invoked with these matches or an error message.
+  // Will only call back during the lifetime of this object.
+  // TODO(pneubeck): Add the interactive option and integrate the select
+  // certificate dialog.
+  void SelectClientCertificates(
+      const platform_keys::ClientCertificateRequest& request,
+      const std::string& extension_id,
+      const SelectCertificatesCallback& callback);
+
  private:
   using GetPlatformKeysCallback =
       base::Callback<void(scoped_ptr<base::ListValue> platform_keys)>;
@@ -124,6 +153,17 @@ class PlatformKeysService : public KeyedService {
                               const std::string& public_key_spki_der,
                               const std::string& error_message);
 
+  // Calback used by |SelectClientCertificates|.
+  // If the certificate request could be processed successfully, |matches| will
+  // contain the list of matching certificates (maybe empty) and |error_message|
+  // will be empty. If an error occurred, |matches| will be null and
+  // |error_message| contain an error message.
+  void SelectClientCertificatesCallback(
+      const std::string& extension_id,
+      const SelectCertificatesCallback& callback,
+      scoped_ptr<net::CertificateList> matches,
+      const std::string& error_message);
+
   // Callback used by |RegisterPublicKey|.
   // Updates the old |platform_keys| read from the StateStore and writes the
   // updated value back to the StateStore.
@@ -151,6 +191,7 @@ class PlatformKeysService : public KeyedService {
 
   content::BrowserContext* browser_context_;
   extensions::StateStore* state_store_;
+  bool permission_check_enabled_ = true;
   base::WeakPtrFactory<PlatformKeysService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformKeysService);

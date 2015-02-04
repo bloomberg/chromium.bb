@@ -16,8 +16,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
@@ -26,6 +33,8 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_store_chromeos.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -188,6 +197,39 @@ class SignState : public NSSOperationState {
   subtle::SignCallback callback_;
 };
 
+class SelectCertificatesState : public NSSOperationState {
+ public:
+  explicit SelectCertificatesState(
+      const std::string& username_hash,
+      const bool use_system_key_slot,
+      scoped_refptr<net::SSLCertRequestInfo> request,
+      const subtle::SelectCertificatesCallback& callback);
+  ~SelectCertificatesState() override {}
+
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, scoped_ptr<net::CertificateList>() /* no matches */,
+             error_message);
+  }
+
+  void CallBack(const tracked_objects::Location& from,
+                scoped_ptr<net::CertificateList> matches,
+                const std::string& error_message) {
+    origin_task_runner_->PostTask(
+        from, base::Bind(callback_, base::Passed(&matches), error_message));
+  }
+
+  const std::string username_hash_;
+  const bool use_system_key_slot_;
+  scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
+  scoped_ptr<net::ClientCertStore> cert_store_;
+  scoped_ptr<net::CertificateList> certs_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  subtle::SelectCertificatesCallback callback_;
+};
+
 class GetCertificatesState : public NSSOperationState {
  public:
   explicit GetCertificatesState(const GetCertificatesCallback& callback);
@@ -304,6 +346,17 @@ SignState::SignState(const std::string& public_key,
       callback_(callback) {
 }
 
+SelectCertificatesState::SelectCertificatesState(
+    const std::string& username_hash,
+    const bool use_system_key_slot,
+    scoped_refptr<net::SSLCertRequestInfo> cert_request_info,
+    const subtle::SelectCertificatesCallback& callback)
+    : username_hash_(username_hash),
+      use_system_key_slot_(use_system_key_slot),
+      cert_request_info_(cert_request_info),
+      callback_(callback) {
+}
+
 GetCertificatesState::GetCertificatesState(
     const GetCertificatesCallback& callback)
     : callback_(callback) {
@@ -417,6 +470,33 @@ void RSASignWithDB(scoped_ptr<SignState> state, net::NSSCertDatabase* cert_db) {
       FROM_HERE,
       base::Bind(&RSASignOnWorkerThread, base::Passed(&state)),
       true /*task is slow*/);
+}
+
+// Called when ClientCertStoreChromeOS::GetClientCerts is done. Builds the list
+// of net::CertificateList and calls back. Used by
+// SelectCertificatesOnIOThread().
+void DidSelectCertificatesOnIOThread(
+    scoped_ptr<SelectCertificatesState> state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  state->CallBack(FROM_HERE, state->certs_.Pass(),
+                  std::string() /* no error */);
+}
+
+// Continues selecting certificates on the IO thread. Used by
+// SelectClientCertificates().
+void SelectCertificatesOnIOThread(scoped_ptr<SelectCertificatesState> state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  state->cert_store_.reset(new net::ClientCertStoreChromeOS(
+      make_scoped_ptr(new chromeos::ClientCertFilterChromeOS(
+          state->use_system_key_slot_, state->username_hash_)),
+      net::ClientCertStoreChromeOS::PasswordDelegateFactory()));
+
+  state->certs_.reset(new net::CertificateList);
+
+  SelectCertificatesState* state_ptr = state.get();
+  state_ptr->cert_store_->GetClientCerts(
+      *state_ptr->cert_request_info_, state_ptr->certs_.get(),
+      base::Bind(&DidSelectCertificatesOnIOThread, base::Passed(&state)));
 }
 
 // Filters the obtained certificates on a worker thread. Used by
@@ -594,6 +674,34 @@ void Sign(const std::string& token_id,
                   base::Bind(&RSASignWithDB, base::Passed(&state)),
                   browser_context,
                   state_ptr);
+}
+
+void SelectClientCertificates(const ClientCertificateRequest& request,
+                              const SelectCertificatesCallback& callback,
+                              content::BrowserContext* browser_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
+      new net::SSLCertRequestInfo);
+  cert_request_info->cert_key_types = request.certificate_key_types;
+  cert_request_info->cert_authorities = request.certificate_authorities;
+
+  user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
+      Profile::FromBrowserContext(browser_context));
+
+  // Use the device-wide system key slot only if the user is of the same
+  // domain as the device is registered to.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool use_system_key_slot = connector->GetUserAffiliation(user->email()) ==
+                             policy::USER_AFFILIATION_MANAGED;
+
+  scoped_ptr<SelectCertificatesState> state(new SelectCertificatesState(
+      user->username_hash(), use_system_key_slot, cert_request_info, callback));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SelectCertificatesOnIOThread, base::Passed(&state)));
 }
 
 }  // namespace subtle

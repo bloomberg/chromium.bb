@@ -182,6 +182,7 @@
       'browser/extensions/api/omnibox/omnibox_api_browsertest.cc',
       'browser/extensions/api/page_capture/page_capture_apitest.cc',
       'browser/extensions/api/permissions/permissions_apitest.cc',
+      'browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc',
       'browser/extensions/api/preference/preference_apitest.cc',
       'browser/extensions/api/preferences_private/preferences_private_apitest.cc',
       'browser/extensions/api/processes/processes_apitest.cc',
@@ -2137,6 +2138,7 @@
         }, {  # Non-ChromeOS
           'sources!': [
             'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc',
+            'browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
             'browser/invalidation/profile_invalidation_provider_factory_browsertest.cc',
             'browser/net/nss_context_chromeos_browsertest.cc',

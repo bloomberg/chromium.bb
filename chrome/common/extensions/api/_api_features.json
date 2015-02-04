@@ -555,7 +555,15 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
+  "platformKeys": {
+    "dependencies": ["permission:platformKeys"],
+    "contexts": ["blessed_extension"]
+  },
   "platformKeysInternal": [{
+    "dependencies": ["permission:platformKeys"],
+    "internal": true,
+    "contexts": ["blessed_extension"]
+  },{
     "dependencies": ["permission:enterprise.platformKeys"],
     "internal": true,
     "contexts": ["blessed_extension"]

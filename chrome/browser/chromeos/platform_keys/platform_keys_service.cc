@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/state_store.h"
+#include "net/cert/x509_certificate.h"
 
 using content::BrowserThread;
 
@@ -74,6 +75,10 @@ PlatformKeysService::PlatformKeysService(
 PlatformKeysService::~PlatformKeysService() {
 }
 
+void PlatformKeysService::DisablePermissionCheckForTesting() {
+  permission_check_enabled_ = false;
+}
+
 void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
                                          unsigned int modulus_length,
                                          const std::string& extension_id,
@@ -106,6 +111,19 @@ void PlatformKeysService::Sign(const std::string& token_id,
                                           data,
                                           callback,
                                           browser_context_));
+}
+
+void PlatformKeysService::SelectClientCertificates(
+    const platform_keys::ClientCertificateRequest& request,
+    const std::string& extension_id,
+    const SelectCertificatesCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  platform_keys::subtle::SelectClientCertificates(
+      request,
+      base::Bind(&PlatformKeysService::SelectClientCertificatesCallback,
+                 weak_factory_.GetWeakPtr(), extension_id, callback),
+      browser_context_);
 }
 
 void PlatformKeysService::RegisterPublicKey(
@@ -161,6 +179,18 @@ void PlatformKeysService::GenerateRSAKeyCallback(
   base::Closure wrapped_callback(
       base::Bind(&RunGenerateKeyCallback, callback, public_key_spki_der));
   RegisterPublicKey(extension_id, public_key_spki_der, wrapped_callback);
+}
+
+void PlatformKeysService::SelectClientCertificatesCallback(
+    const std::string& extension_id,
+    const SelectCertificatesCallback& callback,
+    scoped_ptr<net::CertificateList> matches,
+    const std::string& error_message) {
+  if (permission_check_enabled_)
+    matches->clear();
+
+  // TODO(pneubeck): Remove all certs that the extension doesn't have access to.
+  callback.Run(matches.Pass(), error_message);
 }
 
 void PlatformKeysService::RegisterPublicKeyGotPlatformKeys(

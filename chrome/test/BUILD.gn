@@ -797,6 +797,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     } else {
       sources -= [
         "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
+        "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
         "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
         "../browser/net/nss_context_chromeos_browsertest.cc",

@@ -6,4 +6,5 @@ var binding = require('binding')
                   .Binding.create('platformKeysInternal')
                   .generate();
 
+exports.selectClientCertificates = binding.selectClientCertificates;
 exports.sign = binding.sign;

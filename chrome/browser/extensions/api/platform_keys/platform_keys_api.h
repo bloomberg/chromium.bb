@@ -6,8 +6,14 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PLATFORM_KEYS_PLATFORM_KEYS_API_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
+
+namespace net {
+class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
+}
 
 namespace extensions {
 namespace platform_keys {
@@ -24,6 +30,21 @@ std::string PlatformKeysTokenIdToApiId(
     const std::string& platform_keys_token_id);
 
 }  // namespace platform_keys
+
+class PlatformKeysInternalSelectClientCertificatesFunction
+    : public ChromeUIThreadExtensionFunction {
+ private:
+  ~PlatformKeysInternalSelectClientCertificatesFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the certificates were selected. If an error occurred, |certs|
+  // will be null and instead |error_message| be set.
+  void OnSelectedCertificates(scoped_ptr<net::CertificateList> matches,
+                              const std::string& error_message);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",
+                             PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES);
+};
 
 class PlatformKeysInternalSignFunction
     : public ChromeUIThreadExtensionFunction {

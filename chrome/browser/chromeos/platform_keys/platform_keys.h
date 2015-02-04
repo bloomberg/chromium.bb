@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 namespace content {
 class BrowserContext;
@@ -41,6 +42,19 @@ enum HashAlgorithm {
   HASH_ALGORITHM_SHA256,
   HASH_ALGORITHM_SHA384,
   HASH_ALGORITHM_SHA512
+};
+
+struct ClientCertificateRequest {
+  ClientCertificateRequest();
+  ~ClientCertificateRequest();
+
+  // The list of the types of certificates requested, sorted in order of the
+  // server's preference.
+  std::vector<net::SSLClientCertType> certificate_key_types;
+
+  // List of distinguished names of certificate authorities allowed by the
+  // server. Each entry must be a DER-encoded X.509 DistinguishedName.
+  std::vector<std::string> certificate_authorities;
 };
 
 namespace subtle {
@@ -76,6 +90,20 @@ void Sign(const std::string& token_id,
           const std::string& data,
           const SignCallback& callback,
           content::BrowserContext* browser_context);
+
+// If the certificate request could be processed successfully, |matches| will
+// contain the list of matching certificates (which may be empty) and
+// |error_message| will be empty. If an error occurred, |matches| will be null
+// and |error_message| contain an error message.
+typedef base::Callback<void(scoped_ptr<net::CertificateList> matches,
+                            const std::string& error_message)>
+    SelectCertificatesCallback;
+
+// Returns the list of all certificates that match |request|. |callback| will be
+// invoked with these matches or an error message.
+void SelectClientCertificates(const ClientCertificateRequest& request,
+                              const SelectCertificatesCallback& callback,
+                              content::BrowserContext* browser_context);
 
 }  // namespace subtle
 

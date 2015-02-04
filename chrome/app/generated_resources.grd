@@ -4594,6 +4594,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROMPT_WARNING_EXPERIENCE_SAMPLING_PRIVATE" desc="Permission string for Experience Sampling Private API.">
         Monitor when you take actions in Chrome
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_PLATFORMKEYS" desc="Permission string for access to client certificates.">
+        Use your client certificates
+      </message>
       <if expr="is_macosx">
         <message name="IDS_EXTENSION_PROMPT_WARNING_INTERCEPT_ALL_KEYS" desc="Permission string for intercept all keyboard keys via packaged app extension APIs">
         Read and change anything you type including task switching keys like CMD+TAB

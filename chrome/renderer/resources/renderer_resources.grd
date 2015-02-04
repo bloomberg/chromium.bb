@@ -74,6 +74,7 @@
         <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="extensions\omnibox_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="extensions\page_action_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\page_capture_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS" file="extensions\platform_keys_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PLATFORM_KEYS_INTERNAL_API_JS" file="extensions\platform_keys\internal_api.js" type="BINDATA" />
         <include name="IDR_PLATFORM_KEYS_KEY_JS" file="extensions\platform_keys\key.js" type="BINDATA" />
         <include name="IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS" file="extensions\platform_keys\subtle_crypto.js" type="BINDATA" />

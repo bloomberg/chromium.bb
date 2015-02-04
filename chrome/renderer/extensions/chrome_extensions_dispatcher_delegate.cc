@@ -189,6 +189,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("platformKeys",
+                             IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys.internalAPI",
                              IDR_PLATFORM_KEYS_INTERNAL_API_JS);
   source_map->RegisterSource("platformKeys.Key", IDR_PLATFORM_KEYS_KEY_JS);

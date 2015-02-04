@@ -101,6 +101,7 @@ class PermissionMessage {
     kHostsAllReadOnly,
     kInterceptAllKeys,
     kNetworkingConfig,
+    kPlatformKeys,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission2" enum in tools/metrics/histograms/histograms.xml.
     kEnumBoundary,
