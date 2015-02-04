@@ -20,7 +20,6 @@
 #include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -135,19 +134,10 @@ void CompleteWithKeyOrError(const Status& status,
   }
 }
 
-// Gets a task runner for the current thread. The current thread is either:
-//
-//   * The main Blink thread
-//   * A Blink web worker thread
-//
-// A different mechanism is needed for posting to these threads. The main
-// thread has an associated message loop and can simply use
-// base::ThreadTaskRunnerHandle. Whereas the web worker threads are managed by
-// Blink and need to be indirected through WorkerThreadTaskRunner.
+// Gets a task runner for the current thread.
 scoped_refptr<base::TaskRunner> GetCurrentBlinkThread() {
-  if (base::ThreadTaskRunnerHandle::IsSet())
-    return base::ThreadTaskRunnerHandle::Get();
-  return WorkerThreadTaskRunner::current();
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 // --------------------------------------------------------------------
