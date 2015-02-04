@@ -86,6 +86,10 @@ class EnhancedBookmarkModel : public KeyedService,
                         int width,
                         int height);
 
+  // Removes all image data for the node and sets the user_removed_image flag
+  // so the server won't try to fetch a new image for the node.
+  void RemoveImageData(const BookmarkNode* node);
+
   // Returns the url and dimensions of the original scraped image of a
   // bookmark |node|.
   // Returns true if the out variables are populated, false otherwise.

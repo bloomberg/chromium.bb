@@ -26,6 +26,17 @@ message ImageData {
 
   // Information about the server hosted thumbnail.
   optional ImageInfo thumbnail_info = 3;
+
+  // The expiration timestamp of the served thumbnail, in microseconds since
+  // epoch. The thumbnail is only guaranteed until this time, afterwards the
+  // URL may be broken.
+  // If expiration_timestamp is not present, then whoever set the thumbnail_info
+  // should guarantee that the thumbnail will not expire.
+  optional int64 expiration_timestamp = 5;
+
+  // Represents an explicit user action to remove an image. This will prevent
+  // any additional backfilling once this is set.
+  optional bool user_removed_image = 6;
 }
 
 message PageData {

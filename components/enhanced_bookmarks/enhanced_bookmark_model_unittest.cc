@@ -25,6 +25,7 @@ using enhanced_bookmarks::EnhancedBookmarkModel;
 
 namespace {
 const std::string BOOKMARK_URL("http://example.com/index.html");
+const std::string IMAGE_URL("http://example.com/image.jpg");
 }  // namespace
 
 class EnhancedBookmarkModelTest
@@ -772,4 +773,25 @@ TEST_F(EnhancedBookmarkModelTest, AddsRemoteIdToNonClonedKeys) {
   const std::set<std::string>& non_cloned_keys =
       bookmark_model_->non_cloned_keys();
   EXPECT_TRUE(non_cloned_keys.find("stars.id") != non_cloned_keys.end());
+}
+
+TEST_F(EnhancedBookmarkModelTest, RemoveImageData) {
+  const BookmarkNode* node = AddBookmark();
+  model_->SetAllImages(node, GURL(IMAGE_URL), 64, 64, GURL(IMAGE_URL), 16, 16);
+
+  GURL url;
+  int width, height;
+  EXPECT_TRUE(model_->GetOriginalImage(node, &url, &width, &height));
+  EXPECT_TRUE(model_->GetThumbnailImage(node, &url, &width, &height));
+
+  model_->RemoveImageData(node);
+  EXPECT_FALSE(model_->GetOriginalImage(node, &url, &width, &height));
+  EXPECT_FALSE(model_->GetThumbnailImage(node, &url, &width, &height));
+
+  std::string meta_info = GetMetaInfoField(node, "stars.imageData");
+  std::string decoded;
+  ASSERT_TRUE(base::Base64Decode(meta_info, &decoded));
+  image::collections::ImageData data;
+  ASSERT_TRUE(data.ParseFromString(decoded));
+  EXPECT_TRUE(data.user_removed_image());
 }

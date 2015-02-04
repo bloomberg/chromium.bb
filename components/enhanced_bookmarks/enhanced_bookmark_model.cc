@@ -226,6 +226,16 @@ bool EnhancedBookmarkModel::SetOriginalImage(const BookmarkNode* node,
   return true;
 }
 
+void EnhancedBookmarkModel::RemoveImageData(const BookmarkNode* node) {
+  DCHECK(node->is_url());
+  image::collections::ImageData data;
+  data.set_user_removed_image(true);
+
+  std::string encoded_data;
+  base::Base64Encode(data.SerializeAsString(), &encoded_data);
+  SetMetaInfo(node, kImageDataKey, encoded_data);
+}
+
 bool EnhancedBookmarkModel::GetOriginalImage(const BookmarkNode* node,
                                              GURL* url,
                                              int* width,
