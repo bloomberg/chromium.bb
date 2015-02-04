@@ -140,6 +140,38 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="interstitial.malware.domain" type="COARSE_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered a safe-browsing malware
+    interstitial.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="interstitial.phishing.domain" type="COARSE_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered a safe-browsing phishing
+    interstitial.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered a safe-browsing UWS
+    interstitial.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="interstitial.ssl.domain" type="COARSE_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered an SSL interstitial.
+    Domains for bad-clock warnings are not reported.
+  </summary>
+</rappor-metric>
+
 </rappor-metrics>
 
 </rappor-configuration>

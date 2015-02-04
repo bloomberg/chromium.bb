@@ -175,15 +175,17 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     interstitial_reason_ = SB_REASON_PHISHING;
 
   // This must be done after calculating |interstitial_reason_| above.
-  uma_helper_.reset(new SecurityInterstitialUmaHelper(
-      web_contents, request_url(),
-      GetHistogramPrefix(), GetSamplingEventName()));
-  uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::SHOW);
-  uma_helper_->RecordUserInteraction(
-      SecurityInterstitialUmaHelper::TOTAL_VISITS);
+  // Use same prefix for UMA as for Rappor.
+  metrics_helper_.reset(new SecurityInterstitialMetricsHelper(
+      web_contents, request_url(), GetMetricPrefix(), GetMetricPrefix(),
+      SecurityInterstitialMetricsHelper::REPORT_RAPPOR,
+      GetSamplingEventName()));
+  metrics_helper_->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
+  metrics_helper_->RecordUserInteraction(
+      SecurityInterstitialMetricsHelper::TOTAL_VISITS);
   if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-    uma_helper_->RecordUserDecision(
-        SecurityInterstitialUmaHelper::PROCEEDING_DISABLED);
+    metrics_helper_->RecordUserDecision(
+        SecurityInterstitialMetricsHelper::PROCEEDING_DISABLED);
   }
 
   if (!is_main_frame_load_blocked_) {
@@ -239,8 +241,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   if (command == kLearnMoreCommand) {
     // User pressed "Learn more".
-    uma_helper_->RecordUserInteraction(
-        SecurityInterstitialUmaHelper::SHOW_LEARN_MORE);
+    metrics_helper_->RecordUserInteraction(
+        SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
     GURL learn_more_url(
         interstitial_reason_ == SB_REASON_PHISHING ?
         kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
@@ -257,8 +259,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   if (command == kShowPrivacyCommand) {
     // User pressed "Safe Browsing privacy policy".
-    uma_helper_->RecordUserInteraction(
-        SecurityInterstitialUmaHelper::SHOW_PRIVACY_POLICY);
+    metrics_helper_->RecordUserInteraction(
+        SecurityInterstitialMetricsHelper::SHOW_PRIVACY_POLICY);
     GURL privacy_url(
         l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
     privacy_url = google_util::AppendGoogleLocaleParam(
@@ -277,7 +279,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
       proceed_blocked = true;
     } else {
-      uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::PROCEED);
+      metrics_helper_->RecordUserDecision(
+          SecurityInterstitialMetricsHelper::PROCEED);
       interstitial_page()->Proceed();
       // |this| has been deleted after Proceed() returns.
       return;
@@ -333,8 +336,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   std::string bad_url_spec = unsafe_resources_[element_index].url.spec();
   if (command == kShowDiagnosticCommand) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
-    uma_helper_->RecordUserInteraction(
-        SecurityInterstitialUmaHelper::SHOW_DIAGNOSTIC);
+    metrics_helper_->RecordUserInteraction(
+        SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
     std::string diagnostic =
         base::StringPrintf(kSbDiagnosticUrl,
             net::EscapeQueryParamValue(bad_url_spec, true).c_str());
@@ -355,8 +358,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   if (command == kExpandedSeeMoreCommand) {
-    uma_helper_->RecordUserInteraction(
-        SecurityInterstitialUmaHelper::SHOW_ADVANCED);
+    metrics_helper_->RecordUserInteraction(
+        SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
     return;
   }
 
@@ -421,8 +424,8 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
     return;
 
   if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-    uma_helper_->RecordUserDecision(
-        SecurityInterstitialUmaHelper::DONT_PROCEED);
+    metrics_helper_->RecordUserDecision(
+        SecurityInterstitialMetricsHelper::DONT_PROCEED);
   }
 
   // Send the malware details, if we opted to.
@@ -555,7 +558,7 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
   return unsafe_resources.size() == 1 && !unsafe_resources[0].is_subresource;
 }
 
-std::string SafeBrowsingBlockingPage::GetHistogramPrefix() const {
+std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {
   switch (interstitial_reason_) {
     case SB_REASON_MALWARE:
       return "malware";

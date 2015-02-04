@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
-#include "chrome/browser/interstitials/security_interstitial_uma_helper.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -95,7 +95,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
-  std::string GetHistogramPrefix() const;
+  std::string GetUmaHistogramPrefix() const;
   std::string GetSamplingEventName() const;
 
   base::Callback<void(bool)> callback_;
@@ -117,9 +117,9 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // expired?
   const bool expired_but_previously_allowed_;
   scoped_ptr<SSLErrorClassification> ssl_error_classification_;
-  scoped_ptr<SecurityInterstitialUmaHelper> uma_helper_;
+  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
 
-  // Which type of Safe Browsing interstitial this is.
+  // Which type of interstitial this is.
   enum SSLInterstitialReason {
     SSL_REASON_SSL,
     SSL_REASON_BAD_CLOCK

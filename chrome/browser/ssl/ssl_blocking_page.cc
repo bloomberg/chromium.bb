@@ -87,6 +87,9 @@ enum SSLExpirationAndDecision {
   END_OF_SSL_EXPIRATION_AND_DECISION,
 };
 
+// Rappor prefix
+const char kSSLRapporPrefix[] = "ssl";
+
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,
                                        bool overridable) {
@@ -233,12 +236,19 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       IsErrorDueToBadClock(base::Time::NowFromSystemTime(), cert_error_) ?
       SSL_REASON_BAD_CLOCK : SSL_REASON_SSL;
 
+  // We collapse the Rappor metric name to just "ssl" so we don't leak
+  // the "overridable" bit.  We skip Rappor altogether for bad clocks.
   // This must be done after calculating |interstitial_reason_| above.
-  uma_helper_.reset(new SecurityInterstitialUmaHelper(
-      web_contents, request_url, GetHistogramPrefix(), GetSamplingEventName()));
-  uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::SHOW);
-  uma_helper_->RecordUserInteraction(
-      SecurityInterstitialUmaHelper::TOTAL_VISITS);
+  metrics_helper_.reset(new SecurityInterstitialMetricsHelper(
+      web_contents, request_url, GetUmaHistogramPrefix(), kSSLRapporPrefix,
+      (interstitial_reason_ == SSL_REASON_BAD_CLOCK
+           ? SecurityInterstitialMetricsHelper::SKIP_RAPPOR
+           : SecurityInterstitialMetricsHelper::REPORT_RAPPOR),
+      GetSamplingEventName()));
+
+  metrics_helper_->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
+  metrics_helper_->RecordUserInteraction(
+      SecurityInterstitialMetricsHelper::TOTAL_VISITS);
 
   ssl_error_classification_.reset(new SSLErrorClassification(
       web_contents,
@@ -267,8 +277,8 @@ SSLBlockingPage::~SSLBlockingPage() {
   if (!callback_.is_null()) {
     // The page is closed without the user having chosen what to do, default to
     // deny.
-    uma_helper_->RecordUserDecision(
-        SecurityInterstitialUmaHelper::DONT_PROCEED);
+    metrics_helper_->RecordUserDecision(
+        SecurityInterstitialMetricsHelper::DONT_PROCEED);
     RecordSSLExpirationPageEventState(
         expired_but_previously_allowed_, false, overridable_);
     NotifyDenyCertificate();
@@ -451,20 +461,20 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       break;
     }
     case CMD_MORE: {
-      uma_helper_->RecordUserInteraction(
-          SecurityInterstitialUmaHelper::SHOW_ADVANCED);
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
       break;
     }
     case CMD_RELOAD: {
-      uma_helper_->RecordUserInteraction(
-          SecurityInterstitialUmaHelper::RELOAD);
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::RELOAD);
       // The interstitial can't refresh itself.
       web_contents()->GetController().Reload(true);
       break;
     }
     case CMD_HELP: {
-      uma_helper_->RecordUserInteraction(
-          SecurityInterstitialUmaHelper::SHOW_LEARN_MORE);
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
       content::NavigationController::LoadURLParams help_page_params(
           google_util::AppendGoogleLocaleParam(
               GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
@@ -472,8 +482,8 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       break;
     }
     case CMD_CLOCK: {
-      uma_helper_->RecordUserInteraction(
-          SecurityInterstitialUmaHelper::OPEN_TIME_SETTINGS);
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::OPEN_TIME_SETTINGS);
       LaunchDateAndTimeSettings();
       break;
     }
@@ -492,7 +502,8 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::PROCEED);
+  metrics_helper_->RecordUserDecision(
+      SecurityInterstitialMetricsHelper::PROCEED);
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, true, overridable_);
   // Accepting the certificate resumes the loading of the page.
@@ -500,7 +511,8 @@ void SSLBlockingPage::OnProceed() {
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::DONT_PROCEED);
+  metrics_helper_->RecordUserDecision(
+      SecurityInterstitialMetricsHelper::DONT_PROCEED);
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, false, overridable_);
   NotifyDenyCertificate();
@@ -524,7 +536,7 @@ void SSLBlockingPage::NotifyAllowCertificate() {
   callback_.Reset();
 }
 
-std::string SSLBlockingPage::GetHistogramPrefix() const {
+std::string SSLBlockingPage::GetUmaHistogramPrefix() const {
   switch (interstitial_reason_) {
     case SSL_REASON_SSL:
       if (overridable_)

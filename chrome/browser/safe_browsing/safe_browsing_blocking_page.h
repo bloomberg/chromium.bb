@@ -34,8 +34,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
-#include "chrome/browser/interstitials/security_interstitial_uma_helper.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "url/gurl.h"
 
@@ -191,10 +191,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
-  std::string GetHistogramPrefix() const;
+  std::string GetMetricPrefix() const;
   std::string GetSamplingEventName() const;
 
-  scoped_ptr<SecurityInterstitialUmaHelper> uma_helper_;
+  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

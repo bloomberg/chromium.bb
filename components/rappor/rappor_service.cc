@@ -126,7 +126,8 @@ void RapporService::Update(RecordingLevel recording_level, bool may_upload) {
     }
   }
 
-  DVLOG(1) << "RapporService may_upload=" << may_upload;
+  DVLOG(1) << "RapporService recording_level=" << recording_level_
+           << " may_upload=" << may_upload;
   if (may_upload) {
     uploader_->Start();
   } else {
