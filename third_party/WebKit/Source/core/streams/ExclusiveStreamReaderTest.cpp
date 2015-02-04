@@ -54,6 +54,8 @@ class NoopUnderlyingSource final : public GarbageCollectedFinalized<NoopUnderlyi
 public:
     ~NoopUnderlyingSource() override { }
 
+    void trace(Visitor* visitor) override { UnderlyingSource::trace(visitor); }
+
     void pullSource() override { }
     ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) { return ScriptPromise::cast(scriptState, reason); }
 };
