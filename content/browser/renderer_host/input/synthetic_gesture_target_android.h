@@ -18,28 +18,28 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   SyntheticGestureTargetAndroid(
       RenderWidgetHostImpl* host,
       base::android::ScopedJavaLocalRef<jobject> touch_event_synthesizer);
-  virtual ~SyntheticGestureTargetAndroid();
+  ~SyntheticGestureTargetAndroid() override;
 
   static bool RegisterTouchEventSynthesizer(JNIEnv* env);
 
   // SyntheticGestureTargetBase:
-  virtual void DispatchWebTouchEventToPlatform(
+  void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info) override;
-  virtual void DispatchWebMouseWheelEventToPlatform(
+  void DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo& latency_info) override;
-  virtual void DispatchWebMouseEventToPlatform(
+  void DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) override;
 
   // SyntheticGestureTarget:
-  virtual SyntheticGestureParams::GestureSourceType
-      GetDefaultSyntheticGestureSourceType() const override;
+  SyntheticGestureParams::GestureSourceType
+  GetDefaultSyntheticGestureSourceType() const override;
 
-  virtual float GetTouchSlopInDips() const override;
+  float GetTouchSlopInDips() const override;
 
-  virtual float GetMinScalingSpanInDips() const override;
+  float GetMinScalingSpanInDips() const override;
 
  private:
   // Enum values below need to be kept in sync with TouchEventSynthesizer.java

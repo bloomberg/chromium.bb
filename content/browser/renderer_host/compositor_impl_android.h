@@ -44,7 +44,7 @@ class CONTENT_EXPORT CompositorImpl
       public ui::WindowAndroidCompositor {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
-  virtual ~CompositorImpl();
+  ~CompositorImpl() override;
 
   static bool IsInitialized();
 
@@ -52,53 +52,51 @@ class CONTENT_EXPORT CompositorImpl
 
  private:
   // Compositor implementation.
-  virtual void SetRootLayer(scoped_refptr<cc::Layer> root) override;
-  virtual void SetSurface(jobject surface) override;
-  virtual void SetVisible(bool visible) override;
-  virtual void setDeviceScaleFactor(float factor) override;
-  virtual void SetWindowBounds(const gfx::Size& size) override;
-  virtual void SetHasTransparentBackground(bool flag) override;
-  virtual void SetNeedsComposite() override;
-  virtual ui::UIResourceProvider& GetUIResourceProvider() override;
-  virtual ui::ResourceManager& GetResourceManager() override;
+  void SetRootLayer(scoped_refptr<cc::Layer> root) override;
+  void SetSurface(jobject surface) override;
+  void SetVisible(bool visible) override;
+  void setDeviceScaleFactor(float factor) override;
+  void SetWindowBounds(const gfx::Size& size) override;
+  void SetHasTransparentBackground(bool flag) override;
+  void SetNeedsComposite() override;
+  ui::UIResourceProvider& GetUIResourceProvider() override;
+  ui::ResourceManager& GetResourceManager() override;
 
   // LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) override {}
-  virtual void DidBeginMainFrame() override {}
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
-  virtual void Layout() override;
-  virtual void ApplyViewportDeltas(
-      const gfx::Vector2d& inner_delta,
-      const gfx::Vector2d& outer_delta,
-      const gfx::Vector2dF& elastic_overscroll_delta,
-      float page_scale,
-      float top_controls_delta) override {}
-  virtual void ApplyViewportDeltas(
-      const gfx::Vector2d& scroll_delta,
-      float page_scale,
-      float top_controls_delta) override {}
-  virtual void RequestNewOutputSurface() override;
-  virtual void DidInitializeOutputSurface() override {}
-  virtual void DidFailToInitializeOutputSurface() override;
-  virtual void WillCommit() override {}
-  virtual void DidCommit() override;
-  virtual void DidCommitAndDrawFrame() override {}
-  virtual void DidCompleteSwapBuffers() override;
-  virtual void DidCompletePageScaleAnimation() override {}
+  void WillBeginMainFrame(int frame_id) override {}
+  void DidBeginMainFrame() override {}
+  void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
+  void Layout() override;
+  void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
+                           const gfx::Vector2d& outer_delta,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override {}
+  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override {}
+  void RequestNewOutputSurface() override;
+  void DidInitializeOutputSurface() override {}
+  void DidFailToInitializeOutputSurface() override;
+  void WillCommit() override {}
+  void DidCommit() override;
+  void DidCommitAndDrawFrame() override {}
+  void DidCompleteSwapBuffers() override;
+  void DidCompletePageScaleAnimation() override {}
 
   // LayerTreeHostSingleThreadClient implementation.
-  virtual void ScheduleComposite() override;
-  virtual void ScheduleAnimation() override;
-  virtual void DidPostSwapBuffers() override;
-  virtual void DidAbortSwapBuffers() override;
+  void ScheduleComposite() override;
+  void ScheduleAnimation() override;
+  void DidPostSwapBuffers() override;
+  void DidAbortSwapBuffers() override;
 
   // WindowAndroidCompositor implementation.
-  virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
-  virtual void RequestCopyOfOutputOnRootLayer(
+  void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
+  void RequestCopyOfOutputOnRootLayer(
       scoped_ptr<cc::CopyOutputRequest> request) override;
-  virtual void OnVSync(base::TimeTicks frame_time,
-                       base::TimeDelta vsync_period) override;
-  virtual void SetNeedsAnimate() override;
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override;
+  void SetNeedsAnimate() override;
 
   void SetWindowSurface(ANativeWindow* window);
 

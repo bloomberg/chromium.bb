@@ -89,115 +89,110 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
-  virtual ~RenderWidgetHostViewAndroid();
+  ~RenderWidgetHostViewAndroid() override;
 
   // RenderWidgetHostView implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void InitAsChild(gfx::NativeView parent_view) override;
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) override;
-  virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) override;
-  virtual RenderWidgetHost* GetRenderWidgetHost() const override;
-  virtual void SetSize(const gfx::Size& size) override;
-  virtual void SetBounds(const gfx::Rect& rect) override;
-  virtual gfx::Vector2dF GetLastScrollOffset() const override;
-  virtual gfx::NativeView GetNativeView() const override;
-  virtual gfx::NativeViewId GetNativeViewId() const override;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& moves) override;
-  virtual void Focus() override;
-  virtual void Blur() override;
-  virtual bool HasFocus() const override;
-  virtual bool IsSurfaceAvailableForCopy() const override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual bool IsShowing() override;
-  virtual gfx::Rect GetViewBounds() const override;
-  virtual gfx::Size GetPhysicalBackingSize() const override;
-  virtual bool DoTopControlsShrinkBlinkSize() const override;
-  virtual float GetTopControlsHeight() const override;
-  virtual void UpdateCursor(const WebCursor& cursor) override;
-  virtual void SetIsLoading(bool is_loading) override;
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode input_mode,
-                                    bool can_compose_inline,
-                                    int flags) override;
-  virtual void ImeCancelComposition() override;
-  virtual void ImeCompositionRangeChanged(
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void InitAsChild(gfx::NativeView parent_view) override;
+  void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                   const gfx::Rect& pos) override;
+  void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
+  RenderWidgetHost* GetRenderWidgetHost() const override;
+  void SetSize(const gfx::Size& size) override;
+  void SetBounds(const gfx::Rect& rect) override;
+  gfx::Vector2dF GetLastScrollOffset() const override;
+  gfx::NativeView GetNativeView() const override;
+  gfx::NativeViewId GetNativeViewId() const override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
+  void Focus() override;
+  void Blur() override;
+  bool HasFocus() const override;
+  bool IsSurfaceAvailableForCopy() const override;
+  void Show() override;
+  void Hide() override;
+  bool IsShowing() override;
+  gfx::Rect GetViewBounds() const override;
+  gfx::Size GetPhysicalBackingSize() const override;
+  bool DoTopControlsShrinkBlinkSize() const override;
+  float GetTopControlsHeight() const override;
+  void UpdateCursor(const WebCursor& cursor) override;
+  void SetIsLoading(bool is_loading) override;
+  void TextInputTypeChanged(ui::TextInputType type,
+                            ui::TextInputMode input_mode,
+                            bool can_compose_inline,
+                            int flags) override;
+  void ImeCancelComposition() override;
+  void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
-  virtual void FocusedNodeChanged(bool is_editable_node) override;
-  virtual void RenderProcessGone(base::TerminationStatus status,
-                                 int error_code) override;
-  virtual void Destroy() override;
-  virtual void SetTooltipText(const base::string16& tooltip_text) override;
-  virtual void SelectionChanged(const base::string16& text,
-                                size_t offset,
-                                const gfx::Range& range) override;
-  virtual void SelectionBoundsChanged(
+  void FocusedNodeChanged(bool is_editable_node) override;
+  void RenderProcessGone(base::TerminationStatus status,
+                         int error_code) override;
+  void Destroy() override;
+  void SetTooltipText(const base::string16& tooltip_text) override;
+  void SelectionChanged(const base::string16& text,
+                        size_t offset,
+                        const gfx::Range& range) override;
+  void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  virtual void AcceleratedSurfaceInitialized(int route_id) override;
-  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  virtual void SetBackgroundColor(SkColor color) override;
-  virtual void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      ReadbackRequestCallback& callback,
-      const SkColorType color_type) override;
-  virtual void CopyFromCompositingSurfaceToVideoFrame(
+  void AcceleratedSurfaceInitialized(int route_id) override;
+  bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
+  void SetBackgroundColor(SkColor color) override;
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& dst_size,
+                                  ReadbackRequestCallback& callback,
+                                  const SkColorType color_type) override;
+  void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) override;
-  virtual bool CanCopyToVideoFrame() const override;
-  virtual void GetScreenInfo(blink::WebScreenInfo* results) override;
-  virtual gfx::Rect GetBoundsInRootWindow() override;
-  virtual gfx::GLSurfaceHandle GetCompositingSurface() override;
-  virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                                      InputEventAckState ack_result) override;
-  virtual InputEventAckState FilterInputEvent(
+  bool CanCopyToVideoFrame() const override;
+  void GetScreenInfo(blink::WebScreenInfo* results) override;
+  gfx::Rect GetBoundsInRootWindow() override;
+  gfx::GLSurfaceHandle GetCompositingSurface() override;
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override;
+  InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
-  virtual void OnSetNeedsFlushInput() override;
-  virtual void GestureEventAck(const blink::WebGestureEvent& event,
-                               InputEventAckState ack_result) override;
-  virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
+  void OnSetNeedsFlushInput() override;
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       InputEventAckState ack_result) override;
+  BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
-  virtual bool LockMouse() override;
-  virtual void UnlockMouse() override;
-  virtual void OnSwapCompositorFrame(
-      uint32 output_surface_id,
-      scoped_ptr<cc::CompositorFrame> frame) override;
-  virtual void DidOverscroll(const DidOverscrollParams& params) override;
-  virtual void DidStopFlinging() override;
-  virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                       const SkBitmap& zoomed_bitmap) override;
-  virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
-      override;
-  virtual void LockCompositingSurface() override;
-  virtual void UnlockCompositingSurface() override;
-  virtual void OnTextSurroundingSelectionResponse(const base::string16& content,
-                                                  size_t start_offset,
-                                                  size_t end_offset) override;
+  bool LockMouse() override;
+  void UnlockMouse() override;
+  void OnSwapCompositorFrame(uint32 output_surface_id,
+                             scoped_ptr<cc::CompositorFrame> frame) override;
+  void DidOverscroll(const DidOverscrollParams& params) override;
+  void DidStopFlinging() override;
+  void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
+                               const SkBitmap& zoomed_bitmap) override;
+  scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
+  void LockCompositingSurface() override;
+  void UnlockCompositingSurface() override;
+  void OnTextSurroundingSelectionResponse(const base::string16& content,
+                                          size_t start_offset,
+                                          size_t end_offset) override;
 
   // cc::DelegatedFrameResourceCollectionClient implementation.
-  virtual void UnusedResourcesAreAvailable() override;
+  void UnusedResourcesAreAvailable() override;
 
   // ui::GestureProviderClient implementation.
-  virtual void OnGestureEvent(const ui::GestureEventData& gesture) override;
+  void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
   // ui::WindowAndroidObserver implementation.
-  virtual void OnCompositingDidCommit() override;
-  virtual void OnAttachCompositor() override;
-  virtual void OnDetachCompositor() override;
-  virtual void OnVSync(base::TimeTicks frame_time,
-                       base::TimeDelta vsync_period) override;
-  virtual void OnAnimate(base::TimeTicks begin_frame_time) override;
+  void OnCompositingDidCommit() override;
+  void OnAttachCompositor() override;
+  void OnDetachCompositor() override;
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override;
+  void OnAnimate(base::TimeTicks begin_frame_time) override;
 
   // DelegatedFrameEvictor implementation
-  virtual void EvictDelegatedFrame() override;
+  void EvictDelegatedFrame() override;
 
-  virtual SkColorType PreferredReadbackFormat() override;
+  SkColorType PreferredReadbackFormat() override;
 
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
@@ -206,15 +201,15 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnStylusSelectTap(base::TimeTicks time, float x, float y) override;
 
   // ui::TouchSelectionControllerClient implementation.
-  virtual bool SupportsAnimation() const override;
-  virtual void SetNeedsAnimate() override;
-  virtual void MoveCaret(const gfx::PointF& position) override;
-  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
-  virtual void SelectBetweenCoordinates(const gfx::PointF& base,
-                                        const gfx::PointF& extent) override;
-  virtual void OnSelectionEvent(ui::SelectionEventType event,
-                                const gfx::PointF& anchor_position) override;
-  virtual scoped_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
+  bool SupportsAnimation() const override;
+  void SetNeedsAnimate() override;
+  void MoveCaret(const gfx::PointF& position) override;
+  void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
+  void SelectBetweenCoordinates(const gfx::PointF& base,
+                                const gfx::PointF& extent) override;
+  void OnSelectionEvent(ui::SelectionEventType event,
+                        const gfx::PointF& anchor_position) override;
+  scoped_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);

@@ -171,10 +171,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SelectWordAroundCaret() override;
 
 #if defined(OS_ANDROID)
-  virtual void ActivateNearestFindResult(int request_id,
-                                         float x,
-                                         float y) override;
-  virtual void RequestFindMatchRects(int current_version) override;
+  void ActivateNearestFindResult(int request_id, float x, float y) override;
+  void RequestFindMatchRects(int current_version) override;
 #endif
 
   void set_delegate(RenderViewHostDelegate* d) {

@@ -140,8 +140,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                             const SkColorType color_type) override;
   bool CanCopyFromBackingStore() override;
 #if defined(OS_ANDROID)
-  virtual void LockBackingStore() override;
-  virtual void UnlockBackingStore() override;
+  void LockBackingStore() override;
+  void UnlockBackingStore() override;
 #endif
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardWheelEvent(const blink::WebMouseWheelEvent& wheel_event) override;

@@ -80,7 +80,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     main_thread_ = base::MessageLoopProxy::current();
   }
 
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override {
+  void SwapBuffers(cc::CompositorFrame* frame) override {
     GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
     DCHECK(frame->gl_frame_data->sub_buffer_rect ==
            gfx::Rect(frame->gl_frame_data->size));
@@ -88,7 +88,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     client_->DidSwapBuffers();
   }
 
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override {
+  bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
 
