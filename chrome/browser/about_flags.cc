@@ -334,19 +334,6 @@ const Experiment::Choice kOriginChipChoices[] = {
   { IDS_FLAGS_ORIGIN_CHIP_ON_SRP, switches::kEnableOriginChipOnSrp, ""}
 };
 
-const Experiment::Choice kTouchScrollingModeChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_TOUCH_SCROLLING_MODE_TOUCHCANCEL,
-    switches::kTouchScrollingMode,
-    switches::kTouchScrollingModeTouchcancel },
-  { IDS_FLAGS_TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE,
-    switches::kTouchScrollingMode,
-    switches::kTouchScrollingModeAsyncTouchmove },
-  { IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE,
-    switches::kTouchScrollingMode,
-    switches::kTouchScrollingModeSyncTouchmove },
-};
-
 const Experiment::Choice kExtensionContentVerificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP,
@@ -1760,13 +1747,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableCenteredAppList)
   },
 #endif
-  {
-    "touch-scrolling-mode",
-    IDS_FLAGS_TOUCH_SCROLLING_MODE_NAME,
-    IDS_FLAGS_TOUCH_SCROLLING_MODE_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
-    MULTI_VALUE_TYPE(kTouchScrollingModeChoices)
-  },
   {
     "disable-threaded-scrolling",
     IDS_FLAGS_DISABLE_THREADED_SCROLLING_NAME,

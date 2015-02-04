@@ -37,13 +37,14 @@ class TouchEventQueueTest : public testing::Test,
       : sent_event_count_(0),
         acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
-        slop_length_dips_(0),
-        touch_scrolling_mode_(TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT) {}
+        slop_length_dips_(0) {}
 
   ~TouchEventQueueTest() override {}
 
   // testing::Test
-  void SetUp() override { ResetQueueWithConfig(CreateConfig()); }
+  void SetUp() override {
+    ResetQueueWithConfig(TouchEventQueue::Config());
+  }
 
   void TearDown() override { queue_.reset(); }
 
@@ -78,23 +79,12 @@ class TouchEventQueueTest : public testing::Test,
   }
 
  protected:
-  TouchEventQueue::Config CreateConfig() {
-    TouchEventQueue::Config config;
-    config.touch_scrolling_mode = touch_scrolling_mode_;
-    return config;
-  }
-
-  void SetTouchScrollingMode(TouchEventQueue::TouchScrollingMode mode) {
-    touch_scrolling_mode_ = mode;
-    ResetQueueWithConfig(CreateConfig());
-  }
-
   void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
     slop_length_dips_ = slop_length_dips;
   }
 
   void SetUpForTimeoutTesting(base::TimeDelta timeout_delay) {
-    TouchEventQueue::Config config = CreateConfig();
+    TouchEventQueue::Config config;
     config.touch_ack_timeout_delay = timeout_delay;
     config.touch_ack_timeout_supported = true;
     ResetQueueWithConfig(config);
@@ -304,7 +294,6 @@ class TouchEventQueueTest : public testing::Test,
   scoped_ptr<InputEventAckState> sync_ack_result_;
   double slop_length_dips_;
   gfx::PointF anchor_;
-  TouchEventQueue::TouchScrollingMode touch_scrolling_mode_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -988,140 +977,6 @@ TEST_F(TouchEventQueueTest, NoTouchBasic) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
-// Tests that no TouchEvents are sent to renderer during scrolling.
-TEST_F(TouchEventQueueTest, TouchCancelOnScroll) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL);
-  // Queue a TouchStart.
-  PressTouchPoint(0, 1);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  MoveTouchPoint(0, 20, 5);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-
-  MoveTouchPoint(0, 30, 15);
-  EXPECT_EQ(2U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-
-  // Queue another TouchStart.
-  PressTouchPoint(20, 20);
-  EXPECT_EQ(3U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
-
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
-  SetFollowupEvent(followup_scroll);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-  EXPECT_TRUE(sent_event().cancelable);
-  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-
-  // GestureScrollUpdate inserts a synthetic TouchCancel before the TouchStart.
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
-  SetFollowupEvent(followup_scroll);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
-
-  // Acking the TouchCancel will result in dispatch of the next TouchStart.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  // The synthetic TouchCancel should not reach client, only the TouchStart.
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
-
-  // TouchMove should not be sent to the renderer.
-  MoveTouchPoint(0, 30, 5);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-
-  // GestureScrollUpdates should not change affect touch forwarding.
-  SendGestureEvent(WebInputEvent::GestureScrollUpdate);
-
-  // TouchEnd should not be sent to the renderer.
-  ReleaseTouchPoint(0);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-
-  ReleaseTouchPoint(0);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-
-  // Touch events from a new gesture sequence should be forwarded normally.
-  PressTouchPoint(80, 10);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  MoveTouchPoint(0, 80, 20);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  ReleaseTouchPoint(0);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-}
-
-// Tests that a scroll event will not insert a synthetic TouchCancel if there
-// was no consumer for the current touch sequence.
-TEST_F(TouchEventQueueTest, NoTouchCancelOnScrollIfNoConsumer) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL);
-
-  // Queue a TouchStart.
-  PressTouchPoint(0, 1);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
-
-  // Queue a TouchMove that turns into a GestureScrollBegin.
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
-  SetFollowupEvent(followup_scroll);
-  MoveTouchPoint(0, 20, 5);
-
-  // The TouchMove has no consumer, and should be ack'ed immediately. However,
-  // *no* synthetic TouchCancel should be inserted as the touch sequence
-  // had no consumer.
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
-
-  // Subsequent TouchMove's should not be sent to the renderer.
-  MoveTouchPoint(0, 30, 5);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-
-  // TouchEnd should not be sent to the renderer.
-  ReleaseTouchPoint(0);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-
-  // Touch events from a new gesture sequence should be forwarded normally.
-  PressTouchPoint(80, 10);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-}
-
 // Tests that IsTouchStartPendingAck works correctly.
 TEST_F(TouchEventQueueTest, PendingStart) {
 
@@ -1714,31 +1569,7 @@ TEST_F(TouchEventQueueTest, NoForwardingAfterScrollWithNoTouchConsumers) {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 }
 
-TEST_F(TouchEventQueueTest, SyncTouchMoveDoesntCancelTouchOnScroll) {
- SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE);
- // Queue a TouchStart.
- PressTouchPoint(0, 1);
- EXPECT_EQ(1U, GetAndResetSentEventCount());
- SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
- EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
- MoveTouchPoint(0, 20, 5);
- EXPECT_EQ(1U, queued_event_count());
- EXPECT_EQ(1U, GetAndResetSentEventCount());
-
- // GestureScrollBegin doesn't insert a synthetic TouchCancel.
- WebGestureEvent followup_scroll;
- followup_scroll.type = WebInputEvent::GestureScrollBegin;
- SetFollowupEvent(followup_scroll);
- SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
- EXPECT_EQ(0U, GetAndResetSentEventCount());
- EXPECT_EQ(1U, GetAndResetAckedEventCount());
- EXPECT_EQ(0U, queued_event_count());
-}
-
 TEST_F(TouchEventQueueTest, AsyncTouch) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1770,8 +1601,6 @@ TEST_F(TouchEventQueueTest, AsyncTouch) {
 // Ensure that touchmove's are appropriately throttled during a typical
 // scroll sequences that transitions between scrolls consumed and unconsumed.
 TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   // Process a TouchStart
   PressTouchPoint(0, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1967,8 +1796,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
 }
 
 TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   PressTouchPoint(0, 0);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -2024,7 +1851,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
 // Ensure that async touch dispatch and touch ack timeout interactions work
 // appropriately.
 TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
   SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
 
   // The touchstart should start the timeout.
@@ -2107,8 +1933,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
 // Ensure that if the touch ack for an async touchmove triggers a follow-up
 // touch event, that follow-up touch will be forwarded appropriately.
 TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   PressTouchPoint(0, 0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -2162,8 +1986,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
 // Ensure that the async touch is fully reset if the touch sequence restarts
 // without properly terminating.
 TEST_F(TouchEventQueueTest, AsyncTouchWithHardTouchStartReset) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   PressTouchPoint(0, 0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -2201,8 +2023,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithHardTouchStartReset) {
 }
 
 TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -2242,8 +2062,6 @@ TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
 }
 
 TEST_F(TouchEventQueueTest, TouchStartCancelableDuringScroll) {
-  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
-
   // Queue a touchstart and touchmove that go unconsumed, transitioning to an
   // active scroll sequence.
   PressTouchPoint(0, 1);

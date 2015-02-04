@@ -752,11 +752,6 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 
-const char kTouchScrollingMode[]            = "touch-scrolling-mode";
-const char kTouchScrollingModeAsyncTouchmove[] = "async-touchmove";
-const char kTouchScrollingModeSyncTouchmove[] = "sync-touchmove";
-const char kTouchScrollingModeTouchcancel[] = "touchcancel";
-
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
 // --trace-shutdown=base,net) otherwise, all events are recorded.

@@ -95,28 +95,12 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
 
 #endif
 
-TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
-  std::string modeString =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchScrollingMode);
-  if (modeString == switches::kTouchScrollingModeAsyncTouchmove)
-    return TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE;
-  if (modeString == switches::kTouchScrollingModeSyncTouchmove)
-    return TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE;
-  if (modeString == switches::kTouchScrollingModeTouchcancel)
-    return TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL;
-  if (!modeString.empty())
-    LOG(ERROR) << "Invalid --touch-scrolling-mode option: " << modeString;
-  return TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT;
-}
-
 }  // namespace
 
 InputRouterImpl::Config GetInputRouterConfigForPlatform() {
   InputRouterImpl::Config config;
   config.gesture_config = GetGestureEventQueueConfig();
   config.touch_config = GetTouchEventQueueConfig();
-  config.touch_config.touch_scrolling_mode = GetTouchScrollingMode();
   return config;
 }
 

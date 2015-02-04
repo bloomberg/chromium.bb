@@ -179,14 +179,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchmove"));
-  if (TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT ==
-      TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL) {
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchend"));
-    EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
-  } else {
-    EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchend"));
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
-  }
+  EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchend"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
 }
 
 // Verify that touching a touch-action: none region disables scrolling and
