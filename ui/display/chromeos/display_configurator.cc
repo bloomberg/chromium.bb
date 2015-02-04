@@ -456,6 +456,7 @@ DisplayConfigurator::DisplayConfigurator()
       force_configure_(false),
       next_display_protection_client_id_(1),
       display_externally_controlled_(false),
+      displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
       weak_ptr_factory_(this) {
 }
@@ -856,9 +857,13 @@ void DisplayConfigurator::SuspendDisplays() {
     // racing with the HandleSuspendReadiness message.
     native_display_delegate_->SyncWithServer();
   }
+
+  displays_suspended_ = true;
 }
 
 void DisplayConfigurator::ResumeDisplays() {
+  displays_suspended_ = false;
+
   configure_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kResumeDelayMs),
@@ -875,6 +880,14 @@ void DisplayConfigurator::ConfigureDisplays() {
 }
 
 void DisplayConfigurator::RunPendingConfiguration() {
+  // Don't do anything if the displays are currently suspended.  Instead we will
+  // probe and reconfigure the displays if necessary in ResumeDisplays().
+  if (displays_suspended_) {
+    VLOG(1) << "Displays are currently suspended.  Not attempting to "
+            << "reconfigure them.";
+    return;
+  }
+
   // Configuration task is currently running. Do not start a second
   // configuration.
   if (configuration_task_)

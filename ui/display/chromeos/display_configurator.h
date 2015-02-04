@@ -414,6 +414,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Display controlled by an external entity.
   bool display_externally_controlled_;
 
+  // Whether the displays are currently suspended.
+  bool displays_suspended_;
+
   scoped_ptr<DisplayLayoutManager> layout_manager_;
 
   scoped_ptr<UpdateDisplayConfigurationTask> configuration_task_;

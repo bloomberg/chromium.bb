@@ -965,6 +965,54 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
             log_->GetActionsAndClear());
 }
 
+TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
+  InitWithSingleOutput();
+
+  // The DisplayConfigurator may occasionally receive OnConfigurationChanged()
+  // after the displays have been suspended.  This event should be ignored since
+  // the DisplayConfigurator will force a probe and reconfiguration of displays
+  // at resume time.
+  configurator_.SuspendDisplays();
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+
+  configurator_.OnConfigurationChanged();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+
+  configurator_.ResumeDisplays();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+
+  // If a configuration task is pending when the displays are suspended, that
+  // task should not run either.
+  configurator_.OnConfigurationChanged();
+  configurator_.SuspendDisplays();
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+
+  configurator_.ResumeDisplays();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+}
+
 TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
   DisplayConfigurator::ContentProtectionClientId client1 =
       configurator_.RegisterContentProtectionClient();
