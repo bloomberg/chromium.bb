@@ -4,19 +4,14 @@
 
 #include "content/child/notifications/notification_dispatcher.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/notifications/notification_manager.h"
-#include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/common/platform_notification_messages.h"
 
 namespace content {
 
 NotificationDispatcher::NotificationDispatcher(
     ThreadSafeSender* thread_safe_sender)
-    : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(thread_safe_sender),
-      next_notification_id_(0) {
+    : WorkerThreadMessageFilter(thread_safe_sender), next_notification_id_(0) {
 }
 
 NotificationDispatcher::~NotificationDispatcher() {}
@@ -27,43 +22,32 @@ int NotificationDispatcher::GenerateNotificationId(int thread_id) {
   return next_notification_id_++;
 }
 
-base::TaskRunner* NotificationDispatcher::OverrideTaskRunnerForMessage(
+bool NotificationDispatcher::ShouldHandleMessage(
+    const IPC::Message& msg) const {
+  return IPC_MESSAGE_CLASS(msg) == PlatformNotificationMsgStart;
+}
+
+void NotificationDispatcher::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  if (!ShouldHandleMessage(msg))
-    return NULL;
+  NotificationManager::ThreadSpecificInstance(thread_safe_sender(),
+                                              main_thread_task_runner(),
+                                              this)->OnMessageReceived(msg);
+}
 
-  int notification_id = -1,
-      thread_id = 0;
-
+bool NotificationDispatcher::GetWorkerThreadIdForMessage(
+    const IPC::Message& msg,
+    int* ipc_thread_id) {
+  int notification_id = -1;
   const bool success = PickleIterator(msg).ReadInt(&notification_id);
   DCHECK(success);
 
-  {
-    base::AutoLock lock(notification_id_map_lock_);
-    auto iterator = notification_id_map_.find(notification_id);
-    if (iterator != notification_id_map_.end())
-      thread_id = iterator->second;
+  base::AutoLock lock(notification_id_map_lock_);
+  auto iterator = notification_id_map_.find(notification_id);
+  if (iterator != notification_id_map_.end()) {
+    *ipc_thread_id = iterator->second;
+    return true;
   }
-
-  if (!thread_id)
-    return main_thread_loop_proxy_.get();
-
-  return new WorkerThreadTaskRunner(thread_id);
-}
-
-bool NotificationDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  if (!ShouldHandleMessage(msg))
-    return false;
-
-  NotificationManager::ThreadSpecificInstance(
-      thread_safe_sender_.get(),
-      main_thread_loop_proxy_.get(),
-      this)->OnMessageReceived(msg);
-  return true;
-}
-
-bool NotificationDispatcher::ShouldHandleMessage(const IPC::Message& msg) {
-  return IPC_MESSAGE_CLASS(msg) == PlatformNotificationMsgStart;
+  return false;
 }
 
 }  // namespace content

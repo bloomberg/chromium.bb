@@ -5,30 +5,24 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_MESSAGE_FILTER_H_
 
-#include "content/child/child_message_filter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
+#include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class EmbeddedWorkerContextMessageFilter : public ChildMessageFilter {
+class EmbeddedWorkerContextMessageFilter : public WorkerThreadMessageFilter {
  public:
   EmbeddedWorkerContextMessageFilter();
 
  protected:
   ~EmbeddedWorkerContextMessageFilter() override;
 
-  // ChildMessageFilter implementation:
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
 
  private:
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextMessageFilter);
 };
 

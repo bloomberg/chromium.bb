@@ -5,22 +5,17 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 
-#include "content/child/child_message_filter.h"
+#include "content/child/worker_thread_message_filter.h"
 #include "content/common/content_export.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace content {
 
-class ThreadSafeSender;
 struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 class CONTENT_EXPORT ServiceWorkerMessageFilter
-    : public NON_EXPORTED_BASE(ChildMessageFilter) {
+    : public NON_EXPORTED_BASE(WorkerThreadMessageFilter) {
  public:
   explicit ServiceWorkerMessageFilter(ThreadSafeSender* thread_safe_sender);
 
@@ -28,10 +23,13 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   ~ServiceWorkerMessageFilter() override;
 
  private:
-  // ChildMessageFilter implementation:
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
+
+  // ChildMessageFilter:
   void OnStaleMessageReceived(const IPC::Message& msg) override;
 
   // Message handlers for stale messages.
@@ -51,9 +49,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
       int provider_id,
       const ServiceWorkerObjectInfo& info,
       bool should_notify_controllerchange);
-
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessageFilter);
 };

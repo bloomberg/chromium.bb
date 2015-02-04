@@ -7,19 +7,12 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/child/child_message_filter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
+#include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class ThreadSafeSender;
-
-class NotificationDispatcher : public ChildMessageFilter {
+class NotificationDispatcher : public WorkerThreadMessageFilter {
  public:
   explicit NotificationDispatcher(ThreadSafeSender* thread_safe_sender);
 
@@ -31,15 +24,11 @@ class NotificationDispatcher : public ChildMessageFilter {
   ~NotificationDispatcher() override;
 
  private:
-  bool ShouldHandleMessage(const IPC::Message& msg);
-
-  // ChildMessageFilter implementation.
-  base::TaskRunner* OverrideTaskRunnerForMessage(const IPC::Message& msg)
-      override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
 
   using NotificationIdToThreadId = std::map<int, int>;
 

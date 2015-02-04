@@ -38,14 +38,13 @@ class WebFrame;
 }  // namespace blink
 
 namespace content {
-class BluetoothMessageFilter;
+class ChildMessageFilter;
 class ChildDiscardableSharedMemoryManager;
 class ChildGpuMemoryBufferManager;
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
-class GeofencingMessageFilter;
 class NavigatorConnectDispatcher;
 class NotificationDispatcher;
 class PushDispatcher;
@@ -294,9 +293,8 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_ptr<base::PowerMonitor> power_monitor_;
 
-  scoped_refptr<GeofencingMessageFilter> geofencing_message_filter_;
-
-  scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
+  scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
+  scoped_refptr<ChildMessageFilter> bluetooth_message_filter_;
 
   scoped_refptr<NavigatorConnectDispatcher> navigator_connect_dispatcher_;
 

@@ -273,6 +273,8 @@
       'child/weburlresponse_extradata_impl.h',
       'child/worker_task_runner.cc',
       'child/worker_task_runner.h',
+      'child/worker_thread_message_filter.cc',
+      'child/worker_thread_message_filter.h',
       'child/worker_thread_task_runner.cc',
       'child/worker_thread_task_runner.h',
     ],

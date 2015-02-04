@@ -7,20 +7,12 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/child/child_message_filter.h"
-#include "content/public/common/push_messaging_status.h"
-
-namespace base {
-class MessageLoopProxy;
-}
+#include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class ThreadSafeSender;
-
-class PushDispatcher : public ChildMessageFilter {
+class PushDispatcher : public WorkerThreadMessageFilter {
  public:
   explicit PushDispatcher(ThreadSafeSender* thread_safe_sender);
 
@@ -34,15 +26,11 @@ class PushDispatcher : public ChildMessageFilter {
   ~PushDispatcher() override;
 
  private:
-  bool ShouldHandleMessage(const IPC::Message& msg);
-
-  // ChildMessageFilter implementation.
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
 
   base::Lock request_id_map_lock_;
   std::map<int, int> request_id_map_;  // Maps request id to thread id.

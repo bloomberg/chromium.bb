@@ -7,19 +7,12 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/child/child_message_filter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
+#include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class ThreadSafeSender;
-
-class QuotaMessageFilter : public ChildMessageFilter {
+class QuotaMessageFilter : public WorkerThreadMessageFilter {
  public:
   explicit QuotaMessageFilter(ThreadSafeSender* thread_safe_sender);
 
@@ -35,15 +28,13 @@ class QuotaMessageFilter : public ChildMessageFilter {
   ~QuotaMessageFilter() override;
 
  private:
-  // ChildMessageFilter implementation:
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
 
   typedef std::map<int, int> RequestIdToThreadId;
-
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   base::Lock request_id_map_lock_;
   RequestIdToThreadId request_id_map_;

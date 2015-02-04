@@ -4,10 +4,8 @@
 
 #include "content/child/service_worker/service_worker_message_filter.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
@@ -39,29 +37,26 @@ void SendRegistrationObjectDestroyed(
 }  // namespace
 
 ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
-    : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(sender) {}
+    : WorkerThreadMessageFilter(sender) {
+}
 
 ServiceWorkerMessageFilter::~ServiceWorkerMessageFilter() {}
 
-base::TaskRunner* ServiceWorkerMessageFilter::OverrideTaskRunnerForMessage(
-    const IPC::Message& msg) {
-  if (IPC_MESSAGE_CLASS(msg) != ServiceWorkerMsgStart)
-    return NULL;
-  int ipc_thread_id = 0;
-  const bool success = PickleIterator(msg).ReadInt(&ipc_thread_id);
-  DCHECK(success);
-  if (!ipc_thread_id)
-    return main_thread_loop_proxy_.get();
-  return new WorkerThreadTaskRunner(ipc_thread_id);
+bool ServiceWorkerMessageFilter::ShouldHandleMessage(
+    const IPC::Message& msg) const {
+  return IPC_MESSAGE_CLASS(msg) == ServiceWorkerMsgStart;
 }
 
-bool ServiceWorkerMessageFilter::OnMessageReceived(const IPC::Message& msg) {
-  if (IPC_MESSAGE_CLASS(msg) != ServiceWorkerMsgStart)
-    return false;
+void ServiceWorkerMessageFilter::OnFilteredMessageReceived(
+    const IPC::Message& msg) {
   ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender_.get())->OnMessageReceived(msg);
-  return true;
+      thread_safe_sender())->OnMessageReceived(msg);
+}
+
+bool ServiceWorkerMessageFilter::GetWorkerThreadIdForMessage(
+    const IPC::Message& msg,
+    int* ipc_thread_id) {
+  return PickleIterator(msg).ReadInt(ipc_thread_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleMessageReceived(
@@ -83,13 +78,13 @@ void ServiceWorkerMessageFilter::OnStaleRegistered(
     int request_id,
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.active.handle_id);
-  SendRegistrationObjectDestroyed(thread_safe_sender_.get(), info.handle_id);
+  SendRegistrationObjectDestroyed(thread_safe_sender(), info.handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
@@ -98,11 +93,11 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
     int registration_handle_id,
     int changed_mask,
     const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.active.handle_id);
   // Don't have to decrement registration refcount because the sender of the
   // SetVersionAttributes message doesn't increment it.
@@ -113,7 +108,7 @@ void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info,
     bool should_notify_controllerchange) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(), info.handle_id);
+  SendServiceWorkerObjectDestroyed(thread_safe_sender(), info.handle_id);
 }
 
 }  // namespace content

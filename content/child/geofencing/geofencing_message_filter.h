@@ -5,30 +5,22 @@
 #ifndef CONTENT_CHILD_GEOFENCING_GEOFENCING_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_GEOFENCING_GEOFENCING_MESSAGE_FILTER_H_
 
-#include "content/child/child_message_filter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
+#include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class ThreadSafeSender;
-
-class GeofencingMessageFilter : public ChildMessageFilter {
+class GeofencingMessageFilter : public WorkerThreadMessageFilter {
  public:
   explicit GeofencingMessageFilter(ThreadSafeSender* thread_safe_sender);
 
  private:
   ~GeofencingMessageFilter() override;
 
-  // ChildMessageFilter implementation:
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) override;
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  // WorkerThreadMessageFilter:
+  bool ShouldHandleMessage(const IPC::Message& msg) const override;
+  void OnFilteredMessageReceived(const IPC::Message& msg) override;
+  bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
+                                   int* ipc_thread_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(GeofencingMessageFilter);
 };

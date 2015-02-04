@@ -4,45 +4,38 @@
 
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
 
 EmbeddedWorkerContextMessageFilter::EmbeddedWorkerContextMessageFilter()
-    : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
+    : WorkerThreadMessageFilter(
+          ChildThreadImpl::current()->thread_safe_sender()) {
+}
 
 EmbeddedWorkerContextMessageFilter::~EmbeddedWorkerContextMessageFilter() {}
 
-base::TaskRunner*
-EmbeddedWorkerContextMessageFilter::OverrideTaskRunnerForMessage(
-    const IPC::Message& msg) {
-  if (IPC_MESSAGE_CLASS(msg) != EmbeddedWorkerContextMsgStart)
-    return NULL;
-  int ipc_thread_id = 0;
-  const bool success = PickleIterator(msg).ReadInt(&ipc_thread_id);
-  DCHECK(success);
-  if (!ipc_thread_id)
-    return main_thread_loop_proxy_.get();
-  return new WorkerThreadTaskRunner(ipc_thread_id);
+bool EmbeddedWorkerContextMessageFilter::ShouldHandleMessage(
+    const IPC::Message& msg) const {
+  return IPC_MESSAGE_CLASS(msg) == EmbeddedWorkerContextMsgStart;
 }
 
-bool EmbeddedWorkerContextMessageFilter::OnMessageReceived(
+void EmbeddedWorkerContextMessageFilter::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  if (IPC_MESSAGE_CLASS(msg) != EmbeddedWorkerContextMsgStart)
-    return false;
   EmbeddedWorkerContextClient* client =
       EmbeddedWorkerContextClient::ThreadSpecificInstance();
-  if (!client) {
+  if (!client)
     LOG(ERROR) << "Stray message is sent to nonexistent worker";
-    return true;
-  }
-  return client->OnMessageReceived(msg);
+  else
+    client->OnMessageReceived(msg);
+}
+
+bool EmbeddedWorkerContextMessageFilter::GetWorkerThreadIdForMessage(
+    const IPC::Message& msg,
+    int* ipc_thread_id) {
+  return PickleIterator(msg).ReadInt(ipc_thread_id);
 }
 
 }  // namespace content
