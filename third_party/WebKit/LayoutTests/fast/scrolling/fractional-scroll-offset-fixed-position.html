@@ -27,7 +27,8 @@
 function runTest()
 {
   window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-  window.scrollTo(0, 0.5)
+  window.scrollTo(0, 0.5);
+  document.getElementById('header').innerHTML = "scroll offset is " + window.scrollY;
 }
 </script>
 

@@ -23,9 +23,18 @@
 </style>
 </head>
 
-<body style="width:1000px;height:2000px;">
+<script>
+function runTest()
+{
+  window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+  window.scrollTo(0, 1.5);
+  document.getElementById('header').innerHTML = "scroll offset is " + window.scrollY;
+}
+</script>
+
+<body style="width:1000px;height:2000px;" onload="runTest()">
 <div id="settings"  >
- <div id="header">scroll offset is 0.5
+ <div id="header">
     </div>
 </div>
 </body>
