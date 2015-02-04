@@ -5,12 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_PROGRAM_INFO_MANAGER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_PROGRAM_INFO_MANAGER_H_
 
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -48,8 +49,30 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLES2Implementation* gl, GLuint program, GLuint index, GLsizei bufsize,
       GLsizei* length, GLint* size, GLenum* type, char* name);
 
+  GLuint GetUniformBlockIndex(
+      GLES2Implementation* gl, GLuint program, const char* name);
+
+  bool GetActiveUniformBlockName(
+      GLES2Implementation* gl, GLuint program, GLuint index,
+      GLsizei buf_size, GLsizei* length, char* name);
+
+  bool GetActiveUniformBlockiv(
+      GLES2Implementation* gl, GLuint program, GLuint index,
+      GLenum pname, GLint* params);
+
  private:
-  class Program {
+  friend class ProgramInfoManagerTest;
+
+  FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest, UpdateES3UniformBlocks);
+
+  enum ProgramInfoType {
+    kES2,
+    kES3UniformBlocks,
+    kNone,
+  };
+
+  // Need GLES2_IMPL_EXPORT for tests.
+  class GLES2_IMPL_EXPORT Program {
    public:
     struct UniformInfo {
       UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
@@ -71,6 +94,17 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLint location;
       std::string name;
     };
+    struct UniformBlock {
+      UniformBlock();
+      ~UniformBlock();
+
+      GLuint binding;
+      GLuint data_size;
+      std::vector<GLuint> active_uniform_indices;
+      GLboolean referenced_by_vertex_shader;
+      GLboolean referenced_by_fragment_shader;
+      std::string name;
+    };
 
     Program();
     ~Program();
@@ -89,15 +123,20 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     bool GetProgramiv(GLenum pname, GLint* params);
 
-    // Updates the program info after a successful link.
-    void Update(GLES2Implementation* gl,
-                GLuint program,
-                const std::vector<int8>& result);
+    // Gets the index of a uniform block by name.
+    GLuint GetUniformBlockIndex(const std::string& name) const;
+    const UniformBlock* GetUniformBlock(GLuint index) const;
 
-    bool cached() const;
+    // Updates the ES2 only program info after a successful link.
+    void UpdateES2(const std::vector<int8>& result);
+
+    // Updates the ES3 UniformBlock info after a successful link.
+    void UpdateES3UniformBlocks(const std::vector<int8>& result);
+
+    bool IsCached(ProgramInfoType type) const;
 
    private:
-    bool cached_;
+    bool cached_es2_;
 
     GLsizei max_attrib_name_length_;
 
@@ -109,13 +148,23 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     // Uniform info by index.
     std::vector<UniformInfo> uniform_infos_;
 
-    base::hash_map<std::string, GLint> frag_data_locations_;
-
     // This is true if glLinkProgram was successful last time it was called.
     bool link_status_;
+
+    // BELOW ARE ES3 ONLY INFORMATION.
+
+    bool cached_es3_uniform_blocks_;
+
+    uint32_t active_uniform_block_max_name_length_;
+
+    // Uniform blocks by index.
+    std::vector<UniformBlock> uniform_blocks_;
+
+    base::hash_map<std::string, GLint> frag_data_locations_;
   };
 
-  Program* GetProgramInfo(GLES2Implementation* gl, GLuint program);
+  Program* GetProgramInfo(
+      GLES2Implementation* gl, GLuint program, ProgramInfoType type);
 
   typedef base::hash_map<GLuint, Program> ProgramInfoMap;
 

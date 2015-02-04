@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/program_info_manager.h"
 
+#include "base/numerics/safe_math.h"
+
 namespace {
 
 template<typename T> static T LocalGetAs(
@@ -44,11 +46,23 @@ ProgramInfoManager::Program::UniformInfo::UniformInfo(
 ProgramInfoManager::Program::UniformInfo::~UniformInfo() {
 }
 
+ProgramInfoManager::Program::UniformBlock::UniformBlock()
+    : binding(0),
+      data_size(0),
+      referenced_by_vertex_shader(false),
+      referenced_by_fragment_shader(false) {
+}
+
+ProgramInfoManager::Program::UniformBlock::~UniformBlock() {
+}
+
 ProgramInfoManager::Program::Program()
-    : cached_(false),
+    : cached_es2_(false),
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
-      link_status_(false) {
+      link_status_(false),
+      cached_es3_uniform_blocks_(false),
+      active_uniform_block_max_name_length_(0) {
 }
 
 ProgramInfoManager::Program::~Program() {
@@ -76,6 +90,11 @@ const ProgramInfoManager::Program::UniformInfo*
 ProgramInfoManager::Program::GetUniformInfo(GLint index) const {
   return (static_cast<size_t>(index) < uniform_infos_.size()) ?
       &uniform_infos_[index] : NULL;
+}
+
+const ProgramInfoManager::Program::UniformBlock*
+ProgramInfoManager::Program::GetUniformBlock(GLuint index) const {
+  return (index < uniform_blocks_.size()) ? &uniform_blocks_[index] : NULL;
 }
 
 GLint ProgramInfoManager::Program::GetUniformLocation(
@@ -125,31 +144,45 @@ bool ProgramInfoManager::Program::GetProgramiv(
     GLenum pname, GLint* params) {
   switch (pname) {
     case GL_LINK_STATUS:
-      *params = link_status_;
+      *params = static_cast<GLint>(link_status_);
       return true;
     case GL_ACTIVE_ATTRIBUTES:
-      *params = attrib_infos_.size();
+      *params = static_cast<GLint>(attrib_infos_.size());
       return true;
     case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
-      *params = max_attrib_name_length_;
+      *params = static_cast<GLint>(max_attrib_name_length_);
       return true;
     case GL_ACTIVE_UNIFORMS:
-      *params = uniform_infos_.size();
+      *params = static_cast<GLint>(uniform_infos_.size());
       return true;
     case GL_ACTIVE_UNIFORM_MAX_LENGTH:
-      *params = max_uniform_name_length_;
+      *params = static_cast<GLint>(max_uniform_name_length_);
+      return true;
+    case GL_ACTIVE_UNIFORM_BLOCKS:
+      *params = static_cast<GLint>(uniform_blocks_.size());
+      return true;
+    case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
+      *params = static_cast<GLint>(active_uniform_block_max_name_length_);
       return true;
     default:
+      NOTREACHED();
       break;
   }
   return false;
 }
 
-void ProgramInfoManager::Program::Update(
-    GLES2Implementation* gl,
-    GLuint program,
-    const std::vector<int8>& result) {
-  if (cached_) {
+GLuint ProgramInfoManager::Program::GetUniformBlockIndex(
+    const std::string& name) const {
+  for (size_t ii = 0; ii < uniform_blocks_.size(); ++ii) {
+    if (uniform_blocks_[ii].name == name) {
+      return static_cast<GLuint>(ii);
+    }
+  }
+  return GL_INVALID_INDEX;
+}
+
+void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
+  if (cached_es2_) {
     return;
   }
   if (result.empty()) {
@@ -200,12 +233,91 @@ void ProgramInfoManager::Program::Update(
     ++input;
   }
   DCHECK_EQ(header->num_attribs + header->num_uniforms,
-                static_cast<uint32>(input - inputs));
-  cached_ = true;
+            static_cast<uint32>(input - inputs));
+  cached_es2_ = true;
 }
 
-bool ProgramInfoManager::Program::cached() const {
-  return cached_;
+void ProgramInfoManager::Program::UpdateES3UniformBlocks(
+    const std::vector<int8>& result) {
+  if (cached_es3_uniform_blocks_) {
+    return;
+  }
+  if (result.empty()) {
+    // This should only happen on a lost context.
+    return;
+  }
+  uniform_blocks_.clear();
+  active_uniform_block_max_name_length_ = 0;
+
+  uint32_t header_size = sizeof(UniformBlocksHeader);
+  DCHECK_GE(result.size(), header_size);
+  const UniformBlocksHeader* header = LocalGetAs<const UniformBlocksHeader*>(
+      result, 0, header_size);
+  DCHECK(header);
+  if (header->num_uniform_blocks == 0) {
+    DCHECK_EQ(result.size(), header_size);
+    // TODO(zmo): Here we can't tell if no uniform blocks are defined, or
+    // the previous link failed.
+    return;
+  }
+  uniform_blocks_.resize(header->num_uniform_blocks);
+
+  uint32_t entry_size = sizeof(UniformBlockInfo) * header->num_uniform_blocks;
+  DCHECK_GE(result.size(), header_size + entry_size);
+  uint32_t data_size = result.size() - header_size - entry_size;
+  DCHECK_LT(0u, data_size);
+  const UniformBlockInfo* entries = LocalGetAs<const UniformBlockInfo*>(
+      result, header_size, entry_size);
+  DCHECK(entries);
+  const char* data = LocalGetAs<const char*>(
+      result, header_size + entry_size, data_size);
+  DCHECK(data);
+
+  uint32_t size = 0;
+  for (uint32_t ii = 0; ii < header->num_uniform_blocks; ++ii) {
+    uniform_blocks_[ii].binding = static_cast<GLuint>(entries[ii].binding);
+    uniform_blocks_[ii].data_size = static_cast<GLuint>(entries[ii].data_size);
+    uniform_blocks_[ii].active_uniform_indices.resize(
+        entries[ii].active_uniforms);
+    uniform_blocks_[ii].referenced_by_vertex_shader = static_cast<GLboolean>(
+        entries[ii].referenced_by_vertex_shader);
+    uniform_blocks_[ii].referenced_by_fragment_shader = static_cast<GLboolean>(
+        entries[ii].referenced_by_fragment_shader);
+    // Uniform block names can't be empty strings.
+    DCHECK_LT(1u, entries[ii].name_length);
+    if (entries[ii].name_length > active_uniform_block_max_name_length_) {
+      active_uniform_block_max_name_length_ = entries[ii].name_length;
+    }
+    size += entries[ii].name_length;
+    DCHECK_GE(data_size, size);
+    uniform_blocks_[ii].name = std::string(data, entries[ii].name_length - 1);
+    data += entries[ii].name_length;
+    size += entries[ii].active_uniforms * sizeof(uint32_t);
+    DCHECK_GE(data_size, size);
+    const uint32_t* indices = reinterpret_cast<const uint32_t*>(data);
+    for (uint32_t uu = 0; uu < entries[ii].active_uniforms; ++uu) {
+      uniform_blocks_[ii].active_uniform_indices[uu] =
+          static_cast<GLuint>(indices[uu]);
+    }
+    indices += entries[ii].active_uniforms;
+    data = reinterpret_cast<const char*>(indices);
+  }
+  DCHECK_EQ(data_size, size);
+  cached_es3_uniform_blocks_ = true;
+}
+
+bool ProgramInfoManager::Program::IsCached(ProgramInfoType type) const {
+  switch (type) {
+    case kES2:
+      return cached_es2_;
+    case kES3UniformBlocks:
+      return cached_es3_uniform_blocks_;
+    case kNone:
+      return true;
+    default:
+      NOTREACHED();
+      return true;
+  }
 }
 
 
@@ -216,29 +328,42 @@ ProgramInfoManager::~ProgramInfoManager() {
 }
 
 ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
-    GLES2Implementation* gl, GLuint program) {
+    GLES2Implementation* gl, GLuint program, ProgramInfoType type) {
   lock_.AssertAcquired();
   ProgramInfoMap::iterator it = program_infos_.find(program);
   if (it == program_infos_.end()) {
     return NULL;
   }
   Program* info = &it->second;
-  if (info->cached())
+  if (info->IsCached(type))
     return info;
-  std::vector<int8> result;
-  {
-    base::AutoUnlock unlock(lock_);
-    // lock_ can't be held across IPC call or else it may deadlock in pepper.
-    // http://crbug.com/418651
-    gl->GetProgramInfoCHROMIUMHelper(program, &result);
-  }
 
-  it = program_infos_.find(program);
-  if (it == program_infos_.end()) {
-    return NULL;
+  std::vector<int8> result;
+  switch (type) {
+    case kES2:
+      {
+        base::AutoUnlock unlock(lock_);
+        // lock_ can't be held across IPC call or else it may deadlock in
+        // pepper. http://crbug.com/418651
+        gl->GetProgramInfoCHROMIUMHelper(program, &result);
+      }
+      info->UpdateES2(result);
+      break;
+    case kES3UniformBlocks:
+      {
+        base::AutoUnlock unlock(lock_);
+        // lock_ can't be held across IPC call or else it may deadlock in
+        // pepper. http://crbug.com/418651
+
+        // TODO(zmo): Uncomment the below line once GetUniformBlocksCHROMIUM
+        // command is implemented.
+        // gl->GetUniformBlocksCHROMIUMHeler(program, &result);
+      }
+      info->UpdateES3UniformBlocks(result);
+    default:
+      NOTREACHED();
+      return NULL;
   }
-  info = &it->second;
-  info->Update(gl, program, result);
   return info;
 }
 
@@ -259,7 +384,23 @@ void ProgramInfoManager::DeleteInfo(GLuint program) {
 bool ProgramInfoManager::GetProgramiv(
     GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params) {
   base::AutoLock auto_lock(lock_);
-  Program* info = GetProgramInfo(gl, program);
+  ProgramInfoType type = kNone;
+  switch (pname) {
+    case GL_ACTIVE_ATTRIBUTES:
+    case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
+    case GL_ACTIVE_UNIFORMS:
+    case GL_ACTIVE_UNIFORM_MAX_LENGTH:
+    case GL_LINK_STATUS:
+      type = kES2;
+      break;
+    case GL_ACTIVE_UNIFORM_BLOCKS:
+    case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
+      type = kES3UniformBlocks;
+      break;
+    default:
+      return false;
+  }
+  Program* info = GetProgramInfo(gl, program, type);
   if (!info) {
     return false;
   }
@@ -270,7 +411,7 @@ GLint ProgramInfoManager::GetAttribLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kES2);
     if (info) {
       return info->GetAttribLocation(name);
     }
@@ -282,7 +423,7 @@ GLint ProgramInfoManager::GetUniformLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kES2);
     if (info) {
       return info->GetUniformLocation(name);
     }
@@ -296,7 +437,7 @@ GLint ProgramInfoManager::GetFragDataLocation(
   // fetched altogether from the service side.  See crbug.com/452104.
   {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kNone);
     if (info) {
       GLint possible_loc = info->GetFragDataLocation(name);
       if (possible_loc != -1)
@@ -306,7 +447,7 @@ GLint ProgramInfoManager::GetFragDataLocation(
   GLint loc = gl->GetFragDataLocationHelper(program, name);
   if (loc != -1) {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kNone);
     if (info) {
       info->CacheFragDataLocation(name, loc);
     }
@@ -320,7 +461,7 @@ bool ProgramInfoManager::GetActiveAttrib(
     GLint* size, GLenum* type, char* name) {
   {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kES2);
     if (info) {
       const Program::VertexAttrib* attrib_info = info->GetAttribInfo(index);
       if (attrib_info) {
@@ -356,7 +497,7 @@ bool ProgramInfoManager::GetActiveUniform(
     GLint* size, GLenum* type, char* name) {
   {
     base::AutoLock auto_lock(lock_);
-    Program* info = GetProgramInfo(gl, program);
+    Program* info = GetProgramInfo(gl, program, kES2);
     if (info) {
       const Program::UniformInfo* uniform_info = info->GetUniformInfo(index);
       if (uniform_info) {
@@ -384,6 +525,108 @@ bool ProgramInfoManager::GetActiveUniform(
   }
   return gl->GetActiveUniformHelper(
       program, index, bufsize, length, size, type, name);
+}
+
+GLuint ProgramInfoManager::GetUniformBlockIndex(
+    GLES2Implementation* gl, GLuint program, const char* name) {
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kES3UniformBlocks);
+    if (info) {
+      return info->GetUniformBlockIndex(name);
+    }
+  }
+  return false;
+  // TODO(zmo): return gl->GetUniformBlockIndexHelper(program, name);
+}
+
+bool ProgramInfoManager::GetActiveUniformBlockName(
+    GLES2Implementation* gl, GLuint program, GLuint index,
+    GLsizei buf_size, GLsizei* length, char* name) {
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kES3UniformBlocks);
+    if (info) {
+      const Program::UniformBlock* uniform_block = info->GetUniformBlock(index);
+      if (uniform_block && buf_size >= 1) {
+        GLsizei written_size = std::min(
+            buf_size, static_cast<GLsizei>(uniform_block->name.size()) + 1);
+        if (length) {
+          *length = written_size - 1;
+        }
+        memcpy(name, uniform_block->name.c_str(), written_size);
+        return true;
+      }
+    }
+  }
+  return false;
+  // TODO(zmo): return gl->GetActiveUniformBlockNameHelper(
+  //                program, index, buf_size, length, name);
+}
+
+bool ProgramInfoManager::GetActiveUniformBlockiv(
+    GLES2Implementation* gl, GLuint program, GLuint index,
+    GLenum pname, GLint* params) {
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kES3UniformBlocks);
+    if (info) {
+      const Program::UniformBlock* uniform_block = info->GetUniformBlock(index);
+      bool valid_pname;
+      switch (pname) {
+        case GL_UNIFORM_BLOCK_BINDING:
+        case GL_UNIFORM_BLOCK_DATA_SIZE:
+        case GL_UNIFORM_BLOCK_NAME_LENGTH:
+        case GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS:
+        case GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES:
+        case GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER:
+        case GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER:
+          valid_pname = true;
+          break;
+        default:
+          valid_pname = false;
+          break;
+      }
+      if (uniform_block && valid_pname && params) {
+        switch (pname) {
+          case GL_UNIFORM_BLOCK_BINDING:
+            *params = static_cast<GLint>(uniform_block->binding);
+            break;
+          case GL_UNIFORM_BLOCK_DATA_SIZE:
+            *params = static_cast<GLint>(uniform_block->data_size);
+            break;
+          case GL_UNIFORM_BLOCK_NAME_LENGTH:
+            *params = static_cast<GLint>(uniform_block->name.size()) + 1;
+            break;
+          case GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS:
+            *params = static_cast<GLint>(
+                uniform_block->active_uniform_indices.size());
+            break;
+          case GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES:
+            for (size_t ii = 0;
+                 ii < uniform_block->active_uniform_indices.size(); ++ii) {
+              params[ii] = static_cast<GLint>(
+                  uniform_block->active_uniform_indices[ii]);
+            }
+            break;
+          case GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER:
+            *params = static_cast<GLint>(
+                uniform_block->referenced_by_vertex_shader);
+            break;
+          case GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER:
+            *params = static_cast<GLint>(
+                uniform_block->referenced_by_fragment_shader);
+            break;
+          default:
+            NOTREACHED();
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+  // TODO(zmo): return gl->GetActiveUniformBlockivHelper(
+  //                program, index, pname, params);
 }
 
 }  // namespace gles2
