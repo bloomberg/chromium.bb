@@ -47,6 +47,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/common/gpu/media/fake_video_decode_accelerator.h"
 #include "content/common/gpu/media/rendering_helper.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "content/public/common/content_switches.h"
@@ -119,6 +120,8 @@ int g_rendering_warm_up = 0;
 // values for |num_play_throughs|. This setting will override the value. A
 // special value "0" means no override.
 int g_num_play_throughs = 0;
+// Fake decode
+int g_fake_decoder = 0;
 
 // Environment to store rendering thread.
 class VideoDecodeAcceleratorTestEnvironment;
@@ -295,6 +298,7 @@ class GLRenderingVDAClient
                        int frame_width,
                        int frame_height,
                        media::VideoCodecProfile profile,
+                       int fake_decoder,
                        bool suppress_rendering,
                        int delay_reuse_after_frame_num,
                        int decode_calls_per_second,
@@ -330,6 +334,7 @@ class GLRenderingVDAClient
  private:
   typedef std::map<int32, scoped_refptr<TextureRef>> TextureRefMap;
 
+  scoped_ptr<media::VideoDecodeAccelerator> CreateFakeVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
@@ -383,6 +388,7 @@ class GLRenderingVDAClient
   int num_done_bitstream_buffers_;
   base::TimeTicks initialize_done_ticks_;
   media::VideoCodecProfile profile_;
+  int fake_decoder_;
   GLenum texture_target_;
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
@@ -424,6 +430,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int frame_width,
     int frame_height,
     media::VideoCodecProfile profile,
+    int fake_decoder,
     bool suppress_rendering,
     int delay_reuse_after_frame_num,
     int decode_calls_per_second,
@@ -445,6 +452,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_queued_fragments_(0),
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
+      fake_decoder_(fake_decoder),
       texture_target_(0),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
@@ -470,6 +478,18 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
 }
 
 static bool DoNothingReturnTrue() { return true; }
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateFakeVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+  if (fake_decoder_) {
+    decoder.reset(new FakeVideoDecodeAccelerator(
+        static_cast<gfx::GLContext*> (rendering_helper_->GetGLContextHandle()),
+        frame_size_,
+        base::Bind(&DoNothingReturnTrue)));
+  }
+  return decoder.Pass();
+}
 
 scoped_ptr<media::VideoDecodeAccelerator>
 GLRenderingVDAClient::CreateDXVAVDA() {
@@ -544,6 +564,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   VideoDecodeAccelerator::Client* client = this;
 
   scoped_ptr<media::VideoDecodeAccelerator> decoders[] = {
+    CreateFakeVDA(),
     CreateDXVAVDA(),
     CreateV4L2VDA(),
     CreateV4L2SliceVDA(),
@@ -1234,6 +1255,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
                                  video_file->width,
                                  video_file->height,
                                  video_file->profile,
+                                 g_fake_decoder,
                                  suppress_rendering,
                                  delay_after_frame_num,
                                  0,
@@ -1487,6 +1509,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
                                test_video_files_[0]->width,
                                test_video_files_[0]->height,
                                test_video_files_[0]->profile,
+                               g_fake_decoder,
                                true,
                                std::numeric_limits<int>::max(),
                                kWebRtcDecodeCallsPerSecond,
@@ -1565,6 +1588,9 @@ int main(int argc, char **argv) {
     if (it->first == "num_play_throughs") {
       std::string input(it->second.begin(), it->second.end());
       CHECK(base::StringToInt(input, &content::g_num_play_throughs));
+    }
+    if (it->first == "fake_decoder") {
+      content::g_fake_decoder = 1;
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
