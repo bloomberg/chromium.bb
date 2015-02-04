@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/worker_task_runner.h"
@@ -31,7 +32,9 @@ class WebFileWriterImpl::WriterBridge
  public:
   WriterBridge(WebFileWriterImpl::Type type)
       : request_id_(0),
-        thread_id_(WorkerTaskRunner::Instance()->CurrentWorkerId()),
+        running_on_worker_(WorkerTaskRunner::Instance()->CurrentWorkerId() > 0),
+        task_runner_(running_on_worker_ ? base::ThreadTaskRunnerHandle::Get()
+                                        : nullptr),
         written_bytes_(0) {
     if (type == WebFileWriterImpl::TYPE_SYNC)
       waitable_event_.reset(new base::WaitableEvent(false, false));
@@ -96,23 +99,25 @@ class WebFileWriterImpl::WriterBridge
 
   void PostTaskToWorker(const base::Closure& closure) {
     written_bytes_ = 0;
-    if (!thread_id_) {
+    if (!running_on_worker_) {
       DCHECK(!waitable_event_);
       closure.Run();
       return;
     }
+    DCHECK(task_runner_);
     if (waitable_event_) {
       results_closure_ = closure;
       waitable_event_->Signal();
       return;
     }
-    WorkerTaskRunner::Instance()->PostTask(thread_id_, closure);
+    task_runner_->PostTask(FROM_HERE, closure);
   }
 
   StatusCallback status_callback_;
   WriteCallback write_callback_;
   int request_id_;
-  int thread_id_;
+  const bool running_on_worker_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   int written_bytes_;
   scoped_ptr<base::WaitableEvent> waitable_event_;
   base::Closure results_closure_;
