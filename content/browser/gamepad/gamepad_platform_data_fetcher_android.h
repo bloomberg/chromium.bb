@@ -21,12 +21,12 @@ namespace content {
 class GamepadPlatformDataFetcherAndroid : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherAndroid();
-  virtual ~GamepadPlatformDataFetcherAndroid();
+  ~GamepadPlatformDataFetcherAndroid() override;
 
-  virtual void PauseHint(bool paused) override;
+  void PauseHint(bool paused) override;
 
-  virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) override;
+  void GetGamepadData(blink::WebGamepads* pads,
+                      bool devices_changed_hint) override;
 
   // Registers the JNI methods for GamepadsReader.
   static bool RegisterGamepadPlatformDataFetcherAndroid(JNIEnv* env);

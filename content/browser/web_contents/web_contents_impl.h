@@ -341,8 +341,7 @@ class CONTENT_EXPORT WebContentsImpl
   void GetManifest(const GetManifestCallback&) override;
   void ExitFullscreen() override;
 #if defined(OS_ANDROID)
-  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
-      override;
+  base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
   virtual WebContentsAndroid* GetWebContentsAndroid();
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;

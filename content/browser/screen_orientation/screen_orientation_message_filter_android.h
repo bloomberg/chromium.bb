@@ -14,10 +14,10 @@ class ScreenOrientationMessageFilterAndroid : public BrowserMessageFilter {
   ScreenOrientationMessageFilterAndroid();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~ScreenOrientationMessageFilterAndroid();
+  ~ScreenOrientationMessageFilterAndroid() override;
 
   void OnStartListening();
   void OnStopListening();

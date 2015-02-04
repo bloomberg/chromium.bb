@@ -124,8 +124,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 
 #if defined(OS_ANDROID)
-  virtual void LockCompositingSurface() override;
-  virtual void UnlockCompositingSurface() override;
+  void LockCompositingSurface() override;
+  void UnlockCompositingSurface() override;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

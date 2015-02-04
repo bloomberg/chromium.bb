@@ -32,7 +32,7 @@ namespace content {
 class AndroidHitTestingBrowserTest : public ContentBrowserTest {
  public:
   AndroidHitTestingBrowserTest() {}
-  virtual ~AndroidHitTestingBrowserTest() {}
+  ~AndroidHitTestingBrowserTest() override {}
 };
 
 IN_PROC_BROWSER_TEST_F(AndroidHitTestingBrowserTest,

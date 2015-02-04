@@ -32,7 +32,7 @@ class CONTENT_EXPORT WebContentsAndroid
   static bool Register(JNIEnv* env);
 
   explicit WebContentsAndroid(WebContents* web_contents);
-  virtual ~WebContentsAndroid();
+  ~WebContentsAndroid() override;
 
   WebContents* web_contents() const { return web_contents_; }
 

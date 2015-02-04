@@ -17,7 +17,7 @@ namespace content {
 class TimeZoneMonitorAndroid : public TimeZoneMonitor {
  public:
   TimeZoneMonitorAndroid();
-  virtual ~TimeZoneMonitorAndroid();
+  ~TimeZoneMonitorAndroid() override;
 
   // Must be called at startup.
   static bool Register(JNIEnv* env);

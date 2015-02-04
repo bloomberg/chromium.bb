@@ -40,30 +40,25 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
                           storage::FileSystemContext* file_system_context,
                           int render_process_id,
                           int render_frame_id);
-  virtual ~MediaResourceGetterImpl();
+  ~MediaResourceGetterImpl() override;
 
   // media::MediaResourceGetter implementation.
   // Must be called on the UI thread.
-  virtual void GetAuthCredentials(
-      const GURL& url,
-      const GetAuthCredentialsCB& callback) override;
-  virtual void GetCookies(
-      const GURL& url,
-      const GURL& first_party_for_cookies,
-      const GetCookieCB& callback) override;
-  virtual void GetPlatformPathFromURL(
-      const GURL& url,
-      const GetPlatformPathCB& callback) override;
-  virtual void ExtractMediaMetadata(
-      const std::string& url,
-      const std::string& cookies,
-      const std::string& user_agent,
-      const ExtractMediaMetadataCB& callback) override;
-  virtual void ExtractMediaMetadata(
-      const int fd,
-      const int64 offset,
-      const int64 size,
-      const ExtractMediaMetadataCB& callback) override;
+  void GetAuthCredentials(const GURL& url,
+                          const GetAuthCredentialsCB& callback) override;
+  void GetCookies(const GURL& url,
+                  const GURL& first_party_for_cookies,
+                  const GetCookieCB& callback) override;
+  void GetPlatformPathFromURL(const GURL& url,
+                              const GetPlatformPathCB& callback) override;
+  void ExtractMediaMetadata(const std::string& url,
+                            const std::string& cookies,
+                            const std::string& user_agent,
+                            const ExtractMediaMetadataCB& callback) override;
+  void ExtractMediaMetadata(const int fd,
+                            const int64 offset,
+                            const int64 size,
+                            const ExtractMediaMetadataCB& callback) override;
 
   static bool RegisterMediaResourceGetter(JNIEnv* env);
 

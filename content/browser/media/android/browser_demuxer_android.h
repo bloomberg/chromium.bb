@@ -21,9 +21,9 @@ class CONTENT_EXPORT BrowserDemuxerAndroid : public BrowserMessageFilter {
   BrowserDemuxerAndroid();
 
   // BrowserMessageFilter overrides.
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Returns an uninitialized demuxer implementation associated with
   // |demuxer_client_id|, which can be used to communicate with the real demuxer
@@ -32,7 +32,7 @@ class CONTENT_EXPORT BrowserDemuxerAndroid : public BrowserMessageFilter {
 
  protected:
   friend class base::RefCountedThreadSafe<BrowserDemuxerAndroid>;
-  virtual ~BrowserDemuxerAndroid();
+  ~BrowserDemuxerAndroid() override;
 
  private:
   class Internal;

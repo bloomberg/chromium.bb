@@ -33,7 +33,7 @@ const int GRANULARITY_LINE =
 class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
  public:
   AndroidGranularityMovementBrowserTest() {}
-  virtual ~AndroidGranularityMovementBrowserTest() {}
+  ~AndroidGranularityMovementBrowserTest() override {}
 
   BrowserAccessibility* LoadUrlAndGetAccessibilityRoot(const GURL& url) {
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));

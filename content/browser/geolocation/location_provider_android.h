@@ -17,17 +17,17 @@ struct Geoposition;
 class LocationProviderAndroid : public LocationProviderBase {
  public:
   LocationProviderAndroid();
-  virtual ~LocationProviderAndroid();
+  ~LocationProviderAndroid() override;
 
   // Called by the AndroidLocationApiAdapter.
   void NotifyNewGeoposition(const Geoposition& position);
 
   // LocationProvider.
-  virtual bool StartProvider(bool high_accuracy) override;
-  virtual void StopProvider() override;
-  virtual void GetPosition(Geoposition* position) override;
-  virtual void RequestRefresh() override;
-  virtual void OnPermissionGranted() override;
+  bool StartProvider(bool high_accuracy) override;
+  void StopProvider() override;
+  void GetPosition(Geoposition* position) override;
+  void RequestRefresh() override;
+  void OnPermissionGranted() override;
 
  private:
   Geoposition last_position_;

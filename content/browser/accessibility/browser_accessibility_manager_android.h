@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  virtual ~BrowserAccessibilityManagerAndroid();
+  ~BrowserAccessibilityManagerAndroid() override;
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
@@ -49,8 +49,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
       base::android::ScopedJavaLocalRef<jobject> content_view_core);
 
   // Implementation of BrowserAccessibilityManager.
-  virtual void NotifyAccessibilityEvent(
-      ui::AXEvent event_type, BrowserAccessibility* node) override;
+  void NotifyAccessibilityEvent(ui::AXEvent event_type,
+                                BrowserAccessibility* node) override;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -127,7 +127,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
-  virtual bool UseRootScrollOffsetsWhenComputingBounds() override;
+  bool UseRootScrollOffsetsWhenComputingBounds() override;
 
  private:
   // This gives BrowserAccessibilityManager::Create access to the class

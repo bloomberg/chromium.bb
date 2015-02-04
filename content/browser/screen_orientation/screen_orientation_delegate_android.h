@@ -20,7 +20,7 @@ class WebContents;
 class ScreenOrientationDelegateAndroid : public ScreenOrientationDelegate {
  public:
   ScreenOrientationDelegateAndroid();
-  virtual ~ScreenOrientationDelegateAndroid();
+  ~ScreenOrientationDelegateAndroid() override;
 
   static bool Register(JNIEnv* env);
 
