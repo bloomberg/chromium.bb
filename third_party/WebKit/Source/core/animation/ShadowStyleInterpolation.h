@@ -29,8 +29,6 @@ private:
     {
     }
 
-    friend class AnimationShadowStyleInterpolationTest;
-
     static PassOwnPtrWillBeRawPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, NonInterpolableType& type)
     {
         return toInterpolableValue(value, type);
