@@ -197,7 +197,6 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* databa
     return databaseSize + spaceAvailable;
 }
 
-// FIXME: This can be removed by createCrossThreadTask().
 class DatabaseTracker::CloseOneDatabaseImmediatelyTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, Database* database)

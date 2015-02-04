@@ -26,8 +26,8 @@
 #include "config.h"
 #include "modules/webdatabase/Database.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webdatabase/ChangeVersionData.h"
@@ -812,7 +812,7 @@ void Database::readTransaction(
     runTransaction(callback, errorCallback, successCallback, true);
 }
 
-static void callTransactionErrorCallback(ExecutionContext*, SQLTransactionErrorCallback* callback, PassOwnPtr<SQLErrorData> errorData)
+static void callTransactionErrorCallback(SQLTransactionErrorCallback* callback, PassOwnPtr<SQLErrorData> errorData)
 {
     callback->handleEvent(SQLError::create(*errorData));
 }
@@ -824,6 +824,7 @@ void Database::runTransaction(
     bool readOnly,
     const ChangeVersionData* changeVersionData)
 {
+    ASSERT(executionContext()->isContextThread());
     // FIXME: Rather than passing errorCallback to SQLTransaction and then
     // sometimes firing it ourselves, this code should probably be pushed down
     // into Database so that we only create the SQLTransaction if we're
@@ -838,7 +839,7 @@ void Database::runTransaction(
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
-            executionContext()->postTask(createCrossThreadTask(&callTransactionErrorCallback, callback, error.release()));
+            executionContext()->postTask(createSameThreadTask(&callTransactionErrorCallback, callback, error.release()));
         }
     }
 }
