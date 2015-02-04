@@ -47,13 +47,13 @@ struct OmniboxResultMojo {
   array<AutocompleteResultsForProviderMojo> results_by_provider;
 };
 
-[Client=OmniboxPage]
 interface OmniboxUIHandlerMojo {
   StartOmniboxQuery(string input_string,
                     int32 cursor_position,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
-                    int32 page_classification);
+                    int32 page_classification,
+                    OmniboxPage page);
 };
 
 interface OmniboxPage {

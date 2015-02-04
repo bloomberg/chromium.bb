@@ -42,7 +42,8 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
                          int32_t cursor_position,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
-                         int32_t page_classification) override;
+                         int32_t page_classification,
+                         OmniboxPagePtr page) override;
 
  private:
   // Looks up whether the hostname is a typed host (i.e., has received
@@ -65,6 +66,9 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
 
   // The input used when starting the AutocompleteController.
   AutocompleteInput input_;
+
+  // Handle back to the page by which we can pass results.
+  OmniboxPagePtr page_;
 
   // The Profile* handed to us in our constructor.
   Profile* profile_;

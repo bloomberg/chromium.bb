@@ -114,7 +114,8 @@ OmniboxUIHandler::OmniboxUIHandler(Profile* profile)
   ResetController();
 }
 
-OmniboxUIHandler::~OmniboxUIHandler() {}
+OmniboxUIHandler::~OmniboxUIHandler() {
+}
 
 void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   OmniboxResultMojoPtr result(OmniboxResultMojo::New());
@@ -159,7 +160,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
     }
   }
 
-  client()->HandleNewAutocompleteResult(result.Pass());
+  page_->HandleNewAutocompleteResult(result.Pass());
 }
 
 bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
@@ -179,13 +180,15 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
                                          int32_t cursor_position,
                                          bool prevent_inline_autocomplete,
                                          bool prefer_keyword,
-                                         int32_t page_classification) {
+                                         int32_t page_classification,
+                                         OmniboxPagePtr page) {
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
   // variable (or something else) and some providers will short-circuit
   // important logic and return stale results.  In short, we want the
   // actual results to not depend on the state of the previous request.
   ResetController();
+  page_ = page.Pass();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
       input_string.To<base::string16>(), cursor_position, std::string(), GURL(),
