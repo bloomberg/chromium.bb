@@ -71,6 +71,8 @@ void ChromeZoomLevelPrefs::SetDefaultZoomLevelPref(double level) {
   // set this manually.
   host_zoom_map_->SetDefaultZoomLevel(level);
   default_zoom_changed_callbacks_.Notify();
+  if (zoom_event_manager_)
+    zoom_event_manager_->OnDefaultZoomLevelChanged();
 }
 
 double ChromeZoomLevelPrefs::GetDefaultZoomLevelPref() const {

@@ -27,6 +27,7 @@
         'ui/zoom/zoom_controller.h',
         'ui/zoom/zoom_event_manager.cc',
         'ui/zoom/zoom_event_manager.h',
+        'ui/zoom/zoom_event_manager_observer.h',
         'ui/zoom/zoom_observer.h'
       ],
     }

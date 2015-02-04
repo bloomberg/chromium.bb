@@ -7,6 +7,7 @@
 
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/host_zoom_map.h"
 
@@ -15,6 +16,8 @@ class BrowserContext;
 }  // namespace content
 
 namespace ui_zoom {
+
+class ZoomEventManagerObserver;
 
 // This class serves as a target for event notifications from all ZoomController
 // objects. Classes that need to know about browser-specific zoom events (e.g.
@@ -34,8 +37,18 @@ class ZoomEventManager : public base::SupportsUserData::Data {
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   // Add and remove zoom level changed callbacks.
+  // TODO(wjmaclean): Convert this callback mechanism to use
+  // ZoomEventManagerObserver instead.
   scoped_ptr<content::HostZoomMap::Subscription> AddZoomLevelChangedCallback(
       const content::HostZoomMap::ZoomLevelChangedCallback& callback);
+
+  // Called by ZoomLevelDelegates when changes are made to the default zoom
+  // level for their associated HostZoomMap.
+  void OnDefaultZoomLevelChanged();
+
+  // Add and remove observers.
+  void AddZoomEventManagerObserver(ZoomEventManagerObserver* observer);
+  void RemoveZoomEventManagerObserver(ZoomEventManagerObserver* observer);
 
   // Get a weak ptr to be used by clients who may themselves be UserData for
   // the context, since the order of destruction is undefined between the client
@@ -47,6 +60,7 @@ class ZoomEventManager : public base::SupportsUserData::Data {
  private:
   base::CallbackList<void(const content::HostZoomMap::ZoomLevelChange&)>
       zoom_level_changed_callbacks_;
+  ObserverList<ZoomEventManagerObserver> observers_;
   base::WeakPtrFactory<ZoomEventManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomEventManager);

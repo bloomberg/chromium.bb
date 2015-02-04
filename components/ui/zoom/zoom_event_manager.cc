@@ -4,6 +4,7 @@
 
 #include "components/ui/zoom/zoom_event_manager.h"
 
+#include "components/ui/zoom/zoom_event_manager_observer.h"
 #include "content/public/browser/browser_context.h"
 
 namespace {
@@ -35,6 +36,21 @@ scoped_ptr<content::HostZoomMap::Subscription>
 ZoomEventManager::AddZoomLevelChangedCallback(
     const content::HostZoomMap::ZoomLevelChangedCallback& callback) {
   return zoom_level_changed_callbacks_.Add(callback);
+}
+
+void ZoomEventManager::OnDefaultZoomLevelChanged() {
+  FOR_EACH_OBSERVER(ZoomEventManagerObserver, observers_,
+                    OnDefaultZoomLevelChanged());
+}
+
+void ZoomEventManager::AddZoomEventManagerObserver(
+    ZoomEventManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ZoomEventManager::RemoveZoomEventManagerObserver(
+    ZoomEventManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ui_zoom

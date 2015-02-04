@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "components/ui/zoom/zoom_event_manager_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
@@ -83,7 +84,8 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public gfx::AnimationDelegate,
                         public TemplateURLServiceObserver,
-                        public SearchModelObserver {
+                        public SearchModelObserver,
+                        public ui_zoom::ZoomEventManagerObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -258,6 +260,10 @@ class LocationBarView : public LocationBar,
   void EndOriginChipAnimations(bool cancel_fade) override;
   ToolbarModel* GetToolbarModel() override;
   content::WebContents* GetWebContents() override;
+
+  // ZoomEventManagerObserver:
+  // Updates the view for the zoom icon when default zoom levels change.
+  void OnDefaultZoomLevelChanged() override;
 
   // Thickness of the edges of the omnibox background images, in normal mode.
   static const int kNormalEdgeThickness;

@@ -64,6 +64,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -193,6 +194,9 @@ LocationBarView::LocationBarView(Browser* browser,
 
   if (browser_)
     browser_->search_model()->AddObserver(this);
+
+  ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
+      ->AddZoomEventManagerObserver(this);
 }
 
 LocationBarView::~LocationBarView() {
@@ -200,6 +204,9 @@ LocationBarView::~LocationBarView() {
     template_url_service_->RemoveObserver(this);
   if (browser_)
     browser_->search_model()->RemoveObserver(this);
+
+  ui_zoom::ZoomEventManager::GetForBrowserContext(profile())
+      ->RemoveZoomEventManagerObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1151,6 +1158,10 @@ bool LocationBarView::RefreshZoomView() {
   if (!zoom_view_->visible())
     ZoomBubbleView::CloseBubble();
   return was_visible != zoom_view_->visible();
+}
+
+void LocationBarView::OnDefaultZoomLevelChanged() {
+  RefreshZoomView();
 }
 
 void LocationBarView::RefreshTranslateIcon() {

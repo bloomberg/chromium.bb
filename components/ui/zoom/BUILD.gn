@@ -12,6 +12,7 @@ static_library("ui_zoom") {
     "zoom_controller.h",
     "zoom_event_manager.cc",
     "zoom_event_manager.h",
+    "zoom_event_manager_observer.h",
     "zoom_observer.h",
   ]
 
