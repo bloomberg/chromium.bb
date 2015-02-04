@@ -14,10 +14,10 @@ class PrintRenderFrameObserver : public content::RenderFrameObserver {
   explicit PrintRenderFrameObserver(content::RenderFrame* render_view);
 
  private:
-  virtual ~PrintRenderFrameObserver();
+  ~PrintRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers
   void OnPrintNodeUnderContextMenu();

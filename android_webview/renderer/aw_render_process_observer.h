@@ -16,11 +16,11 @@ namespace android_webview {
 class AwRenderProcessObserver : public content::RenderProcessObserver {
  public:
   AwRenderProcessObserver();
-  virtual ~AwRenderProcessObserver();
+  ~AwRenderProcessObserver() override;
 
   // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void WebKitInitialized() override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void WebKitInitialized() override;
 
  private:
   void OnClearCache();

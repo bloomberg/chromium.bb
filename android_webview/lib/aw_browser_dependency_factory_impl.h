@@ -22,14 +22,14 @@ class AwURLRequestJobFactory;
 class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
  public:
   AwBrowserDependencyFactoryImpl();
-  virtual ~AwBrowserDependencyFactoryImpl();
+  ~AwBrowserDependencyFactoryImpl() override;
 
   // Sets this class as the singleton instance.
   static void InstallInstance();
 
   // AwBrowserDependencyFactory
-  virtual content::BrowserContext* GetBrowserContext() override;
-  virtual content::WebContents* CreateWebContents() override;
+  content::BrowserContext* GetBrowserContext() override;
+  content::WebContents* CreateWebContents() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwBrowserDependencyFactoryImpl);

@@ -19,36 +19,33 @@ namespace android_webview {
 class AwContentRendererClient : public content::ContentRendererClient {
  public:
   AwContentRendererClient();
-  virtual ~AwContentRendererClient();
+  ~AwContentRendererClient() override;
 
   // ContentRendererClient implementation.
-  virtual void RenderThreadStarted() override;
-  virtual void RenderFrameCreated(content::RenderFrame* render_frame) override;
-  virtual void RenderViewCreated(content::RenderView* render_view) override;
-  virtual bool HasErrorPage(int http_status_code,
-                            std::string* error_domain) override;
-  virtual void GetNavigationErrorStrings(
-      content::RenderView* render_view,
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& failed_request,
-      const blink::WebURLError& error,
-      std::string* error_html,
-      base::string16* error_description) override;
-  virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length) override;
-  virtual bool IsLinkVisited(unsigned long long link_hash) override;
-  virtual void AddKeySystems(
-      std::vector<media::KeySystemInfo>* key_systems) override;
+  void RenderThreadStarted() override;
+  void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void RenderViewCreated(content::RenderView* render_view) override;
+  bool HasErrorPage(int http_status_code, std::string* error_domain) override;
+  void GetNavigationErrorStrings(content::RenderView* render_view,
+                                 blink::WebFrame* frame,
+                                 const blink::WebURLRequest& failed_request,
+                                 const blink::WebURLError& error,
+                                 std::string* error_html,
+                                 base::string16* error_description) override;
+  unsigned long long VisitedLinkHash(const char* canonical_url,
+                                     size_t length) override;
+  bool IsLinkVisited(unsigned long long link_hash) override;
+  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
 
-  virtual bool HandleNavigation(content::RenderFrame* render_frame,
-                                content::DocumentState* document_state,
-                                int opener_id,
-                                blink::WebFrame* frame,
-                                const blink::WebURLRequest& request,
-                                blink::WebNavigationType type,
-                                blink::WebNavigationPolicy default_policy,
-                                bool is_redirect) override;
-  virtual bool ShouldOverridePageVisibilityState(
+  bool HandleNavigation(content::RenderFrame* render_frame,
+                        content::DocumentState* document_state,
+                        int opener_id,
+                        blink::WebFrame* frame,
+                        const blink::WebURLRequest& request,
+                        blink::WebNavigationType type,
+                        blink::WebNavigationPolicy default_policy,
+                        bool is_redirect) override;
+  bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) override;
 

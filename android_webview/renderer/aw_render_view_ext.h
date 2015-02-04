@@ -32,14 +32,14 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
  private:
   AwRenderViewExt(content::RenderView* render_view);
-  virtual ~AwRenderViewExt();
+  ~AwRenderViewExt() override;
 
   // RenderView::Observer:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
-  virtual void DidCommitCompositorFrame() override;
-  virtual void DidUpdateLayout() override;
-  virtual void Navigate(const GURL& url) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void FocusedNodeChanged(const blink::WebNode& node) override;
+  void DidCommitCompositorFrame() override;
+  void DidUpdateLayout() override;
+  void Navigate(const GURL& url) override;
 
   void OnDocumentHasImagesRequest(int id);
 

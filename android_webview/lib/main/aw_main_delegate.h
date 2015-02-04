@@ -26,7 +26,7 @@ class AwMainDelegate : public content::ContentMainDelegate,
                        public JniDependencyFactory {
  public:
   AwMainDelegate();
-  virtual ~AwMainDelegate();
+  ~AwMainDelegate() override;
 
  private:
   // content::ContentMainDelegate implementation:
@@ -48,9 +48,8 @@ class AwMainDelegate : public content::ContentMainDelegate,
   AwWebPreferencesPopulater* CreateWebPreferencesPopulater() override;
   AwMessagePortService* CreateAwMessagePortService() override;
 #if defined(VIDEO_HOLE)
-  virtual content::ExternalVideoSurfaceContainer*
-      CreateExternalVideoSurfaceContainer(
-          content::WebContents* web_contents) override;
+  content::ExternalVideoSurfaceContainer* CreateExternalVideoSurfaceContainer(
+      content::WebContents* web_contents) override;
 #endif
 
   scoped_ptr<content::BrowserMainRunner> browser_runner_;

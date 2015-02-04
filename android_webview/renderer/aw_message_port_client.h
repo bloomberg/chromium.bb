@@ -19,7 +19,7 @@ class AwMessagePortClient : public content::RenderFrameObserver {
   explicit AwMessagePortClient(content::RenderFrame* render_frame);
 
  private:
-  virtual ~AwMessagePortClient();
+  ~AwMessagePortClient() override;
 
   // RenderFrameObserver
   bool OnMessageReceived(const IPC::Message& message) override;
