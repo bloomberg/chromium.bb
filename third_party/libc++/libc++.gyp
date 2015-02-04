@@ -7,6 +7,7 @@
     {
       'target_name': 'libcxx_proxy',
       'type': 'none',
+      'toolsets': ['host', 'target'],
       'dependencies=': [
         'libc++',
       ],
@@ -47,6 +48,7 @@
     {
       'target_name': 'libc++',
       'type': 'shared_library',
+      'toolsets': ['host', 'target'],
       'dependencies=': [
         # libc++abi is linked statically into libc++.so. This allows us to get
         # both libc++ and libc++abi by passing '-stdlib=libc++'. If libc++abi

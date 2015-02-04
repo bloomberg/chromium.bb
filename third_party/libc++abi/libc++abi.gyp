@@ -7,6 +7,7 @@
     {
       'target_name': 'libc++abi',
       'type': 'static_library',
+      'toolsets': ['host', 'target'],
       'dependencies=': [],
       'sources': [
         'trunk/src/abort_message.cpp',
