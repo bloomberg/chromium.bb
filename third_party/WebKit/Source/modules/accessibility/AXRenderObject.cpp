@@ -2124,44 +2124,9 @@ void AXRenderObject::detachRemoteSVGRoot()
 
 AXSVGRoot* AXRenderObject::remoteSVGRootElement() const
 {
-    if (!m_renderer || !m_renderer->isRenderImage())
-        return 0;
-
-    ImageResource* cachedImage = toRenderImage(m_renderer)->cachedImage();
-    if (!cachedImage)
-        return 0;
-
-    Image* image = cachedImage->image();
-    if (!image || !image->isSVGImage())
-        return 0;
-
-    FrameView* frameView = toSVGImage(image)->frameView();
-    if (!frameView)
-        return 0;
-    Document* doc = frameView->frame().document();
-    if (!doc || !doc->isSVGDocument())
-        return 0;
-
-    Settings* settings = doc->settings();
-    if (settings && !settings->accessibilityEnabled())
-        settings->setAccessibilityEnabled(true);
-
-    SVGSVGElement* rootElement = doc->accessSVGExtensions().rootElement();
-    if (!rootElement)
-        return 0;
-    RenderObject* rendererRoot = rootElement->renderer();
-    if (!rendererRoot)
-        return 0;
-
-    AXObject* rootSVGObject = toAXObjectCacheImpl(doc->axObjectCache())->getOrCreate(rendererRoot);
-
-    // In order to connect the AX hierarchy from the SVG root element from the loaded resource
-    // the parent must be set, because there's no other way to get back to who created the image.
-    ASSERT(rootSVGObject && rootSVGObject->isAXSVGRoot());
-    if (!rootSVGObject->isAXSVGRoot())
-        return 0;
-
-    return toAXSVGRoot(rootSVGObject);
+    // FIXME(dmazzoni): none of this code properly handled multiple references to the same
+    // remote SVG document. I'm disabling this support until it can be fixed properly.
+    return 0;
 }
 
 AXObject* AXRenderObject::remoteSVGElementHitTest(const IntPoint& point) const
