@@ -7,9 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/themed_window.h"
+
 // A custom view that draws a 'standard' background gradient.
 // Base class for other Chromium views.
-@interface BackgroundGradientView : NSView {
+@interface BackgroundGradientView : NSView<ThemedWindowDrawing> {
  @private
   BOOL showsDivider_;
 }

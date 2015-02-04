@@ -4,7 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/themed_window.h"
+
 // The "Show All" button on the download shelf. This is a subclass for custom
 // -sizeToFit logic.
-@interface DownloadShowAllButton : NSButton
+@interface DownloadShowAllButton : NSButton<ThemedWindowDrawing>
 @end

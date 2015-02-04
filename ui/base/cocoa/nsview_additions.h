@@ -29,6 +29,9 @@
 // Return best color for keyboard focus ring.
 - (NSColor*)cr_keyboardFocusIndicatorColor;
 
+// Invoke |block| on this view and all descendants.
+- (void)cr_recursivelyInvokeBlock:(void (^)(id view))block;
+
 // Set needsDisplay for this view and all descendants.
 - (void)cr_recursivelySetNeedsDisplay:(BOOL)flag;
 

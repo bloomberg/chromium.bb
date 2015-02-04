@@ -416,6 +416,16 @@ BookmarkButton* gDraggedButton = nil; // Weak
   [super drawRect:rect];
 }
 
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
+}
+
 @end
 
 @implementation BookmarkButton(Private)

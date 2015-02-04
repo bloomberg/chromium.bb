@@ -11,6 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 
 namespace tabs {
 
@@ -42,7 +43,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // on the tab strip. Relies on an associated TabController to provide a
 // target/action for selecting the tab.
 
-@interface TabView : NSView {
+@interface TabView : NSView<ThemedWindowDrawing> {
  @private
   TabController* controller_;
   base::scoped_nsobject<NSTextField> titleView_;

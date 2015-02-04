@@ -111,43 +111,14 @@
   return themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR);
 }
 
-- (void)windowFocusDidChange:(NSNotification*)notification {
-  // Some child views will indirectly use BackgroundGradientView by calling an
-  // ancestor's draw function (e.g, BookmarkButtonView). Call setNeedsDisplay
-  // on all descendants to ensure that these views re-draw.
-  // TODO(ccameron): Enable these views to listen for focus notifications
-  // directly.
-  [self cr_recursivelySetNeedsDisplay:YES];
-}
-
-- (void)viewWillMoveToWindow:(NSWindow*)window {
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
   if ([self window]) {
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:NSWindowDidBecomeKeyNotification
-                object:[self window]];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:NSWindowDidBecomeMainNotification
-                object:[self window]];
-  }
-  if (window) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidBecomeMainNotification
-             object:window];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidResignMainNotification
-             object:window];
     // The new window for the view may have a different focus state than the
     // last window this view was part of. Force a re-draw to ensure that the
     // view draws the right state.
-    [self windowFocusDidChange:nil];
+    [self windowDidChangeActive];
   }
-  [super viewWillMoveToWindow:window];
 }
 
 - (void)setFrameOrigin:(NSPoint)origin {
@@ -157,6 +128,16 @@
     [self cr_recursivelySetNeedsDisplay:YES];
 
   [super setFrameOrigin:origin];
+}
+
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
 }
 
 @end

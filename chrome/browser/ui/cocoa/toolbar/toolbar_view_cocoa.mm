@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 @implementation ToolbarView
 
@@ -46,6 +47,13 @@
 
 - (BOOL)isOpaque {
   return YES;
+}
+
+// ThemedWindowDrawing overrides.
+
+- (void)windowDidChangeActive {
+  // Need to redraw the omnibox and toolbar buttons as well.
+  [self cr_recursivelySetNeedsDisplay:YES];
 }
 
 @end

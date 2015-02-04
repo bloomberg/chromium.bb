@@ -314,8 +314,8 @@ const CGFloat kRapidCloseDist = 2.5;
 
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
-  bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
-                !themeProvider->UsingDefaultTheme();
+  bool active =
+      [[self window] isMainWindow] || !themeProvider->UsingDefaultTheme();
   return themeProvider->GetNSImageColorNamed(bitmapResources[active][selected]);
 }
 
@@ -429,7 +429,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
 // Draws the tab outline.
 - (void)drawStroke:(NSRect)dirtyRect {
-  BOOL focused = [[self window] isKeyWindow] || [[self window] isMainWindow];
+  BOOL focused = [[self window] isMainWindow];
   CGFloat alpha = focused ? 1.0 : tabs::kImageNoFocusAlpha;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -639,6 +639,16 @@ const CGFloat kRapidCloseDist = 2.5;
 
 - (ViewID)viewID {
   return VIEW_ID_TAB;
+}
+
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
 }
 
 @end  // @implementation TabView

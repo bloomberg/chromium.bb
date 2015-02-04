@@ -64,8 +64,8 @@
 
     // Themes don't have an inactive image so only look for one if there's no
     // theme.
-    bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
-                  !themeProvider->UsingDefaultTheme();
+    bool active =
+        [[self window] isMainWindow] || !themeProvider->UsingDefaultTheme();
     int resource_id = active ? IDR_THEME_TOOLBAR : IDR_THEME_TOOLBAR_INACTIVE;
     [themeProvider->GetNSImageColorNamed(resource_id) set];
     NSRectFill(
@@ -81,7 +81,7 @@
   borderRect.size.height = [image size].height;
   borderRect.origin.y = 0;
 
-  BOOL focused = [[self window] isKeyWindow] || [[self window] isMainWindow];
+  BOOL focused = [[self window] isMainWindow];
   NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
                        NSCompositeSourceOver,
                        focused ?  1.0 : tabs::kImageNoFocusAlpha,
@@ -294,6 +294,16 @@
 
 - (void)setController:(TabStripController*)controller {
   controller_ = controller;
+}
+
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
 }
 
 @end

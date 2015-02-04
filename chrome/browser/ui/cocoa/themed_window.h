@@ -32,7 +32,6 @@ enum ThemeImageAlignment {
 };
 
 // Implemented by windows that support theming.
-
 @interface NSWindow (ThemeProvider)
 - (ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
@@ -43,6 +42,19 @@ enum ThemeImageAlignment {
 // conjunction with [NSGraphicsContext cr_setPatternPhase:] to set the offset of
 // pattern colors.
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment;
+@end
+
+// Adopted by views that want to redraw when the theme changed, or when the
+// window's active status changed.
+@protocol ThemedWindowDrawing
+
+// Called by the window controller when the theme changed.
+- (void)windowDidChangeTheme;
+
+// Called by the window controller when the window gained or lost main window
+// status.
+- (void)windowDidChangeActive;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_THEMED_WINDOW_H_

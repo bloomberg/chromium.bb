@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 #import "chrome/browser/ui/cocoa/draggable_button.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/base/window_open_disposition.h"
 
 @class BookmarkBarFolderController;
@@ -189,7 +190,7 @@ class BookmarkModel;
 
 
 // Class for bookmark bar buttons that can be drag sources.
-@interface BookmarkButton : DraggableButton {
+@interface BookmarkButton : DraggableButton<ThemedWindowDrawing> {
  @private
   IBOutlet NSObject<BookmarkButtonDelegate>* delegate_;  // Weak.
 

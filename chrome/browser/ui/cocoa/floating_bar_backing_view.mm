@@ -45,4 +45,14 @@
     ui::WindowTitlebarReceivedDoubleClick([self window], self);
 }
 
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
+}
+
+- (void)windowDidChangeActive {
+  [self setNeedsDisplay:YES];
+}
+
 @end  // @implementation FloatingBarBackingView

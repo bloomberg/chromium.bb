@@ -619,26 +619,20 @@ using content::WebContents;
   BrowserList::SetLastActive(browser_.get());
   [self saveWindowPositionIfNeeded];
 
-  // TODO(dmaclach): Instead of redrawing the whole window, views that care
-  // about the active window state should be registering for notifications.
-  [[self window] setViewsNeedDisplay:YES];
-
-  // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isInAnyFullscreenMode])
-    [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
+  [[[self window] contentView] cr_recursivelyInvokeBlock:^(id view) {
+      if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
+        [view windowDidChangeActive];
+  }];
 
   extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
       ->set_registry_for_active_window(extension_keybinding_registry_.get());
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
-  // TODO(dmaclach): Instead of redrawing the whole window, views that care
-  // about the active window state should be registering for notifications.
-  [[self window] setViewsNeedDisplay:YES];
-
-  // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isInAnyFullscreenMode])
-    [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
+  [[[self window] contentView] cr_recursivelyInvokeBlock:^(id view) {
+      if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
+        [view windowDidChangeActive];
+  }];
 
   extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
       ->set_registry_for_active_window(nullptr);
@@ -1702,7 +1696,15 @@ using content::WebContents;
 }
 
 - (void)userChangedTheme {
-  [[[[self window] contentView] superview] cr_recursivelySetNeedsDisplay:YES];
+  NSView* rootView = [[[self window] contentView] superview];
+  [rootView cr_recursivelyInvokeBlock:^(id view) {
+      if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
+        [view windowDidChangeTheme];
+
+      // TODO(andresantoso): Remove this once all themed views respond to
+      // windowDidChangeTheme above.
+      [view setNeedsDisplay:YES];
+  }];
 }
 
 - (ui::ThemeProvider*)themeProvider {
