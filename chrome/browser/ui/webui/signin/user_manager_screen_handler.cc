@@ -728,7 +728,7 @@ void UserManagerScreenHandler::SendUserList() {
         kKeyProfilePath, base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(
-        kKeySupervisedUser, info_cache.ProfileIsSupervisedAtIndex(i));
+        kKeySupervisedUser, info_cache.ProfileIsLegacySupervisedAtIndex(i));
     profile_value->SetBoolean(
         kKeyChildUser, info_cache.ProfileIsChildAtIndex(i));
     profile_value->SetBoolean(
