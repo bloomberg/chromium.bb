@@ -208,7 +208,15 @@ LocalFrame::~LocalFrame()
 #if !ENABLE(OILPAN)
     // Oilpan: see setDOMWindow() comment why it is acceptable not to
     // mirror the non-Oilpan call below.
+    //
+    // Also, FrameDestructionObservers that live longer than this
+    // frame object keep weak references to the frame; those will be
+    // automatically cleared by the garbage collector. Hence, explicit
+    // frameDestroyed() notifications aren't needed.
     setDOMWindow(nullptr);
+
+    for (const auto& frameDestructionObserver : m_destructionObservers)
+        frameDestructionObserver->frameDestroyed();
 #endif
 }
 
@@ -286,11 +294,6 @@ void LocalFrame::detach()
     // finalization. Too late to access various heap objects at that
     // stage.
     m_loader.clear();
-
-    // Signal frame destruction here rather than in the destructor.
-    // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
-    for (const auto& frameDestructionObserver : m_destructionObservers)
-        frameDestructionObserver->frameDestroyed();
 }
 
 SecurityContext* LocalFrame::securityContext() const

@@ -47,5 +47,9 @@ crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Ti
 # Times out on the Mac Debug Oilpan bot; widen expectations from [Pass Crash].
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 
+# We should explicitly clear LocalDOMWindow::frame() instead of relying it on GC.
+# See https://codereview.chromium.org/827653003/ for more details.
+crbug.com/446452 http/tests/fetch/chromium/discarded-window.html [ Failure ]
+
 # The crash can be reproduced without Oilpan, but only Oilpan bots are crashing.
 crbug.com/448670 [ Linux ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Crash ]
