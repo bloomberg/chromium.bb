@@ -39,6 +39,7 @@ component("ash") {
     "//ui/compositor",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events:gesture_detection",
     "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -69,7 +70,6 @@ component("ash") {
       "//build/config/linux:xfixes",
     ]
     deps += [
-      "//ui/events:gesture_detection",
       "//ui/events/platform",
       "//ui/gfx/x",
     ]
