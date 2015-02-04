@@ -6,6 +6,7 @@
 #include "core/paint/DetailsMarkerPainter.h"
 
 #include "core/paint/BlockPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -25,6 +26,10 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     overflowRect.moveBy(boxOrigin);
 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
+        return;
+
+    RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderDetailsMarker, paintInfo.phase, overflowRect);
+    if (renderDrawingRecorder.canUseCachedDrawing())
         return;
 
     const Color color(m_renderDetailsMarker.resolveColor(CSSPropertyColor));

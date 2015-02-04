@@ -144,6 +144,11 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/html",
+    "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/inline",
     "args": ["--enable-slimming-paint"]
   },
