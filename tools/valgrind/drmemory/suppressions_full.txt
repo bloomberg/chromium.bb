@@ -1892,3 +1892,9 @@ name=bug_436131_c
 UNINITIALIZED READ
 name=bug_399842
 skia.dll!S32A_Opaque_BlitRow32_SSE4
+
+UNINITIALIZED READ
+name=bug_455417
+*!std::char_traits<>::compare
+...
+*!*::`anonymous namespace'::*URLRequest*::TestBody
