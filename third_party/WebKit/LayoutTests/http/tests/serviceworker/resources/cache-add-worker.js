@@ -24,7 +24,7 @@ cache_test(function(cache) {
   }, 'Cache.add called with non-HTTP/HTTPS URL');
 
 cache_test(function(cache) {
-    var request = new Request('simple.txt', {body: 'Hello'});
+    var request = new Request('simple.txt', {method: 'POST', body: 'Hello'});
     return cache.add(request)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -33,7 +33,7 @@ cache_test(function(cache) {
   }, 'Cache.add called with Request object');
 
 cache_test(function(cache) {
-    var request = new Request('simple.txt', {body: 'Hello'});
+    var request = new Request('simple.txt', {method: 'POST', body: 'Hello'});
     return request.text()
       .then(function() {
           assert_true(request.bodyUsed);
@@ -48,7 +48,7 @@ cache_test(function(cache) {
   }, 'Cache.add called with Request object with a used body');
 
 cache_test(function(cache) {
-    var request = new Request('simple.txt', {body: 'Hello'});
+    var request = new Request('simple.txt', {method: 'POST', body: 'Hello'});
     return cache.add(request)
       .then(function(result) {
           assert_equals(result, undefined,

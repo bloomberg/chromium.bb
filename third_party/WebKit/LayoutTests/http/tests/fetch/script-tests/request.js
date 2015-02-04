@@ -384,11 +384,31 @@ test(function() {
   },
   'Request construction behavior regarding "used" body flag and exceptions.');
 
+
+// Spec: https://fetch.spec.whatwg.org/#dom-request
+// Step 21:
+// If request's method is `GET` or `HEAD`, throw a TypeError.
+promise_test(function() {
+    var headers = new Headers;
+    headers.set('Content-Language', 'ja');
+    ['GET', 'HEAD'].forEach(function(method) {
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            new Request(URL,
+                        {method: method,
+                         body: new Blob(['Test Blob'], {type: 'test/type'})
+                        });
+          },
+          'Request of GET/HEAD method cannot have RequestInit body.');
+      });
+  }, 'Request of GET/HEAD method cannot have RequestInit body.');
+
 promise_test(function() {
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     var req = new Request(URL, {
-        method: 'GET',
+        method: 'POST',
         headers: headers,
         body: new Blob(['Test Blob'], {type: 'test/type'})
       });

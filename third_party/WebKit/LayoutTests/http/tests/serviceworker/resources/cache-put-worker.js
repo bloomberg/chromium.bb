@@ -67,7 +67,7 @@ cache_test(function(cache) {
 
 cache_test(function(cache) {
     var request = new Request(test_url, {
-        method: 'GET',
+        method: 'POST',
         body: 'Hello'
       });
     var response = new Response(test_body);
@@ -291,7 +291,7 @@ cache_test(function(cache) {
   }, 'Cache.put with a null response');
 
 cache_test(function(cache) {
-    var request = new Request(test_url, {body: test_body});
+    var request = new Request(test_url, {method: 'POST', body: test_body});
     assert_false(request.bodyUsed,
                  '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
                  'Request.bodyUsed should be initially false.');

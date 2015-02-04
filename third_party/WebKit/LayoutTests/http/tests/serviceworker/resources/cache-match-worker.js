@@ -181,7 +181,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 
 cache_test(function(cache) {
     var request = new Request('https://example.com/foo', {
-        method: 'GET',
+        method: 'POST',
         body: 'Hello world!'
       });
     var response = new Response('Booyah!', {

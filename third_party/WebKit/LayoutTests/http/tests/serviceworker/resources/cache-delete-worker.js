@@ -41,7 +41,7 @@ cache_test(function(cache) {
   }, 'Cache.delete called with a string URL');
 
 cache_test(function(cache) {
-    var request = new Request(test_url, { body: 'Abc' });
+    var request = new Request(test_url, { method: 'POST', body: 'Abc' });
     return cache.put(request.clone(), new_test_response())
       .then(function() {
           return cache.delete(request);
@@ -56,7 +56,7 @@ cache_test(function(cache) {
   }, 'Cache.delete called with a Request object');
 
 cache_test(function(cache) {
-    var request = new Request(test_url, { body: 'Abc' });
+    var request = new Request(test_url, { method: 'POST', body: 'Abc' });
     return cache.put(request.clone(), new_test_response())
       .then(function() {
           return request.text();

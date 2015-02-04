@@ -179,13 +179,18 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
 
     // "21. If |init|'s body member is present, run these substeps:"
     if (init.bodyBlobHandle) {
-        // "1. Let |stream| and |Content-Type| be the result of extracting
-        // |init|'s body member."
-        // "2. Set |r|'s request's body to |stream|."
-        // "3.If |Content-Type| is non-null and |r|'s request's header list
+        // "1. If request's method is `GET` or `HEAD`, throw a TypeError."
+        // "2. Let |stream| and |Content-Type| be the result of extracting
+        //  |init|'s body member."
+        // "3. Set |r|'s request's body to |stream|."
+        // "4. If |Content-Type| is non-null and |r|'s request's header list
         //  contains no header named `Content-Type`, append
-        // `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
-        // exception."
+        //  `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
+        //  exception."
+        if (request->method() == "GET" || request->method() == "HEAD") {
+            exceptionState.throwTypeError("Request with GET/HEAD method cannot have body.");
+            return 0;
+        }
         r->setBodyBlobHandle(init.bodyBlobHandle);
         if (!init.bodyBlobHandle->type().isEmpty() && !r->headers()->has("Content-Type", exceptionState)) {
             r->headers()->append("Content-Type", init.bodyBlobHandle->type(), exceptionState);
