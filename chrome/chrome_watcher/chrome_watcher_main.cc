@@ -34,23 +34,27 @@ const GUID kChromeWatcherTraceProviderName = {
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 
 // Takes care of monitoring a browser. This class watches for a browser's exit
-// code, as well as listening for WM_ENDSESSION messages. Events are recorded
-// in an exit funnel, for reporting the next time Chrome runs.
+// code, as well as listening for WM_ENDSESSION messages. Events are recorded in
+// an exit funnel, for reporting the next time Chrome runs.
 class BrowserMonitor {
  public:
   BrowserMonitor(base::RunLoop* run_loop, const base::char16* registry_path);
   ~BrowserMonitor();
 
-  // Starts the monitor, returns true on success.
+  // Initiates the asynchronous monitoring process, returns true on success.
+  // |on_initialized_event| will be signaled immediately before blocking on the
+  // exit of |process|.
   bool StartWatching(const base::char16* registry_path,
-                     base::Process process);
+                     base::Process process,
+                     base::win::ScopedHandle on_initialized_event);
 
  private:
   // Called from EndSessionWatcherWindow on a end session messages.
   void OnEndSessionMessage(UINT message, LPARAM lparam);
 
-  // Blocking function that runs on |background_thread_|.
-  void Watch();
+  // Blocking function that runs on |background_thread_|. Signals
+  // |on_initialized_event| before waiting for the browser process to exit.
+  void Watch(base::win::ScopedHandle on_initialized_event);
 
   // Posted to main thread from Watch when browser exits.
   void BrowserExited();
@@ -89,8 +93,10 @@ BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
 BrowserMonitor::~BrowserMonitor() {
 }
 
-bool BrowserMonitor::StartWatching(const base::char16* registry_path,
-                                   base::Process process) {
+bool BrowserMonitor::StartWatching(
+    const base::char16* registry_path,
+    base::Process process,
+    base::win::ScopedHandle on_initialized_event) {
   if (!exit_code_watcher_.Initialize(process.Pass()))
     return false;
 
@@ -104,8 +110,9 @@ bool BrowserMonitor::StartWatching(const base::char16* registry_path,
     return false;
   }
 
-  if (!background_thread_.task_runner()->PostTask(FROM_HERE,
-        base::Bind(&BrowserMonitor::Watch, base::Unretained(this)))) {
+  if (!background_thread_.task_runner()->PostTask(
+          FROM_HERE, base::Bind(&BrowserMonitor::Watch, base::Unretained(this),
+                                base::Passed(on_initialized_event.Pass())))) {
     background_thread_.Stop();
     return false;
   }
@@ -137,9 +144,14 @@ void BrowserMonitor::OnEndSessionMessage(UINT message, LPARAM lparam) {
     run_loop_->Quit();
 }
 
-void BrowserMonitor::Watch() {
+void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
   // This needs to run on an IO thread.
   DCHECK_NE(main_thread_, base::MessageLoopProxy::current());
+
+  // Signal our client now that the Kasko reporter is initialized and we have
+  // cleared all of the obstacles that might lead to an early exit.
+  ::SetEvent(on_initialized_event.Get());
+  on_initialized_event.Close();
 
   exit_code_watcher_.WaitForExit();
   exit_funnel_.RecordEvent(L"BrowserExit");
@@ -177,8 +189,10 @@ void BrowserMonitor::BrowserExited() {
 // The main entry point to the watcher, declared as extern "C" to avoid name
 // mangling.
 extern "C" int WatcherMain(const base::char16* registry_path,
-                           HANDLE process_handle) {
+                           HANDLE process_handle,
+                           HANDLE on_initialized_event_handle) {
   base::Process process(process_handle);
+  base::win::ScopedHandle on_initialized_event(on_initialized_event_handle);
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
@@ -197,8 +211,10 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 
   base::RunLoop run_loop;
   BrowserMonitor monitor(&run_loop, registry_path);
-  if (!monitor.StartWatching(registry_path, process.Pass()))
+  if (!monitor.StartWatching(registry_path, process.Pass(),
+                             on_initialized_event.Pass())) {
     return 1;
+  }
 
   run_loop.Run();
 

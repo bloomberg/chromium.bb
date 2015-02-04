@@ -2605,6 +2605,8 @@
         '..',
       ],
       'sources': [
+        'app/chrome_watcher_client_unittest_win.cc',
+        'app/chrome_watcher_client_win.cc',
         'app/chrome_watcher_command_line_unittest_win.cc',
         'app/chrome_watcher_command_line_win.cc',
         'app/delay_load_hook_win.cc',

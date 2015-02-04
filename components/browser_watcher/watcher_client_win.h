@@ -32,12 +32,19 @@ class WatcherClient {
   // a non-threadsafe legacy launch mode that's compatible with Windows XP.
   void LaunchWatcher();
 
+  // Ensures that |handle| may be inherited by the watcher process. |handle|
+  // must still be inheritable, and it's the client's responsibility to
+  // communicate the value of |handle| to the launched process.
+  void AddInheritedHandle(HANDLE handle);
+
+  // Returns the launched process.
+  const base::Process& process() const { return process_; }
+
   // Accessors, exposed only for testing.
   bool use_legacy_launch() const { return use_legacy_launch_; }
   void set_use_legacy_launch(bool use_legacy_launch) {
       use_legacy_launch_ = use_legacy_launch;
   }
-  base::ProcessHandle process() const { return process_.Handle(); }
 
  private:
   // If true, the watcher process will be launched with XP legacy handle
@@ -51,6 +58,8 @@ class WatcherClient {
   // A handle to the launched watcher process. Valid after a successful
   // LaunchWatcher() call.
   base::Process process_;
+
+  std::vector<HANDLE> inherited_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherClient);
 };

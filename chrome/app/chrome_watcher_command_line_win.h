@@ -15,15 +15,21 @@ class FilePath;
 }  // namespace base
 
 // Generates a CommandLine that will launch |chrome_exe| in Chrome Watcher mode
-// to observe |parent_process|.
+// to observe |parent_process|. The watcher process will signal
+// |on_initialized_event| when its initialization is complete.
 base::CommandLine GenerateChromeWatcherCommandLine(
     const base::FilePath& chrome_exe,
-    HANDLE parent_process);
+    HANDLE parent_process,
+    HANDLE on_initialized_event);
 
 // Interprets the Command Line used to launch a Chrome Watcher process and
-// extracts the parent process HANDLE. Verifies that the handle is usable in
-// this process before returning it, and returns NULL in case of a failure.
-base::win::ScopedHandle InterpretChromeWatcherCommandLine(
-    const base::CommandLine& command_line);
+// extracts the parent process and initialization event HANDLEs. Verifies that
+// the handles are usable in this process before returning them. Returns true if
+// both handles are successfully parsed and false otherwise. If only one of the
+// handles can be parsed, it will be closed.
+bool InterpretChromeWatcherCommandLine(
+    const base::CommandLine& command_line,
+    base::win::ScopedHandle* parent_process,
+    base::win::ScopedHandle* on_initialized_event);
 
 #endif  // CHROME_APP_CHROME_WATCHER_COMMAND_LINE_WIN_H_

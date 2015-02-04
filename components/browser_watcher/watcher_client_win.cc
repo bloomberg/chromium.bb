@@ -48,12 +48,18 @@ void WatcherClient::LaunchWatcher() {
     // Launch the child process inheriting only |self| on
     // Vista and better.
     to_inherit.push_back(self.Handle());
+    to_inherit.insert(to_inherit.end(), inherited_handles_.begin(),
+                      inherited_handles_.end());
     options.handles_to_inherit = &to_inherit;
   }
 
   process_ = base::LaunchProcess(cmd_line, options);
   if (!process_.IsValid())
     LOG(ERROR) << "Failed to launch browser watcher.";
+}
+
+void WatcherClient::AddInheritedHandle(HANDLE handle) {
+  inherited_handles_.push_back(handle);
 }
 
 }  // namespace browser_watcher

@@ -21,6 +21,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
@@ -33,7 +34,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/browser_watcher/watcher_client_win.h"
 #include "components/crash/app/breakpad_win.h"
 #include "components/crash/app/crash_reporter_client.h"
 #include "components/metrics/client_info.h"
@@ -179,10 +179,12 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   }
 
   if (process_type_ == "watcher") {
-    base::win::ScopedHandle parent_process =
-        InterpretChromeWatcherCommandLine(cmd_line);
-    if (!parent_process.IsValid())
+    base::win::ScopedHandle parent_process;
+    base::win::ScopedHandle on_initialized_event;
+    if (!InterpretChromeWatcherCommandLine(cmd_line, &parent_process,
+                                           &on_initialized_event)) {
       return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
+    }
 
     // Intentionally leaked.
     HMODULE watcher_dll = Load(&version, &file);
@@ -193,7 +195,7 @@ int MainDllLoader::Launch(HINSTANCE instance) {
         reinterpret_cast<ChromeWatcherMainFunction>(
             ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
     return watcher_main(chrome::kBrowserExitCodesRegistryPath,
-                        parent_process.Take());
+                        parent_process.Take(), on_initialized_event.Take());
   }
 
   // Initialize the sandbox services.
@@ -260,8 +262,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
     if (g_chrome_crash_client.Get().GetCollectStatsConsent()) {
       base::char16 exe_path[MAX_PATH];
       ::GetModuleFileNameW(nullptr, exe_path, arraysize(exe_path));
-
-      browser_watcher::WatcherClient watcher_client(base::Bind(
+      ChromeWatcherClient watcher_client(base::Bind(
           &GenerateChromeWatcherCommandLine, base::FilePath(exe_path)));
       watcher_client.LaunchWatcher();
     }

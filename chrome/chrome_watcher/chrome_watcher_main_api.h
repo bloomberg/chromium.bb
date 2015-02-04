@@ -16,8 +16,11 @@ extern const char kChromeWatcherDLLEntrypoint[];
 
 // The type of the watcher DLL's main entry point.
 // Watches |parent_process| and records its exit code under |registry_path| in
-// HKCU. Takes ownership of |parent_process|.
-typedef int (*ChromeWatcherMainFunction)(const base::char16* registry_path,
-                                         HANDLE parent_process);
+// HKCU. |on_initialized_event| will be signaled once the process is fully
+// initialized. Takes ownership of |parent_process| and |on_initialized_event|.
+typedef int (*ChromeWatcherMainFunction)(
+    const base::char16* registry_path,
+    HANDLE parent_process,
+    HANDLE on_initialized_event);
 
 #endif  // CHROME_CHROME_WATCHER_CHROME_WATCHER_MAIN_API_H_
