@@ -79,6 +79,42 @@ promise_test(function() {
   }, 'Behavior of Response with ArrayBufferView content with a slice.');
 
 promise_test(function() {
+    var formData = new FormData();
+    formData.append('sample string', '1234567890');
+    formData.append('sample blob', new Blob(['blob content']));
+    formData.append('sample file',
+                    new File(['file content'], 'file.dat'));
+    var response = new Response(formData);
+    return response.text()
+      .then(function(result) {
+          var reg = new RegExp('multipart\/form-data; boundary=(.*)');
+          var regResult = reg.exec(getContentType(response.headers));
+          var boundary = regResult[1];
+          var expected_body =
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample string"\r\n' +
+            '\r\n' +
+            '1234567890\r\n' +
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample blob"; ' +
+            'filename="blob"\r\n' +
+            'Content-Type: application/octet-stream\r\n' +
+            '\r\n' +
+            'blob content\r\n' +
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample file"; ' +
+            'filename="file.dat"\r\n' +
+            'Content-Type: application/octet-stream\r\n' +
+            '\r\n' +
+            'file content\r\n' +
+            '--' + boundary + '--\r\n';
+          assert_equals(
+            result, expected_body,
+            'Creating a Response with FormData body must succeed.');
+        });
+  }, 'Behavior of Response with FormData content');
+
+promise_test(function() {
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     var response = new Response(

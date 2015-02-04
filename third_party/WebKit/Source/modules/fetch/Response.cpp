@@ -10,7 +10,9 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
+#include "core/html/DOMFormData.h"
 #include "modules/fetch/ResponseInit.h"
+#include "platform/network/FormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
@@ -91,6 +93,37 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         RefPtr<DOMArrayBufferView> arrayBufferView = body.getAsArrayBufferView();
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
+        const long long length = blobData->length();
+        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    }
+    if (body.isFormData()) {
+        RefPtr<DOMFormData> domFormData = body.getAsFormData();
+        OwnPtr<BlobData> blobData = BlobData::create();
+        // FIXME: the same code exist in RequestInit::RequestInit().
+        RefPtr<FormData> httpBody = domFormData->createMultiPartFormData();
+        for (size_t i = 0; i < httpBody->elements().size(); ++i) {
+            const FormDataElement& element = httpBody->elements()[i];
+            switch (element.m_type) {
+            case FormDataElement::data: {
+                blobData->appendBytes(element.m_data.data(), element.m_data.size());
+                break;
+            }
+            case FormDataElement::encodedFile:
+                blobData->appendFile(element.m_filename, element.m_fileStart, element.m_fileLength, element.m_expectedFileModificationTime);
+                break;
+            case FormDataElement::encodedBlob:
+                if (element.m_optionalBlobDataHandle)
+                    blobData->appendBlob(element.m_optionalBlobDataHandle, 0, element.m_optionalBlobDataHandle->size());
+                break;
+            case FormDataElement::encodedFileSystemURL:
+                blobData->appendFileSystemURL(element.m_fileSystemURL, element.m_fileStart, element.m_fileLength, element.m_expectedFileModificationTime);
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
+        }
+        blobData->setContentType(AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data());
         const long long length = blobData->length();
         Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);

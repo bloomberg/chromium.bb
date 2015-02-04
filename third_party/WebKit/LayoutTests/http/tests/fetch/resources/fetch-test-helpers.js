@@ -21,6 +21,15 @@ function unreached_rejection(test, prefix) {
     });
 }
 
+function getContentType(headers) {
+  var content_type = '';
+  for (var header of headers) {
+    if (header[0] == 'content-type')
+      content_type = header[1];
+  }
+  return content_type;
+}
+
 var FORBIDDEN_HEADERS =
   ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',
    'Access-Control-Request-Method', 'Connection', 'Content-Length',

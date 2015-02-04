@@ -6,8 +6,8 @@
 
 enum ResponseType { "basic", "cors", "default", "error", "opaque" };
 
-// FIXME: Add union types: FormData and URLSearchParams
-typedef (Blob or ArrayBuffer or ArrayBufferView or USVString) BodyInit;
+// FIXME: Add union type: URLSearchParams
+typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyInit;
 
 [
     Constructor(optional BodyInit body, optional Dictionary responseInitDict),

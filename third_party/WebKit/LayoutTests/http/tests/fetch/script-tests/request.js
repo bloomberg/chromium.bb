@@ -430,14 +430,6 @@ promise_test(function() {
   }, 'Test clone behavior with loading content from Request.');
 
 async_test(function(t) {
-    var getContentType = function(headers) {
-      var content_type = '';
-      for (var header of headers) {
-        if (header[0] == 'content-type')
-          content_type = header[1];
-      }
-      return content_type;
-    };
     var request =
       new Request(URL,
                   {

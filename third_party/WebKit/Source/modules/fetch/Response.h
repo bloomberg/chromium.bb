@@ -23,7 +23,7 @@ class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;
 
-typedef BlobOrArrayBufferOrArrayBufferViewOrUSVString BodyInit;
+typedef BlobOrArrayBufferOrArrayBufferViewOrFormDataOrUSVString BodyInit;
 
 class Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
