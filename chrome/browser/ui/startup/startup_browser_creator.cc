@@ -600,6 +600,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
+  // If --no-startup-window is specified and Chrome is already running then do
+  // not open a new window.
+  if (!process_startup && command_line.HasSwitch(switches::kNoStartupWindow))
+    silent_launch = true;
+
   // If we don't want to launch a new browser window or tab we are done here.
   if (silent_launch)
     return true;
