@@ -101,6 +101,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
         MakeSequencedTaskRunner(),
         MakeSequencedTaskRunner(),
+        content::BrowserThread::GetBlockingPool(),
         base_dir_.path(),
         NULL,  // task_logger
         NULL,  // notification_manager

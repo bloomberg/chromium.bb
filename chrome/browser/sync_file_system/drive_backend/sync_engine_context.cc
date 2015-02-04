@@ -23,14 +23,16 @@ SyncEngineContext::SyncEngineContext(
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     TaskLogger* task_logger,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
     : drive_service_(drive_service.Pass()),
       drive_uploader_(drive_uploader.Pass()),
       task_logger_(task_logger ? task_logger->AsWeakPtr()
                                : base::WeakPtr<TaskLogger>()),
       remote_change_processor_(nullptr),
       ui_task_runner_(ui_task_runner),
-      worker_task_runner_(worker_task_runner) {
+      worker_task_runner_(worker_task_runner),
+      worker_pool_(worker_pool) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -76,6 +78,11 @@ base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
 base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return worker_task_runner_.get();
+}
+
+base::SequencedWorkerPool* SyncEngineContext::GetWorkerPool() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return worker_pool_.get();
 }
 
 void SyncEngineContext::SetMetadataDatabase(

@@ -70,9 +70,10 @@ class ConflictResolverTest : public testing::Test {
 
     context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
                                          drive_uploader.Pass(),
-                                         nullptr,
+                                         nullptr /* task_logger */,
                                          base::ThreadTaskRunnerHandle::Get(),
-                                         base::ThreadTaskRunnerHandle::Get()));
+                                         base::ThreadTaskRunnerHandle::Get(),
+                                         nullptr /* worker_pool */));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
@@ -80,7 +81,8 @@ class ConflictResolverTest : public testing::Test {
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
         10 /* maximum_background_task */,
-        base::ThreadTaskRunnerHandle::Get()));
+        base::ThreadTaskRunnerHandle::Get(),
+        nullptr /* worker_pool */));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 

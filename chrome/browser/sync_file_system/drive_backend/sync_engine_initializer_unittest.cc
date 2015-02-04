@@ -54,14 +54,16 @@ class SyncEngineInitializerTest : public testing::Test {
     sync_context_.reset(new SyncEngineContext(
         fake_drive_service.Pass(),
         scoped_ptr<drive::DriveUploaderInterface>(),
-        nullptr,
+        nullptr /* task_logger */,
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get()));
+        base::ThreadTaskRunnerHandle::Get(),
+        nullptr /* worker_pool */));
 
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
         1 /* maximum_parallel_task */,
-        base::ThreadTaskRunnerHandle::Get()));
+        base::ThreadTaskRunnerHandle::Get(),
+        nullptr /* worker_pool */));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 

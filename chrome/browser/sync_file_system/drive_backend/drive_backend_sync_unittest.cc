@@ -118,6 +118,7 @@ class DriveBackendSyncTest : public testing::Test,
         new SyncEngine(base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
                        worker_task_runner_.get(),
                        drive_task_runner.get(),
+                       worker_pool.get(),
                        base_dir_.path(),
                        nullptr,  // task_logger
                        nullptr,  // notification_manager
