@@ -264,9 +264,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
                                              true /* is_renderer_initiated */,
                                              std::string(),
                                              controller_->GetBrowserContext()));
-      entry->set_site_instance(
-          static_cast<SiteInstanceImpl*>(
-              render_frame_host->render_view_host()->GetSiteInstance()));
+      entry->set_site_instance(render_frame_host->GetSiteInstance());
       // TODO(creis): If there's a pending entry already, find a safe way to
       // update it instead of replacing it and copying over things like this.
       if (pending_entry) {
@@ -552,8 +550,7 @@ void NavigatorImpl::DidNavigate(
   // assigning a site is not necessary for this URL.  In that case, the
   // SiteInstance can still be considered unused until a navigation to a real
   // page.
-  SiteInstanceImpl* site_instance =
-      static_cast<SiteInstanceImpl*>(render_frame_host->GetSiteInstance());
+  SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->HasSite() &&
       ShouldAssignSiteForURL(params.url)) {
     site_instance->SetSite(params.url);

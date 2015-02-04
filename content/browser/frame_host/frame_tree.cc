@@ -302,8 +302,7 @@ RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
 
 void FrameTree::RegisterRenderFrameHost(
     RenderFrameHostImpl* render_frame_host) {
-  SiteInstance* site_instance =
-      render_frame_host->render_view_host()->GetSiteInstance();
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   CHECK(iter != render_view_host_map_.end());
@@ -313,8 +312,7 @@ void FrameTree::RegisterRenderFrameHost(
 
 void FrameTree::UnregisterRenderFrameHost(
     RenderFrameHostImpl* render_frame_host) {
-  SiteInstance* site_instance =
-      render_frame_host->render_view_host()->GetSiteInstance();
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   int32 site_instance_id = site_instance->GetId();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance_id);
