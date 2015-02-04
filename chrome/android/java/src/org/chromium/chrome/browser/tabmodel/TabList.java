@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.Tab;
  * well as a currently selected tab (see {@link #index}).
  */
 public interface TabList {
+    // Keep this in sync with chrome/browser/ui/android/tab_model/tab_model.cc
     public static final int INVALID_TAB_INDEX = -1;
 
     /**

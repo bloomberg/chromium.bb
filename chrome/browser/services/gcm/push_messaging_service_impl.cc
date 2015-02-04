@@ -33,8 +33,18 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/platform_notification_data.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 namespace gcm {
 
@@ -242,6 +252,51 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
       GetAllIdsByProfileAndSourceOrigin(profile_, application_id.origin).size();
   if (notification_count > 0)
     return;
+
+  // Sites with a currently visible tab don't need to show notifications.
+#if defined(OS_ANDROID)
+  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
+    Profile* profile = (*it)->GetProfile();
+    content::WebContents* active_web_contents =
+        (*it)->GetActiveWebContents();
+#else
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Profile* profile = it->profile();
+    content::WebContents* active_web_contents =
+        it->tab_strip_model()->GetActiveWebContents();
+#endif
+    if (!active_web_contents)
+      continue;
+
+    // Don't leak information from other profiles.
+    if (profile != profile_)
+      continue;
+
+    // Ignore minimized windows etc.
+    switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
+     case blink::WebPageVisibilityStateHidden:
+     case blink::WebPageVisibilityStatePrerender:
+      continue;
+     case blink::WebPageVisibilityStateVisible:
+      break;
+    }
+
+    // Use the visible URL since that's the one the user is aware of (and it
+    // doesn't matter whether the page loaded successfully).
+    const GURL& active_url = active_web_contents->GetVisibleURL();
+
+    // Allow https://foo.example.com Service Worker to not show notification if
+    // an https://bar.example.com tab is visible (and hence might conceivably
+    // be showing UI in response to the push message); but http:// doesn't count
+    // as the Service Worker can't talk to it, even with navigator.connect.
+    if (application_id.origin.scheme() != active_url.scheme())
+      continue;
+    if (net::registry_controlled_domains::SameDomainOrHost(
+        application_id.origin, active_url,
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      return;
+    }
+  }
 
   // If we haven't returned yet, the site failed to show a notification, so we
   // will show a generic notification. See https://crbug.com/437277

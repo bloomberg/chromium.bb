@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace gcm {
 
@@ -170,10 +171,16 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   bool RunScript(const std::string& script, std::string* result) {
-    return content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-        script,
-        result);
+    return RunScript(script, result, nullptr);
+  }
+
+  bool RunScript(const std::string& script, std::string* result,
+                 content::WebContents* web_contents) {
+    if (!web_contents)
+      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    return content::ExecuteScriptAndExtractString(web_contents->GetMainFrame(),
+                                                  script,
+                                                  result);
   }
 
   void TryToRegisterSuccessfully(
@@ -486,12 +493,30 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   notification_manager()->CancelAll();
   ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
 
-  // If the Service Worker push event handler shows a notification, we should
-  // not show a forced one.
+  // We'll need to specify the web_contents in which to eval script, since we're
+  // going to run script in a background tab.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // If the site is visible in an active tab, we should not force a notification
+  // to be shown.
   GCMClient::IncomingMessage message;
-  message.data["data"] = "shownotification";
+  message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("testdata", script_result);
+  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // Open a blank foreground tab so site is no longer visible.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  // If the Service Worker push event handler shows a notification, we should
+  // not show a forced one.
+  message.data["data"] = "shownotification";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
@@ -504,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // notification, we should show a forced one.
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
-  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   EXPECT_EQ(base::ASCIIToUTF16(kPushMessagingForcedNotificationTag),
@@ -514,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // explicitly dismisses it (though we may change this later).
   message.data["data"] = "shownotification";
   push_service()->OnMessage(app_id.ToString(), message);
-  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
   ASSERT_EQ(2u, notification_manager()->GetNotificationCount());
 }

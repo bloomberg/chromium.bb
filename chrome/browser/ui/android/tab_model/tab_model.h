@@ -37,6 +37,7 @@ class TabModel : public content::NotificationObserver {
 
   virtual int GetTabCount() const = 0;
   virtual int GetActiveIndex() const = 0;
+  virtual content::WebContents* GetActiveWebContents() const;
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   // This will return NULL if the tab has not yet been initialized.
   virtual TabAndroid* GetTabAt(int index) const = 0;

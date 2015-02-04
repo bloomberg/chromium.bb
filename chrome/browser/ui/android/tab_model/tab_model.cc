@@ -14,6 +14,10 @@
 
 using content::NotificationService;
 
+// Keep this in sync with
+// chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabList.java
+static int INVALID_TAB_INDEX = -1;
+
 TabModel::TabModel(Profile* profile)
   : profile_(profile),
     synced_window_delegate_(
@@ -56,6 +60,13 @@ browser_sync::SyncedWindowDelegate* TabModel::GetSyncedWindowDelegate() const {
 
 SessionID::id_type TabModel::GetSessionId() const {
   return session_id_.id();
+}
+
+content::WebContents* TabModel::GetActiveWebContents() const {
+  int active_index = GetActiveIndex();
+  if (active_index == INVALID_TAB_INDEX)
+    return nullptr;
+  return GetWebContentsAt(active_index);
 }
 
 void TabModel::BroadcastSessionRestoreComplete() {
