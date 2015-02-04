@@ -43,7 +43,7 @@ typedef String ErrorString;
 
 class InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
-    static void provideTo(Page*);
+    static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(Page*);
 
     virtual ~InspectorIndexedDBAgent();
     virtual void trace(Visitor*) override;

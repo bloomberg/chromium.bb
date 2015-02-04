@@ -41,14 +41,15 @@ namespace blink {
 class Database;
 class InspectorDatabaseResource;
 class InspectorFrontend;
+class Page;
 
 typedef String ErrorString;
 
 class InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent>, public InspectorBackendDispatcher::DatabaseCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create()
+    static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create(Page* page)
     {
-        return adoptPtrWillBeNoop(new InspectorDatabaseAgent());
+        return adoptPtrWillBeNoop(new InspectorDatabaseAgent(page));
     }
     virtual ~InspectorDatabaseAgent();
     virtual void trace(Visitor*) override;
@@ -67,7 +68,7 @@ public:
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
 private:
-    explicit InspectorDatabaseAgent();
+    explicit InspectorDatabaseAgent(Page*);
 
     Database* databaseForId(const String& databaseId);
     InspectorDatabaseResource* findByFileName(const String& fileName);

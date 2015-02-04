@@ -43,9 +43,14 @@ DatabaseClient::DatabaseClient()
     : m_inspectorAgent(0)
 { }
 
+DatabaseClient* DatabaseClient::fromPage(Page* page)
+{
+    return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
+}
+
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)
 {
-    return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
+    return DatabaseClient::fromPage(toDocument(context)->page());
 }
 
 const char* DatabaseClient::supplementName()
@@ -59,19 +64,15 @@ void DatabaseClient::didOpenDatabase(Database* database, const String& domain, c
         m_inspectorAgent->didOpenDatabase(database, domain, name, version);
 }
 
-void DatabaseClient::createInspectorAgentFor(Page* page)
+void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent)
 {
     ASSERT(!m_inspectorAgent);
-    OwnPtrWillBeRawPtr<InspectorDatabaseAgent> inspectorAgent = InspectorDatabaseAgent::create();
-    m_inspectorAgent = inspectorAgent.get();
-    page->inspectorController().registerModuleAgent(inspectorAgent.release());
+    m_inspectorAgent = agent;
 }
 
 void provideDatabaseClientTo(Page& page, PassOwnPtrWillBeRawPtr<DatabaseClient> client)
 {
-    DatabaseClient* clientPtr = client.get();
     page.provideSupplement(DatabaseClient::supplementName(), client);
-    clientPtr->createInspectorAgentFor(&page);
 }
 
 } // namespace blink

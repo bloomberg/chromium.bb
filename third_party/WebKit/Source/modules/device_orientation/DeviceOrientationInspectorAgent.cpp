@@ -22,10 +22,10 @@ static const char gamma[] = "gamma";
 static const char overrideEnabled[] = "overrideEnabled";
 }
 
-void DeviceOrientationInspectorAgent::provideTo(Page& page)
+// static
+PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> DeviceOrientationInspectorAgent::create(Page* page)
 {
-    OwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> deviceOrientationAgent(adoptPtrWillBeNoop(new DeviceOrientationInspectorAgent(page)));
-    page.inspectorController().registerModuleAgent(deviceOrientationAgent.release());
+    return adoptPtrWillBeNoop(new DeviceOrientationInspectorAgent(*page));
 }
 
 DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()

@@ -94,6 +94,7 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
@@ -427,13 +428,14 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideSpeechRecognitionTo(*m_page, SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0));
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
-
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
-    DeviceOrientationInspectorAgent::provideTo(*m_page);
-
-    m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
     provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());
-    InspectorIndexedDBAgent::provideTo(m_page.get());
+
+    m_page->inspectorController().registerModuleAgent(InspectorDatabaseAgent::create(m_page.get()));
+    m_page->inspectorController().registerModuleAgent(DeviceOrientationInspectorAgent::create(m_page.get()));
+    m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
+    m_page->inspectorController().registerModuleAgent(InspectorIndexedDBAgent::create(m_page.get()));
+
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());

@@ -52,10 +52,11 @@ public:
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
 
+    static DatabaseClient* fromPage(Page*);
     static DatabaseClient* from(ExecutionContext*);
     static const char* supplementName();
 
-    void createInspectorAgentFor(Page*);
+    void setInspectorAgent(InspectorDatabaseAgent*);
 
 private:
     InspectorDatabaseAgent* m_inspectorAgent;

@@ -564,10 +564,10 @@ LocalFrame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin
 
 } // namespace
 
-void InspectorIndexedDBAgent::provideTo(Page* page)
+// static
+PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(Page* page)
 {
-    OwnPtrWillBeRawPtr<InspectorIndexedDBAgent> agent(adoptPtrWillBeNoop(new InspectorIndexedDBAgent(page)));
-    page->inspectorController().registerModuleAgent(agent.release());
+    return adoptPtrWillBeNoop(new InspectorIndexedDBAgent(page));
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(Page* page)

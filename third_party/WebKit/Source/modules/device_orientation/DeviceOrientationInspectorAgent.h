@@ -18,7 +18,7 @@ typedef String ErrorString;
 class DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent>, public InspectorBackendDispatcher::DeviceOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
-    static void provideTo(Page&);
+    static PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> create(Page*);
 
     virtual ~DeviceOrientationInspectorAgent();
 

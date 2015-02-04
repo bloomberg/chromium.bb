@@ -36,6 +36,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/InspectorDatabaseResource.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"
@@ -234,11 +235,12 @@ void InspectorDatabaseAgent::didCommitLoadForMainFrame()
     m_resources.clear();
 }
 
-InspectorDatabaseAgent::InspectorDatabaseAgent()
+InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
     : InspectorBaseAgent<InspectorDatabaseAgent>("Database")
     , m_frontend(0)
     , m_enabled(false)
 {
+    DatabaseClient::fromPage(page)->setInspectorAgent(this);
 }
 
 InspectorDatabaseAgent::~InspectorDatabaseAgent()
