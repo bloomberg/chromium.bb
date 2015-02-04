@@ -70,6 +70,7 @@ class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
 class ScriptProcessorNode;
+class SecurityOrigin;
 class StereoPannerNode;
 class WaveShaperNode;
 
@@ -266,6 +267,9 @@ public:
     void refNode(AudioNode*);
 
     static unsigned s_hardwareContextCount;
+
+    // Get the security origin for this audio context.
+    SecurityOrigin* securityOrigin() const;
 
 protected:
     explicit AudioContext(Document*);

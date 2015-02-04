@@ -67,6 +67,7 @@
 #include "modules/webaudio/WaveShaperNode.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/HRTFPanner.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Atomics.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -1147,6 +1148,11 @@ void AudioContext::updateChangedChannelCountMode()
         (*k)->updateChannelCountMode();
 
     m_deferredCountModeChange.clear();
+}
+
+SecurityOrigin* AudioContext::securityOrigin() const
+{
+    return executionContext()->securityOrigin();
 }
 
 } // namespace blink

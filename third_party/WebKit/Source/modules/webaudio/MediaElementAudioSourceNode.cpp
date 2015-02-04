@@ -33,6 +33,8 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/graphics/media/MediaPlayer.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
 
 namespace blink {
@@ -117,6 +119,8 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked()) {
         if (AudioSourceProvider* provider = mediaElement()->audioSourceProvider()) {
+            // Grab data from the provider so that the element continues to make progress, even if
+            // we're going to output silence anyway.
             if (m_multiChannelResampler.get()) {
                 ASSERT(m_sourceSampleRate != sampleRate());
                 m_multiChannelResampler->process(provider, outputBus, numberOfFrames);
@@ -124,6 +128,11 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
                 // Bypass the resampler completely if the source is at the context's sample-rate.
                 ASSERT(m_sourceSampleRate == sampleRate());
                 provider->provideInput(outputBus, numberOfFrames);
+            }
+            // Output silence if we don't have access to the element.
+            if (!(mediaElement()->webMediaPlayer()->didPassCORSAccessCheck()
+                || context()->securityOrigin()->canRequest(mediaElement()->currentSrc()))) {
+                outputBus->zero();
             }
         } else {
             // Either this port doesn't yet support HTMLMediaElement audio stream access,
