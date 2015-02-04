@@ -96,6 +96,8 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
         ConvertMouseMoveEvent(input);
         break;
       case EV_SYN:
+        if (input.code == SYN_DROPPED)
+          LOG(WARNING) << "kernel dropped input events";
         FlushEvents();
         break;
     }
