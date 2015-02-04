@@ -48,6 +48,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "url/url_constants.h"
 
 using base::UserMetricsAction;
 using content::RenderFrameHost;
@@ -879,6 +880,7 @@ void WebViewGuest::NavigateGuest(const std::string& src,
   if (scheme_is_blocked || !url.is_valid()) {
     LoadAbort(true /* is_top_level */, url,
               net::ErrorToShortString(net::ERR_ABORTED));
+    NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
     return;
   }
   if (!force_navigation && (src_ == url))

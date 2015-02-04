@@ -964,16 +964,14 @@ function testLoadAbortEmptyResponse() {
 // chrome URL is provided.
 function testLoadAbortIllegalChromeURL() {
   var webview = document.createElement('webview');
-  var onFirstLoadStop = function(e) {
-    webview.removeEventListener('loadstop', onFirstLoadStop);
-    webview.setAttribute('src', 'chrome://newtab');
-  };
-  webview.addEventListener('loadstop', onFirstLoadStop);
   webview.addEventListener('loadabort', function(e) {
     embedder.test.assertEq('ERR_ABORTED', e.reason);
+  });
+  webview.addEventListener('loadstop', function(e)  {
+    embedder.test.assertEq('about:blank', webview.src);
     embedder.test.succeed();
   });
-  webview.setAttribute('src', 'about:blank');
+  webview.src = 'chrome://newtab';
   document.body.appendChild(webview);
 }
 
@@ -981,9 +979,12 @@ function testLoadAbortIllegalFileURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
     embedder.test.assertEq('ERR_ABORTED', e.reason);
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertEq('about:blank', webview.src);
     embedder.test.succeed();
   });
-  webview.setAttribute('src', 'file://foo');
+  webview.src = 'file://foo';
   document.body.appendChild(webview);
 }
 
@@ -991,6 +992,9 @@ function testLoadAbortIllegalJavaScriptURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
     embedder.test.assertEq('ERR_ABORTED', e.reason);
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertEq('about:blank', webview.src);
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'javascript:void(document.bgColor="#0000FF")');
@@ -1000,17 +1004,19 @@ function testLoadAbortIllegalJavaScriptURL() {
 // Verifies that navigating to invalid URL (e.g. 'http:') doesn't cause a crash.
 function testLoadAbortInvalidNavigation() {
   var webview = document.createElement('webview');
-  var validSchemeWithEmptyURL = 'http:';
   webview.addEventListener('loadabort', function(e) {
     embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.assertEq('', e.url);
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertEq('about:blank', webview.src);
     embedder.test.succeed();
   });
   webview.addEventListener('exit', function(e) {
     // We should not crash.
     embedder.test.fail();
   });
-  webview.setAttribute('src', validSchemeWithEmptyURL);
+  webview.src = 'http:';
   document.body.appendChild(webview);
 }
 
@@ -1018,17 +1024,20 @@ function testLoadAbortInvalidNavigation() {
 // pseudo-scheme fires loadabort and doesn't cause a crash.
 function testLoadAbortNonWebSafeScheme() {
   var webview = document.createElement('webview');
-  var chromeGuestURL = 'chrome-guest://abc123';
+  var chromeGuestURL = 'chrome-guest://abc123/';
   webview.addEventListener('loadabort', function(e) {
     embedder.test.assertEq('ERR_ABORTED', e.reason);
-    embedder.test.assertEq('chrome-guest://abc123/', e.url);
+    embedder.test.assertEq(chromeGuestURL, e.url);
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertEq('about:blank', webview.src);
     embedder.test.succeed();
   });
   webview.addEventListener('exit', function(e) {
     // We should not crash.
     embedder.test.fail();
   });
-  webview.setAttribute('src', chromeGuestURL);
+  webview.src = chromeGuestURL;
   document.body.appendChild(webview);
 };
 
