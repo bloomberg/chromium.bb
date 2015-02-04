@@ -348,7 +348,6 @@
           'memory/ref_counted_delete_on_message_loop.h',
           'memory/ref_counted_memory.cc',
           'memory/ref_counted_memory.h',
-          'memory/scoped_open_process.h',
           'memory/scoped_policy.h',
           'memory/scoped_ptr.h',
           'memory/scoped_vector.h',

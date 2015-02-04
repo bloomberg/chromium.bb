@@ -49,6 +49,9 @@ class BASE_EXPORT Process {
   // Returns an object for the current process.
   static Process Current();
 
+  // Returns a Process for the given |pid|.
+  static Process Open(ProcessId pid);
+
   // Returns a Process for the given |pid|. On Windows the handle is opened
   // with more access rights and must only be used by trusted code (can read the
   // address space and duplicate handles).

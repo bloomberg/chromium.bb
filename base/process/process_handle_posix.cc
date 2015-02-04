@@ -16,13 +16,6 @@ ProcessHandle GetCurrentProcessHandle() {
   return GetCurrentProcId();
 }
 
-bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle) {
-  // On Posix platforms, process handles are the same as PIDs, so we
-  // don't need to do anything.
-  *handle = pid;
-  return true;
-}
-
 void CloseProcessHandle(ProcessHandle process) {
   // See OpenProcessHandle, nothing to do.
   return;

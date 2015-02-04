@@ -95,12 +95,10 @@ class ServiceProcessControlBrowserTest
     service_process_ =
         base::Process::OpenWithAccess(service_pid,
                                       SYNCHRONIZE | PROCESS_QUERY_INFORMATION);
-    EXPECT_TRUE(service_process_.IsValid());
 #else
-    base::ProcessHandle service_process_handle;
-    EXPECT_TRUE(base::OpenProcessHandle(service_pid, &service_process_handle));
-    service_process_ = base::Process(service_process_handle);
+    service_process_ = base::Process::Open(service_pid);
 #endif
+    EXPECT_TRUE(service_process_.IsValid());
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.

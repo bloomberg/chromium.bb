@@ -40,9 +40,7 @@ BASE_EXPORT ProcessId GetCurrentProcId();
 // Returns the ProcessHandle of the current process.
 BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
 
-// Converts a PID to a process handle. This handle must be closed by
-// CloseProcessHandle when you are done with it. Returns true on success.
-BASE_EXPORT bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle);
+
 
 // Closes the process handle opened by OpenProcessHandle.
 BASE_EXPORT void CloseProcessHandle(ProcessHandle process);

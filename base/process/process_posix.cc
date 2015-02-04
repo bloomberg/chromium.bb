@@ -38,13 +38,18 @@ Process Process::Current() {
 }
 
 // static
-Process Process::OpenWithExtraPriviles(ProcessId pid) {
+Process Process::Open(ProcessId pid) {
   if (pid == GetCurrentProcId())
     return Current();
 
-  // On POSIX process handles are the same as PIDs, and there are no privileges
-  // to set.
+  // On POSIX process handles are the same as PIDs.
   return Process(pid);
+}
+
+// static
+Process Process::OpenWithExtraPriviles(ProcessId pid) {
+  // On POSIX there are no privileges to set.
+  return Open(pid);
 }
 
 // static

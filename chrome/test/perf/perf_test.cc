@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/logging.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/chrome_process_util.h"
@@ -52,17 +53,17 @@ std::string IOPerfInfoToString(const std::string& test_name,
   std::string output;
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-    base::ProcessHandle process_handle;
-    if (!base::OpenProcessHandle(*it, &process_handle)) {
+    base::Process process = base::Process::Open(*it);
+    if (!process.IsValid()) {
       NOTREACHED();
       return output;
     }
 
     // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
     // scoped_ptr<base::ProcessMetrics> process_metrics(
-    //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    //     base::ProcessMetrics::CreateProcessMetrics(process.Handle()));
     scoped_ptr<ChromeTestProcessMetrics> process_metrics(
-        ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+        ChromeTestProcessMetrics::CreateProcessMetrics(process.Handle()));
     base::IoCounters io_counters;
     memset(&io_counters, 0, sizeof(io_counters));
 
@@ -109,8 +110,6 @@ std::string IOPerfInfoToString(const std::string& test_name,
         total_byte_r += total_byte;
       }
     }
-
-    base::CloseProcessHandle(process_handle);
   }
 
   std::string t_name(test_name);
@@ -268,17 +267,17 @@ std::string MemoryUsageInfoToString(const std::string& test_name,
   std::string output;
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-    base::ProcessHandle process_handle;
-    if (!base::OpenProcessHandle(*it, &process_handle)) {
+    base::Process process = base::Process::Open(*it);
+    if (!process.IsValid()) {
       NOTREACHED();
       return output;
     }
 
     // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
     // scoped_ptr<base::ProcessMetrics> process_metrics(
-    //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    //     base::ProcessMetrics::CreateProcessMetrics(process.Handle()));
     scoped_ptr<ChromeTestProcessMetrics> process_metrics(
-        ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+        ChromeTestProcessMetrics::CreateProcessMetrics(process.Handle()));
 
     size_t current_virtual_size = process_metrics->GetPagefileUsage();
     size_t current_working_set_size = process_metrics->GetWorkingSetSize();
@@ -310,8 +309,6 @@ std::string MemoryUsageInfoToString(const std::string& test_name,
       renderer_total_peak_working_set_size += peak_working_set_size;
     }
 #endif
-
-    base::CloseProcessHandle(process_handle);
   }
 
   std::string trace_name(test_name);

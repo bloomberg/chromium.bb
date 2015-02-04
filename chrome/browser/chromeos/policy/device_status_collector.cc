@@ -17,7 +17,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -437,16 +437,15 @@ std::vector<double> DeviceStatusCollector::GetPerProcessCPUUsage() {
   const int num_processors = base::SysInfo::NumberOfProcessors();
   while (const base::ProcessEntry* process_entry =
          process_iter.NextProcessEntry()) {
-    base::ProcessHandle process;
-    if (!base::OpenProcessHandle(process_entry->pid(), &process)) {
+    base::Process process = base::Process::Open(process_entry->pid());
+    if (!process.IsValid()) {
       LOG(ERROR) << "Could not create process handle for process "
                   << process_entry->pid();
       continue;
     }
     scoped_ptr<base::ProcessMetrics> metrics(
-        base::ProcessMetrics::CreateProcessMetrics(process));
+        base::ProcessMetrics::CreateProcessMetrics(process.Handle()));
     const double usage = metrics->GetPlatformIndependentCPUUsage();
-    base::CloseProcessHandle(process);
     DCHECK_LE(0, usage);
     if (usage > 0) {
       // Convert CPU usage from "percentage of a single core" to "percentage of

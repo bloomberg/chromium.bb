@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
@@ -49,15 +50,12 @@ std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
 void TerminateAllChromeProcesses(const ChromeProcessList& process_pids) {
   ChromeProcessList::const_iterator it;
   for (it = process_pids.begin(); it != process_pids.end(); ++it) {
-    base::ProcessHandle handle;
-    if (!base::OpenProcessHandle(*it, &handle)) {
+    base::Process process = base::Process::Open(*it);
+    if (process.IsValid()) {
       // Ignore processes for which we can't open the handle. We don't
       // guarantee that all processes will terminate, only try to do so.
-      continue;
+      base::KillProcess(process.Handle(), content::RESULT_CODE_KILLED, true);
     }
-
-    base::KillProcess(handle, content::RESULT_CODE_KILLED, true);
-    base::CloseProcessHandle(handle);
   }
 }
 

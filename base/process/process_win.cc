@@ -47,10 +47,14 @@ Process Process::Current() {
 }
 
 // static
+Process Process::Open(ProcessId pid) {
+  return Process(::OpenProcess(kBasicProcessAccess, FALSE, pid));
+}
+
+// static
 Process Process::OpenWithExtraPriviles(ProcessId pid) {
   DWORD access = kBasicProcessAccess | PROCESS_DUP_HANDLE | PROCESS_VM_READ;
-  ProcessHandle handle = ::OpenProcess(access, FALSE, pid);
-  return Process(handle);
+  return Process(::OpenProcess(access, FALSE, pid));
 }
 
 // static

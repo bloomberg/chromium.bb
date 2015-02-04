@@ -20,22 +20,6 @@ ProcessHandle GetCurrentProcessHandle() {
   return ::GetCurrentProcess();
 }
 
-bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle) {
-  // We try to limit privileges granted to the handle. If you need this
-  // for test code, consider using OpenPrivilegedProcessHandle instead of
-  // adding more privileges here.
-  ProcessHandle result = OpenProcess(PROCESS_TERMINATE |
-                                     PROCESS_QUERY_INFORMATION |
-                                     SYNCHRONIZE,
-                                     FALSE, pid);
-
-  if (result == NULL)
-    return false;
-
-  *handle = result;
-  return true;
-}
-
 void CloseProcessHandle(ProcessHandle process) {
   CloseHandle(process);
 }

@@ -17,7 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -57,10 +57,9 @@ base::ProcessId GetParentProcessId(base::ProcessId pid) {
   // base::GetParentProcessId() is defined as taking a ProcessHandle instead of
   // a ProcessId, even though it's a POSIX-only function and IDs and Handles
   // are both simply pid_t on POSIX... :/
-  base::ProcessHandle handle;
-  CHECK(base::OpenProcessHandle(pid, &handle));
-  base::ProcessId ret = base::GetParentProcessId(pid);
-  base::CloseProcessHandle(handle);
+  base::Process process = base::Process::Open(pid);
+  CHECK(process.IsValid());
+  base::ProcessId ret = base::GetParentProcessId(process.Handle());
   return ret;
 }
 

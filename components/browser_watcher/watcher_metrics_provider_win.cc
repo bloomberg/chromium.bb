@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/metrics/sparse_histogram.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,10 +51,9 @@ bool IsDeadProcess(base::StringPiece16 key_or_value_name) {
   // This is more expensive than the above check, but should also be very rare,
   // as this only happens more than once for a given PID if a user is running
   // multiple Chrome instances concurrently.
-  base::ProcessHandle process = base::kNullProcessHandle;
-  if (base::OpenProcessHandle(static_cast<base::ProcessId>(pid), &process)) {
-    base::CloseProcessHandle(process);
-
+  base::Process process =
+      base::Process::Open(static_cast<base::ProcessId>(pid));
+  if (process.IsValid()) {
     // The fact that it was possible to open the process says it's live.
     return false;
   }
