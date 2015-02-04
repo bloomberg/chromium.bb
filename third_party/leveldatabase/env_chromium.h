@@ -131,6 +131,8 @@ class ChromiumEnv : public leveldb::Env,
       leveldb::RandomAccessFile** result);
   virtual leveldb::Status NewWritableFile(const std::string& fname,
                                           leveldb::WritableFile** result);
+  virtual leveldb::Status NewAppendableFile(const std::string& fname,
+                                            leveldb::WritableFile** result);
   virtual leveldb::Status NewLogger(const std::string& fname,
                                     leveldb::Logger** result);
 

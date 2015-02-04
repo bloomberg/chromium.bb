@@ -898,6 +898,22 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
   }
 }
 
+Status ChromiumEnv::NewAppendableFile(const std::string& fname,
+                                      leveldb::WritableFile** result) {
+  *result = NULL;
+  FilePath path = FilePath::FromUTF8Unsafe(fname);
+  scoped_ptr<base::File> f(new base::File(
+      path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND));
+  if (!f->IsValid()) {
+    RecordErrorAt(kNewAppendableFile);
+    return MakeIOError(fname, "Unable to create appendable file",
+                       kNewAppendableFile, f->error_details());
+  }
+  *result =
+      new ChromiumWritableFile(fname, f.release(), this, this, make_backup_);
+  return Status::OK();
+}
+
 uint64_t ChromiumEnv::NowMicros() {
   return base::TimeTicks::Now().ToInternalValue();
 }
