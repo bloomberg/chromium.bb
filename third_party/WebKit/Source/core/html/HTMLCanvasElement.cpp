@@ -617,10 +617,9 @@ void HTMLCanvasElement::createImageBufferInternal()
 
     int msaaSampleCount;
     OwnPtr<ImageBufferSurface> surface = createImageBufferSurface(size(), &msaaSampleCount);
-    if (!surface->isValid())
-        return;
-
     m_imageBuffer = ImageBuffer::create(surface.release());
+    if (!m_imageBuffer)
+        return;
     m_imageBuffer->setClient(this);
 
     document().updateRenderTreeIfNeeded();
