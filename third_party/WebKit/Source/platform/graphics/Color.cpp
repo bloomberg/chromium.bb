@@ -60,20 +60,12 @@ RGBA32 makeRGBA(int r, int g, int b, int a)
 
 static int colorFloatToRGBAByte(float f)
 {
-    // We use lroundf and 255 instead of nextafterf(256, 0) to match CG's rounding
     return std::max(0, std::min(static_cast<int>(lroundf(255.0f * f)), 255));
 }
 
 RGBA32 makeRGBA32FromFloats(float r, float g, float b, float a)
 {
     return colorFloatToRGBAByte(a) << 24 | colorFloatToRGBAByte(r) << 16 | colorFloatToRGBAByte(g) << 8 | colorFloatToRGBAByte(b);
-}
-
-RGBA32 colorWithOverrideAlpha(RGBA32 color, float overrideAlpha)
-{
-    RGBA32 rgbOnly = color & 0x00FFFFFF;
-    RGBA32 rgba = rgbOnly | colorFloatToRGBAByte(overrideAlpha) << 24;
-    return rgba;
 }
 
 static double calcHue(double temp1, double temp2, double hueVal)
@@ -325,7 +317,9 @@ Color Color::dark() const
 
 Color Color::combineWithAlpha(float otherAlpha) const
 {
-    return colorWithOverrideAlpha(rgb(), (alpha() / 255.f) * otherAlpha);
+    RGBA32 rgbOnly = rgb() & 0x00FFFFFF;
+    float overrideAlpha = (alpha() / 255.f) * otherAlpha;
+    return rgbOnly | colorFloatToRGBAByte(overrideAlpha) << 24;
 }
 
 static int blendComponent(int c, int a)
