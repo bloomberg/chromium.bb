@@ -494,7 +494,12 @@ void SyncFileSystemService::DidInitializeFileSystem(
 
   // Local side of initialization for the app is done.
   // Continue on initializing the remote side.
-  GetRemoteService(app_origin)->RegisterOrigin(
+  if (!remote_service_) {
+    callback.Run(SYNC_STATUS_ABORT);
+    return;
+  }
+
+  remote_service_->RegisterOrigin(
       app_origin,
       base::Bind(&SyncFileSystemService::DidRegisterOrigin,
                  AsWeakPtr(), app_origin, callback));
@@ -509,8 +514,13 @@ void SyncFileSystemService::DidRegisterOrigin(
             app_origin.spec().c_str(),
             SyncStatusCodeToString(status));
 
+  if (!remote_service_) {
+    callback.Run(SYNC_STATUS_ABORT);
+    return;
+  }
+
   UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.RegisterOriginResult",
-                            GetRemoteService(app_origin)->GetCurrentState(),
+                            remote_service_->GetCurrentState(),
                             REMOTE_SERVICE_STATE_MAX);
 
   if (status == SYNC_STATUS_FAILED) {
@@ -541,6 +551,11 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
     return;
   }
 
+  if (!remote_service_) {
+    callback.Run(base::ListValue());
+    return;
+  }
+
   GetRemoteService(origin)->DumpFiles(
       origin,
       base::Bind(
@@ -554,7 +569,8 @@ void SyncFileSystemService::DidDumpFiles(
     const GURL& origin,
     const DumpFilesCallback& callback,
     scoped_ptr<base::ListValue> dump_files) {
-  if (!dump_files || !dump_files->GetSize()) {
+  if (!dump_files || !dump_files->GetSize() ||
+      !local_service_ || !remote_service_) {
     callback.Run(base::ListValue());
     return;
   }
