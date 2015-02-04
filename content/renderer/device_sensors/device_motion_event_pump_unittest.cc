@@ -16,7 +16,8 @@ namespace content {
 
 class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
  public:
-  MockDeviceMotionListener() : did_change_device_motion_(false) {
+  MockDeviceMotionListener()
+      : did_change_device_motion_(false), number_of_events_(0) {
     memset(&data_, 0, sizeof(data_));
   }
   virtual ~MockDeviceMotionListener() { }
@@ -25,17 +26,22 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
       const blink::WebDeviceMotionData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_motion_ = true;
+    ++number_of_events_;
   }
 
   bool did_change_device_motion() const {
     return did_change_device_motion_;
   }
+
+  int number_of_events() const { return number_of_events_; }
+
   const blink::WebDeviceMotionData& data() const {
     return data_;
   }
 
  private:
   bool did_change_device_motion_;
+  int number_of_events_;
   blink::WebDeviceMotionData data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceMotionListener);
@@ -44,8 +50,16 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
   DeviceMotionEventPumpForTesting()
-      : DeviceMotionEventPump(0) { }
+      : DeviceMotionEventPump(0), stop_on_fire_event_(true) {}
   ~DeviceMotionEventPumpForTesting() override {}
+
+  void set_stop_on_fire_event(bool stop_on_fire_event) {
+    stop_on_fire_event_ = stop_on_fire_event;
+  }
+
+  bool stop_on_fire_event() { return stop_on_fire_event_; }
+
+  int pump_delay_microseconds() const { return pump_delay_microseconds_; }
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceMotionEventPump::OnDidStart(renderer_handle);
@@ -54,11 +68,15 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
   void SendStopMessage() override {}
   void FireEvent() override {
     DeviceMotionEventPump::FireEvent();
-    Stop();
-    base::MessageLoop::current()->QuitWhenIdle();
+    if (stop_on_fire_event_) {
+      Stop();
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
 
  private:
+  bool stop_on_fire_event_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpForTesting);
 };
 
@@ -156,6 +174,33 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
   EXPECT_FALSE(received_data.hasRotationRateAlpha);
   EXPECT_FALSE(received_data.hasRotationRateBeta);
   EXPECT_FALSE(received_data.hasRotationRateGamma);
+}
+
+// Confirm that the frequency of pumping events is not greater than 60Hz. A rate
+// above 60Hz would allow for the detection of keystrokes (crbug.com/421691)
+TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
+  // Confirm that the delay for pumping events is 60 Hz.
+  EXPECT_GE(60, base::Time::kMicrosecondsPerSecond /
+      motion_pump()->pump_delay_microseconds());
+
+  base::MessageLoopForUI loop;
+
+  InitBuffer(true);
+
+  motion_pump()->set_stop_on_fire_event(false);
+  motion_pump()->Start(listener());
+  motion_pump()->OnDidStart(handle());
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  base::MessageLoop::current()->Run();
+  motion_pump()->Stop();
+
+  // Check that the blink::WebDeviceMotionListener does not receive excess
+  // events.
+  EXPECT_TRUE(listener()->did_change_device_motion());
+  EXPECT_GE(6, listener()->number_of_events());
 }
 
 }  // namespace content
