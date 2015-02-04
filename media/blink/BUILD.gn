@@ -15,6 +15,7 @@ component("blink") {
     "//media",
     "//media:shared_memory_support",
     "//net",
+    "//skia",
     "//third_party/WebKit/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",

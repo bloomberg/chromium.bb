@@ -15,6 +15,7 @@
         '../../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../net/net.gyp:net',
+        '../../skia/skia.gyp:skia',
         '../../third_party/WebKit/public/blink.gyp:blink',
         '../media.gyp:media',
         '../media.gyp:shared_memory_support',
