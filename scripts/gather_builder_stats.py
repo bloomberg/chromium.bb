@@ -617,30 +617,6 @@ class StatsManager(object):
       self.builds = [b for b in self.builds
                      if b.build_number >= starting_build_number]
 
-  def CollateActions(self, actions):
-    """Collates a list of actions into per-patch and per-cl actions.
-
-    Returns a tuple (per_patch_actions, per_cl_actions) where each are
-    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
-    sorted in order of ascending timestamp.
-    """
-    per_patch_actions = {}
-    per_cl_actions = {}
-    for a in actions:
-      change_with_patch = a.patch
-      change_no_patch = metadata_lib.GerritChangeTuple(
-          a.change_number, change_with_patch.internal
-      )
-
-      per_patch_actions.setdefault(change_with_patch, []).append(a)
-      per_cl_actions.setdefault(change_no_patch, []).append(a)
-
-    for p in [per_cl_actions, per_patch_actions]:
-      for k, v in p.iteritems():
-        p[k] = sorted(v, key=lambda x: x.timestamp)
-
-    return (per_patch_actions, per_cl_actions)
-
   @classmethod
   def _FetchBuildData(cls, start_date, end_date, config_target, gs_ctx):
     """Fetches BuildData for builds of |config_target| since |start_date|.

@@ -1347,17 +1347,17 @@ class ValidationPool(object):
     if not db:
       return 0
 
-    statuses = db.GetLastBuildStatuses(self._run.config.name,
-                                       ValidationPool.CQ_SEARCH_HISTORY)
+    builds = db.GetBuildHistory(self._run.config.name,
+                                ValidationPool.CQ_SEARCH_HISTORY,
+                                ignore_build_id=build_id)
     number_of_failures = 0
-    # Iterate through the ordered list of statuses until you get one that is
+    # Iterate through the ordered list of builds until you get one that is
     # passed.
-    for status_dict in statuses:
-      if status_dict['id'] != build_id:
-        if status_dict['status'] != constants.BUILDER_STATUS_PASSED:
-          number_of_failures += 1
-        else:
-          break
+    for build in builds:
+      if build['status'] != constants.BUILDER_STATUS_PASSED:
+        number_of_failures += 1
+      else:
+        break
 
     return number_of_failures
 

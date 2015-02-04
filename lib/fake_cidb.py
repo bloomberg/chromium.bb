@@ -19,6 +19,9 @@ class FakeCIDBConnection(object):
   This class is a partial re-implementation of CIDBConnection, using
   in-memory lists rather than a backing database.
   """
+
+  NUM_RESULTS_NO_LIMIT = -1
+
   def __init__(self):
     self.buildTable = []
     self.clActionTable = []
@@ -190,8 +193,10 @@ class FakeCIDBConnection(object):
     """Gets the status of the builds."""
     return [self.buildTable[x -1] for x in build_ids]
 
-  def GetLastBuildStatuses(self, build_config, number):
-    """Returns the last |number| builds for the given |build_config|."""
+  def GetBuildHistory(self, build_config, num_results,
+                      ignore_build_id=None, start_date=None, end_date=None,
+                      starting_build_number=None):
+    """Returns the build history for the given |build_config|."""
     def ReduceToBuildConfig(new_list, current_build):
       """Filters a build list to only those of a given config."""
       if current_build['build_config'] == build_config:
@@ -201,7 +206,23 @@ class FakeCIDBConnection(object):
 
     build_configs = reduce(ReduceToBuildConfig, self.buildTable, [])
     # Reverse sort as that's what's expected.
-    return sorted(build_configs[-number:], reverse=True)
+    build_configs = sorted(build_configs[-num_results:], reverse=True)
+
+    # Filter results.
+    if ignore_build_id is not None:
+      build_configs = [b for b in build_configs if b['id'] != ignore_build_id]
+    if start_date is not None:
+      build_configs = [b for b in build_configs
+                       if b['start_time'].date() >= start_date]
+    if end_date is not None:
+      build_configs = [b for b in build_configs
+                       if 'finish_time' in b and
+                       b['finish_time'].date() <= end_date]
+    if starting_build_number is not None:
+      build_configs = [b for b in build_configs
+                       if b['build_number'] >= starting_build_number]
+
+    return build_configs
 
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining until deadline."""

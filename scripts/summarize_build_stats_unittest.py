@@ -21,34 +21,9 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 
 
-REASON_BAD_CL = summarize_build_stats.CLStats.REASON_BAD_CL
+REASON_BAD_CL = summarize_build_stats.CLStatsEngine.REASON_BAD_CL
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
-
-
-class TestHelperMethods(cros_test_lib.TestCase):
-  """Test helper methods not in a class."""
-
-  def testRemoveBuildsWithNoBuildId(self):
-    # pylint: disable=protected-access
-    good_build1 = metadata_lib.BuildData('url', {'build_id': 1})
-    good_build2 = metadata_lib.BuildData('url', {'build_id': 2})
-    bad_build = metadata_lib.BuildData('url', {})
-
-    # Test No Builds.
-    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
-        [], 'Test No Builds')
-    self.assertEqual(result, [])
-
-    # Test Good Builds.
-    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
-        [good_build1, good_build2], 'Test No Builds')
-    self.assertEqual(result, [good_build1, good_build2])
-
-    # Test No Builds.
-    result = summarize_build_stats._RemoveBuildsWithNoBuildId(
-        [good_build1, good_build2, bad_build], 'Test No Builds')
-    self.assertEqual(result, [good_build1, good_build2])
 
 
 class TestCLActionLogic(cros_test_lib.TestCase):
@@ -191,16 +166,17 @@ class TestCLActionLogic(cros_test_lib.TestCase):
 
     return TEST_BUILDDATA
 
-  def testCLStatsSummary(self):
+  def testCLStatsEngineSummary(self):
     with cros_build_lib.ContextManagerStack() as stack:
       pre_cq_builddata = self._getTestBuildData(cq=False)
       cq_builddata = self._getTestBuildData(cq=True)
       stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
                 '_FetchBuildData', side_effect=[cq_builddata, pre_cq_builddata])
       stack.Add(mock.patch.object, gather_builder_stats, 'PrepareCreds')
-      stack.Add(mock.patch.object, summarize_build_stats.CLStats,
+      stack.Add(mock.patch.object, summarize_build_stats.CLStatsEngine,
                 'GatherFailureReasons')
-      cl_stats = summarize_build_stats.CLStats('foo@bar.com', self.fake_db)
+      cl_stats = summarize_build_stats.CLStatsEngine('foo@bar.com',
+                                                     self.fake_db)
       cl_stats.Gather(datetime.date.today(), datetime.date.today())
       cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
       cl_stats.blames = {1: '', 2: '', 3: 'crosreview.com/1',
@@ -258,5 +234,6 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 'crosreview.com/i/6789',
                 't/1234',
                 't/4321']
-    self.assertEqual(summarize_build_stats.CLStats.ProcessBlameString(blame),
-                     expected)
+    self.assertEqual(
+        summarize_build_stats.CLStatsEngine.ProcessBlameString(blame),
+        expected)

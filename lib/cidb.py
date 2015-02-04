@@ -497,6 +497,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'SELECT c.id, b.id, action, c.reason, build_config, '
       'change_number, patch_number, change_source, timestamp FROM '
       'clActionTable c JOIN buildTable b ON build_id = b.id ')
+  _DATE_FORMAT = '%Y-%m-%d'
+
+  NUM_RESULTS_NO_LIMIT = -1
 
   def __init__(self, db_credentials_dir):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
@@ -871,25 +874,60 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return 0 if deadline_past else abs(time_remaining.total_seconds())
 
   @minimum_schema(2)
-  def GetLastBuildStatuses(self, build_config, number):
+  def GetBuildHistory(self, build_config, num_results,
+                      ignore_build_id=None, start_date=None, end_date=None,
+                      starting_build_number=None):
     """Returns basic information about most recent builds.
+
+    By default this function returns the most recent builds. Some arguments can
+    restrict the result to older builds.
 
     Args:
       build_config: config name of the build.
-      number: number of builds to search back.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      ignore_build_id: (Optional) Ignore a specific build. This is most useful
+          to ignore the current build when querying recent past builds from a
+          build in flight.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+      starting_build_number: (Optional) The minimum build_number on the CQ
+          master for which data should be retrieved.
 
     Returns:
       A sorted list of dicts containining up to |number| dictionaries for
-      build statuses in descending order. Dictionaries contain
-      id, build_config, start_time, finish_time, full_version and status.
+      build statuses in descending order. Valid keys in the dictionary are
+      [id, build_config, buildbot_generation, waterfall, build_number,
+      start_time, finish_time, full_version, status].
     """
-    results = self._Execute(
-        'SELECT id, build_config, start_time, finish_time, full_version, status'
+    columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
+               'build_number', 'start_time', 'finish_time', 'full_version',
+               'status']
+
+    where_clauses = ['build_config = "%s"' % build_config]
+    if start_date is not None:
+      where_clauses.append('date(start_time) >= date("%s")' %
+                           start_date.strftime(self._DATE_FORMAT))
+    if end_date is not None:
+      where_clauses.append('date(finish_time) <= date("%s")' %
+                           end_date.strftime(self._DATE_FORMAT))
+    if starting_build_number is not None:
+      where_clauses.append('build_number >= %d' % starting_build_number)
+    if ignore_build_id is not None:
+      where_clauses.append('id != %s' % ignore_build_id)
+    query = (
+        'SELECT %s'
         ' FROM buildTable'
-        ' WHERE build_config = "%s"'
-        ' ORDER BY id DESC LIMIT %d' % (build_config, number)).fetchall()
-    columns = ['id', 'build_config', 'start_time', 'finish_time',
-               'full_version', 'status']
+        ' WHERE %s'
+        ' ORDER BY id DESC' %
+        (', '.join(columns), ' AND '.join(where_clauses)))
+    if num_results != self.NUM_RESULTS_NO_LIMIT:
+      query += ' LIMIT %d' % num_results
+
+    results = self._Execute(query).fetchall()
     return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(11)

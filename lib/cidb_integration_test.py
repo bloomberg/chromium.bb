@@ -241,9 +241,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     #|         511 | pass   |
     #|         481 | pass   |
     # From 1929 because we always go back one build first.
-    last_status = readonly_db.GetLastBuildStatuses('master-paladin', 1)
+    last_status = readonly_db.GetBuildHistory('master-paladin', 1)
     self.assertEqual(len(last_status), 1)
-    last_status = readonly_db.GetLastBuildStatuses('master-paladin', 5)
+    last_status = readonly_db.GetBuildHistory('master-paladin', 5)
     self.assertEqual(len(last_status), 5)
     # Make sure keys are sorted correctly.
     build_ids = []

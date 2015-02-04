@@ -92,14 +92,12 @@ class CleanUpStage(generic_stages.BuilderStage):
     debug = (self._run.options.remote_trybot or
              (not self._run.options.buildbot) or
              self._run.options.debug)
-    _, db = self._run.GetCIDBHandle()
+    build_id, db = self._run.GetCIDBHandle()
     if db:
-      statuses = db.GetLastBuildStatuses(self._run.config.name, 2)
-      # The first entry in the history corresponds to the current build.
-      # Skip it.
-      statuses = statuses[1:]
-      for status_dict in statuses:
-        old_version = status_dict['full_version']
+      builds = db.GetBuildHistory(self._run.config.name, 2,
+                                  ignore_build_id=build_id)
+      for build in builds:
+        old_version = build['full_version']
         if old_version is None:
           continue
         for suite_config in self._run.config.hw_tests:

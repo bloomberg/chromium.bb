@@ -15,6 +15,7 @@ import sys
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import commandline
@@ -30,29 +31,8 @@ CROS_BUG_BASE_URL = 'crbug.com/'
 INTERNAL_CL_BASE_URL = 'crosreview.com/i/'
 EXTERNAL_CL_BASE_URL = 'crosreview.com/'
 
-def _RemoveBuildsWithNoBuildId(builds, description):
-  """Remove builds without a build_id.
-
-  They happen during some failure modes, but we can't process them, and
-  they don't affect the stats. We do log a warning message if any were
-  filtered.
-
-  Args:
-    builds: List of metadata_lib.BuildData objects.
-    description: A string describing the source of missing build_ids.
-  """
-  result = [b for b in builds if 'build_id' in b.metadata_dict]
-  filtered = len(builds) - len(result)
-
-  if filtered:
-    logging.warn('Found %d %s builds without a build_id.',
-                 filtered, description)
-
-  return result
-
-
-class CLStats(gather_builder_stats.StatsManager):
-  """Manager for stats about CL actions taken by the Commit Queue."""
+class CLStatsEngine(object):
+  """Engine to generate stats about CL actions taken by the Commit Queue."""
   PATCH_HANDLING_TIME_SUMMARY_KEY = 'patch_handling_time'
   SUMMARY_SPREADSHEET_COLUMNS = {
       PATCH_HANDLING_TIME_SUMMARY_KEY: ('PatchHistogram', 1)}
@@ -62,17 +42,18 @@ class CLStats(gather_builder_stats.StatsManager):
   BOT_TYPE = constants.CQ
   GET_SHEETS_VERSION = False
 
-  def __init__(self, email, db, **kwargs):
-    super(CLStats, self).__init__(constants.CQ_MASTER, **kwargs)
-    self.actions = []
-    self.per_patch_actions = {}
-    self.per_cl_actions = {}
+  def __init__(self, email, db, ss_key=gather_builder_stats.CQ_SS_KEY):
     self.email = email
     self.db = db
+    self.ss_key = ss_key
+    self.actions = []
+    self.builds = []
+    self.per_patch_actions = {}
+    self.per_cl_actions = {}
     self.reasons = {}
     self.blames = {}
     self.summary = {}
-    self.build_numbers_by_build_id = {}
+    self.builds_by_build_id = {}
 
   def GatherFailureReasons(self, creds):
     """Gather the reasons why our builds failed and the blamed bugs or CLs.
@@ -87,15 +68,40 @@ class CLStats(gather_builder_stats.StatsManager):
     rows = uploader.GetRowCacheByCol(data_table.WORKSHEET_NAME,
                                      data_table.COL_BUILD_NUMBER)
     for b in self.builds:
+      build_number = b['build_number']
       try:
-        row = rows[str(b.build_number)]
+        row = rows[str(build_number)]
       except KeyError:
-        self.reasons[b.build_number] = 'None'
-        self.blames[b.build_number] = []
+        self.reasons[build_number] = 'None'
+        self.blames[build_number] = []
       else:
-        self.reasons[b.build_number] = str(row[ss_failure_category])
-        self.blames[b.build_number] = self.ProcessBlameString(
+        self.reasons[build_number] = str(row[ss_failure_category])
+        self.blames[build_number] = self.ProcessBlameString(
             str(row[ss_failure_blame]))
+
+  def CollateActions(self, actions):
+    """Collates a list of actions into per-patch and per-cl actions.
+
+    Returns a tuple (per_patch_actions, per_cl_actions) where each are
+    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
+    sorted in order of ascending timestamp.
+    """
+    per_patch_actions = {}
+    per_cl_actions = {}
+    for action in actions:
+      change_with_patch = action.patch
+      change_no_patch = metadata_lib.GerritChangeTuple(
+          action.change_number, change_with_patch.internal
+      )
+
+      per_patch_actions.setdefault(change_with_patch, []).append(action)
+      per_cl_actions.setdefault(change_no_patch, []).append(action)
+
+    for actions_map in [per_cl_actions, per_patch_actions]:
+      for key, value in actions_map.iteritems():
+        actions_map[key] = sorted(value, key=lambda x: x.timestamp)
+
+    return (per_patch_actions, per_cl_actions)
 
   @staticmethod
   def ProcessBlameString(blame_string):
@@ -150,35 +156,43 @@ class CLStats(gather_builder_stats.StatsManager):
     return urls
 
   def Gather(self, start_date, end_date, sort_by_build_number=True,
-             starting_build_number=0, creds=None):
+             starting_build_number=None, creds=None):
     """Fetches build data and failure reasons.
 
     Args:
       start_date: A datetime.date instance for the earliest build to
-                  examine.
+          examine.
       end_date: A datetime.date instance for the latest build to
-                examine.
+          examine.
       sort_by_build_number: Optional boolean. If True, builds will be
-                            sorted by build number.
-      starting_build_number: The lowest build number from the CQ to include in
-                             the results.
+          sorted by build number.
+      starting_build_number: (optional) The lowest build number from the CQ to
+          include in the results.
       creds: Login credentials as returned by gather_builder_stats.PrepareCreds.
-          (optional)
     """
-    if not creds:
-      creds = gather_builder_stats.PrepareCreds(self.email)
-    super(CLStats, self).Gather(start_date,
-                                end_date,
-                                sort_by_build_number=sort_by_build_number,
-                                starting_build_number=starting_build_number)
+    cros_build_lib.Info('Gathering data for %s from %s until %s',
+                        constants.CQ_MASTER, start_date, end_date)
+    self.builds = self.db.GetBuildHistory(
+        constants.CQ_MASTER,
+        start_date=start_date,
+        end_date=end_date,
+        starting_build_number=starting_build_number,
+        num_results=self.db.NUM_RESULTS_NO_LIMIT)
+    if self.builds:
+      cros_build_lib.Info('Fetched %d builds (build_id: %d to %d)',
+                          len(self.builds), self.builds[0]['id'],
+                          self.builds[-1]['id'])
+    else:
+      cros_build_lib.Info('Fetched no builds.')
+    if sort_by_build_number:
+      cros_build_lib.Info('Sorting by build number.')
+      self.builds.sort(key=lambda x: x['build_number'])
+
     self.actions = self.db.GetActionHistory(start_date, end_date)
     self.GatherFailureReasons(creds)
 
-    # Remove builds without a build_id.
-    self.builds = _RemoveBuildsWithNoBuildId(self.builds, 'CQ')
-
-    self.build_numbers_by_build_id.update(
-        {b['build_id'] : b.build_number for b in self.builds})
+    self.builds_by_build_id.update(
+        {b['id'] : b for b in self.builds})
 
   def GetSubmittedPatchNumber(self, actions):
     """Get the patch number of the final patchset submitted.
@@ -330,7 +344,16 @@ class CLStats(gather_builder_stats.StatsManager):
     Returns:
       A dictionary summarizing the statistics.
     """
-    super_summary = super(CLStats, self).Summarize()
+    if self.builds:
+      cros_build_lib.Info('%d total runs included, from build %d to %d.',
+                          len(self.builds), self.builds[-1]['build_number'],
+                          self.builds[0]['build_number'])
+      total_passed = len([b for b in self.builds
+                          if b['status'] == constants.BUILDER_STATUS_PASSED])
+      cros_build_lib.Info('%d of %d runs passed.',
+                          total_passed, len(self.builds))
+    else:
+      cros_build_lib.Info('No runs included.')
 
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)
@@ -405,8 +428,9 @@ class CLStats(gather_builder_stats.StatsManager):
     for k, v in good_patch_rejections.iteritems():
       for a in v:
         if a.action == constants.CL_ACTION_KICKED_OUT:
-          build_number = self.build_numbers_by_build_id.get(a.build_id)
-          if self.BotType(a) == constants.CQ and build_number:
+          build = self.builds_by_build_id.get(a.build_id)
+          if self.BotType(a) == constants.CQ and build is not None:
+            build_number = build['build_number']
             reason = self.reasons.get(build_number, 'None')
             blames = self.blames.get(build_number, ['None'])
             patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
@@ -553,9 +577,7 @@ class CLStats(gather_builder_stats.StatsManager):
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, fmt_fai)
 
-    super_summary.update(summary)
-    self.summary = super_summary
-    return super_summary
+    return summary
 
 
 def _CheckOptions(options):
@@ -573,13 +595,6 @@ def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
-  # Put options that control the mode of script into mutually exclusive group.
-  group = parser.add_argument_group('Script mode. (Choose one)')
-  mode = group.add_mutually_exclusive_group(required=True)
-  mode.add_argument('--cl-actions', action='store_true', default=False,
-                    help='Summarize stats about CL actions taken by the CQ '
-                         'master')
-
   ex_group = parser.add_mutually_exclusive_group(required=True)
   ex_group.add_argument('--start-date', action='store', type='date',
                         default=None,
@@ -596,8 +611,9 @@ def GetParser():
                       help='Database credentials directory with certificates '
                            'and other connection information. Obtain your '
                            'credentials at go/cros-cidb-admin .')
-  parser.add_argument('--starting-build', action='store', type=int, default=0,
-                      help='Filter to builds after given number (inclusive).')
+  parser.add_argument('--starting-build', action='store', type=int,
+                      default=None, help='Filter to builds after given number'
+                                         '(inclusive).')
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
 
@@ -608,11 +624,6 @@ def GetParser():
                      help='Specify email for Google Sheets account to use.')
   group.add_argument('--override-ss-key', action='store', default=None,
                      dest='ss_key', help='Override spreadsheet key.')
-  group.add_argument('--no-sheets-version-filter', action='store_true',
-                     default=False,
-                     help='Upload all parsed metadata to spreasheet regardless '
-                          'of sheets version.')
-
   return parser
 
 
@@ -645,22 +656,12 @@ def main(argv):
   # TODO(pprabhu) Remove this once we remove the dependence on spreadsheet.
   creds = gather_builder_stats.PrepareCreds(options.email)
 
-  # Prepare the rounds of stats gathering to do.
-  stats_managers = []
-
-  if options.cl_actions:
-    # CL stats manager uses the CQ spreadsheet to fetch failure reasons
-    stats_managers.append(
-        CLStats(
-            options.email,
-            db=db,
-            ss_key=options.ss_key or gather_builder_stats.CQ_SS_KEY,
-            no_sheets_version_filter=options.no_sheets_version_filter))
-
-  # Now run through all the stats gathering that is requested.
-  for stats_mgr in stats_managers:
-    stats_mgr.Gather(start_date, end_date,
-                     starting_build_number=options.starting_build,
-                     creds=creds)
-    stats_mgr.Summarize()
-    cros_build_lib.Info('Finished with %s.\n\n', stats_mgr.config_target)
+  # CL stats engine uses the CQ spreadsheet to fetch failure reasons
+  cl_stats_engine = CLStatsEngine(
+      options.email,
+      db=db,
+      ss_key=options.ss_key or gather_builder_stats.CQ_SS_KEY)
+  cl_stats_engine.Gather(start_date, end_date,
+                         starting_build_number=options.starting_build,
+                         creds=creds)
+  cl_stats_engine.Summarize()
