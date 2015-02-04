@@ -33,10 +33,10 @@ namespace blink {
 
 static String canonicalizeLanguageIdentifier(const String& languageCode)
 {
-    String lowercaseLanguageCode = languageCode.lower();
+    String copiedCode = languageCode;
     // Platform::defaultLocale() might provide a language code with '_'.
-    lowercaseLanguageCode.replace('_', '-');
-    return lowercaseLanguageCode;
+    copiedCode.replace('_', '-');
+    return copiedCode;
 }
 
 static const AtomicString& platformLanguage()

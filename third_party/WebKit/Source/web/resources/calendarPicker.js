@@ -75,7 +75,7 @@ function hasInaccuratePointingDevice() {
  * @return {!string} lowercase locale name. e.g. "en-us"
  */
 function getLocale() {
-    return global.params.locale || "en-us";
+    return (global.params.locale || "en-us").toLowerCase();
 }
 
 /**

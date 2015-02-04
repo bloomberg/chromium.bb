@@ -128,6 +128,11 @@ test(function() {
     assert_not_equals(navigator.languages, previous);
 }, "Test that navigator.languages caching behaviour.");
 
+test(function() {
+    // The region code should be uppercase.
+    assert_equals(navigator.language, 'en-US');
+}, 'Test that the default navigator.language in the test environment.');
+
 </script>
 </body>
 </html>
