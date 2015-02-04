@@ -136,7 +136,8 @@ gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
 }
 
 gfx::Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
-  POINT initial_loc = { point.x(), point.y() };
+  gfx::Point point_in_pixels = gfx::win::DIPToScreenPoint(point);
+  POINT initial_loc = { point_in_pixels.x(), point_in_pixels.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
   MONITORINFOEX mi;
   ZeroMemory(&mi, sizeof(MONITORINFOEX));

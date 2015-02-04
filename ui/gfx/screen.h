@@ -76,7 +76,7 @@ class GFX_EXPORT Screen {
   // return the primary display.
   virtual gfx::Display GetDisplayNearestWindow(NativeView view) const = 0;
 
-  // Returns the display nearest the specified point.
+  // Returns the display nearest the specified point. |point| should be in DIPs.
   virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
 
