@@ -94,10 +94,18 @@ class ReflectorImplTest : public testing::Test {
     mirroring_layer_.reset(new ui::Layer());
     gfx::Size size = output_surface_->SurfaceSize();
     mirroring_layer_->SetBounds(gfx::Rect(size.width(), size.height()));
+  }
 
+  void SetUpReflector(bool threaded) {
     int32 surface_id = 1;
-    reflector_ = new ReflectorImpl(compositor_.get(), mirroring_layer_.get(),
-                                   &surface_map_, proxy_.get(), surface_id);
+
+    if (threaded) {
+      reflector_ = new ReflectorImpl(compositor_.get(), mirroring_layer_.get(),
+                                     &surface_map_, proxy_.get(), surface_id);
+    } else {
+      reflector_ = new ReflectorImpl(compositor_.get(), mirroring_layer_.get(),
+                                     &surface_map_, NULL, surface_id);
+    }
   }
 
   void TearDown() override {
@@ -133,6 +141,8 @@ class ReflectorImplTest : public testing::Test {
 
 namespace {
 TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
+  bool threaded = true;
+  SetUpReflector(threaded);
   output_surface_->SetFlip(false);
   Init();
   UpdateTexture();
@@ -144,6 +154,31 @@ TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
 }
 
 TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
+  bool threaded = true;
+  SetUpReflector(threaded);
+  output_surface_->SetFlip(true);
+  Init();
+  UpdateTexture();
+  EXPECT_FALSE(mirroring_layer_->TextureFlipped());
+  EXPECT_EQ(SkRegion(kSkSubRect), mirroring_layer_->damaged_region());
+}
+
+TEST_F(ReflectorImplTest, CheckNormalOutputSurface_SingleThread) {
+  bool threaded = false;
+  SetUpReflector(threaded);
+  output_surface_->SetFlip(false);
+  Init();
+  UpdateTexture();
+  EXPECT_TRUE(mirroring_layer_->TextureFlipped());
+  EXPECT_EQ(SkRegion(SkIRect::MakeXYWH(
+                0, output_surface_->SurfaceSize().height() - kSubRect.height(),
+                kSubRect.width(), kSubRect.height())),
+            mirroring_layer_->damaged_region());
+}
+
+TEST_F(ReflectorImplTest, CheckInvertedOutputSurface_SingleThread) {
+  bool threaded = false;
+  SetUpReflector(threaded);
   output_surface_->SetFlip(true);
   Init();
   UpdateTexture();
