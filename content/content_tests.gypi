@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    'use_v4lplugin%': 0,
     'layouttest_support_content_sources': [
       'public/test/layouttest_support.h',
       'public/test/nested_message_pump_android.cc',
@@ -1616,9 +1615,6 @@
                   '../ui/display/display.gyp:display', # Used by rendering_helper.cc
                   '../ui/ozone/ozone.gyp:ozone',       # Used by rendering_helper.cc
                 ],
-              }],
-              ['use_v4lplugin==1', {
-                'defines': ['USE_LIBV4L2'],
               }],
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

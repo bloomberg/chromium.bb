@@ -768,7 +768,7 @@
     }],
     ['use_v4lplugin==1 and chromeos==1', {
       'defines': [
-        'USE_LIBV4L2',
+        'USE_LIBV4L2'
       ],
       'variables': {
         'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
@@ -819,50 +819,40 @@
       'defines': [
         'USE_V4L2_CODEC'
       ],
-    }],
-    ['chromeos==1 and (target_arch=="arm" or (use_ozone==1 and use_v4l2_codec==1))', {
       'dependencies': [
         '../media/media.gyp:media',
       ],
       'sources': [
+        'common/gpu/media/accelerated_video_decoder.h',
         'common/gpu/media/generic_v4l2_video_device.cc',
         'common/gpu/media/generic_v4l2_video_device.h',
+        'common/gpu/media/h264_decoder.cc',
+        'common/gpu/media/h264_decoder.h',
+        'common/gpu/media/h264_dpb.cc',
+        'common/gpu/media/h264_dpb.h',
         'common/gpu/media/v4l2_image_processor.cc',
         'common/gpu/media/v4l2_image_processor.h',
+        'common/gpu/media/v4l2_slice_video_decode_accelerator.cc',
+        'common/gpu/media/v4l2_slice_video_decode_accelerator.h',
         'common/gpu/media/v4l2_video_decode_accelerator.cc',
         'common/gpu/media/v4l2_video_decode_accelerator.h',
         'common/gpu/media/v4l2_video_device.cc',
         'common/gpu/media/v4l2_video_device.h',
         'common/gpu/media/v4l2_video_encode_accelerator.cc',
         'common/gpu/media/v4l2_video_encode_accelerator.h',
+        'common/gpu/media/vp8_decoder.cc',
+        'common/gpu/media/vp8_decoder.h',
+        'common/gpu/media/vp8_picture.cc',
+        'common/gpu/media/vp8_picture.h',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
       ],
-      'conditions': [
-        ['target_arch == "arm"', {
-          'sources': [
-            'common/gpu/media/tegra_v4l2_video_device.cc',
-            'common/gpu/media/tegra_v4l2_video_device.h',
-          ],
-          'conditions': [
-            ['use_v4lplugin==1', {
-              'sources': [
-                'common/gpu/media/accelerated_video_decoder.h',
-                'common/gpu/media/h264_decoder.cc',
-                'common/gpu/media/h264_decoder.h',
-                'common/gpu/media/h264_dpb.cc',
-                'common/gpu/media/h264_dpb.h',
-                'common/gpu/media/v4l2_slice_video_decode_accelerator.cc',
-                'common/gpu/media/v4l2_slice_video_decode_accelerator.h',
-                'common/gpu/media/vp8_decoder.cc',
-                'common/gpu/media/vp8_decoder.h',
-                'common/gpu/media/vp8_picture.cc',
-                'common/gpu/media/vp8_picture.h',
-              ],
-            }],
-          ],
-        }],
+    }],
+    ['target_arch == "arm" and chromeos == 1', {
+      'sources': [
+        'common/gpu/media/tegra_v4l2_video_device.cc',
+        'common/gpu/media/tegra_v4l2_video_device.h',
       ],
     }],
     ['target_arch != "arm" and chromeos == 1', {
