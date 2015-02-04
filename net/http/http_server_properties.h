@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/net_util.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
@@ -147,7 +148,6 @@ struct NET_EXPORT ServerNetworkStats {
 typedef base::MRUCache<
     HostPortPair, AlternateProtocolInfo> AlternateProtocolMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
-typedef std::map<HostPortPair, SupportsQuic> SupportsQuicMap;
 typedef base::MRUCache<HostPortPair, ServerNetworkStats> ServerNetworkStatsMap;
 
 extern const char kAlternateProtocolHeader[];
@@ -247,15 +247,10 @@ class NET_EXPORT HttpServerProperties {
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const = 0;
 
-  // TODO(rtenneti): Make SupportsQuic a global (instead of per host_port_pair).
-  virtual SupportsQuic GetSupportsQuic(
-      const HostPortPair& host_port_pair) const = 0;
+  virtual bool GetSupportsQuic(IPAddressNumber* last_address) const = 0;
 
-  virtual void SetSupportsQuic(const HostPortPair& host_port_pair,
-                               bool used_quic,
-                               const std::string& address) = 0;
-
-  virtual const SupportsQuicMap& supports_quic_map() const = 0;
+  virtual void SetSupportsQuic(bool used_quic,
+                               const IPAddressNumber& last_address) = 0;
 
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
                                      ServerNetworkStats stats) = 0;

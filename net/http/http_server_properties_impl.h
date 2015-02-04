@@ -43,7 +43,7 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   void InitializeSpdySettingsServers(SpdySettingsMap* spdy_settings_map);
 
-  void InitializeSupportsQuic(SupportsQuicMap* supports_quic_map);
+  void InitializeSupportsQuic(IPAddressNumber* last_address);
 
   void InitializeServerNetworkStats(
       ServerNetworkStatsMap* server_network_stats_map);
@@ -100,12 +100,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   void ClearSpdySettings(const HostPortPair& host_port_pair) override;
   void ClearAllSpdySettings() override;
   const SpdySettingsMap& spdy_settings_map() const override;
-  SupportsQuic GetSupportsQuic(
-      const HostPortPair& host_port_pair) const override;
-  void SetSupportsQuic(const HostPortPair& host_port_pair,
-                       bool used_quic,
-                       const std::string& address) override;
-  const SupportsQuicMap& supports_quic_map() const override;
+  bool GetSupportsQuic(IPAddressNumber* last_address) const override;
+  void SetSupportsQuic(bool used_quic, const IPAddressNumber& address) override;
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
                              ServerNetworkStats stats) override;
   const ServerNetworkStats* GetServerNetworkStats(
@@ -148,8 +144,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   BrokenAlternateProtocolList broken_alternate_protocol_list_;
   BrokenAlternateProtocolMap broken_alternate_protocol_map_;
 
+  IPAddressNumber last_quic_address_;
   SpdySettingsMap spdy_settings_map_;
-  SupportsQuicMap supports_quic_map_;
   ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.
   // Map from a Canonical host/port (host is some postfix of host names) to an

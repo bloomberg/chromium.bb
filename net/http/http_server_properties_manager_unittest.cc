@@ -74,14 +74,14 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
                void(std::vector<std::string>* spdy_servers,
                     SpdySettingsMap* spdy_settings_map,
                     AlternateProtocolMap* alternate_protocol_map,
-                    SupportsQuicMap* supports_quic_map,
+                    IPAddressNumber* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map,
                     bool detected_corrupted_prefs));
   MOCK_METHOD5(UpdatePrefsOnPref,
                void(base::ListValue* spdy_server_list,
                     SpdySettingsMap* spdy_settings_map,
                     AlternateProtocolMap* alternate_protocol_map,
-                    SupportsQuicMap* supports_quic_map,
+                    IPAddressNumber* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map));
 
  private:
@@ -169,12 +169,6 @@ TEST_F(HttpServerPropertiesManagerTest,
   server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
                                             alternate_protocol);
 
-  // Set up SupportsQuic for www.google.com:80.
-  base::DictionaryValue* supports_quic = new base::DictionaryValue;
-  supports_quic->SetBoolean("used_quic", true);
-  supports_quic->SetString("address", "foo");
-  server_pref_dict->SetWithoutPathExpansion("supports_quic", supports_quic);
-
   // Set up ServerNetworkStats for www.google.com:80.
   base::DictionaryValue* stats = new base::DictionaryValue;
   stats->SetInteger("srtt", 10);
@@ -198,12 +192,6 @@ TEST_F(HttpServerPropertiesManagerTest,
   server_pref_dict1->SetWithoutPathExpansion("alternate_protocol",
                                              alternate_protocol1);
 
-  // Set up SupportsQuic for mail.google.com:80
-  base::DictionaryValue* supports_quic1 = new base::DictionaryValue;
-  supports_quic1->SetBoolean("used_quic", false);
-  supports_quic1->SetString("address", "bar");
-  server_pref_dict1->SetWithoutPathExpansion("supports_quic", supports_quic1);
-
   // Set up ServerNetworkStats for mail.google.com:80.
   base::DictionaryValue* stats1 = new base::DictionaryValue;
   stats1->SetInteger("srtt", 20);
@@ -216,6 +204,11 @@ TEST_F(HttpServerPropertiesManagerTest,
       new base::DictionaryValue;
   HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
   http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+  base::DictionaryValue* supports_quic = new base::DictionaryValue;
+  supports_quic->SetBoolean("used_quic", true);
+  supports_quic->SetString("address", "127.0.0.1");
+  http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
+                                                       supports_quic);
 
   // Set the same value for kHttpServerProperties multiple times.
   pref_service_.SetManagedPref(kTestHttpServerProperties,
@@ -246,13 +239,9 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(NPN_SPDY_3_1, port_alternate_protocol.protocol);
 
   // Verify SupportsQuic.
-  SupportsQuic supports_quic2 =
-      http_server_props_manager_->GetSupportsQuic(google_server);
-  EXPECT_TRUE(supports_quic2.used_quic);
-  EXPECT_EQ("foo", supports_quic2.address);
-  supports_quic2 = http_server_props_manager_->GetSupportsQuic(mail_server);
-  EXPECT_FALSE(supports_quic2.used_quic);
-  EXPECT_EQ("bar", supports_quic2.address);
+  IPAddressNumber last_address;
+  EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&last_address));
+  EXPECT_EQ("127.0.0.1", IPAddressToString(last_address));
 
   // Verify ServerNetworkStats.
   const ServerNetworkStats* stats2 =
@@ -279,12 +268,6 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   alternate_protocol->SetString("protocol_str", "npn-spdy/3");
   server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
                                             alternate_protocol);
-
-  // Set up SupportsQuic for www.google.com:65536.
-  base::DictionaryValue* supports_quic = new base::DictionaryValue;
-  supports_quic->SetBoolean("used_quic", true);
-  supports_quic->SetString("address", "foo");
-  server_pref_dict->SetWithoutPathExpansion("supports_quic", supports_quic);
 
   // Set up ServerNetworkStats for www.google.com:65536.
   base::DictionaryValue* stats = new base::DictionaryValue;
@@ -313,9 +296,6 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
       HostPortPair::FromString("www.google.com:65536")));
   EXPECT_FALSE(
       HasAlternateProtocol(HostPortPair::FromString("www.google.com:65536")));
-  SupportsQuic supports_quic2 = http_server_props_manager_->GetSupportsQuic(
-      HostPortPair::FromString("www.google.com:65536"));
-  EXPECT_FALSE(supports_quic2.used_quic);
   const ServerNetworkStats* stats1 =
       http_server_props_manager_->GetServerNetworkStats(
           HostPortPair::FromString("www.google.com:65536"));
@@ -503,21 +483,19 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternateProtocol) {
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   ExpectPrefsUpdate();
 
-  HostPortPair quic_server_mail("mail.google.com", 80);
-  SupportsQuic supports_quic =
-      http_server_props_manager_->GetSupportsQuic(quic_server_mail);
-  EXPECT_FALSE(supports_quic.used_quic);
-  EXPECT_EQ("", supports_quic.address);
-  http_server_props_manager_->SetSupportsQuic(quic_server_mail, true, "foo");
+  IPAddressNumber address;
+  EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
+
+  IPAddressNumber actual_address;
+  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  http_server_props_manager_->SetSupportsQuic(true, actual_address);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  SupportsQuic supports_quic1 =
-      http_server_props_manager_->GetSupportsQuic(quic_server_mail);
-  EXPECT_TRUE(supports_quic1.used_quic);
-  EXPECT_EQ("foo", supports_quic1.address);
+  EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
+  EXPECT_EQ(actual_address, address);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
@@ -547,7 +525,9 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
   http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
                                                    NPN_SPDY_3, 1.0);
-  http_server_props_manager_->SetSupportsQuic(spdy_server_mail, true, "foo");
+  IPAddressNumber actual_address;
+  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  http_server_props_manager_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_props_manager_->SetServerNetworkStats(spdy_server_mail, stats);
@@ -564,10 +544,9 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   EXPECT_TRUE(HasAlternateProtocol(spdy_server_mail));
-  SupportsQuic supports_quic =
-      http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
-  EXPECT_TRUE(supports_quic.used_quic);
-  EXPECT_EQ("foo", supports_quic.address);
+  IPAddressNumber address;
+  EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
+  EXPECT_EQ(actual_address, address);
   const ServerNetworkStats* stats1 =
       http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
@@ -593,10 +572,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_FALSE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   EXPECT_FALSE(HasAlternateProtocol(spdy_server_mail));
-  SupportsQuic supports_quic1 =
-      http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
-  EXPECT_FALSE(supports_quic1.used_quic);
-  EXPECT_EQ("", supports_quic1.address);
+  EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
   const ServerNetworkStats* stats2 =
       http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
   EXPECT_EQ(NULL, stats2);
@@ -629,11 +605,6 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
 
   // Set the preference for mail.google.com server.
   base::DictionaryValue* server_pref_dict1 = new base::DictionaryValue;
-  // Set up SupportsQuic for mail.google.com:80
-  base::DictionaryValue* supports_quic = new base::DictionaryValue;
-  supports_quic->SetBoolean("used_quic", true);
-  supports_quic->SetString("address", "bar");
-  server_pref_dict1->SetWithoutPathExpansion("supports_quic", supports_quic);
 
   // Set the server preference for mail.google.com:80.
   servers_dict->SetWithoutPathExpansion("mail.google.com:80",
@@ -643,6 +614,13 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
       new base::DictionaryValue;
   HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
   http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+
+  // Set up SupportsQuic for 127.0.0.1
+  base::DictionaryValue* supports_quic = new base::DictionaryValue;
+  supports_quic->SetBoolean("used_quic", true);
+  supports_quic->SetString("address", "127.0.0.1");
+  http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
+                                                       supports_quic);
 
   // Set up the pref.
   pref_service_.SetManagedPref(kTestHttpServerProperties,
@@ -662,10 +640,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   }
 
   // Verify SupportsQuic.
-  SupportsQuic supports_quic1 = http_server_props_manager_->GetSupportsQuic(
-      HostPortPair::FromString("mail.google.com:80"));
-  EXPECT_TRUE(supports_quic1.used_quic);
-  EXPECT_EQ("bar", supports_quic1.address);
+  IPAddressNumber address;
+  ASSERT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
+  EXPECT_EQ("127.0.0.1", IPAddressToString(address));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
