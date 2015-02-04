@@ -62,17 +62,15 @@ class DataSender::PendingSend {
 };
 
 DataSender::DataSender(mojo::InterfacePtr<serial::DataSink> sink,
-                       mojo::InterfaceRequest<serial::DataSinkClient> client,
                        uint32_t buffer_size,
                        int32_t fatal_error_value)
     : sink_(sink.Pass()),
-      client_(this, client.Pass()),
       fatal_error_value_(fatal_error_value),
       available_buffer_capacity_(buffer_size),
       shut_down_(false) {
   sink_.set_error_handler(this);
+  sink_.set_client(this);
   sink_->Init(buffer_size);
-  client_.set_error_handler(this);
 }
 
 DataSender::~DataSender() {

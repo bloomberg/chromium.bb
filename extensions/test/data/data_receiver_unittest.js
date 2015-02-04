@@ -13,14 +13,17 @@ var FATAL_ERROR = 2;
 // Returns a promise to a newly created DataReceiver.
 function createReceiver() {
   return Promise.all([
+    requireAsync('content/public/renderer/service_provider'),
     requireAsync('data_receiver'),
-    requireAsync('device/serial/data_receiver_test_factory'),
+    requireAsync('device/serial/data_stream.mojom'),
   ]).then(function(modules) {
-    var dataReceiver = modules[0];
-    var factory = modules[1];
-    var receiver = factory.create();
-    return new dataReceiver.DataReceiver(receiver.source, receiver.client,
-                                         BUFFER_SIZE, FATAL_ERROR);
+    var serviceProvider = modules[0];
+    var dataReceiver = modules[1];
+    var dataStream = modules[2];
+    return new dataReceiver.DataReceiver(
+        serviceProvider.connectToService(dataStream.DataSource.name),
+        BUFFER_SIZE,
+        FATAL_ERROR);
   });
 }
 

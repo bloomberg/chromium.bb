@@ -4,6 +4,7 @@
 
 module device.serial;
 
+[Client=DataSourceClient]
 interface DataSource {
   // Initializes this DataSource with the amount of data its client will
   // buffer.
@@ -26,6 +27,7 @@ interface DataSourceClient {
   OnData(array<uint8> data);
 };
 
+[Client=DataSinkClient]
 interface DataSink {
   // Initializes this DataSink with the amount of data it is expected to
   // buffer.

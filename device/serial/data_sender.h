@@ -27,7 +27,6 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
   // Constructs a DataSender to send data to |sink|, using a buffer size of
   // |buffer_size|, with connection errors reported as |fatal_error_value|.
   DataSender(mojo::InterfacePtr<serial::DataSink> sink,
-             mojo::InterfaceRequest<serial::DataSinkClient> client,
              uint32_t buffer_size,
              int32_t fatal_error_value);
 
@@ -74,7 +73,6 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
 
   // The control connection to the data sink.
   mojo::InterfacePtr<serial::DataSink> sink_;
-  mojo::Binding<serial::DataSinkClient> client_;
 
   // The error value to report in the event of a fatal error.
   const int32_t fatal_error_value_;

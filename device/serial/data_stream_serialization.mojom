@@ -10,8 +10,6 @@ import "data_stream.mojom";
 struct SerializedDataSender {
   // The control channel to the DataSink to which this DataSender sends data.
   DataSink sink;
-  // DataSinkClient&
-  handle<message_pipe> sink_client;
 
   // The error to report for sends in progress when a fatal error occurs.
   int32 fatal_error_value;
@@ -34,8 +32,6 @@ struct SerializedDataReceiver {
   // The control channel to the DataSource from which this DataReceiver receives
   // data.
   DataSource source;
-  // DataSourceClient&
-  handle<message_pipe> source_client;
 
   // The error to report for a receive in progress when a fatal error occurs.
   int32 fatal_error_value;

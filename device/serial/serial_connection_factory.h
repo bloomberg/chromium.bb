@@ -32,9 +32,7 @@ class SerialConnectionFactory
       serial::ConnectionOptionsPtr options,
       mojo::InterfaceRequest<serial::Connection> connection_request,
       mojo::InterfaceRequest<serial::DataSink> sink,
-      mojo::InterfacePtr<serial::DataSinkClient> sink_client,
-      mojo::InterfaceRequest<serial::DataSource> source,
-      mojo::InterfacePtr<serial::DataSourceClient> source_client);
+      mojo::InterfaceRequest<serial::DataSource> source);
 
  private:
   friend class base::RefCountedThreadSafe<SerialConnectionFactory>;

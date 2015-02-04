@@ -15,19 +15,20 @@ namespace device {
 SerialConnection::SerialConnection(
     scoped_refptr<SerialIoHandler> io_handler,
     mojo::InterfaceRequest<serial::DataSink> sink,
-    mojo::InterfacePtr<serial::DataSinkClient> sink_client,
-    mojo::InterfaceRequest<serial::DataSource> source,
-    mojo::InterfacePtr<serial::DataSourceClient> source_client)
+    mojo::InterfaceRequest<serial::DataSource> source)
     : io_handler_(io_handler) {
-  receiver_ = new DataSinkReceiver(
-      sink.Pass(), sink_client.Pass(),
-      base::Bind(&SerialConnection::OnSendPipeReady, base::Unretained(this)),
-      base::Bind(&SerialConnection::OnSendCancelled, base::Unretained(this)),
-      base::Bind(base::DoNothing));
-  sender_ = new DataSourceSender(
-      source.Pass(), source_client.Pass(),
-      base::Bind(&SerialConnection::OnReceivePipeReady, base::Unretained(this)),
-      base::Bind(base::DoNothing));
+  receiver_ = mojo::WeakBindToRequest(
+      new DataSinkReceiver(base::Bind(&SerialConnection::OnSendPipeReady,
+                                      base::Unretained(this)),
+                           base::Bind(&SerialConnection::OnSendCancelled,
+                                      base::Unretained(this)),
+                           base::Bind(base::DoNothing)),
+      &sink);
+  sender_ = mojo::WeakBindToRequest(
+      new DataSourceSender(base::Bind(&SerialConnection::OnReceivePipeReady,
+                                      base::Unretained(this)),
+                           base::Bind(base::DoNothing)),
+      &source);
 }
 
 SerialConnection::~SerialConnection() {

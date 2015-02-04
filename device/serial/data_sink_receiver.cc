@@ -61,15 +61,10 @@ class DataSinkReceiver::DataFrame {
   uint32_t offset_;
 };
 
-DataSinkReceiver::DataSinkReceiver(
-    mojo::InterfaceRequest<serial::DataSink> request,
-    mojo::InterfacePtr<serial::DataSinkClient> client,
-    const ReadyCallback& ready_callback,
-    const CancelCallback& cancel_callback,
-    const ErrorCallback& error_callback)
-    : binding_(this, request.Pass()),
-      client_(client.Pass()),
-      ready_callback_(ready_callback),
+DataSinkReceiver::DataSinkReceiver(const ReadyCallback& ready_callback,
+                                   const CancelCallback& cancel_callback,
+                                   const ErrorCallback& error_callback)
+    : ready_callback_(ready_callback),
       cancel_callback_(cancel_callback),
       error_callback_(error_callback),
       flush_pending_(false),
@@ -78,8 +73,6 @@ DataSinkReceiver::DataSinkReceiver(
       available_buffer_capacity_(0),
       shut_down_(false),
       weak_factory_(this) {
-  binding_.set_error_handler(this);
-  client_.set_error_handler(this);
 }
 
 void DataSinkReceiver::ShutDown() {
@@ -158,7 +151,7 @@ void DataSinkReceiver::RunReadyCallback() {
 void DataSinkReceiver::Done(uint32_t bytes_read) {
   if (!DoneInternal(bytes_read))
     return;
-  client_->ReportBytesSent(bytes_read);
+  client()->ReportBytesSent(bytes_read);
   if (!pending_data_buffers_.empty()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -191,8 +184,9 @@ void DataSinkReceiver::ReportBytesSentAndError(uint32_t bytes_read,
   // When we encounter an error, we must discard the data from any send buffers
   // transmitted by the DataSinkClient before it receives this error.
   flush_pending_ = true;
-  client_->ReportBytesSentAndError(
-      bytes_read, error,
+  client()->ReportBytesSentAndError(
+      bytes_read,
+      error,
       base::Bind(&DataSinkReceiver::DoFlush, weak_factory_.GetWeakPtr()));
 }
 

@@ -165,16 +165,15 @@ define('data_sender', [
 
   /**
    * A DataSender that sends data to a DataSink.
-   * @param {!MojoHandle} sink The handle to the DataSink.
-   * @param {!MojoHandle} client The handle to the DataSinkClient.
+   * @param {!MojoHandle} handle The handle to the DataSink.
    * @param {number} bufferSize How large a buffer to use for data.
    * @param {number} fatalErrorValue The send error value to report in the
    *     event of a fatal error.
    * @constructor
    * @alias module:data_sender.DataSender
    */
-  function DataSender(sink, client, bufferSize, fatalErrorValue) {
-    this.init_(sink, client, fatalErrorValue, bufferSize);
+  function DataSender(handle, bufferSize, fatalErrorValue) {
+    this.init_(handle, fatalErrorValue, bufferSize);
     this.sink_.init(bufferSize);
   }
 
@@ -189,7 +188,6 @@ define('data_sender', [
       return;
     this.shutDown_ = true;
     this.router_.close();
-    this.clientRouter_.close();
     while (this.pendingSends_.length) {
       this.pendingSends_.pop().reportBytesSentAndError(
           0, this.fatalErrorValue_);
@@ -203,15 +201,13 @@ define('data_sender', [
 
   /**
    * Initialize this DataSender.
-   * @param {!MojoHandle} sink A handle to the DataSink.
-   * @param {!MojoHandle} sinkClient A handle to the DataSinkClient.
+   * @param {!MojoHandle} sink A handle to the DataSink
    * @param {number} fatalErrorValue The error to dispatch in the event of a
    *     fatal error.
    * @param {number} bufferSize The size of the send buffer.
    * @private
    */
-  DataSender.prototype.init_ = function(sink, sinkClient, fatalErrorValue,
-                                        bufferSize) {
+  DataSender.prototype.init_ = function(sink, fatalErrorValue, bufferSize) {
     /**
      * The error to be dispatched in the event of a fatal error.
      * @const {number}
@@ -231,18 +227,11 @@ define('data_sender', [
      */
     this.router_ = new routerModule.Router(sink);
     /**
-     * The [Router]{@link module:mojo/public/js/router.Router} for the
-     * connection to the DataSinkClient.
-     * @private
-     */
-    this.clientRouter_ = new routerModule.Router(sinkClient);
-    /**
      * The connection to the DataSink.
      * @private
      */
     this.sink_ = new dataStreamMojom.DataSink.proxyClass(this.router_);
-    this.client_ = new dataStreamMojom.DataSinkClient.stubClass(this);
-    this.clientRouter_.setIncomingReceiver(this.client_);
+    this.router_.setIncomingReceiver(this);
     /**
      * A queue of sends that have not fully sent their data to the DataSink.
      * @type {!module:data_sender~PendingSend[]}
@@ -301,13 +290,10 @@ define('data_sender', [
     return readyToSerialize.then(function() {
       var serialized = new serialization.SerializedDataSender();
       serialized.sink = this.router_.connector_.handle_;
-      serialized.client = this.clientRouter_.connector_.handle_;
       serialized.fatal_error_value = this.fatalErrorValue_;
       serialized.buffer_size = this.availableBufferCapacity_;
       this.router_.connector_.handle_ = null;
       this.router_.close();
-      this.clientRouter_.connector_.handle_ = null;
-      this.clientRouter_.close();
       this.shutDown_ = true;
       return serialized;
     }.bind(this));
@@ -334,8 +320,8 @@ define('data_sender', [
       this.shutDown_ = true;
       return;
     }
-    this.init_(serialized.sink, serialized.client, serialized.fatal_error_value,
-               serialized.buffer_size);
+    this.init_(
+        serialized.sink, serialized.fatal_error_value, serialized.buffer_size);
   };
 
   /**

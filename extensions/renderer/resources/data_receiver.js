@@ -86,16 +86,15 @@ define('data_receiver', [
 
   /**
    * A DataReceiver that receives data from a DataSource.
-   * @param {!MojoHandle} source The handle to the DataSource.
-   * @param {!MojoHandle} client The handle to the DataSourceClient.
+   * @param {!MojoHandle} handle The handle to the DataSource.
    * @param {number} bufferSize How large a buffer to use.
    * @param {number} fatalErrorValue The receive error value to report in the
    *     event of a fatal error.
    * @constructor
    * @alias module:data_receiver.DataReceiver
    */
-  function DataReceiver(source, client, bufferSize, fatalErrorValue) {
-    this.init_(source, client, fatalErrorValue, 0, null, [], false);
+  function DataReceiver(handle, bufferSize, fatalErrorValue) {
+    this.init_(handle, fatalErrorValue, 0, null, [], false);
     this.source_.init(bufferSize);
   }
 
@@ -110,7 +109,6 @@ define('data_receiver', [
       return;
     this.shutDown_ = true;
     this.router_.close();
-    this.clientRouter_.close();
     if (this.receive_) {
       this.receive_.dispatchFatalError(this.fatalErrorValue_);
       this.receive_ = null;
@@ -119,8 +117,7 @@ define('data_receiver', [
 
   /**
    * Initialize this DataReceiver.
-   * @param {!MojoHandle} source A handle to the DataSource.
-   * @param {!MojoHandle} client A handle to the DataSourceClient.
+   * @param {!MojoHandle} source A handle to the DataSource
    * @param {number} fatalErrorValue The error to dispatch in the event of a
    *     fatal error.
    * @param {number} bytesReceived The number of bytes already received.
@@ -131,9 +128,12 @@ define('data_receiver', [
    * @param {boolean} paused Whether the DataSource is paused.
    * @private
    */
-  DataReceiver.prototype.init_ = function(source, client, fatalErrorValue,
-                                          bytesReceived, pendingError,
-                                          pendingData, paused) {
+  DataReceiver.prototype.init_ = function(source,
+                                          fatalErrorValue,
+                                          bytesReceived,
+                                          pendingError,
+                                          pendingData,
+                                          paused) {
     /**
      * The [Router]{@link module:mojo/public/js/router.Router} for the
      * connection to the DataSource.
@@ -141,18 +141,11 @@ define('data_receiver', [
      */
     this.router_ = new router.Router(source);
     /**
-     * The [Router]{@link module:mojo/public/js/router.Router} for the
-     * connection to the DataSource.
-     * @private
-     */
-    this.clientRouter_ = new router.Router(client);
-    /**
      * The connection to the DataSource.
      * @private
      */
     this.source_ = new dataStream.DataSource.proxyClass(this.router_);
-    this.client_ = new dataStream.DataSourceClient.stubClass(this);
-    this.clientRouter_.setIncomingReceiver(this.client_);
+    this.router_.setIncomingReceiver(this);
     /**
      * The current receive operation.
      * @type {module:data_receiver~PendingReceive}
@@ -209,7 +202,6 @@ define('data_receiver', [
     }
     var serialized = new serialization.SerializedDataReceiver();
     serialized.source = this.router_.connector_.handle_;
-    serialized.client = this.clientRouter_.connector_.handle_;
     serialized.fatal_error_value = this.fatalErrorValue_;
     serialized.paused = this.paused_;
     serialized.pending_error = this.pendingError_;
@@ -219,8 +211,6 @@ define('data_receiver', [
     });
     this.router_.connector_.handle_ = null;
     this.router_.close();
-    this.clientRouter_.connector_.handle_ = null;
-    this.clientRouter_.close();
     this.shutDown_ = true;
     return Promise.resolve(serialized);
   };
@@ -252,9 +242,12 @@ define('data_receiver', [
       buffer.set(data);
       pendingData.push(buffer.buffer);
     });
-    this.init_(serialized.source, serialized.client,
-               serialized.fatal_error_value, serialized.bytes_received,
-               serialized.pending_error, pendingData, serialized.paused);
+    this.init_(serialized.source,
+               serialized.fatal_error_value,
+               serialized.bytes_received,
+               serialized.pending_error,
+               pendingData,
+               serialized.paused);
   };
 
   /**

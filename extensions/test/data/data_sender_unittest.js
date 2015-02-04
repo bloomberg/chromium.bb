@@ -24,14 +24,17 @@ function generateData(size, pattern) {
 // Returns a promise to a newly created DataSender.
 function createSender() {
   return Promise.all([
+    requireAsync('content/public/renderer/service_provider'),
     requireAsync('data_sender'),
-    requireAsync('device/serial/data_sender_test_factory'),
+    requireAsync('device/serial/data_stream.mojom'),
   ]).then(function(modules) {
-    var dataSender = modules[0];
-    var factory = modules[1];
-    var sender = factory.create();
-    return new dataSender.DataSender(sender.sink, sender.client, BUFFER_SIZE,
-                                     FATAL_ERROR);
+    var serviceProvider = modules[0];
+    var dataSender = modules[1];
+    var dataStream = modules[2];
+    return new dataSender.DataSender(
+        serviceProvider.connectToService(dataStream.DataSink.name),
+        BUFFER_SIZE,
+        FATAL_ERROR);
   });
 }
 

@@ -31,18 +31,12 @@ class DataSourceTest : public testing::Test {
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::DataSource> source_sender_handle;
-    mojo::InterfacePtr<serial::DataSourceClient> source_sender_client_handle;
-    mojo::InterfaceRequest<serial::DataSourceClient>
-        source_sender_client_request =
-            mojo::GetProxy(&source_sender_client_handle);
-    source_sender_ = new DataSourceSender(
-        mojo::GetProxy(&source_sender_handle),
-        source_sender_client_handle.Pass(),
-        base::Bind(&DataSourceTest::CanWriteData, base::Unretained(this)),
-        base::Bind(&DataSourceTest::OnError, base::Unretained(this)));
-    receiver_ =
-        new DataReceiver(source_sender_handle.Pass(),
-                         source_sender_client_request.Pass(), 100, kFatalError);
+    source_sender_ = mojo::WeakBindToProxy(
+        new DataSourceSender(
+            base::Bind(&DataSourceTest::CanWriteData, base::Unretained(this)),
+            base::Bind(&DataSourceTest::OnError, base::Unretained(this))),
+        &source_sender_handle);
+    receiver_ = new DataReceiver(source_sender_handle.Pass(), 100, kFatalError);
   }
 
   void TearDown() override {

@@ -29,7 +29,6 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   // size of |buffer_size|, with connection errors reported as
   // |fatal_error_value|.
   DataReceiver(mojo::InterfacePtr<serial::DataSource> source,
-               mojo::InterfaceRequest<serial::DataSourceClient> client,
                uint32_t buffer_size,
                int32_t fatal_error_value);
 
@@ -73,7 +72,6 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
 
   // The control connection to the data source.
   mojo::InterfacePtr<serial::DataSource> source_;
-  mojo::Binding<serial::DataSourceClient> client_;
 
   // The error value to report in the event of a fatal error.
   const int32_t fatal_error_value_;

@@ -38,16 +38,13 @@ class DataSinkTest : public testing::Test {
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::DataSink> sink_handle;
-    mojo::InterfacePtr<serial::DataSinkClient> sink_client_handle;
-    mojo::InterfaceRequest<serial::DataSinkClient> sink_client_request =
-        mojo::GetProxy(&sink_client_handle);
-    sink_receiver_ = new DataSinkReceiver(
-        mojo::GetProxy(&sink_handle), sink_client_handle.Pass(),
-        base::Bind(&DataSinkTest::OnDataToRead, base::Unretained(this)),
-        base::Bind(&DataSinkTest::OnCancel, base::Unretained(this)),
-        base::Bind(&DataSinkTest::OnError, base::Unretained(this)));
-    sender_.reset(new DataSender(sink_handle.Pass(), sink_client_request.Pass(),
-                                 kBufferSize, kFatalError));
+    sink_receiver_ = mojo::WeakBindToProxy(
+        new DataSinkReceiver(
+            base::Bind(&DataSinkTest::OnDataToRead, base::Unretained(this)),
+            base::Bind(&DataSinkTest::OnCancel, base::Unretained(this)),
+            base::Bind(&DataSinkTest::OnError, base::Unretained(this))),
+        &sink_handle);
+    sender_.reset(new DataSender(sink_handle.Pass(), kBufferSize, kFatalError));
   }
 
   void TearDown() override {
