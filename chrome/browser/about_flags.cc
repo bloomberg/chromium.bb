@@ -2145,11 +2145,11 @@ const Experiment kExperiments[] = {
 #endif  // defined(OS_MACOSX)
 #if defined(OS_CHROMEOS)
   {
-    "disable-timezone-tracking",
-    IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME,
-    IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION,
+    "enable-timezone-tracking",
+    IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME,
+    IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableTimeZoneTrackingOption)
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableTimeZoneTrackingOption)
   },
 #endif  // defined(OS_CHROMEOS)
 

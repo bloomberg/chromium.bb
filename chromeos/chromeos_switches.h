@@ -99,7 +99,7 @@ CHROMEOS_EXPORT extern const char kSystemDevMode[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
 CHROMEOS_EXPORT extern const char kWakeOnPackets[];
 CHROMEOS_EXPORT extern const char kEnableCaptivePortalBypassProxy[];
-CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
+CHROMEOS_EXPORT extern const char kEnableTimeZoneTrackingOption[];
 
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 

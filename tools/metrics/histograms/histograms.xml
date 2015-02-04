@@ -51012,7 +51012,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1237297772" label="no-pings"/>
   <int value="1245889469" label="enable-surface-worker"/>
-  <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1268470658" label="disable-android-password-link"/>
   <int value="1279584261" label="enable-carrier-switching"/>
