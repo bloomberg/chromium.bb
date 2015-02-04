@@ -27,7 +27,13 @@ remoting.Application = function(app_capabilities) {
    * @type {Array.<string>}
    * @private
    */
-  this.app_capabilities_ = app_capabilities;
+  this.app_capabilities_ = [
+    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
+    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
+    remoting.ClientSession.Capability.VIDEO_RECORDER
+  ];
+  // Append the app-specific capabilities.
+  this.app_capabilities_.push.apply(this.app_capabilities_, app_capabilities);
 
   /**
    * @type {remoting.SessionConnector}
@@ -49,14 +55,7 @@ remoting.Application.prototype.setDelegate = function(appDelegate) {
  *     by this application.
  */
 remoting.Application.prototype.getRequiredCapabilities_ = function() {
-  var capabilities = [
-    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
-    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
-    remoting.ClientSession.Capability.VIDEO_RECORDER
-  ];
-  // Append the app-specific capabilities.
-  capabilities.push.apply(capabilities, this.app_capabilities_);
-  return capabilities;
+  return this.app_capabilities_;
 };
 
 /**
