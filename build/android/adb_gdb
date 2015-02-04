@@ -26,6 +26,7 @@ fi
 TMPDIR=
 GDBSERVER_PIDFILE=
 TARGET_GDBSERVER=
+COMMAND_PREFIX=
 
 clean_exit () {
   if [ "$TMPDIR" ]; then
@@ -36,7 +37,7 @@ clean_exit () {
     fi
     if [ "$TARGET_GDBSERVER" ]; then
       log "Removing target gdbserver binary: $TARGET_GDBSERVER."
-      "$ADB" shell run-as "$PACKAGE_NAME" rm "$TARGET_GDBSERVER" >/dev/null 2>&1
+      "$ADB" shell "$COMMAND_PREFIX" rm "$TARGET_GDBSERVER" >/dev/null 2>&1
     fi
     log "Cleaning up: $TMPDIR"
     rm -rf "$TMPDIR"
@@ -908,7 +909,7 @@ SOLIB_DIRS=$(find $PULL_LIBS_DIR -mindepth 1 -maxdepth 4 -type d | \
 # Push gdbserver to the device
 log "Pushing gdbserver $GDBSERVER to $TARGET_GDBSERVER"
 adb push $GDBSERVER $TMP_TARGET_GDBSERVER &>/dev/null
-adb shell run-as $PACKAGE_NAME cp $TMP_TARGET_GDBSERVER .
+adb shell $COMMAND_PREFIX cp $TMP_TARGET_GDBSERVER $TARGET_GDBSERVER
 adb shell rm $TMP_TARGET_GDBSERVER
 fail_panic "Could not copy gdbserver to the device!"
 
