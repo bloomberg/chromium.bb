@@ -711,3 +711,12 @@ system call NtOpenProcess
 KERNELBASE.dll!OpenProcess
 base.dll!base::Process::OpenWithExtraPriviles
 content.dll!content::BrowserMessageFilter::Internal::OnChannelConnected
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/455060
+*!content::FrameAccessibility::GetParent
+*!content::RenderFrameHostImpl::AccessibilityGetParentFrame
+*!content::BrowserAccessibilityManager::GetDelegateFromRootManager
+*!content::BrowserAccessibilityManager::OnWindowBlurred
+...
+*!content::RenderWidgetHostViewAura::Destroy
