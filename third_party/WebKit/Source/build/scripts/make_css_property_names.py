@@ -40,7 +40,6 @@ const char* getPropertyName(CSSPropertyID);
 const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
 WTF::String getPropertyNameString(CSSPropertyID);
 WTF::String getJSPropertyName(CSSPropertyID);
-bool isInternalProperty(CSSPropertyID id);
 
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
@@ -162,16 +161,6 @@ String getJSPropertyName(CSSPropertyID id)
     return String(result);
 }
 
-bool isInternalProperty(CSSPropertyID id)
-{
-    switch (id) {
-        %(internal_properties)s
-            return true;
-        default:
-            return false;
-    }
-}
-
 } // namespace blink
 """
 
@@ -216,7 +205,6 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
             'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties_list)),
             'property_name_offsets': '\n'.join(map(lambda offset: '    %d,' % offset, property_offsets)),
             'property_to_enum_map': '\n'.join(map(lambda property: '%s, %s' % property, css_name_and_enum_pairs)),
-            'internal_properties': '\n'.join("case %s:" % property_id for property_id, property in self._properties.items() if property['is_internal']),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']

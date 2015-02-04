@@ -110,8 +110,8 @@ int ImmutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     uint16_t id = static_cast<uint16_t>(propertyID);
     for (int n = m_arraySize - 1 ; n >= 0; --n) {
         if (metadataArray()[n].m_propertyID == id) {
-            // Only enabled or internal properties should be part of the style.
-            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID) || isInternalProperty(propertyID));
+            // Only enabled properties should be part of the style.
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
             return n;
         }
     }
@@ -551,8 +551,8 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     const CSSProperty* properties = m_propertyVector.data();
     for (int n = m_propertyVector.size() - 1 ; n >= 0; --n) {
         if (properties[n].metadata().m_propertyID == id) {
-            // Only enabled or internal properties should be part of the style.
-            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID) || isInternalProperty(propertyID));
+            // Only enabled properties should be part of the style.
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
             return n;
         }
     }

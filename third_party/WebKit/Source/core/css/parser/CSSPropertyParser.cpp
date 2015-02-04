@@ -441,9 +441,6 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
 
 bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
 {
-    if (!isInternalPropertyAndValueParsingEnabledForMode(m_context.mode()) && isInternalProperty(propId))
-        return false;
-
     if (!m_valueList)
         return false;
 

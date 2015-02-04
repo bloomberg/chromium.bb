@@ -64,11 +64,6 @@ inline bool isUASheetBehavior(CSSParserMode mode)
     return mode == UASheetMode;
 }
 
-inline bool isInternalPropertyAndValueParsingEnabledForMode(CSSParserMode mode)
-{
-    return mode == HTMLAttributeMode || mode == UASheetMode;
-}
-
 inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode)
 {
     return mode == HTMLAttributeMode || mode == SVGAttributeMode;
