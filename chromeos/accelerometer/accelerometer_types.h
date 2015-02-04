@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_
-#define UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#ifndef CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#define CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
 
 #include "base/macros.h"
-#include "ui/accelerometer/ui_accelerometer_export.h"
-#include "ui/gfx/geometry/vector3d_f.h"
+#include "chromeos/chromeos_export.h"
 
-namespace ui {
+namespace chromeos {
 
 enum AccelerometerSource {
   // Accelerometer is located in the device's screen. In the screen's natural
@@ -30,47 +29,48 @@ enum AccelerometerSource {
   ACCELEROMETER_SOURCE_COUNT
 };
 
-struct UI_ACCELEROMETER_EXPORT AccelerometerReading {
+struct CHROMEOS_EXPORT AccelerometerReading {
   AccelerometerReading();
   ~AccelerometerReading();
 
   // If true, this accelerometer is being updated.
   bool present;
 
-  // The reading from this accelerometer measured in m/s^2.
-  gfx::Vector3dF reading;
+  // The readings from this accelerometer measured in m/s^2.
+  float x;
+  float y;
+  float z;
 };
 
 // An accelerometer update contains the last known value for each of the
 // accelerometers present on the device.
-class UI_ACCELEROMETER_EXPORT AccelerometerUpdate {
+class CHROMEOS_EXPORT AccelerometerUpdate {
  public:
   AccelerometerUpdate();
   ~AccelerometerUpdate();
 
   // Returns true if |source| has a valid value in this update.
-  bool has(AccelerometerSource source)  const {
-    return data_[source].present;
-  }
+  bool has(AccelerometerSource source) const { return data_[source].present; }
 
   // Returns the last known value for |source|.
-  const gfx::Vector3dF& get(AccelerometerSource source) const {
-    return data_[source].reading;
+  const AccelerometerReading& get(AccelerometerSource source) const {
+    return data_[source];
   }
 
   void Set(AccelerometerSource source, float x, float y, float z) {
     data_[source].present = true;
-    data_[source].reading.set_x(x);
-    data_[source].reading.set_y(y);
-    data_[source].reading.set_z(z);
+    data_[source].x = x;
+    data_[source].y = y;
+    data_[source].z = z;
   }
 
  protected:
   AccelerometerReading data_[ACCELEROMETER_SOURCE_COUNT];
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AccelerometerUpdate);
 };
 
-}  // namespace ui
+}  // namespace chromeos
 
-#endif  // UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#endif  // CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_

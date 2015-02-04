@@ -34,7 +34,6 @@ component("chromeos") {
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",
-    "//ui/accelerometer",
     "//ui/gfx/geometry",
     "//url",
     ":cryptohome_proto",

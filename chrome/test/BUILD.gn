@@ -1212,7 +1212,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "//third_party/cacheinvalidation",
       "//third_party/icu",
       "//third_party/libxml",
-      "//ui/accelerometer",
       "//ui/base:test_support",
       "//ui/gfx:test_support",
       "//ui/resources",

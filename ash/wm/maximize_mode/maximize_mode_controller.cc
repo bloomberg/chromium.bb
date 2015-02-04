@@ -30,12 +30,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "ui/chromeos/accelerometer/accelerometer_util.h"
 #endif  // OS_CHROMEOS
 
 namespace ash {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 // The hinge angle at which to enter maximize mode.
 const float kEnterMaximizeModeAngle = 200.0f;
 
@@ -49,6 +51,7 @@ const float kExitMaximizeModeAngle = 160.0f;
 // vice versa).
 const float kMinStableAngle = 20.0f;
 const float kMaxStableAngle = 340.0f;
+#endif  // OS_CHROMEOS
 
 // The time duration to consider the lid to be recently opened.
 // This is used to prevent entering maximize mode if an erroneous accelerometer
@@ -57,6 +60,7 @@ const float kMaxStableAngle = 340.0f;
 const base::TimeDelta kLidRecentlyOpenedDuration =
     base::TimeDelta::FromSeconds(2);
 
+#if defined(OS_CHROMEOS)
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
 // gravity pointing in the direction of the hinge). When this happens we cannot
@@ -65,13 +69,25 @@ const base::TimeDelta kLidRecentlyOpenedDuration =
 // detect hinge angle in m/s^2.
 const float kHingeAngleDetectionThreshold = 2.5f;
 
-#if defined(OS_CHROMEOS)
 // The maximum deviation between the magnitude of the two accelerometers under
-// which to detect hinge angle and screen rotation in m/s^2. These
-// accelerometers are attached to the same physical device and so should be
-// under the same acceleration.
+// which to detect hinge angle in m/s^2. These accelerometers are attached to
+// the same physical device and so should be under the same acceleration.
 const float kNoisyMagnitudeDeviation = 1.0f;
-#endif
+
+// The angle between chromeos::AccelerometerReadings are considered stable if
+// their magnitudes do not differ greatly. This returns false if the deviation
+// between the screen and keyboard accelerometers is too high.
+bool IsAngleBetweenAccelerometerReadingsStable(
+    const chromeos::AccelerometerUpdate& update) {
+  return std::abs(
+             ui::ConvertAccelerometerReadingToVector3dF(
+                 update.get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD))
+                 .Length() -
+             ui::ConvertAccelerometerReadingToVector3dF(
+                 update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN)).Length()) <=
+         kNoisyMagnitudeDeviation;
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace
 
@@ -131,32 +147,28 @@ void MaximizeModeController::AddWindow(aura::Window* window) {
 
 #if defined(OS_CHROMEOS)
 void MaximizeModeController::OnAccelerometerUpdated(
-    const ui::AccelerometerUpdate& update) {
+    const chromeos::AccelerometerUpdate& update) {
   bool first_accelerometer_update = !have_seen_accelerometer_data_;
   have_seen_accelerometer_data_ = true;
 
-  if (!update.has(ui::ACCELEROMETER_SOURCE_SCREEN))
+  if (!update.has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
 
   // Whether or not we enter maximize mode affects whether we handle screen
   // rotation, so determine whether to enter maximize mode first.
-  if (!update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+  if (!update.has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
     if (first_accelerometer_update)
       EnterMaximizeMode();
-  } else if (chromeos::AccelerometerReader::IsReadingStable(
-                 update, ui::ACCELEROMETER_SOURCE_SCREEN) &&
-             chromeos::AccelerometerReader::IsReadingStable(
-                 update, ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
-             std::abs(update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
-                          .Length() -
-                      update.get(ui::ACCELEROMETER_SOURCE_SCREEN).Length()) <=
-                 kNoisyMagnitudeDeviation) {
-    // update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
+  } else if (ui::IsAccelerometerReadingStable(
+                 update, chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
+             ui::IsAccelerometerReadingStable(
+                 update, chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
+             IsAngleBetweenAccelerometerReadingsStable(update)) {
+    // update.has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
     // Ignore the reading if it appears unstable. The reading is considered
     // unstable if it deviates too much from gravity and/or the magnitude of the
     // reading from the lid differs too much from the reading from the base.
-    HandleHingeRotation(update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD),
-                        update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
+    HandleHingeRotation(update);
   }
 }
 
@@ -176,15 +188,16 @@ void MaximizeModeController::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   last_touchview_transition_time_ = base::Time::Now();
 }
-#endif  // OS_CHROMEOS
 
-void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
-                                                 const gfx::Vector3dF& lid) {
+void MaximizeModeController::HandleHingeRotation(
+    const chromeos::AccelerometerUpdate& update) {
   static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
-  gfx::Vector3dF base_flattened(base);
-  gfx::Vector3dF lid_flattened(lid);
+  gfx::Vector3dF base_flattened(ui::ConvertAccelerometerReadingToVector3dF(
+      update.get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)));
+  gfx::Vector3dF lid_flattened(ui::ConvertAccelerometerReadingToVector3dF(
+      update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN)));
   base_flattened.set_x(0.0f);
   lid_flattened.set_x(0.0f);
 
@@ -235,6 +248,7 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
 #endif
   }
 }
+#endif  // OS_CHROMEOS
 
 void MaximizeModeController::EnterMaximizeMode() {
   if (IsMaximizeModeWindowManagerEnabled())

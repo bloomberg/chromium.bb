@@ -14,6 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/accelerometer/accelerometer_reader.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif  // OS_CHROMEOS
 
@@ -81,7 +82,8 @@ class ASH_EXPORT MaximizeModeController :
 
 #if defined(OS_CHROMEOS)
   // chromeos::AccelerometerReader::Observer:
-  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
+  void OnAccelerometerUpdated(
+      const chromeos::AccelerometerUpdate& update) override;
 
   // PowerManagerClient::Observer:
   void LidEventReceived(bool open, const base::TimeTicks& time) override;
@@ -99,10 +101,11 @@ class ASH_EXPORT MaximizeModeController :
   // artificially and deterministically control the current time.
   void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
 
-  // Detect hinge rotation from |base| and |lid| accelerometers and
-  // automatically start / stop maximize mode.
-  void HandleHingeRotation(const gfx::Vector3dF& base,
-                           const gfx::Vector3dF& lid);
+#if defined(OS_CHROMEOS)
+  // Detect hinge rotation from base and lid accelerometers and automatically
+  // start / stop maximize mode.
+  void HandleHingeRotation(const chromeos::AccelerometerUpdate& update);
+#endif
 
   // Returns true if the lid was recently opened.
   bool WasLidOpenedRecently() const;

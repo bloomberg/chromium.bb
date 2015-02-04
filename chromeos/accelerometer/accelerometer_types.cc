@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accelerometer/accelerometer_types.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 
-namespace ui {
+namespace chromeos {
 
 AccelerometerReading::AccelerometerReading() : present(false) {
 }
@@ -18,4 +18,4 @@ AccelerometerUpdate::AccelerometerUpdate() {
 AccelerometerUpdate::~AccelerometerUpdate() {
 }
 
-}  // namespace ui
+}  // namespace chromeos

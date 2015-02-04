@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
@@ -71,8 +72,8 @@ void SetRotationLocked(bool rotation_locked) {
 }
 
 void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-  ui::AccelerometerUpdate update;
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+  chromeos::AccelerometerUpdate update;
+  update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   Shell::GetInstance()->screen_orientation_controller()->OnAccelerometerUpdated(
       update);
 }

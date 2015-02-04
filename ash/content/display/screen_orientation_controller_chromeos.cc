@@ -12,10 +12,12 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/wm/public/activation_client.h"
@@ -145,16 +147,16 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
-    const ui::AccelerometerUpdate& update) {
+    const chromeos::AccelerometerUpdate& update) {
   if (rotation_locked_ && !CanRotateInLockedState())
     return;
-  if (!update.has(ui::ACCELEROMETER_SOURCE_SCREEN))
+  if (!update.has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity
-  if (chromeos::AccelerometerReader::IsReadingStable(
-          update, ui::ACCELEROMETER_SOURCE_SCREEN)) {
-    HandleScreenRotation(update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
+  if (ui::IsAccelerometerReadingStable(update,
+                                       chromeos::ACCELEROMETER_SOURCE_SCREEN)) {
+    HandleScreenRotation(update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
   }
 }
 
@@ -314,8 +316,8 @@ void ScreenOrientationController::LockToRotationMatchingOrientation(
 }
 
 void ScreenOrientationController::HandleScreenRotation(
-    const gfx::Vector3dF& lid) {
-  gfx::Vector3dF lid_flattened(lid.x(), lid.y(), 0.0f);
+    const chromeos::AccelerometerReading& lid) {
+  gfx::Vector3dF lid_flattened(lid.x, lid.y, 0.0f);
   float lid_flattened_length = lid_flattened.Length();
   // When the lid is close to being flat, don't change rotation as it is too
   // sensitive to slight movements.

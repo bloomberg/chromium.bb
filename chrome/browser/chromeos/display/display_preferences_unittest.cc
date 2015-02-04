@@ -674,20 +674,18 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
                                       gfx::Display::ROTATE_0);
 
   // Open up 270 degrees to trigger maximize mode
-  ui::AccelerometerUpdate update;
-  update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-             0.0f, 0.0f, kMeanGravity);
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-             0.0f, -kMeanGravity, 0.0f);
+  chromeos::AccelerometerUpdate update;
+  update.Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
+             kMeanGravity);
+  update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::MaximizeModeController* controller = shell->maximize_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
 
   // Trigger 90 degree rotation
-  update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-             -kMeanGravity, 0.0f, 0.0f);
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-             -kMeanGravity, 0.0f, 0.0f);
+  update.Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, -kMeanGravity,
+             0.0f, 0.0f);
+  update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
   shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
   EXPECT_EQ(gfx::Display::ROTATE_90, display_manager->
@@ -814,11 +812,10 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   EXPECT_EQ(gfx::Display::ROTATE_0, before_maximize_mode_rotation);
 
   // Open up 270 degrees to trigger maximize mode
-  ui::AccelerometerUpdate update;
-  update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-             0.0f, 0.0f, kMeanGravity);
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-             0.0f, -kMeanGravity, 0.0f);
+  chromeos::AccelerometerUpdate update;
+  update.Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
+             kMeanGravity);
+  update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::MaximizeModeController* maximize_mode_controller =
       shell->maximize_mode_controller();
   maximize_mode_controller->OnAccelerometerUpdated(update);

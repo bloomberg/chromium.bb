@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
@@ -80,7 +81,8 @@ class ASH_EXPORT ScreenOrientationController
   void OnWindowDestroying(aura::Window* window) override;
 
   // chromeos::AccelerometerReader::Observer:
-  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
+  void OnAccelerometerUpdated(
+      const chromeos::AccelerometerUpdate& update) override;
 
   // content::ScreenOrientationDelegate:
   bool FullScreenRequired(content::WebContents* web_contents) override;
@@ -126,7 +128,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // Detect screen rotation from |lid| accelerometer and automatically rotate
   // screen.
-  void HandleScreenRotation(const gfx::Vector3dF& lid);
+  void HandleScreenRotation(const chromeos::AccelerometerReading& lid);
 
   // Checks DisplayManager for registered rotation lock, and rotation,
   // preferences. These are then applied.

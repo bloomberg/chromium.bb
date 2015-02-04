@@ -41,8 +41,7 @@ const char kAccelerometerScanIndexPath[] =
 
 // The names of the accelerometers. Matches up with the enum AccelerometerSource
 // in ui/accelerometer/accelerometer_types.h.
-const char kAccelerometerNames[ui::ACCELEROMETER_SOURCE_COUNT][5] = {
-    "lid", "base"};
+const char kAccelerometerNames[ACCELEROMETER_SOURCE_COUNT][5] = {"lid", "base"};
 
 // The axes on each accelerometer.
 const char kAccelerometerAxes[][2] = {"y", "x", "z"};
@@ -58,10 +57,6 @@ const int kDelayBetweenReadsMs = 100;
 
 // The mean acceleration due to gravity on Earth in m/s^2.
 const float kMeanGravity = 9.80665f;
-
-// The maximum deviation from the acceleration expected due to gravity under
-// which to detect hinge angle and screen rotation in m/s^2
-const float kDeviationFromGravityThreshold = 1.0f;
 
 // Reads |path| to the unsigned int pointed to by |value|. Returns true on
 // success or false on failure.
@@ -126,14 +121,14 @@ bool DetectAndReadAccelerometerConfiguration(
 
   // Adjust the directions of accelerometers to match the AccelerometerUpdate
   // type specified in ui/accelerometer/accelerometer_types.h.
-  configuration->data.scale[ui::ACCELEROMETER_SOURCE_SCREEN][0] *= -1.0f;
+  configuration->data.scale[ACCELEROMETER_SOURCE_SCREEN][0] *= -1.0f;
   for (int i = 0; i < 3; ++i) {
-    configuration->data.scale[ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD][i] *=
+    configuration->data.scale[ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD][i] *=
         -1.0f;
   }
 
   // Verify indices are within bounds.
-  for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+  for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
     if (!configuration->data.has[i])
       continue;
     for (int j = 0; j < 3; ++j) {
@@ -176,7 +171,7 @@ bool ReadAccelerometer(
 
 AccelerometerReader::ConfigurationData::ConfigurationData()
     : count(0) {
-  for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+  for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
     has[i] = false;
     for (int j = 0; j < 3; ++j) {
       scale[i][j] = 0;
@@ -215,13 +210,6 @@ void AccelerometerReader::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool AccelerometerReader::IsReadingStable(const ui::AccelerometerUpdate& update,
-                                          ui::AccelerometerSource source) {
-  return update.has(source) &&
-         std::abs(update.get(source).Length() - kMeanGravity) <=
-             kDeviationFromGravityThreshold;
-}
-
 AccelerometerReader::AccelerometerReader()
     : configuration_(new AccelerometerReader::Configuration()),
       weak_factory_(this) {
@@ -257,12 +245,12 @@ void AccelerometerReader::OnDataRead(
   DCHECK(!task_runner_->RunsTasksOnCurrentThread());
 
   if (success) {
-    for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+    for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
       if (!configuration_->data.has[i])
         continue;
 
       int16* values = reinterpret_cast<int16*>(reading->data);
-      update_.Set(static_cast<ui::AccelerometerSource>(i),
+      update_.Set(static_cast<AccelerometerSource>(i),
                   values[configuration_->data.index[i][0]] *
                       configuration_->data.scale[i][0],
                   values[configuration_->data.index[i][1]] *

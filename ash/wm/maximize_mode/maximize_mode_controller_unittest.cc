@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
-#include "ui/accelerometer/accelerometer_types.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -77,18 +77,19 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-    ui::AccelerometerUpdate update;
-    update.Set(ui::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+    chromeos::AccelerometerUpdate update;
+    update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
+               lid.z());
     maximize_mode_controller()->OnAccelerometerUpdated(update);
   }
 
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
                                const gfx::Vector3dF& lid) {
-    ui::AccelerometerUpdate update;
-    update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-        base.x(), base.y(), base.z());
-    update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-        lid.x(), lid.y(), lid.z());
+    chromeos::AccelerometerUpdate update;
+    update.Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(),
+               base.y(), base.z());
+    update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
+               lid.z());
     maximize_mode_controller()->OnAccelerometerUpdated(update);
   }
 

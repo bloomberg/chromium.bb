@@ -11,6 +11,4 @@ include_rules = [
 
   # Some targets may not have any UI, so explictly exclude src/ui.
   "-ui",
-  # TODO(stevenjb/flackr): Remove these dependencies.
-  "+ui/accelerometer"
 ]

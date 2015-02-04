@@ -9,6 +9,8 @@
     'chromeos_sources': [
       'accelerometer/accelerometer_reader.cc',
       'accelerometer/accelerometer_reader.h',
+      'accelerometer/accelerometer_types.cc',
+      'accelerometer/accelerometer_types.h',
       'app_mode/kiosk_oem_manifest_parser.cc',
       'app_mode/kiosk_oem_manifest_parser.h',
       'audio/audio_device.cc',
@@ -521,7 +523,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/accelerometer/ui_accelerometer.gyp:ui_accelerometer',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',
         'ime/input_method.gyp:gencode',
