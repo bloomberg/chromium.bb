@@ -282,7 +282,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool ShouldAnimate() const;
   bool ShouldBeginOutputSurfaceCreation() const;
-  bool ShouldDrawForced() const;
   bool ShouldDraw() const;
   bool ShouldActivatePendingTree() const;
   bool ShouldSendBeginMainFrame() const;
