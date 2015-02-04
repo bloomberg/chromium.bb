@@ -451,6 +451,9 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
+// Enables the material design Settings feature.
+const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
+
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";

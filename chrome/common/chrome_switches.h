@@ -132,6 +132,7 @@ extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];
+extern const char kEnableMaterialDesignSettings[];
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewBookmarkApps[];

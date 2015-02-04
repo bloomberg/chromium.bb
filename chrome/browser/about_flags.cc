@@ -1970,6 +1970,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(
         switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)
   },
+  {
+    "enable-md-settings",
+    IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_NAME,
+    IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(
+        switches::kEnableMaterialDesignSettings)
+  },
 #endif
 #if defined(OS_CHROMEOS)
   {

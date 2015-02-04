@@ -5406,6 +5406,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- chrome://md-settings/ - the Material Design Settings page -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_NAME" desc="Name for the flag to enable the material design Settings page.">
+          Enable Material Design settings
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_DESCRIPTION" desc="Description for the flag to enable the material design Settings page.">
+          If enabled, the chrome://md-settings/ URL loads the Material Design settings page.
+      </message>
+
       <!-- Packaged Apps -->
       <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
         Install app
