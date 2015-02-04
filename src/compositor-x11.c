@@ -1017,8 +1017,8 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 		update_xkb_state_from_core(c, button_event->state);
 
 	switch (button_event->detail) {
-	default:
-		button = button_event->detail + BTN_LEFT - 1;
+	case 1:
+		button = BTN_LEFT;
 		break;
 	case 2:
 		button = BTN_MIDDLE;
@@ -1056,6 +1056,9 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
 				    DEFAULT_AXIS_STEP_DISTANCE);
 		return;
+	default:
+		button = button_event->detail + BTN_SIDE - 8;
+		break;
 	}
 
 	notify_button(&c->core_seat,
