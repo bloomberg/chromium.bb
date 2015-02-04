@@ -47,6 +47,11 @@ module('It2MeHelpeeChannel', {
 
     // remoting.settings
     remoting.settings = new remoting.Settings();
+    remoting.identity = new remoting.Identity();
+  },
+  tearDown: function() {
+    remoting.settings = null;
+    remoting.identity = null;
   }
 });
 
@@ -112,19 +117,6 @@ test('downloadHost() should trigger a host download',
   sinon.assert.called(hostInstaller.download);
 });
 
-test('connect() should return error if email is missing',
-    function() {
-  var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
-
-  hangoutPort.onMessage.mock$fire({
-    method: MessageTypes.CONNECT
-  });
-
-  sinon.assert.calledWithMatch(hangoutPort.postMessage, {
-      method: MessageTypes.ERROR
-  });
-});
-
 QUnit.asyncTest('connect() should return access code',
     function() {
   // Stubs authentication.
@@ -136,6 +128,10 @@ QUnit.asyncTest('connect() should return access code',
   });
   sinon.stub(chrome.identity, 'getAuthToken')
       .callsArgWith(1, 'token');
+  sinon.stub(remoting.identity, 'callWithToken')
+      .callsArgWith(0, 'token');
+  sinon.stub(remoting.identity, 'getEmail')
+      .callsArgWith(0, {token: 'token', email: 'test@chromium.org'});
   // Stubs Host behavior.
   sinon.stub(host, 'initialized').returns(true);
   sinon.stub(host, 'connect')
@@ -145,7 +141,6 @@ QUnit.asyncTest('connect() should return access code',
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
     method: MessageTypes.CONNECT,
-    email: 'test@chromium.org',
     hangoutBounds: {widht: 10, height: 10, left:10, top: 10}
   });
 

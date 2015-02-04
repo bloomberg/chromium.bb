@@ -16,7 +16,9 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.AppLauncher} appLauncher
+ *
  * @constructor
+ * @implements {base.Disposable}
  */
 remoting.It2MeService = function(appLauncher) {
   /**

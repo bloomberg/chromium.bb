@@ -78,6 +78,7 @@ base.Disposables.prototype.dispose = function() {
   for (var i = 0; i < this.disposables_.length; i++) {
     this.disposables_[i].dispose();
   }
+  this.disposables_ = null;
 };
 
 /**

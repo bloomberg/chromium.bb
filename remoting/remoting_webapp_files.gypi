@@ -241,6 +241,7 @@
       'webapp/crd/js/hangout_consent_dialog.js',
       'webapp/crd/js/host_installer.js',
       'webapp/crd/js/host_session.js',
+      'webapp/crd/js/identity.js',
       'webapp/crd/js/it2me_helpee_channel.js',
       'webapp/crd/js/it2me_helper_channel.js',
       'webapp/crd/js/it2me_host_facade.js',

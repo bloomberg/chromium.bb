@@ -249,33 +249,26 @@ remoting.It2MeHelpeeChannel.prototype.onHangoutDisconnect_ = function() {
  */
 remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
     function(message) {
-  var email = getStringAttr(message, 'email');
   var bounds =
       /** @type {Bounds} */ (getObjectAttr(message, 'hangoutBounds', null));
-
-  if (!email) {
-    throw new Error('Missing required parameter: email');
-  }
 
   if (this.hostState_ !== remoting.HostSession.State.UNKNOWN) {
     throw new Error('An existing connection is in progress.');
   }
 
   var that = this;
-  this.showConfirmDialog_(bounds).then(
-    this.initializeHost_.bind(this)
-  ).then(
-    this.fetchOAuthToken_.bind(this)
-  ).then(
-    /** @type {function(*):void} */(this.connectToHost_.bind(this, email))
-  ).catch(
-    /** @param {*} reason */
-    function(reason) {
-      var error = /** @type {Error} */ (reason);
-      that.sendErrorResponse_(message, error);
-      that.dispose();
-    }
-  );
+  this.showConfirmDialog_(bounds)
+      .then(this.initializeHost_.bind(this))
+      .then(this.fetchOAuthToken_.bind(this))
+      .then(this.fetchEmail_.bind(this))
+      /** @param {{email:string, token:string}|Promise} result */
+      .then(function(result) {
+        that.connectToHost_(result.email, result.token);
+      /** @param {*} reason */
+      }).catch(function(reason) {
+        that.sendErrorResponse_(message, /** @type {Error} */ (reason));
+        that.dispose();
+      });
 };
 
 /**
@@ -368,9 +361,10 @@ remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
   if (base.isAppsV2()) {
     /**
      * @param {function(*=):void} resolve
+     * @param {function(*=):void} reject
      */
-    return new Promise(function(resolve){
-      chrome.identity.getAuthToken({'interactive': true}, resolve);
+    return new Promise(function(resolve, reject){
+      remoting.identity.callWithToken(resolve, reject);
     });
   } else {
     /**
@@ -378,21 +372,38 @@ remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
      * @param {function(*=):void} reject
      */
     return new Promise(function(resolve, reject) {
-      /** @type {remoting.OAuth2} */
-      var oauth2 = new remoting.OAuth2();
       /** @param {remoting.Error} error */
       var onError = function(error) {
         if (error === remoting.Error.NOT_AUTHENTICATED) {
-          oauth2.doAuthRedirect(function() {
-            oauth2.callWithToken(resolve, reject);
+          remoting.oauth2.doAuthRedirect(function() {
+            remoting.identity.callWithToken(resolve, reject);
           });
           return;
         }
         reject(new Error(remoting.Error.NOT_AUTHENTICATED));
       };
-      oauth2.callWithToken(resolve, onError);
+      remoting.identity.callWithToken(resolve, onError);
     });
   }
+};
+
+/**
+ * @param {string|Promise} token
+ * @return {Promise} Promise that resolves with the access token and the email
+ *   of the user.
+ */
+remoting.It2MeHelpeeChannel.prototype.fetchEmail_ = function(token) {
+  /**
+   * @param {function(*=):void} resolve
+   * @param {function(*=):void} reject
+   */
+  return new Promise(function(resolve, reject){
+    /** @param {string} email */
+    function onEmail (email) {
+      resolve({ email: email, token: token });
+    }
+    remoting.identity.getEmail(onEmail, reject);
+  });
 };
 
 /**

@@ -21,12 +21,12 @@ var remoting = remoting || {};
 remoting.identity = null;
 
 /**
- * @param {remoting.Identity.ConsentDialog} consentDialog
+ * @param {remoting.Identity.ConsentDialog=} opt_consentDialog
  * @constructor
  */
-remoting.Identity = function(consentDialog) {
+remoting.Identity = function(opt_consentDialog) {
   /** @private */
-  this.consentDialog_ = consentDialog;
+  this.consentDialog_ = opt_consentDialog;
   /** @type {string} @private */
   this.email_ = '';
   /** @type {string} @private */
@@ -36,7 +36,7 @@ remoting.Identity = function(consentDialog) {
 };
 
 /**
- * chrome.identity.getAuthToken must be initiated from user interactions if
+ * chrome.identity.getAuthToken should be initiated from user interactions if
  * called with interactive equals true.  This interface prompts a dialog for
  * the user's consent.
  *
@@ -223,7 +223,9 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
   // If there's no token, but we haven't yet prompted for permission, do so
   // now.
   var that = this;
-  this.consentDialog_.show().then(function() {
+  var showConsentDialog =
+      (this.consentDialog_) ? this.consentDialog_.show() : Promise.resolve();
+  showConsentDialog.then(function() {
     chrome.identity.getAuthToken({'interactive': true},
                                  that.onAuthComplete_.bind(that, true));
   });
