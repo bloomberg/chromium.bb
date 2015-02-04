@@ -204,7 +204,7 @@ public:
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, MetadataCacheType = SendToPlatform);
 
     // Reset existing metadata, to allow setting new data.
-    void clearCachedMetadata();
+    void clearCachedMetadata(MetadataCacheType = CacheLocally);
 
     // Returns cached metadata of the given type associated with this resource.
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;

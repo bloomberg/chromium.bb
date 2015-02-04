@@ -136,7 +136,7 @@ v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned 
         invalidCache = cachedData->rejected;
     }
     if (invalidCache)
-        resource->clearCachedMetadata();
+        resource->clearCachedMetadata(Resource::SendToPlatform);
     return script;
 }
 

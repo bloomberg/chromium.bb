@@ -432,9 +432,12 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
     }
 }
 
-void Resource::clearCachedMetadata()
+void Resource::clearCachedMetadata(MetadataCacheType cacheType)
 {
     m_cachedMetadata.clear();
+
+    if (cacheType == SendToPlatform)
+        blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
 }
 
 bool Resource::canDelete() const
