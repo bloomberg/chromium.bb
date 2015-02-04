@@ -3639,15 +3639,6 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-         # GN: //chrome/android:chrome_android_java_enums_srcjar
-         'target_name': 'add_web_contents_result_java',
-         'type': 'none',
-         'variables': {
-           'source_file': 'browser/android/chrome_web_contents_delegate_android.h',
-          },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
           # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'profile_sync_service_model_type_selection_java',
           'type': 'none',

@@ -27,16 +27,6 @@ class RectF;
 namespace chrome {
 namespace android {
 
-// An enum with the result of calling AddNewContents() in Java.
-//
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
-enum AddWebContentsResult {
-  ADD_WEB_CONTENTS_RESULT_PROCEED,
-  ADD_WEB_CONTENTS_RESULT_STOP_LOAD,
-  ADD_WEB_CONTENTS_RESULT_STOP_LOAD_AND_DELETE
-};
-
 // Chromium Android specific WebContentsDelegate.
 // Should contain any WebContentsDelegate implementations required by
 // the Chromium Android port but not to be shared with WebView.

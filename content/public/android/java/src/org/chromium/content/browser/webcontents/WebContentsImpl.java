@@ -296,11 +296,6 @@ import org.chromium.content_public.browser.WebContents;
         nativeAddMessageToDevToolsConsole(mNativeWebContentsAndroid, level, message);
     }
 
-    @Override
-    public void openUrl(String url, boolean userGesture, boolean isRendererInitiated) {
-        nativeOpenURL(mNativeWebContentsAndroid, url, userGesture, isRendererInitiated);
-    }
-
     @CalledByNative
     private static void onEvaluateJavaScriptResult(
             String jsonResult, JavaScriptCallback callback) {
@@ -352,6 +347,4 @@ import org.chromium.content_public.browser.WebContents;
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
-    private native void nativeOpenURL(long nativeWebContentsAndroid, String url,
-            boolean userGesture, boolean isRendererInitiated);
 }

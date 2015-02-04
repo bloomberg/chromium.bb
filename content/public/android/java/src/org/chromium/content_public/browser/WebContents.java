@@ -213,13 +213,4 @@ public interface WebContents {
      * org.chromium.content_public.common.ConsoleMessageLevel.
      */
     public void addMessageToDevToolsConsole(int level, String message);
-
-    /**
-     * Opens a URL on web contents.
-     * @param url The URL to open.
-     * @param userGesture Whether navigation is triggered during a user gesture.
-     * @param isRendererInitiated Whether the navigation was started in the renderer (e.g.
-     *        clicking on a link).
-     */
-    public void openUrl(String url, boolean userGesture, boolean isRendererInitiated);
 }

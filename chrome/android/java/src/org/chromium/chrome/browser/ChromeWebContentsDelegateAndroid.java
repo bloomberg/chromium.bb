@@ -28,9 +28,9 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
-    public int addNewContents(WebContents sourceWebContents, WebContents webContents,
+    public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
-        return AddWebContentsResult.STOP_LOAD_AND_DELETE;
+        return false;
     }
 
     @Override
