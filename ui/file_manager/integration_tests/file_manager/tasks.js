@@ -178,8 +178,8 @@ function defaultActionDialog(expectedTaskId, windowId) {
 
   // Wait for the dialog hidden, and the task is executed.
   var dialogHiddenPromise = itemClickedPromise.then(function() {
-    return remoteCall.waitForElement.bind(
-        remoteCall, windowId, '#default-action-dialog', null);
+    return remoteCall.waitForElementLost(
+        windowId, '#default-action-dialog', null);
   });
 
   // Execute the new default task.

@@ -1039,11 +1039,13 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-// In addition, this test in particular has become very flaky as of this CL:
-//   https://codereview.chromium.org/838193002/
-// Disable completely until further investigation. See: http://crbug.com/444574.
+#if !defined(NDEBUG)
+#define MAYBE_DefaultActionDialog DISABLED_DefaultActionDialog
+#else
+#define MAYBE_DefaultActionDialog DefaultActionDialog
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_DefaultActionDialog,
+    MAYBE_DefaultActionDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "defaultActionDialogOnDownloads"),
