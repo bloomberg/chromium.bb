@@ -716,17 +716,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     CleanUpNavigation();
     navigation_rfh = render_frame_host_.get();
   } else {
-    // If the current render_frame_host_ isn't live, we should create it so
-    // that we don't show a sad tab while the navigation is ongoing.
-    // (Bug 1145340)
-    if (!render_frame_host_->IsRenderFrameLive()) {
-      // Note: we don't call InitRenderView here because we are navigating away
-      // soon anyway, and we don't have the NavigationEntry for this host.
-      delegate_->CreateRenderViewForRenderManager(
-          render_frame_host_->render_view_host(), MSG_ROUTING_NONE,
-          MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame());
-    }
-
     // If the SiteInstance for the final URL doesn't match the one from the
     // speculatively created RenderFrameHost, create a new RenderFrameHost using
     // this new SiteInstance.
@@ -741,6 +730,16 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
     DCHECK(speculative_render_frame_host_);
     navigation_rfh = speculative_render_frame_host_.get();
+
+    // Check if our current RFH is live.
+    if (!render_frame_host_->IsRenderFrameLive()) {
+      // The current RFH is not live.  There's no reason to sit around with a
+      // sad tab or a newly created RFH while we wait for the navigation to
+      // complete. Just switch to the speculative RFH now and go back to non
+      // cross-navigating (Note that we don't care about on{before}unload
+      // handlers if the current RFH isn't live.)
+      CommitPending();
+    }
   }
   DCHECK(navigation_rfh &&
          (navigation_rfh == render_frame_host_.get() ||

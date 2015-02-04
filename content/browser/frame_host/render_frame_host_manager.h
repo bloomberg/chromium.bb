@@ -234,6 +234,13 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                    pending_and_current_web_ui_.get();
   }
 
+  // PlzNavigate
+  // Returns the speculative WebUI for the navigation (a newly created one or
+  // the current one if it should be reused). If none is set returns nullptr.
+  WebUIImpl* speculative_web_ui_for_testing() const {
+    return should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
+  }
+
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderFrameHost or re-use an existing
   // one. The RenderFrameHost to navigate will be returned. Returns NULL if one

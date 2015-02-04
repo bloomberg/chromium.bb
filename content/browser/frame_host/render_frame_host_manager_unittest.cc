@@ -941,8 +941,11 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostImpl* initial_rfh = manager->current_frame_host();
 
   EXPECT_FALSE(manager->current_host()->IsRenderViewLive());
+  EXPECT_FALSE(manager->web_ui());
+  EXPECT_TRUE(initial_rfh);
 
   const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
@@ -955,6 +958,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   // RenderFrameHost was not live.  We test a case where it is live in
   // WebUIInNewTab.
   EXPECT_TRUE(host);
+  EXPECT_NE(initial_rfh, host);
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
@@ -967,7 +971,12 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateStateForNavigate() took the short cut path.
-  EXPECT_FALSE(manager->pending_web_ui());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    EXPECT_FALSE(manager->speculative_web_ui_for_testing());
+  } else {
+    EXPECT_FALSE(manager->pending_web_ui());
+  }
   EXPECT_TRUE(manager->web_ui());
 
   // Commit.
