@@ -742,6 +742,11 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             self._build_root, cwd, tempdir)
         queue.put([test_suites_tarball])
 
+        # Build the server side package.
+        server_tarball = commands.BuildAutotestServerPackageTarball(
+            self._build_root, cwd, tempdir)
+        queue.put([server_tarball])
+
   def _GeneratePayloads(self, image_name, **kwargs):
     """Generate and upload payloads for |image_name|.
 

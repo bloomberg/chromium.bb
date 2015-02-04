@@ -517,6 +517,19 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
                                                       'control_files.tar'),
                                          cwd=self._cwd, compressed=False)
 
+  def testBuildAutotestServerPackageTarball(self):
+    """Tests that generating the autotest server package tarball is correct."""
+    control_file_list = ['autotest/server/site_tests/testA/control',
+                         'autotest/server/site_tests/testB/control']
+    self.PatchObject(commands, 'FindFilesWithPattern',
+                     return_value=control_file_list)
+    tar_mock = self.PatchObject(commands, 'BuildTarball')
+    commands.BuildAutotestServerPackageTarball(self._buildroot, self._cwd,
+                                               self._tarball_dir)
+    tar_mock.assert_called_once_with(
+        self._buildroot, control_file_list,
+        os.path.join(self._tarball_dir, 'autotest_server_package.tar.bz2'),
+        cwd=self._cwd, error_code_ok=True)
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""
@@ -602,6 +615,38 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         commands.BuildFirmwareArchive(fw_test_root, board, fw_test_root))
     # Verify the tarball contents.
     cros_test_lib.VerifyTarball(tarball, fw_archived_files)
+
+  def findFilesWithPatternExpectedResults(self, root, files):
+    """Generate the expected results for testFindFilesWithPattern"""
+    return [os.path.join(root, f) for f in files]
+
+  def testFindFilesWithPattern(self):
+    """Verifies FindFilesWithPattern searches and excludes files properly"""
+    search_files = (
+        'file1',
+        'test1',
+        'file2',
+        'dir1/file1',
+        'dir1/test1',
+        'dir2/file2',
+    )
+    search_files_root = os.path.join(self.tempdir, 'FindFilesWithPatternTest')
+    cros_test_lib.CreateOnDiskHierarchy(search_files_root, search_files)
+    find_all = commands.FindFilesWithPattern('*', target=search_files_root)
+    expected_find_all = self.findFilesWithPatternExpectedResults(
+        search_files_root, search_files)
+    self.assertEquals(set(find_all), set(expected_find_all))
+    find_test_files = commands.FindFilesWithPattern('test*',
+                                                    target=search_files_root)
+    find_test_expected = self.findFilesWithPatternExpectedResults(
+        search_files_root, ['test1', 'dir1/test1'])
+    self.assertEquals(set(find_test_files), set(find_test_expected))
+    find_exclude = commands.FindFilesWithPattern(
+        '*', target=search_files_root,
+        exclude_dirs=(os.path.join(search_files_root, 'dir1'),))
+    find_exclude_expected = self.findFilesWithPatternExpectedResults(
+        search_files_root, ['file1', 'test1', 'file2', 'dir2/file2'])
+    self.assertEquals(set(find_exclude), set(find_exclude_expected))
 
   def testGenerateHtmlIndexTuple(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: tuple)"""

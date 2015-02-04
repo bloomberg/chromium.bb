@@ -1519,10 +1519,9 @@ def FindFilesWithPattern(pattern, target='./', cwd=os.curdir, exclude_dirs=()):
 
   matches = []
   for target, _, filenames in os.walk(target):
-    if target in exclude_dirs:
-      continue
-    for filename in fnmatch.filter(filenames, pattern):
-      matches.append(os.path.join(target, filename))
+    if not any(target.startswith(e) for e in exclude_dirs):
+      for filename in fnmatch.filter(filenames, pattern):
+        matches.append(os.path.join(target, filename))
 
   # Restore the working directory
   os.chdir(old_cwd)
@@ -1630,6 +1629,27 @@ def BuildAutotestTestSuitesTarball(buildroot, cwd, tarball_dir):
   BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
                cwd=cwd)
   return test_suites_tarball
+
+
+def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
+  """Tar up the autotest files required by the server package.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory.
+    tarball_dir: Location for storing autotest tarballs.
+
+  Returns:
+    The path of the autotest server package tarball.
+  """
+  # Find all files in autotest excluding certain directories.
+  autotest_files = FindFilesWithPattern(
+      '*', target='autotest', cwd=cwd,
+      exclude_dirs=('autotest/packages', 'autotest/client/deps/',
+                    'autotest/client/tests', 'autotest/client/site_tests'))
+  tarball = os.path.join(tarball_dir, 'autotest_server_package.tar.bz2')
+  BuildTarball(buildroot, autotest_files, tarball, cwd=cwd, error_code_ok=True)
+  return tarball
 
 
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
