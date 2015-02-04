@@ -45,8 +45,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       CONTROL_TASK_QUEUE, RendererTaskQueueSelector::CONTROL_PRIORITY);
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
   task_queue_manager_->SetAutoPump(IDLE_TASK_QUEUE, false);
-  // TODO(skyostil): Increase this to 4 (crbug.com/444764).
-  task_queue_manager_->SetWorkBatchSize(1);
+  // See crbug.com/444764 for how this work batch size was derived.
+  task_queue_manager_->SetWorkBatchSize(4);
 
   for (size_t i = 0; i < TASK_QUEUE_COUNT; i++) {
     task_queue_manager_->SetQueueName(
