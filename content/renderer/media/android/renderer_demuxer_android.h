@@ -44,7 +44,7 @@ class RendererDemuxerAndroid : public IPC::MessageFilter {
   void RemoveDelegate(int demuxer_client_id);
 
   // IPC::MessageFilter overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // media::DemuxerAndroidClient "implementation".
   //
@@ -61,7 +61,7 @@ class RendererDemuxerAndroid : public IPC::MessageFilter {
 
  protected:
   friend class base::RefCountedThreadSafe<RendererDemuxerAndroid>;
-  virtual ~RendererDemuxerAndroid();
+  ~RendererDemuxerAndroid() override;
 
  private:
   void DispatchMessage(const IPC::Message& message);

@@ -23,13 +23,13 @@ class CONTENT_EXPORT EmailDetector : public ContentDetector {
   friend class EmailDetectorTest;
 
   // Implementation of ContentDetector.
-  virtual bool FindContent(const base::string16::const_iterator& begin,
-                           const base::string16::const_iterator& end,
-                           size_t* start_pos,
-                           size_t* end_pos,
-                           std::string* content_text) override;
-  virtual GURL GetIntentURL(const std::string& content_text) override;
-  virtual size_t GetMaximumContentLength() override;
+  bool FindContent(const base::string16::const_iterator& begin,
+                   const base::string16::const_iterator& end,
+                   size_t* start_pos,
+                   size_t* end_pos,
+                   std::string* content_text) override;
+  GURL GetIntentURL(const std::string& content_text) override;
+  size_t GetMaximumContentLength() override;
 
   DISALLOW_COPY_AND_ASSIGN(EmailDetector);
 };

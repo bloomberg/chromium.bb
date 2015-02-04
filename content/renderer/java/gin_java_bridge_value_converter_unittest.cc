@@ -20,15 +20,13 @@ class GinJavaBridgeValueConverterTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     v8::HandleScope handle_scope(isolate_);
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
     context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
   }
 
-  virtual void TearDown() {
-    context_.Reset();
-  }
+  void TearDown() override { context_.Reset(); }
 
   v8::Isolate* isolate_;
 

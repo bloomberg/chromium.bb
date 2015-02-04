@@ -40,7 +40,7 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
 
 #if defined(OS_ANDROID)
   // Returns the descriptor key of the android minidump global descriptor.
-  virtual int GetAndroidMinidumpDescriptor() override;
+  int GetAndroidMinidumpDescriptor() override;
 #endif
 
   bool EnableBreakpadForProcess(const std::string& process_type) override;

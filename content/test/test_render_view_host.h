@@ -124,8 +124,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const NativeWebKeyboardEvent& event) override;
 #endif
 #if defined(OS_ANDROID)
-  virtual void LockCompositingSurface() override {}
-  virtual void UnlockCompositingSurface() override {}
+  void LockCompositingSurface() override {}
+  void UnlockCompositingSurface() override {}
 #endif
   void GetScreenInfo(blink::WebScreenInfo* results) override {}
   gfx::Rect GetBoundsInRootWindow() override;

@@ -24,7 +24,7 @@ class GpuChannelHost;
 class StreamTextureHost : public IPC::Listener {
  public:
   explicit StreamTextureHost(GpuChannelHost* channel);
-  virtual ~StreamTextureHost();
+  ~StreamTextureHost() override;
 
   // Listener class that is listening to the stream texture updates. It is
   // implemented by StreamTextureProxyImpl.
@@ -38,8 +38,8 @@ class StreamTextureHost : public IPC::Listener {
   bool BindToCurrentThread(int32 stream_id, Listener* listener);
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
  private:
   // Message handlers:

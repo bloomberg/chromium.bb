@@ -31,13 +31,13 @@ class StreamTextureProxyImpl
  public:
   explicit StreamTextureProxyImpl(
       StreamTextureFactorySynchronousImpl::ContextProvider* provider);
-  virtual ~StreamTextureProxyImpl();
+  ~StreamTextureProxyImpl() override;
 
   // StreamTextureProxy implementation:
-  virtual void BindToLoop(int32 stream_id,
-                          cc::VideoFrameProvider::Client* client,
-                          scoped_refptr<base::MessageLoopProxy> loop) override;
-  virtual void Release() override;
+  void BindToLoop(int32 stream_id,
+                  cc::VideoFrameProvider::Client* client,
+                  scoped_refptr<base::MessageLoopProxy> loop) override;
+  void Release() override;
 
  private:
   void BindOnThread(int32 stream_id);

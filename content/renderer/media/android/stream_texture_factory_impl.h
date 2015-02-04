@@ -29,17 +29,15 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
       int frame_id);
 
   // StreamTextureFactory implementation.
-  virtual StreamTextureProxy* CreateProxy() override;
-  virtual void EstablishPeer(int32 stream_id, int player_id) override;
-  virtual unsigned CreateStreamTexture(unsigned texture_target,
-                                       unsigned* texture_id,
-                                       gpu::Mailbox* texture_mailbox) override;
-  virtual void SetStreamTextureSize(int32 texture_id,
-                                    const gfx::Size& size) override;
-  virtual gpu::gles2::GLES2Interface* ContextGL() override;
-  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) override;
-  virtual void RemoveObserver(
-      StreamTextureFactoryContextObserver* obs) override;
+  StreamTextureProxy* CreateProxy() override;
+  void EstablishPeer(int32 stream_id, int player_id) override;
+  unsigned CreateStreamTexture(unsigned texture_target,
+                               unsigned* texture_id,
+                               gpu::Mailbox* texture_mailbox) override;
+  void SetStreamTextureSize(int32 texture_id, const gfx::Size& size) override;
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  void AddObserver(StreamTextureFactoryContextObserver* obs) override;
+  void RemoveObserver(StreamTextureFactoryContextObserver* obs) override;
 
  private:
   friend class base::RefCounted<StreamTextureFactoryImpl>;
@@ -47,7 +45,7 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
       const scoped_refptr<cc::ContextProvider>& context_provider,
       GpuChannelHost* channel,
       int frame_id);
-  virtual ~StreamTextureFactoryImpl();
+  ~StreamTextureFactoryImpl() override;
 
   scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_refptr<GpuChannelHost> channel_;

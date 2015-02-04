@@ -24,7 +24,7 @@ class CONTENT_EXPORT ContentProtocolHandler :
       const scoped_refptr<base::TaskRunner>& content_task_runner);
 
  protected:
-  virtual ~ContentProtocolHandler() {}
+  ~ContentProtocolHandler() override {}
 };
 
 }  // namespace content

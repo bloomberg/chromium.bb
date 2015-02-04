@@ -56,7 +56,7 @@ class UnixDomainServerSocketFactory
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&CanUserConnectToDevTools),

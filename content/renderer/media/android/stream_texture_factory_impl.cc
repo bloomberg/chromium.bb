@@ -19,17 +19,17 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
                                public StreamTextureHost::Listener {
  public:
   explicit StreamTextureProxyImpl(StreamTextureHost* host);
-  virtual ~StreamTextureProxyImpl();
+  ~StreamTextureProxyImpl() override;
 
   // StreamTextureProxy implementation:
-  virtual void BindToLoop(int32 stream_id,
-                          cc::VideoFrameProvider::Client* client,
-                          scoped_refptr<base::MessageLoopProxy> loop) override;
-  virtual void Release() override;
+  void BindToLoop(int32 stream_id,
+                  cc::VideoFrameProvider::Client* client,
+                  scoped_refptr<base::MessageLoopProxy> loop) override;
+  void Release() override;
 
   // StreamTextureHost::Listener implementation:
-  virtual void OnFrameAvailable() override;
-  virtual void OnMatrixChanged(const float matrix[16]) override;
+  void OnFrameAvailable() override;
+  void OnMatrixChanged(const float matrix[16]) override;
 
  private:
   void BindOnThread(int32 stream_id);

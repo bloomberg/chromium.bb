@@ -17,17 +17,16 @@ class NestedMessagePumpAndroid : public base::MessagePumpForUI {
  public:
   NestedMessagePumpAndroid();
 
-  virtual void Run(Delegate* delegate) override;
-  virtual void Quit() override;
-  virtual void ScheduleWork() override;
-  virtual void ScheduleDelayedWork(
-      const base::TimeTicks& delayed_work_time) override;
-  virtual void Start(Delegate* delegate) override;
+  void Run(Delegate* delegate) override;
+  void Quit() override;
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
+  void Start(Delegate* delegate) override;
 
   static bool RegisterJni(JNIEnv* env);
 
  protected:
-  virtual ~NestedMessagePumpAndroid();
+  ~NestedMessagePumpAndroid() override;
 
  private:
   // We may make recursive calls to Run, so we save state that needs to be

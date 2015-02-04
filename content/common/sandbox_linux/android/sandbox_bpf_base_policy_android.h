@@ -15,10 +15,10 @@ namespace content {
 class SandboxBPFBasePolicyAndroid : public SandboxBPFBasePolicy {
  public:
   SandboxBPFBasePolicyAndroid();
-  virtual ~SandboxBPFBasePolicyAndroid();
+  ~SandboxBPFBasePolicyAndroid() override;
 
   // sandbox::SandboxBPFPolicy:
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
  private:

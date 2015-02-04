@@ -33,29 +33,27 @@ namespace content {
 class MockVideoDecodeAcceleratorClient
     : public media::VideoDecodeAccelerator::Client {
  public:
-  MockVideoDecodeAcceleratorClient() {};
-  virtual ~MockVideoDecodeAcceleratorClient() {};
+  MockVideoDecodeAcceleratorClient() {}
+  ~MockVideoDecodeAcceleratorClient() override {}
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                     const gfx::Size& dimensions,
-                                     uint32 texture_target) override {};
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) override {};
-  virtual void PictureReady(const media::Picture& picture) override {};
-  virtual void NotifyEndOfBitstreamBuffer(
-      int32 bitstream_buffer_id) override {};
-  virtual void NotifyFlushDone() override {};
-  virtual void NotifyResetDone() override {};
-  virtual void NotifyError(
-      media::VideoDecodeAccelerator::Error error) override {};
+  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                             const gfx::Size& dimensions,
+                             uint32 texture_target) override {}
+  void DismissPictureBuffer(int32 picture_buffer_id) override {}
+  void PictureReady(const media::Picture& picture) override {}
+  void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override {}
+  void NotifyFlushDone() override {}
+  void NotifyResetDone() override {}
+  void NotifyError(media::VideoDecodeAccelerator::Error error) override {}
 };
 
 class AndroidVideoDecodeAcceleratorTest : public testing::Test {
  public:
-  virtual ~AndroidVideoDecodeAcceleratorTest() {}
+  ~AndroidVideoDecodeAcceleratorTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     media::RegisterJni(env);
     // TODO(felipeg): fix GL bindings, so that the decoder can perform GL

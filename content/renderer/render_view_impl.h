@@ -453,9 +453,9 @@ class CONTENT_EXPORT RenderViewImpl
   SSLStatus GetSSLStatusOfFrame(blink::WebFrame* frame) const override;
   const std::string& GetAcceptLanguages() const override;
 #if defined(OS_ANDROID)
-  virtual void UpdateTopControlsState(TopControlsState constraints,
-                                      TopControlsState current,
-                                      bool animate) override;
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
+                              bool animate) override;
 #endif
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 

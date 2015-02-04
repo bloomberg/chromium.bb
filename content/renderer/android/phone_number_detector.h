@@ -18,19 +18,19 @@ class CONTENT_EXPORT PhoneNumberDetector : public ContentDetector {
  public:
   PhoneNumberDetector();
   explicit PhoneNumberDetector(const std::string& region);
-  virtual ~PhoneNumberDetector();
+  ~PhoneNumberDetector() override;
 
  private:
   friend class PhoneNumberDetectorTest;
 
   // Implementation of ContentDetector.
-  virtual bool FindContent(const base::string16::const_iterator& begin,
-                           const base::string16::const_iterator& end,
-                           size_t* start_pos,
-                           size_t* end_pos,
-                           std::string* content_text) override;
-  virtual GURL GetIntentURL(const std::string& content_text) override;
-  virtual size_t GetMaximumContentLength() override;
+  bool FindContent(const base::string16::const_iterator& begin,
+                   const base::string16::const_iterator& end,
+                   size_t* start_pos,
+                   size_t* end_pos,
+                   std::string* content_text) override;
+  GURL GetIntentURL(const std::string& content_text) override;
+  size_t GetMaximumContentLength() override;
 
   const std::string region_code_;
 

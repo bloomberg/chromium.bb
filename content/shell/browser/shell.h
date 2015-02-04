@@ -121,8 +121,7 @@ class Shell : public WebContentsDelegate,
   void LoadingStateChanged(WebContents* source,
                            bool to_different_document) override;
 #if defined(OS_ANDROID)
-  virtual void LoadProgressChanged(WebContents* source,
-                                   double progress) override;
+  void LoadProgressChanged(WebContents* source, double progress) override;
 #endif
   void EnterFullscreenModeForTab(WebContents* web_contents,
                                  const GURL& origin) override;

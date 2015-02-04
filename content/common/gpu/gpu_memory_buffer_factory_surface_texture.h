@@ -24,7 +24,7 @@ class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
                                              public gpu::ImageFactory {
  public:
   GpuMemoryBufferFactorySurfaceTexture();
-  ~GpuMemoryBufferFactorySurfaceTexture();
+  ~GpuMemoryBufferFactorySurfaceTexture() override;
 
   static bool IsGpuMemoryBufferConfigurationSupported(
       gfx::GpuMemoryBuffer::Format format,
