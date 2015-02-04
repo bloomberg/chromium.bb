@@ -1,12 +1,13 @@
-<head>
-    <style>
-        html, body { margin:0; overflow: hidden; }
-    </style>
-    <script src="../../resources/js-test.js"></script>
-</head>
+<style>
+    html, body { margin:0; overflow: hidden; }
+</style>
+<script src="../../resources/js-test.js"></script>
 
-<div>This tests that a usually overflow: hidden viewport should be scrollable when scaled. Otherwise, you can't get to content
-    you would have been able to get to had you not been zoomed it.</div>
+<div>
+  This tests that a usually overflow: hidden viewport should be scrollable when
+  scaled. Otherwise, you can't get to content you would have been able to get to
+  had you not been zoomed it.
+</div>
 <div id="console"></div>
 
 <div style='font-size:40px; height: 1000px;'>
@@ -18,7 +19,7 @@
             debug("This test only works in the test runner.");
             return;
         }
-        
+
         // Force a layout.
         document.body.offsetLeft;
 
@@ -32,6 +33,6 @@
             eventSender.mouseScrollBy(0, -5);
         }
 
-        shouldBe("window.document.body.scrollTop", "100");
+        shouldBe("window.document.body.scrollTop", "200");
     })();
 </script>

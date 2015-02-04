@@ -633,10 +633,8 @@ double Element::scrollLeft()
         if (document().inQuirksMode())
             return 0;
 
-        if (FrameView* view = document().view()) {
-            if (RenderView* renderView = document().renderView())
-                return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().x(), *renderView);
-        }
+        if (LocalDOMWindow* window = document().domWindow())
+            return window->scrollX();
     }
 
     return 0;
@@ -656,10 +654,8 @@ double Element::scrollTop()
         if (document().inQuirksMode())
             return 0;
 
-        if (FrameView* view = document().view()) {
-            if (RenderView* renderView = document().renderView())
-                return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().y(), *renderView);
-        }
+        if (LocalDOMWindow* window = document().domWindow())
+            return window->scrollY();
     }
 
     return 0;
@@ -683,14 +679,8 @@ void Element::setScrollLeft(double newLeft)
         if (document().inQuirksMode())
             return;
 
-        LocalFrame* frame = document().frame();
-        if (!frame)
-            return;
-        FrameView* view = frame->view();
-        if (!view)
-            return;
-
-        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollPositionDouble().y()), ScrollBehaviorAuto);
+        if (LocalDOMWindow* window = document().domWindow())
+            window->scrollTo(newLeft, window->scrollY());
     }
 }
 
@@ -712,14 +702,8 @@ void Element::setScrollTop(double newTop)
         if (document().inQuirksMode())
             return;
 
-        LocalFrame* frame = document().frame();
-        if (!frame)
-            return;
-        FrameView* view = frame->view();
-        if (!view)
-            return;
-
-        view->setScrollPosition(DoublePoint(view->scrollPositionDouble().x(), newTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
+        if (LocalDOMWindow* window = document().domWindow())
+            window->scrollTo(window->scrollX(), newTop);
     }
 }
 

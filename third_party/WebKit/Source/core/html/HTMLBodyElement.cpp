@@ -234,8 +234,8 @@ double HTMLBodyElement::scrollLeft()
             return 0;
     }
 
-    if (FrameView* view = document.view())
-        return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().x(), document.frame()->pageZoomFactor());
+    if (LocalDOMWindow* window = document.domWindow())
+        return window->scrollX();
     return 0;
 }
 
@@ -260,13 +260,8 @@ void HTMLBodyElement::setScrollLeft(double scrollLeft)
             return;
     }
 
-    LocalFrame* frame = document.frame();
-    if (!frame)
-        return;
-    FrameView* view = frame->view();
-    if (!view)
-        return;
-    view->setScrollPosition(DoublePoint(scrollLeft * frame->pageZoomFactor(), view->scrollPositionDouble().y()), ScrollBehaviorAuto);
+    if (LocalDOMWindow* window = document.domWindow())
+        window->scrollTo(scrollLeft, window->scrollY());
 }
 
 double HTMLBodyElement::scrollTop()
@@ -284,8 +279,8 @@ double HTMLBodyElement::scrollTop()
             return 0;
     }
 
-    if (FrameView* view = document.view())
-        return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().y(), document.frame()->pageZoomFactor());
+    if (LocalDOMWindow* window = document.domWindow())
+        return window->scrollY();
     return 0;
 }
 
@@ -310,13 +305,8 @@ void HTMLBodyElement::setScrollTop(double scrollTop)
             return;
     }
 
-    LocalFrame* frame = document.frame();
-    if (!frame)
-        return;
-    FrameView* view = frame->view();
-    if (!view)
-        return;
-    view->setScrollPosition(DoublePoint(view->scrollPositionDouble().x(), scrollTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
+    if (LocalDOMWindow* window = document.domWindow())
+        window->scrollTo(window->scrollX(), scrollTop);
 }
 
 int HTMLBodyElement::scrollHeight()
