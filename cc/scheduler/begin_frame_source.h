@@ -138,7 +138,7 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
 
   // BeginFrameSource
   bool NeedsBeginFrames() const override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) final;
   void DidFinishFrame(size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) final;
   void RemoveObserver(BeginFrameObserver* obs) final;
@@ -261,8 +261,10 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
 
   // BeginFrameSource
   bool NeedsBeginFrames() const override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void DidFinishFrame(size_t remaining_frames) override;
+
+  // BeginFrameSourceMixIn
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // Tracing
   void AsValueInto(base::debug::TracedValue* dict) const override;

@@ -414,11 +414,10 @@ bool BeginFrameSourceMultiplexer::NeedsBeginFrames() const {
   }
 }
 
-void BeginFrameSourceMultiplexer::SetNeedsBeginFrames(bool needs_begin_frames) {
-  DEBUG_FRAMES("BeginFrameSourceMultiplexer::SetNeedsBeginFrames",
-               "active_source",
-               active_source_,
-               "needs_begin_frames",
+void BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange(
+    bool needs_begin_frames) {
+  DEBUG_FRAMES("BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange",
+               "active_source", active_source_, "needs_begin_frames",
                needs_begin_frames);
   if (active_source_) {
     active_source_->SetNeedsBeginFrames(needs_begin_frames);
