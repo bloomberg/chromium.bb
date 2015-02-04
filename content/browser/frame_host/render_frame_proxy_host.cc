@@ -45,7 +45,8 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
       process_(site_instance->GetProcess()),
-      frame_tree_node_(frame_tree_node) {
+      frame_tree_node_(frame_tree_node),
+      render_frame_proxy_created_(false) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(g_routing_id_frame_proxy_map.Get().insert(
       std::make_pair(
@@ -122,6 +123,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
+  DCHECK(!render_frame_proxy_created_);
   // The process may (if we're sharing a process with another host that already
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
@@ -147,6 +149,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
                                   frame_tree_node_
                                       ->current_replication_state()));
 
+  render_frame_proxy_created_ = true;
   return true;
 }
 

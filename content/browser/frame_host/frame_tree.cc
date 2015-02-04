@@ -208,6 +208,9 @@ void FrameTree::CreateProxiesForSiteInstance(
       root()->render_manager()->CreateRenderFrame(
           site_instance, nullptr, MSG_ROUTING_NONE,
           CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
+    } else {
+      root()->render_manager()->EnsureRenderViewInitialized(
+          source, render_view_host, site_instance);
     }
   }
 

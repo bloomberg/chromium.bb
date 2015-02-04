@@ -397,6 +397,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   void OnDidStartLoading();
   void OnDidStopLoading();
 
+  void EnsureRenderViewInitialized(FrameTreeNode* source,
+                                   RenderViewHostImpl* render_view_host,
+                                   SiteInstance* instance);
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
@@ -408,6 +412,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
   // FrameTreeNode's RenderFrameHostManager.
   static bool ClearProxiesInSiteInstance(int32 site_instance_id,
+                                         FrameTreeNode* node);
+  // Used with FrameTree::ForEach to reset initialized state of
+  // RenderFrameProxyHosts from a FrameTreeNode's RenderFrameHostManager.
+  static bool ResetProxiesInSiteInstance(int32 site_instance_id,
                                          FrameTreeNode* node);
 
   // Returns whether this tab should transition to a new renderer for

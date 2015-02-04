@@ -106,6 +106,13 @@ class RenderFrameProxyHost
   // action in another renderer process.
   void DisownOpener();
 
+  void set_render_frame_proxy_created(bool created) {
+    render_frame_proxy_created_ = created;
+  }
+
+  // Returns if the RenderFrameProxy for this host is alive.
+  bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
+
  private:
   // IPC Message handlers.
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
@@ -124,6 +131,9 @@ class RenderFrameProxyHost
 
   // The node in the frame tree where this proxy is located.
   FrameTreeNode* frame_tree_node_;
+
+  // True if we have a live RenderFrameProxy for this host.
+  bool render_frame_proxy_created_;
 
   // When a RenderFrameHost is in a different process from its parent in the
   // frame tree, this class connects its associated RenderWidgetHostView

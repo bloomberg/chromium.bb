@@ -502,11 +502,22 @@ void RenderFrameHostManager::RendererProcessClosing(
   // swap them back in while the process is exiting.  Start by finding them,
   // since there could be more than one.
   std::list<int> ids_to_remove;
+  // Do not remove proxies in the dead process that still have active frame
+  // count though, we just reset them to be uninitialized.
+  std::list<int> ids_to_keep;
   for (RenderFrameProxyHostMap::iterator iter = proxy_hosts_.begin();
        iter != proxy_hosts_.end();
        ++iter) {
-    if (iter->second->GetProcess() == render_process_host)
+    RenderFrameProxyHost* proxy = iter->second;
+    if (proxy->GetProcess() != render_process_host)
+      continue;
+
+    if (static_cast<SiteInstanceImpl*>(proxy->GetSiteInstance())
+            ->active_frame_count() >= 1U) {
+      ids_to_keep.push_back(iter->first);
+    } else {
       ids_to_remove.push_back(iter->first);
+    }
   }
 
   // Now delete them.
@@ -514,6 +525,14 @@ void RenderFrameHostManager::RendererProcessClosing(
     delete proxy_hosts_[ids_to_remove.back()];
     proxy_hosts_.erase(ids_to_remove.back());
     ids_to_remove.pop_back();
+  }
+
+  while (!ids_to_keep.empty()) {
+    frame_tree_node_->frame_tree()->ForEach(
+        base::Bind(
+            &RenderFrameHostManager::ResetProxiesInSiteInstance,
+            ids_to_keep.back()));
+    ids_to_keep.pop_back();
   }
 }
 
@@ -569,6 +588,9 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);
+
+  // SwapOut creates a RenderFrameProxy, so set the proxy to be initialized.
+  proxy->set_render_frame_proxy_created(true);
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -807,6 +829,17 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
     delete proxy;
     node->render_manager()->proxy_hosts_.erase(site_instance_id);
   }
+
+  return true;
+}
+
+// static.
+bool RenderFrameHostManager::ResetProxiesInSiteInstance(int32 site_instance_id,
+                                                        FrameTreeNode* node) {
+  RenderFrameProxyHostMap::iterator iter =
+      node->render_manager()->proxy_hosts_.find(site_instance_id);
+  if (iter != node->render_manager()->proxy_hosts_.end())
+    iter->second->set_render_frame_proxy_created(false);
 
   return true;
 }
@@ -1393,6 +1426,23 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   return proxy->GetRoutingID();
 }
 
+void RenderFrameHostManager::EnsureRenderViewInitialized(
+    FrameTreeNode* source,
+    RenderViewHostImpl* render_view_host,
+    SiteInstance* instance) {
+  DCHECK(frame_tree_node_->IsMainFrame());
+
+  if (render_view_host->IsRenderViewLive())
+    return;
+
+  // Recreate the opener chain.
+  int opener_route_id =
+      delegate_->CreateOpenerRenderViewsForRenderManager(instance);
+  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
+  InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
+                 source->IsMainFrame());
+}
+
 bool RenderFrameHostManager::InitRenderView(
     RenderViewHostImpl* render_view_host,
     int opener_route_id,
@@ -1454,6 +1504,8 @@ bool RenderFrameHostManager::InitRenderFrame(
   if (existing_proxy) {
     proxy_routing_id = existing_proxy->GetRoutingID();
     CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
+    if (!existing_proxy->is_render_frame_proxy_live())
+      existing_proxy->InitRenderFrameProxy();
   }
   return delegate_->CreateRenderFrameForRenderManager(render_frame_host,
                                                       parent_routing_id,

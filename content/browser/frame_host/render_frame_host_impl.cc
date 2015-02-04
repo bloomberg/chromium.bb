@@ -568,6 +568,14 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
     rwhv->Hide();
   }
 
+  if (proxy_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameProxyHost* proxy = RenderFrameProxyHost::FromID(
+        GetProcess()->GetID(), proxy_routing_id);
+    // We have also created a RenderFrameProxy in FrameMsg_NewFrame above, so
+    // remember that.
+    proxy->set_render_frame_proxy_created(true);
+  }
+
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
   // this path is only used for out-of-process iframes.  Main frame RenderFrames
   // are created with their RenderView, and same-site iframes are created at the

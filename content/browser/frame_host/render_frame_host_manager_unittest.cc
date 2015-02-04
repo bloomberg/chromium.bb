@@ -1410,15 +1410,25 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   RenderProcessHost::RendererClosedDetails details(
       base::TERMINATION_STATUS_PROCESS_CRASHED,
       0);
+  // TODO(nasko): Investigate whether this test can be made more realistic by
+  // not faking the notification and just doing the RenderProcessGone. This
+  // should also get rid of faking |set_render_view_created()| call below.
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(rvh1->GetProcess()),
       Details<RenderProcessHost::RendererClosedDetails>(&details));
   rvh1->set_render_view_created(false);
 
-  // Ensure that the swapped out RenderViewHost has been deleted.
-  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
-      rvh1->GetSiteInstance()));
+  // Ensure that the RenderFrameProxyHost stays around and the RenderFrameProxy
+  // is deleted.
+  RenderFrameProxyHost* render_frame_proxy_host =
+      opener1_manager->GetRenderFrameProxyHost(rvh1->GetSiteInstance());
+  EXPECT_TRUE(render_frame_proxy_host);
+  EXPECT_FALSE(render_frame_proxy_host->is_render_frame_proxy_live());
+
+  // Expect the swapped out RVH to exist.
+  EXPECT_TRUE(opener1_manager->GetSwappedOutRenderViewHost(
+                  rvh1->GetSiteInstance()));
 
   // Reload the initial tab. This should recreate the opener's swapped out RVH
   // in the original SiteInstance.
