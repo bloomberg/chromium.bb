@@ -73,4 +73,10 @@ void NavigationURLLoaderImpl::NotifyRequestFailed(int net_error) {
   delegate_->OnRequestFailed(net_error);
 }
 
+void NavigationURLLoaderImpl::NotifyRequestStarted(base::TimeTicks timestamp) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  delegate_->OnRequestStarted(timestamp);
+}
+
 }  // namespace content

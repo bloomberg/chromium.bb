@@ -757,6 +757,9 @@ void NavigatorImpl::OnBeginNavigation(
     navigation_request = scoped_request.get();
     navigation_request_map_.set(
         frame_tree_node->frame_tree_node_id(), scoped_request.Pass());
+
+    if (frame_tree_node->IsMainFrame())
+      navigation_data_.reset();
   }
   DCHECK(navigation_request);
 
@@ -818,6 +821,8 @@ void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
+  if (frame_tree_node->IsMainFrame())
+    navigation_data_.reset();
   // TODO(carlosk): move this cleanup into the NavigationRequest destructor once
   // we properly cancel ongoing navigations.
   frame_tree_node->render_manager()->CleanUpNavigation();
@@ -929,6 +934,7 @@ void NavigatorImpl::RecordNavigationMetrics(
     RecordAction(base::UserMetricsAction("FrameLoad"));
 
   if (!details.is_main_frame || !navigation_data_ ||
+      navigation_data_->url_job_start_time_.is_null() ||
       navigation_data_->url_ != params.original_request_url) {
     return;
   }

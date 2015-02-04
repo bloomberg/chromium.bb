@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -41,6 +42,11 @@ void NavigationURLLoaderImplCore::Start(
     scoped_ptr<NavigationRequestInfo> request_info,
     ResourceRequestBody* request_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NavigationURLLoaderImpl::NotifyRequestStarted, loader_,
+                 base::TimeTicks::Now()));
 
   ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
       resource_context, frame_tree_node_id,

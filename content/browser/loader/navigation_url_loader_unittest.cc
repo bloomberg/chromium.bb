@@ -62,8 +62,7 @@ class StreamProtocolHandler
 class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
  public:
   TestNavigationURLLoaderDelegate()
-      : net_error_(0) {
-  }
+      : net_error_(0), on_request_handled_counter_(0) {}
 
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
   ResourceResponse* redirect_response() const {
@@ -72,6 +71,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   ResourceResponse* response() const { return response_.get(); }
   StreamHandle* body() const { return body_.get(); }
   int net_error() const { return net_error_; }
+  int on_request_handled_counter() const { return on_request_handled_counter_; }
 
   void WaitForRequestRedirected() {
     request_redirected_.reset(new base::RunLoop);
@@ -119,12 +119,18 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
     request_failed_->Quit();
   }
 
+  void OnRequestStarted(base::TimeTicks timestamp) override {
+    ASSERT_FALSE(timestamp.is_null());
+    ++on_request_handled_counter_;
+  }
+
  private:
   net::RedirectInfo redirect_info_;
   scoped_refptr<ResourceResponse> redirect_response_;
   scoped_refptr<ResourceResponse> response_;
   scoped_ptr<StreamHandle> body_;
   int net_error_;
+  int on_request_handled_counter_;
 
   scoped_ptr<base::RunLoop> request_redirected_;
   scoped_ptr<base::RunLoop> response_started_;
@@ -222,6 +228,8 @@ TEST_F(NavigationURLLoaderTest, Basic) {
   // Check the body is correct.
   EXPECT_EQ(net::URLRequestTestJob::test_data_1(),
             FetchURL(delegate.body()->GetURL()));
+
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
 // Tests that request failures are propagated correctly.
@@ -233,6 +241,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailed) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, delegate.net_error());
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
 // Test that redirects are sent to the delegate.
@@ -252,6 +261,7 @@ TEST_F(NavigationURLLoaderTest, RequestRedirected) {
   EXPECT_EQ(net::URLRequestTestJob::test_url_2(),
             delegate.redirect_info().new_first_party_for_cookies);
   EXPECT_EQ(302, delegate.redirect_response()->head.headers->response_code());
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 
   // Wait for the response to complete.
   loader->FollowRedirect();
@@ -265,6 +275,8 @@ TEST_F(NavigationURLLoaderTest, RequestRedirected) {
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
   EXPECT_EQ(net::URLRequestTestJob::test_data_2(),
             FetchURL(delegate.body()->GetURL()));
+
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
 // Tests that the destroying the loader cancels the request.
@@ -325,6 +337,7 @@ TEST_F(NavigationURLLoaderTest, CancelByContext) {
   // Wait for the request to now be aborted.
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
 // Tests that, if the request is blocked by the ResourceDispatcherHostDelegate,
@@ -340,6 +353,7 @@ TEST_F(NavigationURLLoaderTest, RequestBlocked) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
+  EXPECT_EQ(1, delegate.on_request_handled_counter());
 
   host_.SetDelegate(nullptr);
 }

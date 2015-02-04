@@ -108,7 +108,12 @@ void NavigationRequest::OnRequestFailed(int net_error) {
   DCHECK(state_ == STARTED);
   state_ = FAILED;
   // TODO(davidben): Network failures should display a network error page.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED() << " where net_error=" << net_error;
+}
+
+void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
+  frame_tree_node_->navigator()->LogResourceRequestTime(timestamp,
+                                                        common_params_.url);
 }
 
 }  // namespace content

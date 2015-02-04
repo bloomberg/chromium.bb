@@ -110,6 +110,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                          scoped_ptr<StreamHandle> body) override;
   void OnRequestFailed(int net_error) override;
+  void OnRequestStarted(base::TimeTicks timestamp) override;
 
   FrameTreeNode* frame_tree_node_;
 
