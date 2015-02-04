@@ -567,7 +567,8 @@ class ChromeTests:
                   "--no-retry-failures",  # retrying takes too much time
                   # http://crbug.com/176908: Don't launch a browser when done.
                   "--no-show-results",
-                  "--nocheck-sys-deps"]
+                  "--nocheck-sys-deps",
+                  "--additional-drt-flag=--no-sandbox"]
     # Pass build mode to run-webkit-tests.  We aren't passed it directly,
     # so parse it out of build_dir.  run-webkit-tests can only handle
     # the two values "Release" and "Debug".
