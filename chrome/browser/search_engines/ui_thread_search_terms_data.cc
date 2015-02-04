@@ -10,7 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/google/google_profile_helper.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search/search.h"
@@ -49,9 +50,14 @@ std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
   GURL base_url(google_util::CommandLineGoogleBaseURL());
   if (base_url.is_valid())
     return base_url.spec();
-  return profile_ ?
-      google_profile_helper::GetGoogleHomePageURL(profile_).spec() :
-      SearchTermsData::GoogleBaseURLValue();
+
+  if (!profile_)
+    return SearchTermsData::GoogleBaseURLValue();
+
+  const GoogleURLTracker* tracker =
+      GoogleURLTrackerFactory::GetForProfile(profile_);
+  return tracker ?
+      tracker->google_url().spec() : GoogleURLTracker::kDefaultGoogleHomepage;
 }
 
 std::string UIThreadSearchTermsData::GetApplicationLocale() const {

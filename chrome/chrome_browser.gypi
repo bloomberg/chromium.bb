@@ -1476,8 +1476,6 @@
       'browser/google/google_brand.h',
       'browser/google/google_brand_chromeos.cc',
       'browser/google/google_brand_chromeos.h',
-      'browser/google/google_profile_helper.cc',
-      'browser/google/google_profile_helper.h',
       'browser/google/google_search_counter.cc',
       'browser/google/google_search_counter.h',
       'browser/google/google_search_counter_android.cc',

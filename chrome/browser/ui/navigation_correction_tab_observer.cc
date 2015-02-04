@@ -7,9 +7,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/google/core/browser/google_util.h"
@@ -95,13 +95,12 @@ void NavigationCorrectionTabObserver::OnEnabledChanged() {
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
     RenderViewHost* rvh) {
   RenderFrameHost* rfh = rvh->GetMainFrame();
+  GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
   rfh->Send(new ChromeViewMsg_SetNavigationCorrectionInfo(
       rfh->GetRoutingID(),
       GetNavigationCorrectionURL(),
       google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale()),
-      google_util::GetGoogleCountryCode(
-          google_profile_helper::GetGoogleHomePageURL(profile_)),
+      google_util::GetGoogleCountryCode(google_base_url),
       google_apis::GetAPIKey(),
-      google_util::GetGoogleSearchURL(
-          google_profile_helper::GetGoogleHomePageURL(profile_))));
+      google_util::GetGoogleSearchURL(google_base_url)));
 }

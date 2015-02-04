@@ -54,13 +54,6 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
       const base::FilePath& base_path,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
-  // Respond to all HTTP requests of |hostname| with contents of the file
-  // located at |file_path|.
-  static void AddHostnameToFileHandler(
-      const std::string& hostname,
-      const base::FilePath& file,
-      const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
-
   // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL.
   static GURL GetMockUrl(const base::FilePath& path);

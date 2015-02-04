@@ -14,11 +14,11 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/app_list/speech_auth_helper.h"
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -68,14 +67,6 @@ const int kDefaultDoodleRecheckDelayMinutes = 30;
 bool InSpeechRecognition(SpeechRecognitionState state) {
   return state == SPEECH_RECOGNITION_RECOGNIZING ||
       state == SPEECH_RECOGNITION_IN_SPEECH;
-}
-
-GURL GetGoogleBaseURL(Profile* profile) {
-  GURL base_url(google_util::CommandLineGoogleBaseURL());
-  if (!base_url.is_valid())
-    base_url = google_profile_helper::GetGoogleHomePageURL(profile);
-
-  return base_url;
 }
 
 }  // namespace
@@ -573,7 +564,8 @@ void StartPageService::FetchDoodleJson() {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
 
-  GURL doodle_url = GetGoogleBaseURL(profile_).ReplaceComponents(replacements);
+  GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
+  GURL doodle_url = google_base_url.ReplaceComponents(replacements);
   doodle_fetcher_.reset(
       net::URLFetcher::Create(0, doodle_url, net::URLFetcher::GET, this));
   doodle_fetcher_->SetRequestContext(profile_->GetRequestContext());
@@ -612,7 +604,8 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
 
     contents_->GetWebUI()->CallJavascriptFunction(
         "appList.startPage.onAppListDoodleUpdated", *doodle_json,
-        base::StringValue(GetGoogleBaseURL(profile_).spec()));
+        base::StringValue(
+            UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));
   }
 
   // Check for a new doodle.

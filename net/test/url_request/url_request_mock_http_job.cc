@@ -122,16 +122,6 @@ void URLRequestMockHTTPJob::AddUrlHandlers(
 }
 
 // static
-void URLRequestMockHTTPJob::AddHostnameToFileHandler(
-    const std::string& hostname,
-    const base::FilePath& file,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameInterceptor(
-      "http", hostname, CreateInterceptorForSingleFile(file, worker_pool));
-}
-
-// static
 GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
   return GetMockUrlForScheme(path, "http");
 }

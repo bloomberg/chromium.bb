@@ -5,11 +5,10 @@
 #include "chrome/browser/android/logo_service.h"
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "components/google/core/browser/google_util.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/google_logo_api.h"
@@ -23,7 +22,6 @@ using search_provider_logos::LogoTracker;
 
 namespace {
 
-const char kGoogleDoodleURLPath[] = "async/newtab_mobile";
 const char kCachedLogoDirectory[] = "Search Logo";
 const int kDecodeLogoTimeoutSeconds = 30;
 
@@ -31,16 +29,14 @@ const int kDecodeLogoTimeoutSeconds = 30;
 // https://www.google.com/async/newtab_mobile. This depends on the user's
 // Google domain.
 GURL GetGoogleDoodleURL(Profile* profile) {
-  // SetPathStr() requires its argument to stay in scope as long as
-  // |replacements| is, so a std::string is needed, instead of a char*.
-  std::string path = kGoogleDoodleURLPath;
+  GURL google_base_url(UIThreadSearchTermsData(profile).GoogleBaseURLValue());
+  const char kGoogleDoodleURLPath[] = "async/newtab_mobile";
+  // The string passed to SetPathStr() must stay alive until after
+  // ReplaceComponents(), so declare it on the stack here instead of inline.
+  std::string path(kGoogleDoodleURLPath);
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
-
-  GURL base_url(google_util::CommandLineGoogleBaseURL());
-  if (!base_url.is_valid())
-    base_url = google_profile_helper::GetGoogleHomePageURL(profile);
-  return base_url.ReplaceComponents(replacements);
+  return google_base_url.ReplaceComponents(replacements);
 }
 
 class LogoDecoderDelegate : public ImageDecoder::Delegate {
