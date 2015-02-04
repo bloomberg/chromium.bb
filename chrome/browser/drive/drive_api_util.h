@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
@@ -25,6 +26,14 @@ class FileList;
 class FileResource;
 class ResourceEntry;
 }  // namespace google_apis
+
+namespace net {
+class IOBuffer;
+}  // namespace net
+
+namespace storage {
+class FileStreamReader;
+}  // namespace storage
 
 namespace drive {
 namespace util {
@@ -63,6 +72,38 @@ std::string CanonicalizeResourceId(const std::string& resource_id);
 // Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
 // or an empty string if an error is found.
 std::string GetMd5Digest(const base::FilePath& file_path);
+
+// Computes the (base-16 encoded) MD5 digest of data extracted from a file
+// stream.
+class FileStreamMd5Digester {
+ public:
+  typedef base::Callback<void(const std::string&)> ResultCallback;
+
+  FileStreamMd5Digester();
+  ~FileStreamMd5Digester();
+
+  // Computes an MD5 digest of data read from the given |streamReader|.  The
+  // work occurs asynchronously, and the resulting hash is returned via the
+  // |callback|.  If an error occurs, |callback| is called with an empty string.
+  // Only one stream can be processed at a time by each digester.  Do not call
+  // GetMd5Digest before the results of a previous call have been returned.
+  void GetMd5Digest(scoped_ptr<storage::FileStreamReader> stream_reader,
+                    const ResultCallback& callback);
+
+ private:
+  // Kicks off a read of the next chunk from the stream.
+  void ReadNextChunk();
+  // Handles the incoming chunk of data from a stream read.
+  void OnChunkRead(int result);
+
+  // Maximum chunk size for read operations.
+  scoped_ptr<storage::FileStreamReader> reader_;
+  ResultCallback callback_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  base::MD5Context md5_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileStreamMd5Digester);
+};
 
 // Returns preferred file extension for hosted documents which have given mime
 // type.

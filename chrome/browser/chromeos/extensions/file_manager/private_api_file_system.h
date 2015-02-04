@@ -31,6 +31,9 @@ typedef std::vector<EntryDefinition> EntryDefinitionList;
 }  // namespace file_manager
 
 namespace drive {
+namespace util {
+class FileStreamMd5Digester;
+}  // namespace util
 struct HashAndFilePath;
 }  // namespace drive
 
@@ -236,16 +239,20 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
 class FileManagerPrivateComputeChecksumFunction
     : public LoggedAsyncExtensionFunction {
  public:
+  FileManagerPrivateComputeChecksumFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.computeChecksum",
                              FILEMANAGERPRIVATE_COMPUTECHECKSUM)
 
  protected:
-  ~FileManagerPrivateComputeChecksumFunction() override {}
+  ~FileManagerPrivateComputeChecksumFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
+  scoped_ptr<drive::util::FileStreamMd5Digester> digester_;
+
   void Respond(const std::string& hash);
 };
 

@@ -34,6 +34,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "storage/browser/blob/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -210,6 +211,16 @@ void StatusCallbackToResponseCallback(
     const base::Callback<void(bool)>& callback,
     base::File::Error result) {
   callback.Run(result == base::File::FILE_OK);
+}
+
+// Calls a response callback (on the UI thread) with a file content hash
+// computed on the IO thread.
+void ComputeChecksumRespondOnUIThread(
+    const base::Callback<void(const std::string&)>& callback,
+    const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, hash));
 }
 
 }  // namespace
@@ -713,13 +724,23 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
   SendResponse(true);
 }
 
+FileManagerPrivateComputeChecksumFunction::
+    FileManagerPrivateComputeChecksumFunction()
+    : digester_(new drive::util::FileStreamMd5Digester()) {
+}
+
+FileManagerPrivateComputeChecksumFunction::
+    ~FileManagerPrivateComputeChecksumFunction() {
+}
+
 bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
   using extensions::api::file_manager_private::ComputeChecksum::Params;
+  using drive::util::FileStreamMd5Digester;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->file_url.empty()) {
-    // TODO(kenobi): call SetError()
+    SetError("File URL must be provided");
     return false;
   }
 
@@ -727,23 +748,30 @@ bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
-  storage::FileSystemURL file_url(
-      file_system_context->CrackURL(GURL(params->file_url)));
+  FileSystemURL file_url(file_system_context->CrackURL(GURL(params->file_url)));
   if (!file_url.is_valid()) {
-    // TODO(kenobi): Call SetError()
+    SetError("File URL was invalid");
     return false;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&drive::util::GetMd5Digest, file_url.path()),
+  scoped_ptr<storage::FileStreamReader> reader =
+      file_system_context->CreateFileStreamReader(
+          file_url, 0, storage::kMaximumLength, base::Time());
+
+  FileStreamMd5Digester::ResultCallback result_callback = base::Bind(
+      &ComputeChecksumRespondOnUIThread,
       base::Bind(&FileManagerPrivateComputeChecksumFunction::Respond, this));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&FileStreamMd5Digester::GetMd5Digest,
+                                     base::Unretained(digester_.get()),
+                                     base::Passed(&reader), result_callback));
 
   return true;
 }
 
 void FileManagerPrivateComputeChecksumFunction::Respond(
     const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SetResult(new base::StringValue(hash));
   SendResponse(true);
 }
