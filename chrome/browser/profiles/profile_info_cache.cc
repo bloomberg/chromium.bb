@@ -148,13 +148,6 @@ void DeleteBitmap(const base::FilePath& image_path) {
   base::DeleteFile(image_path, false);
 }
 
-// Used by SaveAvatarImageAtPath to post a task to delete the |downloader|
-// "soon". We can't just delete it directly there because
-// SaveAvatarImageAtPath is called from this very downloader.
-void DeleteDownloader(ProfileAvatarDownloader* downloader) {
-  delete downloader;
-}
-
 }  // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
@@ -914,9 +907,8 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
   if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
     // We mustn't delete the avatar downloader right here, since we're being
     // called by it.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&DeleteDownloader,
-                                       downloader_iter->second));
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
+                              downloader_iter->second);
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 
