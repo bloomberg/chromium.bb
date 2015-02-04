@@ -9,7 +9,7 @@
 chrome.exe: %(ChromeDir)s\
 wow_helper.exe: %(ChromeDir)s\
 #
-# Chrome version dir aseembly manifest.
+# Chrome version dir assembly manifest.
 # The name of this file must match the name of the version dir, so we cannot
 # hard-code it.
 # // TODO(caitkp): Find a way to do this without wildcards.
@@ -25,6 +25,7 @@ chrome_elf.dll: %(VersionDir)s\
 chrome_watcher.dll: %(VersionDir)s\
 d3dcompiler_47.dll: %(VersionDir)s\
 ffmpegsumo.dll: %(VersionDir)s\
+kasko.dll: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
 icudtl.dat: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
