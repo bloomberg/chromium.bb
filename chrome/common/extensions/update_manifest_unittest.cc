@@ -17,14 +17,14 @@ static const char kValidXml[] =
 "</gupdate>";
 
 static const char valid_xml_with_hash[] =
-"<?xml version='1.0' encoding='UTF-8'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' prodversionmin='2.0.143.0' "
-"               hash='1234'/>"
-" </app>"
-"</gupdate>";
+    "<?xml version='1.0' encoding='UTF-8'?>"
+    "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+    " <app appid='12345'>"
+    "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+    "               version='1.2.3.4' prodversionmin='2.0.143.0' "
+    "               hash_sha256='1234'/>"
+    " </app>"
+    "</gupdate>";
 
 static const char kMissingAppId[] =
 "<?xml version='1.0'?>"

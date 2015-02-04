@@ -179,18 +179,17 @@ void ExternalCache::OnExtensionDownloadFailed(
 }
 
 void ExternalCache::OnExtensionDownloadFinished(
-    const std::string& id,
-    const base::FilePath& path,
+    const extensions::CRXFileInfo& file,
     bool file_ownership_passed,
     const GURL& download_url,
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
   DCHECK(file_ownership_passed);
-  local_cache_.PutExtension(id, path, version,
-                            base::Bind(&ExternalCache::OnPutExtension,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       id));
+  local_cache_.PutExtension(
+      file.extension_id, file.path, version,
+      base::Bind(&ExternalCache::OnPutExtension, weak_ptr_factory_.GetWeakPtr(),
+                 file.extension_id));
 }
 
 bool ExternalCache::IsExtensionPending(const std::string& id) {

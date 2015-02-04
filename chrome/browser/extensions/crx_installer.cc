@@ -170,13 +170,17 @@ CrxInstaller::~CrxInstaller() {
 }
 
 void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
+  InstallCrxFile(CRXFileInfo(source_file));
+}
+
+void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 
   NotifyCrxInstallBegin();
 
-  source_file_ = source_file;
+  source_file_ = source_file.path;
 
   scoped_refptr<SandboxedUnpacker> unpacker(
       new SandboxedUnpacker(source_file,

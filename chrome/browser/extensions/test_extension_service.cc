@@ -17,8 +17,7 @@ TestExtensionService::pending_extension_manager() {
 }
 
 bool TestExtensionService::UpdateExtension(
-    const std::string& id,
-    const base::FilePath& path,
+    const extensions::CRXFileInfo& file,
     bool file_ownership_passed,
     extensions::CrxInstaller** out_crx_installer) {
   ADD_FAILURE();

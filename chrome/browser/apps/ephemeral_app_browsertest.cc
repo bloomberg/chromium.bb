@@ -273,8 +273,8 @@ const Extension* EphemeralAppTestBase::UpdateEphemeralApp(
       content::Source<extensions::CrxInstaller>(crx_installer));
   ExtensionService* service =
       ExtensionSystem::Get(profile())->extension_service();
-  EXPECT_TRUE(service->UpdateExtension(app_id, app_v2_path, true,
-                                       &crx_installer));
+  EXPECT_TRUE(service->UpdateExtension(
+      extensions::CRXFileInfo(app_id, app_v2_path), true, &crx_installer));
   windowed_observer.Wait();
 
   return ExtensionRegistry::Get(profile())

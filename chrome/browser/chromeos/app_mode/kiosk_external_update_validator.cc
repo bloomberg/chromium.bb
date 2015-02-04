@@ -14,13 +14,11 @@ namespace chromeos {
 
 KioskExternalUpdateValidator::KioskExternalUpdateValidator(
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
-    const std::string& app_id,
-    const base::FilePath& crx_dir,
+    const extensions::CRXFileInfo& file,
     const base::FilePath& crx_unpack_dir,
     const base::WeakPtr<KioskExternalUpdateValidatorDelegate>& delegate)
     : backend_task_runner_(backend_task_runner),
-      app_id_(app_id),
-      crx_dir_(crx_dir),
+      crx_file_(file),
       crx_unpack_dir_(crx_unpack_dir),
       delegate_(delegate) {
 }
@@ -30,12 +28,10 @@ KioskExternalUpdateValidator::~KioskExternalUpdateValidator() {
 
 void KioskExternalUpdateValidator::Start() {
   scoped_refptr<extensions::SandboxedUnpacker> unpacker(
-      new extensions::SandboxedUnpacker(crx_dir_,
-                                        extensions::Manifest::EXTERNAL_PREF,
-                                        extensions::Extension::NO_FLAGS,
-                                        crx_unpack_dir_,
-                                        backend_task_runner_.get(),
-                                        this));
+      new extensions::SandboxedUnpacker(
+          crx_file_, extensions::Manifest::EXTERNAL_PREF,
+          extensions::Extension::NO_FLAGS, crx_unpack_dir_,
+          backend_task_runner_.get(), this));
   if (!backend_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&extensions::SandboxedUnpacker::Start, unpacker.get()))) {
@@ -45,15 +41,13 @@ void KioskExternalUpdateValidator::Start() {
 
 void KioskExternalUpdateValidator::OnUnpackFailure(
     const base::string16& error_message) {
-  LOG(ERROR) << "Failed to unpack external kiosk crx file: " << app_id_ << " "
-             << error_message;
+  LOG(ERROR) << "Failed to unpack external kiosk crx file: "
+             << crx_file_.extension_id << " " << error_message;
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(
           &KioskExternalUpdateValidatorDelegate::OnExternalUpdateUnpackFailure,
-          delegate_,
-          app_id_));
+          delegate_, crx_file_.extension_id));
 }
 
 void KioskExternalUpdateValidator::OnUnpackSuccess(
@@ -62,26 +56,23 @@ void KioskExternalUpdateValidator::OnUnpackSuccess(
     const base::DictionaryValue* original_manifest,
     const extensions::Extension* extension,
     const SkBitmap& install_icon) {
-  DCHECK(app_id_ == extension->id());
+  DCHECK(crx_file_.extension_id == extension->id());
 
   std::string minimum_browser_version;
   if (!extension->manifest()->GetString(
           extensions::manifest_keys::kMinimumChromeVersion,
           &minimum_browser_version)) {
-    LOG(ERROR) << "Can't find minimum browser version for app " << app_id_;
+    LOG(ERROR) << "Can't find minimum browser version for app "
+               << crx_file_.extension_id;
     minimum_browser_version.clear();
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(
           &KioskExternalUpdateValidatorDelegate::OnExtenalUpdateUnpackSuccess,
-          delegate_,
-          app_id_,
-          extension->VersionString(),
-          minimum_browser_version,
-          temp_dir));
+          delegate_, crx_file_.extension_id, extension->VersionString(),
+          minimum_browser_version, temp_dir));
 }
 
 }  // namespace chromeos

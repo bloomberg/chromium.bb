@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -17,6 +18,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -32,6 +34,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   base::FilePath temp_dir() const { return temp_dir_; }
+  base::string16 unpack_err() const { return error_; }
 
  private:
   ~MockSandboxedUnpackerClient() override {}
@@ -46,9 +49,11 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   void OnUnpackFailure(const base::string16& error) override {
-    ASSERT_TRUE(false);
+    error_ = error;
+    quit_closure_.Run();
   }
 
+  base::string16 error_;
   base::Closure quit_closure_;
   base::FilePath temp_dir_;
 };
@@ -74,15 +79,17 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     ExtensionsTest::TearDown();
   }
 
-  void SetupUnpacker(const std::string& crx_name) {
+  void SetupUnpacker(const std::string& crx_name,
+                     const std::string& package_hash) {
     base::FilePath original_path;
     ASSERT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &original_path));
     original_path = original_path.AppendASCII("unpacker").AppendASCII(crx_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
-        original_path, Manifest::INTERNAL, Extension::NO_FLAGS,
-        extensions_dir_.path(), base::MessageLoopProxy::current(), client_);
+        extensions::CRXFileInfo(std::string(), original_path, package_hash),
+        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.path(),
+        base::MessageLoopProxy::current(), client_);
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -94,6 +101,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
+  base::string16 GetInstallError() { return client_->unpack_err(); }
+
  protected:
   base::ScopedTempDir extensions_dir_;
   MockSandboxedUnpackerClient* client_;
@@ -104,17 +113,41 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 };
 
 TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
-  SetupUnpacker("no_l10n.crx");
+  SetupUnpacker("no_l10n.crx", "");
   // Check that there is no _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
 }
 
 TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
-  SetupUnpacker("good_l10n.crx");
+  SetupUnpacker("good_l10n.crx", "");
   // Check that there is _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_TRUE(base::PathExists(install_path));
+}
+
+TEST_F(SandboxedUnpackerTest, FailHashCheck) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      extensions::switches::kEnableCrxHashCheck);
+  SetupUnpacker("good_l10n.crx", "badhash");
+  // Check that there is an error message.
+  EXPECT_NE(base::string16(), GetInstallError());
+}
+
+TEST_F(SandboxedUnpackerTest, PassHashCheck) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      extensions::switches::kEnableCrxHashCheck);
+  SetupUnpacker(
+      "good_l10n.crx",
+      "6fa171c726373785aa4fcd2df448c3db0420a95d5044fbee831f089b979c4068");
+  // Check that there is no error message.
+  EXPECT_EQ(base::string16(), GetInstallError());
+}
+
+TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
+  SetupUnpacker("good_l10n.crx", "badhash");
+  // Check that there is no error message.
+  EXPECT_EQ(base::string16(), GetInstallError());
 }
 
 }  // namespace extensions

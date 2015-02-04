@@ -146,12 +146,10 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     }
 
     scoped_refptr<extensions::SandboxedUnpacker> unpacker(
-        new extensions::SandboxedUnpacker(crx_file_,
-                                          extensions::Manifest::INTERNAL,
-                                          extensions::Extension::NO_FLAGS,
-                                          temp_dir_.path(),
-                                          task_runner_.get(),
-                                          this));
+        new extensions::SandboxedUnpacker(
+            extensions::CRXFileInfo(crx_file_), extensions::Manifest::INTERNAL,
+            extensions::Extension::NO_FLAGS, temp_dir_.path(),
+            task_runner_.get(), this));
     unpacker->Start();
   }
 

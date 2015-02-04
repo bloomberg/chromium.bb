@@ -35,6 +35,7 @@ extern const char kEnableScriptsRequireAction[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kTraceAppSource[];
 extern const char kWhitelistedExtensionID[];
+extern const char kEnableCrxHashCheck[];
 
 }  // namespace switches
 

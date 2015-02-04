@@ -91,8 +91,7 @@ class ExternalCache : public content::NotificationObserver,
                                  const PingResult& ping_result,
                                  const std::set<int>& request_ids) override;
 
-  void OnExtensionDownloadFinished(const std::string& id,
-                                   const base::FilePath& path,
+  void OnExtensionDownloadFinished(const extensions::CRXFileInfo& file,
                                    bool file_ownership_passed,
                                    const GURL& download_url,
                                    const std::string& version,

@@ -39,8 +39,7 @@ class KioskExternalUpdateValidator
  public:
   KioskExternalUpdateValidator(
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
-      const std::string& app_id,
-      const base::FilePath& crx_path,
+      const extensions::CRXFileInfo& file,
       const base::FilePath& crx_unpack_dir,
       const base::WeakPtr<KioskExternalUpdateValidatorDelegate>& delegate);
 
@@ -60,10 +59,10 @@ class KioskExternalUpdateValidator
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  std::string app_id_;
 
-  // The directory where the external crx file resides.
-  base::FilePath crx_dir_;
+  // Information about the external crx file.
+  extensions::CRXFileInfo crx_file_;
+
   // The temporary directory used by SandBoxedUnpacker for unpacking extensions.
   const base::FilePath crx_unpack_dir_;
 

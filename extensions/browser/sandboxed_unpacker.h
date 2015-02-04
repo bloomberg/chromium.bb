@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "extensions/browser/crx_file_info.h"
 #include "extensions/common/manifest.h"
 
 class SkBitmap;
@@ -19,6 +20,10 @@ class SkBitmap;
 namespace base {
 class DictionaryValue;
 class SequencedTaskRunner;
+}
+
+namespace crypto {
+class SecureHash;
 }
 
 namespace extensions {
@@ -79,7 +84,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedUnpacker(
-      const base::FilePath& crx_path,
+      const CRXFileInfo& file,
       Manifest::Location location,
       int creation_flags,
       const base::FilePath& extensions_dir,
@@ -148,6 +153,9 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
     ERROR_SERIALIZING_CATALOG,
     ERROR_SAVING_CATALOG,
 
+    // SandboxedUnpacker::ValidateSignature()
+    CRX_HASH_VERIFICATION_FAILED,
+
     NUM_FAILURE_REASONS
   };
 
@@ -159,6 +167,11 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // Set |temp_dir_| as a temporary directory to unpack the extension in.
   // Return true on success.
   virtual bool CreateTempDirectory();
+
+  // Finalizes hash calculation and checks the result against the expected
+  // package hash. In case of mismatch, depending on the command-line option,
+  // we will either fail installation, or just update histograms.
+  bool FinalizeHash(scoped_ptr<crypto::SecureHash>& hash);
 
   // Validates the signature of the extension and extract the key to
   // |public_key_|. Returns true if the signature validates, false otherwise.
@@ -201,6 +214,12 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // The path to the CRX to unpack.
   base::FilePath crx_path_;
+
+  // The package hash that was reported from the Web Store.
+  std::string package_hash_;
+
+  // Whether we need to check the .crx hash sum.
+  bool check_crx_hash_;
 
   // Our client.
   scoped_refptr<SandboxedUnpackerClient> client_;

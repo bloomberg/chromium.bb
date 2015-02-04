@@ -98,6 +98,7 @@ class CrxInstaller
 
   // Install the crx in |source_file|.
   void InstallCrx(const base::FilePath& source_file);
+  void InstallCrxFile(const CRXFileInfo& source_file);
 
   // Convert the specified user script into an extension and install it.
   void InstallUserScript(const base::FilePath& source_file,

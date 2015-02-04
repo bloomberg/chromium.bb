@@ -187,9 +187,9 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
     }
   }
 
-  // package_hash is optional. It is only required for blacklist. It is a
-  // sha256 hash of the package in hex format.
-  result->package_hash = GetAttribute(updatecheck, "hash");
+  // package_hash is optional. It is a sha256 hash of the package in hex
+  // format.
+  result->package_hash = GetAttribute(updatecheck, "hash_sha256");
 
   int size = 0;
   if (base::StringToInt(GetAttribute(updatecheck, "size"), &size)) {

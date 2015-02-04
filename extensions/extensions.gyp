@@ -661,6 +661,8 @@
         'browser/content_verifier_io_data.h',
         'browser/content_verify_job.cc',
         'browser/content_verify_job.h',
+        'browser/crx_file_info.cc',
+        'browser/crx_file_info.h',
         'browser/error_map.cc',
         'browser/error_map.h',
         'browser/event_listener_map.cc',

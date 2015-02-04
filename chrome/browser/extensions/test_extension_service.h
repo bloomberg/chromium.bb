@@ -25,8 +25,7 @@ class TestExtensionService : public ExtensionServiceInterface {
   // ExtensionServiceInterface implementation.
   extensions::PendingExtensionManager* pending_extension_manager() override;
 
-  bool UpdateExtension(const std::string& id,
-                       const base::FilePath& path,
+  bool UpdateExtension(const extensions::CRXFileInfo& file,
                        bool file_ownership_passed,
                        extensions::CrxInstaller** out_crx_installer) override;
   const extensions::Extension* GetExtensionById(

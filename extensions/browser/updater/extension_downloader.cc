@@ -731,13 +731,10 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
     scoped_ptr<ExtensionFetch> fetch_data,
     const base::FilePath& crx_path,
     bool file_ownership_passed) {
-  delegate_->OnExtensionDownloadFinished(fetch_data->id,
-                                         crx_path,
-                                         file_ownership_passed,
-                                         fetch_data->url,
-                                         fetch_data->version,
-                                         ping_results_[fetch_data->id],
-                                         fetch_data->request_ids);
+  delegate_->OnExtensionDownloadFinished(
+      CRXFileInfo(fetch_data->id, crx_path, fetch_data->package_hash),
+      file_ownership_passed, fetch_data->url, fetch_data->version,
+      ping_results_[fetch_data->id], fetch_data->request_ids);
   ping_results_.erase(fetch_data->id);
 }
 

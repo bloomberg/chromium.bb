@@ -45,9 +45,10 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   };
   struct ExternalUpdate {
     ExternalUpdate();
+    ~ExternalUpdate();
 
     std::string app_name;
-    base::FilePath external_crx;
+    extensions::CRXFileInfo external_crx;
     ExternalUpdateStatus update_status;
     base::string16 error;
   };

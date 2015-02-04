@@ -145,13 +145,13 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                                                Error,
                                                const PingResult&,
                                                const std::set<int>&));
-  MOCK_METHOD7(OnExtensionDownloadFinished, void(const std::string&,
-                                                 const base::FilePath&,
-                                                 bool,
-                                                 const GURL&,
-                                                 const std::string&,
-                                                 const PingResult&,
-                                                 const std::set<int>&));
+  MOCK_METHOD6(OnExtensionDownloadFinished,
+               void(const extensions::CRXFileInfo&,
+                    bool,
+                    const GURL&,
+                    const std::string&,
+                    const PingResult&,
+                    const std::set<int>&));
   MOCK_METHOD2(GetPingDataForExtension,
                bool(const std::string&, ManifestFetchData::PingData*));
   MOCK_METHOD1(GetUpdateUrlData, std::string(const std::string&));
@@ -175,9 +175,10 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
     ON_CALL(*this, OnExtensionDownloadFailed(_, _, _, _))
         .WillByDefault(Invoke(delegate,
             &ExtensionDownloaderDelegate::OnExtensionDownloadFailed));
-    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
+    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _))
+        .WillByDefault(
+            Invoke(delegate,
+                   &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
     ON_CALL(*this, GetPingDataForExtension(_, _))
         .WillByDefault(Invoke(delegate,
             &ExtensionDownloaderDelegate::GetPingDataForExtension));
@@ -499,15 +500,14 @@ class ServiceForDownloadTests : public MockService {
     fake_crx_installers_[id] = crx_installer;
   }
 
-  bool UpdateExtension(const std::string& id,
-                       const base::FilePath& extension_path,
+  bool UpdateExtension(const CRXFileInfo& file,
                        bool file_ownership_passed,
                        CrxInstaller** out_crx_installer) override {
-    extension_id_ = id;
-    install_path_ = extension_path;
+    extension_id_ = file.extension_id;
+    install_path_ = file.path;
 
-    if (ContainsKey(fake_crx_installers_, id)) {
-      *out_crx_installer = fake_crx_installers_[id];
+    if (ContainsKey(fake_crx_installers_, extension_id_)) {
+      *out_crx_installer = fake_crx_installers_[extension_id_];
       return true;
     }
 
@@ -1221,7 +1221,8 @@ class ExtensionUpdaterTest : public testing::Test {
       fetcher->set_response_code(200);
       fetcher->SetResponseFilePath(extension_file_path);
       EXPECT_CALL(delegate, OnExtensionDownloadFinished(
-          id, _, _, _, version.GetString(), _, requests));
+                                CRXFileInfo(id, extension_file_path, hash), _,
+                                _, version.GetString(), _, requests));
     }
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 

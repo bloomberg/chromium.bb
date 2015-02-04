@@ -139,14 +139,12 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // but have not yet installed.
   struct FetchedCRXFile {
     FetchedCRXFile();
-    FetchedCRXFile(const std::string& id,
-                   const base::FilePath& path,
+    FetchedCRXFile(const CRXFileInfo& file,
                    bool file_ownership_passed,
                    const std::set<int>& request_ids);
     ~FetchedCRXFile();
 
-    std::string extension_id;
-    base::FilePath path;
+    CRXFileInfo info;
     bool file_ownership_passed;
     std::set<int> request_ids;
   };
@@ -198,8 +196,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                  Error error,
                                  const PingResult& ping,
                                  const std::set<int>& request_ids) override;
-  void OnExtensionDownloadFinished(const std::string& id,
-                                   const base::FilePath& path,
+  void OnExtensionDownloadFinished(const CRXFileInfo& file,
                                    bool file_ownership_passed,
                                    const GURL& download_url,
                                    const std::string& version,

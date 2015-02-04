@@ -101,6 +101,10 @@ const char kWhitelistedExtensionID[] = "whitelisted-extension-id";
 // Pass launch source to platform apps.
 const char kTraceAppSource[] = "enable-trace-app-source";
 
+// Enable package hash check: the .crx file sha256 hash sum should be equal to
+// the one received from update manifest.
+const char kEnableCrxHashCheck[] = "enable-crx-hash-check";
+
 }  // namespace switches
 
 }  // namespace extensions

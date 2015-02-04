@@ -120,11 +120,14 @@ namespace {
 
 class ValidateCrxHelper : public SandboxedUnpackerClient {
  public:
-  ValidateCrxHelper(const base::FilePath& crx_file,
+  ValidateCrxHelper(const CRXFileInfo& file,
                     const base::FilePath& temp_dir,
                     base::RunLoop* run_loop)
-      : crx_file_(crx_file), temp_dir_(temp_dir), run_loop_(run_loop),
-        finished_(false), success_(false) {}
+      : crx_file_(file),
+        temp_dir_(temp_dir),
+        run_loop_(run_loop),
+        finished_(false),
+        success_(false) {}
 
   bool finished() { return finished_; }
   bool success() { return success_; }
@@ -185,7 +188,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   }
 
   // The file being validated.
-  const base::FilePath& crx_file_;
+  const CRXFileInfo& crx_file_;
 
   // The temporary directory where the sandboxed unpacker will do work.
   const base::FilePath& temp_dir_;
@@ -222,8 +225,9 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   }
 
   base::RunLoop run_loop;
+  CRXFileInfo file(path);
   scoped_refptr<ValidateCrxHelper> helper(
-      new ValidateCrxHelper(path, temp_dir.path(), &run_loop));
+      new ValidateCrxHelper(file, temp_dir.path(), &run_loop));
   helper->Start();
   if (!helper->finished())
     run_loop.Run();

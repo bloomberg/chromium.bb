@@ -826,7 +826,8 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
     content::WindowedNotificationObserver observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         base::Bind(&IsCrxInstallerDone, &installer));
-    service()->UpdateExtension(id, path, true, &installer);
+    service()->UpdateExtension(extensions::CRXFileInfo(id, path), true,
+                               &installer);
 
     if (installer)
       observer.Wait();
@@ -2717,7 +2718,8 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
 
   // Update should fail and extension should not be updated.
   path = data_dir().AppendASCII("good2.crx");
-  bool updated = service()->UpdateExtension(good_crx, path, true, NULL);
+  bool updated = service()->UpdateExtension(
+      extensions::CRXFileInfo(good_crx, path), true, NULL);
   ASSERT_FALSE(updated);
   ASSERT_EQ(
       "1.0.0.0",
@@ -6763,7 +6765,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
 
   // We don't want the extension to be installed.  A path that doesn't
   // point to a valid CRX ensures this.
-  const base::FilePath kInvalidPathToCrx = base::FilePath();
+  const base::FilePath kInvalidPathToCrx(FILE_PATH_LITERAL("invalid_path"));
 
   const int kCreationFlags = 0;
   const bool kDontMarkAcknowledged = false;
@@ -6967,7 +6969,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   Version kVersion123("1.2.3");
   Version kVersion124("1.2.4");
   Version kVersion125("1.2.5");
-  const base::FilePath kInvalidPathToCrx = base::FilePath();
+  const base::FilePath kInvalidPathToCrx(FILE_PATH_LITERAL("invalid_path"));
   const int kCreationFlags = 0;
   const bool kDontMarkAcknowledged = false;
 

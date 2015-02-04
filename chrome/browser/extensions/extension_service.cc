@@ -474,8 +474,7 @@ void ExtensionService::LoadGreylistFromPrefs() {
   }
 }
 
-bool ExtensionService::UpdateExtension(const std::string& id,
-                                       const base::FilePath& extension_path,
+bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
                                        bool file_ownership_passed,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -486,6 +485,8 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     // the file is in the OS temp directory which should be cleaned up for us.
     return false;
   }
+
+  const std::string& id = file.extension_id;
 
   const extensions::PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
@@ -498,8 +499,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     // that would do it for us.
     if (!GetFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(
-                &extensions::file_util::DeleteFile, extension_path, false)))
+            base::Bind(&extensions::file_util::DeleteFile, file.path, false)))
       NOTREACHED();
 
     return false;
@@ -557,7 +557,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 
   installer->set_delete_source(file_ownership_passed);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
-  installer->InstallCrx(extension_path);
+  installer->InstallCrxFile(file);
 
   if (out_crx_installer)
     *out_crx_installer = installer.get();

@@ -9016,6 +9016,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken to unpack an extension, when the unpack fails.</summary>
 </histogram>
 
+<histogram name="Extensions.SandboxUnpackHashCheck" enum="BooleanValidHashSum">
+  <owner>ginkage@chromium.org</owner>
+  <summary>
+    Whether a CRX file hash sum was the same as in an updater manifest.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.SandboxUnpackInitialCrxPathLength">
   <owner>asargent@chromium.org</owner>
   <summary>Length of the initial path to the CRX to be unpacked.</summary>
@@ -43682,6 +43689,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Valid"/>
 </enum>
 
+<enum name="BooleanValidHashSum" type="int">
+  <int value="0" label="Invalid hash sum"/>
+  <int value="1" label="Valid hash sum"/>
+</enum>
+
 <enum name="BooleanValidKeyExists" type="int">
   <int value="0" label="No Valid Cached Key Found"/>
   <int value="1" label="Valid Cached Key Found"/>
@@ -47522,6 +47534,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="30" label="INVALID_PATH_FOR_CATALOG"/>
   <int value="31" label="ERROR_SERIALIZING_CATALOG"/>
   <int value="32" label="ERROR_SAVING_CATALOG"/>
+  <int value="33" label="CRX_HASH_VERIFICATION_FAILED"/>
 </enum>
 
 <enum name="ExternalDeviceAction" type="int">

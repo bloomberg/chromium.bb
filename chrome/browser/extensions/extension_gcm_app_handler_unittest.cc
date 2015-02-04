@@ -306,7 +306,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         base::Bind(&IsCrxInstallerDone, &installer));
     extension_service_->UpdateExtension(
-        extension->id(), path, true, &installer);
+        extensions::CRXFileInfo(extension->id(), path), true, &installer);
 
     if (installer)
       observer.Wait();

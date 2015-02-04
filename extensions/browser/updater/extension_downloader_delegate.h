@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 
 class GURL;
@@ -82,8 +83,7 @@ class ExtensionDownloaderDelegate {
   // successfully downloaded to |path|. |ownership_passed| is true if delegate
   // should get ownership of the file.
   virtual void OnExtensionDownloadFinished(
-      const std::string& id,
-      const base::FilePath& path,
+      const CRXFileInfo& file,
       bool file_ownership_passed,
       const GURL& download_url,
       const std::string& version,

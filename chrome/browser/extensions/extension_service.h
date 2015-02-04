@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
@@ -83,8 +84,7 @@ class ExtensionServiceInterface
   // TODO(aa): This method can be removed. ExtensionUpdater could use
   // CrxInstaller directly instead.
   virtual bool UpdateExtension(
-      const std::string& id,
-      const base::FilePath& path,
+      const extensions::CRXFileInfo& file,
       bool file_ownership_passed,
       extensions::CrxInstaller** out_crx_installer) = 0;
 
@@ -207,8 +207,7 @@ class ExtensionService
       bool include_disabled) const override;
   const extensions::Extension* GetInstalledExtension(
       const std::string& id) const override;
-  bool UpdateExtension(const std::string& id,
-                       const base::FilePath& extension_path,
+  bool UpdateExtension(const extensions::CRXFileInfo& file,
                        bool file_ownership_passed,
                        extensions::CrxInstaller** out_crx_installer) override;
   bool IsExtensionEnabled(const std::string& extension_id) const override;

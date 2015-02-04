@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/crx_file/constants.h"
@@ -26,6 +27,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/common_param_traits.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -35,6 +38,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/switches.h"
 #include "grit/extensions_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -209,19 +213,25 @@ bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
 }  // namespace
 
 SandboxedUnpacker::SandboxedUnpacker(
-    const base::FilePath& crx_path,
+    const CRXFileInfo& file,
     Manifest::Location location,
     int creation_flags,
     const base::FilePath& extensions_dir,
     const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
-    : crx_path_(crx_path),
+    : crx_path_(file.path),
+      package_hash_(file.expected_hash),
+      check_crx_hash_(false),
       client_(client),
       extensions_dir_(extensions_dir),
       got_response_(false),
       location_(location),
       creation_flags_(creation_flags),
       unpacker_io_task_runner_(unpacker_io_task_runner) {
+  if (!package_hash_.empty()) {
+    check_crx_hash_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        extensions::switches::kEnableCrxHashCheck);
+  }
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
@@ -402,8 +412,48 @@ void SandboxedUnpacker::OnUnpackExtensionFailed(const base::string16& error) {
       l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE, error));
 }
 
+static size_t ReadAndHash(void* ptr,
+                          size_t size,
+                          size_t nmemb,
+                          FILE* stream,
+                          scoped_ptr<crypto::SecureHash>& hash) {
+  size_t len = fread(ptr, size, nmemb, stream);
+  if (len > 0 && hash) {
+    hash->Update(ptr, len * size);
+  }
+  return len;
+}
+
+bool SandboxedUnpacker::FinalizeHash(scoped_ptr<crypto::SecureHash>& hash) {
+  if (hash) {
+    uint8 output[crypto::kSHA256Length];
+    hash->Finish(output, sizeof(output));
+    bool result = (base::StringToLowerASCII(base::HexEncode(
+                       output, sizeof(output))) == package_hash_);
+    UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", result);
+    if (!result && check_crx_hash_) {
+      // Package hash verification failed
+      std::string name = crx_path_.BaseName().AsUTF8Unsafe();
+      LOG(ERROR) << "Hash check failed for extension: " << name;
+      ReportFailure(CRX_HASH_VERIFICATION_FAILED,
+                    l10n_util::GetStringFUTF16(
+                        IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                        ASCIIToUTF16("CRX_HASH_VERIFICATION_FAILED")));
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool SandboxedUnpacker::ValidateSignature() {
   base::ScopedFILE file(base::OpenFile(crx_path_, "rb"));
+
+  scoped_ptr<crypto::SecureHash> hash;
+
+  if (!package_hash_.empty()) {
+    hash.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  }
 
   if (!file.get()) {
 // Could not open crx file for reading.
@@ -437,7 +487,7 @@ bool SandboxedUnpacker::ValidateSignature() {
   // code in the code base.  So for now, this assumes that we're running
   // on a little endian machine with 4 byte alignment.
   CrxFile::Header header;
-  size_t len = fread(&header, 1, sizeof(header), file.get());
+  size_t len = ReadAndHash(&header, 1, sizeof(header), file.get(), hash);
   if (len < sizeof(header)) {
     // Invalid crx header
     ReportFailure(CRX_HEADER_INVALID, l10n_util::GetStringFUTF16(
@@ -492,7 +542,8 @@ bool SandboxedUnpacker::ValidateSignature() {
 
   std::vector<uint8> key;
   key.resize(header.key_size);
-  len = fread(&key.front(), sizeof(uint8), header.key_size, file.get());
+  len = ReadAndHash(&key.front(), sizeof(uint8), header.key_size, file.get(),
+                    hash);
   if (len < header.key_size) {
     // Invalid public key
     ReportFailure(
@@ -504,8 +555,8 @@ bool SandboxedUnpacker::ValidateSignature() {
 
   std::vector<uint8> signature;
   signature.resize(header.signature_size);
-  len = fread(&signature.front(), sizeof(uint8), header.signature_size,
-              file.get());
+  len = ReadAndHash(&signature.front(), sizeof(uint8), header.signature_size,
+                    file.get(), hash);
   if (len < header.signature_size) {
     // Invalid signature
     ReportFailure(
@@ -530,7 +581,7 @@ bool SandboxedUnpacker::ValidateSignature() {
   }
 
   unsigned char buf[1 << 12];
-  while ((len = fread(buf, 1, sizeof(buf), file.get())) > 0)
+  while ((len = ReadAndHash(buf, 1, sizeof(buf), file.get(), hash)) > 0)
     verifier.VerifyUpdate(buf, len);
 
   if (!verifier.VerifyFinal()) {
@@ -539,6 +590,10 @@ bool SandboxedUnpacker::ValidateSignature() {
                   l10n_util::GetStringFUTF16(
                       IDS_EXTENSION_PACKAGE_ERROR_CODE,
                       ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_FAILED")));
+    return false;
+  }
+
+  if (!FinalizeHash(hash)) {
     return false;
   }
 

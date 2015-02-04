@@ -53,8 +53,7 @@ void UpdateService::OnExtensionDownloadFailed(
 }
 
 void UpdateService::OnExtensionDownloadFinished(
-    const std::string& id,
-    const base::FilePath& path,
+    const CRXFileInfo& file,
     bool file_ownership_passed,
     const GURL& download_url,
     const std::string& version,

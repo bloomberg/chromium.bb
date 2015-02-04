@@ -339,6 +339,8 @@ source_set("browser") {
       "content_verifier_io_data.h",
       "content_verify_job.cc",
       "content_verify_job.h",
+      "crx_file_info.cc",
+      "crx_file_info.h",
       "error_map.cc",
       "error_map.h",
       "event_listener_map.cc",
