@@ -798,6 +798,54 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
             static_text_accessible->GetLocalBoundsForRange(2, 2).ToString());
 }
 
+TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.AddIntAttribute(ui::AX_ATTR_SCROLL_X, 25);
+  root.AddIntAttribute(ui::AX_ATTR_SCROLL_Y, 50);
+
+  ui::AXNodeData static_text;
+  static_text.id = 2;
+  static_text.SetValue("ABC");
+  static_text.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text.location = gfx::Rect(100, 100, 16, 9);
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData inline_text;
+  inline_text.id = 3;
+  inline_text.SetValue("ABC");
+  inline_text.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text.location = gfx::Rect(100, 100, 16, 9);
+  inline_text.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
+                              ui::AX_TEXT_DIRECTION_LR);
+  std::vector<int32> character_offsets1;
+  character_offsets1.push_back(6);   // 0
+  character_offsets1.push_back(11);  // 1
+  character_offsets1.push_back(16);  // 2
+  inline_text.AddIntListAttribute(
+      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets1);
+  static_text.child_ids.push_back(3);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, static_text, inline_text),
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  BrowserAccessibility* static_text_accessible =
+      root_accessible->PlatformGetChild(0);
+
+  if (manager->UseRootScrollOffsetsWhenComputingBounds()) {
+    EXPECT_EQ(gfx::Rect(75, 50, 16, 9).ToString(),
+              static_text_accessible->GetLocalBoundsForRange(0, 3).ToString());
+  } else {
+    EXPECT_EQ(gfx::Rect(100, 100, 16, 9).ToString(),
+              static_text_accessible->GetLocalBoundsForRange(0, 3).ToString());
+  }
+}
+
 #if defined(OS_WIN)
 #define MAYBE_BoundsForRangeOnParentElement \
   DISABLED_BoundsForRangeOnParentElement

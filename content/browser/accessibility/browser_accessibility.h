@@ -267,6 +267,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   // bounds offsets.
   BrowserAccessibility* GetParentForBoundsCalculation() const;
 
+  // Convert the bounding rectangle of an element (which is relative to
+  // its nearest scrollable ancestor) to local bounds (which are relative
+  // to the top of the web accessibility tree).
+  gfx::Rect ElementBoundsToLocalBounds(gfx::Rect bounds) const;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
 

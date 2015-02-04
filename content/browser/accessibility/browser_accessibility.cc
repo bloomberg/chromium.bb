@@ -186,43 +186,7 @@ BrowserAccessibility::GetHtmlAttributes() const {
 
 gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   gfx::Rect bounds = GetLocation();
-
-  // Walk up the parent chain. Every time we encounter a Web Area, offset
-  // based on the scroll bars and then offset based on the origin of that
-  // nested web area.
-  BrowserAccessibility* parent = GetParentForBoundsCalculation();
-  bool need_to_offset_web_area =
-      (GetRole() == ui::AX_ROLE_WEB_AREA ||
-       GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
-  while (parent) {
-    if (need_to_offset_web_area &&
-        parent->GetLocation().width() > 0 &&
-        parent->GetLocation().height() > 0) {
-      bounds.Offset(parent->GetLocation().x(), parent->GetLocation().y());
-      need_to_offset_web_area = false;
-    }
-
-    // On some platforms, we don't want to take the root scroll offsets
-    // into account.
-    if (parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA &&
-        !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
-      break;
-    }
-
-    if (parent->GetRole() == ui::AX_ROLE_WEB_AREA ||
-        parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
-      int sx = 0;
-      int sy = 0;
-      if (parent->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          parent->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
-        bounds.Offset(-sx, -sy);
-      }
-      need_to_offset_web_area = true;
-    }
-    parent = parent->GetParentForBoundsCalculation();
-  }
-
-  return bounds;
+  return ElementBoundsToLocalBounds(bounds);
 }
 
 gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
@@ -252,7 +216,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       }
       start -= child_len;
     }
-    return bounds;
+    return ElementBoundsToLocalBounds(bounds);
   }
 
   int end = start + len;
@@ -329,7 +293,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       bounds.Union(child_overlap_rect);
   }
 
-  return bounds;
+  return ElementBoundsToLocalBounds(bounds);
 }
 
 gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
@@ -709,6 +673,46 @@ BrowserAccessibility* BrowserAccessibility::GetParentForBoundsCalculation()
     return NULL;
 
   return manager_->delegate()->AccessibilityGetParentFrame();
+}
+
+gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
+    const {
+  // Walk up the parent chain. Every time we encounter a Web Area, offset
+  // based on the scroll bars and then offset based on the origin of that
+  // nested web area.
+  BrowserAccessibility* parent = GetParentForBoundsCalculation();
+  bool need_to_offset_web_area =
+      (GetRole() == ui::AX_ROLE_WEB_AREA ||
+       GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
+  while (parent) {
+    if (need_to_offset_web_area &&
+        parent->GetLocation().width() > 0 &&
+        parent->GetLocation().height() > 0) {
+      bounds.Offset(parent->GetLocation().x(), parent->GetLocation().y());
+      need_to_offset_web_area = false;
+    }
+
+    // On some platforms, we don't want to take the root scroll offsets
+    // into account.
+    if (parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA &&
+        !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
+      break;
+    }
+
+    if (parent->GetRole() == ui::AX_ROLE_WEB_AREA ||
+        parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
+      int sx = 0;
+      int sy = 0;
+      if (parent->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          parent->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+        bounds.Offset(-sx, -sy);
+      }
+      need_to_offset_web_area = true;
+    }
+    parent = parent->GetParentForBoundsCalculation();
+  }
+
+  return bounds;
 }
 
 }  // namespace content
