@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -44,6 +43,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -131,7 +131,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
  public:
   CryptohomeAuthenticatorTest()
       : user_context_("me@nowhere.org"),
-        user_manager_(new FakeUserManager()),
+        user_manager_(new user_manager::FakeUserManager()),
         user_manager_enabler_(user_manager_),
         mock_caller_(NULL),
         mock_homedir_methods_(NULL),
@@ -325,7 +325,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   TestingProfile profile_;
   scoped_ptr<TestingProfileManager> profile_manager_;
-  FakeUserManager* user_manager_;
+  user_manager::FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;

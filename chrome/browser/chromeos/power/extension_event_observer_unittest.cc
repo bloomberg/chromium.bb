@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -36,7 +36,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
  public:
   ExtensionEventObserverTest()
       : power_manager_client_(new FakePowerManagerClient()),
-        fake_user_manager_(new FakeUserManager()),
+        fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_) {
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         make_scoped_ptr(power_manager_client_));
@@ -132,7 +132,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
   ScopedTestCrosSettings test_cros_settings_;
 
   // Owned by |scoped_user_manager_enabler_|.
-  FakeUserManager* fake_user_manager_;
+  FakeChromeUserManager* fake_user_manager_;
   ScopedUserManagerEnabler scoped_user_manager_enabler_;
 
   std::vector<scoped_refptr<extensions::Extension>> created_apps_;

@@ -126,7 +126,7 @@ class ProfileHelper
   friend class CryptohomeAuthenticatorTest;
   friend class DeviceSettingsTestBase;
   friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
-  friend class FakeUserManager;
+  friend class FakeChromeUserManager;
   friend class KioskTest;
   friend class MockUserManager;
   friend class MultiProfileUserControllerTest;

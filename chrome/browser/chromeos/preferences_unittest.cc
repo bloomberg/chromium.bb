@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/chrome_constants.h"
@@ -149,7 +149,8 @@ class PreferencesTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
-    chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
+    chromeos::FakeChromeUserManager* user_manager =
+        new chromeos::FakeChromeUserManager();
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(user_manager));
 

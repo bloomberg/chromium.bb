@@ -117,11 +117,6 @@ class USER_MANAGER_EXPORT UserManager {
   // has a policy that prohibits it to be part of multi-profile session.
   virtual UserList GetUsersAllowedForMultiProfile() const = 0;
 
-  // Returns list of users allowed for supervised user creation.
-  // Returns an empty list in cases when supervised user creation or adding new
-  // users is restricted.
-  virtual UserList GetUsersAllowedForSupervisedUsersCreation() const = 0;
-
   // Returns a list of users who are currently logged in.
   virtual const UserList& GetLoggedInUsers() const = 0;
 

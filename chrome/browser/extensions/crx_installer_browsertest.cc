@@ -46,7 +46,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
@@ -533,8 +533,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
 #if defined(OS_CHROMEOS)
   // Simulate ChromeOS kiosk mode. |scoped_user_manager| will take over
   // lifetime of |user_manager|.
-  chromeos::FakeUserManager* fake_user_manager =
-      new chromeos::FakeUserManager();
+  chromeos::FakeChromeUserManager* fake_user_manager =
+      new chromeos::FakeChromeUserManager();
   fake_user_manager->AddKioskAppUser("example@example.com");
   fake_user_manager->LoginUser("example@example.com");
   chromeos::ScopedUserManagerEnabler scoped_user_manager(fake_user_manager);

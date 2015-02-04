@@ -50,7 +50,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -62,6 +62,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window_contents.h"
@@ -779,8 +780,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     profile_manager_->SetLoggedIn(true);
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));
+    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
+        new chromeos::FakeChromeUserManager));
 
     // Initialize the rest.
     ChromeLauncherControllerTest::SetUp();
@@ -906,8 +907,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   typedef std::map<Profile*, std::string> ProfileToNameMap;
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
-  chromeos::FakeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeUserManager*>(
+  chromeos::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 

@@ -2,55 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_USER_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_USER_MANAGER_H_
+#ifndef COMPONENTS_USER_MANAGER_FAKE_USER_MANAGER_H_
+#define COMPONENTS_USER_MANAGER_FAKE_USER_MANAGER_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_manager_base.h"
 
-namespace chromeos {
-
-class FakeSupervisedUserManager;
+namespace user_manager {
 
 // Fake user manager with a barebones implementation. Users can be added
 // and set as logged in, and those users can be returned.
-class FakeUserManager : public ChromeUserManager {
+class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
  public:
   FakeUserManager();
   ~FakeUserManager() override;
 
   // Create and add a new user.
-  const user_manager::User* AddUser(const std::string& email);
-
-  // Create and add a kiosk app user.
-  void AddKioskAppUser(const std::string& kiosk_app_username);
-
-  // Create and add a public account user.
-  const user_manager::User* AddPublicAccountUser(const std::string& email);
+  virtual const user_manager::User* AddUser(const std::string& email);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
   void LoginUser(const std::string& email);
 
-  // ChromeUserManager overrides.
-  MultiProfileUserController* GetMultiProfileUserController() override;
-  UserImageManager* GetUserImageManager(const std::string& user_id) override;
-  SupervisedUserManager* GetSupervisedUserManager() override;
-  void SetUserFlow(const std::string& email, UserFlow* flow) override {}
-  UserFlow* GetCurrentUserFlow() const override;
-  UserFlow* GetUserFlow(const std::string& email) const override;
-  void ResetUserFlow(const std::string& email) override {}
-
   // UserManager overrides.
   const user_manager::UserList& GetUsers() const override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
-  user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
-      const override;
   const user_manager::UserList& GetLoggedInUsers() const override;
 
   // Set the user as logged in.
@@ -133,33 +112,23 @@ class FakeUserManager : public ChromeUserManager {
   void PublicAccountUserLoggedIn(user_manager::User* user) override {}
   void SupervisedUserLoggedIn(const std::string& user_id) override {}
 
-  void set_owner_email(const std::string& owner_email) {
-    owner_email_ = owner_email;
-  }
-
-  void set_multi_profile_user_controller(
-      MultiProfileUserController* controller) {
-    multi_profile_user_controller_ = controller;
-  }
-
- private:
-  // We use this internal function for const-correctness.
-  user_manager::User* GetActiveUserInternal() const;
-
-  scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
-  user_manager::UserList user_list_;
-  user_manager::UserList logged_in_users_;
-  std::string owner_email_;
+ protected:
   user_manager::User* primary_user_;
 
   // If set this is the active user. If empty, the first created user is the
   // active user.
   std::string active_user_id_;
-  MultiProfileUserController* multi_profile_user_controller_;
+
+ private:
+  // We use this internal function for const-correctness.
+  user_manager::User* GetActiveUserInternal() const;
+
+  // stub, always empty string.
+  std::string owner_email_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_USER_MANAGER_H_
+#endif  // COMPONENTS_USER_MANAGER_FAKE_USER_MANAGER_H_

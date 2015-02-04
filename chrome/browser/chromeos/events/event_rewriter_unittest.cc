@@ -17,12 +17,12 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -222,7 +222,7 @@ namespace chromeos {
 class EventRewriterTest : public ash::test::AshTestBase {
  public:
   EventRewriterTest()
-      : fake_user_manager_(new chromeos::FakeUserManager),
+      : fake_user_manager_(new user_manager::FakeUserManager),
         user_manager_enabler_(fake_user_manager_),
         input_method_manager_mock_(NULL) {}
   ~EventRewriterTest() override {}
@@ -255,7 +255,7 @@ class EventRewriterTest : public ash::test::AshTestBase {
                       : &event;
   }
 
-  chromeos::FakeUserManager* fake_user_manager_;  // Not owned.
+  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
@@ -1821,7 +1821,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
  public:
   EventRewriterAshTest()
       : source_(&buffer_),
-        fake_user_manager_(new chromeos::FakeUserManager),
+        fake_user_manager_(new user_manager::FakeUserManager),
         user_manager_enabler_(fake_user_manager_) {}
   ~EventRewriterAshTest() override {}
 
@@ -1880,7 +1880,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
   EventBuffer buffer_;
   TestEventSource source_;
 
-  chromeos::FakeUserManager* fake_user_manager_;  // Not owned.
+  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   TestingPrefServiceSyncable prefs_;
 

@@ -8,7 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,7 +35,7 @@ class InputMethodPersistenceTest : public testing::Test {
  protected:
   InputMethodPersistenceTest()
       : mock_profile_manager_(TestingBrowserProcess::GetGlobal()),
-        fake_user_manager_(new chromeos::FakeUserManager()),
+        fake_user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(fake_user_manager_) {}
 
   void SetUp() override {
@@ -71,7 +71,7 @@ class InputMethodPersistenceTest : public testing::Test {
   TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
-  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 };
 

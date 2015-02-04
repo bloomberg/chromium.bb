@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -50,8 +50,9 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   ~SessionStateDelegateChromeOSTest() override {}
 
   void SetUp() override {
-    // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_ = new chromeos::FakeUserManager;
+    // Initialize the UserManager singleton to a fresh FakeChromeUserManager
+    // instance.
+    user_manager_ = new FakeChromeUserManager;
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(user_manager_));
 
@@ -89,7 +90,7 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
     return user_manager::UserManager::Get()->GetActiveUser()->email();
   }
 
-  chromeos::FakeUserManager* user_manager() { return user_manager_; }
+  FakeChromeUserManager* user_manager() { return user_manager_; }
   SessionStateDelegateChromeos* session_state_delegate() {
     return session_state_delegate_.get();
   }
@@ -119,7 +120,7 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   scoped_ptr<SessionStateDelegateChromeos> session_state_delegate_;
 
   // Not owned.
-  chromeos::FakeUserManager* user_manager_;
+  FakeChromeUserManager* user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateChromeOSTest);
 };

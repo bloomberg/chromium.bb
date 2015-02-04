@@ -63,7 +63,7 @@ class ChromeUserManagerImpl
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // ChromeUserManager implementation:
+  // UserManagerInterface implementation:
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const std::string& user_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;

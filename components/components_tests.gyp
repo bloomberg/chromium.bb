@@ -723,6 +723,7 @@
                 'components.gyp:wifi_sync',
 
                 'components.gyp:pairing',
+                'components.gyp:user_manager_test_support',
                 '../chromeos/chromeos.gyp:chromeos_test_support',
               ],
             }],

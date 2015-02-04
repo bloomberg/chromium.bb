@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "components/user_manager/fake_user_manager.h"
 
+#include "base/callback.h"
 #include "base/task_runner.h"
-#include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/grit/theme_resources.h"
-#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -30,92 +27,46 @@ class FakeTaskRunner : public base::TaskRunner {
 
 }  // namespace
 
-namespace chromeos {
+namespace user_manager {
 
 FakeUserManager::FakeUserManager()
-    : ChromeUserManager(new FakeTaskRunner(), new FakeTaskRunner()),
-      supervised_user_manager_(new FakeSupervisedUserManager),
+    : UserManagerBase(new FakeTaskRunner(), new FakeTaskRunner()),
       primary_user_(NULL),
-      multi_profile_user_controller_(NULL) {
+      owner_email_(std::string()) {
 }
 
 FakeUserManager::~FakeUserManager() {
-  // Can't use STLDeleteElements because of the private destructor of User.
-  for (user_manager::UserList::iterator it = user_list_.begin();
-       it != user_list_.end();
-       it = user_list_.erase(it)) {
-    delete *it;
-  }
 }
 
 const user_manager::User* FakeUserManager::AddUser(const std::string& email) {
   user_manager::User* user = user_manager::User::CreateRegularUser(email);
-  user->set_username_hash(
-      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
-  user->SetStubImage(user_manager::UserImage(
-                         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING)),
-                     user_manager::User::USER_IMAGE_PROFILE,
-                     false);
-  user_list_.push_back(user);
+  users_.push_back(user);
   return user;
-}
-
-const user_manager::User* FakeUserManager::AddPublicAccountUser(
-    const std::string& email) {
-  user_manager::User* user = user_manager::User::CreatePublicAccountUser(email);
-  user->set_username_hash(
-      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
-  user->SetStubImage(user_manager::UserImage(
-                         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING)),
-                     user_manager::User::USER_IMAGE_PROFILE,
-                     false);
-  user_list_.push_back(user);
-  return user;
-}
-
-void FakeUserManager::AddKioskAppUser(const std::string& kiosk_app_username) {
-  user_manager::User* user =
-      user_manager::User::CreateKioskAppUser(kiosk_app_username);
-  user->set_username_hash(
-      ProfileHelper::GetUserIdHashByUserIdForTesting(kiosk_app_username));
-  user_list_.push_back(user);
 }
 
 void FakeUserManager::RemoveUserFromList(const std::string& email) {
-  user_manager::UserList::iterator it = user_list_.begin();
-  while (it != user_list_.end() && (*it)->email() != email) ++it;
-  if (it != user_list_.end()) {
+  user_manager::UserList::iterator it = users_.begin();
+  while (it != users_.end() && (*it)->email() != email)
+    ++it;
+  if (it != users_.end()) {
     delete *it;
-    user_list_.erase(it);
+    users_.erase(it);
   }
 }
 
-void FakeUserManager::LoginUser(const std::string& email) {
-  UserLoggedIn(
-      email, ProfileHelper::GetUserIdHashByUserIdForTesting(email), false);
-}
-
 const user_manager::UserList& FakeUserManager::GetUsers() const {
-  return user_list_;
+  return users_;
 }
 
 user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
   user_manager::UserList result;
-  for (user_manager::UserList::const_iterator it = user_list_.begin();
-       it != user_list_.end();
-       ++it) {
+  for (user_manager::UserList::const_iterator it = users_.begin();
+       it != users_.end(); ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_REGULAR &&
         !(*it)->is_logged_in())
       result.push_back(*it);
   }
   return result;
-}
-
-user_manager::UserList
-FakeUserManager::GetUsersAllowedForSupervisedUsersCreation() const {
-  return ChromeUserManager::GetUsersAllowedAsSupervisedUserManagers(user_list_);
 }
 
 const user_manager::UserList& FakeUserManager::GetLoggedInUsers() const {
@@ -125,9 +76,8 @@ const user_manager::UserList& FakeUserManager::GetLoggedInUsers() const {
 void FakeUserManager::UserLoggedIn(const std::string& email,
                                    const std::string& username_hash,
                                    bool browser_restart) {
-  for (user_manager::UserList::const_iterator it = user_list_.begin();
-       it != user_list_.end();
-       ++it) {
+  for (user_manager::UserList::const_iterator it = users_.begin();
+       it != users_.end(); ++it) {
     if ((*it)->username_hash() == username_hash) {
       (*it)->set_is_logged_in(true);
       (*it)->set_profile_is_created();
@@ -141,16 +91,15 @@ void FakeUserManager::UserLoggedIn(const std::string& email,
 }
 
 user_manager::User* FakeUserManager::GetActiveUserInternal() const {
-  if (user_list_.size()) {
+  if (users_.size()) {
     if (!active_user_id_.empty()) {
-      for (user_manager::UserList::const_iterator it = user_list_.begin();
-           it != user_list_.end();
-           ++it) {
+      for (user_manager::UserList::const_iterator it = users_.begin();
+           it != users_.end(); ++it) {
         if ((*it)->email() == active_user_id_)
           return *it;
       }
     }
-    return user_list_[0];
+    return users_[0];
   }
   return NULL;
 }
@@ -164,22 +113,11 @@ user_manager::User* FakeUserManager::GetActiveUser() {
 }
 
 void FakeUserManager::SwitchActiveUser(const std::string& email) {
-  active_user_id_ = email;
-  ProfileHelper::Get()->ActiveUserHashChanged(
-      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
-  if (user_list_.size() && !active_user_id_.empty()) {
-    for (user_manager::UserList::const_iterator it = user_list_.begin();
-         it != user_list_.end(); ++it) {
-      (*it)->set_is_active((*it)->email() == active_user_id_);
-    }
-  }
 }
 
-void FakeUserManager::SaveUserDisplayName(
-    const std::string& username,
-    const base::string16& display_name) {
-  for (user_manager::UserList::iterator it = user_list_.begin();
-       it != user_list_.end();
+void FakeUserManager::SaveUserDisplayName(const std::string& username,
+                                          const base::string16& display_name) {
+  for (user_manager::UserList::iterator it = users_.begin(); it != users_.end();
        ++it) {
     if ((*it)->email() == username) {
       (*it)->set_display_name(display_name);
@@ -188,25 +126,12 @@ void FakeUserManager::SaveUserDisplayName(
   }
 }
 
-MultiProfileUserController* FakeUserManager::GetMultiProfileUserController() {
-  return multi_profile_user_controller_;
-}
-
-SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {
-  return supervised_user_manager_.get();
-}
-
-UserImageManager* FakeUserManager::GetUserImageManager(
-    const std::string& /* user_id */) {
-  return NULL;
-}
-
 const user_manager::UserList& FakeUserManager::GetLRULoggedInUsers() const {
-  return user_list_;
+  return users_;
 }
 
 user_manager::UserList FakeUserManager::GetUnlockUsers() const {
-  return user_list_;
+  return users_;
 }
 
 const std::string& FakeUserManager::GetOwnerEmail() const {
@@ -221,8 +146,7 @@ const user_manager::User* FakeUserManager::FindUser(
     const std::string& email) const {
   const user_manager::UserList& users = GetUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+       it != users.end(); ++it) {
     if ((*it)->email() == email)
       return *it;
   }
@@ -312,14 +236,6 @@ bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
   return false;
 }
 
-UserFlow* FakeUserManager::GetCurrentUserFlow() const {
-  return NULL;
-}
-
-UserFlow* FakeUserManager::GetUserFlow(const std::string& email) const {
-  return NULL;
-}
-
 bool FakeUserManager::AreSupervisedUsersAllowed() const {
   return true;
 }
@@ -354,4 +270,4 @@ bool FakeUserManager::IsPublicAccountMarkedForRemoval(
   return false;
 }
 
-}  // namespace chromeos
+}  // namespace user_manager

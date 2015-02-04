@@ -62,5 +62,25 @@
         'sources': [ '<@(user_manager_chromeos_sources)' ],
       }],
     ],
-  }],
+  },
+  {
+    # GN version: //components/user_manager:test_support
+    'target_name': 'user_manager_test_support',
+    'type': 'static_library',
+    'conditions': [
+      ['chromeos == 1', {
+        'dependencies': [
+          '<(DEPTH)/base/base.gyp:base',
+          '<(DEPTH)/base/base.gyp:test_support_base',
+          '<(DEPTH)/testing/gmock.gyp:gmock',
+          '<(DEPTH)/testing/gtest.gyp:gtest',
+          'user_manager',
+        ],
+        'sources': [
+          'user_manager/fake_user_manager.cc',
+          'user_manager/fake_user_manager.h',
+        ],
+      }],
+     ]
+  },],
 }

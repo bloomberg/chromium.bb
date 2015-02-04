@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -79,7 +80,7 @@ void UpdateAuthParams(base::DictionaryValue* params,
     message_id = IDS_CREATE_SUPERVISED_USER_CREATION_RESTRICTED_TEXT;
   }
   if (supervised_users_can_create &&
-      user_manager::UserManager::Get()
+      ChromeUserManager::Get()
           ->GetUsersAllowedForSupervisedUsersCreation()
           .empty()) {
     supervised_users_can_create = false;

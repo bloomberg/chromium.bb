@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -28,9 +29,8 @@ ChromeUserManager::GetUsersAllowedAsSupervisedUserManagers(
     const user_manager::UserList& user_list) {
   user_manager::UserList result;
   for (user_manager::User* user : user_list) {
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+    if (user->GetType() == user_manager::USER_TYPE_REGULAR)
       result.push_back(user);
-    }
   }
   return result;
 }

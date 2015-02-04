@@ -21,7 +21,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/system_notifier.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #endif
 
@@ -74,8 +74,8 @@ class MessageCenterSettingsControllerChromeOSTest
     MessageCenterSettingsControllerBaseTest::SetUp();
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));
+    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
+        new chromeos::FakeChromeUserManager));
   }
 
   void TearDown() override {
@@ -98,8 +98,8 @@ class MessageCenterSettingsControllerChromeOSTest
   }
 
  private:
-  chromeos::FakeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeUserManager*>(
+  chromeos::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 

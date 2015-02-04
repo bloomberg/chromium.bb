@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -35,9 +35,8 @@ class SigninPrepareUserListTest
       public MultiProfileUserControllerDelegate {
  public:
   SigninPrepareUserListTest()
-      : fake_user_manager_(new FakeUserManager()),
-        user_manager_enabler_(fake_user_manager_) {
-  }
+      : fake_user_manager_(new FakeChromeUserManager()),
+        user_manager_enabler_(fake_user_manager_) {}
 
   ~SigninPrepareUserListTest() override {}
 
@@ -66,7 +65,7 @@ class SigninPrepareUserListTest
   // MultiProfileUserControllerDelegate overrides:
   void OnUserNotAllowed(const std::string& user_email) override {}
 
-  FakeUserManager* fake_user_manager_;
+  FakeChromeUserManager* fake_user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   std::map<std::string,

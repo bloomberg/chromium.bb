@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -27,10 +27,10 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
  public:
   ConsumerEnrollmentHandlerFactoryTest()
       : fake_service_(new FakeConsumerManagementService()),
-        fake_user_manager_(new chromeos::FakeUserManager()),
+        fake_user_manager_(new chromeos::FakeChromeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_),
-        testing_profile_manager_(new TestingProfileManager(
-            TestingBrowserProcess::GetGlobal())) {
+        testing_profile_manager_(
+            new TestingProfileManager(TestingBrowserProcess::GetGlobal())) {
     // Set up FakeConsumerManagementService.
     fake_service_->SetStatusAndStage(
         ConsumerManagementService::STATUS_ENROLLING,
@@ -42,7 +42,7 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
     connector->SetConsumerManagementServiceForTesting(
         make_scoped_ptr(fake_service_));
 
-    // Set up FakeUserManager.
+    // Set up FakeChromeUserManager.
     fake_user_manager_->AddUser(kTestOwner);
     fake_user_manager_->AddUser(kTestUser);
     fake_user_manager_->set_owner_email(kTestOwner);
@@ -53,7 +53,7 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
   }
 
   FakeConsumerManagementService* fake_service_;
-  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_enabler_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
 };

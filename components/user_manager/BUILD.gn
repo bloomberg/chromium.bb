@@ -47,3 +47,18 @@ component("user_manager") {
     ]
   }
 }
+
+source_set("test_support") {
+  testonly = true
+  if (is_chromeos) {
+    sources = [
+      "fake_user_manager.cc",
+      "fake_user_manager.h",
+    ]
+    deps = [
+      ":user_manager",
+      "//base",
+      "//skia",
+    ]
+  }
+}

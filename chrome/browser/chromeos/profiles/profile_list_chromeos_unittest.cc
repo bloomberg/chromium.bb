@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -58,22 +58,24 @@ class ProfileListChromeOSTest : public testing::Test {
     // AvatarMenu and multiple profiles works after user logged in.
     manager_.SetLoggedIn(true);
 
-    // Initialize the UserManager singleton to a fresh FakeUserManager instance.
+    // Initialize the UserManager singleton to a fresh FakeChromeUserManager
+    // instance.
     user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(new FakeUserManager));
+        new ScopedUserManagerEnabler(new FakeChromeUserManager));
   }
 
-  FakeUserManager* GetFakeUserManager() {
-    return static_cast<FakeUserManager*>(user_manager::UserManager::Get());
+  FakeChromeUserManager* GetFakeChromeUserManager() {
+    return static_cast<FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
   }
 
   void AddProfile(base::string16 name, bool log_in) {
     std::string email_string = base::UTF16ToASCII(name) + "@example.com";
 
     // Add a user to the fake user manager.
-    GetFakeUserManager()->AddUser(email_string);
+    GetFakeChromeUserManager()->AddUser(email_string);
     if (log_in)
-      GetFakeUserManager()->LoginUser(email_string);
+      GetFakeChromeUserManager()->LoginUser(email_string);
 
     // Create a profile for the user.
     manager()->CreateTestingProfile(email_string);
@@ -96,7 +98,7 @@ class ProfileListChromeOSTest : public testing::Test {
 
   void ActiveUserChanged(const base::string16& name) {
     std::string email_string = base::UTF16ToASCII(name) + "@example.com";
-    GetFakeUserManager()->SwitchActiveUser(email_string);
+    GetFakeChromeUserManager()->SwitchActiveUser(email_string);
   }
 
   TestingProfileManager* manager() { return &manager_; }
@@ -163,7 +165,7 @@ TEST_F(ProfileListChromeOSTest, DontShowSupervisedUsers) {
       cache->GetUserDataDir().AppendASCII("p2"), supervised_name,
       base::string16(), 0, "TEST_ID");
 
-  GetFakeUserManager()->AddUser(base::UTF16ToASCII(supervised_name));
+  GetFakeChromeUserManager()->AddUser(base::UTF16ToASCII(supervised_name));
 
   AvatarMenu* menu = GetAvatarMenu();
   ASSERT_EQ(1U, menu->GetNumberOfItems());
@@ -238,7 +240,7 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
 
   // Change name of the first profile, to trigger resorting of the profiles:
   // now the first menu item should be named "beta", and the second be "gamma".
-  GetFakeUserManager()->SaveUserDisplayName(
+  GetFakeChromeUserManager()->SaveUserDisplayName(
       base::UTF16ToASCII(name1) + "@example.com", newname1);
   manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
 

@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -179,7 +179,7 @@ class FileSystemProviderServiceTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user@example.com");
-    user_manager_ = new FakeUserManager();
+    user_manager_ = new FakeChromeUserManager();
     user_manager_->AddUser(profile_->GetProfileName());
     user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
@@ -201,7 +201,7 @@ class FileSystemProviderServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
-  FakeUserManager* user_manager_;
+  FakeChromeUserManager* user_manager_;
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
   scoped_ptr<Service> service_;

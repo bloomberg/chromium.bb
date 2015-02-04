@@ -19,11 +19,10 @@
 
 namespace content {
 class WebUI;
-}  // namespace content
+}
 
 namespace chromeos {
 
-class FakeUserManager;
 class NetworkPortalDetectorTestImpl;
 
 // Base class for OOBE and Kiosk tests.

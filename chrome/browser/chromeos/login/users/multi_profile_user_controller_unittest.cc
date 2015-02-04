@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -114,7 +114,7 @@ class MultiProfileUserControllerTest
       public MultiProfileUserControllerDelegate {
  public:
   MultiProfileUserControllerTest()
-      : fake_user_manager_(new FakeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(fake_user_manager_),
         user_not_allowed_count_(0) {}
   ~MultiProfileUserControllerTest() override {}
@@ -203,7 +203,7 @@ class MultiProfileUserControllerTest
   content::TestBrowserThreadBundle threads_;
   scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
   scoped_ptr<TestingProfileManager> profile_manager_;
-  FakeUserManager* fake_user_manager_;  // Not owned
+  FakeChromeUserManager* fake_user_manager_;  // Not owned
   ScopedUserManagerEnabler user_manager_enabler_;
 
   scoped_ptr<MultiProfileUserController> controller_;

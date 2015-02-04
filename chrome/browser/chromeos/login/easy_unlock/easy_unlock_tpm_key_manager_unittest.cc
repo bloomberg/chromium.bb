@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_constants.h"
@@ -193,10 +193,9 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
  public:
   EasyUnlockTpmKeyManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        user_manager_(new chromeos::FakeUserManager),
+        user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(user_manager_),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {
-  }
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~EasyUnlockTpmKeyManagerTest() override {}
 
   void SetUp() override {
@@ -286,7 +285,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 
   // Needed to properly set up signin and user profiles for test.
-  chromeos::FakeUserManager* user_manager_;
+  user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   TestingProfileManager profile_manager_;
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -74,7 +74,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
-    user_manager_ = new FakeUserManager();
+    user_manager_ = new FakeChromeUserManager();
     user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
     user_manager_->AddUser(profile_->GetProfileName());
     ServiceFactory::GetInstance()->SetTestingFactory(profile_, &CreateService);
@@ -93,7 +93,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
-  FakeUserManager* user_manager_;
+  FakeChromeUserManager* user_manager_;
   Service* file_system_provider_service_;  // Owned by its factory.
 };
 

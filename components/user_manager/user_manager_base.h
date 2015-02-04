@@ -136,7 +136,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
-  void EnsureUsersLoaded();
+  virtual void EnsureUsersLoaded();
 
   // Handle OAuth token |status| change for |user_id|.
   virtual void HandleUserOAuthTokenStatusChange(
@@ -260,6 +260,15 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // |UpdateAndCleanUpPublicAccounts|.
   UserList users_;
 
+  // List of all users that are logged in current session. These point to User
+  // instances in |users_|. Only one of them could be marked as active.
+  UserList logged_in_users_;
+
+  // A list of all users that are logged in the current session. In contrast to
+  // |logged_in_users|, the order of this list is least recently used so that
+  // the active user should always be the first one in the list.
+  UserList lru_logged_in_users_;
+
  private:
   // Stages of loading user list from preferences. Some methods can have
   // different behavior depending on stage.
@@ -315,15 +324,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_;
-
-  // List of all users that are logged in current session. These point to User
-  // instances in |users_|. Only one of them could be marked as active.
-  UserList logged_in_users_;
-
-  // A list of all users that are logged in the current session. In contrast to
-  // |logged_in_users|, the order of this list is least recently used so that
-  // the active user should always be the first one in the list.
-  UserList lru_logged_in_users_;
 
   // True if SessionStarted() has been called.
   bool session_started_;

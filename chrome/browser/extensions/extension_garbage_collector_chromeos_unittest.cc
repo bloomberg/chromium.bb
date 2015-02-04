@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
@@ -66,9 +66,10 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     ExtensionAssetsManagerChromeOS::SetSharedInstallDirForTesting(cache_dir());
     ExtensionGarbageCollectorChromeOS::ClearGarbageCollectedForTesting();
 
-    // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));
+    // Initialize the UserManager singleton to a fresh FakeChromeUserManager
+    // instance.
+    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
+        new chromeos::FakeChromeUserManager));
 
     GetFakeUserManager()->AddUser(chromeos::login::kStubUser);
     GetFakeUserManager()->LoginUser(chromeos::login::kStubUser);
@@ -144,8 +145,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     return ExtensionPrefs::Get(profile_.get());
   }
 
-  chromeos::FakeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeUserManager*>(
+  chromeos::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 

@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -40,10 +40,10 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
   ConsumerEnrollmentHandlerTest()
       : fake_service_(new FakeConsumerManagementService()),
         fake_initializer_(new FakeDeviceCloudPolicyInitializer()),
-        fake_user_manager_(new chromeos::FakeUserManager()),
+        fake_user_manager_(new chromeos::FakeChromeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_),
-        testing_profile_manager_(new TestingProfileManager(
-            TestingBrowserProcess::GetGlobal())) {
+        testing_profile_manager_(
+            new TestingProfileManager(TestingBrowserProcess::GetGlobal())) {
     // Set up FakeConsumerManagementService.
     fake_service_->SetStatusAndStage(
         ConsumerManagementService::STATUS_ENROLLING,
@@ -57,7 +57,7 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
     connector->SetDeviceCloudPolicyInitializerForTesting(
         make_scoped_ptr(fake_initializer_));
 
-    // Set up FakeUserManager.
+    // Set up FakeChromeUserManager.
     fake_user_manager_->AddUser(kTestOwner);
     fake_user_manager_->AddUser(kTestUser);
     fake_user_manager_->set_owner_email(kTestOwner);
@@ -92,7 +92,7 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle;
   FakeConsumerManagementService* fake_service_;
   FakeDeviceCloudPolicyInitializer* fake_initializer_;
-  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_enabler_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
   Profile* profile_;

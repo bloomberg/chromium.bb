@@ -44,7 +44,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -222,7 +222,8 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
             profile_manager->GetInitialProfileDir().value());
 
   const char kTestUserName[] = "test-user@example.com";
-  chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
+  chromeos::FakeChromeUserManager* user_manager =
+      new chromeos::FakeChromeUserManager();
   chromeos::ScopedUserManagerEnabler enabler(user_manager);
 
   const user_manager::User* active_user = user_manager->AddUser(kTestUserName);

@@ -666,6 +666,7 @@
         'browser/chromeos/login/users/supervised_user_manager.h',
         'browser/chromeos/login/users/supervised_user_manager_impl.cc',
         'browser/chromeos/login/users/supervised_user_manager_impl.h',
+        'browser/chromeos/login/users/user_manager_interface.h',
         'browser/chromeos/login/users/wallpaper/wallpaper_manager.cc',
         'browser/chromeos/login/users/wallpaper/wallpaper_manager.h',
         'browser/chromeos/login/version_info_updater.cc',
@@ -1100,6 +1101,7 @@
         '../components/components.gyp:ownership',
         '../components/components.gyp:pairing',
         '../components/components.gyp:policy',
+        '../components/components.gyp:user_manager',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.

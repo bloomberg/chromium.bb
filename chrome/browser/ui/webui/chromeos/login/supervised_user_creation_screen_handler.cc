@@ -211,8 +211,7 @@ void SupervisedUserCreationScreenHandler::Show() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   scoped_ptr<base::ListValue> users_list(new base::ListValue());
   const user_manager::UserList& users =
-      user_manager::UserManager::Get()
-          ->GetUsersAllowedForSupervisedUsersCreation();
+      ChromeUserManager::Get()->GetUsersAllowedForSupervisedUsersCreation();
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 

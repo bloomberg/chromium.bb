@@ -1786,6 +1786,7 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
+            '../components/components.gyp:user_manager_test_support',
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
@@ -1817,8 +1818,8 @@
             'browser/chromeos/login/users/avatar/mock_user_image_manager.h',
             'browser/chromeos/login/users/fake_supervised_user_manager.cc',
             'browser/chromeos/login/users/fake_supervised_user_manager.h',
-            'browser/chromeos/login/users/fake_user_manager.cc',
-            'browser/chromeos/login/users/fake_user_manager.h',
+            'browser/chromeos/login/users/fake_chrome_user_manager.cc',
+            'browser/chromeos/login/users/fake_chrome_user_manager.h',
             'browser/chromeos/login/users/mock_user_manager.cc',
             'browser/chromeos/login/users/mock_user_manager.h',
             'browser/chromeos/net/network_portal_detector_test_utils.cc',

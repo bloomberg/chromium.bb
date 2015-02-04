@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -112,7 +112,7 @@ class AffiliatedInvalidationServiceProviderTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   ScopedStubEnterpriseInstallAttributes install_attributes_;
   scoped_ptr<chromeos::ScopedTestDeviceSettingsService>
@@ -131,7 +131,7 @@ AffiliatedInvalidationServiceProviderTest::
 AffiliatedInvalidationServiceProviderTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
-      fake_user_manager_(new chromeos::FakeUserManager),
+      fake_user_manager_(new chromeos::FakeChromeUserManager),
       user_manager_enabler_(fake_user_manager_),
       install_attributes_("example.com",
                           "user@example.com",
