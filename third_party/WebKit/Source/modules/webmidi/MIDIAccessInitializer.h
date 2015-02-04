@@ -72,6 +72,7 @@ private:
     Vector<PortDescriptor> m_portDescriptors;
     bool m_requestSysex;
     bool m_hasBeenDisposed;
+    bool m_sysexPermissionResolved;
 };
 
 } // namespace blink

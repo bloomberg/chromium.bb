@@ -21,6 +21,7 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MID
     : ScriptPromiseResolver(scriptState)
     , m_requestSysex(false)
     , m_hasBeenDisposed(false)
+    , m_sysexPermissionResolved(false)
 {
 #if ENABLE(OILPAN)
     // A prefinalizer has already been registered (as a LifecycleObserver);
@@ -57,11 +58,13 @@ void MIDIAccessInitializer::dispose()
     if (!executionContext())
         return;
 
-    // It is safe to cancel a request which is already finished or cancelled.
-    Document* document = toDocument(executionContext());
-    ASSERT(document);
-    if (MIDIController* controller = MIDIController::from(document->frame()))
-        controller->cancelSysexPermissionRequest(this);
+    if (!m_sysexPermissionResolved) {
+        Document* document = toDocument(executionContext());
+        ASSERT(document);
+        if (MIDIController* controller = MIDIController::from(document->frame()))
+            controller->cancelSysexPermissionRequest(this);
+        m_sysexPermissionResolved = true;
+    }
 
     m_hasBeenDisposed = true;
 
@@ -128,6 +131,7 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
 
 void MIDIAccessInitializer::resolveSysexPermission(bool allowed)
 {
+    m_sysexPermissionResolved = true;
     if (allowed)
         m_accessor->startSession();
     else
