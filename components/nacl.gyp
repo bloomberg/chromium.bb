@@ -77,11 +77,12 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_static',
+            '../crypto/crypto.gyp:crypto',
             '../ipc/ipc.gyp:ipc',
             '../mojo/mojo_nacl.gyp:monacl_syscall',
-            '../ppapi/ppapi_internal.gyp:ppapi_shared',
-            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome',
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
           ],
           'conditions': [
@@ -202,11 +203,14 @@
           'target_name': 'nacl_loader_unittests',
           'type': '<(gtest_target_type)',
           'sources': [
+            'nacl/loader/nacl_ipc_adapter_unittest.cc',
+            'nacl/loader/nacl_validation_query_unittest.cc',
             'nacl/loader/run_all_unittests.cc',
           ],
           'dependencies': [
             'nacl',
             '../base/base.gyp:test_support_base',
+            '../ipc/ipc.gyp:test_support_ipc',
             '../testing/gtest.gyp:gtest',
           ],
           'conditions': [
@@ -218,8 +222,8 @@
                 'nacl/loader/nonsfi/irt_icache_unittest.cc',
                 # TODO(hamaji): Currently, we build them twice. Stop building
                 # them for components_unittests. See crbug.com/364751
-                'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
                 'nacl/loader/nonsfi/nonsfi_sandbox_sigsys_unittest.cc',
+                'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
               ],
               'dependencies': [
                 'nacl_linux',

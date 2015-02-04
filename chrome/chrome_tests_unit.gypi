@@ -627,12 +627,6 @@
       'browser/background/background_contents_service_unittest.cc',
       'browser/background/background_mode_manager_unittest.cc',
     ],
-    'chrome_unit_tests_nacl_sources': [
-      # TODO(yael): Move to //components/components_tests.gypi once
-      # nacl_defines is moved out of chrome.gyp into a common place.
-      '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
-      '../components/nacl/loader/nacl_validation_query_unittest.cc',
-    ],
     'chrome_unit_tests_extensions_sources': [
       '../apps/saved_files_service_unittest.cc',
       'browser/apps/app_shim/app_shim_host_mac_unittest.cc',
@@ -2157,9 +2151,6 @@
               ],
             }],
           ],
-        }],
-        ['disable_nacl==0', {
-          'sources':[ '<@(chrome_unit_tests_nacl_sources)' ],
         }],
         ['enable_extensions==1', {
           'sources': [ '<@(chrome_unit_tests_extensions_sources)' ],

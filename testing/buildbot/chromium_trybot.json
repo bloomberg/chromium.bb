@@ -174,10 +174,7 @@
     "mojo_public_system_unittests",
     "mojo_public_utility_unittests",
     "mojo_system_unittests",
-    {
-      "test": "nacl_loader_unittests",
-      "platforms": ["linux"]
-    },
+    "nacl_loader_unittests",
     {
       "test": "net_unittests",
       "swarming": {

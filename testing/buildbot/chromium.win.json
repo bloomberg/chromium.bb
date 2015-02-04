@@ -92,6 +92,7 @@
           "can_use_on_swarming_builders": true
         }
       },
+      "nacl_loader_unittests",
       {
         "test": "net_unittests",
         "swarming": {
@@ -233,6 +234,7 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
+      "nacl_loader_unittests",
       {
         "test": "net_unittests",
         "swarming": {
@@ -382,6 +384,7 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
+      "nacl_loader_unittests",
       {
         "test": "net_unittests",
         "swarming": {
@@ -535,6 +538,7 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
+      "nacl_loader_unittests",
       {
         "test": "net_unittests",
         "swarming": {
@@ -681,6 +685,7 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
+      "nacl_loader_unittests",
       {
         "test": "net_unittests",
         "swarming": {
