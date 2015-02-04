@@ -343,7 +343,8 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   return true;
 }
 
-bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
+bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy,
+                                  std::string& type_str) {
   sandbox::ResultCode result;
   // Renderers need to share events with plugins.
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
@@ -353,8 +354,11 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
     return false;
 
   // Win8+ adds a device DeviceApi that we don't need.
-  if (base::win::GetVersion() > base::win::VERSION_WIN7)
+  // Only close this handle on renderer processes.  See crbug.com/452613.
+  if (base::win::GetVersion() > base::win::VERSION_WIN7 &&
+      type_str == switches::kRendererProcess) {
     result = policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
+  }
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
@@ -649,7 +653,8 @@ base::Process StartSandboxedProcess(
   if (delegate)
     delegate->PreSandbox(&disable_default_policy, &exposed_dir);
 
-  if (!disable_default_policy && !AddPolicyForSandboxedProcess(policy))
+  if (!disable_default_policy &&
+      !AddPolicyForSandboxedProcess(policy, type_str))
     return base::Process();
 
   if (type_str == switches::kRendererProcess) {
