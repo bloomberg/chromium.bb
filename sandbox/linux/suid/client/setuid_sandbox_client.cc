@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -32,7 +31,7 @@
 namespace {
 
 bool IsFileSystemAccessDenied() {
-  base::ScopedFD self_exe(HANDLE_EINTR(open(base::kProcSelfExe, O_RDONLY)));
+  base::ScopedFD self_exe(HANDLE_EINTR(open("/", O_RDONLY)));
   return !self_exe.is_valid();
 }
 
@@ -206,11 +205,6 @@ bool SetuidSandboxClient::ChrootMe() {
   CHECK(IsFileSystemAccessDenied());
   sandboxed_ = true;
   return true;
-}
-
-bool SetuidSandboxClient::CreateInitProcessReaper(
-    base::Closure* post_fork_parent_callback) {
-  return sandbox::CreateInitProcessReaper(post_fork_parent_callback);
 }
 
 bool SetuidSandboxClient::IsSuidSandboxUpToDate() const {
