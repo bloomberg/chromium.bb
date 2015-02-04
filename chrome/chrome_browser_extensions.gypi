@@ -643,8 +643,6 @@
       'browser/extensions/extension_uninstall_dialog.h',
       'browser/extensions/extension_util.cc',
       'browser/extensions/extension_util.h',
-      'browser/extensions/extension_user_script_loader.cc',
-      'browser/extensions/extension_user_script_loader.h',
       'browser/extensions/extension_view_host.cc',
       'browser/extensions/extension_view_host.h',
       'browser/extensions/extension_view_host_factory.cc',

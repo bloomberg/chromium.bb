@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
-#include "extensions/common/host_id.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -195,10 +194,8 @@ class UserScript {
   FileList& css_scripts() { return css_scripts_; }
   const FileList& css_scripts() const { return css_scripts_; }
 
-  const std::string& extension_id() const { return host_id_.id(); }
-
-  const HostID& host_id() const { return host_id_; }
-  void set_host_id(const HostID& host_id) { host_id_ = host_id; }
+  const std::string& extension_id() const { return extension_id_; }
+  void set_extension_id(const std::string& id) { extension_id_ = id; }
 
   int id() const { return user_script_id_; }
   void set_id(int id) { user_script_id_ = id; }
@@ -206,7 +203,7 @@ class UserScript {
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
 
-  bool is_standalone() const { return extension_id().empty(); }
+  bool is_standalone() const { return extension_id_.empty(); }
 
   // Returns true if the script should be applied to the specified URL, false
   // otherwise.
@@ -225,7 +222,6 @@ class UserScript {
   // Pickle helper functions used to pickle the individual types of components.
   void PickleGlobs(::Pickle* pickle,
                    const std::vector<std::string>& globs) const;
-  void PickleHostID(::Pickle* pickle, const HostID& host_id) const;
   void PickleURLPatternSet(::Pickle* pickle,
                            const URLPatternSet& pattern_list) const;
   void PickleScripts(::Pickle* pickle, const FileList& scripts) const;
@@ -233,9 +229,6 @@ class UserScript {
   // Unpickle helper functions used to unpickle individual types of components.
   void UnpickleGlobs(const ::Pickle& pickle, PickleIterator* iter,
                      std::vector<std::string>* globs);
-  void UnpickleHostID(const ::Pickle& pickle,
-                      PickleIterator* iter,
-                      HostID* host_id);
   void UnpickleURLPatternSet(const ::Pickle& pickle, PickleIterator* iter,
                              URLPatternSet* pattern_list);
   void UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
@@ -274,9 +267,9 @@ class UserScript {
   // List of css scripts defined in content_scripts
   FileList css_scripts_;
 
-  // The ID of the host this script is a part of. The |ID| of the
-  // |host_id| can be empty if the script is a "standlone" user script.
-  HostID host_id_;
+  // The ID of the extension this script is a part of, if any. Can be empty if
+  // the script is a "standlone" user script.
+  std::string extension_id_;
 
   // The globally-unique id associated with this user script. Defaults to
   // -1 for invalid.

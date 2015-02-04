@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_user_script_loader.h"
+#include "chrome/browser/extensions/user_script_loader.h"
 
 #include <set>
 #include <string>
@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "extensions/common/host_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -37,10 +36,10 @@ namespace extensions {
 // Test bringing up a script loader on a specific directory, putting a script
 // in there, etc.
 
-class ExtensionUserScriptLoaderTest : public testing::Test,
-                                      public content::NotificationObserver {
+class UserScriptLoaderTest : public testing::Test,
+                             public content::NotificationObserver {
  public:
-  ExtensionUserScriptLoaderTest() : shared_memory_(NULL) {}
+  UserScriptLoaderTest() : shared_memory_(NULL) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -50,8 +49,8 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
                    extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
                    content::NotificationService::AllSources());
 
-    // ExtensionUserScriptLoader posts tasks to the file thread so make the
-    // current thread look like one.
+    // UserScriptLoader posts tasks to the file thread so make the current
+    // thread look like one.
     file_thread_.reset(new content::TestBrowserThread(
         BrowserThread::FILE, base::MessageLoop::current()));
     ui_thread_.reset(new content::TestBrowserThread(
@@ -89,12 +88,11 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
 };
 
 // Test that we get notified even when there are no scripts.
-TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
+TEST_F(UserScriptLoaderTest, NoScripts) {
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
+  UserScriptLoader loader(&profile,
+                          std::string() /* owner_extension_id */,
+                          true /* listen_for_extension_system_loaded */);
   loader.StartLoad();
   message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   message_loop_.Run();
@@ -102,7 +100,7 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
   ASSERT_TRUE(shared_memory_ != NULL);
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse1) {
+TEST_F(UserScriptLoaderTest, Parse1) {
   const std::string text(
     "// This is my awesome script\n"
     "// It does stuff.\n"
@@ -121,35 +119,35 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse1) {
     "alert('hoo!');\n");
 
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
   ASSERT_EQ(3U, script.globs().size());
   EXPECT_EQ("*mail.google.com*", script.globs()[0]);
   EXPECT_EQ("*mail.yahoo.com*", script.globs()[1]);
   EXPECT_EQ("*mail.msn.com*", script.globs()[2]);
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse2) {
+TEST_F(UserScriptLoaderTest, Parse2) {
   const std::string text("default to @include *");
 
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
   ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse3) {
+TEST_F(UserScriptLoaderTest, Parse3) {
   const std::string text(
     "// ==UserScript==\n"
     "// @include *foo*\n"
     "// ==/UserScript=="); // no trailing newline
 
   UserScript script;
-  ExtensionUserScriptLoader::ParseMetadataHeader(text, &script);
+  UserScriptLoader::ParseMetadataHeader(text, &script);
   ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*foo*", script.globs()[0]);
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse4) {
+TEST_F(UserScriptLoaderTest, Parse4) {
   const std::string text(
     "// ==UserScript==\n"
     "// @match http://*.mail.google.com/*\n"
@@ -161,12 +159,12 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse4) {
   AddPattern(&expected_patterns, "http://mail.yahoo.com/*");
 
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
   EXPECT_EQ(0U, script.globs().size());
   EXPECT_EQ(expected_patterns, script.url_patterns());
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse5) {
+TEST_F(UserScriptLoaderTest, Parse5) {
   const std::string text(
     "// ==UserScript==\n"
     "// @match http://*mail.google.com/*\n"
@@ -174,10 +172,10 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse5) {
 
   // Invalid @match value.
   UserScript script;
-  EXPECT_FALSE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_FALSE(UserScriptLoader::ParseMetadataHeader(text, &script));
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse6) {
+TEST_F(UserScriptLoaderTest, Parse6) {
   const std::string text(
     "// ==UserScript==\n"
     "// @include http://*.mail.google.com/*\n"
@@ -186,10 +184,10 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse6) {
 
   // Allowed to match @include and @match.
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse7) {
+TEST_F(UserScriptLoaderTest, Parse7) {
   // Greasemonkey allows there to be any leading text before the comment marker.
   const std::string text(
     "// ==UserScript==\n"
@@ -199,7 +197,7 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse7) {
     "// ==/UserScript==\n");
 
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
   ASSERT_EQ("hello", script.name());
   ASSERT_EQ("wiggity woo", script.description());
   ASSERT_EQ(1U, script.url_patterns().patterns().size());
@@ -207,7 +205,7 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse7) {
             script.url_patterns().begin()->GetAsString());
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, Parse8) {
+TEST_F(UserScriptLoaderTest, Parse8) {
   const std::string text(
     "// ==UserScript==\n"
     "// @name myscript\n"
@@ -216,7 +214,7 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse8) {
     "// ==/UserScript==\n");
 
   UserScript script;
-  EXPECT_TRUE(ExtensionUserScriptLoader::ParseMetadataHeader(text, &script));
+  EXPECT_TRUE(UserScriptLoader::ParseMetadataHeader(text, &script));
   ASSERT_EQ("myscript", script.name());
   ASSERT_EQ(1U, script.url_patterns().patterns().size());
   EXPECT_EQ("http://www.google.com/*",
@@ -226,7 +224,7 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse8) {
             script.exclude_url_patterns().begin()->GetAsString());
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
+TEST_F(UserScriptLoaderTest, SkipBOMAtTheBeginning) {
   base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
   const std::string content("\xEF\xBB\xBF alert('hello');");
   size_t written = base::WriteFile(path, content.c_str(), content.size());
@@ -239,18 +237,13 @@ TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
-  loader.LoadScriptsForTest(&user_scripts);
+  UserScriptLoader::LoadScriptsForTest(&user_scripts);
 
   EXPECT_EQ(content.substr(3),
             user_scripts[0].js_scripts()[0].GetContent().as_string());
 }
 
-TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
+TEST_F(UserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
   base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
   const std::string content("alert('here's a BOOM: \xEF\xBB\xBF');");
   size_t written = base::WriteFile(path, content.c_str(), content.size());
@@ -263,12 +256,7 @@ TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
-  loader.LoadScriptsForTest(&user_scripts);
+  UserScriptLoader::LoadScriptsForTest(&user_scripts);
 
   EXPECT_EQ(content, user_scripts[0].js_scripts()[0].GetContent().as_string());
 }

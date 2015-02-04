@@ -135,7 +135,6 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
   // in case the input is syntactically unexpected.
   static scoped_refptr<const WebRequestAction> Create(
       content::BrowserContext* browser_context,
-      const HostID& host_id,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error,

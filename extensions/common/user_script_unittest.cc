@@ -193,8 +193,7 @@ TEST(ExtensionUserScriptTest, Pickle) {
   const int64 kId = 12;
   script1.set_id(kId);
   const std::string kExtensionId = "foo";
-  HostID id(HostID::EXTENSIONS, kExtensionId);
-  script1.set_host_id(id);
+  script1.set_extension_id(kExtensionId);
 
   Pickle pickle;
   script1.Pickle(&pickle);

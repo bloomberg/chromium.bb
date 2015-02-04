@@ -14,7 +14,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_user_script_loader.h"
+#include "chrome/browser/extensions/user_script_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"

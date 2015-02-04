@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_user_script_loader.h"
+#include "chrome/browser/extensions/user_script_loader.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/user_script.h"
@@ -48,7 +48,7 @@ class SharedUserScriptMaster : public ExtensionRegistryObserver {
 
   // Script loader that handles loading contents of scripts into shared memory
   // and notifying renderers of scripts in shared memory.
-  ExtensionUserScriptLoader loader_;
+  UserScriptLoader loader_;
 
   // The profile for which the scripts managed here are installed.
   Profile* profile_;

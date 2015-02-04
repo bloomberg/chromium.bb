@@ -7,18 +7,30 @@
 #include <set>
 
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
-DeclarativeUserScriptMaster::DeclarativeUserScriptMaster(Profile* profile,
-                                                         const HostID& host_id)
-    : host_id_(host_id),
+DeclarativeUserScriptMaster::DeclarativeUserScriptMaster(
+    Profile* profile,
+    const ExtensionId& extension_id)
+    : extension_id_(extension_id),
       loader_(profile,
-              host_id,
-              false /* listen_for_extension_system_loaded */) {
+              extension_id,
+              false /* listen_for_extension_system_loaded */),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 DeclarativeUserScriptMaster::~DeclarativeUserScriptMaster() {
+}
+
+void DeclarativeUserScriptMaster::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  if (extension_id_ == extension->id())
+    ClearScripts();
 }
 
 void DeclarativeUserScriptMaster::AddScript(const UserScript& script) {

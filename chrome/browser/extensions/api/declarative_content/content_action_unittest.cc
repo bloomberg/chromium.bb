@@ -74,7 +74,7 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   // Test wrong data type passed.
   error.clear();
   result = ContentAction::Create(
-      NULL, HostID(), NULL, *ParseJson("[]"), &error, &bad_message);
+      NULL, NULL, *ParseJson("[]"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
   EXPECT_FALSE(result.get());
@@ -82,14 +82,14 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   // Test missing instanceType element.
   error.clear();
   result = ContentAction::Create(
-      NULL, HostID(), NULL, *ParseJson("{}"), &error, &bad_message);
+      NULL, NULL, *ParseJson("{}"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   error.clear();
-  result = ContentAction::Create(NULL, HostID(), NULL, *ParseJson(
+  result = ContentAction::Create(NULL, NULL, *ParseJson(
       "{\n"
       "  \"instanceType\": \"declarativeContent.UnknownType\",\n"
       "}"),
@@ -106,7 +106,6 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       NULL,
-      HostID(HostID::EXTENSIONS, extension->id()),
       extension,
       *ParseJson(
            "{\n"
@@ -128,7 +127,6 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       NULL,
-      HostID(HostID::EXTENSIONS, extension->id()),
       extension,
       *ParseJson(
            "{\n"
@@ -187,7 +185,6 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       NULL,
-      HostID(HostID::EXTENSIONS, extension->id()),
       extension,
       *dict,
       &error,
@@ -220,7 +217,6 @@ TEST_F(RequestContentScriptTest, MissingScripts) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -241,7 +237,6 @@ TEST_F(RequestContentScriptTest, CSS) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -262,7 +257,6 @@ TEST_F(RequestContentScriptTest, JS) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -283,7 +277,6 @@ TEST_F(RequestContentScriptTest, CSSBadType) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -302,7 +295,6 @@ TEST_F(RequestContentScriptTest, JSBadType) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -321,7 +313,6 @@ TEST_F(RequestContentScriptTest, AllFrames) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -343,7 +334,6 @@ TEST_F(RequestContentScriptTest, MatchAboutBlank) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -365,7 +355,6 @@ TEST_F(RequestContentScriptTest, AllFramesBadType) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"
@@ -385,7 +374,6 @@ TEST_F(RequestContentScriptTest, MatchAboutBlankBadType) {
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
       profile(),
-      HostID(HostID::EXTENSIONS, extension()->id()),
       extension(),
       *ParseJson(
           "{\n"

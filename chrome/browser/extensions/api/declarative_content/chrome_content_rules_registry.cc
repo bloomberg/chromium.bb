@@ -168,7 +168,6 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
 
     scoped_ptr<ContentRule> content_rule(
         ContentRule::Create(url_matcher_.condition_factory(), browser_context(),
-                            HostID(HostID::EXTENSIONS, extension->id()),
                             extension, extension_installation_time, *rule,
                             ContentRule::ConsistencyChecker(), &error));
     if (!error.empty()) {
