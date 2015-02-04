@@ -32,17 +32,6 @@ AppListStartPageWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
-   * Sample doodle data.
-   */
-  doodleData_: {
-    'ddljson': {
-      'transparent_large_image': {
-        'url': 'doodle.png'
-      }
-    }
-  },
-
-  /**
    * Browser to app launcher start page.
    */
   browsePreload: 'chrome://app-list/',
@@ -135,11 +124,40 @@ TEST_F('AppListStartPageWebUITest', 'Basic', function() {
 });
 
 TEST_F('AppListStartPageWebUITest', 'LoadDoodle', function() {
-  var doodle = $('doodle');
-  assertEquals('', doodle.src);
-  appList.startPage.onAppListDoodleUpdated(this.doodleData_,
+  var doodleData = {
+    'ddljson': {
+      'transparent_large_image': {
+        'url': 'doodle.png'
+      },
+      'alt_text': 'Doodle alt text',
+      'target_url': '/target.html'
+    }
+  };
+
+  assertEquals(null, $('doodle'));
+
+  // Load the doodle with a target url and alt text.
+  appList.startPage.onAppListDoodleUpdated(doodleData,
+                                           'http://example.com/x/');
+  assertNotEquals(null, $('doodle'));
+  assertEquals('http://example.com/x/doodle.png', $('doodle_image').src);
+  assertEquals(doodleData.ddljson.alt_text, $('doodle_image').title);
+  assertEquals('http://example.com/target.html', $('doodle_link').href);
+
+  // Reload the doodle without a target url and alt text.
+  doodleData.ddljson.alt_text = undefined;
+  doodleData.ddljson.target_url = undefined;
+  appList.startPage.onAppListDoodleUpdated(doodleData,
+                                           'http://example.com/x/');
+  assertNotEquals(null, $('doodle'));
+  assertEquals('http://example.com/x/doodle.png', $('doodle_image').src);
+  assertEquals('', $('doodle_image').title);
+  assertEquals(null, $('doodle_link'));
+
+
+  appList.startPage.onAppListDoodleUpdated({},
                                            'http://example.com/');
-  assertEquals('http://example.com/doodle.png', doodle.src);
+  assertEquals(null, $('doodle'));
 });
 
 TEST_F('AppListStartPageWebUITest', 'SpeechRecognitionState', function() {

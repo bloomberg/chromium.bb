@@ -13,6 +13,9 @@ cr.define('appList.startPage', function() {
 
   var speechManager = null;
 
+  // The element containing the current Google Doodle.
+  var doodle = null;
+
   /**
    * Initialize the page.
    */
@@ -48,24 +51,72 @@ cr.define('appList.startPage', function() {
   }
 
   /**
+   * Sets the doodle's visibility, hiding or showing the default logo.
+   *
+   * @param {boolean} visible Whether the doodle should be made visible.
+   */
+  function setDoodleVisible(visible) {
+    var doodle = $('doodle');
+    var defaultLogo = $('default_logo');
+    if (visible) {
+      doodle.style.display = 'flex';
+      defaultLogo.style.display = 'none';
+    } else {
+      if (doodle)
+        doodle.style.display = 'none';
+
+      defaultLogo.style.display = 'block';
+    }
+  }
+
+  /**
    * Invoked when the app-list doodle is updated.
    *
    * @param {Object} data The data object representing the current doodle.
    */
   function onAppListDoodleUpdated(data, base_url) {
-    var defaultLogo = $('default_logo');
-    var doodle = $('doodle');
-    if (!data.ddljson || !data.ddljson.transparent_large_image) {
-      defaultLogo.style.display = 'block';
-      doodle.style.display = 'none';
+    if (this.doodle) {
+      this.doodle.parentNode.removeChild(this.doodle);
+      this.doodle = null;
+    }
+
+    var doodleData = data.ddljson;
+    if (!doodleData || !doodleData.transparent_large_image) {
+      setDoodleVisible(false);
       return;
     }
 
-    doodle.onload = function() {
-      defaultLogo.style.display = 'none';
-      doodle.style.display = 'block';
+    // Set the page's base URL so that links will resolve relative to the Google
+    // homepage.
+    $('base').href = base_url;
+
+    this.doodle = document.createElement('div');
+    this.doodle.id = 'doodle';
+    this.doodle.style.display = 'none';
+
+    var doodleImage = document.createElement('img');
+    doodleImage.id = 'doodle_image';
+    if (doodleData.alt_text) {
+      doodleImage.alt = doodleData.alt_text;
+      doodleImage.title = doodleData.alt_text;
+    }
+
+    doodleImage.onload = function() {
+      setDoodleVisible(true);
     };
-    doodle.src = base_url + data.ddljson.transparent_large_image.url;
+    doodleImage.src = doodleData.transparent_large_image.url;
+
+    if (doodleData.target_url) {
+      var doodleLink = document.createElement('a');
+      doodleLink.id = 'doodle_link';
+      doodleLink.href = doodleData.target_url;
+      doodleLink.target = '_blank';
+      doodleLink.appendChild(doodleImage);
+      this.doodle.appendChild(doodleLink);
+    } else {
+      this.doodle.appendChild(doodleImage);
+    }
+    $('logo_container').appendChild(this.doodle);
   }
 
   /**
@@ -94,4 +145,5 @@ cr.define('appList.startPage', function() {
   };
 });
 
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.addEventListener('DOMContentLoaded', appList.startPage.initialize);

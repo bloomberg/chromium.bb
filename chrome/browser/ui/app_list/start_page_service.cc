@@ -23,6 +23,9 @@
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -107,7 +110,7 @@ class StartPageService::ProfileDestroyObserver
 class StartPageService::StartPageWebContentsDelegate
     : public content::WebContentsDelegate {
  public:
-  StartPageWebContentsDelegate() {}
+  explicit StartPageWebContentsDelegate(Profile* profile) : profile_(profile) {}
   ~StartPageWebContentsDelegate() override {}
 
   void RequestMediaAccessPermission(
@@ -125,7 +128,50 @@ class StartPageService::StartPageWebContentsDelegate
         ->CheckMediaAccessPermission(web_contents, security_origin, type);
   }
 
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override {
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+        profile_, chrome::GetActiveDesktop());
+    // Force all links to open in a new tab, even if they were trying to open a
+    // new window.
+    disposition =
+        disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+    chrome::AddWebContents(displayer.browser(),
+                           nullptr,
+                           new_contents,
+                           disposition,
+                           initial_pos,
+                           user_gesture,
+                           was_blocked);
+  }
+
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override {
+    // Force all links to open in a new tab, even if they were trying to open a
+    // window.
+    chrome::NavigateParams new_tab_params(
+        static_cast<Browser*>(nullptr), params.url, params.transition);
+    if (params.disposition == NEW_BACKGROUND_TAB) {
+      new_tab_params.disposition = NEW_BACKGROUND_TAB;
+    } else {
+      new_tab_params.disposition = NEW_FOREGROUND_TAB;
+      new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    }
+
+    new_tab_params.initiating_profile = profile_;
+    chrome::Navigate(&new_tab_params);
+
+    return new_tab_params.target_contents;
+  }
+
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(StartPageWebContentsDelegate);
 };
 
@@ -498,7 +544,7 @@ void StartPageService::WebUILoaded() {
 void StartPageService::LoadContents() {
   contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile_)));
-  contents_delegate_.reset(new StartPageWebContentsDelegate());
+  contents_delegate_.reset(new StartPageWebContentsDelegate(profile_));
   contents_->SetDelegate(contents_delegate_.get());
 
   // The ZoomController needs to be created before the web contents is observed
