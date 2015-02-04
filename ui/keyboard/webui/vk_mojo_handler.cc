@@ -29,6 +29,11 @@ ui::InputMethod* VKMojoHandler::GetInputMethod() {
   return KeyboardController::GetInstance()->proxy()->GetInputMethod();
 }
 
+void VKMojoHandler::SetTextInputTypeObserver(
+    TextInputTypeObserverPtr observer) {
+  text_input_type_observer_ = observer.Pass();
+}
+
 void VKMojoHandler::SendKeyEvent(const mojo::String& event_type,
                                  int32_t char_value,
                                  int32_t key_code,
@@ -61,6 +66,9 @@ void VKMojoHandler::OnCaretBoundsChanged(const ui::TextInputClient* client) {
 
 void VKMojoHandler::OnTextInputStateChanged(
     const ui::TextInputClient* text_client) {
+  if (!text_input_type_observer_)
+    return;
+
   ui::TextInputType type =
       text_client ? text_client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   std::string type_name = "none";
@@ -106,7 +114,7 @@ void VKMojoHandler::OnTextInputStateChanged(
       type_name = "text";
       break;
   }
-  binding_.client()->OnTextInputTypeChanged(type_name);
+  text_input_type_observer_->OnTextInputTypeChanged(type_name);
 }
 
 void VKMojoHandler::OnInputMethodDestroyed(

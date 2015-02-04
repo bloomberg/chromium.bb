@@ -12,16 +12,19 @@ if (!chrome.virtualKeyboardPrivate) {
       'content/public/renderer/service_provider',
   ], function(connector, keyboard, serviceProvider) {
     'use strict';
-    function KeyboardImpl(kbd) {
-      console.log('Creating KeyboardImpl');
+    function TextInputTypeObserverImpl(kbd) {
+      console.log('Creating TextInputTypeObserverImpl');
       this.keyboard_ = kbd;
       mojo_api = this;
+      mojo_api.setTextInputTypeObserver(
+          connection.bindImpl(this, keyboard.TextInputTypeObserver));
     }
 
-    KeyboardImpl.prototype = Object.create(
+    TextInputTypeObserverImpl.prototype = Object.create(
         keyboard.KeyboardAPI.stubClass.prototype);
 
-    KeyboardImpl.prototype.onTextInputTypeChanged = function(input_type) {
+    TextInputTypeObserverImpl.prototype.onTextInputTypeChanged =
+        function(input_type) {
       console.log('Text input changed: ' + input_type);
       input_focused_event.forEach(function(listener) {
         listener({type: input_type});
@@ -29,11 +32,10 @@ if (!chrome.virtualKeyboardPrivate) {
     };
 
     return function() {
-      connection = new connector.Connection(
-          serviceProvider.connectToService(
-              keyboard.KeyboardUIHandlerMojo.name),
-          KeyboardImpl,
-          keyboard.KeyboardUIHandlerMojo.proxyClass);
+      const KBDApi = keyboard.KeyboardUIHandlerMojo;
+      new TextInputObserverImpl(connection.bindHandleToProxy(
+            serviceProvider.connectToService(KBDApi.name),
+            KBDApi));
     };
   });
 
