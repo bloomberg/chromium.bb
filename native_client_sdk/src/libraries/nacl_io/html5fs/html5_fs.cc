@@ -155,6 +155,9 @@ Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
     int32_t query_result = file_ref_iface_->Query(
         fileref_resource.pp_resource(), &file_info, PP_BlockUntilComplete());
     if (query_result != PP_OK) {
+      if (query_result == PP_ERROR_FILENOTFOUND) {
+        return ENOENT;
+      }
       LOG_ERROR("Error querying file type");
       return EINVAL;
     }
