@@ -720,3 +720,11 @@ name=http://crbug.com/455060
 *!content::BrowserAccessibilityManager::OnWindowBlurred
 ...
 *!content::RenderWidgetHostViewAura::Destroy
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/455066
+system call NtReadFile parameter #4
+KERNELBASE.dll!ReadFile
+KERNEL32.dll!ReadFile
+*!net::FileStream::Context::ReadAsync
+*!base::internal::RunnableAdapter<>::Run
