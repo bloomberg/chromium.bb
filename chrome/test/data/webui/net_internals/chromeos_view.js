@@ -47,10 +47,13 @@ ResultChecker.prototype = {
 };
 
 TEST_F('NetInternalsTest',
-       'DISABLED_netInternalsChromeOSViewStoreDebugLogs',
+       'netInternalsChromeOSViewStoreDebugLogs',
        function() {
-  if (!cr.isChromeOS)
+  if (!cr.isChromeOS) {
     testDone();
+    return;
+  }
+
   // #chromeos-view-import-onc fails accessibility check.
   this.runAccessibilityChecks = false;
   NetInternalsTest.switchToView('chromeos');
