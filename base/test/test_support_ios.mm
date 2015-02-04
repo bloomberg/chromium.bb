@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/test/test_suite.h"
+#include "testing/coverage_util_ios.h"
 
 // Springboard will kill any iOS app that fails to check in after launch within
 // a given time. Starting a UIApplication before invoking TestSuite::Run
@@ -164,6 +165,8 @@ static char** g_argv;
   // things can think the app crashed even on a zero exit status).
   UIApplication* application = [UIApplication sharedApplication];
   [application _terminateWithStatus:exitStatus];
+
+  coverage_util::FlushCoverageDataIfNecessary();
 
   exit(exitStatus);
 }
