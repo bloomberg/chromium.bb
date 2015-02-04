@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-// See shell_gcd.idl for documentation.
+// Used for manual testing in app_shell. See shell_gcd.idl for documentation.
 class ShellGcdPingFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("shell.gcd.ping", UNKNOWN);
@@ -28,6 +28,24 @@ class ShellGcdPingFunction : public UIThreadExtensionFunction {
   void OnPing(bool success);
 
   DISALLOW_COPY_AND_ASSIGN(ShellGcdPingFunction);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Used for manual testing in app_shell. See shell_gcd.idl for documentation.
+class ShellGcdGetWiFiBootstrapStateFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("shell.gcd.getWiFiBootstrapState", UNKNOWN);
+
+  ShellGcdGetWiFiBootstrapStateFunction();
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  ~ShellGcdGetWiFiBootstrapStateFunction() override;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellGcdGetWiFiBootstrapStateFunction);
 };
 
 }  // namespace extensions

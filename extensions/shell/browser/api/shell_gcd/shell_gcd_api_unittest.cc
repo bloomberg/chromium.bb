@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/privet_daemon_client.h"
 #include "extensions/browser/api_unittest.h"
 
 namespace extensions {
@@ -33,7 +34,7 @@ class ShellGcdApiTest : public ApiUnitTest {
   DISALLOW_COPY_AND_ASSIGN(ShellGcdApiTest);
 };
 
-TEST_F(ShellGcdApiTest, GetBootstrapStatus) {
+TEST_F(ShellGcdApiTest, Ping) {
   // Function succeeds and returns a result (for its callback).
   scoped_ptr<base::Value> result =
       RunFunctionAndReturnValue(new ShellGcdPingFunction, "[{}]");
@@ -41,6 +42,16 @@ TEST_F(ShellGcdApiTest, GetBootstrapStatus) {
   bool success = false;
   result->GetAsBoolean(&success);
   EXPECT_TRUE(success);
+}
+
+TEST_F(ShellGcdApiTest, GetWiFiBootstrapState) {
+  // Function succeeds and returns a result (for its callback).
+  scoped_ptr<base::Value> result = RunFunctionAndReturnValue(
+      new ShellGcdGetWiFiBootstrapStateFunction, "[{}]");
+  ASSERT_TRUE(result.get());
+  std::string state;
+  result->GetAsString(&state);
+  EXPECT_EQ(privetd::kWiFiBootstrapStateMonitoring, state);
 }
 
 }  // namespace extensions

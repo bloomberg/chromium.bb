@@ -20,6 +20,9 @@ class FakePrivetDaemonClient : public PrivetDaemonClient {
   void Init(dbus::Bus* bus) override;
 
   // PrivetClient overrides:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::string GetWifiBootstrapState() override;
   void Ping(const PingCallback& callback) override;
 
  private:

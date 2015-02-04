@@ -5,12 +5,20 @@
 // Setup related functions for a Google Cloud Devices (GCD) target device
 // running on Chrome OS Core. The actual bootstrapping and GCD registration is
 // handled by the privetd and buffet system daemons.
+//
+// TODO(jamescook): This API exists only for manual testing of GCD in app_shell.
+// Delete it when GCD setup is integrated into OOBE.
 namespace shell.gcd {
  
   callback PingCallback = void(boolean success);
+  callback StateCallback = void(DOMString state);
 
   interface Functions {
     // Attempts to ping the daemon via D-Bus.
     static void ping(PingCallback callback);
+
+    // Returns the Wi-Fi bootstrap state. Return values are found in
+    // platform2/privetd/dbus_bindings/org.chromium.privetd.Manager.xml.
+    static void getWiFiBootstrapState(StateCallback callback);
   };
 };

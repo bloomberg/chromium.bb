@@ -17,8 +17,19 @@
 // interface is finalized.
 namespace privetd {
 const char kPrivetdServiceName[] = "org.chromium.privetd";
-const char kPrivetdManagerServicePath[] = "/org/chromium/privetd/Manager";
+const char kPrivetdServicePath[] = "/org/chromium/privetd";
 const char kPrivetdManagerInterface[] = "org.chromium.privetd.Manager";
+const char kPrivetdManagerServicePath[] = "/org/chromium/privetd/Manager";
+
+// Properties.
+const char kWiFiBootstrapStateProperty[] = "WiFiBootstrapState";
+
+// Property values.
+const char kWiFiBootstrapStateDisabled[] = "disabled";
+const char kWiFiBootstrapStateWaiting[] = "waiting";
+const char kWiFiBootstrapStateConnecting[] = "connecting";
+const char kWiFiBootstrapStateMonitoring[] = "monitoring";
+
 // Methods.
 const char kPingMethod[] = "Ping";
 }  // namespace privetd
@@ -30,10 +41,26 @@ namespace chromeos {
 // embedded Chrome OS Core device.
 class CHROMEOS_EXPORT PrivetDaemonClient : public DBusClient {
  public:
-  ~PrivetDaemonClient() override;
-
   // Returns true if privetd correctly responded to Ping().
   using PingCallback = base::Callback<void(bool success)>;
+
+  // Interface for observing changes in setup state.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Notifies the observer when a named |property| changes.
+    virtual void OnPrivetDaemonPropertyChanged(const std::string& property) = 0;
+  };
+
+  ~PrivetDaemonClient() override;
+
+  // The usual observer interface.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns the current properties.
+  virtual std::string GetWifiBootstrapState() = 0;
 
   // Asynchronously pings the daemon.
   virtual void Ping(const PingCallback& callback) = 0;
@@ -46,8 +73,6 @@ class CHROMEOS_EXPORT PrivetDaemonClient : public DBusClient {
   PrivetDaemonClient();
 
  private:
-  friend class PrivetDaemonClientTest;
-
   DISALLOW_COPY_AND_ASSIGN(PrivetDaemonClient);
 };
 

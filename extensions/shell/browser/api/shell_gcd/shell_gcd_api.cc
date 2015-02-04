@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/api/shell_gcd/shell_gcd_api.h"
 
+#include <string>
+
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/privet_daemon_client.h"
@@ -28,6 +30,22 @@ ExtensionFunction::ResponseAction ShellGcdPingFunction::Run() {
 
 void ShellGcdPingFunction::OnPing(bool success) {
   Respond(OneArgument(new base::FundamentalValue(success)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+ShellGcdGetWiFiBootstrapStateFunction::ShellGcdGetWiFiBootstrapStateFunction() {
+}
+
+ShellGcdGetWiFiBootstrapStateFunction::
+    ~ShellGcdGetWiFiBootstrapStateFunction() {
+}
+
+ExtensionFunction::ResponseAction ShellGcdGetWiFiBootstrapStateFunction::Run() {
+  std::string state = chromeos::DBusThreadManager::Get()
+                          ->GetPrivetDaemonClient()
+                          ->GetWifiBootstrapState();
+  return RespondNow(OneArgument(new base::StringValue(state)));
 }
 
 }  // namespace extensions

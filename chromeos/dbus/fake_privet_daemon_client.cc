@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_privet_daemon_client.h"
 
+#include <string>
+
 #include "base/callback.h"
 
 namespace chromeos {
@@ -15,6 +17,17 @@ FakePrivetDaemonClient::~FakePrivetDaemonClient() {
 }
 
 void FakePrivetDaemonClient::Init(dbus::Bus* bus) {
+}
+
+void FakePrivetDaemonClient::AddObserver(Observer* observer) {
+}
+
+void FakePrivetDaemonClient::RemoveObserver(Observer* observer) {
+}
+
+std::string FakePrivetDaemonClient::GetWifiBootstrapState() {
+  // Simulate Wi-Fi being configured already.
+  return privetd::kWiFiBootstrapStateMonitoring;
 }
 
 void FakePrivetDaemonClient::Ping(const PingCallback& callback) {
