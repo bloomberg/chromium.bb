@@ -8,8 +8,11 @@
 #include <ostream>
 
 #include "base/base64.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "net/base/escape.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon_stdstring.h"
@@ -283,6 +286,19 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
   std::sort(a_sorted.begin(), a_sorted.end());
   std::sort(b_sorted.begin(), b_sorted.end());
   return std::equal(a_sorted.begin(), a_sorted.end(), b_sorted.begin());
+}
+
+bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
+  // Note: It is important to always query the field trial state, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AffiliationBasedMatching");
+
+  if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
+    return true;
+  return StartsWithASCII(group_name, "Enabled", /*case_sensitive=*/false);
 }
 
 }  // namespace password_manager

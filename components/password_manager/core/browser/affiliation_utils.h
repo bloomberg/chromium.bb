@@ -53,6 +53,10 @@
 #include "base/time/time.h"
 #include "url/url_parse.h"
 
+namespace base {
+class CommandLine;
+}  // namespace base
+
 namespace password_manager {
 
 // Encapsulates a facet URI in canonical form.
@@ -160,6 +164,11 @@ struct AffiliatedFacetsWithUpdateTime {
 // Note that this will do some sorting, so it can be expensive for large inputs.
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b);
+
+// Returns whether or not affiliation based matching is enabled, either via
+// command line flags or field trials. The command line flag, if present, always
+// takes precedence.
+bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line);
 
 // For logging use only.
 std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);

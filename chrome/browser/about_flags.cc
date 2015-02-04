@@ -1038,6 +1038,15 @@ const Experiment kExperiments[] = {
              autofill::switches::kEnablePasswordSaveOnInPageNavigation)
   },
   {
+    "enable-affiliation-based-matching",
+    IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME,
+    IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS | kOsMac | kOsAndroid,
+    ENABLE_DISABLE_VALUE_TYPE(
+        password_manager::switches::kEnableAffiliationBasedMatching,
+        password_manager::switches::kDisableAffiliationBasedMatching)
+  },
+  {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,

@@ -6300,6 +6300,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SAVE_PASSOWRD_ON_IN_PAGE_NAVIGATION_DESCRIPTION" desc="Description of the flag to enable showing of password save prompt on in-page navigations">
         Enable showing of the password prompt on in-page navigations. This allows for saving passwords on more pages but might sometimes trigger the prompt on unsuccessful login attempts.
       </message>
+      <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME" desc="Name of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
+        Enable affiliation based matching in password manager.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_DESCRIPTION" desc="Description of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
+        Allow credentials stored for Android applications to be filled into corresponding websites.
+      </message>
       <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME" desc="Name of the flag specifying how the browser will handle autofilling the users sync credential.">
         Autofill sync credential
       </message>
