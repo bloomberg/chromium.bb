@@ -49,7 +49,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     if self._env.trigger:
       self._TriggerSetUp()
     elif self._env.collect:
-      assert isinstance(self._env.trigger, basestring), (
+      assert isinstance(self._env.collect, basestring), (
                         'File for storing test_run_id must be a string.')
       with open(self._env.collect, 'r') as persisted_data_file:
         persisted_data = json.loads(persisted_data_file.read())

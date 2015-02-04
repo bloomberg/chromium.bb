@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import os
+import json
+import logging
 
 from pylib import constants
 from pylib.base import test_instance
@@ -20,16 +22,27 @@ class UirobotTestInstance(test_instance.TestInstance):
     if not args.app_under_test:
       error_func('Must set --app-under-test.')
     self._app_under_test = args.app_under_test
+    self._minutes = args.minutes
 
-    if args.device_type == 'Android':
+    if args.remote_device_file:
+      with open(args.remote_device_file) as remote_device_file:
+        device_json = json.load(remote_device_file)
+    else:
+      device_json = {}
+    device_type = device_json.get('device_type', 'Android')
+    if args.device_type:
+      if device_type and device_type != args.device_type:
+        logging.info('Overriding device_type from %s to %s',
+                     device_type, args.device_type)
+      device_type = args.device_type
+
+    if device_type == 'Android':
       self._suite = 'Android Uirobot'
       self._package_name = apk_helper.GetPackageName(self._app_under_test)
-
-    elif args.device_type == 'iOS':
+    elif device_type == 'iOS':
       self._suite = 'iOS Uirobot'
       self._package_name = self._app_under_test
 
-    self._minutes = args.minutes
 
   #override
   def TestType(self):

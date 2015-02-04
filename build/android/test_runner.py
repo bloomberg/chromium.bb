@@ -121,28 +121,40 @@ def ProcessCommonOptions(args):
 def AddRemoteDeviceOptions(parser):
   group = parser.add_argument_group('Remote Device Options')
 
-  group.add_argument('--trigger', default='',
+  group.add_argument('--trigger',
                      help=('Only triggers the test if set. Stores test_run_id '
                            'in given file path. '))
-  group.add_argument('--collect', default='',
+  group.add_argument('--collect',
                      help=('Only collects the test results if set. '
                            'Gets test_run_id from given file path.'))
-  group.add_argument('--remote-device', default='',
+  group.add_argument('--remote-device', action='append',
                      help='Device type to run test on.')
-  group.add_argument('--remote-device-os', default='',
-                     help='OS to have on the device.')
-  group.add_argument('--results-path', default='',
+  group.add_argument('--results-path',
                      help='File path to download results to.')
   group.add_argument('--api-protocol',
                      help='HTTP protocol to use. (http or https)')
-  group.add_argument('--api-address', help='Address to send HTTP requests.')
-  group.add_argument('--api-port', help='Port to send HTTP requests to.')
-  group.add_argument('--runner-type', default='',
+  group.add_argument('--api-address',
+                     help='Address to send HTTP requests.')
+  group.add_argument('--api-port',
+                     help='Port to send HTTP requests to.')
+  group.add_argument('--runner-type',
                      help='Type of test to run as.')
-  group.add_argument('--runner-package', help='Package name of test.')
-  group.add_argument('--device-type', default='Android',
+  group.add_argument('--runner-package',
+                     help='Package name of test.')
+  group.add_argument('--device-type',
                      choices=constants.VALID_DEVICE_TYPES,
                      help=('Type of device to run on. iOS or android'))
+  group.add_argument('--device-oem', action='append',
+                     help='Device OEM to run on.')
+  group.add_argument('--remote-device-file',
+                     help=('File with JSON to select remote device. '
+                           'Overrides all other flags.'))
+
+  device_os_group = group.add_mutually_exclusive_group()
+  device_os_group.add_argument('--remote-device-minimum-os',
+                               help='Minimum OS on device.')
+  device_os_group.add_argument('--remote-device-os', action='append',
+                               help='OS to have on the device.')
 
   api_secret_group = group.add_mutually_exclusive_group()
   api_secret_group.add_argument('--api-secret', default='',
@@ -513,7 +525,8 @@ def AddUirobotTestOptions(parser):
   """Adds uirobot test options to |option_parser|."""
   group = parser.add_argument_group('Uirobot Test Options')
 
-  group.add_argument('--app-under-test', help='APK to run tests on.')
+  group.add_argument('--app-under-test', required=True,
+                     help='APK to run tests on.')
   group.add_argument(
       '--minutes', default=5, type=int,
       help='Number of minutes to run uirobot test [default: %default].')
