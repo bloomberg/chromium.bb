@@ -156,6 +156,11 @@ v8::Local<v8::Script> compileAndProduceCache(ScriptResource* resource, unsigned 
             data = compressedOutput.data();
             length = compressedOutput.length();
         }
+        if (length > 1024) {
+            // Omit histogram samples for small cache data to avoid outliers.
+            int cacheSizeRatio = static_cast<int>(100.0 * length / code->Length());
+            blink::Platform::current()->histogramCustomCounts("V8.CodeCacheSizeRatio", cacheSizeRatio, 0, 10000, 50);
+        }
         resource->clearCachedMetadata();
         resource->setCachedMetadata(tag, data, length, cacheType);
     }
@@ -204,9 +209,9 @@ void setCacheTimeStamp(ScriptResource* resource)
 }
 
 // Check previously stored timestamp.
-bool isResourceHotForCaching(ScriptResource* resource)
+bool isResourceHotForCaching(ScriptResource* resource, int hotHours)
 {
-    const double kCacheWithinSeconds = 36 * 60 * 60;
+    const double kCacheWithinSeconds = hotHours * 60 * 60;
     unsigned tag = cacheTag(CacheTagTimeStamp, resource);
     CachedMetadata* cachedMetadata = resource->cachedMetadata(tag);
     if (!cachedMetadata)
@@ -265,24 +270,23 @@ PassOwnPtr<CompileFn> bind(const A&... args)
 PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, v8::Handle<v8::String> code)
 {
     static const int minimalCodeLength = 1024;
-    static const int mediumCodeLength = 300000;
 
-    if (cacheOptions == V8CacheOptionsNone
-        || !resource
-        || !resource->url().protocolIsInHTTPFamily()) {
+    if (!resource || !resource->url().protocolIsInHTTPFamily())
         // Caching is not available in this case.
         return bind(compileWithoutOptions, V8CompileHistogram::Noncacheable);
-    }
 
-    if (code->Length() < minimalCodeLength) {
-        // Do not cache for small scripts, though caching is available.
+    if (cacheOptions == V8CacheOptionsNone)
         return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
-    }
 
     // The cacheOptions will guide our strategy:
+    // FIXME: Clean up code caching options. crbug.com/455187.
     switch (cacheOptions) {
     case V8CacheOptionsDefault:
     case V8CacheOptionsParseMemory:
+        if (code->Length() < minimalCodeLength) {
+            // Do not cache for small scripts, though caching is available.
+            return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
+        }
         // Use parser-cache; in-memory only.
         return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::CacheLocally);
         break;
@@ -292,11 +296,13 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
         return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::SendToPlatform);
         break;
 
+    case V8CacheOptionsHeuristicsDefault:
     case V8CacheOptionsCode:
         // Always use code caching.
         return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagCode, resource), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, false, Resource::SendToPlatform);
         break;
 
+    case V8CacheOptionsHeuristicsDefaultMobile:
     case V8CacheOptionsCodeCompressed:
         // Always use code caching. Compress depending on cacheOptions.
         return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagCodeCompressed, resource), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, true, Resource::SendToPlatform);
@@ -304,48 +310,26 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
 
     case V8CacheOptionsHeuristics:
     case V8CacheOptionsHeuristicsMobile:
-    case V8CacheOptionsHeuristicsDefault:
-    case V8CacheOptionsHeuristicsDefaultMobile: {
-        // We expect compression to win on mobile devices, due to relatively
-        // slow storage.
-        bool compress = (cacheOptions == V8CacheOptionsHeuristicsMobile || cacheOptions == V8CacheOptionsHeuristicsDefaultMobile);
-        CacheTagKind codeTag = compress ? CacheTagCodeCompressed : CacheTagCode;
-
-        // Either code or parser caching, depending on code size and what we
-        // already have in the cache.
-        unsigned codeCacheTag = cacheTag(codeTag, resource);
-        if (resource->cachedMetadata(codeCacheTag))
-            return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, compress);
-        if (code->Length() < mediumCodeLength)
-            return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, compress, Resource::SendToPlatform);
-        Resource::MetadataCacheType cacheType = Resource::CacheLocally;
-        if (cacheOptions == V8CacheOptionsHeuristics || cacheOptions == V8CacheOptionsHeuristicsMobile)
-            cacheType = Resource::SendToPlatform;
-        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, cacheType);
-        break;
-    }
-
     case V8CacheOptionsRecent:
     case V8CacheOptionsRecentSmall: {
-        if (cacheOptions == V8CacheOptionsRecentSmall && code->Length() >= mediumCodeLength)
-            return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::CacheLocally);
-        unsigned codeCacheTag = cacheTag(CacheTagCode, resource);
+        bool compress = (cacheOptions == V8CacheOptionsRecentSmall || cacheOptions == V8CacheOptionsHeuristicsMobile);
+        unsigned codeCacheTag = cacheTag(compress ? CacheTagCodeCompressed : CacheTagCode, resource);
         CachedMetadata* codeCache = resource->cachedMetadata(codeCacheTag);
         if (codeCache)
-            return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, false);
-        if (!isResourceHotForCaching(resource)) {
+            return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, compress);
+        int hotHours = (cacheOptions == V8CacheOptionsRecent || cacheOptions == V8CacheOptionsRecentSmall) ? 36 : 72;
+        if (!isResourceHotForCaching(resource, hotHours)) {
             setCacheTimeStamp(resource);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
-        return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, false, Resource::SendToPlatform);
+        return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, compress, Resource::SendToPlatform);
         break;
     }
 
     case V8CacheOptionsNone:
         // Shouldn't happen, as this is handled above.
-        // Case is here so that compiler can check all cases are handles.
+        // Case is here so that compiler can check all cases are handled.
         ASSERT_NOT_REACHED();
-        return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         break;
     }
 
