@@ -26,6 +26,10 @@ core-toolbar {
   z-index: 3;
 }
 
+core-toolbar /deep/ ::selection {
+  background: rgb(187, 222, 251);
+}
+
 #toolbar-shadow {
   position: fixed;
   width: 100%;
