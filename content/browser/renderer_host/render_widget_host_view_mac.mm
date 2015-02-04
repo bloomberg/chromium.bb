@@ -2239,19 +2239,37 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (void)beginGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ beginGestureWithEvent:event];
+  gestureBeginEvent_.reset(
+      new WebGestureEvent(WebInputEventFactory::gestureEvent(event, self)));
 }
+
 - (void)endGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ endGestureWithEvent:event];
+  gestureBeginEvent_.reset();
+
+  if (!renderWidgetHostView_->render_widget_host_)
+    return;
+
+  if (gestureBeginPinchSent_) {
+    WebGestureEvent endEvent(WebInputEventFactory::gestureEvent(event, self));
+    endEvent.type = WebInputEvent::GesturePinchEnd;
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(endEvent);
+    gestureBeginPinchSent_ = NO;
+  }
 }
+
 - (void)touchesMovedWithEvent:(NSEvent*)event {
   [responderDelegate_ touchesMovedWithEvent:event];
 }
+
 - (void)touchesBeganWithEvent:(NSEvent*)event {
   [responderDelegate_ touchesBeganWithEvent:event];
 }
+
 - (void)touchesCancelledWithEvent:(NSEvent*)event {
   [responderDelegate_ touchesCancelledWithEvent:event];
 }
+
 - (void)touchesEndedWithEvent:(NSEvent*)event {
   [responderDelegate_ touchesEndedWithEvent:event];
 }
@@ -2330,16 +2348,27 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-  if (renderWidgetHostView_->render_widget_host_) {
-    // Send a GesturePinchUpdate event.
-    // Note that we don't attempt to bracket these by GesturePinchBegin/End (or
-    // GestureSrollBegin/End) as is done for touchscreen.  Keeping track of when
-    // a pinch is active would take a little more work here, and we don't need
-    // it for anything yet.
-    const WebGestureEvent& webEvent =
-        WebInputEventFactory::gestureEvent(event, self);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
+  if (!renderWidgetHostView_->render_widget_host_)
+    return;
+
+  // If, due to nesting of multiple gestures (e.g, from multiple touch
+  // devices), the beginning of the gesture has been lost, skip the remainder
+  // of the gesture.
+  if (!gestureBeginEvent_)
+    return;
+
+  // Send a GesturePinchBegin event if none has been sent yet.
+  if (!gestureBeginPinchSent_) {
+    WebGestureEvent beginEvent(*gestureBeginEvent_);
+    beginEvent.type = WebInputEvent::GesturePinchBegin;
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(beginEvent);
+    gestureBeginPinchSent_ = YES;
   }
+
+  // Send a GesturePinchUpdate event.
+  const WebGestureEvent& updateEvent =
+      WebInputEventFactory::gestureEvent(event, self);
+  renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(updateEvent);
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {

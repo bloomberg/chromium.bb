@@ -124,6 +124,26 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
 
   // Create mock events --------------------------------------------------------
 
+  // Create a gesture event with no useful data. Used to create Begin and End
+  // events.
+  id MockGestureEvent(NSEventType type) {
+    id event = [OCMockObject mockForClass:[NSEvent class]];
+    NSPoint locationInWindow = NSMakePoint(0, 0);
+    CGFloat deltaX = 0;
+    CGFloat deltaY = 0;
+    NSTimeInterval timestamp = 0;
+    NSUInteger modifierFlags = 0;
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
+    [(NSEvent*)[[event stub]
+        andReturnValue:OCMOCK_VALUE(locationInWindow)] locationInWindow];
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaX)] deltaX];
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaY)] deltaY];
+    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
+    [(NSEvent*)[[event stub]
+        andReturnValue:OCMOCK_VALUE(modifierFlags)] modifierFlags];
+    return event;
+  }
+
   // Creates a mock scroll wheel event that is backed by a real CGEvent.
   id MockScrollWheelEvent(NSPoint delta, NSEventType type) {
     CGEventRef cg_event =
@@ -189,18 +209,14 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
 
   // Queues a gesture begin event (e.g. [NSView gestureDidBegin:])
   void QueueGestureBegin() {
-    id event = [OCMockObject mockForClass:[NSEvent class]];
-    NSEventType type = NSEventTypeBeginGesture;
-    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
-    QueueEvent(event, DEPLOYMENT_GESTURE_BEGIN, NO);
+    QueueEvent(MockGestureEvent(NSEventTypeBeginGesture),
+               DEPLOYMENT_GESTURE_BEGIN, NO);
   }
 
   // Queues a gesture end event (e.g. [NSView gestureDidEnd:])
   void QueueGestureEnd() {
-    id event = [OCMockObject mockForClass:[NSEvent class]];
-    NSEventType type = NSEventTypeEndGesture;
-    [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
-    QueueEvent(event, DEPLOYMENT_GESTURE_END, NO);
+    QueueEvent(MockGestureEvent(NSEventTypeEndGesture),
+               DEPLOYMENT_GESTURE_BEGIN, NO);
   }
 
   // Queues a touch event with absolute coordinates |x| and |y|.

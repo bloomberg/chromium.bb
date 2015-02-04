@@ -148,6 +148,18 @@ class Layer;
   // Event monitor for scroll wheel end event.
   id endWheelMonitor_;
 
+  // When a gesture starts, the system does not inform the view of which type
+  // of gesture is happening (magnify, rotate, etc), rather, it just informs
+  // the view that some as-yet-undefined gesture is starting. Capture the
+  // information about the gesture's beginning event here. It will be used to
+  // create a specific gesture begin event later.
+  scoped_ptr<blink::WebGestureEvent> gestureBeginEvent_;
+
+  // This is set if a GesturePinchBegin event has been sent in the lifetime of
+  // |gestureBeginEvent_|. If set, a GesturePinchEnd will be sent when the
+  // gesture ends.
+  BOOL gestureBeginPinchSent_;
+
   // If true then escape key down events are suppressed until the first escape
   // key up event. (The up event is suppressed as well). This is used by the
   // flash fullscreen code to avoid sending a key up event without a matching
