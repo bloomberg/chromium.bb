@@ -66,9 +66,30 @@ cr.define('print_preview', function() {
     return returnedPrinters;
   };
 
+  function ExtensionDestinationParser() {}
+
+  /**
+   * Parses an extension destination from an extension supplied printer
+   * description.
+   * @param {!Object} destinationInfo Object describing an extension printer.
+   * @return {!print_preview.Destination} Parsed destination.
+   */
+  ExtensionDestinationParser.parse = function(destinationInfo) {
+    return new print_preview.Destination(
+        destinationInfo.id,
+        print_preview.Destination.Type.LOCAL,
+        print_preview.Destination.Origin.EXTENSION,
+        destinationInfo.name,
+        false /* isRecent */,
+        print_preview.Destination.ConnectionStatus.ONLINE,
+        {description: destinationInfo.description || '',
+         extensionId: destinationInfo.extensionId});
+  };
+
   // Export
   return {
     LocalDestinationParser: LocalDestinationParser,
-    PrivetDestinationParser: PrivetDestinationParser
+    PrivetDestinationParser: PrivetDestinationParser,
+    ExtensionDestinationParser: ExtensionDestinationParser
   };
 });

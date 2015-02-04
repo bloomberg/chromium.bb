@@ -124,6 +124,9 @@ class PrintPreviewHandler
   // Starts getting all local privet printers. |arg| is unused.
   void HandleGetPrivetPrinters(const base::ListValue* args);
 
+  // Starts getting all local extension managed printers. |arg| is unused.
+  void HandleGetExtensionPrinters(const base::ListValue* args);
+
   // Stops getting all local privet printers. |arg| is unused.
   void HandleStopGetPrivetPrinters(const base::ListValue* args);
 
@@ -195,6 +198,10 @@ class PrintPreviewHandler
   void HandleForceOpenNewTab(const base::ListValue* args);
 
   void HandleGetPrivetPrinterCapabilities(const base::ListValue* arg);
+
+  // Requests an extension managed printer's capabilities.
+  // |arg| contains the ID of the printer whose capabilities are requested.
+  void HandleGetExtensionPrinterCapabilities(const base::ListValue* args);
 
   void SendInitialSettings(const std::string& default_printer);
 
@@ -281,6 +288,20 @@ class PrintPreviewHandler
       bool has_local_printing,
       base::DictionaryValue* printer_value);
 #endif
+
+  // Called when a list of printers is reported by an extension.
+  // |printers|: The list of printers managed by the extension.
+  // |done|: Whether all the extensions have reported the list of printers
+  //     they manage.
+  void OnGotPrintersForExtension(const base::ListValue& printers, bool done);
+
+  // Called when an extension reports the set of print capabilites for a
+  // printer.
+  // |printer_id|: The id of the printer whose capabilities are reported.
+  // |capabilities|: The printer capabilities.
+  void OnGotExtensionPrinterCapabilities(
+      const std::string& printer_id,
+      const base::DictionaryValue& capabilities);
 
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.

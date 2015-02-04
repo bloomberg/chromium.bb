@@ -49,9 +49,10 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
   // Notifies observers that a printerProvider.onGetPrintersRequested callback
   // has been called. Called from
   // |PrinterProviderInternalReportPrintersFunction|.
-  void NotifyGetPrintersResult(const Extension* extension,
-                               int request_id,
-                               const base::ListValue& printers);
+  void NotifyGetPrintersResult(
+      const Extension* extension,
+      int request_id,
+      const PrinterProviderInternalAPIObserver::PrinterInfoVector& printers);
 
   // Notifies observers that a printerProvider.onGetCapabilityRequested callback
   // has been called. Called from

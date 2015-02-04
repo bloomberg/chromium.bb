@@ -49,9 +49,11 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     PrintJob();
     ~PrintJob();
 
-    // The id of the printer that should handle the print job. This identifies
-    // a printer within an extension and is provided by the extension via
-    // chrome.printerProvider.onGetPrintersRequested event callback.
+    // The id of the printer that should handle the print job. The id is
+    // formatted as <extension_id>:<printer_id>, where <extension_id> is the
+    // id of the extension that manages the printer, and <printer_id> is
+    // the the printer's id within the extension (as reported via
+    // chrome.printerProvider.onGetPrintersRequested event callback).
     std::string printer_id;
 
     // The print job ticket.
@@ -83,25 +85,28 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   // supported printers. The printer values reported by an extension are
   // added "extensionId" property that is set to the ID of the extension
   // returning the list.
+  // Note that the "id" property of printer values reported by an extension are
+  // rewriten as "<extension_id>:<id>" to ensure they are unique across
+  // different extensions.
   void DispatchGetPrintersRequested(const GetPrintersCallback& callback);
 
-  // Requests printer capability from the extension with id |extension_id| for
-  // the printer with id |printer_id|. |printer_id| should be one of the printer
-  // ids reported by |GetPrinters| callback.
+  // Requests printer capability for a printer with id |printer_id|.
+  // |printer_id| should be one of the printer ids reported by |GetPrinters|
+  // callback.
   // It dispatches chrome.printerProvider.onGetCapabilityRequested event
-  // to the extension.
+  // to the extension that manages the printer (which can be determined from
+  // |printer_id| value).
   // |callback| is passed a dictionary value containing printer capabilities as
   // reported by the extension.
-  void DispatchGetCapabilityRequested(const std::string& extension_id,
-                                      const std::string& printer_id,
+  void DispatchGetCapabilityRequested(const std::string& printer_id,
                                       const GetCapabilityCallback& callback);
 
-  // It dispatches chrome.printerProvider.onPrintRequested event to the
-  // extension with id |extension_id| with the provided print job.
+  // It dispatches chrome.printerProvider.onPrintRequested event with the
+  // provided print job. The event is dispatched only to the extension that
+  // manages printer with id |job.printer_id|.
   // |callback| is passed the print status returned by the extension, and it
   // must not be null.
-  void DispatchPrintRequested(const std::string& extension_id,
-                              const PrintJob& job,
+  void DispatchPrintRequested(const PrintJob& job,
                               const PrintCallback& callback);
 
  private:
@@ -207,9 +212,11 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "PrinterProvider"; }
 
   // PrinterProviderInternalAPIObserver implementation:
-  void OnGetPrintersResult(const Extension* extension,
-                           int request_id,
-                           const base::ListValue& result) override;
+  void OnGetPrintersResult(
+      const Extension* extension,
+      int request_id,
+      const PrinterProviderInternalAPIObserver::PrinterInfoVector& result)
+      override;
   void OnGetCapabilityResult(const Extension* extension,
                              int request_id,
                              const base::DictionaryValue& result) override;

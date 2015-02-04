@@ -142,6 +142,9 @@ cr.define('print_preview', function() {
     updatePrintButtonEnabledState_: function() {
       this.getChildElement('button.print').disabled =
           this.destinationStore_.selectedDestination == null ||
+          // TODO(tbarzic): Remove this when print request for extension
+          // destinations is wired up.
+          this.destinationStore_.selectedDestination.isExtension ||
           !this.isEnabled_ ||
           !this.isPrintButtonEnabled_ ||
           !this.printTicketStore_.isTicketValid();

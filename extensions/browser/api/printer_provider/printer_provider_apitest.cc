@@ -72,14 +72,14 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   void StartPrintRequest(const std::string& extension_id,
                          const PrinterProviderAPI::PrintCallback& callback) {
     PrinterProviderAPI::PrintJob job;
-    job.printer_id = "printer_id";
+    job.printer_id = extension_id + ":printer_id";
     job.ticket_json = "{}";
     job.content_type = "content_type";
     job.document_bytes = "bytes";
 
     PrinterProviderAPI::GetFactoryInstance()
         ->Get(browser_context())
-        ->DispatchPrintRequested(extension_id, job, callback);
+        ->DispatchPrintRequested(job, callback);
   }
 
   void StartCapabilityRequest(
@@ -87,7 +87,8 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
       const PrinterProviderAPI::GetCapabilityCallback& callback) {
     PrinterProviderAPI::GetFactoryInstance()
         ->Get(browser_context())
-        ->DispatchGetCapabilityRequested(extension_id, "printer_id", callback);
+        ->DispatchGetCapabilityRequested(extension_id + ":printer_id",
+                                         callback);
   }
 
   // Loads chrome.printerProvider test app and initializes is for test
@@ -266,15 +267,15 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printerNoDesc\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
       extension_id.c_str()));
@@ -304,8 +305,8 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id.c_str()));
@@ -342,30 +343,30 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id_1.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printerNoDesc\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
       extension_id_1.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printerNoDesc\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
       extension_id_2.c_str()));
@@ -403,15 +404,15 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printerNoDesc\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
       extension_id_2.c_str()));
@@ -449,15 +450,15 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printer1\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
       extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%s\","
-      "\"id\":\"printerNoDesc\","
+      "\"extensionId\":\"%1$s\","
+      "\"id\":\"%1$s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
       extension_id_2.c_str()));

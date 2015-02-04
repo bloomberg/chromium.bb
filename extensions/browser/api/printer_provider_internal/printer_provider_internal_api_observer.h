@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_PRINTER_PROVIDER_INTERNAL_PRINTER_PROVIDER_INTERNAL_API_OBSERVER_H_
 #define EXTENSIONS_BROWSER_API_PRINTER_PROVIDER_INTERNAL_PRINTER_PROVIDER_INTERNAL_API_OBSERVER_H_
 
+#include <vector>
+
+#include "extensions/common/api/printer_provider.h"
 #include "extensions/common/api/printer_provider_internal.h"
 
 namespace base {
@@ -19,6 +22,9 @@ class Extension;
 // Interface for observing chrome.printerProviderInternal API function calls.
 class PrinterProviderInternalAPIObserver {
  public:
+  using PrinterInfoVector =
+      std::vector<linked_ptr<core_api::printer_provider::PrinterInfo>>;
+
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetPrintersRequested result returned by the
   // extension |extension|.
@@ -26,7 +32,7 @@ class PrinterProviderInternalAPIObserver {
   // chrome.printerProvider.onGetPrintersRequested event.
   virtual void OnGetPrintersResult(const Extension* extension,
                                    int request_id,
-                                   const base::ListValue& result) = 0;
+                                   const PrinterInfoVector& result) = 0;
 
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetCapabilityRequested result returned by the

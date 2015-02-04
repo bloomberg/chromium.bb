@@ -54,6 +54,7 @@ cr.define('print_preview', function() {
    *          lastAccessTime: (number|undefined),
    *          isTosAccepted: (boolean|undefined),
    *          cloudID: (string|undefined),
+   *          extensionId: (string|undefined),
    *          description: (string|undefined)}=} opt_params Optional parameters
    *     for the destination.
    * @constructor
@@ -153,6 +154,12 @@ cr.define('print_preview', function() {
      * @private {string}
      */
     this.cloudID_ = (opt_params && opt_params.cloudID) || '';
+
+    /**
+     * Extension ID for extension managed printers.
+     * @private {string}
+     */
+    this.extensionId_ = (opt_params && opt_params.extensionId) || '';
   };
 
   /**
@@ -195,7 +202,8 @@ cr.define('print_preview', function() {
     COOKIES: 'cookies',
     PROFILE: 'profile',
     DEVICE: 'device',
-    PRIVET: 'privet'
+    PRIVET: 'privet',
+    EXTENSION: 'extension'
   };
 
   /**
@@ -280,6 +288,7 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
       return this.origin_ == Destination.Origin.LOCAL ||
+             this.origin_ == Destination.Origin.EXTENSION ||
              (this.origin_ == Destination.Origin.PRIVET &&
               this.connectionStatus_ !=
               Destination.ConnectionStatus.UNREGISTERED);
@@ -288,6 +297,14 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the destination is a Privet local printer */
     get isPrivet() {
       return this.origin_ == Destination.Origin.PRIVET;
+    },
+
+    /**
+     * @return {boolean} Whether the destination is an extension managed
+     *     printer.
+     */
+    get isExtension() {
+      return this.origin_ == Destination.Origin.EXTENSION;
     },
 
     /**
@@ -337,6 +354,14 @@ cr.define('print_preview', function() {
     /** @return {string} Cloud ID associated with the destination */
     get cloudID() {
       return this.cloudID_;
+    },
+
+    /**
+     * @return {string} Extension ID associated with the destination. Non-empty
+     *     only for extension managed printers.
+     */
+    get extensionId() {
+      return this.extensionId_;
     },
 
     /** @return {?print_preview.Cdd} Print capabilities of the destination. */
@@ -410,6 +435,10 @@ cr.define('print_preview', function() {
         return Destination.IconUrl_.FEDEX;
       } else if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
         return Destination.IconUrl_.PDF;
+      } else if (this.isExtension) {
+        // TODO(tbarzic): Update the way extension printers are displayed in the
+        // destination list when the desired UX is defined.
+        return 'chrome://extension-icon/' + this.extensionId + '/48/1';
       } else if (this.isLocal) {
         return Destination.IconUrl_.LOCAL;
       } else if (this.type_ == Destination.Type.MOBILE && this.isOwned_) {

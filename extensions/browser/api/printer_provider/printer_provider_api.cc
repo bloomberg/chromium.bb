@@ -24,6 +24,35 @@ namespace {
 static base::LazyInstance<BrowserContextKeyedAPIFactory<PrinterProviderAPI>>
     g_api_factory = LAZY_INSTANCE_INITIALIZER;
 
+// The separator between extension id and the extension's internal printer id
+// used when generating a printer id unique across extensions.
+const char kPrinterIdSeparator = ':';
+
+// Given an extension ID and an ID of a printer reported by the extension, it
+// generates a ID for the printer unique across extensions (assuming that the
+// printer id is unique in the extension's space).
+std::string GeneratePrinterId(const std::string& extension_id,
+                              const std::string& internal_printer_id) {
+  std::string result = extension_id;
+  result.append(1, kPrinterIdSeparator);
+  result.append(internal_printer_id);
+  return result;
+}
+
+// Parses an ID created using |GeneratePrinterId| to it's components:
+// the extension ID and the printer ID internal to the extension.
+// Returns whenter the ID was succesfully parsed.
+bool ParsePrinterId(const std::string& printer_id,
+                    std::string* extension_id,
+                    std::string* internal_printer_id) {
+  size_t separator = printer_id.find_first_of(kPrinterIdSeparator);
+  if (separator == std::string::npos)
+    return false;
+  *extension_id = printer_id.substr(0, separator);
+  *internal_printer_id = printer_id.substr(separator + 1);
+  return true;
+}
+
 PrinterProviderAPI::PrintError APIPrintErrorToInternalType(
     core_api::printer_provider_internal::PrintError error) {
   switch (error) {
@@ -100,9 +129,15 @@ void PrinterProviderAPI::DispatchGetPrintersRequested(
 }
 
 void PrinterProviderAPI::DispatchGetCapabilityRequested(
-    const std::string& extension_id,
     const std::string& printer_id,
     const PrinterProviderAPI::GetCapabilityCallback& callback) {
+  std::string extension_id;
+  std::string internal_printer_id;
+  if (!ParsePrinterId(printer_id, &extension_id, &internal_printer_id)) {
+    callback.Run(base::DictionaryValue());
+    return;
+  }
+
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router->ExtensionHasEventListener(
           extension_id,
@@ -117,7 +152,7 @@ void PrinterProviderAPI::DispatchGetCapabilityRequested(
   // Request id is not part of the public API, but it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
-  internal_args->AppendString(printer_id);
+  internal_args->AppendString(internal_printer_id);
 
   scoped_ptr<Event> event(new Event(
       core_api::printer_provider::OnGetCapabilityRequested::kEventName,
@@ -127,9 +162,15 @@ void PrinterProviderAPI::DispatchGetCapabilityRequested(
 }
 
 void PrinterProviderAPI::DispatchPrintRequested(
-    const std::string& extension_id,
     const PrinterProviderAPI::PrintJob& job,
     const PrinterProviderAPI::PrintCallback& callback) {
+  std::string extension_id;
+  std::string internal_printer_id;
+  if (!ParsePrinterId(job.printer_id, &extension_id, &internal_printer_id)) {
+    callback.Run(PRINT_ERROR_FAILED);
+    return;
+  }
+
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router->ExtensionHasEventListener(
           extension_id,
@@ -139,7 +180,7 @@ void PrinterProviderAPI::DispatchPrintRequested(
   }
 
   core_api::printer_provider::PrintJob print_job;
-  print_job.printer_id = job.printer_id;
+  print_job.printer_id = internal_printer_id;
   print_job.content_type = job.content_type;
   print_job.document =
       std::vector<char>(job.document_bytes.begin(), job.document_bytes.end());
@@ -268,11 +309,26 @@ bool PrinterProviderAPI::PendingPrintRequests::Complete(int request_id,
   return true;
 }
 
-void PrinterProviderAPI::OnGetPrintersResult(const Extension* extension,
-                                             int request_id,
-                                             const base::ListValue& result) {
+void PrinterProviderAPI::OnGetPrintersResult(
+    const Extension* extension,
+    int request_id,
+    const PrinterProviderInternalAPIObserver::PrinterInfoVector& result) {
+  base::ListValue printer_list;
+
+  // Update some printer description properties to better identify the extension
+  // managing the printer.
+  for (size_t i = 0; i < result.size(); ++i) {
+    scoped_ptr<base::DictionaryValue> printer(result[i]->ToValue());
+    std::string internal_printer_id;
+    CHECK(printer->GetString("id", &internal_printer_id));
+    printer->SetString("id",
+                       GeneratePrinterId(extension->id(), internal_printer_id));
+    printer->SetString("extensionId", extension->id());
+    printer_list.Append(printer.release());
+  }
+
   pending_get_printers_requests_.CompleteForExtension(extension->id(),
-                                                      request_id, result);
+                                                      request_id, printer_list);
 }
 
 void PrinterProviderAPI::OnGetCapabilityResult(

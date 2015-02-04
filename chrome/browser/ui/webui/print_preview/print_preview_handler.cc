@@ -89,6 +89,10 @@
 #include "chrome/browser/local_discovery/privet_constants.h"
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/api/printer_provider/printer_provider_api.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -647,6 +651,14 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getExtensionPrinters",
+      base::Bind(&PrintPreviewHandler::HandleGetExtensionPrinters,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getExtensionPrinterCapabilities",
+      base::Bind(&PrintPreviewHandler::HandleGetExtensionPrinterCapabilities,
+                 base::Unretained(this)));
   RegisterForMergeSession();
 }
 
@@ -703,6 +715,42 @@ void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
       name,
       base::Bind(&PrintPreviewHandler::PrivetCapabilitiesUpdateClient,
                  base::Unretained(this)));
+#endif
+}
+
+void PrintPreviewHandler::HandleGetExtensionPrinters(
+    const base::ListValue* args) {
+#if defined(ENABLE_EXTENSIONS)
+  // TODO(tbarzic): Handle case where a new search is initiated before the
+  // previous one finishes. Currently, in this case Web UI layer may get
+  // multiple events with printer list from some extensions, and it may get
+  // fooled by |done| flag from the first search into marking the search
+  // complete.
+  extensions::PrinterProviderAPI::GetFactoryInstance()
+      ->Get(preview_web_contents()->GetBrowserContext())
+      ->DispatchGetPrintersRequested(
+          base::Bind(&PrintPreviewHandler::OnGotPrintersForExtension,
+                     weak_factory_.GetWeakPtr()));
+#else
+  OnGotPrintersForExtension(base::ListValue(), true /* done */);
+#endif
+}
+
+void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
+    const base::ListValue* args) {
+  std::string printer_id;
+  bool ok = args->GetString(0, &printer_id);
+  DCHECK(ok);
+
+#if defined(ENABLE_EXTENSIONS)
+  extensions::PrinterProviderAPI::GetFactoryInstance()
+      ->Get(preview_web_contents()->GetBrowserContext())
+      ->DispatchGetCapabilityRequested(
+          printer_id,
+          base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterCapabilities,
+                     weak_factory_.GetWeakPtr(), printer_id));
+#else
+  OnGotExtensionPrinterCapabilities(printer_id, base::DictionaryValue());
 #endif
 }
 
@@ -1587,6 +1635,26 @@ void PrintPreviewHandler::FillPrinterDescription(
 }
 
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
+
+void PrintPreviewHandler::OnGotPrintersForExtension(
+    const base::ListValue& printers,
+    bool done) {
+  web_ui()->CallJavascriptFunction("onExtensionPrintersAdded", printers,
+                                   base::FundamentalValue(done));
+}
+
+void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
+    const std::string& printer_id,
+    const base::DictionaryValue& capabilities) {
+  if (capabilities.empty()) {
+    web_ui()->CallJavascriptFunction("failedToGetExtensionPrinterCapabilities",
+                                     base::StringValue(printer_id));
+    return;
+  }
+
+  web_ui()->CallJavascriptFunction("onExtensionCapabilitiesSet",
+                                   base::StringValue(printer_id), capabilities);
+}
 
 void PrintPreviewHandler::RegisterForMergeSession() {
   DCHECK(!reconcilor_);
