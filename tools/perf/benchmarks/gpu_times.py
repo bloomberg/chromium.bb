@@ -27,7 +27,7 @@ class _GPUTimes(benchmark.Benchmark):
         get_metrics_from_flags_callback=_GetGPUTimelineMetric)
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class GPUTimesKeyMobileSites(_GPUTimes):
   """Measures GPU timeline metric on key mobile sites."""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
@@ -36,7 +36,7 @@ class GPUTimesKeyMobileSites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.key_mobile_sites_smooth'
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class GPUTimesGpuRasterizationKeyMobileSites(_GPUTimes):
   """Measures GPU timeline metric on key mobile sites with GPU rasterization.
   """
