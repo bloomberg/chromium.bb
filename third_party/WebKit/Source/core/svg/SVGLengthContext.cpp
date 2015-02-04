@@ -155,6 +155,20 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
     return 0;
 }
 
+static inline float dimensionForLengthMode(SVGLengthMode mode, const FloatSize& viewportSize)
+{
+    switch (mode) {
+    case LengthModeWidth:
+        return viewportSize.width();
+    case LengthModeHeight:
+        return viewportSize.height();
+    case LengthModeOther:
+        return sqrtf(viewportSize.diagonalLengthSquared() / 2);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLengthMode mode, ExceptionState& exceptionState) const
 {
     FloatSize viewportSize;
@@ -163,17 +177,7 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
         return 0;
     }
 
-    switch (mode) {
-    case LengthModeWidth:
-        return value / viewportSize.width() * 100;
-    case LengthModeHeight:
-        return value / viewportSize.height() * 100;
-    case LengthModeOther:
-        return value / sqrtf(viewportSize.diagonalLengthSquared() / 2) * 100;
-    };
-
-    ASSERT_NOT_REACHED();
-    return 0;
+    return value / dimensionForLengthMode(mode, viewportSize) * 100;
 }
 
 float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, ExceptionState& exceptionState) const
@@ -188,32 +192,12 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
 
 float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, const FloatSize& viewportSize)
 {
-    switch (mode) {
-    case LengthModeWidth:
-        return value * viewportSize.width();
-    case LengthModeHeight:
-        return value * viewportSize.height();
-    case LengthModeOther:
-        return value * sqrtf(viewportSize.diagonalLengthSquared() / 2);
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
+    return value * dimensionForLengthMode(mode, viewportSize);
 }
 
 float SVGLengthContext::convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize)
 {
-    switch (value.unitMode()) {
-    case LengthModeWidth:
-        return value.scaleByPercentage(viewportSize.width());
-    case LengthModeHeight:
-        return value.scaleByPercentage(viewportSize.height());
-    case LengthModeOther:
-        return value.scaleByPercentage(sqrtf(viewportSize.diagonalLengthSquared() / 2));
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
+    return value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize));
 }
 
 static inline RenderStyle* renderStyleForLengthResolving(const SVGElement* context)
