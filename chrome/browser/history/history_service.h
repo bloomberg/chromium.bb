@@ -24,13 +24,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/delete_directive_handler.h"
 #include "chrome/browser/history/typed_url_syncable_service.h"
-#include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
-#include "content/public/browser/download_manager_delegate.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
@@ -379,9 +377,13 @@ class HistoryService : public syncer::SyncableService,
       const history::DownloadRow& info,
       const DownloadCreateCallback& callback);
 
+  // Implemented by the caller of 'GetNextDownloadId' below, and is called with
+  // the maximum id of all downloads records in the database plus 1.
+  typedef base::Callback<void(uint32)> DownloadIdCallback;
+
   // Responds on the calling thread with the maximum id of all downloads records
   // in the database plus 1.
-  void GetNextDownloadId(const content::DownloadIdCallback& callback);
+  void GetNextDownloadId(const DownloadIdCallback& callback);
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call

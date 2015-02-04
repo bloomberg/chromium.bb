@@ -5,7 +5,6 @@
 #include "chrome/browser/history/android/android_provider_backend.h"
 
 #include "base/i18n/case_conversion.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 #include "chrome/browser/history/history_backend.h"
 #include "components/history/core/browser/android/android_time.h"

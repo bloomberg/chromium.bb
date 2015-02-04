@@ -741,8 +741,7 @@ void HistoryService::CreateDownload(
       callback);
 }
 
-void HistoryService::GetNextDownloadId(
-    const content::DownloadIdCallback& callback) {
+void HistoryService::GetNextDownloadId(const DownloadIdCallback& callback) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
