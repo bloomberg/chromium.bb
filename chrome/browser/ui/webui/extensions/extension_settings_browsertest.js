@@ -129,11 +129,14 @@ ExtensionSettingsWebUITestWithExtensionInstalled.prototype = {
   }
 };
 
-TEST_F('ExtensionSettingsWebUITestWithExtensionInstalled',
-       'baseAccessibilityIsOk', function() {
+/** @this {ExtensionSettingsWebUITestWithExtensionInstalled} */
+function runAudit() {
   assertEquals(this.browsePreload, document.location.href);
   this.runAccessibilityAudit();
-});
+}
+
+TEST_F('ExtensionSettingsWebUITestWithExtensionInstalled',
+       'baseAccessibilityIsOk', runAudit);
 
 /**
  * @constructor
@@ -152,7 +155,20 @@ ManagedExtensionSettingsWebUITest.prototype = {
   },
 };
 
-TEST_F('ManagedExtensionSettingsWebUITest', 'testAccessibility', function() {
-  assertEquals(this.browsePreload, document.location.href);
-  this.runAccessibilityAudit();
-});
+TEST_F('ManagedExtensionSettingsWebUITest', 'testAccessibility', runAudit);
+
+/**
+ * @constructor
+ * @extends {ExtensionSettingsWebUITestWithExtensionInstalled}
+ */
+function ExtensionOptionsDialogsWebUITest() {}
+
+ExtensionOptionsDialogsWebUITest.prototype = {
+  __proto__: ExtensionSettingsWebUITestWithExtensionInstalled.prototype,
+
+  /** @override */
+  browsePreload: ExtensionSettingsWebUITest.prototype.browsePreload +
+      '?options=ldnnhddmnhbkjipkidpdiheffobcpfmf',
+};
+
+TEST_F('ExtensionOptionsDialogsWebUITest', 'testAccessibility', runAudit);

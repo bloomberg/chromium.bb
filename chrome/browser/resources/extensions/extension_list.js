@@ -567,20 +567,37 @@ cr.define('options', function() {
 
       if (scroll)
         this.scrollToNode_(extensionId);
+
+      document.activeElement.blur();
+
       // Add the options query string. Corner case: the 'options' query string
       // will clobber the 'id' query string if the options link is clicked when
       // 'id' is in the URL, or if both query strings are in the URL.
       uber.replaceState({}, '?options=' + extensionId);
 
-      extensions.ExtensionOptionsOverlay.getInstance().
-          setExtensionAndShowOverlay(extensionId,
-                                     extension.name,
-                                     extension.icon);
+      var shownCallback = function() {
+        if (cr.ui.FocusOutlineManager.forDocument(document).visible)
+          overlay.setInitialFocus();
+      };
 
+      var overlay = extensions.ExtensionOptionsOverlay.getInstance();
+      overlay.setExtensionAndShowOverlay(extensionId, extension.name,
+                                         extension.icon, shownCallback);
       this.optionsShown_ = true;
-      $('overlay').addEventListener('cancelOverlay', function() {
-        this.optionsShown_ = false;
-      }.bind(this));
+
+      var self = this;
+      $('overlay').addEventListener('cancelOverlay', function f() {
+        // Restore focus instead of just blurring when this page isn't rebuild
+        // crazy. http://crbug.com/450818
+        document.activeElement.blur();
+        self.optionsShown_ = false;
+        $('overlay').removeEventListener('cancelOverlay', f);
+      });
+
+      // TODO(dbeam): guestview's focus is weird. Only when this is called from
+      // within this event handler *and* after the showing animation completes
+      // does this work.
+      shownCallback();
     },
   };
 
