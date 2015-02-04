@@ -2062,8 +2062,8 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (!startNode || !wheelEvent)
         return;
 
-    // Ctrl + scrollwheel is reserved for triggering zoom in/out actions in Chromium.
-    if (wheelEvent->ctrlKey())
+    // When the wheelEvent do not scroll, we trigger zoom in/out instead.
+    if (!wheelEvent->canScroll())
         return;
 
     Node* stopNode = m_previousWheelScrolledNode.get();

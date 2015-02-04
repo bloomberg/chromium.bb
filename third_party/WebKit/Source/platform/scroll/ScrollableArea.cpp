@@ -246,8 +246,8 @@ bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, Scro
 
 bool ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
-    // ctrl+wheel events are used to trigger zooming, not scrolling.
-    if (wheelEvent.modifiers() & PlatformEvent::CtrlKey)
+    // Wheel events which do not scroll are used to trigger zooming.
+    if (!wheelEvent.canScroll())
         return false;
 
     cancelProgrammaticScrollAnimation();

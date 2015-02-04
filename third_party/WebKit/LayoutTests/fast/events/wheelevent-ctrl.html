@@ -20,16 +20,16 @@ function runTest() {
 
     debug('Test mousewheel events over scrollable div');
 
-    debug('With ctrl modifier set');
+    debug('With ctrl modifier set and canScroll set to be false');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeTrue("ctrlKey");
     shouldBe("testDiv.scrollTop", "0");
 
-    debug('Without ctrl');
+    debug('Without ctrl and canScroll set to be default true');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
     eventSender.mouseScrollBy(0, scrollAmount, false, true);
@@ -42,23 +42,32 @@ function runTest() {
     debug('Test mousewheel events over the document');
     testDiv = document.getElementById('target2');
 
-    debug('With ctrl modifier set');
+    debug('With ctrl modifier set and canScroll set to be false');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeTrue("ctrlKey");
-    shouldBe("document.body.scrollTop", "0");
+    shouldBe("window.scrollY", "0");
     
-    debug('Now without ctrl');
+    debug('With ctrl modifier set and canScroll set to be true');
+    wheelEventCount = 0;
+    eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", true);
+    shouldBe("wheelEventCount", "1");
+    shouldEvaluateTo("deltaY", expectedDeltaY);
+    shouldBeTrue("ctrlKey");
+    shouldBe("window.scrollY", "deltaY");
+    
+    debug('Now without ctrl and canScroll set to be default true');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
     eventSender.mouseScrollBy(0, scrollAmount, false, true);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeFalse("ctrlKey");
-    shouldBe("window.scrollY", "deltaY");
+    shouldEvaluateTo("window.scrollY", 2 * expectedDeltaY);
 }
 
 var wheelEventCount = 0;
