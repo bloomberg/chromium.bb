@@ -728,7 +728,9 @@ public class ChromeBrowserProvider extends ContentProvider {
             result.putBoolean(CLIENT_API_RESULT_KEY,
                     isBookmarkInMobileBookmarksBranch(extras.getLong(argKey(0))));
         } else if (CLIENT_API_DELETE_ALL_USER_BOOKMARKS.equals(method)) {
+            android.util.Log.i(TAG, "before nativeRemoveAllUserBookmarks");
             nativeRemoveAllUserBookmarks(mNativeChromeBrowserProvider);
+            android.util.Log.i(TAG, "after nativeRemoveAllUserBookmarks");
         } else {
             Log.w(TAG, "Received invalid method " + method);
             return null;

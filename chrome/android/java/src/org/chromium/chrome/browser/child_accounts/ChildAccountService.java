@@ -128,6 +128,7 @@ public class ChildAccountService {
                 new AccountManagerCallback<Boolean>() {
                     @Override
                     public void run(AccountManagerFuture<Boolean> future) {
+                        Log.i(TAG, "completed AM request");
                         assert future == mAccountManagerFuture;
                         assert future.isDone();
 
@@ -143,7 +144,10 @@ public class ChildAccountService {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (!mAccountManagerFuture.isDone()) mAccountManagerFuture.cancel(true);
+                if (!mAccountManagerFuture.isDone()) {
+                    Log.i(TAG, "cancelling AM request");
+                    mAccountManagerFuture.cancel(true);
+                }
             }}, CHILD_ACCOUNT_TIMEOUT_MS);
     }
 
@@ -155,7 +159,10 @@ public class ChildAccountService {
 
     private boolean getFutureResult() {
         try {
-            return mAccountManagerFuture.getResult();
+            Log.i(TAG, "before mAccountManagerFuture.getResult()");
+            boolean result = mAccountManagerFuture.getResult();
+            Log.i(TAG, "after mAccountManagerFuture.getResult()");
+            return result;
         } catch (OperationCanceledException e) {
             Log.e(TAG, "Timed out fetching child account flag: ", e);
         } catch (AuthenticatorException e) {

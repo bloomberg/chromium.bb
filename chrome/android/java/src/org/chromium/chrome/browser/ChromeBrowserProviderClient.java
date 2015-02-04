@@ -173,8 +173,10 @@ public class ChromeBrowserProviderClient {
     @SuppressWarnings("unchecked")
     private static <T extends Object> T chromeBrowserProviderCall(Class returnType, String name,
             Context context, Bundle args) {
+        android.util.Log.i(TAG, "before executing " + name + " call");
         Bundle result = context.getContentResolver().call(getPrivateProviderUri(context),
                 name, null, args);
+        android.util.Log.i(TAG, "after executing " + name + " call");
         if (result == null)
             return null;
         if (Parcelable.class.isAssignableFrom(returnType)) {

@@ -298,7 +298,9 @@ class RemoveAllUserBookmarksTask : public BookmarkModelObserverTask {
 
   static void RunOnUIThread(BookmarkModel* model) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    LOG(ERROR) << "begin model->RemoveAllUserBookmarks";
     model->RemoveAllUserBookmarks();
+    LOG(ERROR) << "after model->RemoveAllUserBookmarks";
   }
 
  private:
@@ -1515,8 +1517,10 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
 }
 
 void ChromeBrowserProvider::RemoveAllUserBookmarks(JNIEnv* env, jobject obj) {
+  LOG(ERROR) << "begin ChromeBrowserProvider::RemoveAllUserBookmarks";
   RemoveAllUserBookmarksTask task(bookmark_model_);
   task.Run();
+  LOG(ERROR) << "end ChromeBrowserProvider::RemoveAllUserBookmarks";
 }
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetBookmarkNode(
