@@ -1,0 +1,101 @@
+<html>
+<head>
+<link rel="stylesheet" href="./resources/empty.css">
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./autocomplete-test.js"></script>
+<script src="../editor/editor-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.showScriptSource("empty.css", onSourceFrame);
+
+    var textEditor;
+    var dumpSuggestions;
+    function onSourceFrame(sourceFrame)
+    {
+        textEditor = sourceFrame.textEditor;
+        dumpSuggestions = InspectorTest.dumpSuggestions.bind(InspectorTest, textEditor);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    var testSuite = [
+        function testClassNameAutocomplete(next)
+        {
+            dumpSuggestions([
+                ".red { color: red }",
+                ".blue { color: blue }",
+                ".|"
+            ]);
+            next();
+        },
+
+        function testPropertyNameAutocomplete(next)
+        {
+            dumpSuggestions([
+                ".red { color: red }",
+                ".blue { c|"
+            ]);
+            dumpSuggestions([
+                ".my-class { -|webkit-border: 1px solid black; -webkit-color: blue;",
+                "text-align: }"
+            ]);
+            next();
+        },
+
+        function testPropertyValueAutocomplete(next)
+        {
+            dumpSuggestions([
+                ".red { border-style: |",
+                "/* some other words to mess up */"
+            ]);
+            dumpSuggestions([
+                ".red { border-style: d|",
+                "/* dial drummer dig */"
+            ]);
+            dumpSuggestions([
+                ".red { border-style: z|",
+                "/* zipper zorro zion */"
+            ]);
+            dumpSuggestions([
+                ".red { border-style/* comment */: /* comment */|"
+            ]);
+            dumpSuggestions([
+                ".my-class { -webkit-border: 1px solid black; -webkit-color: blue;",
+                "text-align: |}"
+            ]);
+            next();
+        },
+
+        function verifySuggestionsOnColumnTypedIn(next)
+        {
+            textEditor.element.focus();
+            textEditor.setText([
+                ".green {",
+                "   display"
+            ].join("\n"));
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, 10));
+            InspectorTest.dumpTextWithSelection(textEditor);
+            var suggestions = [];
+            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", function(words) { suggestions = words; });
+            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "autocomplete", onTypedIn);
+            InspectorTest.typeIn(textEditor, ":");
+
+            function onTypedIn()
+            {
+                InspectorTest.addResult("Suggestions displayed on ':' symbol typed in:");
+                InspectorTest.addResult("[" + suggestions.join(", ") + "]");
+                next();
+            }
+        },
+    ];
+}
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+The test verifies autocomplete suggestions for CSS file.
+</p>
+</body>
+</html>

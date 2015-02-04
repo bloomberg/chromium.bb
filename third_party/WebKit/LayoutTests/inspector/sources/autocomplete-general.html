@@ -1,6 +1,5 @@
 <html>
 <head>
-<link rel="stylesheet" href="./resources/empty.css">
 <script src="./resources/empty.js"></script>
 <script src="../editor/editor-test.js"></script>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
@@ -12,20 +11,17 @@ function codeSnippet() {
 
 function test()
 {
+    InspectorTest.showScriptSource("empty.js", onSourceFrame);
+
     var textEditor;
-    function onSourceFrame(next, sourceFrame)
+    function onSourceFrame(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
         textEditor.element.focus();
-        next();
+        InspectorTest.runTestSuite(testSuite);
     }
 
-    InspectorTest.runTestSuite([
-        function openJavaScriptEditor(next)
-        {
-            InspectorTest.showScriptSource("empty.js", onSourceFrame.bind(null, next));
-        },
-
+    var testSuite = [
         // This test has to be the first. It validates that autocompletion controller
         // will initialize as a key will be pressed.
         function testCompletionsShowUpOnKeyPress(next)
@@ -69,21 +65,8 @@ function test()
         {
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
             InspectorTest.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
-        },
-
-        function openCSSEditor(next)
-        {
-            InspectorTest.showScriptSource("empty.css", onSourceFrame.bind(null, next));
-        },
-
-        function testCSSAutocompletion(next)
-        {
-            // Force autocomplete controller initialization.
-            textEditor._autocompleteController._initializeIfNeeded();
-            textEditor.setText(".my-class { -webkit-border: 1px solid black; }");
-            dumpDictionary(next);
-        },
-    ]);
+        }
+    ];
 
     function dumpDictionary(next) {
         var wordsInDictionary = textEditor._autocompleteController._delegate._dictionary.wordsWithPrefix("");
