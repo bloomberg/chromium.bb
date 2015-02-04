@@ -72,6 +72,10 @@ class ComponentInfoProvider(object):
     def union_types(self):
         return set()
 
+    @property
+    def include_path_for_union_types(self):
+        return None
+
 
 class ComponentInfoProviderCore(ComponentInfoProvider):
     def __init__(self, interfaces_info, component_info):
@@ -94,6 +98,10 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     @property
     def union_types(self):
         return self._component_info['union_types']
+
+    @property
+    def include_path_for_union_types(self):
+        return 'bindings/core/v8/UnionTypesCore.h'
 
 
 class ComponentInfoProviderModules(ComponentInfoProvider):
@@ -123,6 +131,10 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
         # Remove duplicate union types from component_info_modules to avoid
         # generating multiple container generation.
         return self._component_info_modules['union_types'] - self._component_info_core['union_types']
+
+    @property
+    def include_path_for_union_types(self):
+        return 'bindings/modules/v8/UnionTypesModules.h'
 
 
 def load_interfaces_info_overall_pickle(info_dir):

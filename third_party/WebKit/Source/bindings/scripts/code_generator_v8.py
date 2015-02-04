@@ -125,20 +125,33 @@ class TypedefResolver(Visitor):
     def __init__(self, info_provider):
         self.info_provider = info_provider
 
-    def resolve(self, definitions):
+    def resolve(self, definitions, definition_name):
         """Traverse definitions and resolves typedefs with the actual types."""
         self.typedefs = self.info_provider.component_info['typedefs']
         self.typedefs.update(self.STANDARD_TYPEDEFS)
+        self.additional_includes = set()
         definitions.accept(self)
+        self._update_dependencies_include_paths(definition_name)
+
+    def _update_dependencies_include_paths(self, definition_name):
+        interface_info = self.info_provider.interfaces_info[definition_name]
+        dependencies_include_paths = interface_info['dependencies_include_paths']
+        for include_path in self.additional_includes:
+            if include_path not in dependencies_include_paths:
+                dependencies_include_paths.append(include_path)
 
     def _resolve_typedefs(self, typed_object):
         """Resolve typedefs to actual types in the object."""
         idl_type = typed_object.idl_type
         if not idl_type:
             return
+        resolved_idl_type = idl_type.resolve_typedefs(self.typedefs)
+        if resolved_idl_type.is_union_type:
+            self.additional_includes.add(
+                self.info_provider.include_path_for_union_types)
         # Need to re-assign typed_object.idl_type, not just mutate idl_type,
         # since type(idl_type) may change.
-        typed_object.idl_type = idl_type.resolve_typedefs(self.typedefs)
+        typed_object.idl_type = resolved_idl_type
 
     def visit_callback_function(self, callback_function):
         self._resolve_typedefs(callback_function)
@@ -171,7 +184,7 @@ class CodeGeneratorBase(object):
         # Set local type info
         IdlType.set_callback_functions(definitions.callback_functions.keys())
         # Resolve typedefs
-        self.typedef_resolver.resolve(definitions)
+        self.typedef_resolver.resolve(definitions, definition_name)
         return self.generate_code_internal(definitions, definition_name)
 
     def generate_code_internal(self, definitions, definition_name):

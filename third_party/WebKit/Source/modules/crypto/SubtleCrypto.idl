@@ -33,7 +33,6 @@
 typedef DOMString KeyFormat;
 typedef DOMString KeyUsage;
 typedef (Dictionary or DOMString) AlgorithmIdentifier;
-typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 
 [
     GarbageCollected,

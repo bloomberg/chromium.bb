@@ -56,6 +56,7 @@
     attribute unrestricted double unrestrictedDoubleAttribute;
     attribute unrestricted float unrestrictedFloatAttribute;
     attribute TestEnum testEnumAttribute;
+    attribute DOMStringOrDouble stringOrDoubleAttribute;
     static attribute DOMString staticStringAttribute;
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);

@@ -11,8 +11,6 @@ enum MediaKeyStatus {
     "internal-error"
 };
 
-typedef (ArrayBuffer or ArrayBufferView) BufferSource;
-
 [
     GarbageCollected,
 ] interface MediaKeyStatusMap {
