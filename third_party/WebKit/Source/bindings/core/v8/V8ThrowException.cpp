@@ -70,12 +70,16 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, frame, DoNotReportSecurityError))
         sanitizedCreationContext = isolate->GetCurrentContext()->Global();
 
+    v8::TryCatch tryCatch;
 
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException.get(), sanitizedCreationContext, isolate);
 
-    if (exception.IsEmpty())
-        return v8Undefined();
+    if (tryCatch.HasCaught()) {
+        ASSERT(exception.IsEmpty());
+        return tryCatch.Exception();
+    }
+    ASSERT(!exception.IsEmpty());
 
     // Attach an Error object to the DOMException. This is then lazily used to get the stack value.
     v8::Handle<v8::Value> error = v8::Exception::Error(v8String(isolate, domException->message()));
