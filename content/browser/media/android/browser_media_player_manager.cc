@@ -149,6 +149,12 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
   fullscreen_player_id_ = kInvalidMediaPlayerId;
   if (!player)
     return;
+
+#if defined(VIDEO_HOLE)
+  if (external_video_surface_container_)
+    external_video_surface_container_->OnFrameInfoUpdated();
+#endif  // defined(VIDEO_HOLE)
+
   if (release_media_player)
     ReleaseFullscreenPlayer(player);
   else
@@ -318,6 +324,9 @@ void BrowserMediaPlayerManager::DetachExternalVideoSurface(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnFrameInfoUpdated() {
+  if (fullscreen_player_id_ != kInvalidMediaPlayerId)
+    return;
+
   if (external_video_surface_container_)
     external_video_surface_container_->OnFrameInfoUpdated();
 }
