@@ -1758,6 +1758,8 @@ crbug.com/449081 [ Mac Linux Debug ] virtual/gpu/fast/canvas/canvas-lose-restore
 
 crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ Pass Timeout ]
 
+crbug.com/455140 http/tests/loading/bad-scheme-subframe.html [ Pass Failure ]
+
 crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-not-inherited-001.htm [ ImageOnlyFailure ]
 crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm [ ImageOnlyFailure ]
 crbug.com/453957 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm [ ImageOnlyFailure ]
