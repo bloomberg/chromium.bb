@@ -348,6 +348,7 @@ void StartPageService::AppListHidden() {
   if (HotwordService::IsExperimentalHotwordingEnabled() &&
       speech_recognizer_) {
     speech_recognizer_->Stop();
+    speech_recognizer_.reset();
   }
 
 #if defined(OS_CHROMEOS)
