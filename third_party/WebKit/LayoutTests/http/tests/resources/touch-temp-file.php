@@ -14,7 +14,7 @@ if (!$stat) {
     exit();
 }
 
-$mtime = $stat['mtime'] + 1;
+$mtime = $stat['mtime'] + 2;
 
 if (!touch($tmpFile, $mtime)) {
     echo "FAIL: touch() call failed.\n";
