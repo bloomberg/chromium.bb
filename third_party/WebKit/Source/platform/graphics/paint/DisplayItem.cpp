@@ -72,6 +72,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
     case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
     case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
+    case DisplayItem::ClipLayerColumnBounds: return "ClipLayerColumnBounds";
     case DisplayItem::ClipLayerFilter: return "ClipLayerFilter";
     case DisplayItem::ClipLayerForeground: return "ClipLayerForeground";
     case DisplayItem::ClipLayerParent: return "ClipLayerParent";

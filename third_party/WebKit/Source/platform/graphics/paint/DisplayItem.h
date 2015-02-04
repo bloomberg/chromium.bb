@@ -85,6 +85,7 @@ public:
         ClipFrameToVisibleContentRect,
         ClipFrameScrollbars,
         ClipLayerBackground,
+        ClipLayerColumnBounds,
         ClipLayerFilter,
         ClipLayerForeground,
         ClipLayerParent,

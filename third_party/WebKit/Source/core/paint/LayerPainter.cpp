@@ -21,6 +21,7 @@
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
@@ -552,11 +553,9 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
         localDirtyRect.intersect(colRect);
 
         if (!localDirtyRect.isEmpty()) {
-            GraphicsContextStateSaver stateSaver(*context);
-
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            context->clip(enclosingIntRect(colRect));
+            ClipRecorder clipRecorder(m_renderLayer.renderer()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, enclosingIntRect(colRect));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
@@ -585,8 +584,7 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
                 TransformationMatrix transform;
                 transform.translateRight(roundToInt(childOffset.x() + offset.width()), roundToInt(childOffset.y() + offset.height()));
 
-                // Apply the transform.
-                context->concatCTM(transform.toAffineTransform());
+                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform);
 
                 // Now do a paint with the root layer shifted to be the next multicol block.
                 LayerPaintingInfo columnPaintingInfo(paintingInfo);
