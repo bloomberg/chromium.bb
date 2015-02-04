@@ -234,7 +234,6 @@ public:
     PassRefPtrWillBeRawPtr<LocalDOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
-    String inspectorHighlightJSON(Node*, ExceptionState&);
 
     String counterValue(Element*);
 

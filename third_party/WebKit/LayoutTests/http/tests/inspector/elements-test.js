@@ -1,11 +1,3 @@
-function getInspectorHighlightJSON(nodeId, opt_frameId)
-{
-    var doc = document;
-    if (opt_frameId)
-        doc = document.getElementById(opt_frameId).contentDocument;
-    return window.internals.inspectorHighlightJSON(doc.getElementById(nodeId));
-}
-
 var initialize_ElementTest = function() {
 
 InspectorTest.preloadPanel("elements");
@@ -878,15 +870,20 @@ function onBlankSection(selector, callback)
     InspectorTest.waitForSelectorCommitted(callback.bind(null, section));
 }
 
-InspectorTest.dumpInspectorHighlightJSON = function(nodeId, callback, opt_frameId)
+InspectorTest.dumpInspectorHighlightJSON = function(idValue, callback)
 {
-    function innerCallback(result)
+    InspectorTest.nodeWithId(idValue, nodeResolved);
+
+    function nodeResolved(node)
     {
-        InspectorTest.addResult(nodeId + ": " + result.description);
+        InspectorTest.DOMAgent.getHighlightObjectForTest(node.id, report);
+    }
+
+    function report(error, result)
+    {
+        InspectorTest.addResult(idValue + JSON.stringify(result, null, 2));
         callback();
     }
-    opt_frameId = opt_frameId || "";
-    InspectorTest.evaluateInPage("getInspectorHighlightJSON(\"" + nodeId + "\", \"" + opt_frameId + "\")", innerCallback);
 }
 
 };

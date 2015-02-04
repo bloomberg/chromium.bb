@@ -409,11 +409,6 @@ bool InspectorController::screencastEnabled()
     return m_pageAgent->screencastEnabled();
 }
 
-PassRefPtr<JSONObject> InspectorController::highlightJSONForNode(Node* node)
-{
-    return m_overlay->highlightJSONForNode(node);
-}
-
 void InspectorController::willProcessTask()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())

@@ -108,8 +108,6 @@ public:
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);
 
-    PassRefPtr<JSONObject> highlightJSONForNode(Node*);
-
     void willProcessTask();
     void didProcessTask();
     void flushPendingProtocolNotifications();

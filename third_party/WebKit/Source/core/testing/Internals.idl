@@ -183,7 +183,6 @@
     DOMString dumpRefCountedInstanceCounts();
     sequence<DOMString> consoleMessageArgumentCounts(Document document);
     unsigned long[] setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
-    [RaisesException] DOMString inspectorHighlightJSON(Node node);
 
     DOMString counterValue(Element element);
     long pageNumber(Element element, optional float pageWidth, optional float pageHeight);

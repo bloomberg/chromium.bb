@@ -2258,6 +2258,14 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
 }
 
+void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<JSONObject>& result)
+{
+    Node* node = assertNode(errorString, nodeId);
+    if (!node)
+        return;
+    result = m_overlay->highlightJSONForNode(node);
+}
+
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
