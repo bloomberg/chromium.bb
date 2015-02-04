@@ -65,6 +65,18 @@ i18n.input.chrome.inputview.elements.ElementType = {
   EN_SWITCHER: 42,
   VOICE_BTN: 43,
   VOICE_VIEW: 44,
-  VOICE_PRIVACY_GOT_IT: 45
+  VOICE_PRIVACY_GOT_IT: 45,
+  BACK_TO_KEYBOARD: 46,
+  BOLD: 47,
+  ITALICS: 48,
+  UNDERLINE: 49,
+  COPY: 50,
+  PASTE: 51,
+  CUT: 52,
+  SELECT_ALL: 53,
+  REDO: 54,
+  UNDO: 55,
+  SWIPE_VIEW: 56,
+  SELECT_VIEW: 57
 };
 

@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Aggiungi al dizionario personale"
+  },
   "advanced": {
     "message": "Avanzata"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Pagina Impostazioni tastiera Spagnolo"
   },
+  "expand": {
+    "message": "Espandi"
+  },
+  "expand_candidates": {
+    "message": "espandi elenco candidati"
+  },
   "fi_fin_settings_page": {
     "message": "Pagina Impostazioni tastiera Finlandese"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Pagina Impostazioni tastiera Irlandese"
+  },
+  "ignore_correction": {
+    "message": "Ignora correzione di:"
   },
   "il_heb_settings_page": {
     "message": "Pagina Impostazioni tastiera Ebraico"
@@ -2847,7 +2859,7 @@
     "message": "Tastiera Rumeno"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Tastiera Rumeno standard"
   },
   "keyboard_russian": {
     "message": "Tastiera Russo"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Pagina Impostazioni tastiera Svedese"
   },
+  "settings": {
+    "message": "Impostazioni"
+  },
   "shift": {
     "message": "maiusc"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Mostra suggerimenti in hangul"
+  },
+  "shrink_candidates": {
+    "message": "comprimi elenco candidati"
   },
   "si_slv_settings_page": {
     "message": "Pagina Impostazioni tastiera Sloveno"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Rimuovi selezionati"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Salva"

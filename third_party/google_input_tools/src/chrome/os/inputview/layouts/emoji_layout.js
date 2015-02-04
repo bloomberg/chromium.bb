@@ -96,17 +96,13 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   });
 
   keySpec = {
-    'widthInWeight': 42,
-    'heightInWeight': 14
-  };
-  baseSpec = {
-    'widthInWeight': 42,
+    'widthInWeight': 1.42,
     'heightInWeight': 14
   };
   var sideKeys = util.createVerticalLayout({
     'id': 'sideKeys',
     'children': [util.createKey(keySpec), util.createKey(keySpec),
-      util.createKey(baseSpec)]
+      util.createKey(keySpec)]
   });
 
   var rowsAndSideKeys = util.createLinearLayout({

@@ -71,6 +71,9 @@ material.SpaceKey = function(id, stateManager, title, opt_characters,
    */
   this.stateManager_ = stateManager;
 
+  /** @private {string} */
+  this.iconCss_ = opt_iconCss || '';
+
   // Double click on space key may convert two spaces to a period followed by a
   // space.
   this.pointerConfig.dblClick = true;
@@ -104,7 +107,13 @@ SpaceKey.prototype.createDom = function() {
   var dom = this.getDomHelper();
   this.wrapper_ = dom.createDom(goog.dom.TagName.DIV, Css.SPACE_WRAPPER);
   dom.appendChild(this.getElement(), this.wrapper_);
-  goog.dom.setTextContent(this.wrapper_, this.title_);
+  if (this.iconCss_) {
+    var iconElem = dom.createDom(goog.dom.TagName.DIV, this.iconCss_);
+    dom.appendChild(this.wrapper_, iconElem);
+  } else {
+    goog.dom.classlist.add(this.wrapper_, Css.SPACE_GREY_BG);
+    goog.dom.setTextContent(this.wrapper_, this.title_);
+  }
 };
 
 

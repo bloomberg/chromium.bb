@@ -11,7 +11,6 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.require('i18n.input.chrome.inputview.layouts.SpaceRow');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
 

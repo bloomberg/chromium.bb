@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Ongeza kwenye kamusi ya binafsi"
+  },
   "advanced": {
     "message": "Mipangilio ya kina"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kihispania"
   },
+  "expand": {
+    "message": "Panua"
+  },
+  "expand_candidates": {
+    "message": "panua orodha ya wagombea"
+  },
   "fi_fin_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kifini"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiairishi"
+  },
+  "ignore_correction": {
+    "message": "Puuza marekebisho ya neno"
   },
   "il_heb_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiyahudi"
@@ -2847,7 +2859,7 @@
     "message": "Kibodi ya Kiromania"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Kibodi wastani ya Kiromania"
   },
   "keyboard_russian": {
     "message": "Kibodi ya Kirusi"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiswidi"
   },
+  "settings": {
+    "message": "Mipangilio"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Onyesha mapendekezo ya Hangul"
+  },
+  "shrink_candidates": {
+    "message": "punguza orodha ya wagombea"
   },
   "si_slv_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kislovania"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Ondoa Uliochaguliwa"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Hifadhi"

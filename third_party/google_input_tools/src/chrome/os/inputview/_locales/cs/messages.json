@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "P\u0159idat do osobn\u00edho slovn\u00edku"
+  },
   "advanced": {
     "message": "Roz\u0161\u00ed\u0159en\u00e1 nastaven\u00ed"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed \u0161pan\u011blsk\u00e9 kl\u00e1vesnice"
   },
+  "expand": {
+    "message": "Rozbalit"
+  },
+  "expand_candidates": {
+    "message": "rozbalit seznam kandid\u00e1t\u016f"
+  },
   "fi_fin_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed finsk\u00e9 kl\u00e1vesnice"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed irsk\u00e9 kl\u00e1vesnice"
+  },
+  "ignore_correction": {
+    "message": "Ignorovat opravu pro"
   },
   "il_heb_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed hebrejsk\u00e9 kl\u00e1vesnice"
@@ -2847,7 +2859,7 @@
     "message": "Rumunsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Standardn\u00ed rumunsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_russian": {
     "message": "Rusk\u00e1 kl\u00e1vesnice"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed \u0161v\u00e9dsk\u00e9 kl\u00e1vesnice"
   },
+  "settings": {
+    "message": "Nastaven\u00ed"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Zobrazovat n\u00e1vrhy korejsk\u00e9ho p\u00edsma"
+  },
+  "shrink_candidates": {
+    "message": "sbalit seznam kandid\u00e1t\u016f"
   },
   "si_slv_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed slovinsk\u00e9 kl\u00e1vesnice"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Odstranit vybran\u00e9"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Ulo\u017eit"

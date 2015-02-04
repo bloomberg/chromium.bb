@@ -50,6 +50,8 @@ var Character = i18n.input.chrome.inputview.elements.content.Character;
  * @param {boolean} enableShiftRendering Whether renders two letter vertically,
  *     it means show shift letter when in letter state, shows default letter
  *     when in shift state, same as the altgr state.
+ * @param {boolean} isQpInputView Temporary flag to indicate it is in material
+ *     design.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.content.SoftKey}
@@ -57,7 +59,7 @@ var Character = i18n.input.chrome.inputview.elements.content.Character;
 i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
     keyCode, characters, isLetterKey, hasAltGrCharacterInTheKeyset,
     alwaysRenderAltGrCharacter, stateManager, isRTL,
-    enableShiftRendering, opt_eventTarget) {
+    enableShiftRendering, isQpInputView, opt_eventTarget) {
   goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
       CHARACTER_KEY, opt_eventTarget);
 
@@ -117,6 +119,9 @@ i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
   /** @private {boolean} */
   this.enableShiftRendering_ = enableShiftRendering;
 
+  /** @private {boolean} */
+  this.isQpInputView_ = isQpInputView;
+
   this.pointerConfig.longPressWithPointerUp = true;
   this.pointerConfig.longPressDelay = 500;
 };
@@ -164,6 +169,7 @@ CharacterKey.prototype.createDom = function() {
           CharacterKey.STATE_LIST_[i],
           this.stateManager_,
           this.enableShiftRendering_,
+          this.isQpInputView_,
           this.getCapslockCharacter_(i));
       var character = new Character(this.id + '-' + i, model, this.isRTL_);
       this.addChild(character, true);

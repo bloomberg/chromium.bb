@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "L\u00e4gg till i personlig ordlista"
+  },
   "advanced": {
     "message": "Avancerat"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r spanskt tangentbord"
   },
+  "expand": {
+    "message": "Ut\u00f6ka"
+  },
+  "expand_candidates": {
+    "message": "visa fler alternativ"
+  },
   "fi_fin_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r finskt tangentbord"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r irl\u00e4ndskt tangentbord"
+  },
+  "ignore_correction": {
+    "message": "Ignorera korrigeringen av"
   },
   "il_heb_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r hebreiskt tangentbord"
@@ -2847,7 +2859,7 @@
     "message": "Rum\u00e4nskt tangentbord"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rum\u00e4nskt standardtangentbord"
   },
   "keyboard_russian": {
     "message": "Ryskt tangentbord"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r svenskt tangentbord"
   },
+  "settings": {
+    "message": "Inst\u00e4llningar"
+  },
   "shift": {
     "message": "skift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Visa f\u00f6rslag med hangul-tecken"
+  },
+  "shrink_candidates": {
+    "message": "visa f\u00e4rre alternativ"
   },
   "si_slv_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r slovenskt tangentbord"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Ta bort markerade poster"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Spara"

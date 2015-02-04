@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "\u52a0\u5165\u500b\u4eba\u5b57\u5178"
+  },
   "advanced": {
     "message": "\u9032\u968e"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\u897f\u73ed\u7259\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
   },
+  "expand": {
+    "message": "\u5c55\u958b"
+  },
+  "expand_candidates": {
+    "message": "\u5c55\u958b\u5019\u9078\u6e05\u55ae"
+  },
   "fi_fin_settings_page": {
     "message": "\u82ac\u862d\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u611b\u723e\u862d\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
+  },
+  "ignore_correction": {
+    "message": "\u4e0d\u66f4\u6b63\u4ee5\u4e0b\u5b57\u8a5e\uff1a"
   },
   "il_heb_settings_page": {
     "message": "\u5e0c\u4f2f\u4f86\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
@@ -2847,7 +2859,7 @@
     "message": "\u7f85\u99ac\u5c3c\u4e9e\u6587\u9375\u76e4"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "\u7f85\u99ac\u5c3c\u4e9e\u6587\u6a19\u6e96\u9375\u76e4"
   },
   "keyboard_russian": {
     "message": "\u4fc4\u6587\u9375\u76e4"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u745e\u5178\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
   },
+  "settings": {
+    "message": "\u8a2d\u5b9a"
+  },
   "shift": {
     "message": "Shift \u9375"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "\u986f\u793a\u97d3\u6587\u5efa\u8b70"
+  },
+  "shrink_candidates": {
+    "message": "\u6536\u5408\u5019\u9078\u6e05\u55ae"
   },
   "si_slv_settings_page": {
     "message": "\u65af\u6d1b\u7dad\u5c3c\u4e9e\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "\u522a\u9664\u6240\u9078\u9805\u76ee"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "\u5132\u5b58"

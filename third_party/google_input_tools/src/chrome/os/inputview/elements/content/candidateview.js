@@ -20,10 +20,12 @@ goog.require('goog.dom.classlist');
 goog.require('goog.object');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
+goog.require('i18n.input.chrome.inputview.elements.content.ToolbarButton');
 goog.require('i18n.input.chrome.message.Name');
 
 
@@ -66,18 +68,46 @@ i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
    */
   this.iconButtons_ = [];
 
-  this.iconButtons_[CandidateView.IconType.BACK] = new content.CandidateButton(
+  this.iconButtons_[IconType.BACK] = new content.CandidateButton(
       '', ElementType.BACK_BUTTON, '',
       chrome.i18n.getMessage('HANDWRITING_BACK'), this);
-  this.iconButtons_[CandidateView.IconType.SHRINK_CANDIDATES] = new content.
+  this.iconButtons_[IconType.SHRINK_CANDIDATES] = new content.
       CandidateButton('', ElementType.SHRINK_CANDIDATES,
           Css.SHRINK_CANDIDATES_ICON, '', this);
-  this.iconButtons_[CandidateView.IconType.EXPAND_CANDIDATES] = new content.
+
+  this.iconButtons_[IconType.EXPAND_CANDIDATES] = new content.
       CandidateButton('', ElementType.EXPAND_CANDIDATES,
           Css.EXPAND_CANDIDATES_ICON, '', this);
-  this.iconButtons_[CandidateView.IconType.VOICE] = new content.
+
+  this.iconButtons_[IconType.VOICE] = new content.
       CandidateButton('', ElementType.VOICE_BTN, Css.VOICE_MIC_BAR, '', this,
           true);
+
+  /**
+   * Toolbar buttons.
+   *
+   * @private {!Array.<!i18n.input.chrome.inputview.elements.Element>}
+   */
+  this.toolbarButtons_ = [];
+
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.UNDO, Css.UNDO_ICON, '', this, true));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.REDO, Css.REDO_ICON, '', this, true));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.BOLD, Css.BOLD_ICON, '', this, true));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.ITALICS, Css.ITALICS_ICON, '', this, true));
+  this.toolbarButtons_.push(new content.ToolbarButton(
+      '', ElementType.UNDERLINE, Css.UNDERLINE_ICON, '', this, true));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.CUT, Css.CUT_ICON, '', this));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.COPY, Css.COPY_ICON, '', this));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.PASTE, Css.PASTE_ICON, '', this));
+  this.toolbarButtons_.push(new content.
+      ToolbarButton('', ElementType.SELECT_ALL, Css.SELECT_ALL_ICON, '', this));
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.CandidateView,
     i18n.input.chrome.inputview.elements.Element);
@@ -85,7 +115,7 @@ var CandidateView = i18n.input.chrome.inputview.elements.content.CandidateView;
 
 
 /**
- * The icon type at the right of the candiate view.
+ * The icon type at the right of the candidate view.
  *
  * @enum {number}
  */
@@ -95,6 +125,7 @@ CandidateView.IconType = {
   EXPAND_CANDIDATES: 2,
   VOICE: 3
 };
+var IconType = CandidateView.IconType;
 
 
 /**
@@ -132,11 +163,19 @@ CandidateView.prototype.showingCandidates = false;
 
 
 /**
- * true if it is showing number row.
+ * True if it is showing number row.
  *
  * @type {boolean}
  */
 CandidateView.prototype.showingNumberRow = false;
+
+
+/**
+ * True if showing the toolbar row.
+ *
+ * @type {boolean}
+ */
+CandidateView.prototype.showingToolbar = false;
 
 
 /**
@@ -155,6 +194,14 @@ CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 235;
  * @private {number}
  */
 CandidateView.ICON_WIDTH_ = 120;
+
+
+/**
+ * The width of icons in the toolbar.
+ *
+ * @private {number}
+ */
+CandidateView.TOOLBAR_ICON_WIDTH_ = 40;
 
 
 /**
@@ -187,6 +234,13 @@ CandidateView.prototype.createDom = function() {
 
   var dom = this.getDomHelper();
   var elem = this.getElement();
+
+  for (var i = 0; i < this.toolbarButtons_.length; i++) {
+    var button = this.toolbarButtons_[i];
+    button.render(elem);
+    button.setVisible(false);
+  }
+
   this.interContainer_ = dom.createDom(TagName.DIV,
       Css.CANDIDATE_INTER_CONTAINER);
   dom.appendChild(elem, this.interContainer_);
@@ -196,10 +250,16 @@ CandidateView.prototype.createDom = function() {
     button.render(elem);
     button.setVisible(false);
   }
+
   goog.a11y.aria.setState(/** @type {!Element} */
-      (this.iconButtons_[CandidateView.IconType.VOICE].getElement()),
+      (this.iconButtons_[IconType.SHRINK_CANDIDATES].getElement()),
       goog.a11y.aria.State.LABEL,
-      chrome.i18n.getMessage('VOICE_TURN_ON'));
+      chrome.i18n.getMessage('SHRINK_CANDIDATES'));
+
+  goog.a11y.aria.setState(/** @type {!Element} */
+      (this.iconButtons_[IconType.EXPAND_CANDIDATES].getElement()),
+      goog.a11y.aria.State.LABEL,
+      chrome.i18n.getMessage('EXPAND_CANDIDATES'));
 };
 
 
@@ -248,12 +308,12 @@ CandidateView.prototype.showCandidates = function(candidates,
   if (candidates.length > 0) {
     if (showThreeCandidates) {
       this.addThreeCandidates_(candidates);
-      // Hide the voice icons.
-      this.switchToIcon(CandidateView.IconType.VOICE, false);
     } else {
       this.addFullCandidates_(candidates);
-      this.switchToIcon(CandidateView.IconType.EXPAND_CANDIDATES,
-          !!opt_expandable && this.candidateCount < candidates.length);
+      if (!this.iconButtons_[IconType.BACK].isVisible()) {
+        this.switchToIcon(IconType.EXPAND_CANDIDATES,
+            !!opt_expandable && this.candidateCount < candidates.length);
+      }
     }
     this.showingCandidates = true;
     this.showingNumberRow = false;
@@ -272,10 +332,13 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
   var num = Math.min(3, candidates.length);
   var dom = this.getDomHelper();
+  var width = CandidateView.WIDTH_FOR_THREE_CANDIDATES_;
+  if (this.showingToolbar) {
+    width -= CandidateView.ICON_WIDTH_ / 3;
+  }
   for (var i = 0; i < num; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
-        this.height, i == 1 || num == 1, CandidateView.
-        WIDTH_FOR_THREE_CANDIDATES_, this);
+        this.height, i == 1 || num == 1, width, this);
     candidateElem.render(this.interContainer_);
   }
   this.candidateCount = num;
@@ -352,6 +415,10 @@ CandidateView.prototype.resize = function(width, height) {
     button.resize(CandidateView.ICON_WIDTH_, height);
   }
 
+  for (var i = 0; i < this.toolbarButtons_.length; i++) {
+    var button = this.toolbarButtons_[i];
+    button.resize(CandidateView.TOOLBAR_ICON_WIDTH_, height);
+  }
 
   // Resets the candidates elements visibility.
   if (this.candidateCount > 0) {
@@ -383,16 +450,34 @@ CandidateView.prototype.resize = function(width, height) {
 CandidateView.prototype.switchToIcon = function(type, visible) {
   for (var i = 0; i < this.iconButtons_.length; i++) {
     // Don't enable voice when focus in password box.
-    this.iconButtons_[i].setVisible(visible && type == i &&
-        (type != CandidateView.IconType.VOICE || !this.candidateCount &&
-        this.adapter_.contextType != 'password'));
+    this.iconButtons_[i].setVisible(false);
   }
 
-  // We need make default voice icon showed if the position doesn't show other
-  // icon.
-  if (!visible && this.adapter_.isExperimental &&
+  if (visible) {
+    if (type != IconType.VOICE) {
+      this.iconButtons_[type].setVisible(true);
+    } else if (this.adapter_.isVoiceInputEnabled &&
+        this.adapter_.contextType != 'password') {
+      this.iconButtons_[type].setVisible(true);
+    }
+  } else if (this.adapter_.isVoiceInputEnabled &&
+      type != IconType.VOICE &&
       this.adapter_.contextType != 'password') {
-    this.iconButtons_[CandidateView.IconType.VOICE].setVisible(true);
+    // Default to show voice icon.
+    this.iconButtons_[IconType.VOICE].setVisible(true);
+  }
+};
+
+
+/**
+ * Changes the visibility of the toolbar and it's icons.
+ *
+ * @param {boolean} visible The target visibility.
+ */
+CandidateView.prototype.setToolbarVisible = function(visible) {
+  this.showingToolbar = visible;
+  for (var i = 0; i < this.toolbarButtons_.length; i++) {
+    this.toolbarButtons_[i].setVisible(visible);
   }
 };
 
@@ -406,12 +491,15 @@ CandidateView.prototype.switchToIcon = function(type, visible) {
  */
 CandidateView.prototype.updateByKeyset = function(
     keyset, isPasswordBox, isRTL) {
-  if (keyset == CandidateView.HANDWRITING_VIEW_CODE_) {
-    this.switchToIcon(CandidateView.IconType.BACK, true);
-  } else if (keyset != CandidateView.EMOJI_VIEW_CODE_ && !this.candidateCount &&
-      this.adapter_.isExperimental) {
-    // If candidates count is greater than 0, don't show voice icon.
-    this.switchToIcon(CandidateView.IconType.VOICE, true);
+  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+    if (keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
+        keyset == CandidateView.EMOJI_VIEW_CODE_) {
+      this.switchToIcon(IconType.BACK, true);
+    } else {
+      this.switchToIcon(IconType.VOICE,
+          this.adapter_.isVoiceInputEnabled &&
+          this.adapter_.contextType != 'password');
+    }
   }
 
   if (isPasswordBox && keyset.indexOf('compact') != -1) {
@@ -420,5 +508,14 @@ CandidateView.prototype.updateByKeyset = function(
     this.hideNumberRow();
   }
   this.interContainer_.style.direction = isRTL ? 'rtl' : 'ltr';
+};
+
+
+/** @override */
+CandidateView.prototype.disposeInternal = function() {
+  goog.disposeAll(this.toolbarButtons_);
+  goog.disposeAll(this.iconButtons_);
+
+  goog.base(this, 'disposeInternal');
 };
 });  // goog.scope

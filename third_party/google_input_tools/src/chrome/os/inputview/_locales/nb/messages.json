@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Legg til i den personlige ordboken"
+  },
   "advanced": {
     "message": "Avansert"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Innstillinger-side for spansk tastatur"
   },
+  "expand": {
+    "message": "Vis"
+  },
+  "expand_candidates": {
+    "message": "vis kandidatlisten"
+  },
   "fi_fin_settings_page": {
     "message": "Innstillinger-side for finsk tastatur"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Innstillinger-side for irsk tastatur"
+  },
+  "ignore_correction": {
+    "message": "Ignorer korrigering av"
   },
   "il_heb_settings_page": {
     "message": "Innstillinger-side for hebraisk tastatur"
@@ -2847,7 +2859,7 @@
     "message": "Rumensk tastatur"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rumensk standardtastatur"
   },
   "keyboard_russian": {
     "message": "Russisk tastatur"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Innstillinger-side for svensk tastatur"
   },
+  "settings": {
+    "message": "Innstillinger"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Vis foresl\u00e5tte hangul-tegn"
+  },
+  "shrink_candidates": {
+    "message": "skjul kandidatlisten"
   },
   "si_slv_settings_page": {
     "message": "Innstillinger-side for slovensk tastatur"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Fjern valgte"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Lagre"

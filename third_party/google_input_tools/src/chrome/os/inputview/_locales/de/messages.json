@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "In pers\u00f6nliches W\u00f6rterbuch aufnehmen"
+  },
   "advanced": {
     "message": "Erweitert"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr spanische Tastatur"
   },
+  "expand": {
+    "message": "Maximieren"
+  },
+  "expand_candidates": {
+    "message": "Kandidatenliste maximieren"
+  },
   "fi_fin_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr finnische Tastatur"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr irische Tastatur"
+  },
+  "ignore_correction": {
+    "message": "Korrektur ignorieren f\u00fcr"
   },
   "il_heb_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr hebr\u00e4ische Tastatur"
@@ -2847,7 +2859,7 @@
     "message": "Rum\u00e4nische Tastatur"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rum\u00e4nische Standardtastatur"
   },
   "keyboard_russian": {
     "message": "Russische Tastatur"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr schwedische Tastatur"
   },
+  "settings": {
+    "message": "Einstellungen"
+  },
   "shift": {
     "message": "Umschalttaste"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Hangul-Vorschl\u00e4ge anzeigen"
+  },
+  "shrink_candidates": {
+    "message": "Kandidatenliste minimieren"
   },
   "si_slv_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr slowenische Tastatur"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Auswahl entfernen"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Speichern"

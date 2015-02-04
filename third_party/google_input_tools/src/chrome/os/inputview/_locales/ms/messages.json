@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Tambahkan pada kamus peribadi"
+  },
   "advanced": {
     "message": "Terperinci"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Sepanyol"
   },
+  "expand": {
+    "message": "Kembangkan"
+  },
+  "expand_candidates": {
+    "message": "kembangkan senarai calon"
+  },
   "fi_fin_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Finland"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Ireland"
+  },
+  "ignore_correction": {
+    "message": "Abaikan pembetulan untuk"
   },
   "il_heb_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Ibrani"
@@ -2847,7 +2859,7 @@
     "message": "Papan kekunci Romania"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Papan kekunci standard Romania"
   },
   "keyboard_russian": {
     "message": "Papan kekunci Rusia"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Sweden"
   },
+  "settings": {
+    "message": "Tetapan"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Tunjukkan cadangan Hangul"
+  },
+  "shrink_candidates": {
+    "message": "kecilkan senarai calon"
   },
   "si_slv_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Slovenia"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Alih Keluar Pilihan"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Simpan"

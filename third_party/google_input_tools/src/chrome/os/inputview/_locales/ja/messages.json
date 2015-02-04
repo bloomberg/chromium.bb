@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306b\u8ffd\u52a0"
+  },
   "advanced": {
     "message": "\u8a73\u7d30\u8a2d\u5b9a"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\u30b9\u30da\u30a4\u30f3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
+  "expand": {
+    "message": "\u5c55\u958b"
+  },
+  "expand_candidates": {
+    "message": "\u5019\u88dc\u306e\u6570\u3092\u5897\u3084\u3059"
+  },
   "fi_fin_settings_page": {
     "message": "\u30d5\u30a3\u30f3\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u30a2\u30a4\u30eb\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
+  },
+  "ignore_correction": {
+    "message": "\u6b21\u306e\u8a9e\u306f\u4fee\u6b63\u3057\u306a\u3044:"
   },
   "il_heb_settings_page": {
     "message": "\u30d8\u30d6\u30e9\u30a4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -2847,7 +2859,7 @@
     "message": "\u30eb\u30fc\u30de\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "\u30eb\u30fc\u30de\u30cb\u30a2\u8a9e\u6a19\u6e96\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_russian": {
     "message": "\u30ed\u30b7\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u30b9\u30a6\u30a7\u30fc\u30c7\u30f3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
+  "settings": {
+    "message": "\u8a2d\u5b9a"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "\u30cf\u30f3\u30b0\u30eb\u5019\u88dc\u8868\u793a"
+  },
+  "shrink_candidates": {
+    "message": "\u5019\u88dc\u306e\u6570\u3092\u6e1b\u3089\u3059"
   },
   "si_slv_settings_page": {
     "message": "\u30b9\u30ed\u30d9\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "\u9078\u629e\u9805\u76ee\u3092\u524a\u9664"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "\u4fdd\u5b58"

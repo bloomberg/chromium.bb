@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "\uac1c\uc778 \uc0ac\uc804\uc5d0 \ucd94\uac00"
+  },
   "advanced": {
     "message": "\uace0\uae09"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\uc2a4\ud398\uc778\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
+  "expand": {
+    "message": "\ud3bc\uce58\uae30"
+  },
+  "expand_candidates": {
+    "message": "\ud6c4\ubcf4 \ubaa9\ub85d \ud3bc\uce58\uae30"
+  },
   "fi_fin_settings_page": {
     "message": "\ud540\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\uc544\uc77c\ub79c\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
+  },
+  "ignore_correction": {
+    "message": "\uc790\ub3d9 \uc218\uc815 \uae30\ub2a5 \ubb34\uc2dc"
   },
   "il_heb_settings_page": {
     "message": "\ud788\ube0c\ub9ac\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -2847,7 +2859,7 @@
     "message": "\ub8e8\ub9c8\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "\ub8e8\ub9c8\ub2c8\uc544 \ud45c\uc900 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_russian": {
     "message": "\ub7ec\uc2dc\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\uc2a4\uc6e8\ub374\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
+  "settings": {
+    "message": "\uc124\uc815"
+  },
   "shift": {
     "message": "Shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "\ud55c\uae00 \ucd94\ucc9c \ud56d\ubaa9 \ud45c\uc2dc"
+  },
+  "shrink_candidates": {
+    "message": "\ud6c4\ubcf4 \ubaa9\ub85d \uc228\uae30\uae30"
   },
   "si_slv_settings_page": {
     "message": "\uc2ac\ub85c\ubca0\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "\uc120\ud0dd \ud56d\ubaa9 \uc0ad\uc81c"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "\uc800\uc7a5"

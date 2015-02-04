@@ -40,7 +40,7 @@ var material = i18n.input.chrome.inputview.layouts.material;
       });
 
   var data = {
-    'layoutID': '102kbd',
+    'layoutID': 'm-102kbd',
     'widthInWeight': 15,
     'children': [keyboardContainer]
   };

@@ -153,6 +153,21 @@ i18n.input.chrome.inputview.content.util.createBackKey = function() {
 
 
 /**
+ * Create the key which leads to keyboard from emoji/hwt.
+ *
+ * @return {!Object} The back key.
+ */
+i18n.input.chrome.inputview.content.util.createBackToKeyboardKey = function() {
+  var spec = {};
+  spec[SpecNodeName.ICON_CSS_CLASS] =
+      i18n.input.chrome.inputview.Css.BACK_TO_KEYBOARD_ICON;
+  spec[SpecNodeName.TYPE] = ElementType.BACK_TO_KEYBOARD;
+  spec[SpecNodeName.ID] = 'backToKeyboard';
+  return i18n.input.chrome.inputview.content.util.createKey(spec);
+};
+
+
+/**
  * Creates a ctrl key.
  *
  * @return {!Object} The ctrl key.

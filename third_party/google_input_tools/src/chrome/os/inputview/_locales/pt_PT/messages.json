@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Adicionar ao dicion\u00e1rio pessoal"
+  },
   "advanced": {
     "message": "Avan\u00e7ada"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado espanhol"
   },
+  "expand": {
+    "message": "Expandir"
+  },
+  "expand_candidates": {
+    "message": "expandir lista de candidatos"
+  },
   "fi_fin_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado finland\u00eas"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado irland\u00eas"
+  },
+  "ignore_correction": {
+    "message": "Ignorar corre\u00e7\u00e3o para"
   },
   "il_heb_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado hebraico"
@@ -2847,7 +2859,7 @@
     "message": "Teclado romeno"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Teclado padr\u00e3o romeno"
   },
   "keyboard_russian": {
     "message": "Teclado russo"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado sueco"
   },
+  "settings": {
+    "message": "Defini\u00e7\u00f5es"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Mostrar sugest\u00f5es em hangul"
+  },
+  "shrink_candidates": {
+    "message": "reduzir lista de candidatos"
   },
   "si_slv_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado esloveno"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Remover selecionadas"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Guardar"

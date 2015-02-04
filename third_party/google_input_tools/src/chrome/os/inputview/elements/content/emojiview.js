@@ -19,9 +19,11 @@ goog.require('goog.positioning.AnchoredViewportPosition');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
+goog.require('i18n.input.chrome.inputview.elements.content.PageIndicator');
 goog.require('i18n.input.chrome.inputview.events.EventType');
 goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
 
@@ -172,6 +174,14 @@ EmojiView.prototype.isDragging = false;
 
 
 /**
+ * The width percent to used inside the emoji panel.
+ *
+ * @private {number}
+ */
+EmojiView.prototype.emojiWidthPercent_ = 1;
+
+
+/**
  * Whether it is a drag event.
  *
  * @private {number}
@@ -260,8 +270,37 @@ EmojiView.prototype.enterDocument = function() {
 
 
 /** @override */
-EmojiView.prototype.resize = function(outerWidth, outerHeight, opt_force) {
-  goog.base(this, 'resize', outerWidth, outerHeight, opt_force);
+EmojiView.prototype.resize = function(outerWidth, outerHeight, widthPercent,
+    opt_force) {
+  if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+    if (this.getElement() && (!!opt_force || this.outerHeight != outerHeight ||
+        this.outerWidth != outerWidth ||
+        this.emojiWidthPercent_ != widthPercent)) {
+      this.outerHeight = outerHeight;
+      this.outerWidth = outerWidth;
+      goog.style.setSize(this.getElement(), outerWidth, outerHeight);
+      this.emojiWidthPercent_ = widthPercent;
+      var marginOrPadding = Math.round((outerWidth -
+          outerWidth * widthPercent) / 2);
+      var w = outerWidth - 2 * marginOrPadding;
+      var tabBar = /** @type {!Element} */ (
+          this.getChildViewById('tabBar').getElement());
+      tabBar.style.paddingLeft = tabBar.style.paddingRight =
+          marginOrPadding + 'px';
+      var rowsAndKeys = /** @type {!Element} */ (
+          this.getChildViewById('rowsAndSideKeys').getElement());
+      rowsAndKeys.style.marginLeft = rowsAndKeys.style.marginRight =
+          marginOrPadding + 'px';
+      var spaceRow = /**@type {!Element} */ (
+          this.getChildViewById('emojiSpaceRow').getElement());
+      spaceRow.style.marginLeft = spaceRow.style.marginRight =
+          marginOrPadding + 'px';
+      this.resizeRows(outerWidth, outerHeight);
+    }
+  } else {
+    goog.base(this, 'resize', outerWidth, outerHeight, widthPercent,
+        opt_force);
+  }
   // Reposition must happen before clear because it will set the width.
   this.repositionIndicator_();
   this.clearEmojiStates();
@@ -510,8 +549,10 @@ EmojiView.prototype.repositionIndicator_ = function() {
   var emojiElement = this.emojiSlider_.getElement();
   var elem = this.pageIndicator_.getElement();
   elem.style.width = goog.style.getSize(emojiElement).width + 'px';
+  var rowsAndSideKeys = /** @type {!Element} */ (
+      this.getChildViewById('rowsAndSideKeys').getElement());
   var position = new goog.positioning.AnchoredViewportPosition(
-      this.getElement(), goog.positioning.Corner.BOTTOM_START, true);
+      rowsAndSideKeys, goog.positioning.Corner.BOTTOM_START, true);
   position.reposition(this.pageIndicator_.getElement(),
       goog.positioning.Corner.BOTTOM_START);
 };

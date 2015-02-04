@@ -18,6 +18,7 @@ goog.require('goog.dom.classlist');
 goog.require('goog.i18n.bidi');
 goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiView');
@@ -25,6 +26,8 @@ goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView
 goog.require('i18n.input.chrome.inputview.elements.content.HandwritingView');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
+goog.require('i18n.input.chrome.inputview.elements.content.SelectView');
+goog.require('i18n.input.chrome.inputview.elements.content.SwipeView');
 goog.require('i18n.input.chrome.inputview.elements.content.VoiceView');
 
 
@@ -44,10 +47,12 @@ var content = i18n.input.chrome.inputview.elements.content;
  * The keyboard container.
  *
  * @param {!i18n.input.chrome.inputview.Adapter} adapter .
+ * @param {!i18n.input.chrome.SoundController} soundController .
  * @constructor
  * @extends {goog.ui.Container}
  */
-i18n.input.chrome.inputview.KeyboardContainer = function(adapter) {
+i18n.input.chrome.inputview.KeyboardContainer =
+    function(adapter, soundController) {
   goog.base(this);
 
   /** @type {!content.CandidateView} */
@@ -57,11 +62,17 @@ i18n.input.chrome.inputview.KeyboardContainer = function(adapter) {
   /** @type {!content.AltDataView} */
   this.altDataView = new content.AltDataView(this);
 
+  /** @type {!content.SwipeView} */
+  this.swipeView = new content.SwipeView(adapter, this);
+
+  /** @type {!content.SelectView} */
+  this.selectView = new content.SelectView(this);
+
   /** @type {!content.MenuView} */
   this.menuView = new content.MenuView(this);
 
   /** @type {!content.VoiceView} */
-  this.voiceView = new content.VoiceView(this, adapter);
+  this.voiceView = new content.VoiceView(this, adapter, soundController);
 
   /** @type {!content.ExpandedCandidateView} */
   this.expandedCandidateView = new content.ExpandedCandidateView(this);
@@ -126,6 +137,8 @@ KeyboardContainer.prototype.createDom = function() {
   this.candidateView.render(this.wrapperDiv_);
   this.getDomHelper().appendChild(elem, this.wrapperDiv_);
   this.altDataView.render();
+  this.swipeView.render();
+  this.selectView.render();
   this.menuView.render();
   this.voiceView.render();
   this.voiceView.setVisible(false);
@@ -276,15 +289,20 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
 
   this.candidateView.setWidthInWeight(
       this.currentKeysetView.getWidthInWeight());
-  var candidateElem = this.candidateView.getElement();
-  candidateElem.style.paddingLeft = candidateElem.style.paddingRight =
-      padding + 'px';
   this.candidateView.resize(w, candidateViewHeight);
-  this.currentKeysetView.resize(w, h);
-  var currentKeysetViewElem = this.currentKeysetView.getElement();
-  currentKeysetViewElem.style.paddingLeft = currentKeysetViewElem.style.
-      paddingRight = padding + 'px';
   this.expandedCandidateView.resize(w, h);
+  if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+    var candidateElem = this.candidateView.getElement();
+    candidateElem.style.paddingLeft = candidateElem.style.paddingRight =
+        padding + 'px';
+    this.currentKeysetView.resize(width, h, widthPercent);
+    var expandViewElem = this.expandedCandidateView.getElement();
+    expandViewElem.style.marginLeft = expandViewElem.style.marginRight =
+        padding + 'px';
+  } else {
+    this.currentKeysetView.resize(w, h, 1);
+    elem.style.paddingLeft = elem.style.paddingRight = padding + 'px';
+  }
   if (this.expandedCandidateView.isVisible()) {
     // Closes the expanded candidate view if it's visible.
     // This is to avoid mis-layout issue for the expanded candidate when screen
@@ -296,6 +314,8 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
     this.currentKeysetView.setVisible(true);
   }
   this.altDataView.resize(screen.width, height);
+  this.swipeView.resize(screen.width, height);
+  this.selectView.resize(screen.width, height);
   this.menuView.resize(screen.width, height);
   this.voiceView.resize(w + padding, height);
 };
@@ -305,6 +325,8 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
 KeyboardContainer.prototype.disposeInternal = function() {
   goog.dispose(this.candidateView);
   goog.dispose(this.altDataView);
+  goog.dispose(this.swipeView);
+  goog.dispose(this.selectView);
   goog.dispose(this.menuView);
   goog.dispose(this.voiceView);
   for (var key in this.keysetViewMap) {

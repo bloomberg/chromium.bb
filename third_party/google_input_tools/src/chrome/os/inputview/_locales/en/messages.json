@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Add to personal dictionary"
+  },
   "advanced": {
     "message": "Advanced"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Spanish Keyboard Settings Page"
   },
+  "expand": {
+    "message": "Expand"
+  },
+  "expand_candidates": {
+    "message": "expand candidate list"
+  },
   "fi_fin_settings_page": {
     "message": "Finnish Keyboard Settings Page"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Irish Keyboard Settings Page"
+  },
+  "ignore_correction": {
+    "message": "Ignore correction for"
   },
   "il_heb_settings_page": {
     "message": "Hebrew Keyboard Settings Page"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Swedish Keyboard Settings Page"
   },
+  "settings": {
+    "message": "Settings"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Show Hangul suggestions"
+  },
+  "shrink_candidates": {
+    "message": "shrink candidate list"
   },
   "si_slv_settings_page": {
     "message": "Slovenian Keyboard Settings Page"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Remove Selected"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Save"

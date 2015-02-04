@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Prid\u0117ti prie asmeninio \u017eodyno"
+  },
   "advanced": {
     "message": "I\u0161pl\u0117stiniai"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Ispani\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
+  "expand": {
+    "message": "I\u0161skleisti"
+  },
+  "expand_candidates": {
+    "message": "i\u0161skleisti variant\u0173 s\u0105ra\u0161\u0105"
+  },
   "fi_fin_settings_page": {
     "message": "Suomi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Airi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "ignore_correction": {
+    "message": "Ignoruoti pataisym\u0105"
   },
   "il_heb_settings_page": {
     "message": "Hebraji\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
@@ -2847,7 +2859,7 @@
     "message": "Rumuni\u0161ka klaviat\u016bra"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rumun\u0173 k. standartin\u0117 klaviat\u016bra"
   },
   "keyboard_russian": {
     "message": "Rusi\u0161ka klaviat\u016bra"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u0160vedi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
+  "settings": {
+    "message": "Nustatymai"
+  },
   "shift": {
     "message": "klavi\u0161as \u201eshift\u201c"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Rodyti hangul pasi\u016blymus"
+  },
+  "shrink_candidates": {
+    "message": "sutraukti variant\u0173 s\u0105ra\u0161\u0105"
   },
   "si_slv_settings_page": {
     "message": "Slov\u0117ni\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Pa\u0161alinti pasirinktus"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "I\u0161saugoti"

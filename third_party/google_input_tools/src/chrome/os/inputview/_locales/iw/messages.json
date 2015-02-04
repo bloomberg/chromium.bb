@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "\u05d4\u05d5\u05e1\u05e3 \u05dc\u05de\u05d9\u05dc\u05d5\u05df \u05d4\u05d0\u05d9\u05e9\u05d9"
+  },
   "advanced": {
     "message": "\u05de\u05ea\u05e7\u05d3\u05dd"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05e1\u05e4\u05e8\u05d3\u05d9\u05ea"
   },
+  "expand": {
+    "message": "\u05d4\u05e8\u05d7\u05d1"
+  },
+  "expand_candidates": {
+    "message": "\u05d4\u05e8\u05d7\u05d1 \u05d0\u05ea \u05e8\u05e9\u05d9\u05de\u05ea \u05d4\u05d4\u05e6\u05e2\u05d5\u05ea"
+  },
   "fi_fin_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05e4\u05d9\u05e0\u05d9\u05ea"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05d0\u05d9\u05e8\u05d9\u05ea"
+  },
+  "ignore_correction": {
+    "message": "\u05d4\u05ea\u05e2\u05dc\u05dd \u05de\u05ea\u05d9\u05e7\u05d5\u05df \u05e9\u05dc"
   },
   "il_heb_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05e2\u05d1\u05e8\u05d9\u05ea"
@@ -2847,7 +2859,7 @@
     "message": "\u05de\u05e7\u05dc\u05d3\u05ea \u05e8\u05d5\u05de\u05e0\u05d9\u05ea"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "\u05de\u05e7\u05dc\u05d3\u05ea \u05e8\u05d5\u05de\u05e0\u05d9\u05ea \u05e8\u05d2\u05d9\u05dc\u05d4"
   },
   "keyboard_russian": {
     "message": "\u05de\u05e7\u05dc\u05d3\u05ea \u05e8\u05d5\u05e1\u05d9\u05ea"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05e9\u05d5\u05d5\u05d3\u05d9\u05ea"
   },
+  "settings": {
+    "message": "\u05d4\u05d2\u05d3\u05e8\u05d5\u05ea"
+  },
   "shift": {
     "message": "Shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "\u200f\u05d4\u05e6\u05d2\u05ea \u05d4\u05e6\u05e2\u05d5\u05ea \u05d1-Hangul"
+  },
+  "shrink_candidates": {
+    "message": "\u05db\u05d5\u05d5\u05e5 \u05d0\u05ea \u05e8\u05e9\u05d9\u05de\u05ea \u05d4\u05d4\u05e6\u05e2\u05d5\u05ea"
   },
   "si_slv_settings_page": {
     "message": "\u05d3\u05e3 \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05e9\u05dc \u05de\u05e7\u05dc\u05d3\u05ea \u05e1\u05dc\u05d5\u05d1\u05e0\u05d9\u05ea"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "\u05d4\u05e1\u05e8 \u05e2\u05e8\u05da \u05e0\u05d1\u05d7\u05e8"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "\u05e9\u05de\u05d5\u05e8"

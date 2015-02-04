@@ -13,12 +13,14 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.SwitcherKey');
 
+goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
-
 
 
 goog.scope(function() {
 var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
+var Css = i18n.input.chrome.inputview.Css;
 
 
 
@@ -72,6 +74,10 @@ SwitcherKey.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
   this.setAriaLabel(this.getChromeVoxMessage());
+
+  if (this.textElem) {
+    goog.dom.classlist.add(this.getElement(), Css.SWITCHER_KEY_NAME);
+  }
 };
 
 

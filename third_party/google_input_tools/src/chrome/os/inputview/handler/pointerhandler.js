@@ -18,6 +18,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.math.Coordinate');
+goog.require('i18n.input.chrome.inputview.events.PointerEvent');
 goog.require('i18n.input.chrome.inputview.handler.PointerActionBundle');
 
 goog.scope(function() {
@@ -184,8 +185,8 @@ PointerHandler.prototype.onPointerUp_ = function(e) {
     if (pointerActionBundle) {
       pointerActionBundle.handlePointerUp(e);
     }
+    e.preventDefault();
   }
-  e.preventDefault();
   if (pointerActionBundle && pointerActionBundle.view &&
       pointerActionBundle.view.pointerConfig.stopEventPropagation) {
     e.stopPropagation();

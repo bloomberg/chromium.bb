@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Th\u00eam v\u00e0o t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
   "advanced": {
     "message": "N\u00e2ng cao"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng T\u00e2y Ban Nha"
   },
+  "expand": {
+    "message": "M\u1edf r\u1ed9ng"
+  },
+  "expand_candidates": {
+    "message": "m\u1edf r\u1ed9ng danh s\u00e1ch \u1ee9ng vi\u00ean"
+  },
   "fi_fin_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u1ea7n Lan"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ai-len"
+  },
+  "ignore_correction": {
+    "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda cho"
   },
   "il_heb_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
@@ -2847,7 +2859,7 @@
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Rumani"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "B\u00e0n ph\u00edm chu\u1ea9n ti\u1ebfng Rumani"
   },
   "keyboard_russian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Nga"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y \u0110i\u1ec3n"
   },
+  "settings": {
+    "message": "C\u00e0i \u0111\u1eb7t"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Hi\u1ec3n th\u1ecb g\u1ee3i \u00fd b\u1eb1ng ti\u1ebfng Hangul"
+  },
+  "shrink_candidates": {
+    "message": "thu nh\u1ecf danh s\u00e1ch \u1ee9ng vi\u00ean"
   },
   "si_slv_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovenia"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "X\u00f3a m\u1ee5c \u0111\u00e3 ch\u1ecdn"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "L\u01b0u"

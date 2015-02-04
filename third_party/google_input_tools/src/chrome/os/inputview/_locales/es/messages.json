@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "A\u00f1adir a diccionario personal"
+  },
   "advanced": {
     "message": "Avanzada"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado espa\u00f1ol"
   },
+  "expand": {
+    "message": "Ampliar"
+  },
+  "expand_candidates": {
+    "message": "mostrar lista de candidatos"
+  },
   "fi_fin_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado fin\u00e9s"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado irland\u00e9s"
+  },
+  "ignore_correction": {
+    "message": "Ignorar correcci\u00f3n de"
   },
   "il_heb_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado hebreo"
@@ -2847,7 +2859,7 @@
     "message": "Teclado rumano"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Teclado rumano est\u00e1ndar"
   },
   "keyboard_russian": {
     "message": "Teclado ruso"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado sueco"
   },
+  "settings": {
+    "message": "Configuraci\u00f3n"
+  },
   "shift": {
     "message": "may\u00fas"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Mostrar sugerencias de hangul"
+  },
+  "shrink_candidates": {
+    "message": "contraer lista de candidatos"
   },
   "si_slv_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado esloveno"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Eliminar selecci\u00f3n"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Guardar"

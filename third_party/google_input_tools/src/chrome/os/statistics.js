@@ -80,6 +80,24 @@ Statistics.prototype.autoCorrectLevel_ = 0;
 
 
 /**
+ * Whether recording for physical keyboard specially.
+ *
+ * @private {boolean}
+ */
+Statistics.prototype.isPhysicalKeyboard_ = false;
+
+
+/**
+ * Sets whether recording for physical keyboard.
+ *
+ * @param {boolean} isPhysicalKeyboard .
+ */
+Statistics.prototype.setPhysicalKeyboard = function(isPhysicalKeyboard) {
+  this.isPhysicalKeyboard_ = isPhysicalKeyboard;
+};
+
+
+/**
  * Sets the current input method id.
  *
  * @param {string} inputMethodId .
@@ -160,12 +178,15 @@ Statistics.prototype.recordCommit = function(
     return;
   }
 
+  // For latin transliteration, record the logs under the name with 'Pk' which
+  // means Physical Keyboard.
+  var name = this.isPhysicalKeyboard_ ?
+      'InputMethod.PkCommit.' : 'InputMethod.Commit.';
+
   var self = this;
   var record = function(suffix) {
-    self.recordEnum('InputMethod.Commit.Index' + suffix,
-        targetIndex + 1, 20);
-    self.recordEnum('InputMethod.Commit.Type' + suffix,
-        commitType, CommitTypes.MAX);
+    self.recordEnum(name + 'Index' + suffix, targetIndex + 1, 20);
+    self.recordEnum(name + 'Type' + suffix, commitType, CommitTypes.MAX);
   };
 
   record('');

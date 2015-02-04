@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Toevoegen aan persoonlijk woordenboek"
+  },
   "advanced": {
     "message": "Geavanceerd"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Pagina met instellingen voor Spaans toetsenbord"
   },
+  "expand": {
+    "message": "Uitvouwen"
+  },
+  "expand_candidates": {
+    "message": "kandidatenlijst uitvouwen"
+  },
   "fi_fin_settings_page": {
     "message": "Pagina met instellingen voor Fins toetsenbord"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Pagina met instellingen voor Iers toetsenbord"
+  },
+  "ignore_correction": {
+    "message": "Correctie negeren voor"
   },
   "il_heb_settings_page": {
     "message": "Pagina met instellingen voor Hebreeuws toetsenbord"
@@ -2847,7 +2859,7 @@
     "message": "Roemeens toetsenbord"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Standaardtoetsenbord voor Roemeens"
   },
   "keyboard_russian": {
     "message": "Russisch toetsenbord"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Pagina met instellingen voor Zweeds toetsenbord"
   },
+  "settings": {
+    "message": "Instellingen"
+  },
   "shift": {
     "message": "Shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Hangul-suggesties weergeven"
+  },
+  "shrink_candidates": {
+    "message": "kandidatenlijst verkleinen"
   },
   "si_slv_settings_page": {
     "message": "Pagina met instellingen voor Sloveens toetsenbord"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Selectie verwijderen"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Opslaan"

@@ -1,4 +1,4 @@
-// Copyright 2014 The ChromeOS IME Authors. All Rights Reserved.
+// Copyright 2015 The ChromeOS IME Authors. All Rights Reserved.
 // limitations under the License.
 // See the License for the specific language governing permissions and
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,22 +11,22 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.message.ContextType');
+goog.provide('i18n.input.chrome.inputview.Sounds');
 
 
 /**
- * The message type.
+ * The available sounds.
  *
  * @enum {string}
  */
-i18n.input.chrome.message.ContextType = {
-  DEFAULT: 'text',
-  EMAIL: 'email',
-  PASSWORD: 'password',
-  URL: 'url',
-  NUMBER: 'number',
-  PHONE: 'tel'
+i18n.input.chrome.inputview.Sounds = {
+  DELETE: 'keypress-delete',
+  RETURN: 'keypress-return',
+  SPACEBAR: 'keypress-spacebar',
+  STANDARD: 'keypress-standard',
+  NONE: 'none',
+  VOICE_RECOG_START: 'voice_recog_start',
+  VOICE_RECOG_END: 'voice_recog_end',
+  AUTO_CORRECTION: 'auto_correction'
 };
-
-
 

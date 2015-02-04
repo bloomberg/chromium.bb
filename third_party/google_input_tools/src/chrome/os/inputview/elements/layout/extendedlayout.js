@@ -143,7 +143,7 @@ ExtendedLayout.prototype.calculate_ = function() {
     if (this.heightInWeight_ < child.getHeightInWeight()) {
       this.heightInWeight_ = child.getHeightInWeight();
     }
-    this.widthInWeight_ += child.getWidthInWeight();
+    this.widthInWeight_ = child.getWidthInWeight();
   }
 };
 

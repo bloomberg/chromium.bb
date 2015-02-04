@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "\u6dfb\u52a0\u5230\u4e2a\u4eba\u5b57\u5178"
+  },
   "advanced": {
     "message": "\u9ad8\u7ea7\u8bbe\u7f6e"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\u897f\u73ed\u7259\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
   },
+  "expand": {
+    "message": "\u5c55\u5f00"
+  },
+  "expand_candidates": {
+    "message": "\u5c55\u5f00\u5019\u9009\u5b57\u8bcd\u5217\u8868"
+  },
   "fi_fin_settings_page": {
     "message": "\u82ac\u5170\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u7231\u5c14\u5170\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
+  },
+  "ignore_correction": {
+    "message": "\u4e0d\u81ea\u52a8\u66f4\u6b63\u4ee5\u4e0b\u5b57\u8bcd\uff1a"
   },
   "il_heb_settings_page": {
     "message": "\u5e0c\u4f2f\u6765\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
@@ -2847,7 +2859,7 @@
     "message": "\u7f57\u9a6c\u5c3c\u4e9a\u8bed\u952e\u76d8"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "\u7f57\u9a6c\u5c3c\u4e9a\u8bed\u6807\u51c6\u952e\u76d8"
   },
   "keyboard_russian": {
     "message": "\u4fc4\u8bed\u952e\u76d8"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u745e\u5178\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
   },
+  "settings": {
+    "message": "\u8bbe\u7f6e"
+  },
   "shift": {
     "message": "Shift\u952e"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "\u663e\u793a\u97e9\u8bed\u5efa\u8bae"
+  },
+  "shrink_candidates": {
+    "message": "\u6536\u8d77\u5019\u9009\u5b57\u8bcd\u5217\u8868"
   },
   "si_slv_settings_page": {
     "message": "\u65af\u6d1b\u6587\u5c3c\u4e9a\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "\u79fb\u9664\u6240\u9009\u5185\u5bb9"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "\u4fdd\u5b58"

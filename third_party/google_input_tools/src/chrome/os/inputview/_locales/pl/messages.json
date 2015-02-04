@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Dodaj do s\u0142ownika osobistego"
+  },
   "advanced": {
     "message": "Zaawansowane"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury hiszpa\u0144skiej"
   },
+  "expand": {
+    "message": "Rozwi\u0144"
+  },
+  "expand_candidates": {
+    "message": "rozwi\u0144 list\u0119 sugestii"
+  },
   "fi_fin_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury fi\u0144skiej"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury irlandzkiej"
+  },
+  "ignore_correction": {
+    "message": "Ignoruj korekt\u0119"
   },
   "il_heb_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury hebrajskiej"
@@ -2847,7 +2859,7 @@
     "message": "Klawiatura rumu\u0144ska"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Standardowa klawiatura rumu\u0144ska"
   },
   "keyboard_russian": {
     "message": "Klawiatura rosyjska"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury szwedzkiej"
   },
+  "settings": {
+    "message": "Ustawienia"
+  },
   "shift": {
     "message": "Shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Wy\u015bwietlaj sugestie w hangulu"
+  },
+  "shrink_candidates": {
+    "message": "zwi\u0144 list\u0119 sugestii"
   },
   "si_slv_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury s\u0142owe\u0144skiej"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Usu\u0144 zaznaczone"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Zapisz"

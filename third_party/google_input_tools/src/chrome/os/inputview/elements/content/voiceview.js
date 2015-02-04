@@ -13,16 +13,13 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.VoiceView');
 
-goog.require('goog.a11y.aria');
-goog.require('goog.a11y.aria.Announcer');
-goog.require('goog.a11y.aria.LivePriority');
-goog.require('goog.a11y.aria.State');
 goog.require('goog.asserts');
 goog.require('goog.async.Delay');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.Sounds');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
@@ -31,12 +28,11 @@ goog.require('i18n.input.chrome.message.Type');
 
 
 goog.scope(function() {
-var Announcer = goog.a11y.aria.Announcer;
 var Css = i18n.input.chrome.inputview.Css;
-var EventType = goog.events.EventType;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
 var Name = i18n.input.chrome.message.Name;
+var Sounds = i18n.input.chrome.inputview.Sounds;
 var TagName = goog.dom.TagName;
 var Type = i18n.input.chrome.message.Type;
 
@@ -47,11 +43,12 @@ var Type = i18n.input.chrome.message.Type;
  *
  * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
  * @param {i18n.input.chrome.inputview.Adapter=} opt_adapter .
+ * @param {i18n.input.chrome.SoundController=} opt_soundController .
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.VoiceView =
-    function(opt_eventTarget, opt_adapter) {
+    function(opt_eventTarget, opt_adapter, opt_soundController) {
   VoiceView.base(this, 'constructor', '', ElementType.VOICE_VIEW,
       opt_eventTarget);
 
@@ -62,11 +59,15 @@ i18n.input.chrome.inputview.elements.content.VoiceView =
    */
   this.adapter_ = goog.asserts.assertObject(opt_adapter);
 
+  /**
+   * The sound controller.
+   *
+   * @private {!i18n.input.chrome.SoundController}
+   */
+  this.soundController_ = goog.asserts.assertObject(opt_soundController);
+
   /** @private {!goog.async.Delay} */
   this.animator_ = new goog.async.Delay(this.animateMicrophoneLevel_, 0, this);
-
-  /** @private {!Announcer} */
-  this.announcer_ = new Announcer();
 };
 var VoiceView = i18n.input.chrome.inputview.elements.content.VoiceView;
 goog.inherits(VoiceView, i18n.input.chrome.inputview.elements.Element);
@@ -120,23 +121,22 @@ VoiceView.prototype.createDom = function() {
   var elem = this.getElement();
   goog.dom.classlist.add(elem, Css.VOICE_VIEW);
   this.voicePanel_ = dom.createDom(TagName.DIV, Css.VOICE_PANEL);
-  this.voiceMicElem_ = dom.createDom(goog.dom.TagName.DIV,
+  this.voiceMicElem_ = dom.createDom(TagName.DIV,
       Css.VOICE_OPACITY + ' ' + Css.VOICE_MIC_ING);
+
   this.levelElement_ = dom.createDom(
-      goog.dom.TagName.DIV, Css.VOICE_LEVEL);
+      TagName.DIV, Css.VOICE_LEVEL);
   dom.append(/** @type {!Node} */ (this.voicePanel_),
       this.voiceMicElem_, this.levelElement_);
-  goog.a11y.aria.setState(this.voiceMicElem_, goog.a11y.aria.State.LABEL,
-      chrome.i18n.getMessage('VOICE_TURN_OFF'));
 
   this.maskElem_ = dom.createDom(TagName.DIV,
       [Css.VOICE_MASK, Css.VOICE_OPACITY_NONE]);
   dom.append(/** @type {!Node} */ (elem), this.maskElem_, this.voicePanel_);
 
-  this.privacyDiv_ = dom.createDom(goog.dom.TagName.DIV,
+  this.privacyDiv_ = dom.createDom(TagName.DIV,
       Css.VOICE_PRIVACY_INFO);
 
-  var textDiv = dom.createDom(goog.dom.TagName.DIV, Css.VOICE_PRIVACY_TEXT);
+  var textDiv = dom.createDom(TagName.DIV, Css.VOICE_PRIVACY_TEXT);
   dom.setTextContent(textDiv,
       chrome.i18n.getMessage('VOICE_PRIVACY_INFO'));
   dom.appendChild(this.privacyDiv_, textDiv);
@@ -169,11 +169,13 @@ VoiceView.prototype.enterDocument = function() {
  * Start recognition.
  */
 VoiceView.prototype.start = function() {
+  // visible -> invisible
+  if (!this.isVisible()) {
+    this.soundController_.playSound(Sounds.VOICE_RECOG_START, true);
+  }
   if (this.isPrivacyAllowed_) {
     this.adapter_.sendVoiceViewStateChange(true);
     this.animator_.start();
-    this.announcer_.say(chrome.i18n.getMessage('VOICE_TURN_ON'),
-        goog.a11y.aria.LivePriority.ASSERTIVE);
   }
   this.setVisible(true);
 };
@@ -183,15 +185,18 @@ VoiceView.prototype.start = function() {
  * Stop recognition.
  */
 VoiceView.prototype.stop = function() {
+  // invisible -> visible
+  if (this.isVisible()) {
+    this.soundController_.playSound(Sounds.VOICE_RECOG_END, true);
+  }
   this.animator_.stop();
-  this.announcer_.say(chrome.i18n.getMessage('VOICE_TURN_OFF'),
-      goog.a11y.aria.LivePriority.ASSERTIVE);
   this.setVisible(false);
 };
 
 
 /** @override */
 VoiceView.prototype.setVisible = function(visible) {
+  VoiceView.base(this, 'setVisible', visible);
   if (visible) {
     goog.style.setElementShown(this.voicePanel_, true);
     goog.dom.classlist.add(this.maskElem_, Css.VOICE_MASK_OPACITY);
@@ -246,8 +251,7 @@ VoiceView.prototype.onConfirmPrivacyInfo_ = function() {
   this.isPrivacyAllowed_ = true;
   this.adapter_.sendVoiceViewStateChange(true);
   this.animator_.start();
-  this.announcer_.say(chrome.i18n.getMessage('VOICE_TURN_ON'),
-      goog.a11y.aria.LivePriority.ASSERTIVE);
+  this.soundController_.playSound(Sounds.VOICE_RECOG_START, true);
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
   goog.dom.classlist.remove(this.maskElem_, Css.VOICE_OPACITY_NONE);
 };

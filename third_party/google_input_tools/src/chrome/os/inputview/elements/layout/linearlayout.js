@@ -119,6 +119,12 @@ LinearLayout.prototype.getWidthInWeight = function() {
 LinearLayout.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
 
+  var elem = this.getElement();
+  var borderBox = goog.style.getBorderBox(elem);
+  var paddingBox = goog.style.getPaddingBox(elem);
+  var marginBox = goog.style.getMarginBox(elem);
+  var w = width - borderBox.left - borderBox.right - paddingBox.left -
+      paddingBox.right - marginBox.left - marginBox.right;
   var weightArray = [];
   for (var i = 0; i < this.getChildCount(); i++) {
     var child = /** @type {i18n.input.chrome.inputview.elements.Weightable} */ (
@@ -126,7 +132,7 @@ LinearLayout.prototype.resize = function(width, height) {
     weightArray.push(child.getWidthInWeight());
   }
   var splitedWidth = i18n.input.chrome.inputview.util.splitValue(weightArray,
-      width);
+      w);
   for (var i = 0; i < this.getChildCount(); i++) {
     var child = /** @type {i18n.input.chrome.inputview.elements.Element} */ (
         this.getChildAt(i));

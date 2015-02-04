@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Adaug\u0103 \u00een dic\u021bionarul personal"
+  },
   "advanced": {
     "message": "Set\u0103ri avansate"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura spaniol\u0103"
   },
+  "expand": {
+    "message": "Extinde"
+  },
+  "expand_candidates": {
+    "message": "extinde lista de sugestii"
+  },
   "fi_fin_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura finlandez\u0103"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura irlandez\u0103"
+  },
+  "ignore_correction": {
+    "message": "Ignor\u0103 corectura pentru"
   },
   "il_heb_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura ebraic\u0103"
@@ -2847,7 +2859,7 @@
     "message": "Tastatur\u0103 rom\u00e2n\u0103"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Tastatur\u0103 rom\u00e2n\u0103 standard"
   },
   "keyboard_russian": {
     "message": "Tastatur\u0103 rus\u0103"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura suedez\u0103"
   },
+  "settings": {
+    "message": "Set\u0103ri"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Afi\u0219eaz\u0103 sugestii \u00een Hangul"
+  },
+  "shrink_candidates": {
+    "message": "restr\u00e2nge lista de sugestii"
   },
   "si_slv_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura sloven\u0103"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Elimin\u0103-le pe cele selectate"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Salveaz\u0103"

@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Dodaj u osobni rje\u010dnik"
+  },
   "advanced": {
     "message": "Napredno"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Stranica postavki \u0161panjolske tipkovnice"
   },
+  "expand": {
+    "message": "Pro\u0161iri"
+  },
+  "expand_candidates": {
+    "message": "pro\u0161iri popis kandidata"
+  },
   "fi_fin_settings_page": {
     "message": "Stranica postavki finske tipkovnice"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Stranica postavki irske tipkovnice"
+  },
+  "ignore_correction": {
+    "message": "Zanemari ispravak za"
   },
   "il_heb_settings_page": {
     "message": "Stranica postavki hebrejske tipkovnice"
@@ -2847,7 +2859,7 @@
     "message": "Rumunjska tipkovnica"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rumunjska standardna tipkovnica"
   },
   "keyboard_russian": {
     "message": "Ruska tipkovnica"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Stranica postavki \u0161vedske tipkovnice"
   },
+  "settings": {
+    "message": "Postavke"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Prika\u017ei prijedloge za hangul"
+  },
+  "shrink_candidates": {
+    "message": "smanji popis kandidata"
   },
   "si_slv_settings_page": {
     "message": "Stranica postavki slovenske tipkovnice"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Ukloni odabrano"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Spremi"

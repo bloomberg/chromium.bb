@@ -24,6 +24,7 @@ goog.require('goog.events.EventType');
 goog.require('goog.i18n.bidi');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
+goog.require('i18n.input.chrome.SoundController');
 goog.require('i18n.input.chrome.Statistics');
 goog.require('i18n.input.chrome.inputview.Adapter');
 goog.require('i18n.input.chrome.inputview.CandidatesInfo');
@@ -36,7 +37,6 @@ goog.require('i18n.input.chrome.inputview.PerfTracker');
 goog.require('i18n.input.chrome.inputview.ReadyState');
 goog.require('i18n.input.chrome.inputview.Settings');
 goog.require('i18n.input.chrome.inputview.SizeSpec');
-goog.require('i18n.input.chrome.inputview.SoundController');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
@@ -76,7 +76,7 @@ var SizeSpec = i18n.input.chrome.inputview.SizeSpec;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 var StateType = i18n.input.chrome.inputview.StateType;
 var content = i18n.input.chrome.inputview.elements.content;
-var SoundController = i18n.input.chrome.inputview.SoundController;
+var SoundController = i18n.input.chrome.SoundController;
 var Sounds = i18n.input.chrome.inputview.Sounds;
 var Type = i18n.input.chrome.message.Type;
 var util = i18n.input.chrome.inputview.util;
@@ -114,6 +114,23 @@ i18n.input.chrome.inputview.Controller = function(keyset, languageCode,
    * @private
    */
   this.layoutDataMap_ = {};
+
+  /**
+   * The element map.
+   *
+   * @private {!Object.<ElementType, !KeyCodes>}
+   */
+  this.elementTypeToKeyCode_ = goog.object.create(
+      ElementType.BOLD, KeyCodes.KEY_B,
+      ElementType.ITALICS, KeyCodes.KEY_I,
+      ElementType.UNDERLINE, KeyCodes.KEY_U,
+      ElementType.COPY, KeyCodes.KEY_C,
+      ElementType.PASTE, KeyCodes.KEY_V,
+      ElementType.CUT, KeyCodes.KEY_X,
+      ElementType.SELECT_ALL, KeyCodes.KEY_A,
+      ElementType.REDO, KeyCodes.KEY_Y,
+      ElementType.UNDO, KeyCodes.KEY_Z
+      );
 
   /**
    * The keyset data map.
@@ -162,13 +179,13 @@ i18n.input.chrome.inputview.Controller = function(keyset, languageCode,
   /** @private {!i18n.input.chrome.inputview.Adapter} */
   this.adapter_ = new i18n.input.chrome.inputview.Adapter(this.readyState_);
 
+  /** @private {!i18n.input.chrome.SoundController} */
+  this.soundController_ = new SoundController(false);
+
   /** @private {!i18n.input.chrome.inputview.KeyboardContainer} */
   this.container_ = new i18n.input.chrome.inputview.KeyboardContainer(
-      this.adapter_);
+      this.adapter_, this.soundController_);
   this.container_.render();
-
-  /** @private {!i18n.input.chrome.inputview.SoundController} */
-  this.soundController_ = new SoundController(false);
 
   /**
    * The context type and keyset mapping group by input method id.
@@ -359,6 +376,17 @@ Controller.CandidatesOperation = {
 
 
 /**
+ * A temporary list to track keysets have customized in material design.
+ *
+ * @private {!Array.<string>}
+ */
+Controller.MATERIAL_KEYSETS_ = [
+  'emoji',
+  'hwt'
+];
+
+
+/**
  * The active language code.
  *
  * @type {string}
@@ -440,28 +468,21 @@ Controller.prototype.registerEventHandler_ = function() {
           ], this.onPointerEvent_).
       listen(window, goog.events.EventType.RESIZE, this.resize).
       listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.
-              SURROUNDING_TEXT_CHANGED,
-          this.onSurroundingTextChanged_).
+          EventType.SURROUNDING_TEXT_CHANGED, this.onSurroundingTextChanged_).
       listen(this.adapter_,
           i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK,
           this.onCandidatesBack_).
-      listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.CONTEXT_FOCUS,
-          this.onContextFocus_).
-      listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.CONTEXT_BLUR,
-          this.onContextBlur_).
-      listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.VISIBILITY_CHANGE,
+      listen(this.adapter_, EventType.URL_CHANGED, this.onURLChanged_).
+      listen(this.adapter_, EventType.CONTEXT_FOCUS, this.onContextFocus_).
+      listen(this.adapter_, EventType.CONTEXT_BLUR, this.onContextBlur_).
+      listen(this.adapter_, EventType.VISIBILITY_CHANGE,
           this.onVisibilityChange_).
-      listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.SETTINGS_READY,
-          this.onSettingsReady_).
+      listen(this.adapter_, EventType.SETTINGS_READY, this.onSettingsReady_).
       listen(this.adapter_, Type.UPDATE_SETTINGS, this.onUpdateSettings_).
       listen(this.adapter_, Type.FRONT_TOGGLE_LANGUAGE_STATE,
           this.onUpdateToggleLanguateState_).
-      listen(this.adapter_, Type.VOICE_STATE_CHANGE, this.onVoiceStateChange_);
+      listen(this.adapter_, Type.VOICE_STATE_CHANGE, this.onVoiceStateChange_).
+      listen(this.adapter_, EventType.REFRESH, this.onRefresh_);
 };
 
 
@@ -478,6 +499,16 @@ Controller.prototype.onVoiceStateChange_ = function(e) {
         CandidateView.IconType.VOICE, true);
     this.container_.voiceView.stop();
   }
+};
+
+
+/**
+ * Handles the refresh event from adapter.
+ *
+ * @private
+ */
+Controller.prototype.onRefresh_ = function() {
+  window.location.reload();
 };
 
 
@@ -536,6 +567,16 @@ Controller.prototype.onUpdateSettings_ = function(e) {
 
 
 /**
+ * Callback for url changed.
+ *
+ * @private
+ */
+Controller.prototype.onURLChanged_ = function() {
+  this.container_.candidateView.setToolbarVisible(this.shouldShowToolBar_());
+};
+
+
+/**
  * Callback for setting ready.
  *
  * @private
@@ -561,6 +602,8 @@ Controller.prototype.onSettingsReady_ = function() {
   if (newKeyset) {
     this.setDefaultKeyset_(newKeyset);
   }
+  this.container_.selectView.setVisible(
+      this.adapter_.isGestureEdittingEnabled());
   // Loads resources in case the default keyset is changed.
   this.loadAllResources_();
   this.maybeCreateViews_();
@@ -695,6 +738,13 @@ Controller.prototype.handleSwipeAction_ = function(view, e) {
     this.container_.altDataView.highlightItem(e.x, e.y);
     return;
   }
+  if (view.type == ElementType.BACKSPACE_KEY) {
+    if (this.container_.swipeView.isVisible() ||
+        this.container_.swipeView.isArmed()) {
+      this.stopBackspaceAutoRepeat_();
+      return;
+    }
+  }
 
   if (view.type == ElementType.CHARACTER_KEY) {
     view = /** @type {!content.CharacterKey} */ (view);
@@ -780,12 +830,13 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
         'InputMethod.VirtualKeyboard.TapCount', 1, 4095, 4096);
   }
 
-  if (e.type == i18n.input.chrome.inputview.events.EventType.SWIPE) {
+  if (e.type == EventType.SWIPE) {
     e = /** @type {!i18n.input.chrome.inputview.events.SwipeEvent} */ (e);
     this.handleSwipeAction_(view, e);
   }
   switch (view.type) {
     case ElementType.BACK_BUTTON:
+    case ElementType.BACK_TO_KEYBOARD:
       if (e.type == EventType.POINTER_OUT || e.type == EventType.POINTER_UP) {
         view.setHighlighted(false);
       } else if (e.type == EventType.POINTER_DOWN ||
@@ -897,7 +948,7 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
       return;
 
     case ElementType.VOICE_BTN:
-      if (e.type == EventType.CLICK) {
+      if (e.type == EventType.POINTER_UP) {
         this.container_.candidateView.switchToIcon(
             CandidateView.IconType.VOICE, false);
         this.container_.voiceView.start();
@@ -913,7 +964,33 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
         this.container_.voiceView.stop();
       }
       return;
-
+    case ElementType.SWIPE_VIEW:
+      this.stopBackspaceAutoRepeat_();
+      if (e.type == EventType.POINTER_UP ||
+          e.type == EventType.POINTER_OUT) {
+        this.clearUnstickyState_();
+      }
+      return;
+    case ElementType.CUT:
+    case ElementType.COPY:
+    case ElementType.PASTE:
+    case ElementType.BOLD:
+    case ElementType.ITALICS:
+    case ElementType.UNDERLINE:
+    case ElementType.REDO:
+    case ElementType.UNDO:
+    case ElementType.SELECT_ALL:
+      view.setHighlighted(e.type == EventType.POINTER_DOWN ||
+          e.type == EventType.POINTER_OVER);
+      if (e.type == EventType.POINTER_UP) {
+        this.adapter_.sendKeyDownAndUpEvent(
+            '', this.elementTypeToKeyCode_[view.type], undefined, undefined, {
+              ctrl: true,
+              alt: false,
+              shift: false
+            });
+      }
+      return;
     case ElementType.SOFT_KEY_VIEW:
       // Delegates the events on the soft key view to its soft key.
       view = /** @type {!i18n.input.chrome.inputview.elements.layout.
@@ -926,7 +1003,8 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
 
   if (view.type != ElementType.MODIFIER_KEY &&
       !this.container_.altDataView.isVisible() &&
-      !this.container_.menuView.isVisible()) {
+      !this.container_.menuView.isVisible() &&
+      !this.container_.swipeView.isVisible()) {
     // The highlight of the modifier key is depending on the state instead
     // of the key down or up.
     if (e.type == EventType.POINTER_OVER || e.type == EventType.POINTER_DOWN ||
@@ -1012,8 +1090,9 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         this.backspaceTick_();
       } else if (e.type == EventType.POINTER_UP || e.type == EventType.
           POINTER_OUT) {
-        this.stopBackspaceAutoRepeat_();
-        this.adapter_.sendKeyUpEvent('\u0008', KeyCodes.BACKSPACE);
+        if (!this.container_.swipeView.isVisible()) {
+          this.stopBackspaceAutoRepeat_();
+        }
       }
       break;
 
@@ -1075,7 +1154,8 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
     case ElementType.SPACE_KEY:
       key = /** @type {!content.SpaceKey} */ (softKey);
       var doubleSpacePeriod = this.model_.settings.doubleSpacePeriod &&
-          this.currentKeyset_ != Controller.HANDWRITING_VIEW_CODE_;
+          this.currentKeyset_ != Controller.HANDWRITING_VIEW_CODE_ &&
+          this.currentKeyset_ != Controller.EMOJI_VIEW_CODE_;
       if (e.type == EventType.POINTER_UP || (!doubleSpacePeriod && e.type ==
           EventType.DOUBLE_CLICK_END)) {
         this.adapter_.sendKeyDownAndUpEvent(key.getCharacter(),
@@ -1286,7 +1366,20 @@ Controller.prototype.resetAll_ = function() {
   this.resize();
   this.container_.expandedCandidateView.close();
   this.container_.menuView.hide();
+  this.container_.swipeView.reset();
   this.container_.altDataView.hide();
+};
+
+
+/**
+ * Returns whether the toolbar should be shown.
+ *
+ * @return {boolean}
+ * @private
+ */
+Controller.prototype.shouldShowToolBar_ = function() {
+  return this.adapter_.isExperimental && this.adapter_.isGoogleDocument() &&
+      this.adapter_.contextType == ContextType.DEFAULT;
 };
 
 
@@ -1501,13 +1594,15 @@ Controller.prototype.clearCandidates_ = function() {
   if (this.container_.currentKeysetView) {
     this.container_.currentKeysetView.setVisible(true);
   }
-  if (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_) {
-    this.container_.candidateView.switchToIcon(
-        CandidateView.IconType.BACK, true);
-  } else {
-    this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
-        this.currentKeyset_ != Controller.EMOJI_VIEW_CODE_ &&
-            this.adapter_.isExperimental);
+  if (!this.adapter_.isQPInputView) {
+    if (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_ ||
+        this.currentKeyset_ == Controller.EMOJI_VIEW_CODE_) {
+      this.container_.candidateView.switchToIcon(
+          CandidateView.IconType.BACK, true);
+    } else {
+      this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
+          this.adapter_.isVoiceInputEnabled);
+    }
   }
 };
 
@@ -1636,7 +1731,12 @@ Controller.prototype.switchToKeyset = function(keyset) {
       this.contextTypeToKeysetMap_[this.currentInputMethod_][contextType] =
           keyset;
     }
-    this.loadResource_(keyset);
+    if (this.adapter_.isQPInputView &&
+        goog.array.contains(Controller.MATERIAL_KEYSETS_, keyset)) {
+      this.loadResource_('m-' + keyset);
+    } else {
+      this.loadResource_(keyset);
+    }
   }
 };
 
@@ -1665,7 +1765,7 @@ Controller.prototype.onConfigLoaded_ = function(e) {
   }
 
   var layoutId = data[i18n.input.chrome.inputview.SpecNodeName.LAYOUT];
-  if (this.adapter_.isQPInputView && layoutId == 'compactkbd-qwerty') {
+  if (this.adapter_.isQPInputView) {
     layoutId = 'm-' + layoutId;
     data[i18n.input.chrome.inputview.SpecNodeName.LAYOUT] = layoutId;
   }
@@ -1733,6 +1833,7 @@ Controller.prototype.resize = function(opt_ignoreWindowResize) {
 
   this.container_.resize(screen.width, height, widthPercent,
       candidateViewHeight);
+  this.container_.candidateView.setToolbarVisible(this.shouldShowToolBar_());
   if (this.container_.currentKeysetView) {
     this.isKeyboardReady = true;
   }

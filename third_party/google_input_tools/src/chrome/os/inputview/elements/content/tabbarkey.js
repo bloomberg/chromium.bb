@@ -91,7 +91,9 @@ TabBarKey.prototype.createDom = function() {
   goog.dom.classlist.remove(this.bgElem, Css.SPECIAL_KEY_BG);
   goog.dom.classlist.add(this.bgElem, Css.EMOJI_TABBAR_KEY);
   goog.dom.classlist.add(this.iconElem, Css.EMOJI_SWITCH);
-  this.createSeparator_();
+  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+    this.createSeparator_();
+  }
 
   // Sets aria label.
   var ariaLabel = '';
@@ -133,9 +135,11 @@ TabBarKey.prototype.resize = function(width,
   this.tableCell.style.width = this.availableWidth + 'px';
   this.tableCell.style.height = this.availableHeight -
       this.BORDER_HEIGHT_ + 'px';
-  this.sepTableCell.style.height = this.availableHeight -
-      this.BORDER_HEIGHT_ + 'px';
-  this.separator.style.height = this.availableHeight * 0.32 + 'px';
+  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+    this.sepTableCell.style.height = this.availableHeight -
+        this.BORDER_HEIGHT_ + 'px';
+    this.separator.style.height = this.availableHeight * 0.32 + 'px';
+  }
 };
 
 

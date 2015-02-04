@@ -1,4 +1,4 @@
-// Copyright 2014 The ChromeOS IME Authors. All Rights Reserved.
+// Copyright 2015 The ChromeOS IME Authors. All Rights Reserved.
 // limitations under the License.
 // See the License for the specific language governing permissions and
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,19 +11,12 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.inputview.Sounds');
+goog.provide('i18n.input.chrome.inputview.GlobalFlags');
 
 
 /**
- * The available sounds.
+ * Whether input view keyboards of material design is enabled.
  *
- * @enum {string}
+ * @type {boolean}
  */
-i18n.input.chrome.inputview.Sounds = {
-  DELETE: 'keypress-delete',
-  RETURN: 'keypress-return',
-  SPACEBAR: 'keypress-spacebar',
-  STANDARD: 'keypress-standard',
-  NONE: 'none'
-};
-
+i18n.input.chrome.inputview.GlobalFlags.isQPInputView = false;

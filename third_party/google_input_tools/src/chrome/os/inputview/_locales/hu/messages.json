@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Hozz\u00e1ad\u00e1s a szem\u00e9lyes sz\u00f3t\u00e1rhoz"
+  },
   "advanced": {
     "message": "Halad\u00f3"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Spanyol billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
+  "expand": {
+    "message": "Kibont\u00e1s"
+  },
+  "expand_candidates": {
+    "message": "javaslati lista kibont\u00e1sa"
+  },
   "fi_fin_settings_page": {
     "message": "Finn billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u00cdr billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
+  },
+  "ignore_correction": {
+    "message": "Jav\u00edt\u00e1s mell\u0151z\u00e9se enn\u00e9l a sz\u00f3n\u00e1l:"
   },
   "il_heb_settings_page": {
     "message": "H\u00e9ber billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -2847,7 +2859,7 @@
     "message": "Rom\u00e1n billenty\u0171zet"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Hagyom\u00e1nyos rom\u00e1n billenty\u0171zet"
   },
   "keyboard_russian": {
     "message": "Orosz billenty\u0171zet"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Sv\u00e9d billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
+  "settings": {
+    "message": "Be\u00e1ll\u00edt\u00e1sok"
+  },
   "shift": {
     "message": "Shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Hanguljavaslatok megjelen\u00edt\u00e9se"
+  },
+  "shrink_candidates": {
+    "message": "javaslati lista \u00f6sszecsuk\u00e1sa"
   },
   "si_slv_settings_page": {
     "message": "Szlov\u00e9n billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Kijel\u00f6lt(ek) elt\u00e1vol\u00edt\u00e1sa"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Ment\u00e9s"

@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Ki\u015fisel s\u00f6zl\u00fc\u011fe ekle"
+  },
   "advanced": {
     "message": "Geli\u015fmi\u015f"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "\u0130spanyolca Klavye Ayarlar\u0131 Sayfas\u0131"
   },
+  "expand": {
+    "message": "Geni\u015flet"
+  },
+  "expand_candidates": {
+    "message": "\u00f6neri listesini geni\u015flet"
+  },
   "fi_fin_settings_page": {
     "message": "Fince Klavye Ayarlar\u0131 Sayfas\u0131"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "\u0130rlandaca Klavye Ayarlar\u0131 Sayfas\u0131"
+  },
+  "ignore_correction": {
+    "message": "\u015eu kelime i\u00e7in d\u00fczeltmeyi yoksay"
   },
   "il_heb_settings_page": {
     "message": "\u0130branice Klavye Ayarlar\u0131 Sayfas\u0131"
@@ -2847,7 +2859,7 @@
     "message": "Romence klavye"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rumence"
   },
   "keyboard_russian": {
     "message": "Rus\u00e7a klavye"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "\u0130sve\u00e7\u00e7e Klavye Ayarlar\u0131 Sayfas\u0131"
   },
+  "settings": {
+    "message": "Ayarlar"
+  },
   "shift": {
     "message": "\u00fcstkrktr"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Hangul \u00f6nerilerini g\u00f6ster"
+  },
+  "shrink_candidates": {
+    "message": "\u00f6neri listesini daralt"
   },
   "si_slv_settings_page": {
     "message": "Slovence Klavye Ayarlar\u0131 Sayfas\u0131"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Se\u00e7ileni Kald\u0131r"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Kaydet"

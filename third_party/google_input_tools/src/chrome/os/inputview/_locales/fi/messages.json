@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Lis\u00e4\u00e4 omaan sanakirjaan"
+  },
   "advanced": {
     "message": "Lis\u00e4asetukset"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Espanjan n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
+  "expand": {
+    "message": "Laajenna"
+  },
+  "expand_candidates": {
+    "message": "laajenna vaihtoehtoluettelo"
+  },
   "fi_fin_settings_page": {
     "message": "Suomen n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Irlannin iirinkielisen n\u00e4pp\u00e4imist\u00f6n asetukset"
+  },
+  "ignore_correction": {
+    "message": "\u00c4l\u00e4 korjaa:"
   },
   "il_heb_settings_page": {
     "message": "Hepreankielisen n\u00e4pp\u00e4imist\u00f6n asetukset"
@@ -2847,7 +2859,7 @@
     "message": "N\u00e4pp\u00e4imist\u00f6: romania"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Romanialainen vakion\u00e4pp\u00e4imist\u00f6"
   },
   "keyboard_russian": {
     "message": "N\u00e4pp\u00e4imist\u00f6: ven\u00e4j\u00e4"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Ruotsin n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
+  "settings": {
+    "message": "Asetukset"
+  },
   "shift": {
     "message": "shift"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "N\u00e4yt\u00e4 Hangul-ehdotukset"
+  },
+  "shrink_candidates": {
+    "message": "pienenn\u00e4 vaihtoehtoluettelo"
   },
   "si_slv_settings_page": {
     "message": "Slovenian n\u00e4pp\u00e4imist\u00f6n asetukset"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Poista valitut"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Tallenna"

@@ -17,6 +17,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.content.util');
+goog.require('i18n.input.chrome.inputview.events.ConfigLoadedEvent');
 goog.require('i18n.input.chrome.vk.KeyCode');
 goog.require('i18n.input.chrome.vk.Model');
 

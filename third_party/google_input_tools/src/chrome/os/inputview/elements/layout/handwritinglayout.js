@@ -15,6 +15,7 @@ goog.provide('i18n.input.chrome.inputview.elements.layout.HandwritingLayout');
 
 goog.require('goog.dom.classlist');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
@@ -113,9 +114,11 @@ HandwritingLayout.prototype.resize = function(width, height) {
     child.resize(
         Math.ceil(width * child.getWidthInWeight() / this.widthInWeight_),
         Math.ceil(height * child.getHeightInWeight() / this.heightInWeight_));
-    // 85/140 = 0.6
-    child.getElement().style.top =
-        Math.ceil(height * 0.6 / this.heightInWeight_);
+    if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+      // 85/140 = 0.6
+      child.getElement().style.top =
+          Math.ceil(height * 0.6 / this.heightInWeight_);
+    }
   }
 };
 });  // goog.scope

@@ -44,8 +44,9 @@ events.EventType = {
   LONG_PRESS_END: goog.events.getUniqueId('lpe'),
   POINTER_DOWN: goog.events.getUniqueId('pd'),
   POINTER_UP: goog.events.getUniqueId('pu'),
-  POINTER_OVER: goog.events.getUniqueId('po'),
+  POINTER_OVER: goog.events.getUniqueId('pv'),
   POINTER_OUT: goog.events.getUniqueId('po'),
+  REFRESH: goog.events.getUniqueId('rf'),
   SETTINGS_READY: goog.events.getUniqueId('sr'),
   SURROUNDING_TEXT_CHANGED: goog.events.getUniqueId('stc'),
   SWIPE: goog.events.getUniqueId('s'),
@@ -53,7 +54,8 @@ events.EventType = {
   CONTEXT_FOCUS: goog.events.getUniqueId('cf'),
   CONTEXT_BLUR: goog.events.getUniqueId('cb'),
   VISIBILITY_CHANGE: goog.events.getUniqueId('vc'),
-  MODEL_UPDATE: goog.events.getUniqueId('mu')
+  MODEL_UPDATE: goog.events.getUniqueId('mu'),
+  URL_CHANGED: goog.events.getUniqueId('uc')
 };
 
 
@@ -218,14 +220,20 @@ goog.inherits(events.DragEvent, events.PointerEvent);
  * The event when the surrounding text is changed.
  *
  * @param {string} text The surrounding text.
+ * @param {number} anchor .
+ * @param {number} focus .
  * @constructor
  * @extends {goog.events.Event}
  */
-events.SurroundingTextChangedEvent = function(text) {
+events.SurroundingTextChangedEvent = function(text, anchor, focus) {
   goog.base(this, events.EventType.SURROUNDING_TEXT_CHANGED);
 
   /** @type {string} */
   this.text = text;
+  /** @type {number} */
+  this.anchor = anchor;
+  /** @type {number} */
+  this.focus = focus;
 };
 goog.inherits(events.SurroundingTextChangedEvent, goog.events.Event);
 

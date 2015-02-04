@@ -1,4 +1,7 @@
 {
+  "add_to_personal_dictionary": {
+    "message": "Isiklikku s\u00f5nastikku lisamine"
+  },
   "advanced": {
     "message": "T\u00e4psemad"
   },
@@ -2564,6 +2567,12 @@
   "es_spa_settings_page": {
     "message": "Hispaania klaviatuuri seadete leht"
   },
+  "expand": {
+    "message": "Laienda"
+  },
+  "expand_candidates": {
+    "message": "laienda kandidaatide loendit"
+  },
   "fi_fin_settings_page": {
     "message": "Soome klaviatuuri seadete leht"
   },
@@ -2620,6 +2629,9 @@
   },
   "ie_ga_settings_page": {
     "message": "Iiri klaviatuuri seadete leht"
+  },
+  "ignore_correction": {
+    "message": "Ignoreeri parandust:"
   },
   "il_heb_settings_page": {
     "message": "Heebrea klaviatuuri seadete leht"
@@ -2847,7 +2859,7 @@
     "message": "Rumeenia klaviatuur"
   },
   "keyboard_romanian_standard": {
-    "message": "Romanian standard keyboard"
+    "message": "Rumeenia standardne klaviatuur"
   },
   "keyboard_russian": {
     "message": "Vene klaviatuur"
@@ -3062,6 +3074,9 @@
   "se_swe_settings_page": {
     "message": "Rootsi klaviatuuri seadete leht"
   },
+  "settings": {
+    "message": "Seaded"
+  },
   "shift": {
     "message": "t\u00f5stuklahv"
   },
@@ -3088,6 +3103,9 @@
   },
   "show_hangul_candidate": {
     "message": "Kuva hanguli soovitused"
+  },
+  "shrink_candidates": {
+    "message": "kahanda kandidaatide loendit"
   },
   "si_slv_settings_page": {
     "message": "Sloveenia klaviatuuri seadete leht"
@@ -3262,6 +3280,9 @@
   },
   "user_dict_remove": {
     "message": "Eemalda valitud"
+  },
+  "user_dict_reset": {
+    "message": "Reset All Dictionary Entries"
   },
   "user_dict_save": {
     "message": "Salvesta"

@@ -36,13 +36,14 @@ var StateType = i18n.input.chrome.inputview.StateType;
  * @param {!i18n.input.chrome.inputview.StateManager} stateManager The state
  *     manager.
  * @param {boolean} enableShiftRendering .
+ * @param {boolean} isQpInputView .
  * @param {string=} opt_capslockCharacter .
  * @constructor
  */
 i18n.input.chrome.inputview.elements.content.CharacterModel = function(
     character, belongToLetterKey, hasAltGrCharacterInTheKeyset,
     alwaysRenderAltGrCharacter, stateType, stateManager, enableShiftRendering,
-    opt_capslockCharacter) {
+    isQpInputView, opt_capslockCharacter) {
 
   /**
    * The character.
@@ -101,6 +102,9 @@ i18n.input.chrome.inputview.elements.content.CharacterModel = function(
 
   /** @private {boolean} */
   this.enableShiftRendering_ = enableShiftRendering;
+
+  /** @private {boolean} */
+  this.isQpInputView_ = isQpInputView;
 };
 var CharacterModel = i18n.input.chrome.inputview.elements.content.
     CharacterModel;
@@ -149,10 +153,13 @@ CharacterModel.prototype.isHighlighted = function() {
  * @return {boolean} True if the character is visible.
  */
 CharacterModel.prototype.isVisible = function() {
-  var enableShiftLetter = this.enableShiftRendering_ ||
-      this.stateManager_.hasState(StateType.SHIFT);
-  var enableDefaultLetter = this.enableShiftRendering_ || !this.stateManager_.
-      hasState(StateType.SHIFT);
+  var hasShift = this.stateManager_.hasState(StateType.SHIFT);
+  var enableShiftLetter = !this.belongToLetterKey_ || hasShift;
+  var enableDefaultLetter = !this.belongToLetterKey_ || !hasShift;
+  if (this.isQpInputView_) {
+    enableShiftLetter = this.enableShiftRendering_ || hasShift;
+    enableDefaultLetter = this.enableShiftRendering_ || !hasShift;
+  }
   if (this.stateType_ == StateType.DEFAULT) {
     return !this.stateManager_.hasState(StateType.ALTGR) && enableDefaultLetter;
   }
