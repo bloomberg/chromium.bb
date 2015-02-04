@@ -74,7 +74,7 @@ void ContentBrowserTest::SetUp() {
     // setting a global that may be used after ContentBrowserTest is
     // destroyed.
     ContentRendererClient* old_client =
-        command_line->HasSwitch(switches::kDumpRenderTree)
+        command_line->HasSwitch(switches::kRunLayoutTest)
             ? SetRendererClientForTesting(new LayoutTestContentRendererClient)
             : SetRendererClientForTesting(new ShellContentRendererClient);
     // No-one should have set this value before we did.
@@ -117,7 +117,7 @@ void ContentBrowserTest::TearDown() {
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpRenderTree)) {
+          switches::kRunLayoutTest)) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
   }

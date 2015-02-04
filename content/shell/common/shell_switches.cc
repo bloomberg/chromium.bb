@@ -25,7 +25,9 @@ const char kCrashDumpsDir[] = "crash-dumps-dir";
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
 
-// Request pages to be dumped as text once they finished loading.
+// Request the render trees of pages to be dumped as text once they have
+// finished loading. Note that this switch has been deprecated, and the
+// identically functioning |kRunLayoutTest| switch should be used instead.
 const char kDumpRenderTree[] = "dump-render-tree";
 
 // Expose window.ipcTester object for testing
@@ -53,9 +55,13 @@ const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
 // with a semicolon (;).
 const char kRegisterFontFiles[] = "register-font-files";
 
+// Request the render trees of pages to be dumped as text once they have
+// finished loading.
+const char kRunLayoutTest[] = "run-layout-test";
+
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
-// kDumpRenderTree is set. For the features' level, see
+// kRunLayoutTest is set. For the features' level, see
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
 

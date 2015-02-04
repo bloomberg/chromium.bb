@@ -75,7 +75,7 @@ def main():
 
     print "# Run content_shell and make it crash."
     cmd = [options.binary,
-           '--dump-render-tree',
+           '--run-layout-test',
            'chrome://crash',
            '--enable-crash-reporter',
            '--crash-dumps-dir=%s' % crash_dir]

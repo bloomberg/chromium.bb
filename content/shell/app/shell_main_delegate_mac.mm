@@ -29,7 +29,7 @@ void EnsureCorrectResolutionSettings() {
           initWithContentsOfFile:base::mac::FilePathToNSString(info_plist)]);
 
   bool running_layout_tests = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDumpRenderTree);
+      switches::kRunLayoutTest);
   bool not_high_resolution_capable =
       [info_dict objectForKey:kHighResolutionCapable] &&
       [[info_dict objectForKey:kHighResolutionCapable] isEqualToNumber:@(NO)];

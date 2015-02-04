@@ -138,7 +138,7 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   shell_browser_main_parts_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  switches::kDumpRenderTree)
+                                  switches::kRunLayoutTest)
                                   ? new LayoutTestBrowserMainParts(parameters)
                                   : new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
@@ -202,8 +202,8 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpRenderTree))
-    command_line->AppendSwitch(switches::kDumpRenderTree);
+          switches::kRunLayoutTest))
+    command_line->AppendSwitch(switches::kRunLayoutTest);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing))
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
@@ -248,7 +248,7 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
     const GURL& url,
     WebPreferences* prefs) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpRenderTree))
+          switches::kRunLayoutTest))
     return;
   WebKitTestController::Get()->OverrideWebkitPrefs(prefs);
 }
@@ -256,7 +256,7 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpRenderTree)
+          switches::kRunLayoutTest)
           ? new LayoutTestResourceDispatcherHostDelegate
           : new ShellResourceDispatcherHostDelegate);
   ResourceDispatcherHost::Get()->SetDelegate(
