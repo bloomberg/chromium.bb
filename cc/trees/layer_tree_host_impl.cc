@@ -675,6 +675,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   if (root_surface_has_contributing_layers &&
       root_surface_has_no_visible_damage &&
       active_tree_->LayersWithCopyOutputRequest().empty() &&
+      !output_surface_->capabilities().can_force_reclaim_resources &&
       !hud_wants_to_draw_) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
