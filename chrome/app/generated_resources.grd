@@ -1417,6 +1417,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
           &amp;Task manager
         </message>
+        <message name="IDS_TAKE_SCREENSHOT" desc="The text label of the Take Screenshot menu item">
+          T&amp;ake screenshot
+        </message>
         <message name="IDS_RESTORE_TAB" desc="The text label of the Restore Tab menu item">
           R&amp;eopen closed tab
         </message>
@@ -1442,6 +1445,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
           &amp;Task Manager
+        </message>
+        <message name="IDS_TAKE_SCREENSHOT" desc="The text label of the Take Screenshot menu item">
+          T&amp;ake Screenshot
         </message>
         <message name="IDS_RESTORE_TAB" desc="In Title Case: The text label of the Restore Tab menu item">
           R&amp;eopen Closed Tab

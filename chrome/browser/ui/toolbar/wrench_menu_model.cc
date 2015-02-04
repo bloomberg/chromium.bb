@@ -254,6 +254,10 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
+#if defined(OS_CHROMEOS)
+  AddItemWithStringId(IDC_TAKE_SCREENSHOT, IDS_TAKE_SCREENSHOT);
+#endif
+
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));

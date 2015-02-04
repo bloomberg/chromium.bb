@@ -176,6 +176,9 @@ class WrenchMenu : public views::MenuDelegate,
   // Menu corresponding to IDC_FEEDBACK.
   views::MenuItemView* feedback_menu_item_;
 
+  // Menu corresponding to IDC_TAKE_SCREENSHOT.
+  views::MenuItemView* screenshot_menu_item_;
+
   // Used for managing "Recent tabs" menu items.
   scoped_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
 
