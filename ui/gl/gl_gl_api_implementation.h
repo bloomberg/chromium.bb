@@ -44,7 +44,6 @@ class GLApiBase : public GLApi {
   GLApiBase();
   ~GLApiBase() override;
   void InitializeBase(DriverGL* driver);
-  void SignalFlush();
 
   DriverGL* driver_;
 };

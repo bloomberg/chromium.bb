@@ -5,19 +5,14 @@
 #include "ui/gl/gl_fence_apple.h"
 
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 
 namespace gfx {
 
-GLFenceAPPLE::GLFenceAPPLE(bool flush) {
+GLFenceAPPLE::GLFenceAPPLE() {
   glGenFencesAPPLE(1, &fence_);
   glSetFenceAPPLE(fence_);
   DCHECK(glIsFenceAPPLE(fence_));
-  if (flush) {
-    glFlush();
-  } else {
-    flush_event_ = GLContext::GetCurrent()->SignalFlush();
-  }
+  glFlush();
 }
 
 bool GLFenceAPPLE::HasCompleted() {
@@ -27,11 +22,7 @@ bool GLFenceAPPLE::HasCompleted() {
 
 void GLFenceAPPLE::ClientWait() {
   DCHECK(glIsFenceAPPLE(fence_));
-  if (!flush_event_.get() || flush_event_->IsSignaled()) {
-    glFinishFenceAPPLE(fence_);
-  } else {
-    LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
-  }
+  glFinishFenceAPPLE(fence_);
 }
 
 void GLFenceAPPLE::ServerWait() {

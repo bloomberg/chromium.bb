@@ -7,14 +7,13 @@
 
 #include "base/macros.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 
 namespace gfx {
 
 class GL_EXPORT GLFenceEGL : public GLFence {
  public:
-  GLFenceEGL(bool flush);
+  GLFenceEGL();
   ~GLFenceEGL() override;
 
   // GLFence implementation:
@@ -25,7 +24,6 @@ class GL_EXPORT GLFenceEGL : public GLFence {
  private:
   EGLSyncKHR sync_;
   EGLDisplay display_;
-  scoped_refptr<GLContext::FlushEvent> flush_event_;
 
   DISALLOW_COPY_AND_ASSIGN(GLFenceEGL);
 };

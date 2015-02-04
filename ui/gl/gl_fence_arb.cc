@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 
 namespace gfx {
 
@@ -24,14 +23,10 @@ std::string GetGLErrors() {
 
 }  // namespace
 
-GLFenceARB::GLFenceARB(bool flush) {
+GLFenceARB::GLFenceARB() {
   sync_ = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
   DCHECK_EQ(GL_TRUE, glIsSync(sync_));
-  if (flush) {
-    glFlush();
-  } else {
-    flush_event_ = GLContext::GetCurrent()->SignalFlush();
-  }
+  glFlush();
 }
 
 bool GLFenceARB::HasCompleted() {
@@ -52,25 +47,17 @@ bool GLFenceARB::HasCompleted() {
 
 void GLFenceARB::ClientWait() {
   DCHECK_EQ(GL_TRUE, glIsSync(sync_));
-  if (!flush_event_.get() || flush_event_->IsSignaled()) {
-    GLenum result =
-        glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-    DCHECK_NE(static_cast<GLenum>(GL_TIMEOUT_EXPIRED), result);
-    if (result == GL_WAIT_FAILED) {
-      LOG(FATAL) << "Failed to wait for GLFence. error code:" << GetGLErrors();
-    }
-  } else {
-    LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+  GLenum result =
+      glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+  DCHECK_NE(static_cast<GLenum>(GL_TIMEOUT_EXPIRED), result);
+  if (result == GL_WAIT_FAILED) {
+    LOG(FATAL) << "Failed to wait for GLFence. error code:" << GetGLErrors();
   }
 }
 
 void GLFenceARB::ServerWait() {
   DCHECK_EQ(GL_TRUE, glIsSync(sync_));
-  if (!flush_event_.get() || flush_event_->IsSignaled()) {
-    glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
-  } else {
-    LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
-  }
+  glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
 }
 
 GLFenceARB::~GLFenceARB() {

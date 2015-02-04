@@ -59,7 +59,7 @@ void CreateFenceLocked(uint32 sync_point) {
       sync_points.pop();
     }
     // Need to use EGL fences since we are likely not in a single share group.
-    linked_ptr<gfx::GLFence> fence(make_linked_ptr(new gfx::GLFenceEGL(true)));
+    linked_ptr<gfx::GLFence> fence(make_linked_ptr(new gfx::GLFenceEGL));
     if (fence.get()) {
       std::pair<SyncPointToFenceMap::iterator, bool> result =
           sync_point_to_fence.insert(std::make_pair(sync_point, fence));

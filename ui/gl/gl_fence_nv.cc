@@ -5,11 +5,10 @@
 #include "ui/gl/gl_fence_nv.h"
 
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 
 namespace gfx {
 
-GLFenceNV::GLFenceNV(bool flush) {
+GLFenceNV::GLFenceNV() {
   // What if either of these GL calls fails? TestFenceNV will return true.
   // See spec:
   // http://www.opengl.org/registry/specs/NV/fence.txt
@@ -23,11 +22,7 @@ GLFenceNV::GLFenceNV(bool flush) {
   glGenFencesNV(1, &fence_);
   glSetFenceNV(fence_, GL_ALL_COMPLETED_NV);
   DCHECK(glIsFenceNV(fence_));
-  if (flush) {
-    glFlush();
-  } else {
-    flush_event_ = GLContext::GetCurrent()->SignalFlush();
-  }
+  glFlush();
 }
 
 bool GLFenceNV::HasCompleted() {
@@ -37,11 +32,7 @@ bool GLFenceNV::HasCompleted() {
 
 void GLFenceNV::ClientWait() {
   DCHECK(glIsFenceNV(fence_));
-  if (!flush_event_.get() || flush_event_->IsSignaled()) {
-    glFinishFenceNV(fence_);
-  } else {
-    LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
-  }
+  glFinishFenceNV(fence_);
 }
 
 void GLFenceNV::ServerWait() {
