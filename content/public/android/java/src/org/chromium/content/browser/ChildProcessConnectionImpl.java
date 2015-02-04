@@ -415,6 +415,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     @Override
     public void dropOomBindings() {
         synchronized (mLock) {
+            assert !mAlwaysInForeground;
             mInitialBinding.unbind();
 
             mStrongBindingCount = 0;
