@@ -224,6 +224,36 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
     clampToBoundaries();
 }
 
+bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
+{
+    const float oldPageScale = scale();
+    const float newPageScale = frameHost().chrome().client().clampPageScaleFactorToLimits(
+        magnifyDelta * oldPageScale);
+    if (newPageScale == oldPageScale)
+        return false;
+    if (!mainFrame() || !mainFrame()->view())
+        return false;
+
+    // Keep the center-of-pinch anchor in a stable position over the course
+    // of the magnify.
+    FloatPoint anchorAtOldScale = anchor.scaledBy(1.f / oldPageScale);
+    FloatPoint anchorAtNewScale = anchor.scaledBy(1.f / newPageScale);
+    FloatSize anchorDelta = anchorAtOldScale - anchorAtNewScale;
+
+    // First try to use the anchor's delta to scroll the FrameView.
+    FloatSize anchorDeltaUnusedByScroll = anchorDelta;
+    FrameView* view = mainFrame()->view();
+    DoublePoint oldPosition = view->scrollPositionDouble();
+    view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()));
+    DoublePoint newPosition = view->scrollPositionDouble();
+    anchorDeltaUnusedByScroll = anchorDelta - toFloatSize(newPosition - oldPosition);
+
+    // Manually bubble any remaining anchor delta up to the pinch viewport.
+    FloatPoint newLocation(location() + anchorDeltaUnusedByScroll);
+    setScaleAndLocation(newPageScale, newLocation);
+    return true;
+}
+
 // Modifies the top of the graphics layer tree to add layers needed to support
 // the inner/outer viewport fixed-position model for pinch zoom. When finished,
 // the tree will look like this (with * denoting added layers):

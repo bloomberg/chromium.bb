@@ -106,6 +106,11 @@ public:
     void setScale(float);
     float scale() const { return m_scale; }
 
+    // Update scale factor, magnifying or minifying by magnifyDelta, centered around
+    // the point specified by anchor in window coordinates. Returns false if page
+    // scale factor is left unchanged.
+    bool magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor);
+
     void registerLayersWithTreeView(blink::WebLayerTreeView*) const;
     void clearLayersForTreeView(blink::WebLayerTreeView*) const;
 

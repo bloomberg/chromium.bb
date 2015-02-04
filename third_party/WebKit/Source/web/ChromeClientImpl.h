@@ -116,6 +116,7 @@ public:
     virtual WebScreenInfo screenInfo() const override;
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
     virtual void pageScaleFactorChanged() const override;
+    virtual float clampPageScaleFactorToLimits(float scale) const override;
     virtual void layoutUpdated(LocalFrame*) const override;
     virtual void mouseDidMoveOverElement(const HitTestResult&) override;
     virtual void setToolTip(const WTF::String& tooltipText, TextDirection) override;

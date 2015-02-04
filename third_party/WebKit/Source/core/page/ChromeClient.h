@@ -145,6 +145,7 @@ public:
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
     virtual void pageScaleFactorChanged() const { }
+    virtual float clampPageScaleFactorToLimits(float scale) const { return scale; }
     virtual void layoutUpdated(LocalFrame*) const { }
 
     virtual void mouseDidMoveOverElement(const HitTestResult&) = 0;

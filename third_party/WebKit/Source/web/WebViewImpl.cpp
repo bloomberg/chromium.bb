@@ -2140,8 +2140,20 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 
     // Unhandled touchpad gesture pinch events synthesize mouse wheel events.
     if (inputEvent.type == WebInputEvent::GesturePinchUpdate) {
-        if (handleSyntheticWheelFromTouchpadPinchEvent(static_cast<const WebGestureEvent&>(inputEvent)))
+        const WebGestureEvent& pinchEvent = static_cast<const WebGestureEvent&>(inputEvent);
+
+        // First, synthesize a Windows-like wheel event to send to any handlers that may exist.
+        if (handleSyntheticWheelFromTouchpadPinchEvent(pinchEvent))
             return true;
+
+        if (pinchVirtualViewportEnabled()
+            && page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
+            return true;
+
+        // TODO(ccameron): Always return that the event was handled. Once the pinch-zoom content scale
+        // handlers have been removed from content, this function may return false if the page scale does
+        // not change.
+        return true;
     }
 
     return false;

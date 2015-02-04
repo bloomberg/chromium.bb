@@ -287,6 +287,7 @@ public:
     float defaultMaximumPageScaleFactor() const;
     float minimumPageScaleFactor() const;
     float maximumPageScaleFactor() const;
+    float clampPageScaleFactorToLimits(float) const;
 
     HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);
@@ -537,7 +538,6 @@ private:
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
     void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
-    float clampPageScaleFactorToLimits(float) const;
     IntSize contentsSize() const;
 
     void updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);

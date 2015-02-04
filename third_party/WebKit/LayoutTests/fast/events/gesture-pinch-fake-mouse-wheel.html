@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
-<div onmousewheel="mouseWheel(event)" style="margin: 0px 0; width: 100px; height: 100px; background-color: blue;"></div>
+<div onwheel="wheel(event)" style="margin: 0px 0; width: 100px; height: 100px; background-color: blue;"></div>
 <script>
 var gotWheelEvent = false;
 var testX = 40;
@@ -8,7 +8,7 @@ var testY = 70;
 var testScale = 0.5;
 var tolerance = 0.001;
 
-function mouseWheel(event)
+function wheel(event)
 {
     shouldBeFalse('gotWheelEvent');
     gotWheelEvent = true;
