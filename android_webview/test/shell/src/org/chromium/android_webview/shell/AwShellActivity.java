@@ -42,6 +42,9 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * This is a lightweight activity for tests that only require WebView functionality.
  */
@@ -195,8 +198,18 @@ public class AwShellActivity extends Activity {
                     return false;
                 }
 
-                mAwTestContainerView.getAwContents().loadUrl(
-                        new LoadUrlParams(mUrlTextView.getText().toString()));
+                String url = mUrlTextView.getText().toString();
+                try {
+                    URI uri = new URI(url);
+                    if (uri.getScheme() == null) {
+                        url = "http://" + uri.toString();
+                    } else {
+                        url = uri.toString();
+                    }
+                } catch (URISyntaxException e) {
+                    // Ignore syntax errors.
+                }
+                mAwTestContainerView.getAwContents().loadUrl(new LoadUrlParams(url));
                 mUrlTextView.clearFocus();
                 setKeyboardVisibilityForUrl(false);
                 mAwTestContainerView.requestFocus();
