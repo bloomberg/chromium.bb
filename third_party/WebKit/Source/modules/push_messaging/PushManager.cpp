@@ -20,8 +20,8 @@
 #include "modules/push_messaging/PushSubscriptionCallbacks.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPushClient.h"
-#include "public/platform/WebPushProvider.h"
+#include "public/platform/modules/push_messaging/WebPushClient.h"
+#include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

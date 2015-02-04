@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/push_messaging/PushController.h"
 
-#include "public/platform/WebPushClient.h"
+#include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
