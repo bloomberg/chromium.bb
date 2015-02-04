@@ -5,7 +5,7 @@
 #include "base/trace_event/trace_event_impl.h"
 
 namespace base {
-namespace debug {
+namespace trace_event {
 
 // Enable everything but debug and test categories by default.
 const char CategoryFilter::kDefaultCategoryFilterString[] = "-*Debug,-*Test";
@@ -24,5 +24,5 @@ const TraceLog::InternalTraceOptions
 const TraceLog::InternalTraceOptions
     TraceLog::kInternalRecordAsMuchAsPossible = 1 << 4;
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base

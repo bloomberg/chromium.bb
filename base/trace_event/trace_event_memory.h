@@ -22,7 +22,7 @@ namespace base {
 
 class MessageLoopProxy;
 
-namespace debug {
+namespace trace_event {
 
 // Watches for chrome://tracing to be enabled or disabled. When tracing is
 // enabled, also enables tcmalloc heap profiling. This class is the preferred
@@ -46,7 +46,7 @@ class BASE_EXPORT TraceMemoryController
       GetHeapProfileFunction get_heap_profile_function);
   virtual ~TraceMemoryController();
 
-  // base::debug::TraceLog::EnabledStateChangedObserver overrides:
+  // base::trace_event::TraceLog::EnabledStateChangedObserver overrides:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
@@ -146,7 +146,7 @@ BASE_EXPORT bool AppendHeapProfileLineAsTraceFormat(const std::string& line,
 // and "error" if |address| could not be parsed. Visible for testing.
 BASE_EXPORT const char* StringFromHexAddress(const std::string& hex_address);
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base
 
 // Make local variables with unique names based on the line number. Note that
@@ -159,7 +159,7 @@ BASE_EXPORT const char* StringFromHexAddress(const std::string& hex_address);
 // It generates a unique local variable name using the macros above.
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
 #define INTERNAL_TRACE_MEMORY(category, name) \
-  base::debug::ScopedTraceMemory INTERNAL_TRACE_MEMORY_ID(category, name);
+  base::trace_event::ScopedTraceMemory INTERNAL_TRACE_MEMORY_ID(category, name);
 #else
 #define INTERNAL_TRACE_MEMORY(category, name)
 #endif  // defined(TRACE_MEMORY_SUPPORTED)

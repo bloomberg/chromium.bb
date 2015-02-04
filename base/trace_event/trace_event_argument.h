@@ -16,7 +16,7 @@ class DictionaryValue;
 class ListValue;
 class Value;
 
-namespace debug {
+namespace trace_event {
 
 class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
  public:
@@ -53,6 +53,14 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
 
+}  // namespace trace_event
+}  // namespace base
+
+// TODO(ssid): remove these aliases after the tracing clients are moved to the
+// new trace_event namespace. See crbug.com/451032. ETA: March 2015.
+namespace base {
+namespace debug {
+using base::trace_event::TracedValue;
 }  // namespace debug
 }  // namespace base
 

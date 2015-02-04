@@ -41,13 +41,19 @@
 #include "ui/gfx/transform.h"
 
 namespace base {
-namespace debug {
+namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
 
-class DictionaryValue;
+// TODO(ssid): remove these aliases after the tracing clients are moved to the
+// new trace_event namespace. See crbug.com/451032. ETA: March 2015
+namespace debug {
+using ::base::trace_event::ConvertableToTraceFormat;
+using ::base::trace_event::TracedValue;
 }
+class DictionaryValue;
+}  // namespace base
 
 namespace cc {
 

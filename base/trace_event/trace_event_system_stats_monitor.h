@@ -17,7 +17,7 @@ namespace base {
 
 class SingleThreadTaskRunner;
 
-namespace debug {
+namespace trace_event {
 
 // Watches for chrome://tracing to be enabled or disabled. When tracing is
 // enabled, also enables system events profiling. This class is the preferred
@@ -35,7 +35,7 @@ class BASE_EXPORT TraceEventSystemStatsMonitor
 
   virtual ~TraceEventSystemStatsMonitor();
 
-  // base::debug::TraceLog::EnabledStateChangedObserver overrides:
+  // base::trace_event::TraceLog::EnabledStateChangedObserver overrides:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
@@ -69,7 +69,7 @@ BASE_EXPORT void AppendSystemProfileAsTraceFormat(const SystemMetrics&
                                                   system_stats,
                                                   std::string* output);
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base
 
 #endif  // BASE_TRACE_EVENT_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_

@@ -22,8 +22,14 @@
 namespace base {
 class MessageLoop;
 
-namespace debug {
+namespace trace_event {
 class TraceMemoryController;
+}  // namespace trace_event
+
+// TODO(ssid): remove these aliases after the tracing clients are moved to the
+// new trace_event namespace. See crbug.com/451032. ETA: March 2015
+namespace debug {
+using ::base::trace_event::TraceMemoryController;
 }  // namespace debug
 }  // namespace base
 

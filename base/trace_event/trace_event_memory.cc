@@ -15,7 +15,7 @@
 #include "base/trace_event/trace_event.h"
 
 namespace base {
-namespace debug {
+namespace trace_event {
 
 namespace {
 
@@ -26,13 +26,13 @@ const size_t kMaxScopeDepth = 16;
 
 /////////////////////////////////////////////////////////////////////////////
 // Holds a memory dump until the tracing system needs to serialize it.
-class MemoryDumpHolder : public base::debug::ConvertableToTraceFormat {
+class MemoryDumpHolder : public base::trace_event::ConvertableToTraceFormat {
  public:
   // Takes ownership of dump, which must be a JSON string, allocated with
   // malloc() and NULL terminated.
   explicit MemoryDumpHolder(char* dump) : dump_(dump) {}
 
-  // base::debug::ConvertableToTraceFormat overrides:
+  // base::trace_event::ConvertableToTraceFormat overrides:
   void AppendAsTraceFormat(std::string* out) const override {
     AppendHeapProfileAsTraceFormat(dump_, out);
   }
@@ -165,7 +165,7 @@ TraceMemoryController::~TraceMemoryController() {
   TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 }
 
-  // base::debug::TraceLog::EnabledStateChangedObserver overrides:
+// base::trace_event::TraceLog::EnabledStateChangedObserver overrides:
 void TraceMemoryController::OnTraceLogEnabled() {
   // Check to see if tracing is enabled for the memory category.
   bool enabled;
@@ -436,5 +436,5 @@ const char* StringFromHexAddress(const std::string& hex_address) {
   return reinterpret_cast<const char*>(address);
 }
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base
