@@ -12,44 +12,44 @@ html {
   height: 100%;
 }
 
-#pnacl-plugin {
-  background-color: gray;
-  border: 1px solid
-}
-
-#pnacl-plugin:focus {
-  background-color: yellow;
-}
-
 .summary-log-container {
   width: 50%;
-  height: 50vh;
+  height: 100%;
   overflow-y: auto;
   float: left;
 }
 
-.text-log-container {
-  width: 100%;
-  max-height: 25vh;
-  overflow-y: auto;
-  float: left;
+#text-log-container {
+  position: fixed;
+  top: 32px;
+  left: 16px;
+  right: 16px;
+  bottom: 32px;
+  border: 1px solid gray;
+  box-shadow: 0px 4px 10px 4px rgba(0,0,0,0.3);
+  background-color: white;
+  overflow: scroll;
 }
 
-.char-event,
-.key-down,
-.key-up {
+#text-log {
+  padding: 8px;
+}
+
+.selectable {
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.key-div {
   border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.3);
   padding: 2px;
   margin-right: 2px;
+  display: inline-block;
 }
 
 .char-event {
-  background-color: yellow;
-}
-
-.char-event::before {
-  content: "char:";
+  background-color: #DDF;
 }
 
 .key-up {
@@ -57,7 +57,7 @@ html {
 }
 
 .key-up::before {
-  content: "-";
+  content: "\2011";  /** non-breaking hyphen */
 }
 
 .key-down {
@@ -92,4 +92,10 @@ html {
 .chord-div.some-keys-still-pressed::after {
   content: " \2716";  /* cross */
   color: red;
+}
+
+.controls {
+  position: absolute;
+  right: 8px;
+  top: 8px;
 }

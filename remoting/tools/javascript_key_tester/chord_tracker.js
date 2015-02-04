@@ -8,34 +8,39 @@
  * @param {HTMLElement} parentDiv
  */
 var ChordTracker = function(parentDiv) {
+  /** @type {HTMLElement} */
   this.parentDiv_ = parentDiv;
+  /** @type {HTMLElement} */
   this.currentDiv_ = null;
+  /** @type {Object.<HTMLElement>} */
   this.pressedKeys_ = {};
 };
 
 /**
- * @param {number} keyCode
+ * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
+ *     string.
  * @param {string} title
  * @return {void}
  */
-ChordTracker.prototype.addKeyUpEvent = function(keyCode, title) {
-  var text = this.keyName_(keyCode);
+ChordTracker.prototype.addKeyUpEvent = function(keyId, title) {
+  var text = this.keyName_(keyId);
   var span = this.addSpanElement_('key-up', text, title);
-  delete this.pressedKeys_[keyCode];
+  delete this.pressedKeys_[keyId];
   if (!this.keysPressed_()) {
     this.end_();
   }
 };
 
 /**
- * @param {number} keyCode
+ * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
+ *     string.
  * @param {string} title
  * @return {void}
  */
-ChordTracker.prototype.addKeyDownEvent = function(keyCode, title) {
-  var text = this.keyName_(keyCode);
+ChordTracker.prototype.addKeyDownEvent = function(keyId, title) {
+  var text = this.keyName_(keyId);
   var span = this.addSpanElement_('key-down', text, title);
-  this.pressedKeys_[keyCode] = span;
+  this.pressedKeys_[keyId] = span;
 };
 
 /**
@@ -63,11 +68,13 @@ ChordTracker.prototype.releaseAllKeys = function() {
  * @param {string} className
  * @param {string} text
  * @param {string} title
+ * @return {HTMLElement}
  */
 ChordTracker.prototype.addSpanElement_ = function(className, text, title) {
   this.begin_();
-  var span = document.createElement('span');
+  var span = /** @type {HTMLElement} */ (document.createElement('span'));
   span.classList.add(className);
+  span.classList.add('key-div');
   span.innerText = text;
   span.title = title;
   this.currentDiv_.appendChild(span);
@@ -81,7 +88,7 @@ ChordTracker.prototype.begin_ = function() {
   if (this.currentDiv_) {
     return;
   }
-  this.currentDiv_ = document.createElement('div');
+  this.currentDiv_ = /** @type {HTMLElement} */ (document.createElement('div'));
   this.currentDiv_.classList.add('chord-div');
   this.parentDiv_.appendChild(this.currentDiv_);
 };
@@ -113,15 +120,18 @@ ChordTracker.prototype.keysPressed_ = function() {
 };
 
 /**
- * @param {number} keyCode The keyCode field of the keyup or keydown event.
+ * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
+ *     string.
  * @return {string} A human-readable representation of the key.
  * @private
  */
-ChordTracker.prototype.keyName_ = function(keyCode) {
-  var result = keyboardMap[keyCode];
+ChordTracker.prototype.keyName_ = function(keyId) {
+  if (typeof keyId == 'string') {
+    return keyId;
+  }
+  var result = keyboardMap[keyId];
   if (!result) {
-    result = '<' + keyCode + '>';
+    result = '<' + keyId + '>';
   }
   return result;
 };
-

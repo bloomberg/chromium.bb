@@ -11,6 +11,7 @@
     'remoting_key_tester_js_files': [
         'tools/javascript_key_tester/background.js',
         'tools/javascript_key_tester/chord_tracker.js',
+        'tools/javascript_key_tester/event_listeners.js',
         'tools/javascript_key_tester/keyboard_map.js',
         'tools/javascript_key_tester/main.js',
      ],
@@ -45,9 +46,7 @@
           'target_name': 'remoting_key_tester_jscompile',
           'type': 'none',
           'conditions': [
-            # TODO(lukasza): Enable when remoting_key_tester_jscompile is clean.
-            # ['run_jscompile != 0', {
-            ['0 != 0', {
+            ['run_jscompile != 0', {
               'variables': {
                 'success_stamp': '<(PRODUCT_DIR)/<(_target_name).stamp',
               },
@@ -56,6 +55,7 @@
                   'action_name': 'jscompile remoting_key_tester',
                   'inputs': [
                     '<@(remoting_key_tester_js_files)',
+                    'webapp/js_proto/chrome_proto.js'
                   ],
                   'outputs': [
                     '<(success_stamp)',
@@ -66,6 +66,7 @@
                     '--no-single-file',
                     '--success-stamp', '<(success_stamp)',
                     '<@(remoting_key_tester_js_files)',
+                    'webapp/js_proto/chrome_proto.js'
                   ],
                 },
               ],  # actions
