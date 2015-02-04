@@ -1123,8 +1123,8 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
 }
 
 void LoginDisplayHostImpl::StartTimeZoneResolve() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTimeZoneTrackingOption)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableTimeZoneTrackingOption)) {
     return;
   }
 

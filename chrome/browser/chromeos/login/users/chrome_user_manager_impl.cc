@@ -1048,8 +1048,8 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
 }
 
 void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTimeZoneTrackingOption)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableTimeZoneTrackingOption)) {
     return;
   }
 

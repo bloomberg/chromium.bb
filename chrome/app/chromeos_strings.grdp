@@ -6035,11 +6035,11 @@ All users must sign out to continue.
     System time
   </message>
 
-  <message name="IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME" desc="Title for the flag to enable/disable user setting to automatically update timezone by user geolocation.">
-    Automatically resolve timezone by geolocation
+  <message name="IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME" desc="Title for the flag to disable automatic timezone update on user location change.">
+    Disable automatic timezone update by geolocation
   </message>
-  <message name="IDS_FLAGS_ENABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag to enable/disable user setting to automatically update timezone by user geolocation.">
-    If enabled, in chrome://settings a new option becomes available which allows automatically updating the timezone by the current geolocation.
+  <message name="IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag to disable user setting to automatically update timezone by user geolocation.">
+    If set, automatic timezone update by the current geolocation is turned off.
   </message>
   <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
     Automatically resolve timezone by geolocation

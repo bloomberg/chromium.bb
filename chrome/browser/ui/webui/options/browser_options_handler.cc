@@ -681,11 +681,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "showWakeOnWifi",
       chromeos::WakeOnWifiManager::Get()->WakeOnWifiSupported() &&
       chromeos::switches::WakeOnWifiEnabled());
-  const bool have_enable_time_zone_tracking_option_switch =
+  const bool have_disable_time_zone_tracking_option_switch =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTimeZoneTrackingOption);
+          chromeos::switches::kDisableTimeZoneTrackingOption);
   values->SetBoolean("enableTimeZoneTrackingOption",
-                     have_enable_time_zone_tracking_option_switch &&
+                     !have_disable_time_zone_tracking_option_switch &&
                          !chromeos::system::HasSystemTimezonePolicy());
 #endif
 }
