@@ -239,6 +239,10 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // Returns true if |native_event| should be blocked.
   bool IsEventBlocked(const base::NativeEvent& native_event);
 
+  const std::vector<int>& master_pointers() const {
+    return master_pointers_;
+  }
+
  protected:
   // DeviceHotplugEventObserver:
   void OnKeyboardDevicesUpdated(
@@ -273,6 +277,9 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // should be processed.
   std::bitset<kMaxDeviceNum> cmt_devices_;
   std::bitset<kMaxDeviceNum> touchpads_;
+
+  // List of the master pointer devices.
+  std::vector<int> master_pointers_;
 
   // A quick lookup table for determining if events from the XI device
   // should be blocked.

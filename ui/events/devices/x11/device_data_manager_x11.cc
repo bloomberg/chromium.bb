@@ -202,6 +202,7 @@ bool DeviceDataManagerX11::IsXInput2Available() const {
 void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   cmt_devices_.reset();
   touchpads_.reset();
+  master_pointers_.clear();
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
     valuator_lookup_[i].clear();
@@ -232,6 +233,9 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
 
   for (int i = 0; i < info_list.count; ++i) {
     XIDeviceInfo* info = info_list.devices + i;
+
+    if (info->use == XIMasterPointer)
+      master_pointers_.push_back(info->deviceid);
 
     // We currently handle only slave, non-keyboard devices
     if (info->use != XISlavePointer && info->use != XIFloatingSlave)

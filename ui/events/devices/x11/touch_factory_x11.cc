@@ -201,6 +201,8 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
 #if defined(OS_CHROMEOS)
+  // XGrabKey() must be replaced with XI2 keyboard grab if XI2 key events are
+  // enabled on desktop Linux.
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XISetMask(mask, XI_KeyPress);
     XISetMask(mask, XI_KeyRelease);
