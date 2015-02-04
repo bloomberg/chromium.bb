@@ -522,8 +522,6 @@
       'browser/ui/sync/sync_promo_ui_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.mm',
-      'browser/ui/website_settings/mock_permission_bubble_view.cc',
-      'browser/ui/website_settings/mock_permission_bubble_view.h',
       'browser/ui/website_settings/permission_bubble_manager_unittest.cc',
       'browser/ui/website_settings/website_settings_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',

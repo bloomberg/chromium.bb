@@ -494,8 +494,6 @@
       'browser/ui/toolbar/component_toolbar_actions_browsertest.cc',
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
-      'browser/ui/website_settings/mock_permission_bubble_view.cc',
-      'browser/ui/website_settings/mock_permission_bubble_view.h',
       'browser/ui/webui/bidi_checker_web_ui_test.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.h',
       'browser/ui/webui/bookmarks_ui_browsertest.cc',
