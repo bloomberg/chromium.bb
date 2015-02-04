@@ -34,9 +34,9 @@
           scrollToOptions.left = testCase.x;
         if (testCase.y)
           scrollToOptions.top = testCase.y;
-        subframe.contentDocument.documentElement.scroll(scrollToOptions);
+        subframe.contentDocument.body.scroll(scrollToOptions);
       } else {
-        subframe.contentDocument.documentElement.scroll(testCase.x, testCase.y);
+        subframe.contentDocument.body.scroll(testCase.x, testCase.y);
       }
     }
 
@@ -68,7 +68,7 @@
       }
 
       var subframe = document.getElementById("subframe");
-      var scrollBehaviorTest = new ScrollBehaviorTest(subframe.contentDocument.documentElement,
+      var scrollBehaviorTest = new ScrollBehaviorTest(subframe.contentDocument.body,
                                                       subframe.contentDocument,
                                                       testCases,
                                                       getEndPosition,

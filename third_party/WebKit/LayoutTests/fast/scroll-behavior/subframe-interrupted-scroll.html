@@ -20,7 +20,7 @@
     {
       const targets = {y_min: 40, y_mid: 3500, y_max: 7000};
       const innerPoint = {x: 100, y: 100}
-      var subframeDocumentElement = document.getElementById('subframe').contentDocument.documentElement;
+      var subframeDocumentElement = document.getElementById('subframe').contentDocument.body;
       var scrollInterruptionTest = new SmoothScrollInterruptionTest(subframeDocumentElement,
                                                                     innerPoint,
                                                                     targets,
