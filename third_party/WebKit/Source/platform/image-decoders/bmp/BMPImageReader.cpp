@@ -95,8 +95,9 @@ bool BMPImageReader::decodeBMP(bool onlySize)
     if (!m_infoHeader.biSize && !readInfoHeaderSize())
         return false;
 
+    const size_t headerEnd = m_headerOffset + m_infoHeader.biSize;
     // Read and process info header.
-    if ((m_decodedOffset < (m_headerOffset + m_infoHeader.biSize)) && !processInfoHeader())
+    if ((m_decodedOffset < headerEnd) && !processInfoHeader())
         return false;
 
     // processInfoHeader() set the size, so if that's all we needed, we're done.
@@ -175,7 +176,8 @@ bool BMPImageReader::readInfoHeaderSize()
     // Don't allow the header to overflow (which would be harmless here, but
     // problematic or at least confusing in other places), or to overrun the
     // image data.
-    if (((m_headerOffset + m_infoHeader.biSize) < m_headerOffset) || (m_imgDataOffset && (m_imgDataOffset < (m_headerOffset + m_infoHeader.biSize))))
+    const size_t headerEnd = m_headerOffset + m_infoHeader.biSize;
+    if ((headerEnd < m_headerOffset) || (m_imgDataOffset && (m_imgDataOffset < headerEnd)))
         return m_parent->setFailed();
 
     // See if this is a header size we understand:
@@ -422,18 +424,20 @@ bool BMPImageReader::processBitmasks()
         // we read the info header.
 
         // Fail if we don't have enough file space for the bitmasks.
-        static const size_t SIZEOF_BITMASKS = 12;
-        if (((m_headerOffset + m_infoHeader.biSize + SIZEOF_BITMASKS) < (m_headerOffset + m_infoHeader.biSize)) || (m_imgDataOffset && (m_imgDataOffset < (m_headerOffset + m_infoHeader.biSize + SIZEOF_BITMASKS))))
+        const size_t headerEnd = m_headerOffset + m_infoHeader.biSize;
+        const size_t bitmasksSize = 12;
+        const size_t bitmasksEnd = headerEnd + bitmasksSize;
+        if ((bitmasksEnd < headerEnd) || (m_imgDataOffset && (m_imgDataOffset < bitmasksEnd)))
             return m_parent->setFailed();
 
         // Read bitmasks.
-        if ((m_data->size() - m_decodedOffset) < SIZEOF_BITMASKS)
+        if ((m_data->size() - m_decodedOffset) < bitmasksSize)
             return false;
         m_bitMasks[0] = readUint32(0);
         m_bitMasks[1] = readUint32(4);
         m_bitMasks[2] = readUint32(8);
 
-        m_decodedOffset += SIZEOF_BITMASKS;
+        m_decodedOffset += bitmasksSize;
     }
 
     // Alpha is a poorly-documented and inconsistently-used feature.
@@ -529,10 +533,11 @@ bool BMPImageReader::processBitmasks()
 
 bool BMPImageReader::processColorTable()
 {
-    size_t tableSizeInBytes = m_infoHeader.biClrUsed * (m_isOS21x ? 3 : 4);
-
     // Fail if we don't have enough file space for the color table.
-    if (((m_headerOffset + m_infoHeader.biSize + tableSizeInBytes) < (m_headerOffset + m_infoHeader.biSize)) || (m_imgDataOffset && (m_imgDataOffset < (m_headerOffset + m_infoHeader.biSize + tableSizeInBytes))))
+    const size_t headerEnd = m_headerOffset + m_infoHeader.biSize;
+    const size_t tableSizeInBytes = m_infoHeader.biClrUsed * (m_isOS21x ? 3 : 4);
+    const size_t tableEnd = headerEnd + tableSizeInBytes;
+    if ((tableEnd < headerEnd) || (m_imgDataOffset && (m_imgDataOffset < tableEnd)))
         return m_parent->setFailed();
 
     // Read color table.
