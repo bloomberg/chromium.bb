@@ -218,9 +218,10 @@ struct PasswordForm {
   // The URL of identity provider used for federated login.
   GURL federation_url;
 
-  // If true, Chrome will sign the user in automatically using the credentials.
-  // This field isn't synced deliberately.
-  bool is_zero_click;
+  // If true, Chrome will not return this credential to a site in response to
+  // 'navigator.credentials.request()' without user interaction.
+  // Once user selects this credential the flag is reseted.
+  bool skip_zero_click;
 
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;

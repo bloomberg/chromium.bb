@@ -730,7 +730,7 @@ void NativeBackendKWallet::SerializeValue(
     pickle->WriteString16(form->display_name);
     pickle->WriteString(form->avatar_url.spec());
     pickle->WriteString(form->federation_url.spec());
-    pickle->WriteBool(form->is_zero_click);
+    pickle->WriteBool(form->skip_zero_click);
   }
 }
 
@@ -826,7 +826,7 @@ bool NativeBackendKWallet::DeserializeValueSize(
       if (!iter.ReadString16(&form->display_name) ||
           !ReadGURL(&iter, warn_only, &form->avatar_url) ||
           !ReadGURL(&iter, warn_only, &form->federation_url) ||
-          !iter.ReadBool(&form->is_zero_click)) {
+          !iter.ReadBool(&form->skip_zero_click)) {
         LogDeserializationWarning(version, signon_realm, false);
         return false;
       }

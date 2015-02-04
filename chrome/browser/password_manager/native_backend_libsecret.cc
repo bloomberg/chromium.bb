@@ -118,7 +118,7 @@ const SecretSchema kLibsecretSchema = {
      {"display_name", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"avatar_url", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"federation_url", SECRET_SCHEMA_ATTRIBUTE_STRING},
-     {"is_zero_click", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
+     {"skip_zero_click", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      // This field is always "chrome-profile_id" so that we can search for it.
      {"application", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
@@ -180,7 +180,7 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
       UTF8ToUTF16(GetStringFromAttributes(attrs, "display_name"));
   form->avatar_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
   form->federation_url = GURL(GetStringFromAttributes(attrs, "federation_url"));
-  form->is_zero_click = GetUintFromAttributes(attrs, "is_zero_click");
+  form->skip_zero_click = GetUintFromAttributes(attrs, "skip_zero_click");
 
   return form.Pass();
 }
@@ -410,20 +410,26 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       form.origin.spec().c_str(),  // Display name.
       UTF16ToUTF8(form.password_value).c_str(),
       nullptr,  // no cancellable ojbect
-      &error, "origin_url", form.origin.spec().c_str(), "action_url",
-      form.action.spec().c_str(), "username_element",
-      UTF16ToUTF8(form.username_element).c_str(), "username_value",
-      UTF16ToUTF8(form.username_value).c_str(), "password_element",
-      UTF16ToUTF8(form.password_element).c_str(), "submit_element",
-      UTF16ToUTF8(form.submit_element).c_str(), "signon_realm",
-      form.signon_realm.c_str(), "ssl_valid", form.ssl_valid, "preferred",
-      form.preferred, "date_created", base::Int64ToString(date_created).c_str(),
-      "blacklisted_by_user", form.blacklisted_by_user, "type", form.type,
-      "times_used", form.times_used, "scheme", form.scheme, "date_synced",
-      base::Int64ToString(date_synced).c_str(), "display_name",
-      UTF16ToUTF8(form.display_name).c_str(), "avatar_url",
-      form.avatar_url.spec().c_str(), "federation_url",
-      form.federation_url.spec().c_str(), "is_zero_click", form.is_zero_click,
+      &error,
+      "origin_url", form.origin.spec().c_str(),
+      "action_url", form.action.spec().c_str(),
+      "username_element", UTF16ToUTF8(form.username_element).c_str(),
+      "username_value", UTF16ToUTF8(form.username_value).c_str(),
+      "password_element", UTF16ToUTF8(form.password_element).c_str(),
+      "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
+      "signon_realm", form.signon_realm.c_str(),
+      "ssl_valid", form.ssl_valid,
+      "preferred", form.preferred,
+      "date_created", base::Int64ToString(date_created).c_str(),
+      "blacklisted_by_user", form.blacklisted_by_user,
+      "type", form.type,
+      "times_used", form.times_used,
+      "scheme", form.scheme,
+      "date_synced", base::Int64ToString(date_synced).c_str(),
+      "display_name", UTF16ToUTF8(form.display_name).c_str(),
+      "avatar_url", form.avatar_url.spec().c_str(),
+      "federation_url", form.federation_url.spec().c_str(),
+      "skip_zero_click", form.skip_zero_click,
       "application", app_string_.c_str(), nullptr);
 
   if (error) {

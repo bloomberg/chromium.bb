@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -65,7 +66,7 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->display_name = ASCIIToUTF16("Mr. Smith");
   form->avatar_url = GURL("https://accounts.google.com/Avatar");
   form->federation_url = GURL("https://accounts.google.com/federation");
-  form->is_zero_click = true;
+  form->skip_zero_click = true;
 }
 
 }  // namespace
@@ -617,7 +618,7 @@ static bool AddTimestampedLogin(LoginDatabase* db,
   form.display_name = ASCIIToUTF16(unique_string);
   form.avatar_url = GURL("https://accounts.google.com/Avatar");
   form.federation_url = GURL("https://accounts.google.com/federation");
-  form.is_zero_click = true;
+  form.skip_zero_click = true;
 
   if (date_is_creation)
     form.date_created = time;
@@ -741,7 +742,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.avatar_url = GURL("https://accounts.google.com/Avatar");
   form.federation_url = GURL("https://accounts.google.com/federation");
-  form.is_zero_click = true;
+  form.skip_zero_click = true;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   // Get all non-blacklisted logins (should be none).
@@ -980,7 +981,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.avatar_url = GURL("https://accounts.google.com/Avatar");
   form.federation_url = GURL("https://accounts.google.com/federation");
-  form.is_zero_click = true;
+  form.skip_zero_click = true;
   EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 
   ScopedVector<autofill::PasswordForm> result;
@@ -1116,7 +1117,8 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
 }
 #endif  // defined(OS_POSIX)
 
-class LoginDatabaseMigrationTest : public testing::Test {
+// Test the migration from GetParam() version to kCurrentVersionNumber.
+class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -1127,12 +1129,12 @@ class LoginDatabaseMigrationTest : public testing::Test {
     database_path_ = temp_dir_.path().AppendASCII("test.db");
   }
 
-  // Creates database of specific |version|.
-  void CreateDatabase(std::string version) {
+  // Creates the databse from |sql_file|.
+  void CreateDatabase(base::StringPiece sql_file) {
     base::FilePath database_dump;
-    PathService::Get(base::DIR_SOURCE_ROOT, &database_dump);
-    database_dump = database_dump.Append(database_dump_location_)
-                        .AppendASCII("login_db_v" + version + ".sql");
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &database_dump));
+    database_dump =
+        database_dump.Append(database_dump_location_).AppendASCII(sql_file);
     ASSERT_TRUE(
         sql::test::CreateDatabaseFromSQL(database_path_, database_dump));
   }
@@ -1152,8 +1154,8 @@ class LoginDatabaseMigrationTest : public testing::Test {
       return results;
 
     sql::Statement s(db.GetCachedStatement(
-        SQL_FROM_HERE,
-        "SELECT date_created from logins order by username_value"));
+        SQL_FROM_HERE, "SELECT date_created FROM logins "
+                       "ORDER BY username_value, date_created DESC"));
     if (!s.is_valid()) {
       db.Close();
       return results;
@@ -1167,6 +1169,12 @@ class LoginDatabaseMigrationTest : public testing::Test {
     return results;
   }
 
+  // Returns the database version for the test.
+  int version() const { return GetParam(); }
+
+  // Actual test body.
+  void MigrationToVCurrent(base::StringPiece sql_file);
+
   base::FilePath database_path_;
 
  private:
@@ -1174,63 +1182,85 @@ class LoginDatabaseMigrationTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
-// Tests the migration of the login database from version 1 to version
-// kCurrentVersionNumber. This test will fail when kCurrentVersionNumber
-// will be changed to 10, because file login_db_v10.sql doesn't exist.
-// It has to be added in order to fix test.
-TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
-  std::vector<std::string> versions;
-  for (int version = 1; version < kCurrentVersionNumber; ++version)
-    versions.push_back(base::IntToString(version));
-  versions.push_back("9_without_use_additional_auth_field");
+void LoginDatabaseMigrationTest::MigrationToVCurrent(
+    base::StringPiece sql_file) {
+  SCOPED_TRACE(testing::Message("Version file = ") << sql_file);
+  CreateDatabase(sql_file);
+  // Original date, in seconds since UTC epoch.
+  std::vector<int64_t> date_created(GetDateCreated());
+  ASSERT_EQ(2U, date_created.size());
+  // Migration to version 8 performs changes dates to the new format.
+  // So for versions less of equal to 8 create date should be in old
+  // format before migration and in new format after.
+  if (version() <= 8) {
+    ASSERT_EQ(1402955745, date_created[0]);
+    ASSERT_EQ(1402950000, date_created[1]);
+  } else {
+    ASSERT_EQ(13047429345000000, date_created[0]);
+    ASSERT_EQ(13047423600000000, date_created[1]);
+  }
 
-  for (const auto& version : versions) {
-    CreateDatabase(version);
-    SCOPED_TRACE(testing::Message("Version = ") << version);
-    // Original date, in seconds since UTC epoch.
-    std::vector<int64_t> date_created(GetDateCreated());
-    int table_version;
-    base::StringToInt(version, &table_version);
-    // Migration to version 8 performs changes dates to the new format.
-    // So for versions less of equal to 8 create date should be in old
-    // format before migration and in new format after.
-    if (table_version <= 8) {
-      ASSERT_EQ(1402955745, date_created[0]);
-      ASSERT_EQ(1402950000, date_created[1]);
-    } else {
-      ASSERT_EQ(13047429345000000, date_created[0]);
-      ASSERT_EQ(13047423600000000, date_created[1]);
-    }
+  {
+    // Assert that the database was successfully opened and updated
+    // to current version.
+    LoginDatabase db(database_path_);
+    ASSERT_TRUE(db.Init());
+    // Verifies that the final version can save all the appropriate fields.
+    PasswordForm form;
+    GenerateExamplePasswordForm(&form);
+    // Add the same form twice to test the constraints in the database.
+    EXPECT_EQ(AddChangeForForm(form), db.AddLogin(form));
+    PasswordStoreChangeList list;
+    list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+    EXPECT_EQ(list, db.AddLogin(form));
 
-    {
-      // Assert that the database was successfully opened and updated
-      // to current version.
-      LoginDatabase db(database_path_);
-      ASSERT_TRUE(db.Init());
-      // Verifies that the final version can save all the appropriate fields.
-      ScopedVector<autofill::PasswordForm> result;
-      PasswordForm form;
-      GenerateExamplePasswordForm(&form);
-      db.AddLogin(form);
-      EXPECT_TRUE(db.GetLogins(form, &result));
-      ASSERT_EQ(1U, result.size());
-      FormsAreEqual(form, *result[0]);
-      EXPECT_TRUE(db.RemoveLogin(form));
-      result.clear();
+    ScopedVector<autofill::PasswordForm> result;
+    EXPECT_TRUE(db.GetLogins(form, &result));
+    ASSERT_EQ(1U, result.size());
+    FormsAreEqual(form, *result[0]);
+    EXPECT_TRUE(db.RemoveLogin(form));
+  }
+  // New date, in microseconds since platform independent epoch.
+  std::vector<int64_t> new_date_created(GetDateCreated());
+  if (version() <= 8) {
+    ASSERT_EQ(2U, new_date_created.size());
+    // Check that the two dates match up.
+    for (size_t i = 0; i < date_created.size(); ++i) {
+      EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
+                base::Time::FromTimeT(date_created[i]));
     }
-    // New date, in microseconds since platform independent epoch.
-    std::vector<int64_t> new_date_created(GetDateCreated());
+  } else if (version() == 10) {
+    // The test data is setup on this version to cause a unique key collision.
+    EXPECT_EQ(1U, new_date_created.size());
+  } else {
+    ASSERT_EQ(2U, new_date_created.size());
     ASSERT_EQ(13047429345000000, new_date_created[0]);
     ASSERT_EQ(13047423600000000, new_date_created[1]);
-    if (table_version <= 8) {
-      // Check that the two dates match up.
-      for (size_t i = 0; i < date_created.size(); ++i) {
-        EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
-                  base::Time::FromTimeT(date_created[i]));
-      }
-    }
-    DestroyDatabase();
   }
+  DestroyDatabase();
 }
+
+// Tests the migration of the login database from version() to
+// kCurrentVersionNumber.
+TEST_P(LoginDatabaseMigrationTest, MigrationToVCurrent) {
+  MigrationToVCurrent(base::StringPrintf("login_db_v%d.sql", version()));
+}
+
+class LoginDatabaseMigrationTestV9 : public LoginDatabaseMigrationTest {
+};
+
+// Tests migration from the alternative version #9, see crbug.com/423716.
+TEST_P(LoginDatabaseMigrationTestV9, V9WithoutUseAdditionalAuthField) {
+  ASSERT_EQ(9, version());
+  MigrationToVCurrent("login_db_v9_without_use_additional_auth_field.sql");
+}
+
+INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
+                        LoginDatabaseMigrationTest,
+                        testing::Range(1, kCurrentVersionNumber));
+INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
+                        LoginDatabaseMigrationTestV9,
+                        testing::Values(9));
 
 }  // namespace password_manager

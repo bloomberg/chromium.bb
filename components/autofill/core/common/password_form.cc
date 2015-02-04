@@ -20,7 +20,7 @@ PasswordForm::PasswordForm()
       blacklisted_by_user(false),
       type(TYPE_MANUAL),
       times_used(0),
-      is_zero_click(false) {
+      skip_zero_click(false) {
 }
 
 PasswordForm::~PasswordForm() {
@@ -55,7 +55,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       display_name == form.display_name &&
       avatar_url == form.avatar_url &&
       federation_url == form.federation_url &&
-      is_zero_click == form.is_zero_click;
+      skip_zero_click == form.skip_zero_click;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {
@@ -91,7 +91,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " display_name: " << base::UTF16ToUTF8(form.display_name)
             << " avatar_url: " << form.avatar_url
             << " federation_url: " << form.federation_url
-            << " is_zero_click: " << form.is_zero_click;
+            << " skip_next_zero_click: " << form.skip_zero_click;
 }
 
 }  // namespace autofill

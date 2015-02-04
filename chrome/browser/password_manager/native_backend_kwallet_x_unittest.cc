@@ -167,7 +167,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
     form_google_.avatar_url = GURL("http://www.google.com/avatar");
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
-    form_google_.is_zero_click = true;
+    form_google_.skip_zero_click = true;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -216,7 +216,7 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.display_name, actual.display_name);
   EXPECT_EQ(expected.avatar_url, actual.avatar_url);
   EXPECT_EQ(expected.federation_url, actual.federation_url);
-  EXPECT_EQ(expected.is_zero_click, actual.is_zero_click);
+  EXPECT_EQ(expected.skip_zero_click, actual.skip_zero_click);
 }
 
 // static
@@ -996,7 +996,7 @@ void NativeBackendKWalletPickleTest::CheckVersion3Pickle() {
   form.display_name.clear();
   form.avatar_url = GURL();
   form.federation_url = GURL();
-  form.is_zero_click = false;
+  form.skip_zero_click = false;
   CreateVersion3Pickle(form, &pickle);
 
   ScopedVector<PasswordForm> form_list;

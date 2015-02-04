@@ -255,7 +255,7 @@ static PasswordForm* CreatePasswordFormFromData(
   if (form_data.username_value) {
     form->username_value = WideToUTF16(form_data.username_value);
     form->display_name = form->username_value;
-    form->is_zero_click = true;
+    form->skip_zero_click = true;
     if (form_data.password_value)
       form->password_value = WideToUTF16(form_data.password_value);
   } else {
@@ -307,7 +307,7 @@ static void CheckFormsAgainstExpectations(
                 form->username_value) << test_label;
       EXPECT_EQ(WideToUTF16(expectation->username_value),
                 form->display_name) << test_label;
-      EXPECT_TRUE(form->is_zero_click) << test_label;
+      EXPECT_TRUE(form->skip_zero_click) << test_label;
       EXPECT_EQ(WideToUTF16(expectation->password_value),
                 form->password_value) << test_label;
     } else {
