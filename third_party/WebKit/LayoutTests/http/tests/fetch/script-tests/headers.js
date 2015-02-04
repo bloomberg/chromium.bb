@@ -226,6 +226,30 @@ test(function() {
                       ') should throw');
       });
 
+    // Test guard is none for set/append/delete
+    headers = new Headers({'a': 'b'});
+    FORBIDDEN_HEADERS.concat(FORBIDDEN_RESPONSE_HEADERS)
+      .map(function(name) {return [name, 'test'];})
+      .concat(SIMPLE_HEADERS)
+      .concat(NON_SIMPLE_HEADERS)
+      .forEach(function(header) {
+          headers.append(header[0], header[1]);
+          assert_equals(size(headers), 2,
+                        'headers.append should accept ' +
+                        'header name: ' + header[0]);
+          assert_equals(headers.get(header[0]),
+                        header[1],
+                        header[0] + ' of headers should match');
+          headers.set(header[0], 'test2');
+          assert_equals(headers.get(header[0]),
+                        'test2',
+                        header[0] + ' of headers should match');
+          headers.delete(header[0]);
+          assert_equals(size(headers), 1,
+                        'headers.delete should accept ' +
+                        'header name: ' + header[0]);
+        });
+
     var invalidValues = ['test \r data', 'test \n data'];
     invalidValues.forEach(function(value) {
         assert_throws({name: 'TypeError'},

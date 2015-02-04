@@ -83,16 +83,16 @@ test(function() {
         assert_equals(size(response.headers), 4,
                       'Response.headers size should match');
         assert_equals(response.headers.get('Content-Language'), 'ja',
-                      'Content-Language of Response.headers should match');
+                      'Content-Language of Response.headers should match (1)');
         assert_equals(response.headers.get('Content-Type'),
                       'text/html; charset=UTF-8',
-                      'Content-Type of Response.headers should match');
+                      'Content-Type of Response.headers should match (2)');
         assert_equals(response.headers.get('X-Fetch-Test'),
                       'response test field',
-                      'X-Fetch-Test of Response.headers should match');
+                      'X-Fetch-Test of Response.headers should match (3)');
         assert_equals(response.headers.get('Accept-Encoding'),
                       'forbidden header name test',
-                      'Accept-Encoding of Response.headers should match');
+                      'Accept-Encoding of Response.headers should match (4)');
         response.headers.set('X-Fetch-Test2', 'response test field2');
         assert_equals(size(response.headers), 5,
                       'Response.headers size should increase by 1.');
@@ -126,28 +126,39 @@ test(function() {
         response.headers.delete('Accept-Encoding');
         assert_equals(size(response.headers), 4,
                       'Response.headers size should decrease by 1.');
-        response.headers.delete('X-Fetch-Test');
+        response.headers.delete('X-FEtch-Test');
         assert_equals(size(response.headers), 3,
                       'Response.headers size should decrease by 1.');
+        response.headers.delete('ConTent-Type');
+        response.headers.delete('CoNtent-LaNguage');
+        response.headers.delete('X-Fetch-TeSt2');
+        assert_equals(size(response.headers), 0,
+                      'Response.headers size should decrease by 3.');
 
-        // Test set/append/delete for forbidden header names
-        FORBIDDEN_HEADERS.forEach(function(header) {
-          response.headers.append(header, 'test');
-          assert_equals(size(response.headers), 4,
-                        'Response.headers.append should accept ' +
-                        'header name: ' + header);
-          assert_equals(response.headers.get(header),
-                        'test',
-                        header + ' of Response.headers should match');
-          response.headers.set(header, 'test2');
-          assert_equals(response.headers.get(header),
-                        'test2',
-                        header + ' of Response.headers should match');
-          response.headers.delete(header);
-          assert_equals(size(response.headers), 3,
-                        'Response.headers.delete should accept ' +
-                        'header name: ' + header);
-        });
+        // Test set/append/delete
+        // for headers that are not forbidden response header names.
+        FORBIDDEN_HEADERS.map(function(name) {return [name, 'test'];})
+          .concat(SIMPLE_HEADERS)
+          .concat(NON_SIMPLE_HEADERS)
+          .forEach(function(header) {
+              response.headers.append(header[0], header[1]);
+              assert_equals(size(response.headers), 1,
+                            'Response.headers.append should accept ' +
+                            'header name: ' + header[0]);
+              assert_equals(response.headers.get(header[0]),
+                            header[1],
+                            header[0] +
+                            ' of Response.headers should match (5)');
+              response.headers.set(header[0], 'test2');
+              assert_equals(response.headers.get(header[0]),
+                            'test2',
+                            header[0] +
+                            ' of Response.headers should match (6)');
+              response.headers.delete(header[0]);
+              assert_equals(size(response.headers), 0,
+                            'Response.headers.delete should accept ' +
+                            'header name: ' + header[0]);
+            });
       });
     // Note: detailed behavioral tests for Headers are in another test,
     // http/tests/fetch/*/headers.html.

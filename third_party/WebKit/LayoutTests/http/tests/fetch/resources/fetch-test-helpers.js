@@ -36,6 +36,7 @@ var FORBIDDEN_HEADERS =
    'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Host', 'Keep-Alive',
    'Origin', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade',
    'User-Agent', 'Via', 'Proxy-', 'Sec-', 'Proxy-FooBar', 'Sec-FooBar'];
+var FORBIDDEN_RESPONSE_HEADERS = ['Set-Cookie', 'Set-Cookie2'];
 var SIMPLE_HEADERS =
   [['Accept', '*'], ['Accept-Language', 'ru'], ['Content-Language', 'ru'],
    ['Content-Type', 'application/x-www-form-urlencoded'],
