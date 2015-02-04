@@ -56,7 +56,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   static bool Register(JNIEnv* env);
 
  private:
-  ~TemplateUrlServiceAndroid();
+  ~TemplateUrlServiceAndroid() override;
 
   bool IsPrepopulatedTemplate(TemplateURL* url);
 

@@ -22,13 +22,13 @@ class BookmarkModelSQLHandler : public SQLHandler {
  public:
   explicit BookmarkModelSQLHandler(URLDatabase* url_database);
 
-  virtual ~BookmarkModelSQLHandler();
+  ~BookmarkModelSQLHandler() override;
 
   // SQLHandler overrides:
-  virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) override;
-  virtual bool Delete(const TableIDRows& ids_set) override;
-  virtual bool Insert(HistoryAndBookmarkRow* row) override;
+  bool Update(const HistoryAndBookmarkRow& row,
+              const TableIDRows& ids_set) override;
+  bool Delete(const TableIDRows& ids_set) override;
+  bool Insert(HistoryAndBookmarkRow* row) override;
 
  private:
   // This class helps to modify the bookmark model in UI thread.

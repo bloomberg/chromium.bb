@@ -39,9 +39,7 @@ class TestDataReductionProxySettingsAndroid
         settings_(settings) {}
 
   // Returns the provided setting object. Used by wrapping methods.
-  virtual DataReductionProxySettings* Settings() override {
-    return settings_;
-  }
+  DataReductionProxySettings* Settings() override { return settings_; }
 
   // The wrapped settings object.
   DataReductionProxySettings* settings_;
@@ -126,7 +124,7 @@ class DataReductionProxySettingsAndroidTest
           DataReductionProxyChromeSettings> {
  public:
   // DataReductionProxySettingsTest implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     env_ = base::android::AttachCurrentThread();
     DataReductionProxySettingsAndroid::Register(env_);
     DataReductionProxySettingsTestBase::SetUp();

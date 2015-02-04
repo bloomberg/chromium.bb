@@ -39,8 +39,8 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
   GeneratedPasswordSavedInfoBarDelegateAndroid();
 
   // InfoBarDelegate implementation:
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
 
   // The translated text of the message to display.
   base::string16 message_text_;

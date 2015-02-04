@@ -18,21 +18,21 @@ class SyncedTabDelegate;
 class SyncedWindowDelegateAndroid : public browser_sync::SyncedWindowDelegate {
  public:
   explicit SyncedWindowDelegateAndroid(TabModel* tab_model);
-  virtual ~SyncedWindowDelegateAndroid();
+  ~SyncedWindowDelegateAndroid() override;
 
   // browser_sync::SyncedWindowDelegate implementation.
 
-  virtual bool HasWindow() const override;
-  virtual SessionID::id_type GetSessionId() const override;
-  virtual int GetTabCount() const override;
-  virtual int GetActiveIndex() const override;
-  virtual bool IsApp() const override;
-  virtual bool IsTypeTabbed() const override;
-  virtual bool IsTypePopup() const override;
-  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const override;
-  virtual SyncedTabDelegate* GetTabAt(int index) const override;
-  virtual SessionID::id_type GetTabIdAt(int index) const override;
-  virtual bool IsSessionRestoreInProgress() const override;
+  bool HasWindow() const override;
+  SessionID::id_type GetSessionId() const override;
+  int GetTabCount() const override;
+  int GetActiveIndex() const override;
+  bool IsApp() const override;
+  bool IsTypeTabbed() const override;
+  bool IsTypePopup() const override;
+  bool IsTabPinned(const SyncedTabDelegate* tab) const override;
+  SyncedTabDelegate* GetTabAt(int index) const override;
+  SessionID::id_type GetTabIdAt(int index) const override;
+  bool IsSessionRestoreInProgress() const override;
 
  private:
   TabModel* tab_model_;

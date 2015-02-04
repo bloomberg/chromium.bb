@@ -88,13 +88,13 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   void ClearUnmaskedCache(JNIEnv* env, jobject unused_obj);
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() override;
+  void OnPersonalDataChanged() override;
 
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
  private:
-  virtual ~PersonalDataManagerAndroid();
+  ~PersonalDataManagerAndroid() override;
 
   // Pointer to the java counterpart.
   JavaObjectWeakGlobalRef weak_java_obj_;

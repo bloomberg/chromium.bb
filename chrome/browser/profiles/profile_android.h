@@ -45,7 +45,7 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   jboolean IsOffTheRecord(JNIEnv* env, jobject obj);
 
   explicit ProfileAndroid(Profile* profile);
-  virtual ~ProfileAndroid();
+  ~ProfileAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 

@@ -34,10 +34,10 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
         bookmark_model_(NULL),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
-  virtual ~BookmarkModelSQLHandlerTest() {}
+  ~BookmarkModelSQLHandlerTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Setup the testing profile, so the bookmark_model_sql_handler could
     // get the bookmark model from it.
     ASSERT_TRUE(profile_manager_.SetUp());

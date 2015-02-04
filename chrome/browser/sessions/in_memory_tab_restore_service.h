@@ -22,30 +22,29 @@ class InMemoryTabRestoreService : public TabRestoreService {
   InMemoryTabRestoreService(Profile* profile,
                             TimeFactory* time_factory);
 
-  virtual ~InMemoryTabRestoreService();
+  ~InMemoryTabRestoreService() override;
 
   // TabRestoreService:
-  virtual void AddObserver(TabRestoreServiceObserver* observer) override;
-  virtual void RemoveObserver(TabRestoreServiceObserver* observer) override;
-  virtual void CreateHistoricalTab(content::WebContents* contents,
-                                   int index) override;
-  virtual void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
-  virtual void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
-  virtual void ClearEntries() override;
-  virtual const Entries& entries() const override;
-  virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
+  void AddObserver(TabRestoreServiceObserver* observer) override;
+  void RemoveObserver(TabRestoreServiceObserver* observer) override;
+  void CreateHistoricalTab(content::WebContents* contents, int index) override;
+  void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
+  void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
+  void ClearEntries() override;
+  const Entries& entries() const override;
+  std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       chrome::HostDesktopType host_desktop_type) override;
-  virtual Tab* RemoveTabEntryById(SessionID::id_type id) override;
-  virtual std::vector<content::WebContents*>
-    RestoreEntryById(TabRestoreServiceDelegate* delegate,
-                     SessionID::id_type id,
-                     chrome::HostDesktopType host_desktop_type,
-                     WindowOpenDisposition disposition) override;
-  virtual void LoadTabsFromLastSession() override;
-  virtual bool IsLoaded() const override;
-  virtual void DeleteLastSession() override;
-  virtual void Shutdown() override;
+  Tab* RemoveTabEntryById(SessionID::id_type id) override;
+  std::vector<content::WebContents*> RestoreEntryById(
+      TabRestoreServiceDelegate* delegate,
+      SessionID::id_type id,
+      chrome::HostDesktopType host_desktop_type,
+      WindowOpenDisposition disposition) override;
+  void LoadTabsFromLastSession() override;
+  bool IsLoaded() const override;
+  void DeleteLastSession() override;
+  void Shutdown() override;
 
  private:
   TabRestoreServiceHelper helper_;

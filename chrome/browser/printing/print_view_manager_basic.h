@@ -19,7 +19,7 @@ class PrintViewManagerBasic
     : public PrintViewManagerBase,
       public content::WebContentsUserData<PrintViewManagerBasic> {
  public:
-  virtual ~PrintViewManagerBasic();
+  ~PrintViewManagerBasic() override;
 
 #if defined(OS_ANDROID)
   // Sets the file descriptor into which the PDF will be written.
@@ -32,10 +32,10 @@ class PrintViewManagerBasic
 
   // content::WebContentsObserver implementation.
   // Terminates or cancels the print job if one was pending.
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 #endif
 
  private:
@@ -43,7 +43,7 @@ class PrintViewManagerBasic
   friend class content::WebContentsUserData<PrintViewManagerBasic>;
 
 #if defined(OS_ANDROID)
-  virtual void OnPrintingFailed(int cookie) override;
+  void OnPrintingFailed(int cookie) override;
 
   // The file descriptor into which the PDF of the page will be written.
   base::FileDescriptor file_descriptor_;

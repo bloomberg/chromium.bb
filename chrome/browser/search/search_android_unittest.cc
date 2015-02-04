@@ -25,7 +25,7 @@ TEST(SearchTest, QueryExtractionEnabled) {
 
 class SearchUtilTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));
     base::StatisticsRecorder::Initialize();

@@ -187,7 +187,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   jint GetAuthError(JNIEnv* env, jobject obj);
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.
@@ -217,7 +217,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
                    int64,
                    syncer::ObjectIdLessThan> ObjectIdVersionMap;
 
-  virtual ~ProfileSyncServiceAndroid();
+  ~ProfileSyncServiceAndroid() override;
   // Remove observers to profile sync service.
   void RemoveObserver();
 

@@ -17,7 +17,7 @@ class Profile;
 class GoogleSearchCounterAndroid : content::NotificationObserver {
  public:
   explicit GoogleSearchCounterAndroid(Profile* profile);
-  virtual ~GoogleSearchCounterAndroid();
+  ~GoogleSearchCounterAndroid() override;
 
  private:
   friend class GoogleSearchCounterAndroidTest;
@@ -26,9 +26,9 @@ class GoogleSearchCounterAndroid : content::NotificationObserver {
                              const content::NotificationDetails& details);
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;

@@ -21,10 +21,10 @@ namespace history {
 class AndroidCacheDatabaseTest : public testing::Test {
  public:
   AndroidCacheDatabaseTest() {}
-  virtual ~AndroidCacheDatabaseTest() {}
+  ~AndroidCacheDatabaseTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath history_db_name_ =

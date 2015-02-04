@@ -44,15 +44,12 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   }
 
   // ProfileOAuth2TokenService overrides:
-  virtual void Initialize(
-      SigninClient* client,
-      SigninErrorController* signin_error_controller) override;
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) const override;
-  virtual void UpdateAuthError(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
-  virtual std::vector<std::string> GetAccounts() override;
+  void Initialize(SigninClient* client,
+                  SigninErrorController* signin_error_controller) override;
+  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  void UpdateAuthError(const std::string& account_id,
+                       const GoogleServiceAuthError& error) override;
+  std::vector<std::string> GetAccounts() override;
 
   // Lists account at the OS level.
   std::vector<std::string> GetSystemAccounts();
@@ -86,32 +83,31 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
   // Overridden from OAuth2TokenService to complete signout of all
   // OA2TService aware accounts.
-  virtual void RevokeAllCredentials() override;
+  void RevokeAllCredentials() override;
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
   AndroidProfileOAuth2TokenService();
-  virtual ~AndroidProfileOAuth2TokenService();
+  ~AndroidProfileOAuth2TokenService() override;
 
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // Overridden from OAuth2TokenService to intercept token fetch requests and
   // redirect them to the Account Manager.
-  virtual void InvalidateOAuth2Token(const std::string& account_id,
-                                     const std::string& client_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& access_token) override;
+  void InvalidateOAuth2Token(const std::string& account_id,
+                             const std::string& client_id,
+                             const ScopeSet& scopes,
+                             const std::string& access_token) override;
 
   // Called to notify observers when a refresh token is available.
-  virtual void FireRefreshTokenAvailable(
-      const std::string& account_id) override;
+  void FireRefreshTokenAvailable(const std::string& account_id) override;
   // Called to notify observers when a refresh token has been revoked.
-  virtual void FireRefreshTokenRevoked(const std::string& account_id) override;
+  void FireRefreshTokenRevoked(const std::string& account_id) override;
   // Called to notify observers when refresh tokans have been loaded.
-  virtual void FireRefreshTokensLoaded() override;
+  void FireRefreshTokensLoaded() override;
 
  private:
   // Return whether |signed_in_account| is valid and we have access

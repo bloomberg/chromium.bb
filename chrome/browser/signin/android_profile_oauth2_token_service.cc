@@ -39,13 +39,13 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   AndroidAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
                             const std::string& account_id);
-  virtual ~AndroidAccessTokenFetcher();
+  ~AndroidAccessTokenFetcher() override;
 
   // Overrides from OAuth2AccessTokenFetcher:
-  virtual void Start(const std::string& client_id,
-                     const std::string& client_secret,
-                     const std::vector<std::string>& scopes) override;
-  virtual void CancelRequest() override;
+  void Start(const std::string& client_id,
+             const std::string& client_secret,
+             const std::vector<std::string>& scopes) override;
+  void CancelRequest() override;
 
   // Handles an access token response.
   void OnAccessTokenResponse(const GoogleServiceAuthError& error,

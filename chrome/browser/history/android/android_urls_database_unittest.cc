@@ -20,10 +20,10 @@ namespace history {
 class AndroidURLsMigrationTest : public HistoryUnitTestBase {
  public:
   AndroidURLsMigrationTest() {}
-  virtual ~AndroidURLsMigrationTest() {}
+  ~AndroidURLsMigrationTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile);
 
     base::FilePath data_path;

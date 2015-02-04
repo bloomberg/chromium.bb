@@ -26,10 +26,10 @@ class UrlsSQLHandlerTest : public testing::Test {
   UrlsSQLHandlerTest()
       : urls_sql_handler_(&history_db_),
         visit_sql_handler_(&history_db_, &history_db_) {}
-  virtual ~UrlsSQLHandlerTest() {}
+  ~UrlsSQLHandlerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath history_db_name =
@@ -37,8 +37,7 @@ class UrlsSQLHandlerTest : public testing::Test {
     ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name));
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   TestHistoryDatabase history_db_;
   base::ScopedTempDir temp_dir_;
