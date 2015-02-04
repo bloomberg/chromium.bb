@@ -168,12 +168,21 @@ void CastBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 int CastBrowserMainParts::PreCreateThreads() {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  // GPU process is started immediately after threads are created, requiring
+  // CrashDumpManager to be initialized beforehand.
+  base::FilePath crash_dumps_dir;
+  if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
+    LOG(ERROR) << "Could not find crash dump location.";
+  }
+  cast_browser_process_->SetCrashDumpManager(
+      make_scoped_ptr(new breakpad::CrashDumpManager(crash_dumps_dir)));
+#else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
   if (!base::CreateDirectory(home_dir))
     return 1;
-#endif  // !defined(OS_ANDROID)
+#endif
   return 0;
 }
 
@@ -198,15 +207,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           content::BrowserThread::GetBlockingPool(),
           cast_browser_process_->pref_service(),
           cast_browser_process_->browser_context()->GetRequestContext()));
-
-#if defined(OS_ANDROID)
-  base::FilePath crash_dumps_dir;
-  if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
-    LOG(ERROR) << "Could not find crash dump location.";
-  }
-  cast_browser_process_->SetCrashDumpManager(
-      make_scoped_ptr(new breakpad::CrashDumpManager(crash_dumps_dir)));
-#endif
 
   if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
