@@ -13,9 +13,12 @@ namespace blink {
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
+
+    typedef void NonInterpolableType;
+
     static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
     {
-        return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id, range));
+        return adoptRefWillBeNoop(new LengthStyleInterpolation(toInterpolableValue(start), toInterpolableValue(end), id, range));
     }
 
     static bool canCreateFrom(const CSSValue&);
@@ -24,22 +27,16 @@ public:
 
     virtual void trace(Visitor*) override;
 
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);
+
 private:
     LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  InterpolationRange range)
         : StyleInterpolation(start, end, id)
         , m_range(range)
         { }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToLength(const InterpolableValue*, InterpolationRange);
-
     InterpolationRange m_range;
-
-    friend class AnimationLengthStyleInterpolationTest;
-    friend class LengthBoxStyleInterpolation;
-    friend class ShadowStyleInterpolation;
-    friend class LengthPairStyleInterpolation;
-    friend class LengthPoint3DStyleInterpolation;
 };
 
 }

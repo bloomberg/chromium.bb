@@ -19,9 +19,19 @@ class AnimationShadowStyleInterpolationTest : public ::testing::Test {
 
 protected:
 
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> shadowToInterpolableValue(const CSSValue& value, bool styleFlag)
+    {
+        return ShadowStyleInterpolation::shadowToInterpolableValue(value, styleFlag);
+    }
+
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToShadow(InterpolableValue* value, bool styleFlag)
+    {
+        return ShadowStyleInterpolation::interpolableValueToShadow(*value, styleFlag);
+    }
+
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value, bool styleFlag)
     {
-        return ShadowStyleInterpolation::interpolableValueToShadow(ShadowStyleInterpolation::shadowToInterpolableValue(*value).get(), styleFlag);
+        return interpolableValueToShadow(shadowToInterpolableValue(*value, styleFlag).get(), styleFlag);
     }
 
     static void testPrimitiveValues(RefPtrWillBeRawPtr<CSSValue> value, double xExpected, double yExpected, double blurExpected, double spreadExpected,

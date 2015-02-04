@@ -24,7 +24,7 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
     return value.isCalcValue();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(const CSSValue& value)
+PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value)
 {
     ASSERT(canCreateFrom(value));
     OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
@@ -81,9 +81,9 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
 
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, InterpolationRange range)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpolableValue(const InterpolableValue& value, InterpolationRange range)
 {
-    const InterpolableList* listOfValuesAndTypes = toInterpolableList(value);
+    const InterpolableList* listOfValuesAndTypes = toInterpolableList(&value);
     const InterpolableList* listOfValues = toInterpolableList(listOfValuesAndTypes->get(0));
     const InterpolableList* listOfTypes = toInterpolableList(listOfValuesAndTypes->get(1));
     unsigned unitTypeCount = 0;
@@ -117,7 +117,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolable
 
 void LengthStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToLength(m_cachedValue.get(), m_range).get());
+    StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue.get(), m_range).get());
 }
 
 void LengthStyleInterpolation::trace(Visitor* visitor)

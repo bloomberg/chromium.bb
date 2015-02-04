@@ -234,7 +234,7 @@
   function roundNumbers(value) {
     return value.
         // Round numbers to two decimal places.
-        replace(/-?\d*\.\d+/g, function(n) {
+        replace(/-?\d*\.\d+(e-?\d+)?/g, function(n) {
           return (parseFloat(n).toFixed(2)).
               replace(/\.\d+/, function(m) {
                 return m.replace(/0+$/, '');

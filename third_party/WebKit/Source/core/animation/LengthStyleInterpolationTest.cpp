@@ -16,12 +16,12 @@ class AnimationLengthStyleInterpolationTest : public ::testing::Test {
 protected:
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue& value)
     {
-        return LengthStyleInterpolation::lengthToInterpolableValue(value);
+        return LengthStyleInterpolation::toInterpolableValue(value);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue* value, InterpolationRange range)
     {
-        return LengthStyleInterpolation::interpolableValueToLength(value, range);
+        return LengthStyleInterpolation::fromInterpolableValue(*value, range);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)

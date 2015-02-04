@@ -14,9 +14,10 @@
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
-#include "core/animation/LengthPoint3DStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
+#include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/SVGLengthStyleInterpolation.h"
+#include "core/animation/ShadowStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -214,23 +215,38 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyObjectPosition:
         if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
-
-        // FIXME: Handle CSSValueLists.
-        fallBackToLegacy = true;
         break;
+
     case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransformOrigin:
-        if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthPoint3DStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
-
-        // FIXME: Handle percentages and 2D origins.
-        fallBackToLegacy = true;
+    case CSSPropertyTransformOrigin: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<LengthStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
+        if (interpolation)
+            return interpolation.release();
         break;
+    }
+
+    case CSSPropertyBoxShadow:
+    case CSSPropertyTextShadow:
+    case CSSPropertyWebkitBoxShadow: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<ShadowStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
+
+        // FIXME: AnimatableShadow incorrectly animates between inset and non-inset values so it will never indicate it needs default interpolation
+        if (ShadowStyleInterpolation::usesDefaultStyleInterpolation(*fromCSSValue, *toCSSValue))
+            return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+
+        // FIXME: Handle interpolation from/to none, unspecified color values
+        fallBackToLegacy = true;
+
+        break;
+    }
+
     case CSSPropertyWebkitMaskBoxImageSlice:
         if (LengthBoxStyleInterpolation::matchingFill(*toCSSValue, *fromCSSValue) && LengthBoxStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthBoxStyleInterpolation::createFromBorderImageSlice(*fromCSSValue, *toCSSValue, property);
-
         break;
+
     case CSSPropertyStrokeWidth:
         range = RangeNonNegative;
         // Fall through
@@ -245,6 +261,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // from and to values with distinct units.
         return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
     }
+
     default:
         // Fall back to LegacyStyleInterpolation.
         fallBackToLegacy = true;

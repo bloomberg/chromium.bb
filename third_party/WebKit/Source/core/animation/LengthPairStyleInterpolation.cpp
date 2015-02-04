@@ -22,16 +22,16 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPa
     Pair* pair = toCSSPrimitiveValue(value).getPairValue();
     ASSERT(pair);
 
-    result->set(0, LengthStyleInterpolation::lengthToInterpolableValue(*pair->first()));
-    result->set(1, LengthStyleInterpolation::lengthToInterpolableValue(*pair->second()));
+    result->set(0, LengthStyleInterpolation::toInterpolableValue(*pair->first()));
+    result->set(1, LengthStyleInterpolation::toInterpolableValue(*pair->second()));
     return result.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> LengthPairStyleInterpolation::interpolableValueToLengthPair(InterpolableValue* value, InterpolationRange range)
 {
     InterpolableList* lengthPair = toInterpolableList(value);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> first = (LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(0), range));
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> second = (LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(1), range));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> first = LengthStyleInterpolation::fromInterpolableValue(*lengthPair->get(0), range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> second = LengthStyleInterpolation::fromInterpolableValue(*lengthPair->get(1), range);
     RefPtrWillBeRawPtr<Pair> result = Pair::create(first, second, Pair::KeepIdenticalValues);
 
     return CSSPrimitiveValue::create(result.release());

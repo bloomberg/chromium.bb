@@ -23,7 +23,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
     CSSPrimitiveValue* side[numberOfSides] = { rect->left(), rect->right(), rect->top(), rect->bottom() };
 
     for (size_t i = 0; i < numberOfSides; i++) {
-        result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*side[i]));
+        result->set(i, LengthStyleInterpolation::toInterpolableValue(*side[i]));
     }
     return result.release();
 }
@@ -33,10 +33,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueT
     InterpolableList* lengthBox = toInterpolableList(value);
     RefPtrWillBeRawPtr<Rect> result = Rect::create();
 
-    result->setLeft(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(0), RangeNonNegative));
-    result->setRight(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(1), RangeNonNegative));
-    result->setTop(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(2), RangeNonNegative));
-    result->setBottom(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(3), RangeNonNegative));
+    result->setLeft(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(0), RangeNonNegative));
+    result->setRight(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(1), RangeNonNegative));
+    result->setTop(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(2), RangeNonNegative));
+    result->setBottom(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(3), RangeNonNegative));
 
     return CSSPrimitiveValue::create(result.release());
 }
@@ -72,7 +72,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::borderIma
     CSSPrimitiveValue* side[numberOfSides] = { quad->left(), quad->right(), quad->top(), quad->bottom() };
 
     for (size_t i = 0; i < numberOfSides; i++) {
-        result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*side[i]));
+        result->set(i, LengthStyleInterpolation::toInterpolableValue(*side[i]));
     }
     return result.release();
 }
@@ -87,10 +87,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueT
     InterpolableList* lengthBox = toInterpolableList(value);
     RefPtrWillBeRawPtr<Quad> quad = Quad::create();
 
-    quad->setLeft(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(0), RangeNonNegative)));
-    quad->setRight(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(1), RangeNonNegative)));
-    quad->setTop(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(2), RangeNonNegative)));
-    quad->setBottom(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(3), RangeNonNegative)));
+    quad->setLeft(toPrimitiveValue(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(0), RangeNonNegative)));
+    quad->setRight(toPrimitiveValue(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(1), RangeNonNegative)));
+    quad->setTop(toPrimitiveValue(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(2), RangeNonNegative)));
+    quad->setBottom(toPrimitiveValue(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(3), RangeNonNegative)));
 
     return CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad.release()), fill);
 }

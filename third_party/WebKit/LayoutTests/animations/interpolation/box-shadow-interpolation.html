@@ -31,6 +31,19 @@ assertInterpolation({
   {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0)'},
 ]);
 
+assertInterpolation({
+  property: 'box-shadow',
+  from: '15px 10px 5px 6px black inset',
+  to: '-15px -10px 25px -4px orange inset'
+}, [
+  {at: -0.3, is: '24px 16px 0px 9px black inset'},
+  {at: 0, is: '15px 10px 5px 6px black inset'},
+  {at: 0.3, is: '6px 4px 11px 3px rgb(77, 50, 0) inset'},
+  {at: 0.6, is: '-3px -2px 17px 0px rgb(153, 99, 0) inset'},
+  {at: 1, is: '-15px -10px 25px -4px orange inset'},
+  {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0) inset'},
+]);
+
 // Test padding shorter lists
 assertInterpolation({
   property: 'box-shadow',
