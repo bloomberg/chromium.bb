@@ -54,6 +54,9 @@
   <structure name="IDR_POLYMER_CORE_ICONS_CORE_ICONS_HTML"
              file="../../../third_party/polymer/components-chromium/core-icons/core-icons.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ICONS_IMAGE_ICONS_HTML"
+             file="../../../third_party/polymer/components-chromium/core-icons/image-icons.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_ICONSET_CORE_ICONSET_EXTRACTED_JS"
              file="../../../third_party/polymer/components-chromium/core-iconset/core-iconset-extracted.js"
              type="chrome_html" />

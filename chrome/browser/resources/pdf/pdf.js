@@ -162,6 +162,8 @@ function PDFViewer(streamDetails) {
     $('bookmarks-button').addEventListener('click', function() {
       this.bookmarksPane.toggle();
     }.bind(this));
+    $('rotate-right-button').addEventListener('click',
+        this.rotateClockwise_.bind(this));
   }
 
   // Setup the keyboard event listener.
@@ -306,18 +308,12 @@ PDFViewer.prototype = {
         }
         return;
       case 219:  // left bracket.
-        if (e.ctrlKey) {
-          this.plugin_.postMessage({
-            type: 'rotateCounterclockwise'
-          });
-        }
+        if (e.ctrlKey)
+          this.rotateCounterClockwise_();
         return;
       case 221:  // right bracket.
-        if (e.ctrlKey) {
-          this.plugin_.postMessage({
-            type: 'rotateClockwise'
-          });
-        }
+        if (e.ctrlKey)
+          this.rotateClockwise_();
         return;
     }
 
@@ -328,6 +324,26 @@ PDFViewer.prototype = {
         keyEvent: SerializeKeyEvent(e)
       });
     }
+  },
+
+  /**
+   * @private
+   * Rotate the plugin clockwise.
+   */
+  rotateClockwise_: function() {
+    this.plugin_.postMessage({
+      type: 'rotateClockwise'
+    });
+  },
+
+  /**
+   * @private
+   * Rotate the plugin counter-clockwise.
+   */
+  rotateCounterClockwise_: function() {
+    this.plugin_.postMessage({
+      type: 'rotateCounterclockwise'
+    });
   },
 
   /**
