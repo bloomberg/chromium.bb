@@ -604,6 +604,7 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   // Create the view, to transition from Destroyed -> Suspended.
   if (browser_compositor_state_ == BrowserCompositorDestroyed) {
     browser_compositor_ = BrowserCompositorMac::Create();
+    browser_compositor_->compositor()->SetRootLayer(root_layer_.get());
     browser_compositor_->accelerated_widget_mac()->SetNSView(this);
     browser_compositor_state_ = BrowserCompositorSuspended;
   }
@@ -612,8 +613,6 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     delegated_frame_host_->SetCompositor(browser_compositor_->compositor());
     delegated_frame_host_->WasShown(ui::LatencyInfo());
-    browser_compositor_->compositor()->SetRootLayer(
-        root_layer_.get());
     browser_compositor_state_ = BrowserCompositorActive;
   }
 }
@@ -624,9 +623,6 @@ void RenderWidgetHostViewMac::SuspendBrowserCompositorView() {
 
   // Hide the DelegatedFrameHost to transition from Active -> Suspended.
   if (browser_compositor_state_ == BrowserCompositorActive) {
-    // Disconnect the root layer, which will prevent the compositor from
-    // producing more frames.
-    browser_compositor_->compositor()->SetRootLayer(nullptr);
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
@@ -646,6 +642,7 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     browser_compositor_->accelerated_widget_mac()->ResetNSView();
     browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
+    browser_compositor_->compositor()->SetRootLayer(nullptr);
     BrowserCompositorMac::Recycle(browser_compositor_.Pass());
     browser_compositor_state_ = BrowserCompositorDestroyed;
   }
