@@ -1,10 +1,12 @@
 dalecurtis@chromium.org
 ddorwin@chromium.org
-perkj@chromium.org
 scherkus@chromium.org
-tommi@chromium.org
 vrk@chromium.org
 xhwang@chromium.org
+
+# WebRTC OWNERS.
+perkj@chromium.org
+tommi@chromium.org
 
 per-file midi_*=toyoshim@chromium.org
 

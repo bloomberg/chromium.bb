@@ -1,13 +1,15 @@
 dalecurtis@chromium.org
 ddorwin@chromium.org
 jrummell@chromium.org
-perkj@chromium.org
 sandersd@chromium.org
 scherkus@chromium.org
-tommi@chromium.org
 vrk@chromium.org
 wolenetz@chromium.org
 xhwang@chromium.org
+
+# WebRTC OWNERS.
+perkj@chromium.org
+tommi@chromium.org
 
 per-file cast_*=hclam@chromium.org
 per-file cast_*=hubbe@chromium.org
