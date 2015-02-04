@@ -21,6 +21,7 @@ using base::UTF16ToUTF8;
 
 namespace {
 const char kEmptyString[] = "";
+const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
 }
 
 typeof(&::secret_password_store_sync)
@@ -164,7 +165,15 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   bool date_ok = base::StringToInt64(
       GetStringFromAttributes(attrs, "date_created"), &date_created);
   DCHECK(date_ok);
-  form->date_created = base::Time::FromTimeT(date_created);
+  // In the past |date_created| was stored as time_t. Currently is stored as
+  // base::Time's internal value. We need to distinguish, which format the
+  // number in |date_created| was stored in. We use the fact that
+  // kMaxPossibleTimeTValue interpreted as the internal value corresponds to an
+  // unlikely date back in 17th century, and anything above
+  // kMaxPossibleTimeTValue clearly must be in the internal value format.
+  form->date_created = date_created < kMaxPossibleTimeTValue
+                           ? base::Time::FromTimeT(date_created)
+                           : base::Time::FromInternalValue(date_created);
   form->blacklisted_by_user =
       GetUintFromAttributes(attrs, "blacklisted_by_user");
   form->type =
@@ -397,11 +406,11 @@ void NativeBackendLibsecret::AddUpdateLoginSearch(
 }
 
 bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
-  time_t date_created = form.date_created.ToTimeT();
+  int64 date_created = form.date_created.ToInternalValue();
   // If we are asked to save a password with 0 date, use the current time.
-  // We don't want to actually save passwords as though on January 1, 1970.
+  // We don't want to actually save passwords as though on January 1, 1601.
   if (!date_created)
-    date_created = time(nullptr);
+    date_created = base::Time::Now().ToInternalValue();
   int64 date_synced = form.date_synced.ToInternalValue();
   GError* error = nullptr;
   secret_password_store_sync(

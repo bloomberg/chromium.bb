@@ -722,7 +722,7 @@ void NativeBackendKWallet::SerializeValue(
     pickle->WriteBool(form->ssl_valid);
     pickle->WriteBool(form->preferred);
     pickle->WriteBool(form->blacklisted_by_user);
-    pickle->WriteInt64(form->date_created.ToTimeT());
+    pickle->WriteInt64(form->date_created.ToInternalValue());
     pickle->WriteInt(form->type);
     pickle->WriteInt(form->times_used);
     autofill::SerializeFormData(form->form_data, pickle);
@@ -801,7 +801,6 @@ bool NativeBackendKWallet::DeserializeValueSize(
       return false;
     }
     form->scheme = static_cast<PasswordForm::Scheme>(scheme);
-    form->date_created = base::Time::FromTimeT(date_created);
 
     if (version > 1) {
       if (!iter.ReadInt(&type) ||
@@ -830,6 +829,12 @@ bool NativeBackendKWallet::DeserializeValueSize(
         LogDeserializationWarning(version, signon_realm, false);
         return false;
       }
+    }
+
+    if (version > 4) {
+      form->date_created = base::Time::FromInternalValue(date_created);
+    } else {
+      form->date_created = base::Time::FromTimeT(date_created);
     }
 
     forms->push_back(form.release());

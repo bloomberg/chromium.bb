@@ -236,8 +236,7 @@ void CheckPasswordChanges(const PasswordStoreChangeList& expected_list,
     EXPECT_EQ(expected.signon_realm, actual.signon_realm);
     EXPECT_EQ(expected.ssl_valid, actual.ssl_valid);
     EXPECT_EQ(expected.preferred, actual.preferred);
-    // We don't check the date created. It varies due to bug in the
-    // serialization. Integer seconds are saved instead of microseconds.
+    EXPECT_EQ(expected.date_created, actual.date_created);
     EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
     EXPECT_EQ(expected.type, actual.type);
     EXPECT_EQ(expected.times_used, actual.times_used);
@@ -528,15 +527,13 @@ class NativeBackendLibsecretTest : public testing::Test {
   void CheckRemoveLoginsBetween(RemoveBetweenMethod date_to_test) {
     NativeBackendLibsecret backend(42);
 
-    form_google_.date_synced = base::Time();
-    form_isc_.date_synced = base::Time();
-    form_google_.date_created = base::Time();
-    form_isc_.date_created = base::Time();
     base::Time now = base::Time::Now();
     base::Time next_day = now + base::TimeDelta::FromDays(1);
+    form_google_.date_synced = base::Time();
+    form_isc_.date_synced = base::Time();
+    form_google_.date_created = now;
+    form_isc_.date_created = now;
     if (date_to_test == CREATED) {
-      // http://crbug.com/374132. Remove the next line once it's fixed.
-      next_day = base::Time::FromTimeT(next_day.ToTimeT());
       form_google_.date_created = now;
       form_isc_.date_created = next_day;
     } else {
