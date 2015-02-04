@@ -39,7 +39,7 @@ typedef uintptr_t PlatformThreadId;
 // run.
 class BLINK_PLATFORM_EXPORT WebThread {
 public:
-    class Task {
+    class BLINK_PLATFORM_EXPORT Task {
     public:
         virtual ~Task() { }
         virtual void run() = 0;

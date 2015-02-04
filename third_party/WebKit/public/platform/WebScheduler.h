@@ -6,6 +6,7 @@
 #define WebScheduler_h
 
 #include "WebCommon.h"
+#include "public/platform/WebThread.h"
 
 namespace blink {
 
@@ -39,6 +40,12 @@ public:
     // starved for an arbitrarily long time if no idle time is available.
     // Takes ownership of |IdleTask|. Can be called from any thread.
     virtual void postIdleTask(const WebTraceLocation&, IdleTask*) { }
+
+    // Schedule a loading task to be run on the Blink main thread. Loading
+    // tasks usually have the default priority, but may be deprioritised
+    // when the user is interacting with the device.
+    // Takes ownership of |WebThread::Task|. Can be called from any thread.
+    virtual void postLoadingTask(const WebTraceLocation&, WebThread::Task*) { }
 };
 
 } // namespace blink

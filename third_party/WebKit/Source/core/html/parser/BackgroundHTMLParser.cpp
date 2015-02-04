@@ -29,6 +29,8 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
+#include "platform/scheduler/ClosureRunnerTask.h"
+#include "platform/scheduler/Scheduler.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextPosition.h"
 
@@ -267,7 +269,10 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->tokens = m_pendingTokens.release();
     chunk->startingScript = m_startingScript;
     m_startingScript = false;
-    callOnMainThread(bind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, m_parser, chunk.release()));
+
+    Scheduler::shared()->postLoadingTask(
+        FROM_HERE,
+        new ClosureRunnerTask(bind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, m_parser, chunk.release())));
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
 }

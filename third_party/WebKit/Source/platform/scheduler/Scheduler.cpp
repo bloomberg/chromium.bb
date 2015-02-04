@@ -13,13 +13,15 @@
 namespace blink {
 
 class IdleTaskRunner : public WebScheduler::IdleTask {
+    WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
+
 public:
     explicit IdleTaskRunner(PassOwnPtr<Scheduler::IdleTask> task)
         : m_task(task)
     {
     }
 
-    virtual ~IdleTaskRunner()
+    ~IdleTaskRunner() override
     {
     }
 
@@ -62,6 +64,12 @@ void Scheduler::postIdleTask(const TraceLocation& location, PassOwnPtr<IdleTask>
 {
     if (m_webScheduler)
         m_webScheduler->postIdleTask(WebTraceLocation(location), new IdleTaskRunner(idleTask));
+}
+
+void Scheduler::postLoadingTask(const TraceLocation& location, WebThread::Task* task)
+{
+    if (m_webScheduler)
+        m_webScheduler->postLoadingTask(WebTraceLocation(location), task);
 }
 
 bool Scheduler::shouldYieldForHighPriorityWork() const

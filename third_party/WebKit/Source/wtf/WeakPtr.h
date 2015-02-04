@@ -140,6 +140,11 @@ public:
         m_ref = WeakReference<T>::create(ptr);
     }
 
+    bool hasWeakPtrs() const
+    {
+        return m_ref->refCount() > 1;
+    }
+
 private:
     RefPtr<WeakReference<T>> m_ref;
 };

@@ -27,7 +27,7 @@
 #define HTMLParserScheduler_h
 
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "platform/Timer.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -76,7 +76,7 @@ public:
     }
     ~HTMLParserScheduler();
 
-    bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_continueNextChunkTimer.isActive(); }
+    bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_cancellableContinueParse.isPending(); }
 
     void scheduleForResume();
     bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
@@ -97,11 +97,10 @@ private:
     explicit HTMLParserScheduler(HTMLDocumentParser*);
 
     bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
-    void continueNextChunkTimerFired(Timer<HTMLParserScheduler>*);
 
     HTMLDocumentParser* m_parser;
 
-    Timer<HTMLParserScheduler> m_continueNextChunkTimer;
+    CancellableTaskFactory m_cancellableContinueParse;
     bool m_isSuspendedWithActiveTimer;
 };
 

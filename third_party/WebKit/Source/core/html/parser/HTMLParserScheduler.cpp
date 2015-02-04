@@ -82,44 +82,38 @@ void SpeculationsPumpSession::addedElementTokens(size_t count)
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
     : m_parser(parser)
-    , m_continueNextChunkTimer(this, &HTMLParserScheduler::continueNextChunkTimerFired)
+    , m_cancellableContinueParse(WTF::bind(&HTMLDocumentParser::resumeParsingAfterYield, m_parser))
     , m_isSuspendedWithActiveTimer(false)
 {
 }
 
 HTMLParserScheduler::~HTMLParserScheduler()
 {
-    m_continueNextChunkTimer.stop();
-}
-
-void HTMLParserScheduler::continueNextChunkTimerFired(Timer<HTMLParserScheduler>* timer)
-{
-    ASSERT_UNUSED(timer, timer == &m_continueNextChunkTimer);
-    m_parser->resumeParsingAfterYield();
 }
 
 void HTMLParserScheduler::scheduleForResume()
 {
     ASSERT(!m_isSuspendedWithActiveTimer);
-    m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
+    Scheduler::shared()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
 }
 
 void HTMLParserScheduler::suspend()
 {
     ASSERT(!m_isSuspendedWithActiveTimer);
-    if (!m_continueNextChunkTimer.isActive())
+    if (!m_cancellableContinueParse.isPending())
         return;
     m_isSuspendedWithActiveTimer = true;
-    m_continueNextChunkTimer.stop();
+    m_cancellableContinueParse.cancel();
 }
 
 void HTMLParserScheduler::resume()
 {
-    ASSERT(!m_continueNextChunkTimer.isActive());
+    ASSERT(!m_cancellableContinueParse.isPending());
     if (!m_isSuspendedWithActiveTimer)
         return;
     m_isSuspendedWithActiveTimer = false;
-    m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
+
+    Scheduler::shared()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
 }
 
 inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const
@@ -158,7 +152,7 @@ bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session, 
 
 void HTMLParserScheduler::forceResumeAfterYield()
 {
-    ASSERT(!m_continueNextChunkTimer.isActive());
+    ASSERT(!m_cancellableContinueParse.isPending());
     m_isSuspendedWithActiveTimer = true;
 }
 
