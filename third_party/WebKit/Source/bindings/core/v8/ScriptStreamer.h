@@ -5,7 +5,6 @@
 #ifndef ScriptStreamer_h
 #define ScriptStreamer_h
 
-#include "bindings/core/v8/ScriptStreamingMode.h"
 #include "core/dom/PendingScript.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -32,9 +31,9 @@ class SourceStream;
 class ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
-    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptStreamingMode mode, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
+    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
     {
-        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptType, mode, scriptState, compileOptions));
+        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptState, compileOptions));
     }
 
     ~ScriptStreamer();
@@ -46,7 +45,7 @@ public:
     // false. Internally, this constructs a ScriptStreamer and attaches it to
     // the PendingScript. Use ScriptStreamer::addClient to get notified when the
     // streaming finishes.
-    static void startStreaming(PendingScript&, Settings*, ScriptState*, PendingScript::Type);
+    static void startStreaming(PendingScript&, Settings*, ScriptState*);
 
     // Returns false if we cannot stream the given encoding.
     static bool convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding*);
@@ -114,19 +113,14 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, PendingScript::Type, ScriptStreamingMode, ScriptState*, v8::ScriptCompiler::CompileOptions);
+    ScriptStreamer(ScriptResource*, ScriptState*, v8::ScriptCompiler::CompileOptions);
 
     void streamingComplete();
     void notifyFinishedToClient();
 
-    bool shouldBlockMainThread() const
-    {
-        return m_scriptStreamingMode == ScriptStreamingModeAllPlusBlockParsingBlocking && m_scriptType == PendingScript::ParsingBlocking;
-    }
-
     static const char* startedStreamingHistogramName(PendingScript::Type);
 
-    static bool startStreamingInternal(PendingScript&, Settings*, ScriptState*, PendingScript::Type);
+    static bool startStreamingInternal(PendingScript&, Settings*, ScriptState*);
 
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
@@ -159,17 +153,7 @@ private:
     // For recording metrics for different types of scripts separately.
     PendingScript::Type m_scriptType;
 
-    // Streaming mode defines whether the main thread should block and wait for
-    // the parsing to complete after the load has finished. See
-    // ScriptStreamer::notifyFinished for more information.
-    ScriptStreamingMode m_scriptStreamingMode;
     Mutex m_mutex;
-    ThreadCondition m_parsingFinishedCondition;
-    // Whether the main thread is currently waiting on the parser thread in
-    // notifyFinished(). This also defines which thread should do the cleanup of
-    // the parsing task: if the main thread is waiting, the main thread should
-    // do it, otherwise the parser thread should do it. Guarded by m_mutex.
-    bool m_mainThreadWaitingForParserThread;
 
     // Encoding of the streamed script. Saved for sanity checking purposes.
     v8::ScriptCompiler::StreamedSource::Encoding m_encoding;
