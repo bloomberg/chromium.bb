@@ -17,6 +17,10 @@
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
 
+#if !defined(OS_MACOSX)
+#include "ui/gl/gl_fence_egl.h"
+#endif
+
 namespace gpu {
 namespace gles2 {
 
@@ -1020,6 +1024,12 @@ void FeatureInfo::InitializeFeatures() {
       texture_format_validators_[GL_RG_EXT].AddValue(GL_HALF_FLOAT_OES);
     }
   }
+
+#if !defined(OS_MACOSX)
+  if (workarounds_.ignore_egl_sync_failures) {
+    gfx::GLFenceEGL::SetIgnoreFailures();
+  }
+#endif
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {

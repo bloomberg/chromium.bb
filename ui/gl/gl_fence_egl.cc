@@ -9,6 +9,17 @@
 
 namespace gfx {
 
+namespace {
+
+bool g_ignore_egl_sync_failures = false;
+
+}  // namespace
+
+// static
+void GLFenceEGL::SetIgnoreFailures() {
+  g_ignore_egl_sync_failures = true;
+}
+
 GLFenceEGL::GLFenceEGL() {
   display_ = eglGetCurrentDisplay();
   sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
@@ -33,10 +44,12 @@ void GLFenceEGL::ClientWait() {
   EGLint flags = 0;
   EGLTimeKHR time = EGL_FOREVER_KHR;
   EGLint result = eglClientWaitSyncKHR(display_, sync_, flags, time);
-  DCHECK_NE(EGL_TIMEOUT_EXPIRED_KHR, result);
+  DCHECK_IMPLIES(!g_ignore_egl_sync_failures,
+                 EGL_TIMEOUT_EXPIRED_KHR == result);
   if (result == EGL_FALSE) {
-    LOG(FATAL) << "Failed to wait for EGLSync. error:"
+    LOG(ERROR) << "Failed to wait for EGLSync. error:"
                << ui::GetLastEGLErrorString();
+    CHECK(g_ignore_egl_sync_failures);
   }
 }
 
@@ -47,8 +60,9 @@ void GLFenceEGL::ServerWait() {
   }
   EGLint flags = 0;
   if (eglWaitSyncKHR(display_, sync_, flags) == EGL_FALSE) {
-    LOG(FATAL) << "Failed to wait for EGLSync. error:"
+    LOG(ERROR) << "Failed to wait for EGLSync. error:"
                << ui::GetLastEGLErrorString();
+    CHECK(g_ignore_egl_sync_failures);
   }
 }
 

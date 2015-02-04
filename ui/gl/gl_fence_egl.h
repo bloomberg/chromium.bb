@@ -13,6 +13,8 @@ namespace gfx {
 
 class GL_EXPORT GLFenceEGL : public GLFence {
  public:
+  static void SetIgnoreFailures();
+
   GLFenceEGL();
   ~GLFenceEGL() override;
 

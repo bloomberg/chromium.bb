@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.14",
+  "version": "7.15",
   "entries": [
     {
       "id": 1,
@@ -1117,6 +1117,22 @@ LONG_STRING_CONST(
       "gl_renderer": "PowerVR SGX 540",
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
+      ]
+    },
+    {
+      "id": 99,
+      "description": "Qualcomm driver before Lollipop deletes egl sync objects after context destruction",
+      "cr_bugs": [453857],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "features": [
+        "ignore_egl_sync_failures"
       ]
     }
   ]

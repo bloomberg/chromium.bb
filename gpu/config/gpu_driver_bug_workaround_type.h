@@ -58,6 +58,8 @@
          gl_begin_gl_end_on_fbo_change_to_backbuffer)        \
   GPU_OP(GL_CLEAR_BROKEN,                                    \
          gl_clear_broken)                                    \
+  GPU_OP(IGNORE_EGL_SYNC_FAILURES,                           \
+         ignore_egl_sync_failures)                           \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
          init_gl_position_in_vertex_shader)                  \
   GPU_OP(INIT_TEXTURE_MAX_ANISOTROPY,                        \
