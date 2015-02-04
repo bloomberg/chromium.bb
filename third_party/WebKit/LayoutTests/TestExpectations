@@ -1324,6 +1324,13 @@ crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManual
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
 
+crbug.com/421272 [ Mac ] fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/421272 [ Mac ] fast/text/zero-width-characters.html [ NeedsRebaseline ]
+crbug.com/421272 [ Mac ] virtual/antialiasedtext/fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/421272 [ Mac ] virtual/antialiasedtext/fast/text/zero-width-characters.html [ NeedsRebaseline ]
+crbug.com/421272 [ Mac ] virtual/slimmingpaint/fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/421272 [ Mac ] virtual/slimmingpaint/fast/text/zero-width-characters.html [ NeedsRebaseline ]
+
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]

@@ -160,7 +160,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         // in that case use the space character and override the width.
         float width;
         bool spaceUsedAsZeroWidthSpace = false;
-        if (!glyphData.glyph && Character::treatAsZeroWidthSpaceInComplexScript(charData.character)) {
+        if (!glyphData.glyph && Character::treatAsZeroWidthSpace(charData.character)) {
             charData.character = space;
             glyphData = glyphDataForCharacter(charData);
             width = 0;
