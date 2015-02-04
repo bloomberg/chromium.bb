@@ -19,6 +19,7 @@ var default_content_settings = {
   "microphone": "ask",
   "camera": "ask",
   "unsandboxedPlugins": "ask",
+  "automaticDownloads": "ask"
 };
 
 var settings = {
@@ -34,6 +35,7 @@ var settings = {
   "microphone": "block",
   "camera": "block",
   "unsandboxedPlugins": "block",
+  "automaticDownloads": "block"
 };
 
 Object.prototype.forEach = function(f) {
