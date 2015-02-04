@@ -183,6 +183,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx_geometry',
         '<@(external_ozone_platform_unittest_deps)',
         '<@(internal_ozone_platform_unittest_deps)',
       ],
