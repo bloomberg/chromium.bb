@@ -23,8 +23,8 @@
 #ifndef SVGRootInlineBox_h
 #define SVGRootInlineBox_h
 
+#include "core/layout/line/RootInlineBox.h"
 #include "core/rendering/FloatToLayoutUnit.h"
-#include "core/rendering/RootInlineBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 

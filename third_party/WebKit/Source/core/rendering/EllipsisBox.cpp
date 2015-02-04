@@ -21,11 +21,11 @@
 #include "core/rendering/EllipsisBox.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/line/RootInlineBox.h"
 #include "core/paint/EllipsisBoxPainter.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RootInlineBox.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"

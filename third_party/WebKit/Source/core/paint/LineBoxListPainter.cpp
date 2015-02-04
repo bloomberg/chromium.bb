@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/LineBoxListPainter.h"
 
+#include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"
-#include "core/rendering/RootInlineBox.h"
 
 namespace blink {
 

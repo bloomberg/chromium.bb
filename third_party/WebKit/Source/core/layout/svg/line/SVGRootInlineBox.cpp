@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGRootInlineBox.h"
+#include "core/layout/svg/line/SVGRootInlineBox.h"
 
 #include "core/paint/SVGRootInlineBoxPainter.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -197,8 +197,7 @@ static inline void swapItemsInLayoutAttributes(SVGTextLayoutAttributes* firstAtt
     std::swap(itFirst->value, itLast->value);
 }
 
-static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, RenderSVGInlineText* firstContext, RenderSVGInlineText* lastContext,
-                                                      SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
+static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, RenderSVGInlineText* firstContext, RenderSVGInlineText* lastContext, SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
 {
     first = 0;
     last = 0;

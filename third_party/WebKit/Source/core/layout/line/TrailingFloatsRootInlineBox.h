@@ -26,8 +26,8 @@
 #ifndef TrailingFloatsRootInlineBox_h
 #define TrailingFloatsRootInlineBox_h
 
+#include "core/layout/line/RootInlineBox.h"
 #include "core/rendering/FloatToLayoutUnit.h"
-#include "core/rendering/RootInlineBox.h"
 
 namespace blink {
 

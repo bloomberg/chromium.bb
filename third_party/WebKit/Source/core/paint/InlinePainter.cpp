@@ -6,6 +6,7 @@
 #include "core/paint/InlinePainter.h"
 
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LineBoxListPainter.h"
@@ -14,7 +15,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RootInlineBox.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {

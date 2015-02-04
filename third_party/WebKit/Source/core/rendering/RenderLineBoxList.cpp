@@ -30,12 +30,12 @@
 #include "core/rendering/RenderLineBoxList.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RootInlineBox.h"
 
 namespace blink {
 

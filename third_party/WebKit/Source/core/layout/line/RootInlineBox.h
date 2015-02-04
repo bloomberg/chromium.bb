@@ -89,7 +89,7 @@ public:
     using InlineBox::endsWithBreak;
     using InlineBox::setEndsWithBreak;
 
-    void childRemoved(InlineBox* box);
+    void childRemoved(InlineBox*);
 
     bool lineCanAccommodateEllipsis(bool ltr, int blockEdge, int lineBoxEdge, int ellipsisWidth);
     // Return the truncatedWidth, the width of the truncated text + ellipsis.
@@ -192,7 +192,7 @@ private:
 
     // Floats hanging off the line are pushed into this vector during layout. It is only
     // good for as long as the line has not been marked dirty.
-    OwnPtr<Vector<RenderBox*> > m_floats;
+    OwnPtr<Vector<RenderBox*>> m_floats;
 
     LayoutUnit m_lineTop;
     LayoutUnit m_lineBottom;
