@@ -75,8 +75,6 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
 @implementation ZoomBubbleController
 
-@synthesize delegate = delegate_;
-
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                   delegate:(ZoomBubbleControllerDelegate*)delegate {
   base::scoped_nsobject<InfoBubbleWindow> window(
@@ -128,10 +126,6 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 }
 
 - (void)onZoomChanged {
-  // |delegate_| may be set null by this object's owner.
-  if (!delegate_)
-    return;
-
   // TODO(shess): It may be appropriate to close the window if
   // |contents| or |zoomController| are NULL.  But they can be NULL in
   // tests.
@@ -175,11 +169,8 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  // |delegate_| may be set null by this object's owner.
-  if (delegate_) {
-    delegate_->OnClose();
-    delegate_ = NULL;
-  }
+  delegate_->OnClose();
+  delegate_ = NULL;
   [NSObject cancelPreviousPerformRequestsWithTarget:self
                                            selector:@selector(autoCloseBubble)
                                              object:nil];
