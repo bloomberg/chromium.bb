@@ -7,12 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_test.h"
-#include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension_builder.h"
 
 namespace extensions {
@@ -26,9 +22,6 @@ class KeepAliveTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     message_loop_.reset(new base::MessageLoop);
-    browser_client_.reset(new TestExtensionsBrowserClient(browser_context()));
-    browser_client_->set_extension_system_factory(&extension_system_factory_);
-    ExtensionsBrowserClient::Set(browser_client_.get());
     extension_ =
         ExtensionBuilder()
             .SetManifest(
@@ -71,10 +64,8 @@ class KeepAliveTest : public ExtensionsTest {
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;
-  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
   scoped_ptr<content::NotificationService> notification_service_;
   scoped_refptr<const Extension> extension_;
-  scoped_ptr<TestExtensionsBrowserClient> browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveTest);
 };
