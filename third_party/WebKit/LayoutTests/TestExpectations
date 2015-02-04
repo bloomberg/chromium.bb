@@ -1741,6 +1741,8 @@ crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyF
 
 crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pass Failure ]
 
+crbug.com/455111 [ Win7 ] fast/forms/date-multiple-fields/date-multiple-fields-mouse-events.html [ Pass Failure ]
+
 crbug.com/444921 fast/block/lineboxcontain/glyphs-clipping.html [ NeedsRebaseline ]
 crbug.com/444921 fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
 crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
