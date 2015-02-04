@@ -440,7 +440,7 @@ static void checkSteps(int steps, StepsTimingFunction::StepAtPosition position, 
 static void checkCubicRegions2(double x1, double y1, double x2, double y2)
 {
     Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
-    RefPtrWillBeRawPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
+    RefPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
     cubic->partition(regions);
 
     EXPECT_EQ(regions.size(), 2ul);
@@ -458,7 +458,7 @@ static void checkCubicRegions2(double x1, double y1, double x2, double y2)
 static void checkCubicRegions4(double x1, double y1, double x2, double y2)
 {
     Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
-    RefPtrWillBeRawPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
+    RefPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
     cubic->partition(regions);
 
     EXPECT_EQ(regions.size(), 4ul);
