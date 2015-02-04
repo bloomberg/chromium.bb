@@ -42,11 +42,11 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLayerReflectionInfo.h"
+#include "core/layout/LayerReflectionInfo.h"
 
 #include "core/frame/UseCounter.h"
+#include "core/layout/Layer.h"
 #include "core/paint/LayerPainter.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/transforms/ScaleTransformOperation.h"
@@ -56,7 +56,7 @@
 
 namespace blink {
 
-RenderLayerReflectionInfo::RenderLayerReflectionInfo(RenderBox& renderer)
+LayerReflectionInfo::LayerReflectionInfo(RenderBox& renderer)
     : m_box(&renderer)
     , m_isPaintingInsideReflection(false)
 {
@@ -66,7 +66,7 @@ RenderLayerReflectionInfo::RenderLayerReflectionInfo(RenderBox& renderer)
     m_reflection->setParent(m_box); // We create a 1-way connection.
 }
 
-void RenderLayerReflectionInfo::destroy()
+void LayerReflectionInfo::destroy()
 {
     if (!m_reflection->documentBeingDestroyed())
         m_reflection->removeLayers(box().layer());
@@ -76,12 +76,12 @@ void RenderLayerReflectionInfo::destroy()
     m_reflection = nullptr;
 }
 
-RenderLayer* RenderLayerReflectionInfo::reflectionLayer() const
+Layer* LayerReflectionInfo::reflectionLayer() const
 {
     return m_reflection->layer();
 }
 
-void RenderLayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldStyle)
+void LayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::create();
     newStyle->inheritFrom(box().style());
@@ -129,7 +129,7 @@ void RenderLayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldSty
     m_reflection->setStyle(newStyle.release());
 }
 
-void RenderLayerReflectionInfo::paint(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
+void LayerReflectionInfo::paint(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
 {
     if (m_isPaintingInsideReflection)
         return;

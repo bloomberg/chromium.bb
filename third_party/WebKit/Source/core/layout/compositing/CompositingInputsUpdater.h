@@ -9,17 +9,17 @@
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 class CompositingInputsUpdater {
 public:
-    explicit CompositingInputsUpdater(RenderLayer* rootRenderLayer);
+    explicit CompositingInputsUpdater(Layer* rootLayer);
     ~CompositingInputsUpdater();
 
     void update();
 
 #if ENABLE(ASSERT)
-    static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
+    static void assertNeedsCompositingInputsUpdateBitsCleared(Layer*);
 #endif
 
 private:
@@ -38,22 +38,22 @@ private:
         {
         }
 
-        RenderLayer* ancestorStackingContext;
-        RenderLayer* enclosingCompositedLayer;
+        Layer* ancestorStackingContext;
+        Layer* enclosingCompositedLayer;
         // Notice that lastScrollingAncestor isn't the same thing as
         // ancestorScrollingLayer. The former is just the nearest scrolling
-        // along the RenderLayer::parent() chain. The latter is the layer that
+        // along the Layer::parent() chain. The latter is the layer that
         // actually controls the scrolling of this layer, which we find on the
         // containing block chain.
-        RenderLayer* lastScrollingAncestor;
+        Layer* lastScrollingAncestor;
         bool hasAncestorWithClipOrOverflowClip;
         bool hasAncestorWithClipPath;
     };
 
-    void updateRecursive(RenderLayer*, UpdateType, AncestorInfo);
+    void updateRecursive(Layer*, UpdateType, AncestorInfo);
 
     RenderGeometryMap m_geometryMap;
-    RenderLayer* m_rootRenderLayer;
+    Layer* m_rootLayer;
 };
 
 } // namespace blink

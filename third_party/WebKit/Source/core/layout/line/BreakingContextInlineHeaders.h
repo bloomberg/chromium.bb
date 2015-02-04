@@ -24,6 +24,7 @@
 #ifndef BreakingContextInlineHeaders_h
 #define BreakingContextInlineHeaders_h
 
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -35,7 +36,6 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/TextRunConstructor.h"

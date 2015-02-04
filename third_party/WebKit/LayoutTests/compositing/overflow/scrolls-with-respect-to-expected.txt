@@ -1,5 +1,5 @@
 
-This test ensures that RenderLayer::scrollsWithRespectTo always returns the correct answer on relatively "basic" elements as well as fixed- and absolute-positioned elements (ie, those with non-obvious containing blocks), and iframes.
+This test ensures that Layer::scrollsWithRespectTo always returns the correct answer on relatively "basic" elements as well as fixed- and absolute-positioned elements (ie, those with non-obvious containing blocks), and iframes.
 
 predecessor does not scroll with respect to predecessor
 predecessor scrolls with respect to container

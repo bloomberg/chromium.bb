@@ -42,15 +42,15 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef RenderLayerClipper_h
-#define RenderLayerClipper_h
+#ifndef LayerClipper_h
+#define LayerClipper_h
 
 #include "core/rendering/ClipRectsCache.h"
 #include "core/rendering/RenderBox.h"
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 enum ShouldRespectOverflowClip {
     IgnoreOverflowClip,
@@ -59,7 +59,7 @@ enum ShouldRespectOverflowClip {
 
 class ClipRectsContext {
 public:
-    ClipRectsContext(const RenderLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
+    ClipRectsContext(const Layer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
         : rootLayer(root)
         , scrollbarRelevancy(relevancy)
         , cacheSlot(slot)
@@ -82,21 +82,21 @@ public:
         return cacheSlot != UncachedClipRects;
     }
 
-    const RenderLayer* const rootLayer;
+    const Layer* const rootLayer;
     const OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 
 private:
-    friend class RenderLayerClipper;
+    friend class LayerClipper;
 
     ClipRectsCacheSlot cacheSlot;
     LayoutSize subPixelAccumulation;
     ShouldRespectOverflowClip respectOverflowClip;
 };
 
-class RenderLayerClipper {
-    WTF_MAKE_NONCOPYABLE(RenderLayerClipper);
+class LayerClipper {
+    WTF_MAKE_NONCOPYABLE(LayerClipper);
 public:
-    explicit RenderLayerClipper(RenderLayerModelObject&);
+    explicit LayerClipper(LayoutLayerModelObject&);
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -130,7 +130,7 @@ private:
 
     void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
-    RenderLayer* clippingRootForPainting() const;
+    Layer* clippingRootForPainting() const;
 
     ClipRectsCache& cache() const
     {
@@ -140,10 +140,10 @@ private:
     }
 
     // FIXME: Could this be a RenderBox?
-    RenderLayerModelObject& m_renderer;
+    LayoutLayerModelObject& m_renderer;
     mutable OwnPtr<ClipRectsCache> m_cache;
 };
 
 } // namespace blink
 
-#endif // RenderLayerClipper_h
+#endif // LayerClipper_h

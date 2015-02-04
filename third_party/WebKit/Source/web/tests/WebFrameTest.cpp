@@ -61,7 +61,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -6045,7 +6045,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
     webViewHelper.webView()->resize(WebSize(100, 100));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "non-scrollable.html");
 
-    RenderLayerCompositor* compositor =  webViewHelper.webViewImpl()->compositor();
+    LayerCompositor* compositor =  webViewHelper.webViewImpl()->compositor();
     ASSERT_TRUE(compositor->scrollLayer());
 
     // Verify that the WebLayer is not scrollable initially.
@@ -6384,7 +6384,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     webViewImpl->layout();
 
     // Verify that the video layer is visible in fullscreen.
-    RenderLayer* renderLayer =  videoFullscreen->renderer()->enclosingLayer();
+    Layer* renderLayer =  videoFullscreen->renderer()->enclosingLayer();
     GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
     EXPECT_TRUE(graphicsLayer->contentsAreVisible());
     context->notifyContextDestroyed();

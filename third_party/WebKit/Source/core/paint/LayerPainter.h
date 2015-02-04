@@ -5,18 +5,18 @@
 #ifndef LayerPainter_h
 #define LayerPainter_h
 
-#include "core/rendering/LayerFragment.h"
-#include "core/rendering/LayerPaintingInfo.h"
+#include "core/layout/LayerFragment.h"
+#include "core/layout/LayerPaintingInfo.h"
 
 namespace blink {
 
 class ClipRect;
 class LayoutPoint;
-class RenderLayer;
+class Layer;
 
 class LayerPainter {
 public:
-    LayerPainter(RenderLayer& renderLayer) : m_renderLayer(renderLayer) { }
+    LayerPainter(Layer& renderLayer) : m_renderLayer(renderLayer) { }
 
     // The paint() method paints the layers that intersect the damage rect from back to front.
     //  paint() assumes that the caller will clip to the bounds of damageRect if necessary.
@@ -36,8 +36,8 @@ private:
     void paintFragmentByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);
 
     void paintChildren(unsigned childrenToVisit, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const Vector<RenderLayer*>& columnLayers, size_t columnIndex);
+    void paintPaginatedChildLayer(Layer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+    void paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const Vector<Layer*>& columnLayers, size_t columnIndex);
     bool atLeastOneFragmentIntersectsDamageRect(LayerFragments&, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
     void paintFragmentWithPhase(PaintPhase, const LayerFragment&, GraphicsContext*, const ClipRect&, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const LayerFragments&, GraphicsContext*,
@@ -57,7 +57,7 @@ private:
     // layers).
     bool shouldPaintLayerInSoftwareMode(const LayerPaintingInfo&, PaintLayerFlags paintFlags);
 
-    RenderLayer& m_renderLayer;
+    Layer& m_renderLayer;
 };
 
 } // namespace blink

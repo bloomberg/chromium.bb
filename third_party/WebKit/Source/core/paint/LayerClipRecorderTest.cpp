@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/LayerClipRecorder.h"
 
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -43,7 +43,7 @@ void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootRenderLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
 TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)

@@ -32,8 +32,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextFormControlElement.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -61,7 +61,7 @@ bool DragCaretController::isContentRichlyEditable() const
 
 void DragCaretController::setCaretPosition(const VisiblePosition& position)
 {
-    // for querying RenderLayer::compositingState()
+    // for querying Layer::compositingState()
     // This code is probably correct, since it doesn't occur in a stack that involves updating compositing state.
     DisableCompositingQueryAsserts disabler;
 

@@ -24,13 +24,13 @@ class FrameView;
 class GraphicsLayer;
 class ImageResource;
 class KURL;
+class Layer;
 class LayoutRect;
 class LocalFrame;
 class Node;
 class QualifiedName;
 class Page;
 class RenderImage;
-class RenderLayer;
 class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
@@ -196,7 +196,7 @@ public:
     static const char ReflectionLayerChanged[];
     static const char NewCompositedLayer[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderLayer*, const char* reason);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Layer*, const char* reason);
 };
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
     TRACE_EVENT_INSTANT1( \

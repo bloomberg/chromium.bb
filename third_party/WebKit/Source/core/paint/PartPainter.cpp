@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/PartPainter.h"
 
+#include "core/layout/Layer.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -12,7 +13,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 
 namespace blink {

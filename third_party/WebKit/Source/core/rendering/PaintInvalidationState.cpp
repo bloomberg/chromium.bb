@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/rendering/PaintInvalidationState.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -34,7 +34,7 @@ PaintInvalidationState::PaintInvalidationState(const RenderView& renderView)
     m_clipped = true;
 }
 
-PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderLayerModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer)
+PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, LayoutLayerModelObject& renderer, const LayoutLayerModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)

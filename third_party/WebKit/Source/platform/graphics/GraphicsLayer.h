@@ -167,7 +167,7 @@ public:
     void setClipParent(WebLayer*);
 
     // For special cases, e.g. drawing missing tiles on Android.
-    // The compositor should never paint this color in normal cases because the RenderLayer
+    // The compositor should never paint this color in normal cases because the Layer
     // will paint background by itself.
     void setBackgroundColor(const Color&);
 

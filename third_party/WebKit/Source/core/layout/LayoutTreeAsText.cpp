@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/page/PrintContext.h"
@@ -43,7 +44,6 @@
 #include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderPart.h"
@@ -491,7 +491,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, LayoutAsTextBehavi
             RenderView* root = view->renderView();
             if (root) {
                 view->layout();
-                RenderLayer* layer = root->layer();
+                Layer* layer = root->layer();
                 if (layer)
                     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
             }
@@ -505,7 +505,7 @@ enum LayerPaintPhase {
     LayerPaintPhaseForeground = 1
 };
 
-static void write(TextStream& ts, RenderLayer& layer,
+static void write(TextStream& ts, Layer& layer,
     const LayoutRect& layerBounds, const LayoutRect& backgroundClipRect, const LayoutRect& clipRect, const LayoutRect& outlineClipRect,
     LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, LayoutAsTextBehavior behavior = LayoutAsTextBehaviorNormal)
 {
@@ -591,7 +591,7 @@ static void write(TextStream& ts, RenderLayer& layer,
         write(ts, *layer.renderer(), indent + 1, behavior);
 }
 
-void LayoutTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* layer,
+void LayoutTreeAsText::writeLayers(TextStream& ts, const Layer* rootLayer, Layer* layer,
     const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior)
 {
     // Calculate the clip rects we should use.
@@ -604,7 +604,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
 
     bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
 
-    Vector<RenderLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
+    Vector<LayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
         write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), LayerPaintPhaseBackground, indent, behavior);
@@ -623,7 +623,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
     if (shouldPaint)
         write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<LayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         int currIndent = indent;
         if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -634,7 +634,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
             writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintRect, currIndent, behavior);
     }
 
-    if (Vector<RenderLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
+    if (Vector<LayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
         int currIndent = indent;
         if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -710,7 +710,7 @@ static String externalRepresentation(RenderBox* renderer, LayoutAsTextBehavior b
     if (!renderer->hasLayer())
         return ts.release();
 
-    RenderLayer* layer = renderer->layer();
+    Layer* layer = renderer->layer();
     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
     writeSelection(ts, renderer);
     return ts.release();

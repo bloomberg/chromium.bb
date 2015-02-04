@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 enum ClipRectsCacheSlot {
     // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
@@ -42,7 +42,7 @@ public:
         {
         }
 
-        const RenderLayer* root;
+        const Layer* root;
         RefPtr<ClipRects> clipRects;
 #if ENABLE(ASSERT)
         OverlayScrollbarSizeRelevancy scrollbarRelevancy;

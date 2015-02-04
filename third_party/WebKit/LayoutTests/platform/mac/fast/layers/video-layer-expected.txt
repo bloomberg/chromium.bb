@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
             text run at (0,0) width 310: "https://bugs.webkit.org/show_bug.cgi?id=25066"
         RenderBR {BR} at (309,12) size 1x0
         RenderText {#text} at (0,16) size 422x16
-          text run at (0,16) width 422: "controls should not be misplaced when video gets a RenderLayer."
+          text run at (0,16) width 422: "controls should not be misplaced when video gets a Layer."
       RenderBlock (anonymous) at (0,48) size 784x252
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

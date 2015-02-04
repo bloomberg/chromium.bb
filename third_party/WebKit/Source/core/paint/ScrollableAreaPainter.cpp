@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/ScrollableAreaPainter.h"
 
+#include "core/layout/Layer.h"
+#include "core/layout/LayerScrollableArea.h"
 #include "core/page/Page.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerScrollableArea.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -116,7 +116,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
 
         RenderView* renderView = m_renderLayerScrollableArea.box().view();
 
-        RenderLayer* paintingRoot = m_renderLayerScrollableArea.layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
+        Layer* paintingRoot = m_renderLayerScrollableArea.layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
         if (!paintingRoot)
             paintingRoot = renderView->layer();
 

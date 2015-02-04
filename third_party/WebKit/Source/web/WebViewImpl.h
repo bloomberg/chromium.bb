@@ -72,7 +72,7 @@ class FullscreenController;
 class InputMethodContext;
 class LinkHighlight;
 class PopupContainer;
-class RenderLayerCompositor;
+class LayerCompositor;
 class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
@@ -436,7 +436,7 @@ public:
     void setRootGraphicsLayer(GraphicsLayer*);
     void scheduleCompositingLayerSync();
     GraphicsLayerFactory* graphicsLayerFactory() const;
-    RenderLayerCompositor* compositor() const;
+    LayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
 

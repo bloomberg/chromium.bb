@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/rendering/LayoutState.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/Partitions.h"
 

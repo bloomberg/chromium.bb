@@ -36,7 +36,7 @@ class Element;
 class LayoutRect;
 class LocalFrame;
 class Node;
-class RenderLayer;
+class Layer;
 class RenderObject;
 class TextStream;
 
@@ -64,7 +64,7 @@ class LayoutTreeAsText {
 // not being done).
 public:
 static void writeRenderObject(TextStream&, const RenderObject&, LayoutAsTextBehavior);
-static void writeLayers(TextStream&, const RenderLayer* rootLayer, RenderLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+static void writeLayers(TextStream&, const Layer* rootLayer, Layer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 };
 
 // Helper function shared with SVGRenderTreeAsText

@@ -65,9 +65,9 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
 
 LayerType RenderEmbeddedObject::layerTypeRequired() const
 {
-    // This can't just use RenderPart::layerTypeRequired, because RenderLayerCompositor
+    // This can't just use RenderPart::layerTypeRequired, because LayerCompositor
     // doesn't loop through RenderEmbeddedObjects the way it does frames in order
-    // to update the self painting bit on their RenderLayer.
+    // to update the self painting bit on their Layer.
     // Also, unlike iframes, embeds don't used the usesCompositing bit on RenderView
     // in requiresAcceleratedCompositing.
     if (requiresAcceleratedCompositing())

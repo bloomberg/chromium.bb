@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/RenderDrawingRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"

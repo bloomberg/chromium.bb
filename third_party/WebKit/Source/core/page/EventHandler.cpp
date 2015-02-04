@@ -62,6 +62,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
@@ -75,7 +76,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
@@ -1199,7 +1199,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     bool inResizer = false;
     RenderObject* renderer = node ? node->renderer() : nullptr;
     if (renderer && m_frame->view()) {
-        RenderLayer* layer = renderer->enclosingLayer();
+        Layer* layer = renderer->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
     }
 
@@ -1294,7 +1294,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
     if (FrameView* view = m_frame->view()) {
-        RenderLayer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : nullptr;
+        Layer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : nullptr;
         IntPoint p = view->windowToContents(mouseEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -1344,7 +1344,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     return swallowEvent;
 }
 
-static RenderLayer* layerForNode(Node* node)
+static Layer* layerForNode(Node* node)
 {
     if (!node)
         return nullptr;
@@ -1353,16 +1353,16 @@ static RenderLayer* layerForNode(Node* node)
     if (!renderer)
         return nullptr;
 
-    RenderLayer* layer = renderer->enclosingLayer();
+    Layer* layer = renderer->enclosingLayer();
     if (!layer)
         return nullptr;
 
     return layer;
 }
 
-ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer) const
+ScrollableArea* EventHandler::associatedScrollableArea(const Layer* layer) const
 {
-    if (RenderLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (LayerScrollableArea* scrollableArea = layer->scrollableArea()) {
         if (scrollableArea->scrollsOverflow())
             return scrollableArea;
     }
@@ -1384,7 +1384,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
     if (!page)
         return result;
 
-    if (RenderLayer* layer = layerForNode(hoveredNode.innerNode())) {
+    if (Layer* layer = layerForNode(hoveredNode.innerNode())) {
         if (ScrollableArea* layerScrollableArea = associatedScrollableArea(layer))
             layerScrollableArea->mouseMovedInContentArea();
     }
@@ -1863,8 +1863,8 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
 
     // Fire mouseout/mouseover if the mouse has shifted to a different node.
     if (fireMouseOverOut) {
-        RenderLayer* layerForLastNode = layerForNode(m_lastNodeUnderMouse.get());
-        RenderLayer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
+        Layer* layerForLastNode = layerForNode(m_lastNodeUnderMouse.get());
+        Layer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
         Page* page = m_frame->page();
 
         if (m_lastNodeUnderMouse && (!m_nodeUnderMouse || m_nodeUnderMouse->document() != m_frame->document())) {
@@ -2415,7 +2415,7 @@ bool EventHandler::handleGestureLongTap(const GestureEventWithHitTestResults& ta
 
 bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent) {
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
-        RenderLayer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : nullptr;
+        Layer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -3218,7 +3218,7 @@ void EventHandler::clearDragDataTransfer()
 
 void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperation operation)
 {
-    // Send a hit test request so that RenderLayer gets a chance to update the :hover and :active pseudoclasses.
+    // Send a hit test request so that Layer gets a chance to update the :hover and :active pseudoclasses.
     HitTestRequest request(HitTestRequest::Release);
     prepareMouseEvent(request, event);
 

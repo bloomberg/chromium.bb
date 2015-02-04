@@ -163,7 +163,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

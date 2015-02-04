@@ -5,7 +5,7 @@
 #ifndef FilterPainter_h
 #define FilterPainter_h
 
-#include "core/rendering/LayerPaintingInfo.h"
+#include "core/layout/LayerPaintingInfo.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -13,11 +13,11 @@ namespace blink {
 class LayerClipRecorder;
 class ClipRect;
 class GraphicsContext;
-class RenderLayer;
+class Layer;
 
 class FilterPainter {
 public:
-    FilterPainter(RenderLayer&, GraphicsContext*, const LayoutPoint& offsetFromRoot, const ClipRect&, LayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
+    FilterPainter(Layer&, GraphicsContext*, const LayoutPoint& offsetFromRoot, const ClipRect&, LayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
     ~FilterPainter();
 
 private:

@@ -9,13 +9,13 @@
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/Layer.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -130,7 +130,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
     RenderObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->renderer() : 0;
-    RenderLayer* rootLayer = renderView->layer();
+    Layer* rootLayer = renderView->layer();
 
 #if ENABLE(ASSERT)
     renderView->assertSubtreeIsLaidOut();

@@ -12,7 +12,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -132,7 +132,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        RenderLayerCompositor* compositor = frame()->contentRenderer()->compositor();
+        LayerCompositor* compositor = frame()->contentRenderer()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 

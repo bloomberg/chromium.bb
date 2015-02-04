@@ -24,6 +24,7 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/BidiRunForLine.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
@@ -34,7 +35,6 @@
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"

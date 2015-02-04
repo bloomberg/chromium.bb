@@ -50,7 +50,7 @@
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 enum PaintLayerFlag {
     PaintLayerHaveTransparency = 1,
@@ -72,7 +72,7 @@ enum PaintLayerFlag {
 typedef unsigned PaintLayerFlags;
 
 struct LayerPaintingInfo {
-    LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect,
+    LayerPaintingInfo(Layer* inRootLayer, const LayoutRect& inDirtyRect,
         PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation,
         RenderObject* inPaintingRoot = 0)
         : rootLayer(inRootLayer)
@@ -82,7 +82,7 @@ struct LayerPaintingInfo {
         , paintBehavior(inPaintBehavior)
         , clipToDirtyRect(true)
     { }
-    RenderLayer* rootLayer;
+    Layer* rootLayer;
     RenderObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;

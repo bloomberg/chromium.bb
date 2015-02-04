@@ -28,8 +28,8 @@
 #include "core/rendering/RenderObjectChildList.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"

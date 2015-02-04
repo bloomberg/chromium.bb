@@ -42,25 +42,25 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef RenderLayerStackingNode_h
-#define RenderLayerStackingNode_h
+#ifndef LayerStackingNode_h
+#define LayerStackingNode_h
 
-#include "core/rendering/RenderLayerModelObject.h"
+#include "core/layout/LayoutLayerModelObject.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class RenderLayer;
-class RenderLayerCompositor;
+class Layer;
+class LayerCompositor;
 class RenderStyle;
 
-class RenderLayerStackingNode {
-    WTF_MAKE_NONCOPYABLE(RenderLayerStackingNode);
+class LayerStackingNode {
+    WTF_MAKE_NONCOPYABLE(LayerStackingNode);
 public:
-    explicit RenderLayerStackingNode(RenderLayer*);
-    ~RenderLayerStackingNode();
+    explicit LayerStackingNode(Layer*);
+    ~LayerStackingNode();
 
     int zIndex() const { return renderer()->style()->zIndex(); }
 
@@ -87,9 +87,9 @@ public:
 
     void updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle);
 
-    RenderLayerStackingNode* ancestorStackingContextNode() const;
+    LayerStackingNode* ancestorStackingContextNode() const;
 
-    RenderLayer* layer() const { return m_layer; }
+    Layer* layer() const { return m_layer; }
 
 #if ENABLE(ASSERT)
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
@@ -97,24 +97,24 @@ public:
 #endif
 
 private:
-    friend class RenderLayerStackingNodeIterator;
-    friend class RenderLayerStackingNodeReverseIterator;
+    friend class LayerStackingNodeIterator;
+    friend class LayerStackingNodeReverseIterator;
     friend class LayoutTreeAsText;
 
-    Vector<RenderLayerStackingNode*>* posZOrderList() const
+    Vector<LayerStackingNode*>* posZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_posZOrderList);
         return m_posZOrderList.get();
     }
 
-    Vector<RenderLayerStackingNode*>* normalFlowList() const
+    Vector<LayerStackingNode*>* normalFlowList() const
     {
         ASSERT(!m_normalFlowListDirty);
         return m_normalFlowList.get();
     }
 
-    Vector<RenderLayerStackingNode*>* negZOrderList() const
+    Vector<LayerStackingNode*>* negZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_negZOrderList);
@@ -122,14 +122,14 @@ private:
     }
 
     void rebuildZOrderLists();
-    void collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList);
+    void collectLayers(OwnPtr<Vector<LayerStackingNode*>>& posZOrderList, OwnPtr<Vector<LayerStackingNode*>>& negZOrderList);
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
     bool isInStackingParentNormalFlowList() const;
-    void updateStackingParentForZOrderLists(RenderLayerStackingNode* stackingParent);
-    void updateStackingParentForNormalFlowList(RenderLayerStackingNode* stackingParent);
-    void setStackingParent(RenderLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
+    void updateStackingParentForZOrderLists(LayerStackingNode* stackingParent);
+    void updateStackingParentForNormalFlowList(LayerStackingNode* stackingParent);
+    void setStackingParent(LayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
     bool shouldBeNormalFlowOnly() const;
@@ -138,21 +138,21 @@ private:
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
-    RenderLayerCompositor* compositor() const;
+    LayerCompositor* compositor() const;
     // FIXME: Investigate changing this to Renderbox.
-    RenderLayerModelObject* renderer() const;
+    LayoutLayerModelObject* renderer() const;
 
-    RenderLayer* m_layer;
+    Layer* m_layer;
 
     // m_posZOrderList holds a sorted list of all the descendant nodes within
     // that have z-indices of 0 or greater (auto will count as 0).
     // m_negZOrderList holds descendants within our stacking context with
     // negative z-indices.
-    OwnPtr<Vector<RenderLayerStackingNode*> > m_posZOrderList;
-    OwnPtr<Vector<RenderLayerStackingNode*> > m_negZOrderList;
+    OwnPtr<Vector<LayerStackingNode*>> m_posZOrderList;
+    OwnPtr<Vector<LayerStackingNode*>> m_negZOrderList;
 
     // This list contains child nodes that cannot create stacking contexts.
-    OwnPtr<Vector<RenderLayerStackingNode*> > m_normalFlowList;
+    OwnPtr<Vector<LayerStackingNode*>> m_normalFlowList;
 
     unsigned m_zOrderListsDirty : 1;
     unsigned m_normalFlowListDirty: 1;
@@ -160,11 +160,11 @@ private:
 
 #if ENABLE(ASSERT)
     unsigned m_layerListMutationAllowed : 1;
-    RenderLayerStackingNode* m_stackingParent;
+    LayerStackingNode* m_stackingParent;
 #endif
 };
 
-inline void RenderLayerStackingNode::clearZOrderLists()
+inline void LayerStackingNode::clearZOrderLists()
 {
     ASSERT(!isStackingContext());
 
@@ -176,7 +176,7 @@ inline void RenderLayerStackingNode::clearZOrderLists()
     m_negZOrderList.clear();
 }
 
-inline void RenderLayerStackingNode::updateZOrderLists()
+inline void LayerStackingNode::updateZOrderLists()
 {
     if (!m_zOrderListsDirty)
         return;
@@ -193,7 +193,7 @@ inline void RenderLayerStackingNode::updateZOrderLists()
 #if ENABLE(ASSERT)
 class LayerListMutationDetector {
 public:
-    explicit LayerListMutationDetector(RenderLayerStackingNode* stackingNode)
+    explicit LayerListMutationDetector(LayerStackingNode* stackingNode)
         : m_stackingNode(stackingNode)
         , m_previousMutationAllowedState(stackingNode->layerListMutationAllowed())
     {
@@ -206,11 +206,11 @@ public:
     }
 
 private:
-    RenderLayerStackingNode* m_stackingNode;
+    LayerStackingNode* m_stackingNode;
     bool m_previousMutationAllowedState;
 };
 #endif
 
 } // namespace blink
 
-#endif // RenderLayerStackingNode_h
+#endif // LayerStackingNode_h

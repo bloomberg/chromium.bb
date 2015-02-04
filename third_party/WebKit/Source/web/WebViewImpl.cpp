@@ -64,7 +64,7 @@
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -4277,7 +4277,7 @@ GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
     return m_graphicsLayerFactory.get();
 }
 
-RenderLayerCompositor* WebViewImpl::compositor() const
+LayerCompositor* WebViewImpl::compositor() const
 {
     if (!page() || !page()->mainFrame())
         return 0;

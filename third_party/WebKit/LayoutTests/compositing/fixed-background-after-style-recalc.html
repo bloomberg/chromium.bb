@@ -20,7 +20,7 @@
 
     window.onload = function() {
         window.scrollTo(0, 300);
-        // crbug.com/343132 RenderLayerCompositor::rootFixedBackgroundsChanged should not query stale compositing state
+        // crbug.com/343132 LayerCompositor::rootFixedBackgroundsChanged should not query stale compositing state
         document.querySelector('body').classList.add('fixed');
     }
 </script>

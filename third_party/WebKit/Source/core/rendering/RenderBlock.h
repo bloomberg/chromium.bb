@@ -370,7 +370,7 @@ private:
     // children.
     virtual RenderBlock* firstLineBlock() const override;
 
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
 
     virtual RenderObject* hoverAncestor() const override final;
     virtual void updateDragState(bool dragOn) override final;

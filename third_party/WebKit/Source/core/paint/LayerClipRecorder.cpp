@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/LayerClipRecorder.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/ClipRect.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
@@ -17,7 +17,7 @@
 
 namespace blink {
 
-LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
+LayerClipRecorder::LayerClipRecorder(const LayoutLayerModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
     const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext)
     , m_renderer(renderer)
@@ -37,7 +37,7 @@ LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, Gra
     }
 }
 
-static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLayer)
+static bool inContainingBlockChain(Layer* startLayer, Layer* endLayer)
 {
     if (startLayer == endLayer)
         return true;
@@ -51,13 +51,13 @@ static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLaye
     return false;
 }
 
-void LayerClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const LayerPaintingInfo& localPaintingInfo, GraphicsContext* context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags,
+void LayerClipRecorder::collectRoundedRectClips(Layer& renderLayer, const LayerPaintingInfo& localPaintingInfo, GraphicsContext* context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags,
     BorderRadiusClippingRule rule, Vector<FloatRoundedRect>& roundedRectClips)
 {
     // If the clip rect has been tainted by a border radius, then we have to walk up our layer chain applying the clips from
     // any layers with overflow. The condition for being able to apply these clips is that the overflow object be in our
     // containing block chain so we check that also.
-    for (RenderLayer* layer = rule == IncludeSelfForBorderRadius ? &renderLayer : renderLayer.parent(); layer; layer = layer->parent()) {
+    for (Layer* layer = rule == IncludeSelfForBorderRadius ? &renderLayer : renderLayer.parent(); layer; layer = layer->parent()) {
         // Composited scrolling layers handle border-radius clip in the compositor via a mask layer. We do not
         // want to apply a border-radius clip to the layer contents itself, because that would require re-rastering
         // every frame to update the clip. We only want to make sure that the mask layer is properly clipped so

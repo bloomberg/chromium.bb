@@ -30,14 +30,14 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/ViewPainter.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -89,7 +89,7 @@ bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     m_hitTestCount++;
 
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
-    // into a child document, it could trigger a layout on the parent document, which can destroy RenderLayers
+    // into a child document, it could trigger a layout on the parent document, which can destroy Layers
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
     // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
@@ -98,7 +98,7 @@ bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& l
 
     bool hitLayer = layer()->hitTest(request, location, result);
 
-    // FrameView scrollbars are not the same as RenderLayer scrollbars tested by RenderLayer::hitTestOverflowControls,
+    // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
     // so we need to test FrameView scrollbars separately here. Note that it's important we do this after
     // the hit test above, because that may overwrite the entire HitTestResult when it finds a hit.
     IntPoint viewPoint = location.roundedPoint() - frameView()->scrollOffset();
@@ -226,7 +226,7 @@ void RenderView::layout()
     clearNeedsLayout();
 }
 
-void RenderView::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderView::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == static_cast<bool>(mode & IsFixed));
 
@@ -256,7 +256,7 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* paintInvalida
     }
 }
 
-const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const RenderObject* RenderView::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     LayoutSize offsetForFixedPosition;
     LayoutSize offset;
@@ -326,8 +326,8 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     // short-circuit on full-paint invalidation.
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
-        const RenderLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
-        RenderLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
+        const LayoutLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
+        Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
     }
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
@@ -360,12 +360,12 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+void RenderView::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
 {
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
+void RenderView::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
 {
     if (document().printing())
         return;
@@ -683,7 +683,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
 
 void RenderView::clearSelection()
 {
-    // For querying RenderLayer::compositingState()
+    // For querying Layer::compositingState()
     // This is correct, since destroying render objects needs to cause eager paint invalidations.
     DisableCompositingQueryAsserts disabler;
 
@@ -932,10 +932,10 @@ bool RenderView::usesCompositing() const
     return m_compositor && m_compositor->staleInCompositingMode();
 }
 
-RenderLayerCompositor* RenderView::compositor()
+LayerCompositor* RenderView::compositor()
 {
     if (!m_compositor)
-        m_compositor = adoptPtr(new RenderLayerCompositor(*this));
+        m_compositor = adoptPtr(new LayerCompositor(*this));
 
     return m_compositor.get();
 }

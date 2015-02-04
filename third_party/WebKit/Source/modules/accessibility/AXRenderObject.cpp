@@ -48,6 +48,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFieldset.h"
@@ -55,7 +56,6 @@
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderPart.h"
@@ -1339,7 +1339,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     if (!m_renderer || !m_renderer->hasLayer())
         return 0;
 
-    RenderLayer* layer = toRenderBox(m_renderer)->layer();
+    Layer* layer = toRenderBox(m_renderer)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(point);

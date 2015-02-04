@@ -26,15 +26,15 @@
 #include "config.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
@@ -93,7 +93,7 @@ bool RenderBoxModelObject::hasAcceleratedCompositing() const
 }
 
 RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
-    : RenderLayerModelObject(node)
+    : LayoutLayerModelObject(node)
 {
 }
 
@@ -108,7 +108,7 @@ void RenderBoxModelObject::willBeDestroyed()
     // A continuation of this RenderObject should be destroyed at subclasses.
     ASSERT(!continuation());
 
-    RenderLayerModelObject::willBeDestroyed();
+    LayoutLayerModelObject::willBeDestroyed();
 }
 
 bool RenderBoxModelObject::calculateHasBoxDecorations() const
@@ -120,7 +120,7 @@ bool RenderBoxModelObject::calculateHasBoxDecorations() const
 
 void RenderBoxModelObject::updateFromStyle()
 {
-    RenderLayerModelObject::updateFromStyle();
+    LayoutLayerModelObject::updateFromStyle();
 
     RenderStyle* styleToUse = style();
     setHasBoxDecorationBackground(calculateHasBoxDecorations());
@@ -482,7 +482,7 @@ void RenderBoxModelObject::setContinuation(RenderBoxModelObject* continuation)
 
 void RenderBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
 {
-    RenderLayerModelObject::computeLayerHitTestRects(rects);
+    LayoutLayerModelObject::computeLayerHitTestRects(rects);
 
     // If there is a continuation then we need to consult it here, since this is
     // the root of the tree walk and it wouldn't otherwise get picked up.
@@ -587,7 +587,7 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 }
 
-const RenderObject* RenderBoxModelObject::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const RenderObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     ASSERT(ancestorToStopAt != this);
 

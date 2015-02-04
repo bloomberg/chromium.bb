@@ -42,19 +42,19 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLayerStackingNode.h"
+#include "core/layout/LayerStackingNode.h"
 
-#include "core/layout/compositing/RenderLayerCompositor.h"
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-// FIXME: This should not require RenderLayer. There is currently a cycle where
+// FIXME: This should not require Layer. There is currently a cycle where
 // in order to determine if we shoulBeNormalFlowOnly() we have to ask the render
 // layer about some of its state.
-RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
+LayerStackingNode::LayerStackingNode(Layer* layer)
     : m_layer(layer)
     , m_normalFlowListDirty(true)
 #if ENABLE(ASSERT)
@@ -69,7 +69,7 @@ RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     m_zOrderListsDirty = isStackingContext();
 }
 
-RenderLayerStackingNode::~RenderLayerStackingNode()
+LayerStackingNode::~LayerStackingNode()
 {
 #if ENABLE(ASSERT)
     if (!renderer()->documentBeingDestroyed()) {
@@ -83,18 +83,18 @@ RenderLayerStackingNode::~RenderLayerStackingNode()
 }
 
 // Helper for the sorting of layers by z-index.
-static inline bool compareZIndex(RenderLayerStackingNode* first, RenderLayerStackingNode* second)
+static inline bool compareZIndex(LayerStackingNode* first, LayerStackingNode* second)
 {
     return first->zIndex() < second->zIndex();
 }
 
-RenderLayerCompositor* RenderLayerStackingNode::compositor() const
+LayerCompositor* LayerStackingNode::compositor() const
 {
     ASSERT(renderer()->view());
     return renderer()->view()->compositor();
 }
 
-void RenderLayerStackingNode::dirtyZOrderLists()
+void LayerStackingNode::dirtyZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isStackingContext());
@@ -113,13 +113,13 @@ void RenderLayerStackingNode::dirtyZOrderLists()
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
-void RenderLayerStackingNode::dirtyStackingContextZOrderLists()
+void LayerStackingNode::dirtyStackingContextZOrderLists()
 {
-    if (RenderLayerStackingNode* stackingNode = ancestorStackingContextNode())
+    if (LayerStackingNode* stackingNode = ancestorStackingContextNode())
         stackingNode->dirtyZOrderLists();
 }
 
-void RenderLayerStackingNode::dirtyNormalFlowList()
+void LayerStackingNode::dirtyNormalFlowList()
 {
     ASSERT(m_layerListMutationAllowed);
 
@@ -135,12 +135,12 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
-void RenderLayerStackingNode::rebuildZOrderLists()
+void LayerStackingNode::rebuildZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isDirtyStackingContext());
 
-    for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
+    for (Layer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
             child->stackingNode()->collectLayers(m_posZOrderList, m_negZOrderList);
     }
@@ -159,10 +159,10 @@ void RenderLayerStackingNode::rebuildZOrderLists()
         for (RenderObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
-                RenderLayer* layer = toRenderLayerModelObject(child)->layer();
+                Layer* layer = toLayoutLayerModelObject(child)->layer();
                 // Create the buffer if it doesn't exist yet.
                 if (!m_posZOrderList)
-                    m_posZOrderList = adoptPtr(new Vector<RenderLayerStackingNode*>);
+                    m_posZOrderList = adoptPtr(new Vector<LayerStackingNode*>);
                 m_posZOrderList->append(layer->stackingNode());
             }
         }
@@ -175,17 +175,17 @@ void RenderLayerStackingNode::rebuildZOrderLists()
     m_zOrderListsDirty = false;
 }
 
-void RenderLayerStackingNode::updateNormalFlowList()
+void LayerStackingNode::updateNormalFlowList()
 {
     if (!m_normalFlowListDirty)
         return;
 
     ASSERT(m_layerListMutationAllowed);
 
-    for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
+    for (Layer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)) {
             if (!m_normalFlowList)
-                m_normalFlowList = adoptPtr(new Vector<RenderLayerStackingNode*>);
+                m_normalFlowList = adoptPtr(new Vector<LayerStackingNode*>);
             m_normalFlowList->append(child->stackingNode());
         }
     }
@@ -197,20 +197,20 @@ void RenderLayerStackingNode::updateNormalFlowList()
     m_normalFlowListDirty = false;
 }
 
-void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >& posBuffer, OwnPtr<Vector<RenderLayerStackingNode*> >& negBuffer)
+void LayerStackingNode::collectLayers(OwnPtr<Vector<LayerStackingNode*>>& posBuffer, OwnPtr<Vector<LayerStackingNode*>>& negBuffer)
 {
     if (layer()->isInTopLayer())
         return;
 
     if (!isNormalFlowOnly()) {
-        OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
+        OwnPtr<Vector<LayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
-            buffer = adoptPtr(new Vector<RenderLayerStackingNode*>);
+            buffer = adoptPtr(new Vector<LayerStackingNode*>);
         buffer->append(this);
     }
 
     if (!isStackingContext()) {
-        for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
+        for (Layer* child = layer()->firstChild(); child; child = child->nextSibling()) {
             if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
                 child->stackingNode()->collectLayers(posBuffer, negBuffer);
         }
@@ -218,7 +218,7 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
 }
 
 #if ENABLE(ASSERT)
-bool RenderLayerStackingNode::isInStackingParentZOrderLists() const
+bool LayerStackingNode::isInStackingParentZOrderLists() const
 {
     if (!m_stackingParent || m_stackingParent->zOrderListsDirty())
         return false;
@@ -232,7 +232,7 @@ bool RenderLayerStackingNode::isInStackingParentZOrderLists() const
     return false;
 }
 
-bool RenderLayerStackingNode::isInStackingParentNormalFlowList() const
+bool LayerStackingNode::isInStackingParentNormalFlowList() const
 {
     if (!m_stackingParent || m_stackingParent->normalFlowListDirty())
         return false;
@@ -240,7 +240,7 @@ bool RenderLayerStackingNode::isInStackingParentNormalFlowList() const
     return (m_stackingParent->normalFlowList() && m_stackingParent->normalFlowList()->find(this) != kNotFound);
 }
 
-void RenderLayerStackingNode::updateStackingParentForZOrderLists(RenderLayerStackingNode* stackingParent)
+void LayerStackingNode::updateStackingParentForZOrderLists(LayerStackingNode* stackingParent)
 {
     if (m_posZOrderList) {
         for (size_t i = 0; i < m_posZOrderList->size(); ++i)
@@ -253,7 +253,7 @@ void RenderLayerStackingNode::updateStackingParentForZOrderLists(RenderLayerStac
     }
 }
 
-void RenderLayerStackingNode::updateStackingParentForNormalFlowList(RenderLayerStackingNode* stackingParent)
+void LayerStackingNode::updateStackingParentForNormalFlowList(LayerStackingNode* stackingParent)
 {
     if (m_normalFlowList) {
         for (size_t i = 0; i < m_normalFlowList->size(); ++i)
@@ -262,7 +262,7 @@ void RenderLayerStackingNode::updateStackingParentForNormalFlowList(RenderLayerS
 }
 #endif
 
-void RenderLayerStackingNode::updateLayerListsIfNeeded()
+void LayerStackingNode::updateLayerListsIfNeeded()
 {
     updateZOrderLists();
     updateNormalFlowList();
@@ -270,12 +270,12 @@ void RenderLayerStackingNode::updateLayerListsIfNeeded()
     if (!layer()->reflectionInfo())
         return;
 
-    RenderLayer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
+    Layer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
     reflectionLayer->stackingNode()->updateZOrderLists();
     reflectionLayer->stackingNode()->updateNormalFlowList();
 }
 
-void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)
+void LayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)
 {
     bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
@@ -294,34 +294,34 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
 
 // FIXME: Rename shouldBeNormalFlowOnly to something more accurate now that CSS
 // 2.1 defines the term "normal flow".
-bool RenderLayerStackingNode::shouldBeNormalFlowOnly() const
+bool LayerStackingNode::shouldBeNormalFlowOnly() const
 {
     return !isStackingContext() && !renderer()->isPositioned();
 }
 
-void RenderLayerStackingNode::updateIsNormalFlowOnly()
+void LayerStackingNode::updateIsNormalFlowOnly()
 {
     bool isNormalFlowOnly = shouldBeNormalFlowOnly();
     if (isNormalFlowOnly == this->isNormalFlowOnly())
         return;
 
     m_isNormalFlowOnly = isNormalFlowOnly;
-    if (RenderLayer* p = layer()->parent())
+    if (Layer* p = layer()->parent())
         p->stackingNode()->dirtyNormalFlowList();
     dirtyStackingContextZOrderLists();
 }
 
-RenderLayerStackingNode* RenderLayerStackingNode::ancestorStackingContextNode() const
+LayerStackingNode* LayerStackingNode::ancestorStackingContextNode() const
 {
-    for (RenderLayer* ancestor = layer()->parent(); ancestor; ancestor = ancestor->parent()) {
-        RenderLayerStackingNode* stackingNode = ancestor->stackingNode();
+    for (Layer* ancestor = layer()->parent(); ancestor; ancestor = ancestor->parent()) {
+        LayerStackingNode* stackingNode = ancestor->stackingNode();
         if (stackingNode->isStackingContext())
             return stackingNode;
     }
     return 0;
 }
 
-RenderLayerModelObject* RenderLayerStackingNode::renderer() const
+LayoutLayerModelObject* LayerStackingNode::renderer() const
 {
     return m_layer->renderer();
 }

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 class GraphicsLayerTreeBuilder {
 public:
@@ -45,11 +45,11 @@ public:
         {
         }
 
-        RenderLayer* enclosingCompositedLayer;
+        Layer* enclosingCompositedLayer;
         GraphicsLayerVector* childLayersOfEnclosingCompositedLayer;
     };
 
-    void rebuild(RenderLayer&, AncestorInfo);
+    void rebuild(Layer&, AncestorInfo);
 };
 
 } // namespace blink

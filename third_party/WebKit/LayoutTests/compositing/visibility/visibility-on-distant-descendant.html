@@ -43,14 +43,14 @@
 <body>
   <!--
     https://bugs.webkit.org/show_bug.cgi?id=108118
-    (Note: CompositedLayerMapping was formerly known as RenderLayerBacking)
+    (Note: CompositedLayerMapping was formerly known as LayerBacking)
 
     The boolean check CompositedLayerMapping::hasVisibleNonCompositingDescendant()
     was actually not checking for visible content beyond children layers. As a
     result, composited layers sometimes did not see that they actually have
-    visible content in a descendant RenderLayer. This test recreates that
+    visible content in a descendant Layer. This test recreates that
     scenario by using visibility:hidden stacking contexts to create a deeper
-    hierarchy of RenderLayers within on composited layer.
+    hierarchy of Layers within on composited layer.
 
     The green box should be visible, hiding the red box.
   -->

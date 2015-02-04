@@ -50,6 +50,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
@@ -59,7 +60,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginOcclusionSupport.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
@@ -144,7 +144,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                    renderer->borderTop() + renderer->paddingTop());
 
-    // For querying RenderLayer::compositingState().
+    // For querying Layer::compositingState().
     // This code should be correct.
     DisableCompositingQueryAsserts disabler;
     renderer->invalidatePaintRectangle(dirtyRect);
@@ -308,7 +308,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
 
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
-    // on the RenderLayer.
+    // on the Layer.
     if (RenderPart* renderer = m_element->renderPart()) {
         ASSERT(renderer->hasLayer());
         renderer->layer()->updateSelfPaintingLayer();

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderLayerCompositor_h
-#define RenderLayerCompositor_h
+#ifndef LayerCompositor_h
+#define LayerCompositor_h
 
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 
@@ -55,23 +55,23 @@ enum CompositingStateTransitionType {
     RemoveFromSquashingLayer
 };
 
-// RenderLayerCompositor manages the hierarchy of
-// composited RenderLayers. It determines which RenderLayers
+// LayerCompositor manages the hierarchy of
+// composited Layers. It determines which Layers
 // become compositing, and creates and maintains a hierarchy of
-// GraphicsLayers based on the RenderLayer painting order.
+// GraphicsLayers based on the Layer painting order.
 //
-// There is one RenderLayerCompositor per RenderView.
+// There is one LayerCompositor per RenderView.
 
-class RenderLayerCompositor final : public GraphicsLayerClient {
+class LayerCompositor final : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit RenderLayerCompositor(RenderView&);
-    virtual ~RenderLayerCompositor();
+    explicit LayerCompositor(RenderView&);
+    virtual ~LayerCompositor();
 
     void updateIfNeededRecursive();
 
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
-    // composited RenderLayers)
+    // composited Layers)
     bool inCompositingMode() const;
     // FIXME: Replace all callers with inCompositingMode and remove this function.
     bool staleInCompositingMode() const;
@@ -94,23 +94,23 @@ public:
 
     void didLayout();
 
-    // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given RenderLayer.
-    bool clipsCompositingDescendants(const RenderLayer*) const;
+    // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given Layer.
+    bool clipsCompositingDescendants(const Layer*) const;
 
     // Whether the given layer needs an extra 'contents' layer.
-    bool needsContentsCompositingLayer(const RenderLayer*) const;
+    bool needsContentsCompositingLayer(const Layer*) const;
 
     bool supportsFixedRootBackgroundCompositing() const;
-    bool needsFixedRootBackgroundLayer(const RenderLayer*) const;
+    bool needsFixedRootBackgroundLayer(const Layer*) const;
     GraphicsLayer* fixedRootBackgroundLayer() const;
     void setNeedsUpdateFixedBackground() { m_needsUpdateFixedBackground = true; }
 
-    // Issue paint invalidations of the appropriate layers when the given RenderLayer starts or stops being composited.
-    void paintInvalidationOnCompositingChange(RenderLayer*);
+    // Issue paint invalidations of the appropriate layers when the given Layer starts or stops being composited.
+    void paintInvalidationOnCompositingChange(Layer*);
 
     void fullyInvalidatePaint();
 
-    RenderLayer* rootRenderLayer() const;
+    Layer* rootLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
     GraphicsLayer* frameScrollLayer() const;
     GraphicsLayer* scrollLayer() const;
@@ -132,7 +132,7 @@ public:
 
     void setIsInWindow(bool);
 
-    static RenderLayerCompositor* frameContentsCompositor(RenderPart*);
+    static LayerCompositor* frameContentsCompositor(RenderPart*);
     // Return true if the layers changed.
     static bool parentFrameContentLayers(RenderPart*);
 
@@ -143,7 +143,7 @@ public:
     void frameViewScrollbarsExistenceDidChange();
     void rootFixedBackgroundsChanged();
 
-    bool scrollingLayerDidChange(RenderLayer*);
+    bool scrollingLayerDidChange(Layer*);
 
     String layerTreeAsText(LayerTreeFlags);
 
@@ -157,16 +157,16 @@ public:
     virtual String debugName(const GraphicsLayer*) override;
     DocumentLifecycle& lifecycle() const;
 
-    void updatePotentialCompositingReasonsFromStyle(RenderLayer*);
+    void updatePotentialCompositingReasonsFromStyle(Layer*);
 
     // Whether the layer could ever be composited.
-    bool canBeComposited(const RenderLayer*) const;
+    bool canBeComposited(const Layer*) const;
 
     // FIXME: Move allocateOrClearCompositedLayerMapping to CompositingLayerAssigner once we've fixed
     // the compositing chicken/egg issues.
-    bool allocateOrClearCompositedLayerMapping(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
+    bool allocateOrClearCompositedLayerMapping(Layer*, CompositingStateTransitionType compositedLayerUpdate);
 
-    void updateDirectCompositingReasons(RenderLayer*);
+    void updateDirectCompositingReasons(Layer*);
 
     void setOverlayLayer(GraphicsLayer*);
 
@@ -247,4 +247,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderLayerCompositor_h
+#endif // LayerCompositor_h

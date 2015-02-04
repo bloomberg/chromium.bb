@@ -38,7 +38,7 @@ public:
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectCanvas || RenderReplaced::isOfType(type); }
     virtual LayerType layerTypeRequired() const override;
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject&) override final;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutLayerModelObject&) override final;
 
     void canvasSizeChanged();
 

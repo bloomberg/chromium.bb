@@ -93,7 +93,7 @@ void RenderFlowThread::validateRegions()
     updateRegionsFlowThreadPortionRect();
 }
 
-void RenderFlowThread::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void RenderFlowThread::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
     rect = fragmentsBoundingBox(rect);

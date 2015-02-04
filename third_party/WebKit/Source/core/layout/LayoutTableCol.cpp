@@ -109,7 +109,7 @@ bool LayoutTableCol::canHaveChildren() const
     return isTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // For now, just paint invalidate the whole table.
     // FIXME: Find a better way to do this, e.g., need to paint invalidate all the cells that we

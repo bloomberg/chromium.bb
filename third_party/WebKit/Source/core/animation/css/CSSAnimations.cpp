@@ -51,7 +51,7 @@
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/animation/TimingFunction.h"

@@ -81,7 +81,7 @@ void RenderHTMLCanvas::canvasSizeChanged()
         setNeedsLayout();
 }
 
-PaintInvalidationReason RenderHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
+PaintInvalidationReason RenderHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& paintInvalidationContainer)
 {
     PaintInvalidationReason reason = RenderBox::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
     HTMLCanvasElement* element = toHTMLCanvasElement(node());

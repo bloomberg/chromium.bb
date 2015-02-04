@@ -66,8 +66,8 @@
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
+#include "core/layout/Layer.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace blink {

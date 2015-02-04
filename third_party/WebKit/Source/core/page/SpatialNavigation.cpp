@@ -36,9 +36,9 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/layout/Layer.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/geometry/IntRect.h"
 
 namespace blink {

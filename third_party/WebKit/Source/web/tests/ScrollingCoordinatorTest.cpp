@@ -27,7 +27,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -80,7 +80,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        RenderLayerCompositor* compositor = frame()->contentRenderer()->compositor();
+        LayerCompositor* compositor = frame()->contentRenderer()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 
@@ -188,7 +188,7 @@ static WebLayer* webLayerFromElement(Element* element)
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBoxModelObject())
         return 0;
-    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+    Layer* layer = toRenderBoxModelObject(renderer)->layer();
     if (!layer)
         return 0;
     if (!layer->hasCompositedLayerMapping())
@@ -467,7 +467,7 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     RenderView* innerRenderView = innerFrameView->renderView();
     ASSERT_TRUE(innerRenderView);
 
-    RenderLayerCompositor* innerCompositor = innerRenderView->compositor();
+    LayerCompositor* innerCompositor = innerRenderView->compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
@@ -511,7 +511,7 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     RenderView* innerRenderView = innerFrameView->renderView();
     ASSERT_TRUE(innerRenderView);
 
-    RenderLayerCompositor* innerCompositor = innerRenderView->compositor();
+    LayerCompositor* innerCompositor = innerRenderView->compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 

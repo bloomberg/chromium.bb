@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/rendering/RenderGrid.h"
 
+#include "core/layout/Layer.h"
 #include "core/paint/GridPainter.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/GridCoordinate.h"
@@ -1183,7 +1183,7 @@ void RenderGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
 
         if (child->parent() == this) {
             // If column/row start is not auto the padding has been already computed in offsetAndBreadthForPositionedChild().
-            RenderLayer* childLayer = child->layer();
+            Layer* childLayer = child->layer();
             if (columnStartIsAuto)
                 childLayer->setStaticInlinePosition(borderAndPaddingStart());
             else

@@ -42,10 +42,10 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLayerClipper.h"
+#include "core/layout/LayerClipper.h"
 
 #include "core/frame/Settings.h"
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
@@ -91,12 +91,12 @@ static void applyClipRects(const ClipRectsContext& context, RenderObject& render
     }
 }
 
-RenderLayerClipper::RenderLayerClipper(RenderLayerModelObject& renderer)
+LayerClipper::LayerClipper(LayoutLayerModelObject& renderer)
     : m_renderer(renderer)
 {
 }
 
-ClipRects* RenderLayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
+ClipRects* LayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
 {
     ASSERT(context.usesCache());
     if (!m_cache)
@@ -121,7 +121,7 @@ ClipRects* RenderLayerClipper::clipRectsIfCached(const ClipRectsContext& context
     return entry.clipRects.get();
 }
 
-ClipRects* RenderLayerClipper::storeClipRectsInCache(const ClipRectsContext& context, ClipRects* parentClipRects, const ClipRects& clipRects) const
+ClipRects* LayerClipper::storeClipRectsInCache(const ClipRectsContext& context, ClipRects* parentClipRects, const ClipRects& clipRects) const
 {
     ClipRectsCache::Entry& entry = cache().get(context.cacheSlot);
     entry.root = context.rootLayer;
@@ -141,7 +141,7 @@ ClipRects* RenderLayerClipper::storeClipRectsInCache(const ClipRectsContext& con
     return entry.clipRects.get();
 }
 
-ClipRects* RenderLayerClipper::getClipRects(const ClipRectsContext& context) const
+ClipRects* LayerClipper::getClipRects(const ClipRectsContext& context) const
 {
     if (ClipRects* result = clipRectsIfCached(context))
         return result;
@@ -158,28 +158,28 @@ ClipRects* RenderLayerClipper::getClipRects(const ClipRectsContext& context) con
     return storeClipRectsInCache(context, parentClipRects, *clipRects);
 }
 
-void RenderLayerClipper::clearClipRectsIncludingDescendants()
+void LayerClipper::clearClipRectsIncludingDescendants()
 {
     m_cache = nullptr;
 
-    for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (Layer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->clipper().clearClipRectsIncludingDescendants();
 }
 
-void RenderLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
+void LayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
 {
     if (m_cache)
         m_cache->clear(cacheSlot);
 
-    for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (Layer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
 }
 
-LayoutRect RenderLayerClipper::childrenClipRect() const
+LayoutRect LayerClipper::childrenClipRect() const
 {
     // FIXME: border-radius not accounted for.
     // FIXME: Regions not accounted for.
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
+    Layer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
@@ -188,10 +188,10 @@ LayoutRect RenderLayerClipper::childrenClipRect() const
     return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox();
 }
 
-LayoutRect RenderLayerClipper::localClipRect() const
+LayoutRect LayerClipper::localClipRect() const
 {
     // FIXME: border-radius not accounted for.
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
+    Layer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext context(clippingRootLayer, PaintingClipRects);
@@ -208,7 +208,7 @@ LayoutRect RenderLayerClipper::localClipRect() const
     return clipRect;
 }
 
-void RenderLayerClipper::calculateRects(const ClipRectsContext& context, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
+void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
     ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
 {
     bool isClippingRoot = m_renderer.layer() == context.rootLayer;
@@ -271,7 +271,7 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& context, const L
     }
 }
 
-void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
+void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     bool rootLayerScrolls = m_renderer.document().settings() && m_renderer.document().settings()->rootLayerScrolls();
     if (!m_renderer.layer()->parent() && !rootLayerScrolls) {
@@ -284,7 +284,7 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, Cli
 
     // For transformed layers, the root layer was shifted to be us, so there is no need to
     // examine the parent. We want to cache clip rects with us as the root.
-    RenderLayer* parentLayer = !isClippingRoot ? m_renderer.layer()->parent() : 0;
+    Layer* parentLayer = !isClippingRoot ? m_renderer.layer()->parent() : 0;
 
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
@@ -302,7 +302,7 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, Cli
 
     if ((m_renderer.hasOverflowClip() && (context.respectOverflowClip == RespectOverflowClip || !isClippingRoot)) || m_renderer.hasClip()) {
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
-        // some transformed layer boundary, for example, in the RenderLayerCompositor overlapMap, where
+        // some transformed layer boundary, for example, in the LayerCompositor overlapMap, where
         // clipRects are needed in view space.
         applyClipRects(context, m_renderer, roundedLayoutPoint(m_renderer.localToContainerPoint(FloatPoint(), context.rootLayer->renderer())), clipRects);
     }
@@ -319,7 +319,7 @@ static ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPos
     return parentRects.overflowClipRect();
 }
 
-ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
+ClipRect LayerClipper::backgroundClipRect(const ClipRectsContext& context) const
 {
     ASSERT(m_renderer.layer()->parent());
     ASSERT(m_renderer.view());
@@ -339,7 +339,7 @@ ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& context)
     return result;
 }
 
-void RenderLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
+void LayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     if (context.usesCache())
         clipRects = *getClipRects(context);
@@ -347,24 +347,24 @@ void RenderLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context
         calculateClipRects(context, clipRects);
 }
 
-RenderLayer* RenderLayerClipper::clippingRootForPainting() const
+Layer* LayerClipper::clippingRootForPainting() const
 {
-    const RenderLayer* current = m_renderer.layer();
+    const Layer* current = m_renderer.layer();
     // FIXME: getting rid of current->hasCompositedLayerMapping() here breaks the
     // compositing/backing/no-backing-for-clip.html layout test, because there is a
     // "composited but paints into ancestor" layer involved. However, it doesn't make sense that
     // that check would be appropriate here but not inside the while loop below.
     if (current->isPaintInvalidationContainer() || current->hasCompositedLayerMapping())
-        return const_cast<RenderLayer*>(current);
+        return const_cast<Layer*>(current);
 
     while (current) {
         if (current->isRootLayer())
-            return const_cast<RenderLayer*>(current);
+            return const_cast<Layer*>(current);
 
         current = current->compositingContainer();
         ASSERT(current);
         if (current->transform() || current->isPaintInvalidationContainer())
-            return const_cast<RenderLayer*>(current);
+            return const_cast<Layer*>(current);
     }
 
     ASSERT_NOT_REACHED();

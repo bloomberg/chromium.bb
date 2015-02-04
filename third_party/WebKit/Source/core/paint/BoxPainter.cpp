@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -19,7 +20,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/BorderEdge.h"
@@ -622,7 +622,7 @@ static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
     return space;
 }
 
-void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, const RenderLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
+void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, const LayoutLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
     BackgroundImageGeometry& geometry, RenderObject* backgroundObject)
 {
     LayoutUnit left = 0;
@@ -795,7 +795,7 @@ bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const RenderObject& obj
     if (obj.view()->frameView() && obj.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
         return false;
 
-    RenderLayer* rootLayer = obj.view()->layer();
+    Layer* rootLayer = obj.view()->layer();
     if (!rootLayer || rootLayer->compositingState() == NotComposited)
         return false;
 

@@ -148,7 +148,7 @@
     'layers': {
       'filepath': 'Source/core/page/scrolling/ScrollingCoordinator' \
                   '|Source/platform/graphics/GraphicsLayer' \
-                  '|Source/core/rendering/RenderLayer'
+                  '|Source/core/layout/Layer'
     },
     "content_security_policy": {
       'filepath': 'Source/core/frame/csp' \

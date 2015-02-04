@@ -39,9 +39,9 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/rendering/RenderBoxModelObject.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
@@ -263,7 +263,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
+    Layer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation>> animations;

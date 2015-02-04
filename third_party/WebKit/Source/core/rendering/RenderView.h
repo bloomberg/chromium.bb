@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class RenderLayerCompositor;
+class LayerCompositor;
 class RenderQuote;
 
 // The root of the render tree, corresponding to the CSS initial containing block.
@@ -87,8 +87,8 @@ public:
     };
 
     static ViewportConstrainedPosition viewportConstrainedPosition(EPosition position) { return position == FixedPosition ? IsFixedPosition : IsNotFixedPosition; }
-    void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
+    virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
 
     void invalidatePaintForRectangle(const LayoutRect&, PaintInvalidationReason) const;
@@ -135,7 +135,7 @@ public:
     // Notification that this view moved into or out of a native window.
     void setIsInWindow(bool);
 
-    RenderLayerCompositor* compositor();
+    LayerCompositor* compositor();
     bool usesCompositing() const;
 
     IntRect unscaledDocumentRect() const;
@@ -169,8 +169,8 @@ public:
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
 
 private:
-    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
-    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
+    virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
+    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
@@ -198,7 +198,7 @@ private:
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;
     LayoutState* m_layoutState;
-    OwnPtr<RenderLayerCompositor> m_compositor;
+    OwnPtr<LayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 
     RenderQuote* m_renderQuoteHead;

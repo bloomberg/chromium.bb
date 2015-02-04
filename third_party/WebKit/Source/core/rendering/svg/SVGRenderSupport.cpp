@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
@@ -51,7 +51,7 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
     return enclosingIntRect(rect);
 }
 
-LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const RenderObject* object, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
     if (object->style()->visibility() != VISIBLE && !object->enclosingLayer()->hasVisibleContent())
@@ -103,7 +103,7 @@ const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(cons
     return svgRoot;
 }
 
-void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
+void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
     transformState.applyTransform(object->localToParentTransform());
 
@@ -126,7 +126,7 @@ void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const Ren
     parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject* object, const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)
+const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject* object, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != object);
 

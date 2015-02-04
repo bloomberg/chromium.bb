@@ -1,4 +1,4 @@
-A squashing RenderLayer that becomes non-composited should correctly send a repaint invalidation to the new container GraphicsLayer that it paints into. When run interactively, hovering over the force-composited gray div should not cause other layers to disappear.
+A squashing Layer that becomes non-composited should correctly send a repaint invalidation to the new container GraphicsLayer that it paints into. When run interactively, hovering over the force-composited gray div should not cause other layers to disappear.
 
 CASE 1, original layer tree:
 {

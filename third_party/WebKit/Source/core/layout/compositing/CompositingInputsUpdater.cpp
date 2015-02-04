@@ -5,17 +5,17 @@
 #include "config.h"
 #include "core/layout/compositing/CompositingInputsUpdater.h"
 
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
 
-CompositingInputsUpdater::CompositingInputsUpdater(RenderLayer* rootRenderLayer)
+CompositingInputsUpdater::CompositingInputsUpdater(Layer* rootLayer)
     : m_geometryMap(UseTransforms)
-    , m_rootRenderLayer(rootRenderLayer)
+    , m_rootLayer(rootLayer)
 {
 }
 
@@ -26,10 +26,10 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 void CompositingInputsUpdater::update()
 {
     TRACE_EVENT0("blink", "CompositingInputsUpdater::update");
-    updateRecursive(m_rootRenderLayer, DoNotForceUpdate, AncestorInfo());
+    updateRecursive(m_rootLayer, DoNotForceUpdate, AncestorInfo());
 }
 
-static const RenderLayer* findParentLayerOnClippingContainerChain(const RenderLayer* layer)
+static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
 {
     RenderObject* current = layer->renderer();
     while (current) {
@@ -39,14 +39,14 @@ static const RenderLayer* findParentLayerOnClippingContainerChain(const RenderLa
                 // Note: it's unclear whether this is what the spec says. Firefox does not clip, but Chrome does.
                 if (current->style()->position() == FixedPosition && current->hasClipOrOverflowClip()) {
                     ASSERT(current->hasLayer());
-                    return static_cast<const RenderLayerModelObject*>(current)->layer();
+                    return static_cast<const LayoutLayerModelObject*>(current)->layer();
                 }
 
                 // CSS clip applies to fixed position elements even for ancestors that are not what the
                 // fixed element is positioned with respect to.
                 if (current->hasClip()) {
                     ASSERT(current->hasLayer());
-                    return static_cast<const RenderLayerModelObject*>(current)->layer();
+                    return static_cast<const LayoutLayerModelObject*>(current)->layer();
                 }
             }
         } else {
@@ -54,7 +54,7 @@ static const RenderLayer* findParentLayerOnClippingContainerChain(const RenderLa
         }
 
         if (current->hasLayer())
-            return static_cast<const RenderLayerModelObject*>(current)->layer();
+            return static_cast<const LayoutLayerModelObject*>(current)->layer();
         // Having clip or overflow clip forces the RenderObject to become a layer.
         ASSERT(!current->hasClipOrOverflowClip());
     }
@@ -62,22 +62,22 @@ static const RenderLayer* findParentLayerOnClippingContainerChain(const RenderLa
     return 0;
 }
 
-static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObject* object)
+static const Layer* findParentLayerOnContainingBlockChain(const RenderObject* object)
 {
     for (const RenderObject* current = object; current; current = current->containingBlock()) {
         if (current->hasLayer())
-            return static_cast<const RenderLayerModelObject*>(current)->layer();
+            return static_cast<const LayoutLayerModelObject*>(current)->layer();
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-static bool hasClippedStackingAncestor(const RenderLayer* layer, const RenderLayer* clippingLayer)
+static bool hasClippedStackingAncestor(const Layer* layer, const Layer* clippingLayer)
 {
     if (layer == clippingLayer)
         return false;
     const RenderObject* clippingRenderer = clippingLayer->renderer();
-    for (const RenderLayer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
+    for (const Layer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
         if (current->renderer()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->renderer()))
             return true;
 
@@ -89,7 +89,7 @@ static bool hasClippedStackingAncestor(const RenderLayer* layer, const RenderLay
     return false;
 }
 
-void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
+void CompositingInputsUpdater::updateRecursive(Layer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
         return;
@@ -106,7 +106,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     }
 
     if (updateType == ForceUpdate) {
-        RenderLayer::AncestorDependentCompositingInputs properties;
+        Layer::AncestorDependentCompositingInputs properties;
 
         if (!layer->isRootLayer()) {
             properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->boundingBoxForCompositingOverlapTest()));
@@ -116,30 +116,30 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
             if (properties.clippedAbsoluteBoundingBox.isEmpty())
                 properties.clippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
 
-            IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(m_rootRenderLayer, AbsoluteClipRects)).rect());
+            IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(m_rootLayer, AbsoluteClipRects)).rect());
             properties.clippedAbsoluteBoundingBox.intersect(clipRect);
 
-            const RenderLayer* parent = layer->parent();
+            const Layer* parent = layer->parent();
             properties.opacityAncestor = parent->isTransparent() ? parent : parent->opacityAncestor();
             properties.transformAncestor = parent->hasTransformRelatedProperty() ? parent : parent->transformAncestor();
             properties.filterAncestor = parent->hasFilter() ? parent : parent->filterAncestor();
 
             if (info.hasAncestorWithClipOrOverflowClip) {
-                const RenderLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
+                const Layer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
                 const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->renderer()->hasClipOrOverflowClip();
                 properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->renderer() : parentLayerOnClippingContainerChain->clippingContainer();
             }
 
             if (info.lastScrollingAncestor) {
                 const RenderObject* containingBlock = layer->renderer()->containingBlock();
-                const RenderLayer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
+                const Layer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
 
                 properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();
                 if (parentLayerOnContainingBlockChain->scrollsOverflow())
                     properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
                 if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    const RenderLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootRenderLayer();
+                    const Layer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
                     if (hasClippedStackingAncestor(layer, clippingLayer))
                         properties.clipParent = clippingLayer;
                 }
@@ -167,8 +167,8 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     if (layer->renderer()->hasClipPath())
         info.hasAncestorWithClipPath = true;
 
-    RenderLayer::DescendantDependentCompositingInputs descendantProperties;
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
+    Layer::DescendantDependentCompositingInputs descendantProperties;
+    for (Layer* child = layer->firstChild(); child; child = child->nextSibling()) {
         updateRecursive(child, updateType, info);
 
         descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->renderer()->hasClipPath();
@@ -183,12 +183,12 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
 
 #if ENABLE(ASSERT)
 
-void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer* layer)
+void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(Layer* layer)
 {
     ASSERT(!layer->childNeedsCompositingInputsUpdate());
     ASSERT(!layer->needsCompositingInputsUpdate());
 
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
+    for (Layer* child = layer->firstChild(); child; child = child->nextSibling())
         assertNeedsCompositingInputsUpdateBitsCleared(child);
 }
 

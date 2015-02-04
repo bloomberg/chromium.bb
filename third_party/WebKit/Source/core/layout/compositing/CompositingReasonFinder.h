@@ -5,8 +5,8 @@
 #ifndef CompositingReasonFinder_h
 #define CompositingReasonFinder_h
 
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositingTriggers.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/graphics/CompositingReasons.h"
 
 namespace blink {
@@ -20,7 +20,7 @@ public:
     explicit CompositingReasonFinder(RenderView&);
 
     CompositingReasons potentialCompositingReasonsFromStyle(RenderObject*) const;
-    CompositingReasons directReasons(const RenderLayer*) const;
+    CompositingReasons directReasons(const Layer*) const;
 
     void updateTriggers();
 
@@ -30,11 +30,11 @@ public:
 private:
     bool isMainFrame() const;
 
-    CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*) const;
+    CompositingReasons nonStyleDeterminedDirectReasons(const Layer*) const;
 
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForAnimation(RenderStyle*) const;
-    bool requiresCompositingForPositionFixed(const RenderLayer*) const;
+    bool requiresCompositingForPositionFixed(const Layer*) const;
     bool requiresCompositingForScrollBlocksOn(const RenderObject*) const;
 
     RenderView& m_renderView;

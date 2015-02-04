@@ -143,7 +143,7 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
     RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
 
     for (const RefPtrWillBeMember<Node>& node : m_clientsToAdd)
-        renderer->addClientRenderLayer(node.get());
+        renderer->addClientLayer(node.get());
     m_clientsToAdd.clear();
 
     return renderer;

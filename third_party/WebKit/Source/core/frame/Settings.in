@@ -122,7 +122,7 @@ scrollAnimatorEnabled initial=true
 # main thread scrolling are supported.
 threadedScrollingEnabled initial=true, invalidate=Style
 
-# Handles frame-level scrolls via the root RenderLayer instead of the FrameView.
+# Handles frame-level scrolls via the root Layer instead of the FrameView.
 # crbug.com/417782 tracks enabling this by default.
 rootLayerScrolls initial=false
 

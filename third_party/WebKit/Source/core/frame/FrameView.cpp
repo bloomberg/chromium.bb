@@ -47,11 +47,12 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -63,7 +64,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -385,7 +385,7 @@ bool FrameView::didFirstLayout() const
 
 void FrameView::invalidateRect(const IntRect& rect)
 {
-    // For querying RenderLayer::compositingState() when invalidating scrollbars.
+    // For querying Layer::compositingState() when invalidating scrollbars.
     // FIXME: do all scrollbar invalidations after layout of all frames is complete. It's currently not recursively true.
     DisableCompositingQueryAsserts disabler;
     if (!parent()) {
@@ -941,7 +941,7 @@ void FrameView::layout(bool allowSubtree)
     }
 
     FontCachePurgePreventer fontCachePurgePreventer;
-    RenderLayer* layer;
+    Layer* layer;
     {
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
@@ -1340,11 +1340,11 @@ void FrameView::scrollContentsIfNeededRecursive()
 }
 
 // FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
-static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const RenderLayer* layer)
+static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const Layer* layer)
 {
     layer->renderer()->setShouldDoFullPaintInvalidation();
 
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
+    for (Layer* child = layer->firstChild(); child; child = child->nextSibling()) {
         // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
         if (child->isPaintInvalidationContainer())
             continue;
@@ -1367,7 +1367,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         RenderObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
         ASSERT(renderer->hasLayer());
-        RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+        Layer* layer = toRenderBoxModelObject(renderer)->layer();
 
         if (layer->isPaintInvalidationContainer())
             continue;
@@ -2222,7 +2222,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
         return windowClipRect();
 
     // If we have no layer, just return our window clip rect.
-    const RenderLayer* enclosingLayer = ownerElement->renderer()->enclosingLayer();
+    const Layer* enclosingLayer = ownerElement->renderer()->enclosingLayer();
     if (!enclosingLayer)
         return windowClipRect();
 

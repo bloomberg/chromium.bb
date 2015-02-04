@@ -94,7 +94,7 @@ private:
     virtual bool canHaveChildren() const override;
     virtual LayerType layerTypeRequired() const override { return NoLayer; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;

@@ -29,10 +29,10 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/Layer.h"
+#include "core/layout/LayerReflectionInfo.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerReflectionInfo.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ public:
     {
     }
 
-    UpdateContext(const UpdateContext& other, const RenderLayer& layer)
+    UpdateContext(const UpdateContext& other, const Layer& layer)
         : m_compositingStackingContext(other.m_compositingStackingContext)
         , m_compositingAncestor(other.compositingContainer(layer))
     {
@@ -57,19 +57,19 @@ public:
         }
     }
 
-    const RenderLayer* compositingContainer(const RenderLayer& layer) const
+    const Layer* compositingContainer(const Layer& layer) const
     {
         return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
     }
 
-    const RenderLayer* compositingStackingContext() const
+    const Layer* compositingStackingContext() const
     {
         return m_compositingStackingContext;
     }
 
 private:
-    const RenderLayer* m_compositingStackingContext;
-    const RenderLayer* m_compositingAncestor;
+    const Layer* m_compositingStackingContext;
+    const Layer* m_compositingAncestor;
 };
 
 GraphicsLayerUpdater::GraphicsLayerUpdater()
@@ -81,20 +81,20 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::update(RenderLayer& layer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
+void GraphicsLayerUpdater::update(Layer& layer, Vector<Layer*>& layersNeedingPaintInvalidation)
 {
     TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
     updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
     layer.compositor()->updateRootLayerPosition();
 }
 
-void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType updateType, const UpdateContext& context, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
+void GraphicsLayerUpdater::updateRecursive(Layer& layer, UpdateType updateType, const UpdateContext& context, Vector<Layer*>& layersNeedingPaintInvalidation)
 {
     if (layer.hasCompositedLayerMapping()) {
         CompositedLayerMapping* mapping = layer.compositedLayerMapping();
 
         if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
-            const RenderLayer* compositingContainer = context.compositingContainer(layer);
+            const Layer* compositingContainer = context.compositingContainer(layer);
             ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
             if (mapping->updateGraphicsLayerConfiguration())
@@ -111,18 +111,18 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
     }
 
     UpdateContext childContext(context, layer);
-    for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
+    for (Layer* child = layer.firstChild(); child; child = child->nextSibling())
         updateRecursive(*child, updateType, childContext, layersNeedingPaintInvalidation);
 }
 
 #if ENABLE(ASSERT)
 
-void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer& layer)
+void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(Layer& layer)
 {
     if (layer.hasCompositedLayerMapping())
         layer.compositedLayerMapping()->assertNeedsToUpdateGraphicsLayerBitsCleared();
 
-    for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
+    for (Layer* child = layer.firstChild(); child; child = child->nextSibling())
         assertNeedsToUpdateGraphicsLayerBitsCleared(*child);
 }
 

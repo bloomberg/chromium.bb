@@ -26,8 +26,8 @@
 #include "core/rendering/RenderListMarker.h"
 
 #include "core/fetch/ImageResource.h"
+#include "core/layout/Layer.h"
 #include "core/paint/ListMarkerPainter.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/fonts/Font.h"
@@ -1614,7 +1614,7 @@ void RenderListMarker::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 
@@ -1626,7 +1626,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        Layer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

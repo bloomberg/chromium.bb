@@ -47,11 +47,11 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderDetailsMarker.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "wtf/text/WTFString.h"
 
@@ -230,9 +230,9 @@ void TextFieldInputType::forwardEvent(Event* event)
         RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element().renderer());
         if (event->type() == EventTypeNames::blur) {
             if (RenderBox* innerEditorRenderer = element().innerEditorElement()->renderBox()) {
-                // FIXME: This class has no need to know about RenderLayer!
-                if (RenderLayer* innerLayer = innerEditorRenderer->layer()) {
-                    if (RenderLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
+                // FIXME: This class has no need to know about Layer!
+                if (Layer* innerLayer = innerEditorRenderer->layer()) {
+                    if (LayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
                         IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }

@@ -26,9 +26,9 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/layout/Layer.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -106,7 +106,7 @@ void SVGRenderingContext::applyCompositingIfNecessary()
 {
     ASSERT(!m_paintInfo.isRenderingClipPathAsMaskImage());
 
-    // RenderLayer takes care of root opacity and blend mode.
+    // Layer takes care of root opacity and blend mode.
     if (m_object->isSVGRoot())
         return;
 
@@ -226,7 +226,7 @@ float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObje
     // Continue walking up the layer tree, accumulating CSS transforms.
     // FIXME: this queries layer compositing state - which is not
     // supported during layout. Hence, the result may not include all CSS transforms.
-    RenderLayer* layer = renderer ? renderer->enclosingLayer() : 0;
+    Layer* layer = renderer ? renderer->enclosingLayer() : 0;
     while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,

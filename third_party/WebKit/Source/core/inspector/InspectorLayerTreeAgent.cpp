@@ -43,7 +43,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -217,18 +217,18 @@ void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graph
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
-    RenderLayerCompositor* compositor = renderLayerCompositor();
+    LayerCompositor* compositor = renderLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
-    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);
+    buildLayerIdToNodeIdMap(compositor->rootLayer(), layerIdToNodeIdMap);
     gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers);
     return layers.release();
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
     if (root->hasCompositedLayerMapping()) {
         if (Node* node = root->renderer()->generatingNode()) {
@@ -236,14 +236,14 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerId
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
-    for (RenderLayer* child = root->firstChild(); child; child = child->nextSibling())
+    for (Layer* child = root->firstChild(); child; child = child->nextSibling())
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->renderer()->isRenderIFrame())
         return;
     FrameView* childFrameView = toFrameView(toRenderPart(root->renderer())->widget());
     if (RenderView* childRenderView = childFrameView->renderView()) {
-        if (RenderLayerCompositor* childCompositor = childRenderView->compositor())
-            buildLayerIdToNodeIdMap(childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
+        if (LayerCompositor* childCompositor = childRenderView->compositor())
+            buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
     }
 }
 
@@ -264,10 +264,10 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
     return InspectorNodeIds::idForNode(node);
 }
 
-RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
+LayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
     RenderView* renderView = m_pageAgent->inspectedFrame()->contentRenderer();
-    RenderLayerCompositor* compositor = renderView ? renderView->compositor() : nullptr;
+    LayerCompositor* compositor = renderView ? renderView->compositor() : nullptr;
     return compositor;
 }
 
@@ -302,7 +302,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         *errorString = "Invalid layer id";
         return nullptr;
     }
-    RenderLayerCompositor* compositor = renderLayerCompositor();
+    LayerCompositor* compositor = renderLayerCompositor();
     if (!compositor) {
         *errorString = "Not in compositing mode";
         return nullptr;

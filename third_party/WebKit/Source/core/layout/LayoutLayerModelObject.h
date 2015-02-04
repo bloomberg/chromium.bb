@@ -20,15 +20,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderLayerModelObject_h
-#define RenderLayerModelObject_h
+#ifndef LayoutLayerModelObject_h
+#define LayoutLayerModelObject_h
 
 #include "core/rendering/RenderObject.h"
 
 namespace blink {
 
-class RenderLayer;
-class RenderLayerScrollableArea;
+class Layer;
+class LayerScrollableArea;
 
 enum LayerType {
     NoLayer,
@@ -39,17 +39,17 @@ enum LayerType {
     ForcedLayer
 };
 
-class RenderLayerModelObject : public RenderObject {
+class LayoutLayerModelObject : public RenderObject {
 public:
-    explicit RenderLayerModelObject(ContainerNode*);
-    virtual ~RenderLayerModelObject();
+    explicit LayoutLayerModelObject(ContainerNode*);
+    virtual ~LayoutLayerModelObject();
 
     // This is the only way layers should ever be destroyed.
     void destroyLayer();
 
     bool hasSelfPaintingLayer() const;
-    RenderLayer* layer() const { return m_layer.get(); }
-    RenderLayerScrollableArea* scrollableArea() const;
+    Layer* layer() const { return m_layer.get(); }
+    LayerScrollableArea* scrollableArea() const;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
@@ -74,21 +74,21 @@ protected:
 
     virtual void willBeDestroyed() override;
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer*, const LayoutPoint&, const LayoutRect&) const override;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer*, const LayoutPoint&, const LayoutRect&) const override;
 
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
 
 private:
-    virtual bool isLayerModelObject() const override final { return true; }
+    virtual bool isLayoutLayerModelObject() const override final { return true; }
 
-    OwnPtr<RenderLayer> m_layer;
+    OwnPtr<Layer> m_layer;
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_wasFloating;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderLayerModelObject, isLayerModelObject());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutLayerModelObject, isLayoutLayerModelObject());
 
 } // namespace blink
 
-#endif // RenderLayerModelObject_h
+#endif // LayoutLayerModelObject_h

@@ -41,11 +41,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef RenderLayerScrollableArea_h
-#define RenderLayerScrollableArea_h
+#ifndef LayerScrollableArea_h
+#define LayerScrollableArea_h
 
 
-#include "core/rendering/LayerFragment.h"
+#include "core/layout/LayerFragment.h"
 #include "core/rendering/RenderBox.h"
 
 #include "platform/scroll/ScrollableArea.h"
@@ -59,17 +59,17 @@ enum ResizerHitTestType {
 
 class PlatformEvent;
 class RenderBox;
-class RenderLayer;
+class Layer;
 class RenderScrollbarPart;
 
-class RenderLayerScrollableArea final : public ScrollableArea {
+class LayerScrollableArea final : public ScrollableArea {
     friend class Internals;
 
 public:
     // FIXME: We should pass in the RenderBox but this opens a window
-    // for crashers during RenderLayer setup (see crbug.com/368062).
-    RenderLayerScrollableArea(RenderLayer&);
-    virtual ~RenderLayerScrollableArea();
+    // for crashers during Layer setup (see crbug.com/368062).
+    LayerScrollableArea(Layer&);
+    virtual ~LayerScrollableArea();
 
     bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
     bool hasVerticalScrollbar() const { return verticalScrollbar(); }
@@ -201,13 +201,13 @@ public:
 
     // These are used during compositing updates to determine if the overflow
     // controls need to be repositioned in the GraphicsLayer tree.
-    void setTopmostScrollChild(RenderLayer*);
-    RenderLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
+    void setTopmostScrollChild(Layer*);
+    Layer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
 
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
     RenderBox& box() const;
-    RenderLayer* layer() const;
+    Layer* layer() const;
 
     RenderScrollbarPart* resizer() { return m_resizer; }
 
@@ -249,7 +249,7 @@ private:
 
     void updateCompositingLayersAfterScroll();
 
-    RenderLayer& m_layer;
+    Layer& m_layer;
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
@@ -258,8 +258,8 @@ private:
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
 
-    RenderLayer* m_nextTopmostScrollChild;
-    RenderLayer* m_topmostScrollChild;
+    Layer* m_nextTopmostScrollChild;
+    Layer* m_topmostScrollChild;
 
     // FIXME: once cc can handle composited scrolling with clip paths, we will
     // no longer need this bit.
@@ -286,4 +286,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderLayerScrollableArea_h
+#endif // LayerScrollableArea_h

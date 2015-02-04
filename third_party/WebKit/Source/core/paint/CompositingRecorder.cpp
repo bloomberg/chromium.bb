@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/CompositingRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"

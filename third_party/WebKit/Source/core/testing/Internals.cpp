@@ -102,9 +102,10 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
 #include "core/page/Chrome.h"
@@ -116,7 +117,6 @@
 #include "core/page/PrintContext.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -1165,12 +1165,12 @@ unsigned Internals::touchEventHandlerCount(Document* document)
     return eventHandlerCount(*document, EventHandlerRegistry::TouchEvent);
 }
 
-static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
+static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
 {
     *layerOffset = IntSize();
     if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer()) {
         LayoutRect rect;
-        RenderLayer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+        Layer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
         *layerOffset = IntSize(rect.x(), rect.y());
         return searchRoot;
     }
@@ -1186,7 +1186,7 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
         if (graphicsLayer == squashingLayer) {
             *layerType ="squashing";
             LayoutRect rect;
-            RenderLayer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+            Layer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
             *layerOffset = IntSize(rect.x(), rect.y());
             return searchRoot;
         }
@@ -1212,8 +1212,8 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
 
     // Search right to left to increase the chances that we'll choose the top-most layers in a
     // grouped mapping for squashing.
-    for (RenderLayer* child = searchRoot->lastChild(); child; child = child->previousSibling()) {
-        RenderLayer* foundLayer = findRenderLayerForGraphicsLayer(child, graphicsLayer, layerOffset, layerType);
+    for (Layer* child = searchRoot->lastChild(); child; child = child->previousSibling()) {
+        Layer* foundLayer = findLayerForGraphicsLayer(child, graphicsLayer, layerOffset, layerType);
         if (foundLayer)
             return foundLayer;
     }
@@ -1266,14 +1266,14 @@ static void mergeRects(blink::WebVector<blink::WebRect>& rects)
     }
 }
 
-static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
+static void accumulateLayerRectList(LayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
 {
     blink::WebVector<blink::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
     if (!layerRects.isEmpty()) {
         mergeRects(layerRects);
         String layerType;
         IntSize layerOffset;
-        RenderLayer* renderLayer = findRenderLayerForGraphicsLayer(compositor->rootRenderLayer(), graphicsLayer, &layerOffset, &layerType);
+        Layer* renderLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
         Node* node = renderLayer ? renderLayer->renderer()->node() : 0;
         for (size_t i = 0; i < layerRects.size(); ++i) {
             if (!layerRects[i].isEmpty()) {
@@ -1302,7 +1302,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
         return nullptr;
 
     if (RenderView* view = document->renderView()) {
-        if (RenderLayerCompositor* compositor = view->compositor()) {
+        if (LayerCompositor* compositor = view->compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
                 LayerRectList* rects = LayerRectList::create();
                 accumulateLayerRectList(compositor, rootLayer, rects);
@@ -1544,8 +1544,8 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
         return 0;
     }
 
-    RenderLayer* layer1 = toRenderBox(renderer1)->layer();
-    RenderLayer* layer2 = toRenderBox(renderer2)->layer();
+    Layer* layer1 = toRenderBox(renderer1)->layer();
+    Layer* layer2 = toRenderBox(renderer2)->layer();
     if (!layer1 || !layer2) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("No render layer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
         return 0;
@@ -1578,7 +1578,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
         return String();
     }
 
-    RenderLayer* layer = toRenderBox(renderer)->layer();
+    Layer* layer = toRenderBox(renderer)->layer();
     if (!layer
         || !layer->hasCompositedLayerMapping()
         || !layer->compositedLayerMapping()->mainGraphicsLayer()) {

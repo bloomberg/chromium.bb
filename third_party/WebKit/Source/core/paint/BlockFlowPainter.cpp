@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/BlockFlowPainter.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
 
         LayoutRect gapRectsBounds = m_renderBlockFlow.selectionGaps(&m_renderBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight, &paintInfo);
         if (!gapRectsBounds.isEmpty()) {
-            RenderLayer* layer = m_renderBlockFlow.enclosingLayer();
+            Layer* layer = m_renderBlockFlow.enclosingLayer();
             gapRectsBounds.moveBy(-paintOffset);
             if (!m_renderBlockFlow.hasLayer()) {
                 LayoutRect localBounds(gapRectsBounds);

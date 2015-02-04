@@ -6,6 +6,7 @@
 #include "core/paint/LayerPainter.h"
 
 #include "core/frame/Settings.h"
+#include "core/layout/Layer.h"
 #include "core/page/Page.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FilterPainter.h"
@@ -16,7 +17,6 @@
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -28,7 +28,7 @@
 
 namespace blink {
 
-static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
+static inline bool shouldSuppressPaintingLayer(Layer* layer)
 {
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
@@ -103,7 +103,7 @@ void LayerPainter::paintLayerContentsAndReflection(GraphicsContext* context, con
 
 class ClipPathHelper {
 public:
-    ClipPathHelper(GraphicsContext* context, const RenderLayer& renderLayer, const LayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
+    ClipPathHelper(GraphicsContext* context, const Layer& renderLayer, const LayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
         : m_resourceClipper(0), m_clipStateSaver(*context, false), m_renderLayer(renderLayer), m_context(context)
     {
@@ -164,7 +164,7 @@ private:
     GraphicsContextStateSaver m_clipStateSaver;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
     RenderSVGResourceClipper::ClipperState m_clipperState;
-    const RenderLayer& m_renderLayer;
+    const Layer& m_renderLayer;
     GraphicsContext* m_context;
 };
 
@@ -213,7 +213,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     OwnPtr<LayerClipRecorder> clipRecorder;
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to composite if we're painting the root.
-    // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
+    // FIXME: this should be unified further into Layer::paintsWithTransparency().
     bool shouldCompositeForBlendMode = (!m_renderLayer.renderer()->isDocumentElement() || m_renderLayer.renderer()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
     if (shouldCompositeForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
         clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::TransparencyClip,
@@ -332,7 +332,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
 
     // FIXME: We should make sure that we don't walk past paintingInfo.rootLayer here.
     // m_renderLayer may be the "root", and then we should avoid looking at its parent.
-    RenderLayer* parentLayer = m_renderLayer.parent();
+    Layer* parentLayer = m_renderLayer.parent();
 
     ClipRect clipRect(LayoutRect::infiniteRect());
     if (parentLayer) {
@@ -343,17 +343,17 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
         clipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
     }
 
-    RenderLayer* paginationLayer = m_renderLayer.enclosingPaginationLayer();
+    Layer* paginationLayer = m_renderLayer.enclosingPaginationLayer();
     LayerFragments fragments;
     if (paginationLayer) {
-        // FIXME: This is a mess. Look closely at this code and the code in RenderLayer and fix any
+        // FIXME: This is a mess. Look closely at this code and the code in Layer and fix any
         // issues in it & refactor to make it obvious from code structure what it does and that it's
         // correct.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
         ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer());
         // Calculate the transformed bounding box in the current coordinate space, to figure out
         // which fragmentainers (e.g. columns) we need to visit.
-        LayoutRect transformedExtent = RenderLayer::transparencyClipBox(&m_renderLayer, paginationLayer, RenderLayer::PaintingTransparencyClipBox, RenderLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+        LayoutRect transformedExtent = Layer::transparencyClipBox(&m_renderLayer, paginationLayer, Layer::PaintingTransparencyClipBox, Layer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
         // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer here.
         paginationLayer->collectFragments(fragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0, paintingInfo.subPixelAccumulation, &transformedExtent);
     } else {
@@ -411,10 +411,10 @@ void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* cont
     LayerListMutationDetector mutationChecker(m_renderLayer.stackingNode());
 #endif
 
-    RenderLayerStackingNodeIterator iterator(*m_renderLayer.stackingNode(), childrenToVisit);
-    while (RenderLayerStackingNode* child = iterator.next()) {
+    LayerStackingNodeIterator iterator(*m_renderLayer.stackingNode(), childrenToVisit);
+    while (LayerStackingNode* child = iterator.next()) {
         LayerPainter childPainter(*child->layer());
-        // If this RenderLayer should paint into its own backing or a grouped backing, that will be done via CompositedLayerMapping::paintContents()
+        // If this Layer should paint into its own backing or a grouped backing, that will be done via CompositedLayerMapping::paintContents()
         // and CompositedLayerMapping::doPaintTask().
         if (!childPainter.shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
             continue;
@@ -427,7 +427,7 @@ void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* cont
 }
 
 // FIXME: inline this.
-static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlags paintFlags)
+static bool paintForFixedRootBackground(const Layer* layer, PaintLayerFlags paintFlags)
 {
     return layer->renderer()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
 }
@@ -461,15 +461,15 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
             clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
-        if (RenderLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
+        if (LayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
             ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
     }
 }
 
-static bool checkContainingBlockChainForPagination(RenderLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
+static bool checkContainingBlockChainForPagination(LayoutLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
-    RenderLayerModelObject* prevBlock = renderer;
+    LayoutLayerModelObject* prevBlock = renderer;
     RenderBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
         containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;
@@ -488,12 +488,12 @@ static bool checkContainingBlockChainForPagination(RenderLayerModelObject* rende
     return true;
 }
 
-void LayerPainter::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+void LayerPainter::paintPaginatedChildLayer(Layer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     // We need to do multiple passes, breaking up our child layer into strips.
-    Vector<RenderLayer*> columnLayers;
-    RenderLayerStackingNode* ancestorNode = m_renderLayer.stackingNode()->isNormalFlowOnly() ? m_renderLayer.parent()->stackingNode() : m_renderLayer.stackingNode()->ancestorStackingContextNode();
-    for (RenderLayer* curr = childLayer->parent(); curr; curr = curr->parent()) {
+    Vector<Layer*> columnLayers;
+    LayerStackingNode* ancestorNode = m_renderLayer.stackingNode()->isNormalFlowOnly() ? m_renderLayer.parent()->stackingNode() : m_renderLayer.stackingNode()->ancestorStackingContextNode();
+    for (Layer* curr = childLayer->parent(); curr; curr = curr->parent()) {
         if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->renderBox()))
             columnLayers.append(curr);
         if (curr->stackingNode() == ancestorNode)
@@ -510,8 +510,8 @@ void LayerPainter::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsCon
     paintChildLayerIntoColumns(childLayer, context, paintingInfo, paintFlags, columnLayers, columnLayers.size() - 1);
 }
 
-void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
-    PaintLayerFlags paintFlags, const Vector<RenderLayer*>& columnLayers, size_t colIndex)
+void LayerPainter::paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
+    PaintLayerFlags paintFlags, const Vector<Layer*>& columnLayers, size_t colIndex)
 {
     RenderBlock* columnBlock = toRenderBlock(columnLayers[colIndex]->renderer());
 

@@ -1,4 +1,4 @@
-This test ensures that RenderLayer::scrollsWithRespectTo always works even with transformed fixed-position layers.
+This test ensures that Layer::scrollsWithRespectTo always works even with transformed fixed-position layers.
 
 fixed does not scroll with respect to fixed
 fixed scrolls with respect to container

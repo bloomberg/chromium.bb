@@ -35,7 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -264,8 +264,8 @@ bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoin
 //  |       +- *pageScaleLayer
 //  |           +- *innerViewportScrollLayer
 //  |               +-- overflowControlsHostLayer (root layer)
-//  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in RenderLayerCompositor]
-//  |                   |   +-- outerViewportScrollLayer [frame scroll layer in RenderLayerCompositor]
+//  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in LayerCompositor]
+//  |                   |   +-- outerViewportScrollLayer [frame scroll layer in LayerCompositor]
 //  |                   |       +-- content layers ...
 //  |                   +-- horizontal ScrollbarLayer (non-overlay)
 //  |                   +-- verticalScrollbarLayer (non-overlay)
@@ -389,7 +389,7 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
 
     ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentRenderer());
 
-    RenderLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
+    LayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
 

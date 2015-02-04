@@ -38,8 +38,9 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTableCell.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -51,7 +52,6 @@
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
@@ -115,7 +115,7 @@ LayerType RenderBox::layerTypeRequired() const
         || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
         return NormalLayer;
 
-    // Ensure that explicit use of scroll-blocks-on creates a RenderLayer (since we might need
+    // Ensure that explicit use of scroll-blocks-on creates a Layer (since we might need
     // it to be composited).
     if (style()->hasScrollBlocksOn()) {
         if (isDocumentElement()) {
@@ -637,7 +637,7 @@ bool RenderBox::canResize() const
     return (hasOverflowClip() || isRenderIFrame()) && style()->resize() != RESIZE_NONE;
 }
 
-void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
     RenderBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
@@ -1136,7 +1136,7 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
 
     // Check kids first.
     for (RenderObject* child = slowLastChild(); child; child = child->previousSibling()) {
-        if ((!child->hasLayer() || !toRenderLayerModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(request, result, locationInContainer, adjustedLocation, action)) {
+        if ((!child->hasLayer() || !toLayoutLayerModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(request, result, locationInContainer, adjustedLocation, action)) {
             updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
             return true;
         }
@@ -1240,7 +1240,7 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
         return false;
     if (childBox->size().isZero())
         return false;
-    if (RenderLayer* childLayer = childBox->layer()) {
+    if (Layer* childLayer = childBox->layer()) {
         // FIXME: perhaps this could be less conservative?
         if (childLayer->compositingState() != NotComposited)
             return false;
@@ -1388,7 +1388,7 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     return false;
 }
 
-PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& newPaintInvalidationContainer)
 {
     PaintInvalidationReason reason = RenderBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
@@ -1561,7 +1561,7 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
 }
 
-void RenderBox::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1768,10 +1768,10 @@ void RenderBox::clearSpannerPlaceholder()
     m_rareData->m_spannerPlaceholder = 0;
 }
 
-LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {
-        RenderLayer* layer = enclosingLayer();
+        Layer* layer = enclosingLayer();
         layer->updateDescendantDependentFlags();
         if (layer->subtreeIsInvisible())
             return LayoutRect();
@@ -1782,7 +1782,7 @@ LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerM
     return r;
 }
 
-void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -3886,8 +3886,8 @@ bool RenderBox::avoidsFloats() const
 
 bool RenderBox::hasNonCompositedScrollbars() const
 {
-    if (RenderLayer* layer = this->layer()) {
-        if (RenderLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (Layer* layer = this->layer()) {
+        if (LayerScrollableArea* scrollableArea = layer->scrollableArea()) {
             if (scrollableArea->hasHorizontalScrollbar() && !scrollableArea->layerForHorizontalScrollbar())
                 return true;
             if (scrollableArea->hasVerticalScrollbar() && !scrollableArea->layerForVerticalScrollbar())
@@ -3897,7 +3897,7 @@ bool RenderBox::hasNonCompositedScrollbars() const
     return false;
 }
 
-PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
+PaintInvalidationReason RenderBox::paintInvalidationReason(const LayoutLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
     PaintInvalidationReason invalidationReason = RenderBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
@@ -3950,7 +3950,7 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerMode
     return PaintInvalidationIncremental;
 }
 
-void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
+void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     RenderObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, positionFromPaintInvalidationBacking);
 
@@ -4003,7 +4003,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
     }
 }
 
-void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& rect, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& rect, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     if (rect.isEmpty())
         return;
@@ -4285,11 +4285,11 @@ int RenderBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 }
 
 
-RenderLayer* RenderBox::enclosingFloatPaintingLayer() const
+Layer* RenderBox::enclosingFloatPaintingLayer() const
 {
     const RenderObject* curr = this;
     while (curr) {
-        RenderLayer* layer = curr->hasLayer() && curr->isBox() ? toRenderBox(curr)->layer() : 0;
+        Layer* layer = curr->hasLayer() && curr->isBox() ? toRenderBox(curr)->layer() : 0;
         if (layer && layer->isSelfPaintingLayer())
             return layer;
         curr = curr->parent();
@@ -4579,7 +4579,7 @@ void RenderBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
 void RenderBox::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
     RenderBoxModelObject::invalidateDisplayItemClients(displayItemList);
-    if (RenderLayerScrollableArea* area = scrollableArea())
+    if (LayerScrollableArea* area = scrollableArea())
         displayItemList->invalidate(area->displayItemClient());
 }
 

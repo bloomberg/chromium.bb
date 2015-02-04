@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLayerStackingNodeIterator.h"
+#include "core/layout/LayerStackingNodeIterator.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerStackingNode.h"
+#include "core/layout/Layer.h"
+#include "core/layout/LayerStackingNode.h"
 
 namespace blink {
 
-RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
+LayerStackingNode* LayerStackingNodeIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index < negZOrderList->size())
             return negZOrderList->at(m_index++);
 
@@ -48,7 +48,7 @@ RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<RenderLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList && m_index < normalFlowList->size())
             return normalFlowList->at(m_index++);
 
@@ -57,7 +57,7 @@ RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index < posZOrderList->size())
             return posZOrderList->at(m_index++);
 
@@ -68,10 +68,10 @@ RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
     return 0;
 }
 
-RenderLayerStackingNode* RenderLayerStackingNodeReverseIterator::next()
+LayerStackingNode* LayerStackingNodeReverseIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index >= 0)
             return negZOrderList->at(m_index--);
 
@@ -80,7 +80,7 @@ RenderLayerStackingNode* RenderLayerStackingNodeReverseIterator::next()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<RenderLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList && m_index >= 0)
             return normalFlowList->at(m_index--);
 
@@ -89,7 +89,7 @@ RenderLayerStackingNode* RenderLayerStackingNodeReverseIterator::next()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index >= 0)
             return posZOrderList->at(m_index--);
 
@@ -100,10 +100,10 @@ RenderLayerStackingNode* RenderLayerStackingNodeReverseIterator::next()
     return 0;
 }
 
-void RenderLayerStackingNodeReverseIterator::setIndexToLastItem()
+void LayerStackingNodeReverseIterator::setIndexToLastItem()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList) {
             m_index  = negZOrderList->size() - 1;
             return;
@@ -113,7 +113,7 @@ void RenderLayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<RenderLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList) {
             m_index = normalFlowList->size() - 1;
             return;
@@ -123,7 +123,7 @@ void RenderLayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<RenderLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList) {
             m_index = posZOrderList->size() - 1;
             return;

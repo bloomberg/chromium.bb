@@ -13,8 +13,8 @@ enum CompositingState {
 
     PaintsIntoOwnBacking = 1,
 
-    // In this state, the RenderLayer subtree paints into a backing that is shared by
-    // several RenderLayer subtrees.
+    // In this state, the Layer subtree paints into a backing that is shared by
+    // several Layer subtrees.
     PaintsIntoGroupedBacking = 2
 };
 

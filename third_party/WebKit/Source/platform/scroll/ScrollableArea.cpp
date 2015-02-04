@@ -161,7 +161,7 @@ bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granula
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollBehavior behavior)
 {
-    // FIXME(417782): This should be unified with RenderLayerScrollableArea::scrollToOffset.
+    // FIXME(417782): This should be unified with LayerScrollableArea::scrollToOffset.
     ASSERT_NOT_REACHED();
 }
 

@@ -19,9 +19,9 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/layout/Layer.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
@@ -510,7 +510,7 @@ const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] 
 const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change";
 const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer";
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const RenderLayer* layer, const char* reason)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const Layer* layer, const char* reason)
 {
     const RenderObject* paintInvalidationContainer = layer->renderer()->containerForPaintInvalidation();
 

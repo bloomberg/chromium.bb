@@ -42,7 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/UseCounter.h"
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 
 namespace blink {
 

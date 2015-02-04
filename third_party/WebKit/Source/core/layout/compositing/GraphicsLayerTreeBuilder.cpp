@@ -29,10 +29,10 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/Layer.h"
+#include "core/layout/LayerReflectionInfo.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerReflectionInfo.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 
@@ -46,7 +46,7 @@ GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder()
 {
 }
 
-static bool shouldAppendLayer(const RenderLayer& layer)
+static bool shouldAppendLayer(const Layer& layer)
 {
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
@@ -61,7 +61,7 @@ static bool shouldAppendLayer(const RenderLayer& layer)
     return true;
 }
 
-void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, AncestorInfo info)
+void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -86,8 +86,8 @@ void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, AncestorInfo info)
 #endif
 
     if (layer.stackingNode()->isStackingContext()) {
-        RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
-        while (RenderLayerStackingNode* curNode = iterator.next())
+        LayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
+        while (LayerStackingNode* curNode = iterator.next())
             rebuild(*curNode->layer(), infoForChildren);
 
         // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
@@ -95,14 +95,14 @@ void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, AncestorInfo info)
             infoForChildren.childLayersOfEnclosingCompositedLayer->append(currentCompositedLayerMapping->foregroundLayer());
     }
 
-    RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
+    LayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
+    while (LayerStackingNode* curNode = iterator.next())
         rebuild(*curNode->layer(), infoForChildren);
 
     if (hasCompositedLayerMapping) {
         bool parented = false;
         if (layer.renderer()->isRenderPart())
-            parented = RenderLayerCompositor::parentFrameContentLayers(toRenderPart(layer.renderer()));
+            parented = LayerCompositor::parentFrameContentLayers(toRenderPart(layer.renderer()));
 
         if (!parented)
             currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);

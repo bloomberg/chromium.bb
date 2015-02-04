@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 
 class GraphicsLayerUpdater {
 
@@ -44,18 +44,18 @@ public:
         ForceUpdate,
     };
 
-    void update(RenderLayer&, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
+    void update(Layer&, Vector<Layer*>& layersNeedingPaintInvalidation);
 
     bool needsRebuildTree() const { return m_needsRebuildTree; }
 
 #if ENABLE(ASSERT)
-    static void assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer&);
+    static void assertNeedsToUpdateGraphicsLayerBitsCleared(Layer&);
 #endif
 
 private:
     class UpdateContext;
 
-    void updateRecursive(RenderLayer&, UpdateType, const UpdateContext&, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
+    void updateRecursive(Layer&, UpdateType, const UpdateContext&, Vector<Layer*>& layersNeedingPaintInvalidation);
 
     bool m_needsRebuildTree;
 };

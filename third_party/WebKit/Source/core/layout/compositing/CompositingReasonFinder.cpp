@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 
@@ -45,7 +45,7 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer) const
+CompositingReasons CompositingReasonFinder::directReasons(const Layer* layer) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
         return CompositingReasonNone;
@@ -119,7 +119,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style->hasFilter())
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
-    // See RenderLayer::updateTransform for an explanation of why we check both.
+    // See Layer::updateTransform for an explanation of why we check both.
     if (renderer->hasTransformRelatedProperty() && style->hasTransform())
         reasons |= CompositingReasonTransformWithCompositedDescendants;
 
@@ -143,7 +143,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
     return renderer->hasTransformRelatedProperty() && renderer->style()->transform().has3DOperation();
 }
 
-CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer) const
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const Layer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
     RenderObject* renderer = layer->renderer();
@@ -152,7 +152,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
         if (layer->clipParent())
             directReasons |= CompositingReasonOutOfFlowClipping;
 
-        if (const RenderLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
+        if (const Layer* scrollingAncestor = layer->ancestorScrollingLayer()) {
             if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
                 directReasons |= CompositingReasonOverflowScrollingParent;
         }
@@ -178,7 +178,7 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderStyle* style
     return style->shouldCompositeForCurrentAnimations();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(const RenderLayer* layer) const
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Layer* layer) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;

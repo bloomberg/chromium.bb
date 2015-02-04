@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class RenderLayerModelObject;
+class LayoutLayerModelObject;
 class RenderObject;
 class RenderSVGModelObject;
 class RenderView;
@@ -19,7 +19,7 @@ class RenderView;
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
-    PaintInvalidationState(const PaintInvalidationState& next, RenderLayerModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer);
+    PaintInvalidationState(const PaintInvalidationState& next, LayoutLayerModelObject& renderer, const LayoutLayerModelObject& paintInvalidationContainer);
     PaintInvalidationState(const PaintInvalidationState& next, const RenderSVGModelObject& renderer);
 
     explicit PaintInvalidationState(const RenderView&);
@@ -34,9 +34,9 @@ public:
     bool forceCheckForPaintInvalidation() const { return m_forceCheckForPaintInvalidation; }
     void setForceCheckForPaintInvalidation() { m_forceCheckForPaintInvalidation = true; }
 
-    const RenderLayerModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
+    const LayoutLayerModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
 
-    bool canMapToContainer(const RenderLayerModelObject* container) const
+    bool canMapToContainer(const LayoutLayerModelObject* container) const
     {
         return m_cachedOffsetsEnabled && container == &m_paintInvalidationContainer;
     }
@@ -55,7 +55,7 @@ private:
     // x/y offset from paint invalidation container. Includes relative positioning and scroll offsets.
     LayoutSize m_paintOffset;
 
-    const RenderLayerModelObject& m_paintInvalidationContainer;
+    const LayoutLayerModelObject& m_paintInvalidationContainer;
 
     // Transform from the initial viewport coordinate system of an outermost
     // SVG root to the userspace _before_ the relevant element. Combining this

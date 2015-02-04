@@ -23,54 +23,54 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLayerModelObject.h"
+#include "core/layout/LayoutLayerModelObject.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
 
-bool RenderLayerModelObject::s_wasFloating = false;
+bool LayoutLayerModelObject::s_wasFloating = false;
 
-RenderLayerModelObject::RenderLayerModelObject(ContainerNode* node)
+LayoutLayerModelObject::LayoutLayerModelObject(ContainerNode* node)
     : RenderObject(node)
 {
 }
 
-RenderLayerModelObject::~RenderLayerModelObject()
+LayoutLayerModelObject::~LayoutLayerModelObject()
 {
     // Our layer should have been destroyed and cleared by now
     ASSERT(!hasLayer());
     ASSERT(!m_layer);
 }
 
-void RenderLayerModelObject::destroyLayer()
+void LayoutLayerModelObject::destroyLayer()
 {
     setHasLayer(false);
     m_layer = nullptr;
 }
 
-void RenderLayerModelObject::createLayer(LayerType type)
+void LayoutLayerModelObject::createLayer(LayerType type)
 {
     ASSERT(!m_layer);
-    m_layer = adoptPtr(new RenderLayer(this, type));
+    m_layer = adoptPtr(new Layer(this, type));
     setHasLayer(true);
     m_layer->insertOnlyThisLayer();
 }
 
-bool RenderLayerModelObject::hasSelfPaintingLayer() const
+bool LayoutLayerModelObject::hasSelfPaintingLayer() const
 {
     return m_layer && m_layer->isSelfPaintingLayer();
 }
 
-RenderLayerScrollableArea* RenderLayerModelObject::scrollableArea() const
+LayerScrollableArea* LayoutLayerModelObject::scrollableArea() const
 {
     return m_layer ? m_layer->scrollableArea() : 0;
 }
 
-void RenderLayerModelObject::willBeDestroyed()
+void LayoutLayerModelObject::willBeDestroyed()
 {
     if (isPositioned()) {
         // Don't use this->view() because the document's renderView has been set to 0 during destruction.
@@ -87,7 +87,7 @@ void RenderLayerModelObject::willBeDestroyed()
     destroyLayer();
 }
 
-void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
+void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     s_wasFloating = isFloating();
 
@@ -102,7 +102,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
     RenderObject::styleWillChange(diff, newStyle);
 }
 
-void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     bool hadTransform = hasTransformRelatedProperty();
     bool hadLayer = hasLayer();
@@ -154,14 +154,14 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     }
 }
 
-void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     if (hasLayer()) {
         if (isRenderView()) {
             // RenderView is handled with a special fast-path, but it needs to know the current layer.
             RenderObject::addLayerHitTestRects(rects, layer(), LayoutPoint(), LayoutRect());
         } else {
-            // Since a RenderObject never lives outside it's container RenderLayer, we can switch
+            // Since a RenderObject never lives outside it's container Layer, we can switch
             // to marking entire layers instead. This may sometimes mark more than necessary (when
             // a layer is made of disjoint objects) but in practice is a significant performance
             // savings.
@@ -172,7 +172,7 @@ void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     }
 }
 
-void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -180,7 +180,7 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
         return;
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
+    const LayoutLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
     // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
@@ -193,7 +193,7 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
+void LayoutLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
@@ -211,7 +211,7 @@ void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const Layout
     }
 }
 
-void RenderLayerModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutLayerModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {
         if (current->isText() || current->isListMarker())

@@ -69,8 +69,8 @@ class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
-class RenderLayer;
-class RenderLayerScrollableArea;
+class Layer;
+class LayerScrollableArea;
 class RenderObject;
 class ScrollableArea;
 class Scrollbar;
@@ -244,7 +244,7 @@ private:
     bool isCursorVisible() const;
     void updateCursor();
 
-    ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
+    ScrollableArea* associatedScrollableArea(const Layer*) const;
 
     // Scrolls the elements of the DOM tree. Returns true if a node was scrolled.
     // False if we reached the root and couldn't scroll anything.
@@ -342,7 +342,7 @@ private:
 
     bool m_svgPan;
 
-    RenderLayerScrollableArea* m_resizeScrollableArea;
+    LayerScrollableArea* m_resizeScrollableArea;
 
     RefPtrWillBeMember<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;

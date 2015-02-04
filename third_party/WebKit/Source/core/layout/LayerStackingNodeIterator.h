@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderLayerStackingNodeIterator_h
-#define RenderLayerStackingNodeIterator_h
+#ifndef LayerStackingNodeIterator_h
+#define LayerStackingNodeIterator_h
 
 #include "wtf/Noncopyable.h"
 
@@ -42,50 +42,50 @@ enum ChildrenIteration {
     AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
 };
 
-class RenderLayerStackingNode;
+class LayerStackingNode;
 
-// This iterator walks the RenderLayerStackingNode lists in the following order:
+// This iterator walks the LayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
-class RenderLayerStackingNodeIterator {
-    WTF_MAKE_NONCOPYABLE(RenderLayerStackingNodeIterator);
+class LayerStackingNodeIterator {
+    WTF_MAKE_NONCOPYABLE(LayerStackingNodeIterator);
 public:
-    RenderLayerStackingNodeIterator(const RenderLayerStackingNode& root, unsigned whichChildren)
+    LayerStackingNodeIterator(const LayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
         , m_remainingChildren(whichChildren)
         , m_index(0)
     {
     }
 
-    RenderLayerStackingNode* next();
+    LayerStackingNode* next();
 
 private:
-    const RenderLayerStackingNode& m_root;
+    const LayerStackingNode& m_root;
     unsigned m_remainingChildren;
     unsigned m_index;
 };
 
-// This iterator is similar to RenderLayerStackingNodeIterator but it walks the lists in reverse order
+// This iterator is similar to LayerStackingNodeIterator but it walks the lists in reverse order
 // (from the last item to the first one).
-class RenderLayerStackingNodeReverseIterator {
-    WTF_MAKE_NONCOPYABLE(RenderLayerStackingNodeReverseIterator);
+class LayerStackingNodeReverseIterator {
+    WTF_MAKE_NONCOPYABLE(LayerStackingNodeReverseIterator);
 public:
-    RenderLayerStackingNodeReverseIterator(const RenderLayerStackingNode& root, unsigned whichChildren)
+    LayerStackingNodeReverseIterator(const LayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
         , m_remainingChildren(whichChildren)
     {
         setIndexToLastItem();
     }
 
-    RenderLayerStackingNode* next();
+    LayerStackingNode* next();
 
 private:
     void setIndexToLastItem();
 
-    const RenderLayerStackingNode& m_root;
+    const LayerStackingNode& m_root;
     unsigned m_remainingChildren;
     int m_index;
 };
 
 } // namespace blink
 
-#endif // RenderLayerStackingNodeIterator_h
+#endif // LayerStackingNodeIterator_h

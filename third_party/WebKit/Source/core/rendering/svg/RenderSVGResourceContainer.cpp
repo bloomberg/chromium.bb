@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
@@ -131,8 +131,8 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
 
 void RenderSVGResourceContainer::markAllClientLayersForInvalidation()
 {
-    HashSet<RenderLayer*>::iterator layerEnd = m_clientLayers.end();
-    for (HashSet<RenderLayer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
+    HashSet<Layer*>::iterator layerEnd = m_clientLayers.end();
+    for (HashSet<Layer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
         (*it)->filterNeedsPaintInvalidation();
 }
 
@@ -168,23 +168,23 @@ void RenderSVGResourceContainer::removeClient(RenderObject* client)
     m_clients.remove(client);
 }
 
-void RenderSVGResourceContainer::addClientRenderLayer(Node* node)
+void RenderSVGResourceContainer::addClientLayer(Node* node)
 {
     ASSERT(node);
     if (!node->renderer() || !node->renderer()->hasLayer())
         return;
-    m_clientLayers.add(toRenderLayerModelObject(node->renderer())->layer());
+    m_clientLayers.add(toLayoutLayerModelObject(node->renderer())->layer());
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::addClientRenderLayer(RenderLayer* client)
+void RenderSVGResourceContainer::addClientLayer(Layer* client)
 {
     ASSERT(client);
     m_clientLayers.add(client);
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::removeClientRenderLayer(RenderLayer* client)
+void RenderSVGResourceContainer::removeClientLayer(Layer* client)
 {
     ASSERT(client);
     m_clientLayers.remove(client);

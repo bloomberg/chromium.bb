@@ -29,11 +29,11 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderLayerFilterInfo.h"
+#include "core/layout/LayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
+#include "core/layout/Layer.h"
 #include "core/rendering/FilterEffectRenderer.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
@@ -42,38 +42,38 @@
 
 namespace blink {
 
-RenderLayerFilterInfoMap* RenderLayerFilterInfo::s_filterMap = 0;
+LayerFilterInfoMap* LayerFilterInfo::s_filterMap = 0;
 
-RenderLayerFilterInfo* RenderLayerFilterInfo::filterInfoForRenderLayer(const RenderLayer* layer)
+LayerFilterInfo* LayerFilterInfo::filterInfoForLayer(const Layer* layer)
 {
     if (!s_filterMap)
         return 0;
-    RenderLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    LayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     return (iter != s_filterMap->end()) ? iter->value : 0;
 }
 
-RenderLayerFilterInfo* RenderLayerFilterInfo::createFilterInfoForRenderLayerIfNeeded(RenderLayer* layer)
+LayerFilterInfo* LayerFilterInfo::createFilterInfoForLayerIfNeeded(Layer* layer)
 {
     if (!s_filterMap)
-        s_filterMap = new RenderLayerFilterInfoMap();
+        s_filterMap = new LayerFilterInfoMap();
 
-    RenderLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    LayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     if (iter != s_filterMap->end()) {
         ASSERT(layer->hasFilterInfo());
         return iter->value;
     }
 
-    RenderLayerFilterInfo* filter = new RenderLayerFilterInfo(layer);
+    LayerFilterInfo* filter = new LayerFilterInfo(layer);
     s_filterMap->set(layer, filter);
     layer->setHasFilterInfo(true);
     return filter;
 }
 
-void RenderLayerFilterInfo::removeFilterInfoForRenderLayer(RenderLayer* layer)
+void LayerFilterInfo::removeFilterInfoForLayer(Layer* layer)
 {
     if (!s_filterMap)
         return;
-    RenderLayerFilterInfo* filter = s_filterMap->take(layer);
+    LayerFilterInfo* filter = s_filterMap->take(layer);
     if (s_filterMap->isEmpty()) {
         delete s_filterMap;
         s_filterMap = 0;
@@ -86,33 +86,33 @@ void RenderLayerFilterInfo::removeFilterInfoForRenderLayer(RenderLayer* layer)
     delete filter;
 }
 
-RenderLayerFilterInfo::RenderLayerFilterInfo(RenderLayer* layer)
+LayerFilterInfo::LayerFilterInfo(Layer* layer)
     : m_layer(layer)
 {
 }
 
-RenderLayerFilterInfo::~RenderLayerFilterInfo()
+LayerFilterInfo::~LayerFilterInfo()
 {
     removeReferenceFilterClients();
 }
 
-void RenderLayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
+void LayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
 {
     m_renderer = renderer;
 }
 
-void RenderLayerFilterInfo::notifyFinished(Resource*)
+void LayerFilterInfo::notifyFinished(Resource*)
 {
     RenderObject* renderer = m_layer->renderer();
     // FIXME: This caller of scheduleSVGFilterLayerUpdateHack() is not correct. It's using the layer update
-    // system to trigger a RenderLayer to go through the filter updating logic, but that might not
+    // system to trigger a Layer to go through the filter updating logic, but that might not
     // even happen if this element is style sharing and RenderObject::setStyle() returns early.
     // Filters need to find a better way to hook into the system.
     toElement(renderer->node())->scheduleSVGFilterLayerUpdateHack();
     renderer->setShouldDoFullPaintInvalidation();
 }
 
-void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
+void LayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
 {
     removeReferenceFilterClients();
     for (size_t i = 0; i < operations.size(); ++i) {
@@ -134,7 +134,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
             if (!isSVGFilterElement(filter))
                 continue;
             if (filter->renderer())
-                toRenderSVGResourceContainer(filter->renderer())->addClientRenderLayer(m_layer);
+                toRenderSVGResourceContainer(filter->renderer())->addClientLayer(m_layer);
             else
                 toSVGFilterElement(filter)->addClient(m_layer->renderer()->node());
             m_internalSVGReferences.append(filter);
@@ -142,7 +142,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
     }
 }
 
-void RenderLayerFilterInfo::removeReferenceFilterClients()
+void LayerFilterInfo::removeReferenceFilterClients()
 {
     for (size_t i = 0; i < m_externalSVGReferences.size(); ++i)
         m_externalSVGReferences.at(i)->removeClient(this);
@@ -150,7 +150,7 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
     for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
         Element* filter = m_internalSVGReferences.at(i).get();
         if (filter->renderer())
-            toRenderSVGResourceContainer(filter->renderer())->removeClientRenderLayer(m_layer);
+            toRenderSVGResourceContainer(filter->renderer())->removeClientLayer(m_layer);
         else
             toSVGFilterElement(filter)->removeClient(m_layer->renderer()->node());
     }

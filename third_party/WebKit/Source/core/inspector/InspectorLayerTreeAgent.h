@@ -34,7 +34,7 @@
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/rendering/RenderLayer.h"
+#include "core/layout/Layer.h"
 #include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -44,7 +44,7 @@ namespace blink {
 
 class InspectorPageAgent;
 class PictureSnapshot;
-class RenderLayerCompositor;
+class LayerCompositor;
 
 typedef String ErrorString;
 
@@ -90,12 +90,12 @@ private:
 
     GraphicsLayer* rootGraphicsLayer();
 
-    RenderLayerCompositor* renderLayerCompositor();
+    LayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const PictureSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
-    void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
+    void buildLayerIdToNodeIdMap(Layer*, LayerIdToNodeIdMap&);
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 

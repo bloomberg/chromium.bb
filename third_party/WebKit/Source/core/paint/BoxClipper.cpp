@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/BoxClipper.h"
 
+#include "core/layout/Layer.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"

@@ -35,7 +35,7 @@ enum RenderSVGResourceType {
     ClipperResourceType
 };
 
-class RenderLayer;
+class Layer;
 
 class RenderSVGResourceContainer : public RenderSVGHiddenContainer {
 public:
@@ -60,9 +60,9 @@ public:
     }
 
     void idChanged();
-    void addClientRenderLayer(Node*);
-    void addClientRenderLayer(RenderLayer*);
-    void removeClientRenderLayer(RenderLayer*);
+    void addClientLayer(Node*);
+    void addClientLayer(Layer*);
+    void removeClientLayer(Layer*);
 
     void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = 0);
 
@@ -103,7 +103,7 @@ private:
     // 22 padding bits available
 
     HashSet<RenderObject*> m_clients;
-    HashSet<RenderLayer*> m_clientLayers;
+    HashSet<Layer*> m_clientLayers;
 };
 
 inline RenderSVGResourceContainer* getRenderSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)

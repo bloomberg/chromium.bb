@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef RenderLayerFilterInfo_h
-#define RenderLayerFilterInfo_h
+#ifndef LayerFilterInfo_h
+#define LayerFilterInfo_h
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
@@ -42,16 +42,16 @@ namespace blink {
 
 class FilterEffectRenderer;
 class FilterOperations;
-class RenderLayer;
-class RenderLayerFilterInfo;
+class Layer;
+class LayerFilterInfo;
 
-typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
+typedef HashMap<const Layer*, LayerFilterInfo*> LayerFilterInfoMap;
 
-class RenderLayerFilterInfo final : public DocumentResourceClient {
+class LayerFilterInfo final : public DocumentResourceClient {
 public:
-    static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
-    static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
-    static void removeFilterInfoForRenderLayer(RenderLayer*);
+    static LayerFilterInfo* filterInfoForLayer(const Layer*);
+    static LayerFilterInfo* createFilterInfoForLayerIfNeeded(Layer*);
+    static void removeFilterInfoForLayer(Layer*);
 
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
@@ -61,19 +61,19 @@ public:
     void removeReferenceFilterClients();
 
 private:
-    RenderLayerFilterInfo(RenderLayer*);
-    virtual ~RenderLayerFilterInfo();
+    LayerFilterInfo(Layer*);
+    virtual ~LayerFilterInfo();
 
-    RenderLayer* m_layer;
+    Layer* m_layer;
 
     RefPtrWillBePersistent<FilterEffectRenderer> m_renderer;
 
-    static RenderLayerFilterInfoMap* s_filterMap;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Element> > m_internalSVGReferences;
-    Vector<ResourcePtr<DocumentResource> > m_externalSVGReferences;
+    static LayerFilterInfoMap* s_filterMap;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Element>> m_internalSVGReferences;
+    Vector<ResourcePtr<DocumentResource>> m_externalSVGReferences;
 };
 
 } // namespace blink
 
 
-#endif // RenderLayerFilterInfo_h
+#endif // LayerFilterInfo_h

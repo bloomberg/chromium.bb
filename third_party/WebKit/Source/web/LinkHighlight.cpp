@@ -32,9 +32,9 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/Layer.h"
+#include "core/layout/LayoutLayerModelObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerModelObject.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -107,7 +107,7 @@ void LinkHighlight::releaseResources()
     m_node.clear();
 }
 
-void LinkHighlight::attachLinkHighlightToCompositingLayer(const RenderLayerModelObject* paintInvalidationContainer)
+void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutLayerModelObject* paintInvalidationContainer)
 {
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
     if (!newGraphicsLayer->drawsContent())
@@ -126,7 +126,7 @@ void LinkHighlight::attachLinkHighlightToCompositingLayer(const RenderLayerModel
     }
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, const RenderLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, const LayoutLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
     ASSERT(paintInvalidationContainer);
@@ -143,7 +143,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetRenderer->frame()->view()->contentsToWindow(point);
         point = paintInvalidationContainer->frame()->view()->windowToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
-        RenderLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
+        Layer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -185,7 +185,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     }
 }
 
-bool LinkHighlight::computeHighlightLayerPathAndPosition(const RenderLayerModelObject* paintInvalidationContainer)
+bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutLayerModelObject* paintInvalidationContainer)
 {
     if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
         return false;
@@ -334,7 +334,7 @@ void LinkHighlight::updateGeometry()
     m_geometryNeedsUpdate = false;
 
     bool hasRenderer = m_node && m_node->renderer();
-    const RenderLayerModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
+    const LayoutLayerModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
     if (paintInvalidationContainer)
         attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
     if (paintInvalidationContainer && computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {

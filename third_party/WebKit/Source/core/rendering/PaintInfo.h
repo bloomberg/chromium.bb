@@ -40,14 +40,14 @@
 namespace blink {
 
 class RenderInline;
-class RenderLayerModelObject;
+class LayoutLayerModelObject;
 class RenderObject;
 class RenderPart;
 
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
         RenderObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
-        const RenderLayerModelObject* newPaintContainer = 0)
+        const LayoutLayerModelObject* newPaintContainer = 0)
         : context(newContext)
         , rect(newRect)
         , phase(newPhase)
@@ -83,7 +83,7 @@ struct PaintInfo {
 
     DisplayItem::Type displayItemTypeForClipping() const { return DisplayItem::paintPhaseToClipBoxType(phase); }
 
-    const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }
+    const LayoutLayerModelObject* paintContainer() const { return m_paintContainer; }
 
     ListHashSet<RenderInline*>* outlineObjects() const { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<RenderInline*>* objects) { m_outlineObjects = objects; }
@@ -96,7 +96,7 @@ struct PaintInfo {
     RenderObject* paintingRoot; // used to draw just one element and its visual kids
 
 private:
-    const RenderLayerModelObject* m_paintContainer; // the layer object that originates the current painting
+    const LayoutLayerModelObject* m_paintContainer; // the layer object that originates the current painting
     ListHashSet<RenderInline*>* m_outlineObjects; // used to list outlines that should be painted by a block with inline children
 };
 

@@ -30,7 +30,7 @@
 #ifndef RenderFlowThread_h
 #define RenderFlowThread_h
 
-#include "core/rendering/LayerFragment.h"
+#include "core/layout/LayerFragment.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "wtf/ListHashSet.h"
 
@@ -60,7 +60,7 @@ public:
 
     virtual void layout() override;
 
-    // Always create a RenderLayer for the RenderFlowThread so that we
+    // Always create a Layer for the RenderFlowThread so that we
     // can easily avoid drawing the children directly.
     virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
 
@@ -87,7 +87,7 @@ public:
     void invalidateRegions();
     bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);

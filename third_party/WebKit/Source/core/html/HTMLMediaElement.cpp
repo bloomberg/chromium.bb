@@ -57,7 +57,7 @@
 #include "core/html/track/TextTrackList.h"
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"

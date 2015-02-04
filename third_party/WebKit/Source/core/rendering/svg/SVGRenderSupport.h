@@ -37,7 +37,7 @@ class PaintInvalidationState;
 class LayoutRect;
 struct PaintInfo;
 class RenderGeometryMap;
-class RenderLayerModelObject;
+class LayoutLayerModelObject;
 class RenderObject;
 class RenderStyle;
 class RenderSVGRoot;
@@ -72,10 +72,10 @@ public:
     static void computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
-    static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
+    static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
     static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const RenderObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
-    static void mapLocalToContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
-    static const RenderObject* pushMappingToContainer(const RenderObject*, const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
+    static void mapLocalToContainer(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
+    static const RenderObject* pushMappingToContainer(const RenderObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 
     // Shared between SVG renderers and resources.
     static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle&, const RenderObject*);

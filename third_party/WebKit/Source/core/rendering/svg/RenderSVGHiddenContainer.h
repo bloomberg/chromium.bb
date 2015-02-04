@@ -41,7 +41,7 @@ protected:
 
 private:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*, const PaintInvalidationState* = 0) const override final { return LayoutRect(); }
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject*, const PaintInvalidationState* = 0) const override final { return LayoutRect(); }
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override final;

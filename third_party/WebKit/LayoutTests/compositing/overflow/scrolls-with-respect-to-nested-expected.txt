@@ -1,4 +1,4 @@
-This test ensures that RenderLayer::scrollsWithRespectTo always works even with multiple levels of nested overflow-divs, including positioned and non positioned elements, and a scrollable viewport.
+This test ensures that Layer::scrollsWithRespectTo always works even with multiple levels of nested overflow-divs, including positioned and non positioned elements, and a scrollable viewport.
 
 div1 does not scroll with respect to div1
 div1 scrolls with respect to div2

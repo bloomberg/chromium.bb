@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 29: "The "
         RenderText {#text} at (169,0) size 707x32
           text run at (169,0) width 538: " has a transform, which has no effect on inlines. It also has opacity to throw it into a"
-          text run at (0,16) width 88: "RenderLayer."
+          text run at (0,16) width 88: "Layer."
       RenderBlock {P} at (0,80) size 784x16
         RenderText {#text} at (0,0) size 29x16
           text run at (0,0) width 29: "The "

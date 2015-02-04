@@ -42,26 +42,26 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef RenderLayerReflectionInfo_h
-#define RenderLayerReflectionInfo_h
+#ifndef LayerReflectionInfo_h
+#define LayerReflectionInfo_h
 
-#include "core/rendering/LayerPaintingInfo.h"
-#include "core/rendering/RenderLayerModelObject.h"
+#include "core/layout/LayerPaintingInfo.h"
+#include "core/layout/LayoutLayerModelObject.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class RenderLayer;
+class Layer;
 class RenderReplica;
 
-class RenderLayerReflectionInfo {
-    WTF_MAKE_NONCOPYABLE(RenderLayerReflectionInfo);
+class LayerReflectionInfo {
+    WTF_MAKE_NONCOPYABLE(LayerReflectionInfo);
 public:
-    explicit RenderLayerReflectionInfo(RenderBox&);
+    explicit LayerReflectionInfo(RenderBox&);
     void destroy();
 
     RenderReplica* reflection() const { return m_reflection; }
-    RenderLayer* reflectionLayer() const;
+    Layer* reflectionLayer() const;
 
     bool isPaintingInsideReflection() const { return m_isPaintingInsideReflection; }
 
@@ -82,4 +82,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderLayerReflectinInfo_h
+#endif // LayerReflectinInfo_h

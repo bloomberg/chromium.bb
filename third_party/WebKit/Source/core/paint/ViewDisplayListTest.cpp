@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "core/layout/compositing/RenderLayerCompositor.h"
+#include "core/layout/compositing/LayerCompositor.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -86,7 +86,7 @@ void drawRect(GraphicsContext* context, RenderObject* renderer, PaintPhase phase
     context->drawRect(rect);
 }
 
-void drawClippedRect(GraphicsContext* context, RenderLayerModelObject* renderer, PaintPhase phase, const FloatRect& bound)
+void drawClippedRect(GraphicsContext* context, LayoutLayerModelObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
@@ -402,8 +402,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    RenderLayerModelObject* firstRenderer = toRenderLayerModelObject(document().body()->firstChild()->renderer());
-    RenderLayerModelObject* secondRenderer = toRenderLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutLayerModelObject* firstRenderer = toLayoutLayerModelObject(document().body()->firstChild()->renderer());
+    LayoutLayerModelObject* secondRenderer = toLayoutLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     ClipRect firstClipRect(IntRect(1, 1, 2, 2));
@@ -450,8 +450,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
 
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    RenderLayerModelObject* firstRenderer = toRenderLayerModelObject(document().body()->firstChild()->renderer());
-    RenderLayerModelObject* secondRenderer = toRenderLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutLayerModelObject* firstRenderer = toLayoutLayerModelObject(document().body()->firstChild()->renderer());
+    LayoutLayerModelObject* secondRenderer = toLayoutLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -493,7 +493,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 {
     setBodyInnerHTML("<div id='div' contentEditable='true'>XYZ</div>");
     RenderView* renderView = document().renderView();
-    RenderLayer* rootLayer = renderView->layer();
+    Layer* rootLayer = renderView->layer();
     RenderObject* htmlRenderer = document().documentElement()->renderer();
     Element* div = toElement(document().body()->firstChild());
     RenderObject* divRenderer = document().body()->firstChild()->renderer();

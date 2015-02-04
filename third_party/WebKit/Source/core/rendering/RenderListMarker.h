@@ -78,7 +78,7 @@ private:
     bool isText() const { return !isImage(); }
 
     virtual void setSelectionState(SelectionState) override;
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override;
+    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const override;
     virtual bool canBeSelectionLeaf() const override { return true; }
 
     void updateMargins();

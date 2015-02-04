@@ -5,13 +5,13 @@
 #include "config.h"
 #include "core/paint/ReplacedPainter.h"
 
+#include "core/layout/Layer.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderReplaced.h"
 
 namespace blink {

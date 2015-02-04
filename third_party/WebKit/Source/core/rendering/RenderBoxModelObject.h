@@ -24,7 +24,7 @@
 #ifndef RenderBoxModelObject_h
 #define RenderBoxModelObject_h
 
-#include "core/rendering/RenderLayerModelObject.h"
+#include "core/layout/LayoutLayerModelObject.h"
 #include "core/rendering/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
@@ -53,7 +53,7 @@ class InlineFlowBox;
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html
 
-class RenderBoxModelObject : public RenderLayerModelObject {
+class RenderBoxModelObject : public LayoutLayerModelObject {
 public:
     RenderBoxModelObject(ContainerNode*);
     virtual ~RenderBoxModelObject();
@@ -159,7 +159,7 @@ public:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const = 0;
 
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
-    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
+    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
 
     virtual void setSelectionState(SelectionState) override;
 

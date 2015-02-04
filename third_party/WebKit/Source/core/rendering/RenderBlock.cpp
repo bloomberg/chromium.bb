@@ -40,6 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/Layer.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineIterator.h"
@@ -56,7 +57,6 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextControl.h"
@@ -372,7 +372,7 @@ void RenderBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
 
             // One of the renderers we're skipping over here may be the child's paint invalidation container,
             // so we can't pass our own paint invalidation container along.
-            const RenderLayerModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
+            const LayoutLayerModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
 
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.
@@ -3477,7 +3477,7 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     }
 }
 
-LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
     LayoutRect r(RenderBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
     if (isAnonymousBlockContinuation())
