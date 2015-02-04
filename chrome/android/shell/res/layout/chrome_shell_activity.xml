@@ -14,50 +14,61 @@
     <org.chromium.chrome.shell.ChromeShellToolbar android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@drawable/progress">
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/add_button"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@android:drawable/ic_menu_add"
-            android:visibility="gone"
-            android:scaleType="center"/>
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/stop_reload_button"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@drawable/btn_close"
-            android:background="?attr/selectableItemBackground"
-            android:scaleType="center"/>
-        <EditText android:id="@+id/url"
-            android:layout_width="0dp"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="bottom"
-            android:textSize="18sp"
-            android:autoText="true"
-            android:capitalize="sentences"
-            android:singleLine="true"
-            android:selectAllOnFocus="true"
-            android:hint="@string/url_hint"
-            android:inputType="textUri"
-            android:imeOptions="actionGo|flagNoExtractUi" />
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/tab_switcher"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@drawable/btn_tabswitcher"
-            android:background="?attr/selectableItemBackground"
-            android:scaleType="center"
-            android:contentDescription="@null"/>
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/menu_button"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@drawable/btn_menu"
-            android:background="?attr/selectableItemBackground"
-            android:scaleType="center"/>
+            android:orientation="horizontal">
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                android:id="@+id/add_button"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:src="@android:drawable/ic_menu_add"
+                android:visibility="gone"
+                android:scaleType="center"/>
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                android:id="@+id/stop_reload_button"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:src="@drawable/btn_close"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="center"/>
+            <EditText android:id="@+id/url"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="bottom"
+                android:textSize="18sp"
+                android:autoText="true"
+                android:capitalize="sentences"
+                android:singleLine="true"
+                android:selectAllOnFocus="true"
+                android:hint="@string/url_hint"
+                android:inputType="textUri"
+                android:imeOptions="actionGo|flagNoExtractUi" />
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                android:id="@+id/tab_switcher"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:src="@drawable/btn_tabswitcher"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="center"
+                android:contentDescription="@null"/>
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                android:id="@+id/menu_button"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:src="@drawable/btn_menu"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="center"/>
+        </LinearLayout>
+        <org.chromium.chrome.browser.widget.ToolbarProgressBar
+            android:id="@+id/progress"
+            style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+            android:progressDrawable="@drawable/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:progress="0" />
     </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"

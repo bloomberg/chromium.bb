@@ -7,7 +7,6 @@ package org.chromium.chrome.shell;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.drawable.ClipDrawable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.widget.SmoothProgressBar;
 import org.chromium.chrome.shell.omnibox.SuggestionPopup;
 import org.chromium.content.common.ContentSwitches;
 
@@ -40,14 +40,14 @@ public class ChromeShellToolbar extends LinearLayout {
     private final Runnable mClearProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            mProgressDrawable.setLevel(0);
+            mProgressBar.setProgress(0);
         }
     };
 
     private final Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            mProgressDrawable.setLevel(100 * mProgress);
+            mProgressBar.setProgress(mProgress);
             if (mLoading) {
                 mStopReloadButton.setImageResource(
                         R.drawable.btn_close);
@@ -60,7 +60,7 @@ public class ChromeShellToolbar extends LinearLayout {
     };
 
     private EditText mUrlTextView;
-    private ClipDrawable mProgressDrawable;
+    private SmoothProgressBar mProgressBar;
 
     private ChromeShellTab mTab;
     private final TabObserver mTabObserver;
@@ -140,7 +140,7 @@ public class ChromeShellToolbar extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
+        mProgressBar = (SmoothProgressBar) findViewById(R.id.progress);
         initializeUrlField();
         initializeTabSwitcherButton();
         initializeMenuButton();
