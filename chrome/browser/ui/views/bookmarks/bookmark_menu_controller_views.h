@@ -15,8 +15,11 @@
 class BookmarkBarView;
 class BookmarkMenuControllerObserver;
 class BookmarkMenuDelegate;
-class BookmarkNode;
 class Browser;
+
+namespace bookmarks {
+class BookmarkNode;
+}
 
 namespace content {
 class PageNavigator;
@@ -45,7 +48,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   BookmarkMenuController(Browser* browser,
                          content::PageNavigator* page_navigator,
                          views::Widget* parent,
-                         const BookmarkNode* node,
+                         const bookmarks::BookmarkNode* node,
                          int start_child_index,
                          bool for_drop);
 
@@ -59,7 +62,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   void Cancel();
 
   // Returns the node the menu is showing for.
-  const BookmarkNode* node() const { return node_; }
+  const bookmarks::BookmarkNode* node() const { return node_; }
 
   // Returns the menu.
   views::MenuItemView* menu() const;
@@ -122,7 +125,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   scoped_ptr<BookmarkMenuDelegate> menu_delegate_;
 
   // The node we're showing the contents of.
-  const BookmarkNode* node_;
+  const bookmarks::BookmarkNode* node_;
 
   // Data for the drop.
   bookmarks::BookmarkNodeData drop_data_;

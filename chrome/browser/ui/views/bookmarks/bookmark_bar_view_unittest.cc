@@ -26,6 +26,8 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 
+using bookmarks::BookmarkNode;
+
 class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewTest() {}

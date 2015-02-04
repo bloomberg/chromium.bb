@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_STATS_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_STATS_H_
 
+namespace bookmarks {
 class BookmarkNode;
+}
 
 // This enum is used for the Bookmarks.EntryPoint histogram.
 enum BookmarkEntryPoint {
@@ -40,7 +42,7 @@ enum BookmarkLaunchLocation {
 };
 
 // Records the launch of a bookmark for UMA purposes.
-void RecordBookmarkLaunch(const BookmarkNode* node,
+void RecordBookmarkLaunch(const bookmarks::BookmarkNode* node,
                           BookmarkLaunchLocation location);
 
 // Records the user opening a folder of bookmarks for UMA purposes.

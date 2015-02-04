@@ -12,6 +12,7 @@
 #include "ui/base/models/combobox_model_observer.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

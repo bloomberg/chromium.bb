@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 
@@ -86,7 +87,7 @@ BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
       bookmark_drag_(NULL) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  bookmark_model_= BookmarkModelFactory::GetForProfile(profile);
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
   if (bookmark_model_)
     bookmark_model_->AddObserver(this);
 }

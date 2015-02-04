@@ -17,7 +17,10 @@
 namespace base {
 class SingleThreadTaskRunner;
 }
+
+namespace bookmarks {
 class BookmarkNode;
+}
 
 namespace enhanced_bookmarks {
 
@@ -51,28 +54,29 @@ class BookmarkImageService : public KeyedService,
 
   // bookmarks::BookmarkModelObserver:
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
-                                const BookmarkNode* node) override;
+                                const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override;
+                                  const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
 
@@ -178,3 +182,4 @@ class BookmarkImageService : public KeyedService,
 }  // namespace enhanced_bookmarks
 
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_BOOKMARK_IMAGE_SERVICE_H_
+

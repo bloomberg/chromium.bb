@@ -25,6 +25,8 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
+using bookmarks::BookmarkPermanentNode;
 using testing::Mock;
 using testing::_;
 

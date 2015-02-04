@@ -34,9 +34,11 @@ class ChromeBookmarkServerClusterService : public BookmarkServerClusterService,
   void OnSyncCycleCompleted() override;
 
   // EnhancedBookmarkModelObserver implementation.
-  void EnhancedBookmarkAdded(const BookmarkNode* node) override;
-  void EnhancedBookmarkRemoved(const BookmarkNode* node) override;
-  void EnhancedBookmarkNodeChanged(const BookmarkNode* node) override;
+  void EnhancedBookmarkAdded(const bookmarks::BookmarkNode* node) override;
+  void EnhancedBookmarkRemoved(const bookmarks::BookmarkNode* node) override;
+  void EnhancedBookmarkNodeChanged(
+      const bookmarks::BookmarkNode* node) override;
+
  private:
   // This sets an internal flag to fetch new clusters.
   void InvalidateCache();

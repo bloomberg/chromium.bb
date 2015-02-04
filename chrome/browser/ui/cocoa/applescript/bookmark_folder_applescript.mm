@@ -14,6 +14,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @implementation BookmarkFolderAppleScript
 

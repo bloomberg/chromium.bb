@@ -7,10 +7,10 @@
 
 #include <string>
 
-class BookmarkNode;
-
 namespace bookmarks {
+
 class BookmarkModel;
+class BookmarkNode;
 
 namespace test {
 

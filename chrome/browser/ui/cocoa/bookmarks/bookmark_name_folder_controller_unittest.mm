@@ -17,6 +17,7 @@
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 class BookmarkNameFolderControllerTest : public CocoaProfileTest {
 };

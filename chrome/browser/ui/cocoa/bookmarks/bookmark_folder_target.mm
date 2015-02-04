@@ -14,6 +14,7 @@
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
+using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
 
 NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";

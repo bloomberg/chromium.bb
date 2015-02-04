@@ -53,17 +53,18 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
 
   // Returns true if a given bookmark is reachable (i.e. neither the bookmark,
   // nor any of its parents were "removed").
-  bool IsReachable(const BookmarkNode* node) const;
+  bool IsReachable(const bookmarks::BookmarkNode* node) const;
 
   // Returns true if a given node is editable and if editing is allowed.
-  bool IsEditable(const BookmarkNode* node) const;
+  bool IsEditable(const bookmarks::BookmarkNode* node) const;
 
   // Removes a given bookmark.
   // Makes the |node| (and, consequently, all its children) unreachable.
-  void RemoveBookmark(const BookmarkNode* node);
+  void RemoveBookmark(const bookmarks::BookmarkNode* node);
 
   // Renames a given bookmark.
-  void RenameBookmark(const BookmarkNode* node, const base::string16& title);
+  void RenameBookmark(const bookmarks::BookmarkNode* node,
+                      const base::string16& title);
 
   // For Loaded/Changed/ShimBeingDeleted notifications
   class Observer {
@@ -82,15 +83,15 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   void RemoveObserver(Observer* observer);
 
   // PartnerBookmarksShim versions of BookmarkModel/BookmarkNode methods
-  const BookmarkNode* GetNodeByID(int64 id) const;
-  base::string16 GetTitle(const BookmarkNode* node) const;
+  const bookmarks::BookmarkNode* GetNodeByID(int64 id) const;
+  base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
 
-  bool IsPartnerBookmark(const BookmarkNode* node) const;
-  const BookmarkNode* GetPartnerBookmarksRoot() const;
+  bool IsPartnerBookmark(const bookmarks::BookmarkNode* node) const;
+  const bookmarks::BookmarkNode* GetPartnerBookmarksRoot() const;
 
   // Sets the root node of the partner bookmarks and notifies any observers that
   // the shim has now been loaded.  Takes ownership of |root_node|.
-  void SetPartnerBookmarksRoot(BookmarkNode* root_node);
+  void SetPartnerBookmarksRoot(bookmarks::BookmarkNode* root_node);
 
   // Used as a "unique" identifier of the partner bookmark node for the purposes
   // of node deletion and title editing. Two bookmarks with the same URLs and
@@ -123,11 +124,13 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   explicit PartnerBookmarksShim(PrefService* prefs);
   ~PartnerBookmarksShim() override;
 
-  const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64 id) const;
+  const bookmarks::BookmarkNode* GetNodeByID(
+      const bookmarks::BookmarkNode* parent,
+      int64 id) const;
   void ReloadNodeMapping();
   void SaveNodeMapping();
 
-  scoped_ptr<BookmarkNode> partner_bookmarks_root_;
+  scoped_ptr<bookmarks::BookmarkNode> partner_bookmarks_root_;
   PrefService* prefs_;
   NodeRenamingMap node_rename_remove_map_;
 

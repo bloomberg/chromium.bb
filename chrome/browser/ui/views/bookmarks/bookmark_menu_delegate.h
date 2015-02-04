@@ -15,7 +15,6 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
-class BookmarkNode;
 class Browser;
 class ChromeBookmarkClient;
 class Profile;
@@ -61,7 +60,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   // Creates the menus from the model.
   void Init(views::MenuDelegate* real_delegate,
             views::MenuItemView* parent,
-            const BookmarkNode* node,
+            const bookmarks::BookmarkNode* node,
             int start_child_index,
             ShowOptions show_options,
             BookmarkLaunchLocation location);
@@ -74,7 +73,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   // Makes the menu for |node| the active menu. |start_index| is the index of
   // the first child of |node| to show in the menu.
-  void SetActiveMenu(const BookmarkNode* node, int start_index);
+  void SetActiveMenu(const bookmarks::BookmarkNode* node, int start_index);
 
   bookmarks::BookmarkModel* GetBookmarkModel();
   ChromeBookmarkClient* GetChromeBookmarkClient();
@@ -124,19 +123,20 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   // BookmarkModelObserver methods.
   void BookmarkModelChanged() override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override;
+                                  const bookmarks::BookmarkNode* node) override;
 
   // BookmarkContextMenu::Observer methods.
   void WillRemoveBookmarks(
-      const std::vector<const BookmarkNode*>& bookmarks) override;
+      const std::vector<const bookmarks::BookmarkNode*>& bookmarks) override;
   void DidRemoveBookmarks() override;
 
  private:
-  typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;
-  typedef std::map<const BookmarkNode*, views::MenuItemView*> NodeToMenuMap;
+  typedef std::map<int, const bookmarks::BookmarkNode*> MenuIDToNodeMap;
+  typedef std::map<const bookmarks::BookmarkNode*, views::MenuItemView*>
+      NodeToMenuMap;
 
   // Creates a menu. This uses BuildMenu() to recursively populate the menu.
-  views::MenuItemView* CreateMenu(const BookmarkNode* parent,
+  views::MenuItemView* CreateMenu(const bookmarks::BookmarkNode* parent,
                                   int start_child_index,
                                   ShowOptions show_options);
 
@@ -149,7 +149,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   // represent it. If |node| is not empty and |added_separator| is false, a
   // separator is added before the new menu items and |added_separator| is set
   // to true.
-  void BuildMenuForPermanentNode(const BookmarkNode* node,
+  void BuildMenuForPermanentNode(const bookmarks::BookmarkNode* node,
                                  int icon_resource_id,
                                  views::MenuItemView* menu,
                                  int* next_menu_id,
@@ -160,7 +160,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.
-  void BuildMenu(const BookmarkNode* parent,
+  void BuildMenu(const bookmarks::BookmarkNode* parent,
                  int start_child_index,
                  views::MenuItemView* menu,
                  int* next_menu_id);

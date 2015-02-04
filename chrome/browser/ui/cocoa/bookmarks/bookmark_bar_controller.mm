@@ -65,6 +65,7 @@
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
 using content::OpenURLParams;
 using content::Referrer;

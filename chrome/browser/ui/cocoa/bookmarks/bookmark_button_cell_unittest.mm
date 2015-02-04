@@ -17,6 +17,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 // Simple class to remember how many mouseEntered: and mouseExited:
 // calls it gets.  Only used by BookmarkMouseForwarding but placed

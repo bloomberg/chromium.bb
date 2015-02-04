@@ -34,7 +34,7 @@ class BookmarkModel;
 
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
-  const BookmarkNode* parentNode_;  // weak; owned by the model
+  const bookmarks::BookmarkNode* parentNode_;  // weak; owned by the model
   GURL url_;  // This and title_ are only used for new urls.
   base::string16 title_;
   BookmarkEditor::Configuration configuration_;
@@ -61,7 +61,7 @@ class BookmarkModel;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    nibName:(NSString*)nibName
                    profile:(Profile*)profile
-                    parent:(const BookmarkNode*)parent
+                    parent:(const bookmarks::BookmarkNode*)parent
                        url:(const GURL&)url
                      title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
@@ -97,7 +97,7 @@ class BookmarkModel;
 // in the bookmark tree view if the tree view is showing, otherwise returns
 // the original |parentNode_|.  If the tree view is showing but nothing is
 // selected then the root node is returned.
-- (const BookmarkNode*)selectedNode;
+- (const bookmarks::BookmarkNode*)selectedNode;
 
 // Expands the set of BookmarkNodes in |nodes|.
 - (void)expandNodes:(
@@ -108,11 +108,11 @@ class BookmarkModel;
 
 // Select/highlight the given node within the browser tree view.  If the
 // node is nil then select the bookmark bar node.  Exposed for unit test.
-- (void)selectNodeInBrowser:(const BookmarkNode*)node;
+- (void)selectNodeInBrowser:(const bookmarks::BookmarkNode*)node;
 
 // Notifications called when the BookmarkModel changes out from under me.
-- (void)nodeRemoved:(const BookmarkNode*)node
-         fromParent:(const BookmarkNode*)parent;
+- (void)nodeRemoved:(const bookmarks::BookmarkNode*)node
+         fromParent:(const bookmarks::BookmarkNode*)parent;
 - (void)modelChangedPreserveSelection:(BOOL)preserve;
 
 // Determines if the ok button should be enabled, can be overridden.
@@ -121,7 +121,7 @@ class BookmarkModel;
 // Accessors
 - (bookmarks::BookmarkModel*)bookmarkModel;
 - (Profile*)profile;
-- (const BookmarkNode*)parentNode;
+- (const bookmarks::BookmarkNode*)parentNode;
 - (const GURL&)url;
 - (const base::string16&)title;
 
@@ -135,13 +135,13 @@ class BookmarkModel;
 @interface BookmarkFolderInfo : NSObject {
  @private
   NSString* folderName_;
-  const BookmarkNode* folderNode_;  // weak
+  const bookmarks::BookmarkNode* folderNode_;  // weak
   NSMutableArray* children_;
   BOOL newFolder_;
 }
 
 @property(nonatomic, copy) NSString* folderName;
-@property(nonatomic, assign) const BookmarkNode* folderNode;
+@property(nonatomic, assign) const bookmarks::BookmarkNode* folderNode;
 @property(nonatomic, retain) NSMutableArray* children;
 @property(nonatomic, assign) BOOL newFolder;
 
@@ -157,7 +157,7 @@ class BookmarkModel;
 // this session and which have not been committed yet, |newFolder| should be
 // YES and |folderNode| and |children| should be NULL/nil.
 - (id)initWithFolderName:(NSString*)folderName
-              folderNode:(const BookmarkNode*)folderNode
+              folderNode:(const bookmarks::BookmarkNode*)folderNode
                 children:(NSMutableArray*)children
                newFolder:(BOOL)newFolder;
 
@@ -165,7 +165,8 @@ class BookmarkModel;
 // structure.  |folderName| and |folderNode| must be provided. |children|
 // is optional.  Private: exposed here for unit testing purposes.
 + (id)bookmarkFolderInfoWithFolderName:(NSString*)folderName
-                            folderNode:(const BookmarkNode*)folderNode
+                            folderNode:
+                                (const bookmarks::BookmarkNode*)folderNode
                               children:(NSMutableArray*)children;
 
 @end
@@ -180,7 +181,7 @@ class BookmarkModel;
 - (void)createNewFolders;
 
 // Select the given bookmark node within the tree view.
-- (void)selectTestNodeInBrowser:(const BookmarkNode*)node;
+- (void)selectTestNodeInBrowser:(const bookmarks::BookmarkNode*)node;
 
 // Return the dictionary for the folder selected in the tree.
 - (BookmarkFolderInfo*)selectedFolder;

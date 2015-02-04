@@ -19,7 +19,7 @@
 }
 
 // Assigns a node, sets its unique ID and also copies temporary values.
-- (void)setBookmarkNode:(const BookmarkNode*)aBookmarkNode;
+- (void)setBookmarkNode:(const bookmarks::BookmarkNode*)aBookmarkNode;
 
 // Returns the URL that the bookmark item holds.
 - (NSString*)URL;

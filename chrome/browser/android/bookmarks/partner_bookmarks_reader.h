@@ -41,7 +41,7 @@ class PartnerBookmarksReader {
   Profile* profile_;
 
   // JNI
-  scoped_ptr<BookmarkNode> wip_partner_bookmarks_root_;
+  scoped_ptr<bookmarks::BookmarkNode> wip_partner_bookmarks_root_;
   int64 wip_next_available_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PartnerBookmarksReader);

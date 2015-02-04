@@ -113,11 +113,12 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // showing and |loc| is over the overflow button, the bookmark bar node is
   // returned and |model_start_index| is set to the index of the first node
   // contained in the overflow menu.
-  const BookmarkNode* GetNodeForButtonAtModelIndex(const gfx::Point& loc,
-                                                   int* model_start_index);
+  const bookmarks::BookmarkNode* GetNodeForButtonAtModelIndex(
+      const gfx::Point& loc,
+      int* model_start_index);
 
   // Returns the MenuButton for node.
-  views::MenuButton* GetMenuButtonForNode(const BookmarkNode* node);
+  views::MenuButton* GetMenuButtonForNode(const bookmarks::BookmarkNode* node);
 
   // Returns the position to anchor the menu for |button| at.
   void GetAnchorPositionForButton(views::MenuButton* button,
@@ -212,26 +213,27 @@ class BookmarkBarView : public views::AccessiblePaneView,
                            bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override;
+                                  const bookmarks::BookmarkNode* node) override;
 
   // views::DragController:
   void WriteDragDataForView(views::View* sender,
@@ -308,40 +310,41 @@ class BookmarkBarView : public views::AccessiblePaneView,
   views::MenuButton* CreateOverflowButton();
 
   // Creates the button for rendering the specified bookmark node.
-  views::View* CreateBookmarkButton(const BookmarkNode* node);
+  views::View* CreateBookmarkButton(const bookmarks::BookmarkNode* node);
 
   // Creates the button for rendering the apps page shortcut.
   views::LabelButton* CreateAppsPageShortcutButton();
 
   // Configures the button from the specified node. This sets the text,
   // and icon.
-  void ConfigureButton(const BookmarkNode* node, views::LabelButton* button);
+  void ConfigureButton(const bookmarks::BookmarkNode* node,
+                       views::LabelButton* button);
 
   // Implementation for BookmarkNodeAddedImpl. Returns true if LayoutAndPaint()
   // is required.
   bool BookmarkNodeAddedImpl(bookmarks::BookmarkModel* model,
-                             const BookmarkNode* parent,
+                             const bookmarks::BookmarkNode* parent,
                              int index);
 
   // Implementation for BookmarkNodeRemoved. Returns true if LayoutAndPaint() is
   // required.
   bool BookmarkNodeRemovedImpl(bookmarks::BookmarkModel* model,
-                               const BookmarkNode* parent,
+                               const bookmarks::BookmarkNode* parent,
                                int index);
 
   // If the node is a child of the root node, the button is updated
   // appropriately.
   void BookmarkNodeChangedImpl(bookmarks::BookmarkModel* model,
-                               const BookmarkNode* node);
+                               const bookmarks::BookmarkNode* node);
 
   // Shows the menu used during drag and drop for the specified node.
-  void ShowDropFolderForNode(const BookmarkNode* node);
+  void ShowDropFolderForNode(const bookmarks::BookmarkNode* node);
 
   // Cancels the timer used to show a drop menu.
   void StopShowFolderDropMenuTimer();
 
   // Stars the timer used to show a drop menu for node.
-  void StartShowFolderDropMenuTimer(const BookmarkNode* node);
+  void StartShowFolderDropMenuTimer(const bookmarks::BookmarkNode* node);
 
   // Calculates the location for the drop in |location|.
   void CalculateDropLocation(const ui::DropTargetEvent& event,
@@ -349,20 +352,20 @@ class BookmarkBarView : public views::AccessiblePaneView,
                              DropLocation* location);
 
   // Writes a BookmarkNodeData for node to data.
-  void WriteBookmarkDragData(const BookmarkNode* node,
+  void WriteBookmarkDragData(const bookmarks::BookmarkNode* node,
                              ui::OSExchangeData* data);
 
   // This determines which view should throb and starts it
   // throbbing (e.g when the bookmark bubble is showing).
   // If |overflow_only| is true, start throbbing only if |node| is hidden in
   // the overflow menu.
-  void StartThrobbing(const BookmarkNode* node, bool overflow_only);
+  void StartThrobbing(const bookmarks::BookmarkNode* node, bool overflow_only);
 
   // Returns the view to throb when a node is removed. |parent| is the parent of
   // the node that was removed, and |old_index| the index of the node that was
   // removed.
   views::CustomButton* DetermineViewToThrobFromRemove(
-      const BookmarkNode* parent,
+      const bookmarks::BookmarkNode* parent,
       int old_index);
 
   // Updates the colors for all the child objects in the bookmarks bar.

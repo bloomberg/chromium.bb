@@ -16,6 +16,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/protocol/sync_protocol_error.h"
 
+using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
 using sync_integration_test_util::AwaitCommitActivityCompletion;

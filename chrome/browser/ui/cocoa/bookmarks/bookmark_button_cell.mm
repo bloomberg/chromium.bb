@@ -16,6 +16,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNode;
 
 const int kHierarchyButtonXMargin = 4;
 

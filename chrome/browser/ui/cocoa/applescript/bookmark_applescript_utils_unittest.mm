@@ -10,6 +10,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @implementation FakeAppDelegate
 

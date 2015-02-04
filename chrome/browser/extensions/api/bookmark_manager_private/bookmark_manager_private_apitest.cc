@@ -21,6 +21,7 @@
 #include "components/user_prefs/user_prefs.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 // Times out on win syzyasan, http://crbug.com/166026
 #if defined(SYZYASAN)

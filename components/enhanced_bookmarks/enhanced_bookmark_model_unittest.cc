@@ -21,6 +21,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using enhanced_bookmarks::EnhancedBookmarkModel;
 
 namespace {

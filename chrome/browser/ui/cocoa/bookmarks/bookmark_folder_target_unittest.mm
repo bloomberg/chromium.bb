@@ -16,6 +16,7 @@
 #include "third_party/ocmock/gtest_support.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @interface OCMockObject(PreventRetainCycle)
 - (void)clearRecordersAndExpectations;

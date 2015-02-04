@@ -13,6 +13,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/models/tree_node_iterator.h"
 
+using bookmarks::BookmarkNode;
+
 namespace enhanced_bookmarks {
 
 BookmarkServerService::BookmarkServerService(

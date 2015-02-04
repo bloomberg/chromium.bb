@@ -11,6 +11,7 @@
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

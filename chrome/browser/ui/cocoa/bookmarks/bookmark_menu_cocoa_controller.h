@@ -14,8 +14,11 @@
 #import "base/mac/scoped_nsobject.h"
 #include "ui/base/window_open_disposition.h"
 
-class BookmarkNode;
 class BookmarkMenuBridge;
+
+namespace bookmarks {
+class BookmarkNode;
+}
 
 @interface BookmarkMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
@@ -28,10 +31,10 @@ class BookmarkMenuBridge;
 
 // Return an autoreleased string to be used as a menu title for the
 // given bookmark node.
-+ (NSString*)menuTitleForNode:(const BookmarkNode*)node;
++ (NSString*)menuTitleForNode:(const bookmarks::BookmarkNode*)node;
 
 // Make a relevant tooltip string for node.
-+ (NSString*)tooltipForNode:(const BookmarkNode*)node;
++ (NSString*)tooltipForNode:(const bookmarks::BookmarkNode*)node;
 
 - (id)initWithBridge:(BookmarkMenuBridge *)bridge
              andMenu:(NSMenu*)menu;
@@ -47,8 +50,8 @@ class BookmarkMenuBridge;
 
 
 @interface BookmarkMenuCocoaController (ExposedForUnitTests)
-- (const BookmarkNode*)nodeForIdentifier:(int)identifier;
-- (void)openURLForNode:(const BookmarkNode*)node;
+- (const bookmarks::BookmarkNode*)nodeForIdentifier:(int)identifier;
+- (void)openURLForNode:(const bookmarks::BookmarkNode*)node;
 - (void)openAll:(NSInteger)tag
     withDisposition:(WindowOpenDisposition)disposition;
 @end  // BookmarkMenuCocoaController (ExposedForUnitTests)

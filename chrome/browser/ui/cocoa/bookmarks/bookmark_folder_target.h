@@ -9,7 +9,6 @@
 
 @class BookmarkButton;
 @protocol BookmarkButtonControllerProtocol;
-class BookmarkNode;
 class Profile;
 
 // Target (in the target/action sense) of a bookmark folder button.

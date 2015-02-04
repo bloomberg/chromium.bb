@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNode;
 using content::PageNavigator;
 
 BookmarkContextMenuController::BookmarkContextMenuController(

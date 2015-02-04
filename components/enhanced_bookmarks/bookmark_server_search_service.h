@@ -40,7 +40,7 @@ class BookmarkServerSearchService : public BookmarkServerService {
   // loading and no results have come to the client. Previously cancelled
   // queries will not trigger onChange(), and this method will also return null
   // for queries that have never been passed to Search() before.
-  scoped_ptr<std::vector<const BookmarkNode*>> ResultForQuery(
+  scoped_ptr<std::vector<const bookmarks::BookmarkNode*>> ResultForQuery(
       const std::string& query);
 
  protected:
@@ -53,11 +53,12 @@ class BookmarkServerSearchService : public BookmarkServerService {
 
   // EnhancedBookmarkModelObserver methods.
   void EnhancedBookmarkModelLoaded() override{};
-  void EnhancedBookmarkAdded(const BookmarkNode* node) override;
-  void EnhancedBookmarkRemoved(const BookmarkNode* node) override{};
-  void EnhancedBookmarkNodeChanged(const BookmarkNode* node) override{};
+  void EnhancedBookmarkAdded(const bookmarks::BookmarkNode* node) override;
+  void EnhancedBookmarkRemoved(const bookmarks::BookmarkNode* node) override {}
+  void EnhancedBookmarkNodeChanged(
+      const bookmarks::BookmarkNode* node) override {}
   void EnhancedBookmarkAllUserNodesRemoved() override;
-  void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
+  void EnhancedBookmarkRemoteIdChanged(const bookmarks::BookmarkNode* node,
                                        const std::string& old_remote_id,
                                        const std::string& remote_id) override;
 
@@ -70,6 +71,7 @@ class BookmarkServerSearchService : public BookmarkServerService {
   std::string current_query_;
   DISALLOW_COPY_AND_ASSIGN(BookmarkServerSearchService);
 };
+
 }  // namespace enhanced_bookmarks
 
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_BOOKMARK_SERVER_SEARCH_SERVICE_H_

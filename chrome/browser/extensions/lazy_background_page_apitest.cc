@@ -34,6 +34,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using extensions::Extension;
 using extensions::ResultCatcher;
 

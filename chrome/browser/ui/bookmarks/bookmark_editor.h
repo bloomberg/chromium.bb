@@ -35,25 +35,26 @@ class BookmarkEditor {
   class EditDetails {
    public:
     // Returns the type of the existing or new node.
-    BookmarkNode::Type GetNodeType() const;
+    bookmarks::BookmarkNode::Type GetNodeType() const;
 
     // Returns the resource id for the string resource to use on the window
     // title for this edit operation.
     int GetWindowTitleId() const;
 
     // Returns an EditDetails instance for the user editing the given bookmark.
-    static EditDetails EditNode(const BookmarkNode* node);
+    static EditDetails EditNode(const bookmarks::BookmarkNode* node);
 
     // Returns an EditDetails instance for the user adding a bookmark within
     // a given parent node with a specified index.
-    static EditDetails AddNodeInFolder(const BookmarkNode* parent_node,
-                                       int index,
-                                       const GURL& url,
-                                       const base::string16& title);
+    static EditDetails AddNodeInFolder(
+        const bookmarks::BookmarkNode* parent_node,
+        int index,
+        const GURL& url,
+        const base::string16& title);
 
     // Returns an EditDetails instance for the user adding a folder within a
     // given parent node with a specified index.
-    static EditDetails AddFolder(const BookmarkNode* parent_node,
+    static EditDetails AddFolder(const bookmarks::BookmarkNode* parent_node,
                                  int index);
 
     enum Type {
@@ -77,11 +78,11 @@ class BookmarkEditor {
     const Type type;
 
     // If type == EXISTING_NODE this gives the existing node.
-    const BookmarkNode* existing_node;
+    const bookmarks::BookmarkNode* existing_node;
 
     // If type == NEW_URL or type == NEW_FOLDER this gives the initial parent
     // node to place the new node in.
-    const BookmarkNode* parent_node;
+    const bookmarks::BookmarkNode* parent_node;
 
     // If type == NEW_URL or type == NEW_FOLDER this gives the index to insert
     // the new node at.
@@ -111,9 +112,9 @@ class BookmarkEditor {
   // done regarding moving from one folder to another).  If a new node is
   // explicitly being added, returns a pointer to the new node that was created.
   // Otherwise the return value is identically |node|.
-  static const BookmarkNode* ApplyEditsWithNoFolderChange(
+  static const bookmarks::BookmarkNode* ApplyEditsWithNoFolderChange(
       bookmarks::BookmarkModel* model,
-      const BookmarkNode* parent,
+      const bookmarks::BookmarkNode* parent,
       const EditDetails& details,
       const base::string16& new_title,
       const GURL& new_url);
@@ -122,9 +123,9 @@ class BookmarkEditor {
   // changed and the node will need to be removed and reinserted.  If a new node
   // is explicitly being added, returns a pointer to the new node that was
   // created.  Otherwise the return value is identically |node|.
-  static const BookmarkNode* ApplyEditsWithPossibleFolderChange(
+  static const bookmarks::BookmarkNode* ApplyEditsWithPossibleFolderChange(
       bookmarks::BookmarkModel* model,
-      const BookmarkNode* new_parent,
+      const bookmarks::BookmarkNode* new_parent,
       const EditDetails& details,
       const base::string16& new_title,
       const GURL& new_url);

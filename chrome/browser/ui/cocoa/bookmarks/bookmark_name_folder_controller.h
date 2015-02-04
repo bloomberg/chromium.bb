@@ -11,8 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 
 class BookmarkModelObserverForCocoa;
-class BookmarkNode;
 class Profile;
+
+namespace bookmarks {
+class BookmarkNode;
+}
 
 // A controller for dialog to let the user create a new folder or
 // rename an existing folder.  Accessible from a context menu on a
@@ -28,8 +31,8 @@ class Profile;
   // Weak; owned by the model.  Can be NULL (see below).  Either node_
   // is non-NULL (renaming a folder), or parent_ is non-NULL (adding a
   // new one).
-  const BookmarkNode* node_;
-  const BookmarkNode* parent_;
+  const bookmarks::BookmarkNode* node_;
+  const bookmarks::BookmarkNode* parent_;
   int newIndex_;
 
   base::scoped_nsobject<NSString> initialName_;
@@ -45,10 +48,10 @@ class Profile;
 // node.
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                      node:(const BookmarkNode*)node;
+                      node:(const bookmarks::BookmarkNode*)node;
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                    parent:(const BookmarkNode*)parent
+                    parent:(const bookmarks::BookmarkNode*)parent
                   newIndex:(int)newIndex;
 - (void)runAsModalSheet;
 - (IBAction)cancel:(id)sender;

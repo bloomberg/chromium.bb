@@ -14,8 +14,8 @@
 #include "url/gurl.h"
 
 namespace bookmarks {
+
 class BookmarkModel;
-}
 
 // BookmarkNode ---------------------------------------------------------------
 
@@ -117,7 +117,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // HistoryContentsProvider.
 
  private:
-  friend class bookmarks::BookmarkModel;
+  friend class BookmarkModel;
 
   // A helper function to initialize various fields during construction.
   void Initialize(int64 id);
@@ -210,5 +210,7 @@ class BookmarkPermanentNode : public BookmarkNode {
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_NODE_H_

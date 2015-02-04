@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
  @public

@@ -10,6 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace bookmarks {
+
 namespace {
 
 // Whitespace characters to strip from bookmark titles.
@@ -133,3 +135,5 @@ BookmarkPermanentNode::~BookmarkPermanentNode() {
 bool BookmarkPermanentNode::IsVisible() const {
   return visible_ || !empty();
 }
+
+}  // namespace bookmarks

@@ -21,6 +21,7 @@
 #include "sync/test/fake_server/fake_server_verifier.h"
 #include "sync/util/time.h"
 
+using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::GetOtherNode;

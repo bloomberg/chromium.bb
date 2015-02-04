@@ -70,17 +70,17 @@ class BookmarkTabHelper
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
 
   // Overridden from content::WebContentsObserver:
   void DidNavigateMainFrame(

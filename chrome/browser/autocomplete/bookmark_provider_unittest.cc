@@ -25,6 +25,7 @@
 
 using bookmarks::BookmarkMatch;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 // The bookmark corpus against which we will simulate searches.
 struct BookmarksTestInfo {

@@ -31,6 +31,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

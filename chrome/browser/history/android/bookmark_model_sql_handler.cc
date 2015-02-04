@@ -14,6 +14,7 @@
 
 using base::Time;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace history {

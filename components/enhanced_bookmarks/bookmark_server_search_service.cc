@@ -10,6 +10,8 @@
 #include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 
+using bookmarks::BookmarkNode;
+
 namespace {
 const char kSearchUrl[] = "https://www.google.com/stars/search";
 const int kSearchCacheMaxSize = 50;

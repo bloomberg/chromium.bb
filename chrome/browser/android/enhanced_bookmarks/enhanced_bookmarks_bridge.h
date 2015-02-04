@@ -76,7 +76,7 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   void OnChange(BookmarkServerService* service) override;
 
  private:
-  bool IsEditable(const BookmarkNode* node) const;
+  bool IsEditable(const bookmarks::BookmarkNode* node) const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   EnhancedBookmarkModel* enhanced_bookmark_model_; // weak

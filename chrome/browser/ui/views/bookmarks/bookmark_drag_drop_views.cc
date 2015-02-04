@@ -16,6 +16,7 @@
 #include "ui/views/widget/widget.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace chrome {
 

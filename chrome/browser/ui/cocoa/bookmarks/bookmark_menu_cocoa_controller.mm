@@ -20,6 +20,7 @@
 #import "ui/base/cocoa/menu_controller.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNode;
 using content::OpenURLParams;
 using content::Referrer;
 

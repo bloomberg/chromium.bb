@@ -20,6 +20,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using bookmarks::BookmarkNode;
+
 namespace {
 const char kClusterUrl[] = "https://www.google.com/stars/cluster";
 const int kPrefServiceVersion = 1;

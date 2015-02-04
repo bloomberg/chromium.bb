@@ -19,10 +19,10 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNode;
 
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;
-
 
 namespace bookmark_button {
 

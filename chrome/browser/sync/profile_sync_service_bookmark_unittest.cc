@@ -50,6 +50,7 @@
 namespace browser_sync {
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using syncer::BaseNode;
 using testing::_;
 using testing::InvokeWithoutArgs;

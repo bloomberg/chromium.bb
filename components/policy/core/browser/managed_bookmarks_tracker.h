@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
-class BookmarkNode;
-class BookmarkPermanentNode;
 class GURL;
 class PrefService;
 
@@ -22,6 +20,8 @@ class ListValue;
 
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
+class BookmarkPermanentNode;
 }
 
 namespace policy {
@@ -49,17 +49,18 @@ class POLICY_EXPORT ManagedBookmarksTracker {
   // Loads the initial managed bookmarks in |list| into |folder|. New nodes
   // will be assigned IDs starting at |next_node_id|.
   // Returns the next node ID to use.
-  static int64 LoadInitial(BookmarkNode* folder,
+  static int64 LoadInitial(bookmarks::BookmarkNode* folder,
                            const base::ListValue* list,
                            int64 next_node_id);
 
   // Starts tracking the policy for updates to the managed bookmarks. Should
   // be called after loading the initial bookmarks.
-  void Init(BookmarkPermanentNode* managed_node);
+  void Init(bookmarks::BookmarkPermanentNode* managed_node);
 
  private:
   void ReloadManagedBookmarks();
-  void UpdateBookmarks(const BookmarkNode* folder, const base::ListValue* list);
+  void UpdateBookmarks(const bookmarks::BookmarkNode* folder,
+                       const base::ListValue* list);
   static bool LoadBookmark(const base::ListValue* list,
                            size_t index,
                            base::string16* title,
@@ -67,7 +68,7 @@ class POLICY_EXPORT ManagedBookmarksTracker {
                            const base::ListValue** children);
 
   bookmarks::BookmarkModel* model_;
-  BookmarkPermanentNode* managed_node_;
+  bookmarks::BookmarkPermanentNode* managed_node_;
   PrefService* prefs_;
   PrefChangeRegistrar registrar_;
   GetManagementDomainCallback get_management_domain_callback_;
@@ -78,3 +79,4 @@ class POLICY_EXPORT ManagedBookmarksTracker {
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_BROWSER_MANAGED_BOOKMARKS_TRACKER_H_
+

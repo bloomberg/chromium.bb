@@ -6,6 +6,7 @@
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;

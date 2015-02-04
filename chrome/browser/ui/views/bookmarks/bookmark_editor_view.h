@@ -71,7 +71,7 @@ class BookmarkEditorView : public BookmarkEditor,
   };
 
   BookmarkEditorView(Profile* profile,
-                     const BookmarkNode* parent,
+                     const bookmarks::BookmarkNode* parent,
                      const EditDetails& details,
                      BookmarkEditor::Configuration configuration);
 
@@ -130,26 +130,28 @@ class BookmarkEditorView : public BookmarkEditor,
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override {}
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override {}
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override;
-  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override {}
+                           const bookmarks::BookmarkNode* node) override {}
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeFaviconChanged(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override {}
 
   // Creates the necessary sub-views, configures them, adds them to the layout,
   // and requests the entries to display from the database.
@@ -169,7 +171,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Adds and creates a child node in b_node for all children of bb_node that
   // are folders.
-  void CreateNodes(const BookmarkNode* bb_node, EditorNode* b_node);
+  void CreateNodes(const bookmarks::BookmarkNode* bb_node, EditorNode* b_node);
 
   // Returns the node with the specified id, or NULL if one can't be found.
   EditorNode* FindNodeWithID(BookmarkEditorView::EditorNode* node, int64 id);
@@ -191,10 +193,10 @@ class BookmarkEditorView : public BookmarkEditor,
   // used to determine the new BookmarkNode parent based on the EditorNode
   // parent.
   void ApplyNameChangesAndCreateNewFolders(
-      const BookmarkNode* bb_node,
+      const bookmarks::BookmarkNode* bb_node,
       BookmarkEditorView::EditorNode* b_node,
       BookmarkEditorView::EditorNode* parent_b_node,
-      const BookmarkNode** parent_bb_node);
+      const bookmarks::BookmarkNode** parent_bb_node);
 
   // Returns the current url the user has input.
   GURL GetInputURL() const;
@@ -247,7 +249,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Initial parent to select. Is only used if |details_.existing_node| is
   // NULL.
-  const BookmarkNode* parent_;
+  const bookmarks::BookmarkNode* parent_;
 
   const EditDetails details_;
 

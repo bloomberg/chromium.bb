@@ -10,6 +10,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @interface BookmarkItemAppleScript()
 @property (nonatomic, copy) NSString* tempURL;

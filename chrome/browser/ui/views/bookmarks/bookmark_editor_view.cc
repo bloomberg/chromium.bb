@@ -40,6 +40,7 @@
 
 using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using views::GridLayout;
 
 namespace {

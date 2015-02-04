@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 const char* kBookmarkBarId = "f_bookmarks_bar";

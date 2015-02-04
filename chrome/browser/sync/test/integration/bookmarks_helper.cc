@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 
+#include <set>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -43,6 +46,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

@@ -17,7 +17,10 @@
 
 class ProfileOAuth2TokenService;
 class SigninManagerBase;
+
+namespace bookmarks {
 class BookmarkNode;
+}
 
 namespace enhanced_bookmarks {
 
@@ -53,9 +56,10 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
  protected:
   // Retrieves a bookmark by using its remote id. Returns null if nothing
   // matches.
-  virtual const BookmarkNode* BookmarkForRemoteId(
+  virtual const bookmarks::BookmarkNode* BookmarkForRemoteId(
       const std::string& remote_id) const;
-  const std::string RemoteIDForBookmark(const BookmarkNode* bookmark) const;
+  const std::string RemoteIDForBookmark(
+      const bookmarks::BookmarkNode* bookmark) const;
 
   // Cancels the ongoing request, if any.
   void Cancel();
@@ -123,3 +127,4 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
 }  // namespace enhanced_bookmarks
 
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_BOOKMARK_SERVER_SERVICE_H_
+

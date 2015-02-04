@@ -25,6 +25,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile, NSMenu* menu)
     : menuIsValid_(false),

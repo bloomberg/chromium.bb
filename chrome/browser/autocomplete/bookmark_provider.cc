@@ -25,6 +25,7 @@
 #include "url/url_constants.h"
 
 using bookmarks::BookmarkMatch;
+using bookmarks::BookmarkNode;
 
 typedef std::vector<BookmarkMatch> BookmarkMatches;
 

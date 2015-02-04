@@ -43,12 +43,12 @@ class BookmarkServerClusterService : public KeyedService,
   // Retrieves all the bookmarks associated with a cluster. The returned
   // BookmarkNodes are owned by the bookmark model, and one must listen to the
   // model observer notification to clear them.
-  const std::vector<const BookmarkNode*> BookmarksForClusterNamed(
+  const std::vector<const bookmarks::BookmarkNode*> BookmarksForClusterNamed(
       const std::string& cluster_name) const;
 
   // Returns the clusters in which the passed bookmark is in, if any.
   const std::vector<std::string> ClustersForBookmark(
-      const BookmarkNode* bookmark) const;
+      const bookmarks::BookmarkNode* bookmark) const;
 
   // Dynamically generates a vector of all clusters names.
   const std::vector<std::string> GetClusters() const;
@@ -65,11 +65,12 @@ class BookmarkServerClusterService : public KeyedService,
 
   // EnhancedBookmarkModelObserver methods.
   void EnhancedBookmarkModelLoaded() override;
-  void EnhancedBookmarkAdded(const BookmarkNode* node) override;
-  void EnhancedBookmarkRemoved(const BookmarkNode* node) override;
-  void EnhancedBookmarkNodeChanged(const BookmarkNode* node) override;
+  void EnhancedBookmarkAdded(const bookmarks::BookmarkNode* node) override;
+  void EnhancedBookmarkRemoved(const bookmarks::BookmarkNode* node) override;
+  void EnhancedBookmarkNodeChanged(
+      const bookmarks::BookmarkNode* node) override;
   void EnhancedBookmarkAllUserNodesRemoved() override;
-  void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
+  void EnhancedBookmarkRemoteIdChanged(const bookmarks::BookmarkNode* node,
                                        const std::string& old_remote_id,
                                        const std::string& remote_id) override;
 

@@ -24,6 +24,7 @@
 #include "ui/base/theme_provider.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
 using bookmarks::kBookmarkBarMenuCornerRadius;
 

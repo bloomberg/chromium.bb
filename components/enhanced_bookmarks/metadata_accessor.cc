@@ -14,6 +14,7 @@
 
 using namespace image::collections;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

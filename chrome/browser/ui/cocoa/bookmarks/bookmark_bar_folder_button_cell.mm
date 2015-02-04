@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 
+using bookmarks::BookmarkNode;
+
 @implementation BookmarkBarFolderButtonCell
 
 + (id)buttonCellForNode:(const BookmarkNode*)node

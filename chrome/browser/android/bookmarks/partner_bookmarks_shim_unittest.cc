@@ -18,6 +18,8 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
+using bookmarks::BookmarkPermanentNode;
 using testing::_;
 
 class MockObserver : public PartnerBookmarksShim::Observer {

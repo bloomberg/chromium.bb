@@ -49,6 +49,7 @@
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::PageNavigator;

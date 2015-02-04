@@ -99,6 +99,7 @@
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using l10n_util::GetStringUTF16;
 using l10n_util::GetNSStringWithFixup;
 using l10n_util::GetNSStringFWithFixup;

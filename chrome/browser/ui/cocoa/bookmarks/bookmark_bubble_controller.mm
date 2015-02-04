@@ -25,6 +25,7 @@
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 // An object to represent the ChooseAnotherFolder item in the pop up.
 @interface ChooseAnotherFolder : NSObject

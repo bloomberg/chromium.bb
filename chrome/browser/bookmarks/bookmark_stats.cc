@@ -8,6 +8,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 
+using bookmarks::BookmarkNode;
+
 void RecordBookmarkLaunch(const BookmarkNode* node,
                           BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||

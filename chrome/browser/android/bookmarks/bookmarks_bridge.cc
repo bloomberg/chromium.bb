@@ -43,6 +43,8 @@ using bookmarks::android::JavaBookmarkIdCreateBookmarkId;
 using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
+using bookmarks::BookmarkPermanentNode;
 using bookmarks::BookmarkType;
 using content::BrowserThread;
 

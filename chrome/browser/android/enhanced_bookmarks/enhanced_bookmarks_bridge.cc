@@ -29,6 +29,7 @@ using base::android::AttachCurrentThread;
 using bookmarks::android::JavaBookmarkIdCreateBookmarkId;
 using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
+using bookmarks::BookmarkNode;
 using bookmarks::BookmarkType;
 using content::BrowserThread;
 

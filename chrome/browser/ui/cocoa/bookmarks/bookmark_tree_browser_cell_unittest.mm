@@ -9,6 +9,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "testing/platform_test.h"
 
+using bookmarks::BookmarkNode;
+
 class BookmarkTreeBrowserCellTest : public PlatformTest {
  public:
   BookmarkTreeBrowserCellTest() {

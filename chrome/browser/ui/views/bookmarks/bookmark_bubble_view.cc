@@ -34,6 +34,7 @@
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using views::ColumnSet;
 using views::GridLayout;
 

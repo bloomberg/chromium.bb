@@ -9,17 +9,16 @@
 
 #import "chrome/browser/ui/cocoa/applescript/element_applescript.h"
 
-class BookmarkNode;
-
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
 }
 
 // Contains all the elements that are common to both a bookmark folder and
 // bookmark item.
 @interface BookmarkNodeAppleScript : ElementAppleScript {
  @protected
-  const BookmarkNode* bookmarkNode_;  // weak.
+  const bookmarks::BookmarkNode* bookmarkNode_;  // weak.
   // Contains the temporary title when a scripter creates a new folder/item with
   // title specified like
   // |make new bookmark folder with properties {title:"foo"}|.
@@ -31,10 +30,10 @@ class BookmarkModel;
 - (id)init;
 
 // Does not make a folder/item but instead uses an existing one.
-- (id)initWithBookmarkNode:(const BookmarkNode*)aBookmarkNode;
+- (id)initWithBookmarkNode:(const bookmarks::BookmarkNode*)aBookmarkNode;
 
 // Assigns a node, sets its unique ID and also copies temporary values.
-- (void)setBookmarkNode:(const BookmarkNode*)aBookmarkNode;
+- (void)setBookmarkNode:(const bookmarks::BookmarkNode*)aBookmarkNode;
 
 // Get and Set title.
 - (NSString*)title;

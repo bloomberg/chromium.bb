@@ -49,26 +49,27 @@ class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
                            bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override;
+                                  const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
   void ExtensiveBookmarkChangesBeginning(
       bookmarks::BookmarkModel* model) override;
   void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
@@ -141,14 +142,15 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // Helper to get the bookmark node from a given string id.
   // If the given id can't be parsed or doesn't refer to a valid node, sets
   // error_ and returns NULL.
-  const BookmarkNode* GetBookmarkNodeFromId(const std::string& id_string);
+  const bookmarks::BookmarkNode* GetBookmarkNodeFromId(
+      const std::string& id_string);
 
   // Helper to create a bookmark node from a CreateDetails object. If a node
   // can't be created based on the given details, sets error_ and returns NULL.
-  const BookmarkNode* CreateBookmarkNode(
+  const bookmarks::BookmarkNode* CreateBookmarkNode(
       bookmarks::BookmarkModel* model,
       const api::bookmarks::CreateDetails& details,
-      const BookmarkNode::MetaInfoMap* meta_info);
+      const bookmarks::BookmarkNode::MetaInfoMap* meta_info);
 
   // Helper that checks if bookmark editing is enabled. If it's not, this sets
   // error_ to the appropriate error string.
@@ -158,7 +160,7 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // is NULL, or a managed node, or the root node. In these cases the node
   // can't be edited, can't have new child nodes appended, and its direct
   // children can't be moved or reordered.
-  bool CanBeModified(const BookmarkNode* node);
+  bool CanBeModified(const bookmarks::BookmarkNode* node);
 
  private:
   // bookmarks::BaseBookmarkModelObserver:

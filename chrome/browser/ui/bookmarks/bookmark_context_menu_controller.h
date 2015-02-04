@@ -32,7 +32,7 @@ class BookmarkContextMenuControllerDelegate {
   // Sent before any command from the menu is executed.
   virtual void WillExecuteCommand(
       int command_id,
-      const std::vector<const BookmarkNode*>& bookmarks) {}
+      const std::vector<const bookmarks::BookmarkNode*>& bookmarks) {}
 
   // Sent after any command from the menu is executed.
   virtual void DidExecuteCommand(int command_id) {}
@@ -56,8 +56,8 @@ class BookmarkContextMenuController
       Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
-      const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection);
+      const bookmarks::BookmarkNode* parent,
+      const std::vector<const bookmarks::BookmarkNode*>& selection);
   ~BookmarkContextMenuController() override;
 
   ui::SimpleMenuModel* menu_model() { return menu_model_.get(); }
@@ -95,8 +95,8 @@ class BookmarkContextMenuController
   Browser* browser_;
   Profile* profile_;
   content::PageNavigator* navigator_;
-  const BookmarkNode* parent_;
-  std::vector<const BookmarkNode*> selection_;
+  const bookmarks::BookmarkNode* parent_;
+  std::vector<const bookmarks::BookmarkNode*> selection_;
   bookmarks::BookmarkModel* model_;
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
 

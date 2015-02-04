@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-class BookmarkNode;
-
 namespace bookmarks {
+
+class BookmarkNode;
 
 struct BookmarkMatch {
   // Each MatchPosition is the [begin, end) positions of a match within a

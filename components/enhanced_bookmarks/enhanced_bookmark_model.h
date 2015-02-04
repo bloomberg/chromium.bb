@@ -17,7 +17,6 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class BookmarkNode;
 class GURL;
 
 namespace base {
@@ -26,6 +25,7 @@ class Time;
 
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
 }
 
 FORWARD_DECLARE_TEST(EnhancedBookmarkModelTest, SetMultipleMetaInfo);
@@ -49,51 +49,54 @@ class EnhancedBookmarkModel : public KeyedService,
   void RemoveObserver(EnhancedBookmarkModelObserver* observer);
 
   // Moves |node| to |new_parent| and inserts it at the given |index|.
-  void Move(const BookmarkNode* node,
-            const BookmarkNode* new_parent,
+  void Move(const bookmarks::BookmarkNode* node,
+            const bookmarks::BookmarkNode* new_parent,
             int index);
 
   // Adds a new folder node at the specified position.
-  const BookmarkNode* AddFolder(const BookmarkNode* parent,
-                                int index,
-                                const base::string16& title);
+  const bookmarks::BookmarkNode* AddFolder(
+      const bookmarks::BookmarkNode* parent,
+      int index,
+      const base::string16& title);
 
   // Adds a url at the specified position.
-  const BookmarkNode* AddURL(const BookmarkNode* parent,
-                             int index,
-                             const base::string16& title,
-                             const GURL& url,
-                             const base::Time& creation_time);
+  const bookmarks::BookmarkNode* AddURL(const bookmarks::BookmarkNode* parent,
+                                        int index,
+                                        const base::string16& title,
+                                        const GURL& url,
+                                        const base::Time& creation_time);
 
   // Returns the remote id for a bookmark |node|.
-  std::string GetRemoteId(const BookmarkNode* node);
+  std::string GetRemoteId(const bookmarks::BookmarkNode* node);
 
   // Returns the bookmark node corresponding to the given |remote_id|, or NULL
   // if there is no node with the id.
-  const BookmarkNode* BookmarkForRemoteId(const std::string& remote_id);
+  const bookmarks::BookmarkNode* BookmarkForRemoteId(
+      const std::string& remote_id);
 
   // Sets the description of a bookmark |node|.
-  void SetDescription(const BookmarkNode* node, const std::string& description);
+  void SetDescription(const bookmarks::BookmarkNode* node,
+                      const std::string& description);
 
   // Returns the description of a bookmark |node|.
-  std::string GetDescription(const BookmarkNode* node);
+  std::string GetDescription(const bookmarks::BookmarkNode* node);
 
   // Sets the URL of an image representative of a bookmark |node|.
   // Expects the URL to be valid and not empty.
   // Returns true if the metainfo is successfully populated.
-  bool SetOriginalImage(const BookmarkNode* node,
+  bool SetOriginalImage(const bookmarks::BookmarkNode* node,
                         const GURL& url,
                         int width,
                         int height);
 
   // Removes all image data for the node and sets the user_removed_image flag
   // so the server won't try to fetch a new image for the node.
-  void RemoveImageData(const BookmarkNode* node);
+  void RemoveImageData(const bookmarks::BookmarkNode* node);
 
   // Returns the url and dimensions of the original scraped image of a
   // bookmark |node|.
   // Returns true if the out variables are populated, false otherwise.
-  bool GetOriginalImage(const BookmarkNode* node,
+  bool GetOriginalImage(const bookmarks::BookmarkNode* node,
                         GURL* url,
                         int* width,
                         int* height);
@@ -101,14 +104,14 @@ class EnhancedBookmarkModel : public KeyedService,
   // Returns the url and dimensions of the server provided thumbnail image for
   // a given bookmark |node|.
   // Returns true if the out variables are populated, false otherwise.
-  bool GetThumbnailImage(const BookmarkNode* node,
+  bool GetThumbnailImage(const bookmarks::BookmarkNode* node,
                          GURL* url,
                          int* width,
                          int* height);
 
   // Returns a brief server provided synopsis of the bookmarked page.
   // Returns the empty string if the snippet could not be extracted.
-  std::string GetSnippet(const BookmarkNode* node);
+  std::string GetSnippet(const bookmarks::BookmarkNode* node);
 
   // Sets a custom suffix to be added to the version field when writing meta
   // info fields.
@@ -121,7 +124,7 @@ class EnhancedBookmarkModel : public KeyedService,
   // Expects valid or empty urls. Returns true if the metainfo is successfully
   // populated.
   // TODO(rfevang): Move this to a testing only utility file.
-  bool SetAllImages(const BookmarkNode* node,
+  bool SetAllImages(const bookmarks::BookmarkNode* node,
                     const GURL& image_url,
                     int image_width,
                     int image_height,
@@ -142,27 +145,28 @@ class EnhancedBookmarkModel : public KeyedService,
  private:
   FRIEND_TEST_ALL_PREFIXES(::EnhancedBookmarkModelTest, SetMultipleMetaInfo);
 
-  typedef std::map<std::string, const BookmarkNode*> IdToNodeMap;
-  typedef std::map<const BookmarkNode*, std::string> NodeToIdMap;
+  typedef std::map<std::string, const bookmarks::BookmarkNode*> IdToNodeMap;
+  typedef std::map<const bookmarks::BookmarkNode*, std::string> NodeToIdMap;
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
-  void OnWillChangeBookmarkMetaInfo(bookmarks::BookmarkModel* model,
-                                    const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
+  void OnWillChangeBookmarkMetaInfo(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
   void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
-                               const BookmarkNode* node) override;
+                               const bookmarks::BookmarkNode* node) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
 
@@ -171,10 +175,10 @@ class EnhancedBookmarkModel : public KeyedService,
 
   // Adds a node to the id map if it has a (unique) remote id. Must be followed
   // by a (Schedule)ResetDuplicateRemoteIds call when done adding nodes.
-  void AddToIdMap(const BookmarkNode* node);
+  void AddToIdMap(const bookmarks::BookmarkNode* node);
 
   // Recursively removes a node and all its children from the various maps.
-  void RemoveNodeFromMaps(const BookmarkNode* node);
+  void RemoveNodeFromMaps(const bookmarks::BookmarkNode* node);
 
   // If there are nodes that needs to reset their remote ids, schedules
   // ResetDuplicateRemoteIds to be run asynchronously.
@@ -184,19 +188,19 @@ class EnhancedBookmarkModel : public KeyedService,
   void ResetDuplicateRemoteIds();
 
   // Sets the NEEDS_OFFLINE_PROCESSING flag on the given node.
-  void SetNeedsOfflineProcessing(const BookmarkNode* node);
+  void SetNeedsOfflineProcessing(const bookmarks::BookmarkNode* node);
 
   // Helper method for setting a meta info field on a node. Also updates the
   // version field.
-  void SetMetaInfo(const BookmarkNode* node,
+  void SetMetaInfo(const bookmarks::BookmarkNode* node,
                    const std::string& field,
                    const std::string& value);
 
   // Helper method for setting multiple meta info fields at once. All the fields
   // in |meta_info| will be set, but the method will not delete fields not
   // present.
-  void SetMultipleMetaInfo(const BookmarkNode* node,
-                           BookmarkNode::MetaInfoMap meta_info);
+  void SetMultipleMetaInfo(const bookmarks::BookmarkNode* node,
+                           bookmarks::BookmarkNode::MetaInfoMap meta_info);
 
   bookmarks::BookmarkModel* bookmark_model_;
   bool loaded_;
@@ -208,7 +212,7 @@ class EnhancedBookmarkModel : public KeyedService,
 
   // Pending SetNeedsOfflineProcessing calls are stored here, as they may need
   // to be cancelled if the node is removed.
-  std::map<const BookmarkNode*, linked_ptr<base::CancelableClosure>>
+  std::map<const bookmarks::BookmarkNode*, linked_ptr<base::CancelableClosure>>
       set_needs_offline_processing_tasks_;
 
   // Caches the remote id of a node before its meta info changes.

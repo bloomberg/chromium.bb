@@ -38,6 +38,7 @@
 #endif
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

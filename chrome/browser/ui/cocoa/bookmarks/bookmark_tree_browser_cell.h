@@ -7,7 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+namespace bookmarks {
 class BookmarkNode;
+}
 
 // Provides a custom cell as used in the BookmarkEditor.xib's folder tree
 // browser view.  This cell customization adds target and action support
@@ -16,7 +18,7 @@ class BookmarkNode;
 // control in which is contained the cell.
 @interface BookmarkTreeBrowserCell : NSBrowserCell {
  @private
-  const BookmarkNode* bookmarkNode_;  // weak
+  const bookmarks::BookmarkNode* bookmarkNode_;  // weak
   NSMatrix* matrix_;  // weak
   id target_;  // weak
   SEL action_;
@@ -26,8 +28,8 @@ class BookmarkNode;
 @property(nonatomic, assign) id target;
 @property(nonatomic, assign) SEL action;
 
-- (const BookmarkNode*)bookmarkNode;
-- (void)setBookmarkNode:(const BookmarkNode*)bookmarkNode;
+- (const bookmarks::BookmarkNode*)bookmarkNode;
+- (void)setBookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode;
 
 @end
 

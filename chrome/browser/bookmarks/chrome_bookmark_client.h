@@ -36,14 +36,14 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   void Shutdown() override;
 
   // Returns the managed_node.
-  const BookmarkNode* managed_node() { return managed_node_; }
+  const bookmarks::BookmarkNode* managed_node() { return managed_node_; }
 
   // Returns true if the given node belongs to the managed bookmarks tree.
-  bool IsDescendantOfManagedNode(const BookmarkNode* node);
+  bool IsDescendantOfManagedNode(const bookmarks::BookmarkNode* node);
 
   // Returns true if there is at least one managed node in the |list|.
   bool HasDescendantsOfManagedNode(
-      const std::vector<const BookmarkNode*>& list);
+      const std::vector<const bookmarks::BookmarkNode*>& list);
 
   // bookmarks::BookmarkClient:
   bool PreferTouchIcon() override;
@@ -56,12 +56,14 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   void GetTypedCountForNodes(
       const NodeSet& nodes,
       NodeTypedCountPairs* node_typed_count_pairs) override;
-  bool IsPermanentNodeVisible(const BookmarkPermanentNode* node) override;
+  bool IsPermanentNodeVisible(
+      const bookmarks::BookmarkPermanentNode* node) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() override;
-  bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) override;
-  bool CanSyncNode(const BookmarkNode* node) override;
-  bool CanBeEditedByUser(const BookmarkNode* node) override;
+  bool CanSetPermanentNodeTitle(
+      const bookmarks::BookmarkNode* permanent_node) override;
+  bool CanSyncNode(const bookmarks::BookmarkNode* node) override;
+  bool CanBeEditedByUser(const bookmarks::BookmarkNode* node) override;
 
  private:
   friend class HistoryServiceFactory;
@@ -70,9 +72,9 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
@@ -81,7 +83,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
   // Helper for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
-      scoped_ptr<BookmarkPermanentNode> managed_node,
+      scoped_ptr<bookmarks::BookmarkPermanentNode> managed_node,
       scoped_ptr<base::ListValue> initial_managed_bookmarks,
       int64* next_node_id);
 
@@ -104,7 +106,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   bookmarks::BookmarkModel* model_;
 
   scoped_ptr<policy::ManagedBookmarksTracker> managed_bookmarks_tracker_;
-  BookmarkPermanentNode* managed_node_;
+  bookmarks::BookmarkPermanentNode* managed_node_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkClient);
 };

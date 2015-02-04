@@ -16,6 +16,7 @@
 
 using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @interface BookmarkEditorController (Private)
 

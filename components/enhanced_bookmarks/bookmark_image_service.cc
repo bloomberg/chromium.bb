@@ -16,6 +16,7 @@
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

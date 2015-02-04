@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 // TODO(jrg): use OCMock.
 

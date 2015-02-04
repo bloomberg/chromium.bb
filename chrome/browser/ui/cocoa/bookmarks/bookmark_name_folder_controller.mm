@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @implementation BookmarkNameFolderController
 

@@ -7,6 +7,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 
+using bookmarks::BookmarkNode;
+
 namespace enhanced_bookmarks {
 
 ChromeBookmarkServerClusterService::ChromeBookmarkServerClusterService(

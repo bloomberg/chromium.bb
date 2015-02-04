@@ -9,13 +9,13 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
-class BookmarkNode;
 class ChromeBookmarkClient;
 @class BookmarkBubbleController;
 @class BookmarkSyncPromoController;
 
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
 }
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
@@ -28,10 +28,10 @@ class BookmarkModel;
   // profile.
   ChromeBookmarkClient* client_;  // weak
   bookmarks::BookmarkModel* model_;  // weak
-  const BookmarkNode* node_;  // weak
+  const bookmarks::BookmarkNode* node_;  // weak
 
   // The bookmark node whose button we asked to pulse.
-  const BookmarkNode* pulsingBookmarkNode_;  // weak
+  const bookmarks::BookmarkNode* pulsingBookmarkNode_;  // weak
 
   BOOL alreadyBookmarked_;
 
@@ -47,7 +47,7 @@ class BookmarkModel;
   IBOutlet NSView* syncPromoPlaceholder_;
 }
 
-@property(readonly, nonatomic) const BookmarkNode* node;
+@property(readonly, nonatomic) const bookmarks::BookmarkNode* node;
 
 // |node| is the bookmark node we edit in this bubble.
 // |alreadyBookmarked| tells us if the node was bookmarked before the
@@ -58,7 +58,7 @@ class BookmarkModel;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                     client:(ChromeBookmarkClient*)client
                      model:(bookmarks::BookmarkModel*)model
-                      node:(const BookmarkNode*)node
+                      node:(const bookmarks::BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;
 
 // Actions for buttons in the dialog.
@@ -78,11 +78,12 @@ class BookmarkModel;
 
 @property(nonatomic, readonly) NSView* syncPromoPlaceholder;
 
-- (void)addFolderNodes:(const BookmarkNode*)parent
+- (void)addFolderNodes:(const bookmarks::BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation;
-- (void)setTitle:(NSString*)title parentFolder:(const BookmarkNode*)parent;
-- (void)setParentFolderSelection:(const BookmarkNode*)parent;
+- (void)setTitle:(NSString*)title
+    parentFolder:(const bookmarks::BookmarkNode*)parent;
+- (void)setParentFolderSelection:(const bookmarks::BookmarkNode*)parent;
 + (NSString*)chooseAnotherFolderString;
 - (NSPopUpButton*)folderPopUpButton;
 @end

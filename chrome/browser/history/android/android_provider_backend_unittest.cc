@@ -38,6 +38,7 @@ using base::Time;
 using base::TimeDelta;
 using base::UTF8ToUTF16;
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace history {

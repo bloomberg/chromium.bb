@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace {

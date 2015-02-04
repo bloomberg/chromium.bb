@@ -14,6 +14,7 @@
 #include "components/history/core/browser/history_types.h"
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkNode;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::AddUrlToHistoryWithTimestamp;

@@ -149,27 +149,28 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
 
   void EndGroupingUndos(JNIEnv* env, jobject obj);
 
-  base::string16 GetTitle(const BookmarkNode* node) const;
+  base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
 
  private:
   ~BookmarksBridge() override;
 
   base::android::ScopedJavaLocalRef<jobject> CreateJavaBookmark(
-      const BookmarkNode* node);
-  void ExtractBookmarkNodeInformation(
-      const BookmarkNode* node,
-      jobject j_result_obj);
-  const BookmarkNode* GetNodeByID(long node_id, int type);
-  const BookmarkNode* GetFolderWithFallback(long folder_id, int type);
+      const bookmarks::BookmarkNode* node);
+  void ExtractBookmarkNodeInformation(const bookmarks::BookmarkNode* node,
+                                      jobject j_result_obj);
+  const bookmarks::BookmarkNode* GetNodeByID(long node_id, int type);
+  const bookmarks::BookmarkNode* GetFolderWithFallback(long folder_id,
+                                                       int type);
   // Returns whether |node| can be modified by the user.
-  bool IsEditable(const BookmarkNode* node) const;
+  bool IsEditable(const bookmarks::BookmarkNode* node) const;
   // Returns whether |node| is a managed bookmark.
-  bool IsManaged(const BookmarkNode* node) const;
-  const BookmarkNode* GetParentNode(const BookmarkNode* node);
-  int GetBookmarkType(const BookmarkNode* node);
-  bool IsReachable(const BookmarkNode* node) const;
+  bool IsManaged(const bookmarks::BookmarkNode* node) const;
+  const bookmarks::BookmarkNode* GetParentNode(
+      const bookmarks::BookmarkNode* node);
+  int GetBookmarkType(const bookmarks::BookmarkNode* node);
+  bool IsReachable(const bookmarks::BookmarkNode* node) const;
   bool IsLoaded() const;
-  bool IsFolderAvailable(const BookmarkNode* folder) const;
+  bool IsFolderAvailable(const bookmarks::BookmarkNode* folder) const;
   void NotifyIfDoneLoading();
 
   // Override bookmarks::BaseBookmarkModelObserver.
@@ -181,24 +182,25 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                            bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
+                           const bookmarks::BookmarkNode* parent,
                            int old_index,
-                           const BookmarkNode* node,
+                           const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override;
+                           const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
   void ExtensiveBookmarkChangesBeginning(
       bookmarks::BookmarkModel* model) override;
   void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;

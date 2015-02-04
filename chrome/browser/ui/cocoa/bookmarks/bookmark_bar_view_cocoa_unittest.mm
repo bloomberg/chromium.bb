@@ -23,6 +23,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace {
 

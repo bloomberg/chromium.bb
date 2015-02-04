@@ -37,6 +37,7 @@
 #include "sync/util/data_type_histogram.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace browser_sync {

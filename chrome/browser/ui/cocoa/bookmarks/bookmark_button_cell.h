@@ -8,7 +8,10 @@
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 @class BookmarkContextMenuCocoaController;
+
+namespace bookmarks {
 class BookmarkNode;
+}
 
 // A button cell that handles drawing/highlighting of buttons in the
 // bookmark bar.  This cell forwards mouseEntered/mouseExited events
@@ -36,12 +39,13 @@ class BookmarkNode;
   base::scoped_nsobject<NSColor> textColor_;
 }
 
-@property(nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
+@property(nonatomic, readwrite, assign)
+    const bookmarks::BookmarkNode* bookmarkNode;
 @property(nonatomic, readwrite, assign) int startingChildIndex;
 @property(nonatomic, readwrite, assign) BOOL drawFolderArrow;
 
 // Create a button cell which draws with a theme.
-+ (id)buttonCellForNode:(const BookmarkNode*)node
++ (id)buttonCellForNode:(const bookmarks::BookmarkNode*)node
                    text:(NSString*)text
                   image:(NSImage*)image
          menuController:(BookmarkContextMenuCocoaController*)menuController;
@@ -53,10 +57,10 @@ class BookmarkNode;
 
 // Initialize a button cell which draws with a theme.
 // Designated initializer.
-- (id)initForNode:(const BookmarkNode*)node
-             text:(NSString*)text
-            image:(NSImage*)image
-   menuController:(BookmarkContextMenuCocoaController*)menuController;
+- (id)initForNode:(const bookmarks::BookmarkNode*)node
+              text:(NSString*)text
+             image:(NSImage*)image
+    menuController:(BookmarkContextMenuCocoaController*)menuController;
 
 // Initialize a button cell not attached to any node which draws with a theme.
 - (id)initWithText:(NSString*)text

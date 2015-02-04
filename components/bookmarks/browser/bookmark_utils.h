@@ -12,7 +12,6 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
-class BookmarkNode;
 class GURL;
 
 namespace user_prefs {
@@ -26,6 +25,7 @@ namespace bookmarks {
 
 class BookmarkClient;
 class BookmarkModel;
+class BookmarkNode;
 
 // Fields to use when finding matching bookmarks.
 struct QueryFields {

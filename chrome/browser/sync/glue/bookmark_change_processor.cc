@@ -37,6 +37,7 @@
 #include "ui/gfx/image/image_util.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 using syncer::ChangeRecord;
 using syncer::ChangeRecordList;

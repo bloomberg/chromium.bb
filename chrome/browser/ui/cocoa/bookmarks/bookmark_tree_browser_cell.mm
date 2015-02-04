@@ -6,6 +6,8 @@
 
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkNode;
+
 @implementation BookmarkTreeBrowserCell
 
 @synthesize matrix = matrix_;

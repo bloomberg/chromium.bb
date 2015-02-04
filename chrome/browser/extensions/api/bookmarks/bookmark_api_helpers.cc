@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 namespace extensions {
 

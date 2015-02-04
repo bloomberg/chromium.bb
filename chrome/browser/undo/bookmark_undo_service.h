@@ -38,22 +38,22 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
                            bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+                         const bookmarks::BookmarkNode* old_parent,
                          int old_index,
-                         const BookmarkNode* new_parent,
+                         const bookmarks::BookmarkNode* new_parent,
                          int new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
+                         const bookmarks::BookmarkNode* parent,
                          int index) override;
   void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
-                             const BookmarkNode* parent,
+                             const bookmarks::BookmarkNode* parent,
                              int old_index,
-                             const BookmarkNode* node) override;
+                             const bookmarks::BookmarkNode* node) override;
   void OnWillRemoveAllUserBookmarks(bookmarks::BookmarkModel* model) override;
   void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
-                                const BookmarkNode* node) override;
+                                const bookmarks::BookmarkNode* node) override;
   void OnWillReorderBookmarkNode(bookmarks::BookmarkModel* model,
-                                 const BookmarkNode* node) override;
+                                 const bookmarks::BookmarkNode* node) override;
   void GroupedBookmarkChangesBeginning(
       bookmarks::BookmarkModel* model) override;
   void GroupedBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;

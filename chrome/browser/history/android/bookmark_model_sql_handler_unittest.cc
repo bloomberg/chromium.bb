@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace history {

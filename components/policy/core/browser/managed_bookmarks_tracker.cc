@@ -20,6 +20,8 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
+using bookmarks::BookmarkPermanentNode;
 
 namespace policy {
 

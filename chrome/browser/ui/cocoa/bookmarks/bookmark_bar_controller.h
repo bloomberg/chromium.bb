@@ -25,7 +25,6 @@
 @class BookmarkButtonCell;
 @class BookmarkFolderTarget;
 @class BookmarkContextMenuCocoaController;
-class BookmarkNode;
 class Browser;
 class ChromeBookmarkClient;
 class GURL;
@@ -36,6 +35,7 @@ class ThemeProvider;
 namespace bookmarks {
 
 class BookmarkModel;
+class BookmarkNode;
 
 // Magic numbers from Cole
 // TODO(jrg): create an objc-friendly version of bookmark_bar_constants.h?
@@ -339,7 +339,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)viewDidMoveToWindow;
 
 // Provide a favicon for a bookmark node.  May return nil.
-- (NSImage*)faviconForNode:(const BookmarkNode*)node;
+- (NSImage*)faviconForNode:(const bookmarks::BookmarkNode*)node;
 
 // Used for situations where the bookmark bar folder menus should no longer
 // be actively popping up. Called when the window loses focus, a click has
@@ -352,7 +352,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)closeFolderAndStopTrackingMenus;
 
 // Checks if operations such as edit or delete are allowed.
-- (BOOL)canEditBookmark:(const BookmarkNode*)node;
+- (BOOL)canEditBookmark:(const bookmarks::BookmarkNode*)node;
 
 // Checks if bookmark editing is enabled at all.
 - (BOOL)canEditBookmarks;
@@ -373,18 +373,21 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)loaded:(bookmarks::BookmarkModel*)model;
 - (void)beingDeleted:(bookmarks::BookmarkModel*)model;
 - (void)nodeAdded:(bookmarks::BookmarkModel*)model
-           parent:(const BookmarkNode*)oldParent index:(int)index;
+           parent:(const bookmarks::BookmarkNode*)oldParent index:(int)index;
 - (void)nodeChanged:(bookmarks::BookmarkModel*)model
-               node:(const BookmarkNode*)node;
+               node:(const bookmarks::BookmarkNode*)node;
 - (void)nodeMoved:(bookmarks::BookmarkModel*)model
-        oldParent:(const BookmarkNode*)oldParent oldIndex:(int)oldIndex
-        newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex;
+        oldParent:(const bookmarks::BookmarkNode*)oldParent
+         oldIndex:(int)oldIndex
+        newParent:(const bookmarks::BookmarkNode*)newParent
+         newIndex:(int)newIndex;
 - (void)nodeRemoved:(bookmarks::BookmarkModel*)model
-             parent:(const BookmarkNode*)oldParent index:(int)index;
+             parent:(const bookmarks::BookmarkNode*)oldParent
+              index:(int)index;
 - (void)nodeFaviconLoaded:(bookmarks::BookmarkModel*)model
-                     node:(const BookmarkNode*)node;
+                     node:(const bookmarks::BookmarkNode*)node;
 - (void)nodeChildrenReordered:(bookmarks::BookmarkModel*)model
-                         node:(const BookmarkNode*)node;
+                         node:(const bookmarks::BookmarkNode*)node;
 @end
 
 // These APIs should only be used by unit tests (or used internally).
@@ -403,7 +406,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (int)displayedButtonCount;
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
 - (void)clearBookmarkBar;
-- (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node;
+- (BookmarkButtonCell*)cellForBookmarkNode:(const bookmarks::BookmarkNode*)node;
 - (BookmarkButtonCell*)cellForCustomButtonWithText:(NSString*)text
                                              image:(NSImage*)image;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
@@ -415,10 +418,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;
-- (void)unhighlightBookmark:(const BookmarkNode*)node;
+- (void)unhighlightBookmark:(const bookmarks::BookmarkNode*)node;
 
 // The following are for testing purposes only and are not used internally.
-- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
+- (NSMenu *)menuForFolderNode:(const bookmarks::BookmarkNode*)node;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONTROLLER_H_

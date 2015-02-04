@@ -164,7 +164,7 @@ class Profile;
 
 // Gets notified when a fav icon asynchronously loads, so we can now use the
 // real icon instead of a generic placeholder.
-- (void)faviconLoadedForNode:(const BookmarkNode*)node;
+- (void)faviconLoadedForNode:(const bookmarks::BookmarkNode*)node;
 
 - (void)setSelectedButtonByIndex:(int)index;
 

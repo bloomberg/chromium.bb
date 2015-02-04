@@ -16,6 +16,7 @@
 #include "ui/base/models/combobox_model_observer.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 // Implementation of ComboboxModelObserver that records when

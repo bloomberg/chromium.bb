@@ -15,6 +15,7 @@
 #include "ui/base/layout.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;

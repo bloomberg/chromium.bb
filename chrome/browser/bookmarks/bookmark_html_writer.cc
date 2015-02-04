@@ -30,6 +30,7 @@
 #include "ui/gfx/favicon_size.h"
 
 using bookmarks::BookmarkCodec;
+using bookmarks::BookmarkNode;
 using content::BrowserThread;
 
 namespace {

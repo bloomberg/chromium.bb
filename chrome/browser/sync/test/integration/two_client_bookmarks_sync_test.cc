@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "policy/policy_constants.h"
@@ -19,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
 
+using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
@@ -1141,8 +1143,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::string title = IndexedFolderName(level);
-    folder = AddFolder(
-        0, folder, folder->child_count(), title);
+    folder = AddFolder(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 5) folder_L5 = folder;
   }

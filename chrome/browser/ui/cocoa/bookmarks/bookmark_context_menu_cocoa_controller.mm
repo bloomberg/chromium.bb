@@ -14,6 +14,7 @@
 #import "ui/base/cocoa/menu_controller.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 @interface BookmarkContextMenuCocoaController (Private)
 - (void)willExecuteCommand:(int)command;

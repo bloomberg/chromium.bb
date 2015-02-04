@@ -43,7 +43,9 @@
 #include "ui/base/webui/web_ui_util.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
+using content::WebContents;
 
 namespace extensions {
 
@@ -66,8 +68,6 @@ namespace SortChildren = api::bookmark_manager_private::SortChildren;
 namespace StartDrag = api::bookmark_manager_private::StartDrag;
 namespace UndoInfo = api::bookmark_manager_private::GetUndoInfo;
 namespace UpdateMetaInfo = api::bookmark_manager_private::UpdateMetaInfo;
-
-using content::WebContents;
 
 namespace {
 

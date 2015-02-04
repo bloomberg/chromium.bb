@@ -14,8 +14,11 @@
 @class BookmarkBarController;
 class BookmarkContextMenuController;
 class BookmarkContextMenuDelegateBridge;
-class BookmarkNode;
 @class MenuController;
+
+namespace bookmarks {
+class BookmarkNode;
+}
 
 // A controller to manage bookmark bar context menus. One instance of this
 // class exists per bookmark bar controller, used for all of its context menus
@@ -32,7 +35,7 @@ class BookmarkNode;
 
   // The current |bookmarkNode_| for which |bookmarkContextMenuController_| and
   // |menuController_| are initialized. Weak, owned by the BookmarkModel.
-  const BookmarkNode* bookmarkNode_;
+  const bookmarks::BookmarkNode* bookmarkNode_;
 
   // The cross-platform BookmarkContextMenuController, containing the logic for
   // which items and corresponding actions exist in the menu.
@@ -51,7 +54,7 @@ class BookmarkNode;
 // only one menu should ever be shown at a time, and thus caches the last
 // returned menu and re-creates it if a menu for a different node is requested.
 // Passing in a NULL |node| will return the menu for "empty" placeholder.
-- (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node;
+- (NSMenu*)menuForBookmarkNode:(const bookmarks::BookmarkNode*)node;
 
 // Returns an NSMenu customized for the bookmark bar.
 - (NSMenu*)menuForBookmarkBar;

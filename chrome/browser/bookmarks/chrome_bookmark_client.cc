@@ -26,6 +26,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
+using bookmarks::BookmarkPermanentNode;
 
 namespace {
 

@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace bookmarks {
 class BookmarkNode;
+}
 
 namespace enhanced_bookmarks {
 
@@ -20,13 +22,14 @@ class EnhancedBookmarkModelObserver {
   virtual void EnhancedBookmarkModelShuttingDown() = 0;
 
   // Called when a node is added to the model.
-  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) = 0;
+  virtual void EnhancedBookmarkAdded(const bookmarks::BookmarkNode* node) = 0;
 
   // Called when a node is removed from the model.
-  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) = 0;
+  virtual void EnhancedBookmarkRemoved(const bookmarks::BookmarkNode* node) = 0;
 
   // Called when a node has changed.
-  virtual void EnhancedBookmarkNodeChanged(const BookmarkNode* node) = 0;
+  virtual void EnhancedBookmarkNodeChanged(
+      const bookmarks::BookmarkNode* node) = 0;
 
   // Called when all user editable nodes are removed from the model.
   virtual void EnhancedBookmarkAllUserNodesRemoved() = 0;
@@ -34,13 +37,15 @@ class EnhancedBookmarkModelObserver {
   // Called when the remote id of a node changes. If |remote_id| is empty, the
   // remote id has been cleared. This could happen if multiple nodes with the
   // same remote id has been detected.
-  virtual void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
-                                               const std::string& old_remote_id,
-                                               const std::string& remote_id) {};
+  virtual void EnhancedBookmarkRemoteIdChanged(
+      const bookmarks::BookmarkNode* node,
+      const std::string& old_remote_id,
+      const std::string& remote_id) {}
 
  protected:
   virtual ~EnhancedBookmarkModelObserver() {}
 };
 
 }  // namespace enhanced_bookmarks
+
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_MODEL_OBSERVER_H_

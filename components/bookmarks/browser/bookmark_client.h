@@ -16,8 +16,6 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class BookmarkNode;
-class BookmarkPermanentNode;
 class GURL;
 
 namespace base {
@@ -25,6 +23,9 @@ struct UserMetricsAction;
 }
 
 namespace bookmarks {
+
+class BookmarkNode;
+class BookmarkPermanentNode;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
