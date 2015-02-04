@@ -13,6 +13,7 @@ import logging
 import urlparse
 
 from chromite import cros
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
 from chromite.lib import remote_access
@@ -910,7 +911,8 @@ For more information of cros build usage:
 
   def Run(self):
     """Run cros deploy."""
-    cros_build_lib.AssertInsideChroot()
+    if not cros_build_lib.IsInsideChroot():
+      raise commandline.ChrootRequiredError()
     self._ReadOptions()
     try:
       device_connected = False
