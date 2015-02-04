@@ -1203,6 +1203,22 @@
         },
       ],
     }],
+    ['use_v8_in_net == 1 and OS != "android"', {
+      'targets': [
+        {
+          # GN version: //net/interfaces
+          'target_name': 'net_interfaces',
+          'type': 'static_library',
+          'sources': [
+            'interfaces/host_resolver_service.mojom',
+            'interfaces/proxy_resolver_service.mojom',
+          ],
+          'includes': [
+            '../third_party/mojo/mojom_bindings_generator.gypi',
+          ],
+        },
+      ],
+    }],
     ['OS != "ios" and OS != "android"', {
       'targets': [
         # iOS doesn't have the concept of simple executables, these targets
