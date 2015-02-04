@@ -276,8 +276,11 @@ CommandHandler.prototype.updateAvailability = function() {
  * @private
  */
 CommandHandler.prototype.shouldIgnoreEvents_ = function() {
-  // Do not handle commands, when a dialog is shown.
-  if (this.fileManager_.document.querySelector('.cr-dialog-container.shown'))
+  // Do not handle commands, when a dialog is shown. Do not use querySelector
+  // as it's much slower, and this method is executed often.
+  var dialogs = this.fileManager_.document.getElementsByClassName(
+      'cr-dialog-container');
+  if (dialogs.length !== 0 && dialogs[0].classList.contains('shown'))
     return true;
 
   return false;  // Do not ignore.
