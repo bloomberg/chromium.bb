@@ -28,7 +28,7 @@ DSC_FORMAT = {
     # Don't generate the additional files to allow this project to run as a
     # packaged app (i.e. manifest.json, background.js, etc.).
     'NO_PACKAGE_FILES': (bool, [True, False], False),
-    'TOOLS' : (list, VALID_TOOLCHAINS, True),
+    'TOOLS' : (list, VALID_TOOLCHAINS, False),
     'CONFIGS' : (list, ['Debug', 'Release'], False),
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
@@ -167,6 +167,7 @@ def LoadProject(filename):
     return None
   ValidateFormat(desc, DSC_FORMAT)
   desc['FILEPATH'] = os.path.abspath(filename)
+  desc.setdefault('TOOLS', VALID_TOOLCHAINS)
   return desc
 
 

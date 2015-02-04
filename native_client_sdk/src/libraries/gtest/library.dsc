@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'SEARCH': [
     '.',
     '../../../../testing/gtest/include/gtest',
@@ -24,7 +23,6 @@
         # See comment below about gtest-internal-inl.h
         '$(NACL_SDK_ROOT)/include/gtest/internal',
       ],
-      'CXXFLAGS': ['-Wno-unused-const-variable'],
     }
   ],
   'HEADERS': [

@@ -326,11 +326,11 @@ endif
 # so that calls to assert(3) are not included in the build.
 #
 ifeq ($(CONFIG),Release)
-POSIX_FLAGS ?= -g -O2 -pthread -MMD -DNDEBUG
+POSIX_CFLAGS ?= -g -O2 -pthread -MMD -DNDEBUG
 NACL_LDFLAGS ?= -O2
 PNACL_LDFLAGS ?= -O2
 else
-POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
+POSIX_CFLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif
 
 NACL_CFLAGS ?= -Wno-long-long -Werror

@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc',  'bionic', 'pnacl', 'win', 'linux'],
   'SEARCH': [
       '../../../../ppapi/cpp',
       '../../../../ppapi/cpp/dev',

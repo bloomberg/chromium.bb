@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux', 'win'],
   'SEARCH': [
     '../../../../testing/gmock/include/gmock',
     '../../../../testing/gmock/include/gmock/internal',

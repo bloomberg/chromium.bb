@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   # Don't copy the packaged app files: manifest.json, etc.
   'NO_PACKAGE_FILES': True,
   'TARGETS': [

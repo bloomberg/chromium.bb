@@ -538,17 +538,18 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
     gyp_defines.append('clang=1')
 
   gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
-  for key in ['GYP_GENERATORS', 'GYP_DEFINES', 'CC']:
-    value = gyp_env.get(key)
-    if value is not None:
+  gyp_env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir.replace('\\', '/')
+
+  # Print relevant environment variables
+  for key, value in gyp_env.iteritems():
+    if key.startswith('GYP') or key in ('CC',):
       print '%s="%s"' % (key, value)
-  gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
-  gyp_depth = '--depth=.'
+
   buildbot_common.Run(
-      [sys.executable, gyp_py_script, gyp_file, gyp_depth] + \
-          gyp_generator_flags,
+      [sys.executable, gyp_py_script, gyp_file, '--depth=.'],
       cwd=SRC_DIR,
       env=gyp_env)
+
   NinjaBuild(targets, out_dir)
 
 
