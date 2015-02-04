@@ -130,6 +130,9 @@ void AnimationPlayer::setCurrentTime(double newCurrentTime)
 
     m_currentTimePending = false;
     setCurrentTimeInternal(newCurrentTime / 1000, TimingUpdateOnDemand);
+
+    if (calculatePlayState() == Finished)
+        m_startTime = calculateStartTime(newCurrentTime);
 }
 
 void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason reason)
@@ -165,6 +168,12 @@ void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime, TimingUpdate
 void AnimationPlayer::updateCurrentTimingState(TimingUpdateReason reason)
 {
     if (m_held) {
+        // Add hystersis due to floating point error accumulation
+        if (!isNull(m_startTime) && m_timeline && !limited(calculateCurrentTime() + 0.001 * m_playbackRate) && playStateInternal() == Finished) {
+            m_held = false;
+            setCurrentTimeInternal(calculateCurrentTime(), reason);
+            return;
+        }
         setCurrentTimeInternal(m_holdTime, reason);
         return;
     }
@@ -351,7 +360,6 @@ double AnimationPlayer::calculateStartTime(double currentTime) const
 
 double AnimationPlayer::calculateCurrentTime() const
 {
-    ASSERT(!m_held);
     if (isNull(m_startTime) || !m_timeline)
         return 0;
     return (m_timeline->effectiveTime() - m_startTime) * m_playbackRate;

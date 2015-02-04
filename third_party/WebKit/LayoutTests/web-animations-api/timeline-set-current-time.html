@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!-- This tests that animation timeline current time affects players correctly. -->
+
+<div id='element'></div>
+
+<script>
+async_test(function(t) {
+  var player = element.animate([], 10);
+  var readyPromise = player.ready.then(function() {
+    t.step(function() {
+      assert_equals(player.currentTime, 0);
+      document.timeline.currentTime = player.startTime + 5;
+      assert_approx_equals(player.currentTime, 5, 0.1);
+      assert_equals(player.playState, "running");
+
+      document.timeline.currentTime = player.startTime + 15;
+      assert_approx_equals(player.currentTime, 10, 0.1);
+      assert_equals(player.playState, "finished");
+
+      document.timeline.currentTime = player.startTime;
+      assert_equals(player.currentTime, 0);
+      assert_equals(player.playState, "running");
+
+      document.timeline.currentTime = player.startTime + 5;
+      assert_approx_equals(player.currentTime, 5, 0.1);
+      assert_equals(player.playState, "running");
+    });
+    t.done();
+  });
+}, 'Animation players are retriggered if timeline time changes');
+
+</script>
