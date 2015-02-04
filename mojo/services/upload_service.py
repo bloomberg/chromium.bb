@@ -12,6 +12,21 @@ import tempfile
 import time
 import zipfile
 
+# A service's name is defined as the name of its subdirectory in the directory
+# containing this file.
+SERVICES = [ "network", "html_viewer" ]
+
+SERVICE_BINARY_NAMES = {
+    "network" : "network_service.mojo",
+    "html_viewer" : "html_viewer.mojo"
+}
+
+# The network service is downloaded out-of-band rather than dynamically by the
+# shell and thus can be stored zipped in the cloud. Other services are intended
+# to be downloaded dynamically by the shell, which doesn't currently understand
+# zipped binaries.
+SERVICES_WITH_ZIPPED_BINARIES = [ "network" ]
+
 if not sys.platform.startswith("linux"):
   print "Only support linux for now"
   sys.exit(1)
@@ -20,7 +35,6 @@ root_path = os.path.realpath(
     os.path.join(
         os.path.dirname(
             os.path.realpath(__file__)),
-        os.pardir,
         os.pardir,
         os.pardir))
 version = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root_path)
@@ -40,12 +54,19 @@ def gsutil_cp(source, dest, dry_run):
     subprocess.check_call([gsutil_exe, "cp", source, dest])
 
 
-def upload_mojoms(dry_run):
+def upload_mojoms(service, dry_run):
+  script_dir = os.path.dirname(os.path.realpath(__file__))
+  service_dir = os.path.join(script_dir, service)
   absolute_mojom_directory_path = os.path.join(
-      os.path.dirname(os.path.realpath(__file__)),
+      service_dir,
       "public",
       "interfaces")
-  dest = "gs://mojo/network/" + version + "/" + "mojoms.zip"
+
+  if not os.path.exists(absolute_mojom_directory_path):
+    # This service has no interfaces.
+    return
+
+  dest = "gs://mojo/" + service + "/" + version + "/" + "mojoms.zip"
   with tempfile.NamedTemporaryFile() as mojom_zip_file:
     with zipfile.ZipFile(mojom_zip_file, 'w') as z:
       for root, _, files in os.walk(absolute_mojom_directory_path):
@@ -56,13 +77,22 @@ def upload_mojoms(dry_run):
     gsutil_cp(mojom_zip_file.name, dest, dry_run)
 
 
-def upload_binary(binary_path, platform, dry_run):
-  absolute_binary_path = os.path.join(root_path, binary_path)
-  binary_dest = "gs://mojo/network/" + version + "/" + platform + ".zip"
+def upload_binary(service, binary_dir, platform, dry_run):
+  binary_name = SERVICE_BINARY_NAMES[service]
+  absolute_binary_path = os.path.join(root_path, binary_dir, binary_name)
+  binary_dest_prefix = "gs://mojo/" + service + "/" + version + "/" + platform
+
+  if service not in SERVICES_WITH_ZIPPED_BINARIES:
+    binary_dest = binary_dest_prefix + "/" + binary_name
+    gsutil_cp(absolute_binary_path, binary_dest, dry_run)
+    return
+
+  # Zip the binary before uploading it to the cloud.
+  binary_dest = binary_dest_prefix + ".zip"
   with tempfile.NamedTemporaryFile() as binary_zip_file:
     with zipfile.ZipFile(binary_zip_file, 'w') as z:
       with open(absolute_binary_path) as service_binary:
-        zipinfo = zipfile.ZipInfo("network_service.mojo")
+        zipinfo = zipfile.ZipInfo(binary_name)
         zipinfo.external_attr = 0o777 << 16
         zipinfo.compress_type = zipfile.ZIP_DEFLATED
         zipinfo.date_time = time.gmtime(os.path.getmtime(absolute_binary_path))
@@ -72,24 +102,33 @@ def upload_binary(binary_path, platform, dry_run):
 
 def main():
   parser = argparse.ArgumentParser(
-      description="Upload network service mojoms and binaries to Google " +
-                  "storage")
+      description="Upload service mojoms and binaries to Google storage")
   parser.add_argument("-n", "--dry-run", action="store_true", help="Dry run")
   parser.add_argument(
-      "--linux-x64-binary-path",
-      help="Path to the linux-x64 network service binary relative to the " +
-           "repo root, e.g. out/Release/network_service.mojo")
+      "--linux-x64-binary-dir",
+      help="Path to the dir containing the linux-x64 service binary relative "
+           "to the repo root, e.g. out/Release")
   parser.add_argument(
-      "--android-arm-binary-path",
-      help="Path to the android-arm network service binary relative to the " +
-           "repo root, e.g. out/android_Release/network_service.mojo")
+      "--android-arm-binary-dir",
+      help="Path to the dir containing the android-arm service binary relative "
+           "to the repo root, e.g. out/android_Release")
+  parser.add_argument("service",
+                      help="The service to be uploaded (one of %s)" % SERVICES)
 
   args = parser.parse_args()
-  upload_mojoms(args.dry_run)
-  if args.linux_x64_binary_path:
-    upload_binary(args.linux_x64_binary_path, "linux-x64", args.dry_run)
-  if args.android_arm_binary_path:
-    upload_binary(args.android_arm_binary_path, "android-arm", args.dry_run)
+
+  if args.service not in SERVICES:
+    print args.service + " is not one of the recognized services:"
+    print SERVICES
+    return 1
+
+  upload_mojoms(args.service, args.dry_run)
+  if args.linux_x64_binary_dir:
+    upload_binary(args.service, args.linux_x64_binary_dir,
+                  "linux-x64", args.dry_run)
+  if args.android_arm_binary_dir:
+    upload_binary(args.service, args.android_arm_binary_dir,
+                  "android-arm", args.dry_run)
 
   if not args.dry_run:
     print "Uploaded artifacts for version %s" % (version, )
