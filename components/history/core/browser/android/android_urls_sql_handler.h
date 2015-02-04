@@ -15,14 +15,14 @@ class AndroidURLsDatabase;
 class AndroidURLsSQLHandler : public SQLHandler {
  public:
   explicit AndroidURLsSQLHandler(AndroidURLsDatabase* android_urls_db);
-  virtual ~AndroidURLsSQLHandler();
+  ~AndroidURLsSQLHandler() override;
 
-  virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) override;
+  bool Update(const HistoryAndBookmarkRow& row,
+              const TableIDRows& ids_set) override;
 
-  virtual bool Insert(HistoryAndBookmarkRow* row) override;
+  bool Insert(HistoryAndBookmarkRow* row) override;
 
-  virtual bool Delete(const TableIDRows& ids_set) override;
+  bool Delete(const TableIDRows& ids_set) override;
 
  private:
   AndroidURLsDatabase* android_urls_db_;

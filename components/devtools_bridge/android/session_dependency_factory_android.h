@@ -14,17 +14,16 @@ namespace android {
 class SessionDependencyFactoryAndroid : public SessionDependencyFactory {
  public:
   SessionDependencyFactoryAndroid();
-  virtual ~SessionDependencyFactoryAndroid();
+  ~SessionDependencyFactoryAndroid() override;
 
   static bool RegisterNatives(JNIEnv* env);
 
-  virtual scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
+  scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
       scoped_ptr<RTCConfiguration> config,
       scoped_ptr<AbstractPeerConnection::Delegate> delegate) override;
 
-  virtual scoped_refptr<base::TaskRunner> signaling_thread_task_runner()
-      override;
-  virtual scoped_refptr<base::TaskRunner> io_thread_task_runner() override;
+  scoped_refptr<base::TaskRunner> signaling_thread_task_runner() override;
+  scoped_refptr<base::TaskRunner> io_thread_task_runner() override;
 
  private:
   const scoped_ptr<SessionDependencyFactory> impl_;

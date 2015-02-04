@@ -30,27 +30,25 @@ class InvalidationServiceAndroid
       public InvalidationService {
  public:
   InvalidationServiceAndroid(jobject context);
-  virtual ~InvalidationServiceAndroid();
+  ~InvalidationServiceAndroid() override;
 
   // InvalidationService implementation.
   //
   // Note that this implementation does not properly support Ack-tracking,
   // fetching the invalidator state, or querying the client's ID.  Support for
   // exposing the client ID should be available soon; see crbug.com/172391.
-  virtual void RegisterInvalidationHandler(
+  void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) override;
-  virtual void UnregisterInvalidationHandler(
+  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+                                       const syncer::ObjectIdSet& ids) override;
+  void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual syncer::InvalidatorState GetInvalidatorState() const override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual InvalidationLogger* GetInvalidationLogger() override;
-  virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> caller) const
-      override;
-  virtual IdentityProvider* GetIdentityProvider() override;
+  syncer::InvalidatorState GetInvalidatorState() const override;
+  std::string GetInvalidatorClientId() const override;
+  InvalidationLogger* GetInvalidationLogger() override;
+  void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> caller) const override;
+  IdentityProvider* GetIdentityProvider() override;
 
   void RequestSync(JNIEnv* env,
                    jobject obj,

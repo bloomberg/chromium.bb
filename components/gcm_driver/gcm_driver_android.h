@@ -18,7 +18,7 @@ namespace gcm {
 class GCMDriverAndroid : public GCMDriver {
  public:
   GCMDriverAndroid();
-  virtual ~GCMDriverAndroid();
+  ~GCMDriverAndroid() override;
 
   // Methods called from Java via JNI:
   void OnRegisterFinished(JNIEnv* env,
@@ -44,40 +44,36 @@ class GCMDriverAndroid : public GCMDriver {
   static bool RegisterBindings(JNIEnv* env);
 
   // GCMDriver implementation:
-  virtual void OnSignedIn() override;
-  virtual void OnSignedOut() override;
-  virtual void Enable() override;
-  virtual void AddConnectionObserver(GCMConnectionObserver* observer) override;
-  virtual void RemoveConnectionObserver(
-      GCMConnectionObserver* observer) override;
-  virtual void Disable() override;
-  virtual GCMClient* GetGCMClientForTesting() const override;
-  virtual bool IsStarted() const override;
-  virtual bool IsConnected() const override;
-  virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                bool clear_logs) override;
-  virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                               bool recording) override;
-  virtual void SetAccountTokens(
+  void OnSignedIn() override;
+  void OnSignedOut() override;
+  void Enable() override;
+  void AddConnectionObserver(GCMConnectionObserver* observer) override;
+  void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
+  void Disable() override;
+  GCMClient* GetGCMClientForTesting() const override;
+  bool IsStarted() const override;
+  bool IsConnected() const override;
+  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+                        bool clear_logs) override;
+  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+                       bool recording) override;
+  void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
-  virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) override;
-  virtual void RemoveAccountMapping(const std::string& account_id) override;
-  virtual base::Time GetLastTokenFetchTime() override;
-  virtual void SetLastTokenFetchTime(const base::Time& time) override;
-  virtual void WakeFromSuspendForHeartbeat(bool wake) override;
+  void UpdateAccountMapping(const AccountMapping& account_mapping) override;
+  void RemoveAccountMapping(const std::string& account_id) override;
+  base::Time GetLastTokenFetchTime() override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
+  void WakeFromSuspendForHeartbeat(bool wake) override;
 
  protected:
   // GCMDriver implementation:
-  virtual GCMClient::Result EnsureStarted(
-      GCMClient::StartMode start_mode) override;
-  virtual void RegisterImpl(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids) override;
-  virtual void UnregisterImpl(const std::string& app_id) override;
-  virtual void SendImpl(const std::string& app_id,
-                        const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) override;
+  GCMClient::Result EnsureStarted(GCMClient::StartMode start_mode) override;
+  void RegisterImpl(const std::string& app_id,
+                    const std::vector<std::string>& sender_ids) override;
+  void UnregisterImpl(const std::string& app_id) override;
+  void SendImpl(const std::string& app_id,
+                const std::string& receiver_id,
+                const GCMClient::OutgoingMessage& message) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

@@ -37,7 +37,7 @@ class NetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
   NetLogObserver() {}
 
-  virtual ~NetLogObserver() {}
+  ~NetLogObserver() override {}
 
   void OnAddEntry(const net::NetLog::Entry& entry) override;
 

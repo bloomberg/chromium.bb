@@ -15,13 +15,13 @@ class URLDatabase;
 class UrlsSQLHandler : public SQLHandler {
  public:
   explicit UrlsSQLHandler(URLDatabase* url_db);
-  virtual ~UrlsSQLHandler();
+  ~UrlsSQLHandler() override;
 
   // Overriden from SQLHandler.
-  virtual bool Insert(HistoryAndBookmarkRow* row) override;
-  virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) override;
-  virtual bool Delete(const TableIDRows& ids_set) override;
+  bool Insert(HistoryAndBookmarkRow* row) override;
+  bool Update(const HistoryAndBookmarkRow& row,
+              const TableIDRows& ids_set) override;
+  bool Delete(const TableIDRows& ids_set) override;
 
  private:
   URLDatabase* url_db_;

@@ -39,7 +39,7 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   // Should be created on the UI thread.
   explicit CrashDumpManager(const base::FilePath& crash_dump_dir);
 
-  virtual ~CrashDumpManager();
+  ~CrashDumpManager() override;
 
   // Returns a file that should be used to generate a minidump for the process
   // |child_process_id|.
@@ -52,15 +52,15 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
                               base::ProcessHandle pid);
 
   // content::BrowserChildProcessObserver implementation:
-  virtual void BrowserChildProcessHostDisconnected(
+  void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
-  virtual void BrowserChildProcessCrashed(
+  void BrowserChildProcessCrashed(
       const content::ChildProcessData& data) override;
 
   // NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called on child process exit (including crash).
   void OnChildExit(int child_process_id, base::ProcessHandle pid);

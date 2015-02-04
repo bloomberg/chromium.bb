@@ -39,15 +39,15 @@ class PeerConnectionDelegateImpl
     connected_ = false;
   }
 
-  virtual void OnIceConnectionChange(bool connected) override {
+  void OnIceConnectionChange(bool connected) override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyIceConnectionChange(
         env, java_object_.obj(), connected);
   }
 
-  virtual void OnIceCandidate(
-      const std::string& sdp_mid, int sdp_mline_index, const std::string& sdp)
-      override {
+  void OnIceCandidate(const std::string& sdp_mid,
+                      int sdp_mline_index,
+                      const std::string& sdp) override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyIceCandidate(
         env, java_object_.obj(),
@@ -62,29 +62,27 @@ class PeerConnectionDelegateImpl
         ConvertUTF8ToJavaString(env, description).obj());
   }
 
-  virtual void OnLocalOfferCreatedAndSetSet(const std::string& description)
-      override {
+  void OnLocalOfferCreatedAndSetSet(const std::string& description) override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyLocalOfferCreatedAndSetSet(
         env, java_object_.obj(),
         ConvertUTF8ToJavaString(env, description).obj());
   }
 
-  virtual void OnLocalAnswerCreatedAndSetSet(const std::string& description)
-      override {
+  void OnLocalAnswerCreatedAndSetSet(const std::string& description) override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyLocalAnswerCreatedAndSetSet(
         env, java_object_.obj(),
         ConvertUTF8ToJavaString(env, description).obj());
   }
 
-  virtual void OnRemoteDescriptionSet() override {
+  void OnRemoteDescriptionSet() override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyRemoteDescriptionSet(
         env, java_object_.obj());
   }
 
-  virtual void OnFailure(const std::string& description) override {
+  void OnFailure(const std::string& description) override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyConnectionFailure(
         env, java_object_.obj(),
@@ -102,19 +100,19 @@ class DataChannelObserverImpl : public AbstractDataChannel::Observer {
     java_object_.Reset(env, java_object);
   }
 
-  virtual void OnOpen() override {
+  void OnOpen() override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyChannelOpen(
         env, java_object_.obj());
   }
 
-  virtual void OnClose() override {
+  void OnClose() override {
     JNIEnv* env = AttachCurrentThread();
     Java_SessionDependencyFactoryNative_notifyChannelClose(
         env, java_object_.obj());
   }
 
-  virtual void OnMessage(const void* data, size_t length) override {
+  void OnMessage(const void* data, size_t length) override {
     JNIEnv* env = AttachCurrentThread();
 
     ScopedJavaLocalRef<jobject> byte_buffer(

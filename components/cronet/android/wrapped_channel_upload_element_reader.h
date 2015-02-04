@@ -26,16 +26,16 @@ class WrappedChannelElementReader : public net::UploadElementReader {
   WrappedChannelElementReader(
       scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate,
       uint64 length);
-  virtual ~WrappedChannelElementReader();
+  ~WrappedChannelElementReader() override;
 
   // UploadElementReader overrides:
-  virtual int Init(const net::CompletionCallback& callback) override;
-  virtual uint64 GetContentLength() const override;
-  virtual uint64 BytesRemaining() const override;
-  virtual bool IsInMemory() const override;
-  virtual int Read(net::IOBuffer* buf,
-                   int buf_length,
-                   const net::CompletionCallback& callback) override;
+  int Init(const net::CompletionCallback& callback) override;
+  uint64 GetContentLength() const override;
+  uint64 BytesRemaining() const override;
+  bool IsInMemory() const override;
+  int Read(net::IOBuffer* buf,
+           int buf_length,
+           const net::CompletionCallback& callback) override;
 
  private:
   const uint64 length_;

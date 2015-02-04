@@ -56,7 +56,7 @@ class SocketTunnelServer::Connection : public SocketTunnelConnection {
     ReadNextChunk();
   }
 
-  virtual void OnReadError(int error) override {
+  void OnReadError(int error) override {
     socket()->Disconnect();
     SendControlPacket(SERVER_CLOSE);
     delegate_->RemoveConnection(index_);

@@ -39,7 +39,7 @@ net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   BasicNetworkDelegate() {}
-  virtual ~BasicNetworkDelegate() {}
+  ~BasicNetworkDelegate() override {}
 
  private:
   // net::NetworkDelegate implementation.

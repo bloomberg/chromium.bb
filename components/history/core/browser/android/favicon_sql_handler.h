@@ -15,13 +15,13 @@ class ThumbnailDatabase;
 class FaviconSQLHandler : public SQLHandler {
  public:
   explicit FaviconSQLHandler(ThumbnailDatabase* thumbnail_db);
-  virtual ~FaviconSQLHandler();
+  ~FaviconSQLHandler() override;
 
   // SQLHandler overrides:
-  virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) override;
-  virtual bool Delete(const TableIDRows& ids_set) override;
-  virtual bool Insert(HistoryAndBookmarkRow* row) override;
+  bool Update(const HistoryAndBookmarkRow& row,
+              const TableIDRows& ids_set) override;
+  bool Delete(const TableIDRows& ids_set) override;
+  bool Insert(HistoryAndBookmarkRow* row) override;
 
  private:
   // Deletes the given favicons if they are not used by any pages. Returns

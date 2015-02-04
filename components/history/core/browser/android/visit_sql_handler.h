@@ -20,13 +20,13 @@ class VisitDatabase;
 class VisitSQLHandler : public SQLHandler {
  public:
   VisitSQLHandler(URLDatabase* url_db, VisitDatabase* visit_db);
-  virtual ~VisitSQLHandler();
+  ~VisitSQLHandler() override;
 
   // Overriden from SQLHandler.
-  virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) override;
-  virtual bool Insert(HistoryAndBookmarkRow* row) override;
-  virtual bool Delete(const TableIDRows& ids_set) override;
+  bool Update(const HistoryAndBookmarkRow& row,
+              const TableIDRows& ids_set) override;
+  bool Insert(HistoryAndBookmarkRow* row) override;
+  bool Delete(const TableIDRows& ids_set) override;
 
  private:
   // Add a row in visit table with the given |url_id| and |visit_time|.

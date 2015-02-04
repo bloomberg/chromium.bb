@@ -17,7 +17,7 @@ class InvalidationServiceAndroidTest : public testing::Test {
  public:
   InvalidationServiceAndroidTest() :
       invalidation_service_(base::android::GetApplicationContext()) {}
-  virtual ~InvalidationServiceAndroidTest() {}
+  ~InvalidationServiceAndroidTest() override {}
 
   InvalidationService& invalidation_service() {
     return invalidation_service_;

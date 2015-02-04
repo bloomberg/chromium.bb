@@ -25,11 +25,9 @@ class RTCConfiguration::Impl
     : public RTCConfiguration,
       public webrtc::PeerConnectionInterface::RTCConfiguration {
  public:
-
-  virtual void AddIceServer(
-      const std::string& uri,
-      const std::string& username,
-      const std::string& credential) override {
+  void AddIceServer(const std::string& uri,
+                    const std::string& username,
+                    const std::string& credential) override {
     webrtc::PeerConnectionInterface::IceServer server;
     server.uri = uri;
     server.username = username;
@@ -55,15 +53,11 @@ void CheckedRelease(rtc::scoped_refptr<T>* ptr) {
 class MediaConstraints
     : public webrtc::MediaConstraintsInterface {
  public:
-  virtual ~MediaConstraints() {}
+  ~MediaConstraints() override {}
 
-  virtual const Constraints& GetMandatory() const override {
-    return mandatory_;
-  }
+  const Constraints& GetMandatory() const override { return mandatory_; }
 
-  virtual const Constraints& GetOptional() const override {
-    return optional_;
-  }
+  const Constraints& GetOptional() const override { return optional_; }
 
   void AddMandatory(const std::string& key, const std::string& value) {
     mandatory_.push_back(Constraint(key, value));
@@ -133,7 +127,7 @@ class DataChannelObserverImpl : public webrtc::DataChannelObserver {
     open_ = data_channel_->state() == webrtc::DataChannelInterface::kOpen;
   }
 
-  virtual void OnStateChange() override {
+  void OnStateChange() override {
     bool open = data_channel_->state() == webrtc::DataChannelInterface::kOpen;
 
     if (open == open_) return;
@@ -146,7 +140,7 @@ class DataChannelObserverImpl : public webrtc::DataChannelObserver {
     }
   }
 
-  virtual void OnMessage(const webrtc::DataBuffer& buffer) override {
+  void OnMessage(const webrtc::DataBuffer& buffer) override {
     observer_->OnMessage(buffer.data.data(), buffer.size());
   }
 
@@ -173,7 +167,7 @@ class DataChannelProxyImpl : public AbstractDataChannel::Proxy {
     data_channel_ = NULL;
   }
 
-  virtual void SendBinaryMessage(const void* data, size_t length) override {
+  void SendBinaryMessage(const void* data, size_t length) override {
     auto buffer = make_scoped_ptr(new webrtc::DataBuffer(rtc::Buffer(), true));
     buffer->data.SetData(data, length);
 
@@ -184,7 +178,7 @@ class DataChannelProxyImpl : public AbstractDataChannel::Proxy {
             base::Passed(&buffer)));
   }
 
-  virtual void Close() override {
+  void Close() override {
     signaling_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DataChannelProxyImpl::CloseOnSignalingThread,
                               this));
@@ -221,30 +215,30 @@ class DataChannelImpl : public AbstractDataChannel {
         impl_(impl) {
   }
 
-  ~DataChannelImpl() {
+  ~DataChannelImpl() override {
     if (proxy_.get()) {
       signaling_thread_->Invoke<void>(rtc::Bind(
           &DataChannelProxyImpl::StopOnSignalingThread, proxy_.get()));
     }
   }
 
-  virtual void RegisterObserver(scoped_ptr<Observer> observer) override {
+  void RegisterObserver(scoped_ptr<Observer> observer) override {
     observer_.reset(new DataChannelObserverImpl(impl_.get(), observer.Pass()));
     signaling_thread_->Invoke<void>(rtc::Bind(
         &DataChannelImpl::RegisterObserverOnSignalingThread, this));
   }
 
-  virtual void UnregisterObserver() override {
+  void UnregisterObserver() override {
     DCHECK(observer_.get() != NULL);
     impl_->UnregisterObserver();
     observer_.reset();
   }
 
-  virtual void SendBinaryMessage(void* data, size_t length) override {
+  void SendBinaryMessage(void* data, size_t length) override {
     SendMessage(data, length, true);
   }
 
-  virtual void SendTextMessage(void* data, size_t length) override {
+  void SendTextMessage(void* data, size_t length) override {
     SendMessage(data, length, false);
   }
 
@@ -285,20 +279,18 @@ class PeerConnectionObserverImpl
         connected_(false) {
   }
 
-  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) override {}
+  void OnAddStream(webrtc::MediaStreamInterface* stream) override {}
 
-  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) override {}
+  void OnRemoveStream(webrtc::MediaStreamInterface* stream) override {}
 
-  virtual void OnDataChannel(webrtc::DataChannelInterface* data_channel)
-      override {}
+  void OnDataChannel(webrtc::DataChannelInterface* data_channel) override {}
 
-  virtual void OnRenegotiationNeeded() override {}
+  void OnRenegotiationNeeded() override {}
 
-  virtual void OnSignalingChange(
-       webrtc::PeerConnectionInterface::SignalingState new_state) override {
-  }
+  void OnSignalingChange(
+      webrtc::PeerConnectionInterface::SignalingState new_state) override {}
 
-  virtual void OnIceConnectionChange(
+  void OnIceConnectionChange(
       webrtc::PeerConnectionInterface::IceConnectionState new_state) override {
     bool connected =
         new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected ||
@@ -310,8 +302,7 @@ class PeerConnectionObserverImpl
     }
   }
 
-  virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate)
-      override {
+  void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
     std::string sdp;
     candidate->ToString(&sdp);
 
@@ -341,9 +332,7 @@ class PeerConnectionHolder : public rtc::RefCountInterface {
         disposed_(false) {
   }
 
-  virtual ~PeerConnectionHolder() {
-    DCHECK(disposed_);
-  }
+  ~PeerConnectionHolder() override { DCHECK(disposed_); }
 
   void Dispose() {
     DCHECK(!IsDisposed());
@@ -381,7 +370,7 @@ class CreateAndSetHandler
       : holder_(holder) {
   }
 
-  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
+  void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     if (holder_->IsDisposed()) return;
 
     type_ = desc->type();
@@ -392,7 +381,7 @@ class CreateAndSetHandler
     }
   }
 
-  virtual void OnSuccess() override {
+  void OnSuccess() override {
     if (holder_->IsDisposed()) return;
 
     if (type_ == webrtc::SessionDescriptionInterface::kOffer) {
@@ -404,7 +393,7 @@ class CreateAndSetHandler
     }
   }
 
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     if (holder_->IsDisposed()) return;
 
     holder_->delegate()->OnFailure(error);
@@ -424,13 +413,13 @@ class SetRemoteDescriptionHandler
       : holder_(holder) {
   }
 
-  virtual void OnSuccess() override {
+  void OnSuccess() override {
     if (holder_->IsDisposed()) return;
 
     holder_->delegate()->OnRemoteDescriptionSet();
   }
 
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     if (holder_->IsDisposed()) return;
 
     holder_->delegate()->OnFailure(error);
@@ -457,25 +446,25 @@ class PeerConnectionImpl : public AbstractPeerConnection {
         delegate_(delegate.Pass()) {
   }
 
-  virtual ~PeerConnectionImpl() {
+  ~PeerConnectionImpl() override {
     signaling_thread_->Invoke<void>(rtc::Bind(
         &PeerConnectionImpl::DisposeOnSignalingThread, this));
   }
 
-  virtual void CreateAndSetLocalOffer() override {
+  void CreateAndSetLocalOffer() override {
     connection_->CreateOffer(MakeCreateAndSetHandler(), NULL);
   }
 
-  virtual void CreateAndSetLocalAnswer() override {
+  void CreateAndSetLocalAnswer() override {
     connection_->CreateAnswer(MakeCreateAndSetHandler(), NULL);
   }
 
-  virtual void SetRemoteOffer(const std::string& description) override {
+  void SetRemoteOffer(const std::string& description) override {
     SetRemoteDescription(
         webrtc::SessionDescriptionInterface::kOffer, description);
   }
 
-  virtual void SetRemoteAnswer(const std::string& description) override {
+  void SetRemoteAnswer(const std::string& description) override {
     SetRemoteDescription(
         webrtc::SessionDescriptionInterface::kAnswer, description);
   }
@@ -495,10 +484,9 @@ class PeerConnectionImpl : public AbstractPeerConnection {
         value.release());
   }
 
-  virtual void AddIceCandidate(
-      const std::string& sdp_mid,
-      int sdp_mline_index,
-      const std::string& sdp) override {
+  void AddIceCandidate(const std::string& sdp_mid,
+                       int sdp_mline_index,
+                       const std::string& sdp) override {
     webrtc::SdpParseError error;
     auto candidate = webrtc::CreateIceCandidate(
         sdp_mid, sdp_mline_index, sdp, &error);
@@ -511,8 +499,7 @@ class PeerConnectionImpl : public AbstractPeerConnection {
     delete candidate;
   }
 
-  virtual scoped_ptr<AbstractDataChannel> CreateDataChannel(
-      int channelId) override {
+  scoped_ptr<AbstractDataChannel> CreateDataChannel(int channelId) override {
     webrtc::DataChannelInit init;
     init.ordered = true;
     init.negotiated = true;
@@ -562,7 +549,7 @@ class SessionDependencyFactoryImpl : public SessionDependencyFactory {
         &worker_thread_, &signaling_thread_, NULL, NULL, NULL);
   }
 
-  virtual ~SessionDependencyFactoryImpl() {
+  ~SessionDependencyFactoryImpl() override {
     if (signaling_thread_task_runner_.get())
       signaling_thread_task_runner_->Stop();
 
@@ -570,7 +557,7 @@ class SessionDependencyFactoryImpl : public SessionDependencyFactory {
         &SessionDependencyFactoryImpl::DisposeOnSignalingThread, this));
   }
 
-  virtual scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
+  scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
       scoped_ptr<RTCConfiguration> config,
       scoped_ptr<AbstractPeerConnection::Delegate> delegate) override {
     auto observer = make_scoped_ptr(

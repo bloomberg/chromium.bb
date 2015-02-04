@@ -49,7 +49,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
                     URLRequestAdapterDelegate* delegate,
                     GURL url,
                     net::RequestPriority priority);
-  virtual ~URLRequestAdapter();
+  ~URLRequestAdapter() override;
 
   // Sets the request method GET, POST etc
   void SetMethod(const std::string& method);

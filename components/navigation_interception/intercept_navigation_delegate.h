@@ -38,7 +38,7 @@ class NavigationParams;
 class InterceptNavigationDelegate : public base::SupportsUserData::Data {
  public:
   InterceptNavigationDelegate(JNIEnv* env, jobject jdelegate);
-  virtual ~InterceptNavigationDelegate();
+  ~InterceptNavigationDelegate() override;
 
   // Associates the InterceptNavigationDelegate with a WebContents using the
   // SupportsUserData mechanism.
