@@ -10,10 +10,10 @@
    */
   direction: rtl;
   font-family: Roboto, 'Helvetica Neue', Helvetica, Arial;
-  height: calc(100% - 64px);
+  height: calc(100% - 56px);
   margin: 0;
   right: 0;
-  top: 64px;
+  top: 56px;
   width: 22em;
 }
 
