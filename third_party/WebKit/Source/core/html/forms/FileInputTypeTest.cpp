@@ -10,6 +10,8 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/DragData.h"
+#include "wtf/DateMath.h"
+
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -18,16 +20,14 @@ TEST(FileInputTypeTest, createFileList)
 {
     Vector<FileChooserFileInfo> files;
 
-    // Natvie file.
-    files.append(FileChooserFileInfo(
-        "/native/path/native-file",
-        "display-name"));
+    // Native file.
+    files.append(FileChooserFileInfo("/native/path/native-file", "display-name"));
 
     // Non-native file.
     KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file");
     FileMetadata metadata;
     metadata.length = 64;
-    metadata.modificationTime = 24 * 60 * 60 /* sec */;
+    metadata.modificationTimeMS = 1.0 * msPerDay + 3;
     files.append(FileChooserFileInfo(url, metadata));
 
 
@@ -43,7 +43,7 @@ TEST(FileInputTypeTest, createFileList)
     EXPECT_EQ("non-native-file", list->item(1)->name());
     EXPECT_EQ(url, list->item(1)->fileSystemURL());
     EXPECT_EQ(64u, list->item(1)->size());
-    EXPECT_EQ(24 * 60 * 60 * 1000 /* ms */, list->item(1)->lastModified());
+    EXPECT_EQ(1.0 * msPerDay + 3, list->item(1)->lastModified());
 }
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)

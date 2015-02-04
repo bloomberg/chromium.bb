@@ -66,13 +66,13 @@ public:
         }
     };
 
-    // Called with zero or more file names. Zero-lengthed vector means that
+    // Called with zero or more file names. Zero-length vector means that
     // the user cancelled or that file choosing failed. The callback instance
     // is destroyed when this method is called.
     virtual void didChooseFile(const WebVector<WebString>& fileNames) = 0;
 
     // Called with zero or more files, given as a vector of SelectedFileInfo.
-    // Zero-lengthed vector means that the user cancelled or that file
+    // Zero-length vector means that the user cancelled or that file
     // choosing failed. The callback instance is destroyed when this method
     // is called.
     // FIXME: Deprecate either one of the didChooseFile (and rename it to
