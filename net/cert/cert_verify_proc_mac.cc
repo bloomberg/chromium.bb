@@ -175,12 +175,21 @@ OSStatus CreateTrustPolicies(const std::string& hostname,
   return noErr;
 }
 
-// Saves some information about the certificate chain |cert_chain| in
-// |*verify_result|. The caller MUST initialize |*verify_result| before
-// calling this function.
+// Stores the constructed certificate chain |cert_chain| and information about
+// the signature algorithms used into |*verify_result|. If the leaf cert in
+// |cert_chain| contains a weak (MD2, MD4, MD5, SHA-1) signature, stores that
+// in |*leaf_is_weak|.
 void GetCertChainInfo(CFArrayRef cert_chain,
                       CSSM_TP_APPLE_EVIDENCE_INFO* chain_info,
-                      CertVerifyResult* verify_result) {
+                      CertVerifyResult* verify_result,
+                      bool* leaf_is_weak) {
+  *leaf_is_weak = false;
+  verify_result->verified_cert = nullptr;
+  verify_result->has_md2 = false;
+  verify_result->has_md4 = false;
+  verify_result->has_md5 = false;
+  verify_result->has_sha1 = false;
+
   SecCertificateRef verified_cert = NULL;
   std::vector<SecCertificateRef> verified_chain;
   for (CFIndex i = 0, count = CFArrayGetCount(cert_chain); i < count; ++i) {
@@ -223,10 +232,16 @@ void GetCertChainInfo(CFArrayRef cert_chain,
     const CSSM_OID* alg_oid = &sig_algorithm->algorithm;
     if (CSSMOIDEqual(alg_oid, &CSSMOID_MD2WithRSA)) {
       verify_result->has_md2 = true;
+      if (i == 0)
+        *leaf_is_weak = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_MD4WithRSA)) {
       verify_result->has_md4 = true;
+      if (i == 0)
+        *leaf_is_weak = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_MD5WithRSA)) {
       verify_result->has_md5 = true;
+      if (i == 0)
+        *leaf_is_weak = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithRSA) ||
                CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithRSA_OIW) ||
                CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA) ||
@@ -234,6 +249,8 @@ void GetCertChainInfo(CFArrayRef cert_chain,
                CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA_JDK) ||
                CSSMOIDEqual(alg_oid, &CSSMOID_ECDSA_WithSHA1)) {
       verify_result->has_sha1 = true;
+      if (i == 0)
+        *leaf_is_weak = true;
     }
   }
   if (!verified_cert)
@@ -446,80 +463,6 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
   return OK;
 }
 
-// OS X ships with both "GTE CyberTrust Global Root" and "Baltimore CyberTrust
-// Root" as part of its trusted root store. However, a cross-certified version
-// of the "Baltimore CyberTrust Root" exists that chains to "GTE CyberTrust
-// Global Root". When OS X/Security.framework attempts to evaluate such a
-// certificate chain, it disregards the "Baltimore CyberTrust Root" that exists
-// within Keychain and instead attempts to terminate the chain in the "GTE
-// CyberTrust Global Root". However, the GTE root is scheduled to be removed in
-// a future OS X update (for sunsetting purposes), and once removed, such
-// chains will fail validation, even though a trust anchor still exists.
-//
-// Rather than over-generalizing a solution that may mask a number of TLS
-// misconfigurations, attempt to specifically match the affected
-// cross-certified certificate and remove it from certificate chain processing.
-bool IsBadBaltimoreGTECertificate(SecCertificateRef cert) {
-  // Matches the GTE-signed Baltimore CyberTrust Root
-  // https://cacert.omniroot.com/Baltimore-to-GTE-04-12.pem
-  static const SHA1HashValue kBadBaltimoreHashNew =
-    { { 0x4D, 0x34, 0xEA, 0x92, 0x76, 0x4B, 0x3A, 0x31, 0x49, 0x11,
-        0x99, 0x52, 0xF4, 0x19, 0x30, 0xCA, 0x11, 0x34, 0x83, 0x61 } };
-  // Matches the legacy GTE-signed Baltimore CyberTrust Root
-  // https://cacert.omniroot.com/gte-2-2025.pem
-  static const SHA1HashValue kBadBaltimoreHashOld =
-    { { 0x54, 0xD8, 0xCB, 0x49, 0x1F, 0xA1, 0x6D, 0xF8, 0x87, 0xDC,
-        0x94, 0xA9, 0x34, 0xCC, 0x83, 0x6B, 0xDA, 0xA8, 0xA3, 0x69 } };
-
-  SHA1HashValue fingerprint = X509Certificate::CalculateFingerprint(cert);
-
-  return fingerprint.Equals(kBadBaltimoreHashNew) ||
-         fingerprint.Equals(kBadBaltimoreHashOld);
-}
-
-// Attempts to re-verify |cert_array| after adjusting the inputs to work around
-// known issues in OS X. To be used if BuildAndEvaluateSecTrustRef fails to
-// return a positive result for verification.
-//
-// This function should only be called while the Mac Security Services lock is
-// held.
-void RetrySecTrustEvaluateWithAdjustedChain(
-    CFArrayRef cert_array,
-    CFArrayRef trust_policies,
-    int flags,
-    ScopedCFTypeRef<SecTrustRef>* trust_ref,
-    SecTrustResultType* trust_result,
-    ScopedCFTypeRef<CFArrayRef>* verified_chain,
-    CSSM_TP_APPLE_EVIDENCE_INFO** chain_info) {
-  CFIndex count = CFArrayGetCount(*verified_chain);
-  CFIndex slice_point = 0;
-
-  for (CFIndex i = 1; i < count; ++i) {
-    SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
-        const_cast<void*>(CFArrayGetValueAtIndex(*verified_chain, i)));
-    if (cert == NULL)
-      return;  // Strange times; can't fix things up.
-
-    if (IsBadBaltimoreGTECertificate(cert)) {
-      slice_point = i;
-      break;
-    }
-  }
-  if (slice_point == 0)
-    return;  // Nothing to do.
-
-  ScopedCFTypeRef<CFMutableArrayRef> adjusted_cert_array(
-      CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
-  // Note: This excludes the certificate at |slice_point|.
-  CFArrayAppendArray(adjusted_cert_array, cert_array,
-                     CFRangeMake(0, slice_point));
-
-  // Ignore the result; failure will preserve the old verification results.
-  BuildAndEvaluateSecTrustRef(
-      adjusted_cert_array, trust_policies, flags, trust_ref, trust_result,
-      verified_chain, chain_info);
-}
-
 }  // namespace
 
 CertVerifyProcMac::CertVerifyProcMac() {}
@@ -547,7 +490,8 @@ int CertVerifyProcMac::VerifyInternal(
   // array of certificates, the first of which is the certificate we're
   // verifying, and the subsequent (optional) certificates are used for
   // chain building.
-  ScopedCFTypeRef<CFArrayRef> cert_array(cert->CreateOSCertChainForCert());
+  ScopedCFTypeRef<CFMutableArrayRef> cert_array(CFArrayCreateMutableCopy(
+      kCFAllocatorDefault, 0, cert->CreateOSCertChainForCert()));
 
   // Serialize all calls that may use the Keychain, to work around various
   // issues in OS X 10.6+ with multi-threaded access to Security.framework.
@@ -557,17 +501,106 @@ int CertVerifyProcMac::VerifyInternal(
   SecTrustResultType trust_result = kSecTrustResultDeny;
   ScopedCFTypeRef<CFArrayRef> completed_chain;
   CSSM_TP_APPLE_EVIDENCE_INFO* chain_info = NULL;
+  bool candidate_untrusted = true;
+  bool candidate_weak = false;
 
-  int rv = BuildAndEvaluateSecTrustRef(
-      cert_array, trust_policies, flags, &trust_ref, &trust_result,
-      &completed_chain, &chain_info);
-  if (rv != OK)
-    return rv;
-  if (trust_result != kSecTrustResultUnspecified &&
-      trust_result != kSecTrustResultProceed) {
-    RetrySecTrustEvaluateWithAdjustedChain(
-        cert_array, trust_policies, flags, &trust_ref, &trust_result,
-        &completed_chain, &chain_info);
+  // OS X lacks proper path discovery; it will take the input certs and never
+  // backtrack the graph attempting to discover valid paths.
+  // This can create issues in some situations:
+  // - When OS X changes the trust store, there may be a chain
+  //     A -> B -> C -> D
+  //   where OS X trusts D (on some versions) and trusts C (on some versions).
+  //   If a server supplies a chain A, B, C (cross-signed by D), then this chain
+  //   will successfully validate on systems that trust D, but fail for systems
+  //   that trust C. If the server supplies a chain of A -> B, then it forces
+  //   all clients to fetch C (via AIA) if they trust D, and not all clients
+  //   (notably, Firefox and Android) will do this, thus breaking them.
+  //   An example of this is the Verizon Business Services root - GTE CyberTrust
+  //   and Baltimore CyberTrust roots represent old and new roots that cause
+  //   issues depending on which version of OS X being used.
+  //
+  // - A server may be (misconfigured) to send an expired intermediate
+  //   certificate. On platforms with path discovery, the graph traversal
+  //   will back up to immediately before this intermediate, and then
+  //   attempt an AIA fetch or retrieval from local store. However, OS X
+  //   does not do this, and thus prevents access. While this is ostensibly
+  //   a server misconfiguration issue, the fact that it works on other
+  //   platforms is a jarring inconsistency for users.
+  //
+  // - When OS X trusts both C and D (simultaneously), it's possible that the
+  //   version of C signed by D is signed using a weak algorithm (e.g. SHA-1),
+  //   while the version of C in the trust store's signature doesn't matter.
+  //   Since a 'strong' chain exists, it would be desirable to prefer this
+  //   chain.
+  //
+  // - A variant of the above example, it may be that the version of B sent by
+  //   the server is signed using a weak algorithm, but the version of B
+  //   present in the AIA of A is signed using a strong algorithm. Since a
+  //   'strong' chain exists, it would be desirable to prefer this chain.
+  //
+  // Because of this, the code below first attempts to validate the peer's
+  // identity using the supplied chain. If it is not trusted (e.g. the OS only
+  // trusts C, but the version of C signed by D was sent, and D is not trusted),
+  // or if it contains a weak chain, it will begin lopping off certificates
+  // from the end of the chain and attempting to verify. If a stronger, trusted
+  // chain is found, it is used, otherwise, the algorithm continues until only
+  // the peer's certificate remains.
+  //
+  // This does cause a performance hit for these users, but only in cases where
+  // OS X is building weaker chains than desired, or when it would otherwise
+  // fail the connection.
+  while (CFArrayGetCount(cert_array) > 0) {
+    ScopedCFTypeRef<SecTrustRef> temp_ref;
+    SecTrustResultType temp_trust_result = kSecTrustResultDeny;
+    ScopedCFTypeRef<CFArrayRef> temp_chain;
+    CSSM_TP_APPLE_EVIDENCE_INFO* temp_chain_info = NULL;
+
+    int rv = BuildAndEvaluateSecTrustRef(cert_array, trust_policies, flags,
+                                         &temp_ref, &temp_trust_result,
+                                         &temp_chain, &temp_chain_info);
+    if (rv != OK)
+      return rv;
+
+    CertVerifyResult temp_verify_result;
+    bool leaf_is_weak = false;
+    GetCertChainInfo(temp_chain, temp_chain_info, &temp_verify_result,
+                     &leaf_is_weak);
+
+    bool untrusted = (temp_trust_result != kSecTrustResultUnspecified &&
+                      temp_trust_result != kSecTrustResultProceed);
+    bool weak_chain =
+        !leaf_is_weak &&
+        (temp_verify_result.has_md2 || temp_verify_result.has_md4 ||
+         temp_verify_result.has_md5 || temp_verify_result.has_sha1);
+    // Set the result to the current chain if:
+    // - This is the first verification attempt. This ensures that if
+    //   everything is awful (e.g. it may just be an untrusted cert), that
+    //   what is reported is exactly what was sent by the server
+    // - If the current chain is trusted, and the old chain was not trusted,
+    //   then prefer this chain. This ensures that if there is at least a
+    //   valid path to a trust anchor, it's preferred over reporting an error.
+    // - If the current chain is trusted, and the old chain is trusted, but
+    //   the old chain contained weak algorithms while the current chain only
+    //   contains strong algorithms, then prefer the current chain over the
+    //   old chain.
+    //
+    // Note: If the leaf certificate itself is weak, then the only
+    // consideration is whether or not there is a trusted chain. That's
+    // because no amount of path discovery will fix a weak leaf.
+    if (!trust_ref || (!untrusted && (candidate_untrusted ||
+                                      (candidate_weak && !weak_chain)))) {
+      trust_ref = temp_ref;
+      trust_result = temp_trust_result;
+      completed_chain = temp_chain;
+      chain_info = temp_chain_info;
+
+      candidate_untrusted = untrusted;
+      candidate_weak = weak_chain;
+    }
+    // Short-circuit when a current, trusted chain is found.
+    if (!untrusted && !weak_chain)
+      break;
+    CFArrayRemoveValueAtIndex(cert_array, CFArrayGetCount(cert_array) - 1);
   }
 
   if (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED)
@@ -576,7 +609,9 @@ int CertVerifyProcMac::VerifyInternal(
   if (crl_set && !CheckRevocationWithCRLSet(completed_chain, crl_set))
     verify_result->cert_status |= CERT_STATUS_REVOKED;
 
-  GetCertChainInfo(completed_chain, chain_info, verify_result);
+  bool leaf_is_weak_unused = false;
+  GetCertChainInfo(completed_chain, chain_info, verify_result,
+                   &leaf_is_weak_unused);
 
   // As of Security Update 2012-002/OS X 10.7.4, when an RSA key < 1024 bits
   // is encountered, CSSM returns CSSMERR_TP_VERIFY_ACTION_FAILED and adds
