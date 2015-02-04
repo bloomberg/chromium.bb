@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/audio_converter.h"
 #include "media/cast/cast_config.h"
 #include "media/filters/audio_renderer_algorithm.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -29,11 +30,11 @@ struct AVFormatContext;
 namespace media {
 
 class AudioBus;
+class AudioConverter;
 class AudioFifo;
 class AudioTimestampHelper;
 class FFmpegGlue;
 class InMemoryUrlProtocol;
-class MultiChannelResampler;
 
 namespace cast {
 
@@ -41,17 +42,19 @@ class AudioFrameInput;
 class VideoFrameInput;
 class TestAudioBusFactory;
 
-class FakeMediaSource {
+class FakeMediaSource : public media::AudioConverter::InputCallback {
  public:
   // |task_runner| is to schedule decoding tasks.
   // |clock| is used by this source but is not owned.
+  // |audio_config| is the desired audio config.
   // |video_config| is the desired video config.
   // |keep_frames| is true if all VideoFrames are saved in a queue.
   FakeMediaSource(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   base::TickClock* clock,
+                  const AudioSenderConfig& audio_config,
                   const VideoSenderConfig& video_config,
                   bool keep_frames);
-  ~FakeMediaSource();
+  ~FakeMediaSource() override;
 
   // Transcode this file as the source of video and audio frames.
   // If |override_fps| is non zero then the file is played at the desired rate.
@@ -100,7 +103,9 @@ class FakeMediaSource {
   void DecodeVideo(ScopedAVPacket packet);
   void Decode(bool decode_audio);
 
-  void ProvideData(int frame_delay, media::AudioBus* output_bus);
+  // media::AudioConverter::InputCallback implementation.
+  double ProvideInput(media::AudioBus* output_bus, base::TimeDelta buffer_delay)
+      override;
 
   AVStream* av_audio_stream();
   AVStream* av_video_stream();
@@ -108,6 +113,7 @@ class FakeMediaSource {
   AVCodecContext* av_video_context();
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const media::AudioParameters output_audio_params_;
   const VideoSenderConfig video_config_;
   const bool keep_frames_;
   bool variable_frame_size_mode_;
@@ -132,7 +138,7 @@ class FakeMediaSource {
   AVFormatContext* av_format_context_;
 
   int audio_stream_index_;
-  AudioParameters audio_params_;
+  AudioParameters source_audio_params_;
   double playback_rate_;
 
   int video_stream_index_;
@@ -140,7 +146,7 @@ class FakeMediaSource {
   int video_frame_rate_denominator_;
 
   // These are used for audio resampling.
-  scoped_ptr<media::MultiChannelResampler> audio_resampler_;
+  scoped_ptr<media::AudioConverter> audio_converter_;
   scoped_ptr<media::AudioFifo> audio_fifo_;
   scoped_ptr<media::AudioBus> audio_fifo_input_bus_;
   media::AudioRendererAlgorithm audio_algo_;

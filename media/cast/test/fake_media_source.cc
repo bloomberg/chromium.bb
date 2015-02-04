@@ -15,7 +15,6 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/media.h"
-#include "media/base/multi_channel_resampler.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_sender.h"
@@ -31,8 +30,6 @@
 
 namespace {
 
-static const int kAudioChannels = 2;
-static const int kAudioSamplingFrequency = 48000;
 static const int kSoundFrequency = 440;  // Frequency of sinusoid wave.
 static const float kSoundVolume = 0.10f;
 static const int kAudioFrameMs = 10;  // Each audio frame is exactly 10ms.
@@ -69,9 +66,15 @@ namespace cast {
 FakeMediaSource::FakeMediaSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::TickClock* clock,
+    const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     bool keep_frames)
     : task_runner_(task_runner),
+      output_audio_params_(AudioParameters::AUDIO_PCM_LINEAR,
+                           media::GuessChannelLayout(audio_config.channels),
+                           audio_config.frequency,
+                           32,
+                           audio_config.frequency / kAudioPacketsPerSecond),
       video_config_(video_config),
       keep_frames_(keep_frames),
       variable_frame_size_mode_(false),
@@ -88,8 +91,9 @@ FakeMediaSource::FakeMediaSource(
       video_first_pts_(0),
       video_first_pts_set_(false),
       weak_factory_(this) {
-  audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
-                                                   kAudioSamplingFrequency,
+  CHECK(output_audio_params_.IsValid());
+  audio_bus_factory_.reset(new TestAudioBusFactory(audio_config.channels,
+                                                   audio_config.frequency,
                                                    kSoundFrequency,
                                                    kSoundVolume));
 }
@@ -161,13 +165,14 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
         LOG(WARNING) << "Found multiple audio streams.";
       }
       audio_stream_index_ = static_cast<int>(i);
-      audio_params_.Reset(
+      source_audio_params_.Reset(
           AudioParameters::AUDIO_PCM_LINEAR,
           layout,
           av_codec_context->channels,
           av_codec_context->sample_rate,
           8 * av_get_bytes_per_sample(av_codec_context->sample_fmt),
           av_codec_context->sample_rate / kAudioPacketsPerSecond);
+      CHECK(source_audio_params_.IsValid());
       LOG(INFO) << "Source file has audio.";
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
       VideoFrame::Format format =
@@ -228,21 +233,18 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
   }
 
   // Send transcoding streams.
-  audio_algo_.Initialize(audio_params_);
+  audio_algo_.Initialize(source_audio_params_);
   audio_algo_.FlushBuffers();
-  audio_fifo_input_bus_ =
-      AudioBus::Create(
-          audio_params_.channels(), audio_params_.frames_per_buffer());
+  audio_fifo_input_bus_ = AudioBus::Create(
+      source_audio_params_.channels(),
+      source_audio_params_.frames_per_buffer());
   // Audio FIFO can carry all data fron AudioRendererAlgorithm.
   audio_fifo_.reset(
-      new AudioFifo(audio_params_.channels(),
+      new AudioFifo(source_audio_params_.channels(),
                     audio_algo_.QueueCapacity()));
-  audio_resampler_.reset(new media::MultiChannelResampler(
-      audio_params_.channels(),
-      static_cast<double>(audio_params_.sample_rate()) /
-      kAudioSamplingFrequency,
-      audio_params_.frames_per_buffer(),
-      base::Bind(&FakeMediaSource::ProvideData, weak_factory_.GetWeakPtr())));
+  audio_converter_.reset(new media::AudioConverter(
+      source_audio_params_, output_audio_params_, true));
+  audio_converter_->AddInput(this);
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeMediaSource::SendNextFrame, weak_factory_.GetWeakPtr()));
@@ -462,7 +464,7 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
       // Not the frequency of the source file. This is because we
       // increment the frame count by samples we sent.
       audio_sent_ts_.reset(
-          new AudioTimestampHelper(kAudioSamplingFrequency));
+          new AudioTimestampHelper(output_audio_params_.sample_rate()));
       // For some files this is an invalid value.
       base::TimeDelta base_ts;
       audio_sent_ts_->SetBaseTimestamp(base_ts);
@@ -506,16 +508,15 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
 
     // Make sure there's enough data to resample audio.
     if (audio_fifo_->frames() <
-        2 * audio_params_.sample_rate() / kAudioPacketsPerSecond) {
+        2 * source_audio_params_.sample_rate() / kAudioPacketsPerSecond) {
       continue;
     }
 
     scoped_ptr<media::AudioBus> resampled_bus(
         media::AudioBus::Create(
-            audio_params_.channels(),
-            kAudioSamplingFrequency / kAudioPacketsPerSecond));
-    audio_resampler_->Resample(resampled_bus->frames(),
-                               resampled_bus.get());
+            output_audio_params_.channels(),
+            output_audio_params_.sample_rate() / kAudioPacketsPerSecond));
+    audio_converter_->Convert(resampled_bus.get());
     audio_bus_queue_.push(resampled_bus.release());
   }
 }
@@ -588,13 +589,15 @@ void FakeMediaSource::Decode(bool decode_audio) {
   }
 }
 
-void FakeMediaSource::ProvideData(int frame_delay,
-                                  media::AudioBus* output_bus) {
+double FakeMediaSource::ProvideInput(media::AudioBus* output_bus,
+                                   base::TimeDelta buffer_delay) {
   if (audio_fifo_->frames() >= output_bus->frames()) {
     audio_fifo_->Consume(output_bus, 0, output_bus->frames());
+    return 1.0;
   } else {
     LOG(WARNING) << "Not enough audio data for resampling.";
     output_bus->Zero();
+    return 0.0;
   }
 }
 

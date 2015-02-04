@@ -480,6 +480,7 @@ void RunSimulation(const base::FilePath& source_path,
   const bool quality_test = !metrics_output_path.empty();
   FakeMediaSource media_source(task_runner,
                                &testing_clock,
+                               audio_sender_config,
                                video_sender_config,
                                quality_test);
   scoped_ptr<EncodedVideoFrameTracker> video_frame_tracker;
