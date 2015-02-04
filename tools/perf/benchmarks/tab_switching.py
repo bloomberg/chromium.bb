@@ -44,6 +44,7 @@ class TabSwitchingTypical25(benchmark.Benchmark):
     return 'tab_switching.typical_25'
 
 
+@benchmark.Disabled('mac')  # http://crbug.com/455349
 @benchmark.Enabled('has tabs')
 class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
