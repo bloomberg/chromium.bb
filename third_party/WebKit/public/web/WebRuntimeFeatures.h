@@ -32,6 +32,7 @@
 #define WebRuntimeFeatures_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 
@@ -41,6 +42,10 @@ class WebRuntimeFeatures {
 public:
     BLINK_EXPORT static void enableExperimentalFeatures(bool);
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
+
+    // Enables a feature by its string identifier from
+    // RuntimeEnabledFeatures.in.
+    BLINK_EXPORT static void enableFeatureFromString(const WebString& name, bool enable);
 
     BLINK_EXPORT static void enableApplicationCache(bool);
 

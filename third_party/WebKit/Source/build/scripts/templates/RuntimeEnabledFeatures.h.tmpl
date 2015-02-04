@@ -5,6 +5,7 @@
 #define RuntimeEnabledFeatures_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -16,6 +17,7 @@ public:
     static void set{{feature_set|capitalize}}FeaturesEnabled(bool);
     {% endfor %}
 
+    static void setFeatureEnabledFromString(const WTF::String& name, bool isEnabled);
 
     {% for feature in features %}
     {% if feature.custom %}

@@ -41,6 +41,11 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableFeatureFromString(const WebString& name, bool enable)
+{
+    RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);
+}
+
 void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
 {
     ASSERT(enable);

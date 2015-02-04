@@ -4,6 +4,9 @@
 #include "config.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
+#include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 {% for feature_set in feature_sets %}
@@ -15,6 +18,20 @@ void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool e
 }
 
 {% endfor %}
+
+void RuntimeEnabledFeatures::setFeatureEnabledFromString(const String& name, bool isEnabled)
+{
+    {% for feature in features if not feature.custom %}
+    {% filter enable_conditional(feature.condition) %}
+    if (equalIgnoringCase(name, "{{feature.name}}")) {
+        set{{feature.name}}Enabled(isEnabled);
+        return;
+    }
+    {% endfilter %}
+    {% endfor %}
+    WTF_LOG_ERROR("RuntimeEnabledFeature not recognized: %s", name.ascii().data());
+}
+
 {% for feature in features if not feature.custom %}
 {% filter enable_conditional(feature.condition) %}
 bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.status == 'stable' else 'false'}};
