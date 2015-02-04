@@ -246,7 +246,8 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
     return false;
 
   alignment_ = alignment;
-  if (state_.is_screen_locked || state_.is_adding_user_screen) {
+  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked() ||
+      state_.is_adding_user_screen) {
     // The shelf will itself move to the bottom while locked. If a request is
     // sent to move while being locked, we postpone the move until the lock
     // screen goes away.
@@ -264,7 +265,8 @@ ShelfAlignment ShelfLayoutManager::GetAlignment() const {
   // bottom alignment. Note: We cannot use state_.is_screen_locked here since
   // that flag gets set later than the SessionStateDelegate reports a locked
   // screen which leads in
-  if (state_.is_screen_locked || state_.is_adding_user_screen)
+  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked() ||
+      state_.is_adding_user_screen)
     return SHELF_ALIGNMENT_BOTTOM;
   return alignment_;
 }
