@@ -70,7 +70,11 @@ public class MessagePort {
         if (msgPorts != null) {
             portIds = new int[msgPorts.length];
             for (int i = 0; i < msgPorts.length; i++) {
-                portIds[i] = msgPorts[i].portId();
+                int sentId = msgPorts[i].portId();
+                if (sentId == mPortId) {
+                    throw new IllegalStateException("Source port cannot be transferred");
+                }
+                portIds[i] = sentId;
             }
         }
         mMessagePortService.postMessage(mPortId, message, portIds);

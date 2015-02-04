@@ -145,7 +145,7 @@ public class PostMessageTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testTransferringSamePortTwiceNotAllowed() throws Throwable {
+    public void testTransferringSamePortTwiceViaPostMessageToFrameNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {
@@ -162,6 +162,39 @@ public class PostMessageTest extends AwTestBase {
                             mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
                                     mWebServer.getBaseUrl(),
                                     new MessagePort[]{channel[1]});
+                        } catch (IllegalStateException ex) {
+                            latch.countDown();
+                            return;
+                        }
+                        fail();
+                    }
+                };
+                mAwContents.createMessageChannel(callback);
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // channel[0] and channel[1] are entangled ports, establishing a channel. Verify
+    // it is not allowed to transfer channel[0] on channel[0].postMessage.
+    // TODO(sgurun) Note that the related case of posting channel[1] via
+    // channel[0].postMessage does not throw a JS exception at present. We do not throw
+    // an exception in this case either since the information of entangled port is not
+    // available at the source port. We need a new mechanism to implement to prevent
+    // this case.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testTransferSourcePortViaMessageChannelNotAllowed() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
+                    @Override
+                    public void onReceiveValue(MessagePort[] channel) {
+                        try {
+                            channel[0].postMessage("1", new MessagePort[]{channel[0]});
                         } catch (IllegalStateException ex) {
                             latch.countDown();
                             return;
