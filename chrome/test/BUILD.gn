@@ -176,6 +176,7 @@ source_set("test_support") {
       "ppapi/ppapi_test.cc",
       "ppapi/ppapi_test.h",
     ]
+    deps += [ "//pdf" ]
   }
 
   if (use_ash) {
@@ -247,7 +248,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "//net",
       "//net:net_resources",
       "//net:test_support",
-      "//pdf",
 
       #"//ppapi:ppapi_tests",  # TODO(GYP) this doesn't exist yet.
       "//skia",

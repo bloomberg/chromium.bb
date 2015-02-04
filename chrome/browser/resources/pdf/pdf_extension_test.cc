@@ -41,11 +41,6 @@ class PDFExtensionTest : public ExtensionApiTest {
   }
 
   void RunTestsInFile(std::string filename, std::string pdf_filename) {
-    base::FilePath pdf_path;
-    ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path));
-    ASSERT_TRUE(
-        content::PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(
-            pdf_path));
     ExtensionService* service = extensions::ExtensionSystem::Get(
         profile())->extension_service();
     service->component_loader()->Add(IDR_PDF_MANIFEST,

@@ -83,7 +83,6 @@ enum {
                                 // matter the file exists or not.
   FILE_PEPPER_FLASH_PLUGIN,     // Full path to the bundled Pepper Flash plugin
                                 // file.
-  FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
 
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
   DIR_PNACL_BASE,               // Full path to the base dir for PNaCl.

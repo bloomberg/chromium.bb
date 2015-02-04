@@ -52,9 +52,8 @@ namespace {
 
 void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
   // Always enable the internal PDF plugin for the print preview page.
-  base::FilePath pdf_plugin_path;
-  if (!PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin_path))
-    return;
+  base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
+      ChromeContentClient::kPDFPluginPath);
 
   content::WebPluginInfo pdf_plugin;
   if (!content::PluginService::GetInstance()->GetPluginInfoByPath(

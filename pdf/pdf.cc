@@ -13,72 +13,11 @@
 #include "pdf/instance.h"
 #include "pdf/out_of_process_instance.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/cpp/private/internal_module.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "v8/include/v8.h"
 
 bool g_sdk_initialized_via_pepper = false;
-
-// The Mac release builds discard CreateModule and the entire PDFModule
-// definition because they are not referenced here. This causes the Pepper
-// exports (PPP_GetInterface etc) to not be exported. So we force the linker
-// to include this code by using __attribute__((used)).
-#if __GNUC__ >= 4
-#define PDF_USED __attribute__((used))
-#else
-#define PDF_USED
-#endif
-
-#if defined(OS_WIN)
-
-void HandleInvalidParameter(const wchar_t* expression,
-                            const wchar_t* function,
-                            const wchar_t* file,
-                            unsigned int line,
-                            uintptr_t reserved) {
-  // Do the same as Chrome's CHECK(false) which is undefined.
-  ::base::debug::BreakDebugger();
-  return;
-}
-
-void HandlePureVirtualCall() {
-  // Do the same as Chrome's CHECK(false) which is undefined.
-  ::base::debug::BreakDebugger();
-  return;
-}
-
-
-BOOL APIENTRY DllMain(HMODULE module, DWORD reason_for_call, LPVOID reserved) {
-  if (reason_for_call == DLL_PROCESS_ATTACH) {
-    // On windows following handlers work only inside module. So breakpad in
-    // chrome.dll does not catch that. To avoid linking related code or
-    // duplication breakpad_win.cc::InitCrashReporter() just catch errors here
-    // and crash in a way interceptable by breakpad of parent module.
-    _set_invalid_parameter_handler(HandleInvalidParameter);
-    _set_purecall_handler(HandlePureVirtualCall);
-
-#if defined(ARCH_CPU_X86_64) && _MSC_VER <= 1800
-    // VS2013's CRT only checks the existence of FMA3 instructions, not the
-    // enabled-ness of them at the OS level (this is fixed in VS2015). We force
-    // off usage of FMA3 instructions in the CRT to avoid using that path and
-    // hitting illegal instructions when running on CPUs that support FMA3, but
-    // OSs that don't. Because we use the static library CRT we have to call
-    // this function once in each DLL.
-    // See http://crbug.com/436603.
-    _set_FMA3_enable(0);
-#endif  // ARCH_CPU_X86_64 && _MSC_VER <= 1800
-  }
-  return TRUE;
-}
-
-#endif
-
-namespace pp {
-
-PDF_USED Module* CreateModule() {
-  return new chrome_pdf::PDFModule();
-}
-
-}  // namespace pp
 
 namespace chrome_pdf {
 
@@ -117,49 +56,37 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
   return new Instance(instance);
 }
 
-}  // namespace chrome_pdf
 
-extern "C" {
+// Implementation of Global PPP functions ---------------------------------
+int32_t PPP_InitializeModule(PP_Module module_id,
+                             PPB_GetInterface get_browser_interface) {
+  PDFModule* module = new PDFModule();
+  if (!module->InternalInit(module_id, get_browser_interface)) {
+    delete module;
+    return PP_ERROR_FAILED;
+  }
 
-// TODO(sanjeevr): It might make sense to provide more stateful wrappers over
-// the internal PDF SDK (such as LoadDocument, LoadPage etc). Determine if we
-// need to provide this.
-// Wrapper exports over the PDF engine that can be used by an external module
-// such as Chrome (since Chrome cannot directly pull in PDFium sources).
+  pp::InternalSetModuleSingleton(module);
+  return PP_OK;
+}
+
+void PPP_ShutdownModule() {
+  delete pp::Module::Get();
+  pp::InternalSetModuleSingleton(NULL);
+}
+
+const void* PPP_GetInterface(const char* interface_name) {
+  if (!pp::Module::Get())
+    return NULL;
+  return pp::Module::Get()->GetPluginInterface(interface_name);
+}
+
 #if defined(OS_WIN)
-// |pdf_buffer| is the buffer that contains the entire PDF document to be
-//     rendered.
-// |buffer_size| is the size of |pdf_buffer| in bytes.
-// |page_number| is the 0-based index of the page to be rendered.
-// |dc| is the device context to render into.
-// |dpi_x| and |dpi_y| are the x and y resolutions respectively. If either
-//     value is -1, the dpi from the DC will be used.
-// |bounds_origin_x|, |bounds_origin_y|, |bounds_width| and |bounds_height|
-//     specify a bounds rectangle within the DC in which to render the PDF
-//     page.
-// |fit_to_bounds| specifies whether the output should be shrunk to fit the
-//     supplied bounds if the page size is larger than the bounds in any
-//     dimension. If this is false, parts of the PDF page that lie outside
-//     the bounds will be clipped.
-// |stretch_to_bounds| specifies whether the output should be stretched to fit
-//     the supplied bounds if the page size is smaller than the bounds in any
-//     dimension.
-// If both |fit_to_bounds| and |stretch_to_bounds| are true, then
-//     |fit_to_bounds| is honored first.
-// |keep_aspect_ratio| If any scaling is to be done is true, this flag
-//     specifies whether the original aspect ratio of the page should be
-//     preserved while scaling.
-// |center_in_bounds| specifies whether the final image (after any scaling is
-//     done) should be centered within the given bounds.
-// |autorotate| specifies whether the final image should be rotated to match
-//     the output bound.
-// Returns false if the document or the page number are not valid.
-PP_EXPORT bool RenderPDFPageToDC(const void* pdf_buffer,
+bool RenderPDFPageToDC(const void* pdf_buffer,
                                  int buffer_size,
                                  int page_number,
                                  HDC dc,
-                                 int dpi_x,
-                                 int dpi_y,
+                                 int dpi,
                                  int bounds_origin_x,
                                  int bounds_origin_y,
                                  int bounds_width,
@@ -177,8 +104,8 @@ PP_EXPORT bool RenderPDFPageToDC(const void* pdf_buffer,
   scoped_ptr<chrome_pdf::PDFEngineExports> engine_exports(
       chrome_pdf::PDFEngineExports::Create());
   chrome_pdf::PDFEngineExports::RenderingSettings settings(
-      dpi_x, dpi_y, pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width,
-                             bounds_height),
+      dpi, dpi, pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width,
+                         bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
       autorotate);
   bool ret = engine_exports->RenderPDFPageToDC(pdf_buffer, buffer_size,
@@ -191,9 +118,6 @@ PP_EXPORT bool RenderPDFPageToDC(const void* pdf_buffer,
 
 #endif  // OS_WIN
 
-// |page_count| and |max_page_width| are optional and can be NULL.
-// Returns false if the document is not valid.
-PDF_USED PP_EXPORT
 bool GetPDFDocInfo(const void* pdf_buffer,
                    int buffer_size, int* page_count,
                    double* max_page_width) {
@@ -211,16 +135,6 @@ bool GetPDFDocInfo(const void* pdf_buffer,
   return ret;
 }
 
-// Gets the dimensions of a specific page in a document.
-// |pdf_buffer| is the buffer that contains the entire PDF document to be
-//     rendered.
-// |pdf_buffer_size| is the size of |pdf_buffer| in bytes.
-// |page_number| is the page number that the function will get the dimensions
-//     of.
-// |width| is the output for the width of the page in points.
-// |height| is the output for the height of the page in points.
-// Returns false if the document or the page number are not valid.
-PDF_USED PP_EXPORT
 bool GetPDFPageSizeByIndex(const void* pdf_buffer,
                            int pdf_buffer_size, int page_number,
                            double* width, double* height) {
@@ -237,19 +151,6 @@ bool GetPDFPageSizeByIndex(const void* pdf_buffer,
   return ret;
 }
 
-// Renders PDF page into 4-byte per pixel BGRA color bitmap.
-// |pdf_buffer| is the buffer that contains the entire PDF document to be
-//     rendered.
-// |pdf_buffer_size| is the size of |pdf_buffer| in bytes.
-// |page_number| is the 0-based index of the page to be rendered.
-// |bitmap_buffer| is the output buffer for bitmap.
-// |bitmap_width| is the width of the output bitmap.
-// |bitmap_height| is the height of the output bitmap.
-// |dpi| is the resolutions.
-// |autorotate| specifies whether the final image should be rotated to match
-//     the output bound.
-// Returns false if the document or the page number are not valid.
-PDF_USED PP_EXPORT
 bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int pdf_buffer_size,
                            int page_number,
@@ -275,4 +176,4 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
   return ret;
 }
 
-}  // extern "C"
+}  // namespace chrome_pdf

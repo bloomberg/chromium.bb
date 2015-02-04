@@ -626,12 +626,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(ENABLE_PLUGINS)
-  base::FilePath pdf_path;
-  content::PluginService* plugin_service =
-      content::PluginService::GetInstance();
-  if (switches::OutOfProcessPdfEnabled() &&
-      PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path) &&
-      plugin_service->GetRegisteredPpapiPluginInfo(pdf_path)) {
+  if (switches::OutOfProcessPdfEnabled()) {
     if (switches::PdfMaterialUIEnabled())
       Add(IDR_PDF_MANIFEST_MATERIAL, base::FilePath(FILE_PATH_LITERAL("pdf")));
     else

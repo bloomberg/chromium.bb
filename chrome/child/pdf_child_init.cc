@@ -59,15 +59,20 @@ void InitializePDF() {
 #if defined(OS_WIN)
   // Need to patch a few functions for font loading to work correctly. This can
   // be removed once we switch PDF to use Skia.
-  base::FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      base::PathExists(pdf)) {
-    g_iat_patch_createdca.Patch(pdf.value().c_str(), "gdi32.dll", "CreateDCA",
-                                CreateDCAPatch);
-    g_iat_patch_get_font_data.Patch(pdf.value().c_str(), "gdi32.dll",
-                                    "GetFontData", GetFontDataPatch);
-  }
-#endif
+  HMODULE current_module = NULL;
+  wchar_t current_module_name[MAX_PATH];
+  CHECK(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                          reinterpret_cast<LPCWSTR>(InitializePDF),
+                          &current_module));
+  DWORD result = GetModuleFileNameW(current_module, current_module_name,
+                                    MAX_PATH);
+  if (!result || result == MAX_PATH)
+    return;
+  g_iat_patch_createdca.Patch(current_module_name, "gdi32.dll", "CreateDCA",
+                              CreateDCAPatch);
+  g_iat_patch_get_font_data.Patch(current_module_name, "gdi32.dll",
+                                  "GetFontData", GetFontDataPatch);
+#endif  // OS_WIN
 }
 
 }  // namespace chrome

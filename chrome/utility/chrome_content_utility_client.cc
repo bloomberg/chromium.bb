@@ -166,10 +166,6 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW) || defined(OS_WIN)
-  PrintingHandler::PreSandboxStartup();
-#endif
-
 #if defined(ENABLE_MDNS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUtilityProcessEnableMDns)) {

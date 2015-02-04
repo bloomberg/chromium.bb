@@ -8,7 +8,6 @@
         'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
-          '<(PRODUCT_DIR)/libpdf.so',
         ],
       },
     }],
@@ -88,7 +87,6 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
-          '<(PRODUCT_DIR)/pdf.dll',
         ],
       },
     }],

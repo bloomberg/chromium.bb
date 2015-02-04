@@ -119,6 +119,11 @@
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
 
+#if defined(ENABLE_PLUGINS) && (defined(CHROME_MULTIPLE_DLL_CHILD) || \
+    !defined(CHROME_MULTIPLE_DLL_BROWSER))
+#include "pdf/pdf.h"
+#endif
+
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #include "chrome/child/pdf_child_init.h"
 
@@ -825,6 +830,12 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
       nacl_plugin::PPP_GetInterface,
       nacl_plugin::PPP_InitializeModule,
       nacl_plugin::PPP_ShutdownModule);
+#endif
+#if defined(ENABLE_PLUGINS)
+  ChromeContentClient::SetPDFEntryFunctions(
+      chrome_pdf::PPP_GetInterface,
+      chrome_pdf::PPP_InitializeModule,
+      chrome_pdf::PPP_ShutdownModule);
 #endif
 #endif
 }

@@ -1451,7 +1451,6 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
-        '../pdf/pdf.gyp:pdf',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',

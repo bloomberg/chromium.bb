@@ -190,6 +190,11 @@
                 '../build/linux/system.gyp:xext',
               ],
             }],
+            ['enable_plugins==1', {
+              'dependencies': [
+                '../pdf/pdf.gyp:pdf',
+              ],
+            }],
           ],
           'sources': [
             'app/chrome_dll_resource.h',
@@ -428,20 +433,6 @@
             # NOTE: chrome/app/theme/chromium/BRANDING and
             # chrome/app/theme/google_chrome/BRANDING have the short name
             # "chrome" etc.; should we try to extract from there instead?
-
-            # CrOS does this in a separate build step.
-            ['OS=="linux" and chromeos==0 and linux_dump_symbols==1', {
-              'dependencies': [
-                '../pdf/pdf.gyp:pdf_linux_symbols',
-              ],
-            }], # OS=="linux" and chromeos==0 and linux_dump_symbols==1
-            # Android doesn't use pdfium.
-            ['OS!="android"', {
-              'dependencies': [
-                # On Mac, this is done in chrome_dll.gypi.
-                '../pdf/pdf.gyp:pdf',
-              ],
-            }], # OS=="android"
           ],
           'dependencies': [
             '../components/components.gyp:startup_metric_utils',

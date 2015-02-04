@@ -256,6 +256,11 @@
                 '../content/content.gyp:content_app_browser',
               ],
             }],
+            ['chrome_multiple_dll==0 and enable_plugins==1', {
+              'dependencies': [
+                '../pdf/pdf.gyp:pdf',
+              ],
+            }],
             ['cld_version==1', {
               'dependencies': [
                 '<(DEPTH)/third_party/cld/cld.gyp:cld',
@@ -278,9 +283,6 @@
                 # sets -order_file.
                 'ORDER_FILE': 'app/framework.order',
               },
-              'dependencies': [
-                '../pdf/pdf.gyp:pdf',
-              ],
               'include_dirs': [
                 '<(grit_out_dir)',
               ],
@@ -371,6 +373,11 @@
                   },
                 }],
               ]
+            }],
+            ['enable_plugins==1', {
+              'dependencies': [
+                '../pdf/pdf.gyp:pdf',
+              ],
             }],
           ],
         },  # target chrome_child_dll

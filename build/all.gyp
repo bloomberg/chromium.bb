@@ -750,7 +750,6 @@
               'dependencies': [
                 '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
                 '../content/content_shell_and_tests.gyp:content_shell_syzyasan',
-                '../pdf/pdf.gyp:pdf_syzyasan',
               ],
               'conditions': [
                 ['chrome_multiple_dll==1', {

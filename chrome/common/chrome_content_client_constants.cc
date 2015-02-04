@@ -4,6 +4,12 @@
 
 #include "chrome/common/chrome_content_client.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
 const char* const ChromeContentClient::kPDFPluginName = "Chrome PDF Viewer";
+#else
+const char* const ChromeContentClient::kPDFPluginName = "Chromium PDF Viewer";
+#endif
+const char* const ChromeContentClient::kPDFPluginPath =
+    "internal-pdf-viewer";
 const char* const ChromeContentClient::kRemotingViewerPluginPath =
     "internal-remoting-viewer";

@@ -4,8 +4,7 @@
 
 pdf_engine = 0  # 0 PDFium
 
-# TODO(GYP) need support for loadable modules
-shared_library("pdf") {
+static_library("pdf") {
   sources = [
     "button.h",
     "button.cc",
@@ -35,7 +34,6 @@ shared_library("pdf") {
     "paint_manager.h",
     "pdf.cc",
     "pdf.h",
-    "pdf.rc",
     "progress_control.cc",
     "progress_control.h",
     "pdf_engine.h",
@@ -45,8 +43,6 @@ shared_library("pdf") {
     "resource_consts.h",
     "thumbnail_control.cc",
     "thumbnail_control.h",
-    "../components/ui/zoom/page_zoom_constants.cc",
-    "../content/common/page_zoom.cc",
   ]
 
   if (pdf_engine == 0) {
@@ -68,33 +64,15 @@ shared_library("pdf") {
   }
 
   if (is_win) {
-    defines = [ "COMPILE_CONTENT_STATICALLY" ]
     cflags = [ "/wd4267" ]  # TODO(jschuh) size_t to int truncations.
-  }
-
-  if (is_mac) {
-    # TODO(GYP)
-    #'mac_bundle': 1,
-    #'product_name': 'PDF',
-    #'product_extension': 'plugin',
-    ## Strip the shipping binary of symbols so "Foxit" doesn't appear in
-    ## the binary.  Symbols are stored in a separate .dSYM.
-    #'variables': {
-    #  'mac_real_dsym': 1,
-    #},
-    #'sources+': [
-    #  'Info.plist'
-    #]
-    #'xcode_settings': {
-    #  'INFOPLIST_FILE': 'Info.plist',
-    #},
   }
 
   deps = [
     "//base",
+    "//components/ui/zoom:ui_zoom",
+    "//content/public/common",
     "//net",
-    "//ppapi:ppapi_cpp",
+    "//ppapi:ppapi_internal_module",
     "//third_party/pdfium",
   ]
 }
-# TODO(GYP) pdf_linux_symbols target.

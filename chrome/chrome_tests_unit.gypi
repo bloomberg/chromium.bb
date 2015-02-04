@@ -1986,6 +1986,9 @@
             'test/ppapi/ppapi_test.cc',
             'test/ppapi/ppapi_test.h',
           ],
+          'dependencies': [
+            '../pdf/pdf.gyp:pdf',
+          ],
         }],
         ['enable_plugins==1 and disable_nacl==0', {
           'dependencies': [

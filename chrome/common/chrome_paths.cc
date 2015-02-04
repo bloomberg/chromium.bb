@@ -50,16 +50,6 @@ const base::FilePath::CharType kPepperFlashDebuggerBaseDirectory[] =
     FILE_PATH_LITERAL("Macromed\\Flash");
 #endif
 
-// File name of the internal PDF plugin on different platforms.
-const base::FilePath::CharType kInternalPDFPluginFileName[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("pdf.dll");
-#elif defined(OS_MACOSX)
-    FILE_PATH_LITERAL("PDF.plugin");
-#else  // Linux and Chrome OS
-    FILE_PATH_LITERAL("libpdf.so");
-#endif
-
 const base::FilePath::CharType kInternalNaClPluginFileName[] =
     FILE_PATH_LITERAL("internal-nacl-plugin");
 
@@ -293,11 +283,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &cur))
         return false;
       cur = cur.Append(chrome::kPepperFlashPluginFilename);
-      break;
-    case chrome::FILE_PDF_PLUGIN:
-      if (!GetInternalPluginsDirectory(&cur))
-        return false;
-      cur = cur.Append(kInternalPDFPluginFileName);
       break;
     case chrome::FILE_EFFECTS_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))

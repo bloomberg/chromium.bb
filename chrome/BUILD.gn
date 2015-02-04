@@ -154,10 +154,8 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
     }
 
-    if (!is_mac) {
-      # On Mac this is done in chrome_dll.gypi.
-      datadeps += [ "//pdf" ]
-      # TODO(GYP) pdf linux symbols
+    if (enable_plugins) {
+      deps += [ "//pdf" ]
     }
   }
 }  # !is_android
@@ -240,6 +238,10 @@ if (!is_win || link_chrome_on_windows) {
       #  'includes': [ 'chrome_dll_bundle.gypi' ],
       #}],
       # TODO(GYP) Lots of other stuff in the OS=="mac" block.
+    }
+
+    if (enable_plugins) {
+      deps += [ "//pdf" ]
     }
   }
 }
