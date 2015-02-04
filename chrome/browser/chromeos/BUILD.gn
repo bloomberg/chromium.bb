@@ -110,6 +110,7 @@ source_set("chromeos") {
     "//ui/chromeos:ui_chromeos",
     "//ui/compositor",
     "//ui/display",
+    "//ui/events/devices",
     "//ui/events/platform",
     "//ui/events:dom4_keycode_converter",
     "//ui/file_manager",

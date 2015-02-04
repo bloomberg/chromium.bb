@@ -1670,7 +1670,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     }
     if (use_ozone) {
       # crbug.com/354036
-      sources -= [ "browser/chromeos/events/event_rewriter_unittest.cc" ]
+      sources -= [ "../browser/chromeos/events/event_rewriter_unittest.cc" ]
     }
     if (!enable_plugin_installation) {
       sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
