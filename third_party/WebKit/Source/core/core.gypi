@@ -3705,6 +3705,7 @@
             'css/parser/MediaConditionTest.cpp',
             'css/parser/SizesAttributeParserTest.cpp',
             'css/parser/SizesCalcParserTest.cpp',
+            'css/resolver/FontBuilderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',

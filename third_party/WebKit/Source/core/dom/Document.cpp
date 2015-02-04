@@ -1626,7 +1626,6 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
 void Document::setupFontBuilder(RenderStyle* documentStyle)
 {
     FontBuilder fontBuilder(*this);
-    fontBuilder.setFontDescription(documentStyle->fontDescription());
     RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }

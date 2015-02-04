@@ -66,7 +66,6 @@ public:
         // FIXME: Improve RAII of StyleResolverState to remove this function.
         m_style = style;
         m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().renderView(), m_style->effectiveZoom());
-        m_fontBuilder.setFontDescription(m_style->fontDescription());
     }
     const RenderStyle* style() const { return m_style.get(); }
     RenderStyle* style() { return m_style.get(); }
@@ -127,10 +126,27 @@ public:
     // want to design a better wrapper around RenderStyle for tracking these mutations
     // and separate it from StyleResolverState.
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
-    void setZoom(float f) { m_fontBuilder.didChangeFontParameters(m_style->setZoom(f)); }
-    void setEffectiveZoom(float f) { m_fontBuilder.didChangeFontParameters(m_style->setEffectiveZoom(f)); }
-    void setWritingMode(WritingMode writingMode) { m_fontBuilder.didChangeFontParameters(m_style->setWritingMode(writingMode)); }
-    void setTextOrientation(TextOrientation textOrientation) { m_fontBuilder.didChangeFontParameters(m_style->setTextOrientation(textOrientation)); }
+
+    void setZoom(float f)
+    {
+        if (m_style->setZoom(f))
+            m_fontBuilder.didChangeEffectiveZoom();
+    }
+    void setEffectiveZoom(float f)
+    {
+        if (m_style->setEffectiveZoom(f))
+            m_fontBuilder.didChangeEffectiveZoom();
+    }
+    void setWritingMode(WritingMode writingMode)
+    {
+        if (m_style->setWritingMode(writingMode))
+            m_fontBuilder.didChangeWritingMode();
+    }
+    void setTextOrientation(TextOrientation textOrientation)
+    {
+        if (m_style->setTextOrientation(textOrientation))
+            m_fontBuilder.didChangeTextOrientation();
+    }
 
 private:
     ElementResolveContext m_elementContext;

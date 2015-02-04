@@ -89,11 +89,11 @@ public:
     bool operator!=(const FontDescription& other) const { return !(*this == other); }
 
     struct VariantLigatures {
-        VariantLigatures()
-            : common(NormalLigaturesState)
-            , discretionary(NormalLigaturesState)
-            , historical(NormalLigaturesState)
-            , contextual(NormalLigaturesState)
+        VariantLigatures(LigaturesState state = NormalLigaturesState)
+            : common(state)
+            , discretionary(state)
+            , historical(state)
+            , contextual(state)
         {
         }
 
