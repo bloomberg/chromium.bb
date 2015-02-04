@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
@@ -17,7 +18,7 @@ class DriWrapper;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class DriBuffer : public ScanoutBuffer {
+class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
  public:
   DriBuffer(DriWrapper* dri);
 
@@ -53,7 +54,7 @@ class DriBuffer : public ScanoutBuffer {
   DISALLOW_COPY_AND_ASSIGN(DriBuffer);
 };
 
-class DriBufferGenerator : public ScanoutBufferGenerator {
+class OZONE_EXPORT DriBufferGenerator : public ScanoutBufferGenerator {
  public:
   DriBufferGenerator();
   ~DriBufferGenerator() override;

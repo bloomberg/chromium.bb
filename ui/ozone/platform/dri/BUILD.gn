@@ -75,6 +75,8 @@ source_set("dri_common") {
     "scanout_buffer.h",
   ]
 
+  defines = [ "OZONE_IMPLEMENTATION" ]
+
   deps = [
     "//base",
     "//skia",
@@ -116,17 +118,19 @@ if (ozone_platform_dri) {
       "dri_surface_unittest.cc",
       "dri_window_delegate_impl_unittest.cc",
       "hardware_display_controller_unittest.cc",
-      "hardware_display_manager_unittest.cc",
+      "hardware_display_plane_manager_unittest.cc",
       "screen_manager_unittest.cc",
       "test/mock_dri_wrapper.cc",
       "test/mock_dri_wrapper.h",
     ]
 
     deps = [
-      ":dri_common",
       "//skia",
       "//testing/gtest",
+      "//ui/ozone",
     ]
+
+    public_configs = [ ":libdrm" ]
   }
 }
 

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/display_change_observer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
@@ -25,7 +26,7 @@ class DriWrapper;
 class ScanoutBufferGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
-class ScreenManager {
+class OZONE_EXPORT ScreenManager {
  public:
   ScreenManager(DriWrapper* dri, ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();

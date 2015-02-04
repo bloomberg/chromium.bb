@@ -106,7 +106,7 @@
         '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
-        'ozone_platform_dri',
+        'ozone.gyp:ozone',
       ],
       'export_dependent_settings': [
         '../../build/linux/system.gyp:libdrm',

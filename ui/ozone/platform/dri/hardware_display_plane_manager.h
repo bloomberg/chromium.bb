@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_display_plane.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
@@ -27,7 +28,7 @@ class CrtcController;
 
 // This contains the list of planes controlled by one HDC on a given DRM fd.
 // It is owned by the HDC and filled by the CrtcController.
-struct HardwareDisplayPlaneList {
+struct OZONE_EXPORT HardwareDisplayPlaneList {
   HardwareDisplayPlaneList();
   ~HardwareDisplayPlaneList();
 
@@ -69,7 +70,7 @@ struct HardwareDisplayPlaneList {
   bool committed;
 };
 
-class HardwareDisplayPlaneManager {
+class OZONE_EXPORT HardwareDisplayPlaneManager {
  public:
   HardwareDisplayPlaneManager();
   virtual ~HardwareDisplayPlaneManager();

@@ -7,12 +7,13 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_export.h"
 
 namespace ui {
 
 class DriWindowDelegate;
 
-class DriWindowDelegateManager {
+class OZONE_EXPORT DriWindowDelegateManager {
  public:
   DriWindowDelegateManager();
   ~DriWindowDelegateManager();

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/basictypes.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 namespace gfx {
@@ -19,7 +20,7 @@ namespace ui {
 
 class DriWrapper;
 
-class HardwareDisplayPlane {
+class OZONE_EXPORT HardwareDisplayPlane {
  public:
   HardwareDisplayPlane(ScopedDrmPlanePtr plane);
   HardwareDisplayPlane(uint32_t plane_id, uint32_t possible_crtcs);

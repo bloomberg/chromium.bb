@@ -9,6 +9,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 class SkSurface;
@@ -20,7 +21,7 @@ class DriWindowDelegate;
 class DriWrapper;
 class HardwareDisplayController;
 
-class DriSurface : public SurfaceOzoneCanvas {
+class OZONE_EXPORT DriSurface : public SurfaceOzoneCanvas {
  public:
   DriSurface(DriWindowDelegate* window_delegate, DriWrapper* dri);
   ~DriSurface() override;

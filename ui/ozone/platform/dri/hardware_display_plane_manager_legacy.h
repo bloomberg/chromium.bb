@@ -5,11 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_DRI_HARDWARE_DISPLAY_PLANE_MANAGER_ATOMIC_H_
 #define UI_OZONE_PLATFORM_DRI_HARDWARE_DISPLAY_PLANE_MANAGER_ATOMIC_H_
 
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 
 namespace ui {
 
-class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
+class OZONE_EXPORT HardwareDisplayPlaneManagerLegacy
+    : public HardwareDisplayPlaneManager {
  public:
   HardwareDisplayPlaneManagerLegacy();
   ~HardwareDisplayPlaneManagerLegacy() override;

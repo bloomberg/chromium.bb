@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
@@ -25,7 +26,8 @@ class PageFlipObserver;
 // One CRTC can be paired up with one or more connectors. The simplest
 // configuration represents one CRTC driving one monitor, while pairing up a
 // CRTC with multiple connectors results in hardware mirroring.
-class CrtcController : public base::SupportsWeakPtr<CrtcController> {
+class OZONE_EXPORT CrtcController
+    : public base::SupportsWeakPtr<CrtcController> {
  public:
   CrtcController(DriWrapper* drm, uint32_t crtc, uint32_t connector);
   ~CrtcController();

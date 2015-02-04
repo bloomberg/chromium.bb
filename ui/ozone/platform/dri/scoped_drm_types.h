@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_SCOPED_DRM_TYPES_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/ozone/ozone_export.h"
 
 typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
@@ -20,34 +21,34 @@ typedef struct _drmModeRes drmModeRes;
 
 namespace ui {
 
-struct DrmResourcesDeleter {
+struct OZONE_EXPORT DrmResourcesDeleter {
   void operator()(drmModeRes* resources) const;
 };
-struct DrmConnectorDeleter {
+struct OZONE_EXPORT DrmConnectorDeleter {
   void operator()(drmModeConnector* connector) const;
 };
-struct DrmCrtcDeleter {
+struct OZONE_EXPORT DrmCrtcDeleter {
   void operator()(drmModeCrtc* crtc) const;
 };
-struct DrmEncoderDeleter {
+struct OZONE_EXPORT DrmEncoderDeleter {
   void operator()(drmModeEncoder* encoder) const;
 };
-struct DrmObjectPropertiesDeleter {
+struct OZONE_EXPORT DrmObjectPropertiesDeleter {
   void operator()(drmModeObjectProperties* properties) const;
 };
-struct DrmPlaneDeleter {
+struct OZONE_EXPORT DrmPlaneDeleter {
   void operator()(drmModePlane* plane) const;
 };
-struct DrmPlaneResDeleter {
+struct OZONE_EXPORT DrmPlaneResDeleter {
   void operator()(drmModePlaneRes* plane_res) const;
 };
-struct DrmPropertyDeleter {
+struct OZONE_EXPORT DrmPropertyDeleter {
   void operator()(drmModePropertyRes* property) const;
 };
-struct DrmPropertyBlobDeleter {
+struct OZONE_EXPORT DrmPropertyBlobDeleter {
   void operator()(drmModePropertyBlobRes* property) const;
 };
-struct DrmFramebufferDeleter {
+struct OZONE_EXPORT DrmFramebufferDeleter {
   void operator()(drmModeFB* framebuffer) const;
 };
 

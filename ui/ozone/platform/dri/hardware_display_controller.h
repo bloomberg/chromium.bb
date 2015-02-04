@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/page_flip_observer.h"
@@ -86,7 +87,7 @@ class DriWrapper;
 // only a subset of connectors can be active independently, showing different
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
-class HardwareDisplayController
+class OZONE_EXPORT HardwareDisplayController
     : public base::SupportsWeakPtr<HardwareDisplayController>,
       public PageFlipObserver {
  public:

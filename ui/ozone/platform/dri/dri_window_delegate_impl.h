@@ -9,6 +9,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/display_change_observer.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
 
@@ -20,8 +21,8 @@ class DriWrapper;
 class HardwareDisplayController;
 class ScreenManager;
 
-class DriWindowDelegateImpl : public DriWindowDelegate,
-                              public DisplayChangeObserver {
+class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
+                                           public DisplayChangeObserver {
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
                         DriWrapper* drm,
