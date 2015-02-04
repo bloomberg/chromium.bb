@@ -206,6 +206,10 @@ source_set("test_support") {
 
     deps += [ "//ui/gfx/x" ]
   }
+
+  if (use_ozone) {
+    sources += [ "test/ui_controls_factory_ozone.cc" ]
+  }
 }
 
 executable("demo") {
