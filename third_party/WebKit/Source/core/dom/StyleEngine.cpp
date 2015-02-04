@@ -323,7 +323,7 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
 
 void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 {
-    if (!node->inDocument())
+    if (!node->inDocument() || document().isDetached())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
@@ -349,7 +349,10 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
     ASSERT(!isXSLStyleSheet(*node));
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
-    ASSERT(collection);
+    // After detaching document, collection could be null. In the case,
+    // we should not update anything. Instead, just return.
+    if (!collection)
+        return;
     collection->removeStyleSheetCandidateNode(node);
 
     markTreeScopeDirty(treeScope);
