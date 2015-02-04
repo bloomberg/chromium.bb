@@ -57,7 +57,7 @@ namespace {
 
 PassRefPtrWillBeRawPtr<KeyboardEvent> createKeyboardEventWithLocation(KeyboardEvent::KeyLocationCode location)
 {
-    return KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false);
+    return KeyboardEvent::create("keydown", true, true, 0, "", "", location, false, false, false, false);
 }
 
 int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location)
@@ -731,7 +731,7 @@ TEST(WebInputEventConversionTest, PinchViewportOffset)
 
 TEST(WebInputEventConversionTest, ElasticOverscroll)
 {
-    const std::string baseURL("http://www.test5.com/");
+    const std::string baseURL("http://www.test6.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
@@ -792,7 +792,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
 
 TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 {
-    const std::string baseURL("http://www.test6.com/");
+    const std::string baseURL("http://www.test5.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
@@ -823,7 +823,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
 {
-    const std::string baseURL("http://www.test7.com/");
+    const std::string baseURL("http://www.test6.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));

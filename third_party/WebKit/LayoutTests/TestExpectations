@@ -175,6 +175,10 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
+# Disable KeyboardEvent code tests https://codereview.chromium.org/658183002/ lands
+crbug.com/227231 fast/events/keyboardevent-code.html [ Failure Pass ]
+crbug.com/227231 virtual/slimmingpaint/fast/events/keyboardevent-code.html [ Failure Pass ]
+
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/filter.html [ ImageOnlyFailure ]

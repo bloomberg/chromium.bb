@@ -45,6 +45,7 @@
 #include "core/rendering/RenderObject.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/Widget.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -317,6 +318,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_nativeVirtualKeyCode = e.nativeKeyCode;
     m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad);
     m_isSystemKey = e.isSystemKey;
+    m_code = Platform::current()->domCodeStringFromEnum(e.domCode);
 
     m_modifiers = toPlatformEventModifiers(e.modifiers);
 
@@ -674,6 +676,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     if (!event.keyEvent())
         return;
     nativeKeyCode = event.keyEvent()->nativeVirtualKeyCode();
+    domCode = Platform::current()->domEnumFromCodeString(event.keyEvent()->code());
     unsigned numberOfCharacters = std::min(event.keyEvent()->text().length(), static_cast<unsigned>(textLengthCap));
     for (unsigned i = 0; i < numberOfCharacters; ++i) {
         text[i] = event.keyEvent()->text()[i];
@@ -708,6 +711,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const PlatformKeyboardEvent& ev
         modifiers |= WebInputEvent::IsKeyPad;
     isSystemKey = event.isSystemKey();
     nativeKeyCode = event.nativeVirtualKeyCode();
+    domCode = Platform::current()->domEnumFromCodeString(event.code());
 
     windowsKeyCode = windowsKeyCodeWithoutLocation(event.windowsVirtualKeyCode());
     modifiers |= locationModifiersFromWindowsKeyCode(event.windowsVirtualKeyCode());

@@ -69,6 +69,7 @@ ImageRenderingPixelated status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
+KeyboardEventCode status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
 LocalStorage status=stable

@@ -100,7 +100,7 @@ InspectorInputAgent::~InspectorInputAgent()
 {
 }
 
-void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& type, const int* modifiers, const double* timestamp, const String* text, const String* unmodifiedText, const String* keyIdentifier, const int* windowsVirtualKeyCode, const int* nativeVirtualKeyCode, const bool* autoRepeat, const bool* isKeypad, const bool* isSystemKey)
+void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& type, const int* modifiers, const double* timestamp, const String* text, const String* unmodifiedText, const String* keyIdentifier, const String* code, const int* windowsVirtualKeyCode, const int* nativeVirtualKeyCode, const bool* autoRepeat, const bool* isKeypad, const bool* isSystemKey)
 {
     PlatformEvent::Type convertedType;
     if (type == "keyDown")
@@ -121,6 +121,7 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
         text ? *text : "",
         unmodifiedText ? *unmodifiedText : "",
         keyIdentifier ? *keyIdentifier : "",
+        code ? *code : "",
         windowsVirtualKeyCode ? *windowsVirtualKeyCode : 0,
         nativeVirtualKeyCode ? *nativeVirtualKeyCode : 0,
         asBool(autoRepeat),

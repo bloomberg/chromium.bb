@@ -26,6 +26,7 @@
     const unsigned long DOM_KEY_LOCATION_RIGHT    = 0x02;
     const unsigned long DOM_KEY_LOCATION_NUMPAD   = 0x03;
 
+    [RuntimeEnabled=KeyboardEventCode] readonly attribute DOMString     code;
     readonly attribute DOMString        keyIdentifier;
     readonly attribute unsigned long    location;
     [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] readonly attribute unsigned long keyLocation; // Deprecated.

@@ -134,7 +134,6 @@ public:
     // indicating that the default action should be suppressed.
     virtual bool handleCurrentKeyboardEvent() { return false; }
 
-
     // Dialogs -------------------------------------------------------------
 
     // This method returns immediately after showing the dialog. When the

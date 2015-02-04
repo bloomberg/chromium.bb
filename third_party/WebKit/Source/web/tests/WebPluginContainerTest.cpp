@@ -199,7 +199,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
 #if OS(MACOSX)
     modifierKey = PlatformEvent::MetaKey;
 #endif
-    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", 67, 0, false, false, false, modifierKey, 0.0);
+    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", "", 67, 0, false, false, false, modifierKey, 0.0);
     RefPtrWillBeRawPtr<KeyboardEvent> keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
     ((WebPluginContainerImpl*)(pluginContainerOneElement.pluginContainer()))->handleEvent(keyEventC.get());
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
@@ -208,7 +208,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     Platform::current()->clipboard()->writePlainText(WebString(""));
     EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
-    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "45", 45, 0, false, false, false, modifierKey, 0.0);
+    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "45", "", 45, 0, false, false, false, modifierKey, 0.0);
     RefPtrWillBeRawPtr<KeyboardEvent> keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
     ((WebPluginContainerImpl*)(pluginContainerOneElement.pluginContainer()))->handleEvent(keyEventInsert.get());
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));

@@ -606,6 +606,18 @@ public:
     // longer notify the listener, if any.
     virtual void stopListening(WebPlatformEventType type) { }
 
+    // This method converts from the supplied DOM code enum to the
+    // embedder's DOM code value for the key pressed. |domCode| values are
+    // based on the value defined in ui/events/keycodes/dom4/keycode_converter_data.h.
+    // Returns null string, if DOM code value is not found.
+    virtual WebString domCodeStringFromEnum(int domCode) { return WebString(); }
+
+    // This method converts from the suppled DOM code value to the
+    // embedder's DOM code enum for the key pressed. |codeString| is defined in
+    // ui/events/keycodes/dom4/keycode_converter_data.h.
+    // Returns 0, if DOM code enum is not found.
+    virtual int domEnumFromCodeString(const WebString& codeString) { return 0; }
+
     // Quota -----------------------------------------------------------
 
     // Queries the storage partition's storage usage and quota information.
