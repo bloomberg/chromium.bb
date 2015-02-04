@@ -278,6 +278,8 @@ ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
 }
 
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
+  // TODO(mlamouri,kenrb): call GetRenderWidgetHost() directly when it stops
+  // returning nullptr in some cases. See https://crbug.com/455245.
   blink::WebPageVisibilityState visibility_state =
       RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())->is_hidden()
           ? blink::WebPageVisibilityStateHidden
@@ -1602,7 +1604,10 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 }
 
 bool RenderFrameHostImpl::IsFocused() {
-  return GetView()->HasFocus() &&
+  // TODO(mlamouri,kenrb): call GetRenderWidgetHost() directly when it stops
+  // returning nullptr in some cases. See https://crbug.com/455245.
+  return RenderWidgetHostImpl::From(
+            GetView()->GetRenderWidgetHost())->is_focused() &&
          frame_tree_->GetFocusedFrame() &&
          (frame_tree_->GetFocusedFrame() == frame_tree_node() ||
           frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));

@@ -228,6 +228,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void GotFocus();
   virtual void LostCapture();
 
+  // Indicates whether the RenderWidgetHost thinks it is focused.
+  // This is different from RenderWidgetHostView::HasFocus() in the sense that
+  // it reflects what the renderer process knows: it saves the state that is
+  // sent/received.
+  // RenderWidgetHostView::HasFocus() is checking whether the view is focused so
+  // it is possible in some edge cases that a view was requested to be focused
+  // but it failed, thus HasFocus() returns false.
+  bool is_focused() const { return is_focused_; }
+
   // Called to notify the RenderWidget that it has lost the mouse lock.
   virtual void LostMouseLock();
 
@@ -840,6 +849,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether a RenderFramehost has ownership, in which case this
   // object does not self destroy.
   bool owned_by_render_frame_host_;
+
+  // Indicates whether this RenderWidgetHost thinks is focused. This is trying
+  // to match what the renderer process knows. It is different from
+  // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
+  // causing HasFocus to return false when is_focused_ is true.
+  bool is_focused_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

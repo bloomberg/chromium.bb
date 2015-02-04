@@ -408,7 +408,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns whether the frame is focused. A frame is considered focused when it
   // is the parent chain of the focused frame within the frame tree. In
-  // addition, its associated RenderWidgetHostView has to be focused.
+  // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
  protected:

@@ -186,6 +186,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
+      is_focused_(false),
       weak_factory_(this) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -663,10 +664,14 @@ void RenderWidgetHostImpl::GotFocus() {
 }
 
 void RenderWidgetHostImpl::Focus() {
+  is_focused_ = true;
+
   Send(new InputMsg_SetFocus(routing_id_, true));
 }
 
 void RenderWidgetHostImpl::Blur() {
+  is_focused_ = false;
+
   // If there is a pending mouse lock request, we don't want to reject it at
   // this point. The user can switch focus back to this view and approve the
   // request later.
