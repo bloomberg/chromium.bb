@@ -25,13 +25,13 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="true"
                 android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
                 android:text="@string/autofill_profile_editor_country" />
             <Spinner
                 android:id="@+id/countries"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/autofill_profile_editor_country" />
+                android:layout_height="wrap_content" />
 
             <LinearLayout
                 android:id="@+id/autofill_profile_widget_root"

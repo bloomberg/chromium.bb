@@ -96,6 +96,7 @@ public class FloatLabelLayout extends LinearLayout {
         mLabel.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
         mLabel.setVisibility(INVISIBLE);
         mLabel.setText(mHint);
+        mLabel.setFocusable(true);
         ViewCompat.setPivotX(mLabel, 0f);
         ViewCompat.setPivotY(mLabel, 0f);
 

@@ -52,6 +52,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="true"
                 android:paddingTop="10dp"
                 android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
                 android:text="@string/autofill_credit_card_editor_expiration_date" />
@@ -66,16 +67,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:paddingTop="8dp"
-                    android:contentDescription="@string/accessibility_autofill_cc_month" />
+                    android:paddingTop="8dp" />
 
                 <Spinner
                     android:id="@+id/autofill_credit_card_editor_year_spinner"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:paddingTop="8dp"
-                    android:contentDescription="@string/accessibility_autofill_cc_year" />
+                    android:paddingTop="8dp" />
             </LinearLayout>
         </LinearLayout>
 

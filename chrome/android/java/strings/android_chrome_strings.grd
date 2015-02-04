@@ -167,12 +167,6 @@
       <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_NUMBER_TEXTBOX" desc="Content description for text input field containing a credit card number.">
         Card number
       </message>
-      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_MONTH" desc="Content description for text input field containing a credit card expiration month.">
-        Card expiration month
-      </message>
-      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_YEAR" desc="Content description for text input field containing a credit card expiration year.">
-        Card expiration year
-      </message>
 
       <!-- Autofill/Wallet integration preferences -->
       <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Title for Autofill Wallet settings, which controls import of Wallet cards.">
