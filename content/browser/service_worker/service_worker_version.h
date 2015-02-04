@@ -33,6 +33,10 @@ namespace blink {
 struct WebCircularGeofencingRegion;
 }
 
+namespace net {
+class HttpResponseInfo;
+}
+
 namespace content {
 
 class EmbeddedWorkerRegistry;
@@ -292,6 +296,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void SetDevToolsAttached(bool attached);
 
+  // Sets the HttpResponseInfo used to load the main script.
+  // This HttpResponseInfo will be used for all responses sent back from the
+  // service worker, as the effective security of these responses is equivalent
+  // to that of the ServiceWorker.
+  void SetMainScriptHttpResponseInfo(const net::HttpResponseInfo& http_info);
+  const net::HttpResponseInfo* GetMainScriptHttpResponseInfo();
+
  private:
   class GetClientDocumentsCallback;
 
@@ -411,6 +422,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool is_doomed_;
   std::vector<int> pending_skip_waiting_requests_;
   bool skip_waiting_;
+  scoped_ptr<net::HttpResponseInfo> main_script_http_info_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

@@ -19,6 +19,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "net/http/http_response_info.h"
 
 namespace content {
 
@@ -674,6 +675,16 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
     // running, try scheduling stop-worker-timer now.
     ScheduleStopWorker();
   }
+}
+
+void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
+    const net::HttpResponseInfo& http_info) {
+  main_script_http_info_.reset(new net::HttpResponseInfo(http_info));
+}
+
+const net::HttpResponseInfo*
+ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
+  return main_script_http_info_.get();
 }
 
 void ServiceWorkerVersion::OnStarted() {

@@ -21,11 +21,14 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/security_style.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -766,45 +769,110 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
-  const std::string kPageUrl = "/service_worker/reload.html";
-  const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
-  {
-    scoped_refptr<WorkerActivatedObserver> observer =
-        new WorkerActivatedObserver(wrapper());
-    observer->Init();
-    public_context()->RegisterServiceWorker(
-        embedded_test_server()->GetURL(kPageUrl),
-        embedded_test_server()->GetURL(kWorkerUrl),
-        base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
-    observer->Wait();
-  }
-  {
-    const base::string16 title = base::ASCIIToUTF16("reload=false");
-    TitleWatcher title_watcher(shell()->web_contents(), title);
-    NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
-    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  }
-  {
-    const base::string16 title = base::ASCIIToUTF16("reload=true");
-    TitleWatcher title_watcher(shell()->web_contents(), title);
-    ReloadBlockUntilNavigationsComplete(shell(), 1);
-    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  }
+  const char kPageUrl[] = "/service_worker/reload.html";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_reload.js";
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      embedded_test_server()->GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  const base::string16 title1 = base::ASCIIToUTF16("reload=false");
+  TitleWatcher title_watcher1(shell()->web_contents(), title1);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
+  EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
+
+  const base::string16 title2 = base::ASCIIToUTF16("reload=true");
+  TitleWatcher title_watcher2(shell()->web_contents(), title2);
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_EQ(title2, title_watcher2.WaitAndGetTitle());
+
   shell()->Close();
-  {
-    base::RunLoop run_loop;
-    public_context()->UnregisterServiceWorker(
-        embedded_test_server()->GetURL(kPageUrl),
-        base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
+  const char kPageUrl[] = "files/service_worker/fetch_event_blob.html";
+  const char kWorkerUrl[] = "files/service_worker/fetch_event_blob.js";
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::BaseTestServer::SSLOptions(
+          net::BaseTestServer::SSLOptions::CERT_OK),
+      base::FilePath(FILE_PATH_LITERAL("content/test/data/")));
+  ASSERT_TRUE(https_server.Start());
+
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      https_server.GetURL(kPageUrl),
+      https_server.GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), https_server.GetURL(kPageUrl));
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->GetSSL().security_style);
+
+  shell()->Close();
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      https_server.GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       ResponseFromHTTPServiceWorkerIsNotMarkedAsSecure) {
+  const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      embedded_test_server()->GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->GetSSL().security_style);
+
+  shell()->Close();
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
-  const std::string kScopeUrl = "/service_worker/imports_bust_memcache_scope/";
-  const std::string kPageUrl = "/service_worker/imports_bust_memcache.html";
-  const std::string kScriptUrl = "/service_worker/worker_with_one_import.js";
-  const std::string kImportUrl = "/service_worker/long_lived_import.js";
+  const char kScopeUrl[] = "/service_worker/imports_bust_memcache_scope/";
+  const char kPageUrl[] = "/service_worker/imports_bust_memcache.html";
+  const char kScriptUrl[] = "/service_worker/worker_with_one_import.js";
+  const char kImportUrl[] = "/service_worker/long_lived_import.js";
   const base::string16 kOKTitle(base::ASCIIToUTF16("OK"));
   const base::string16 kFailTitle(base::ASCIIToUTF16("FAIL"));
 
@@ -878,8 +946,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   shell()->Close();
   EXPECT_EQ(0, CountRenderProcessHosts());
 
-  const std::string kWorkerUrl = "/service_worker/fetch_event.js";
-  const std::string kScope = "/service_worker/";
+  const char kWorkerUrl[] = "/service_worker/fetch_event.js";
+  const char kScope[] = "/service_worker/";
 
   // Unregistering nothing should return false.
   {
@@ -953,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossSiteTransfer) {
   // The first page registers a service worker.
-  const std::string kRegisterPageUrl = "/service_worker/cross_site_xfer.html";
+  const char kRegisterPageUrl[] = "/service_worker/cross_site_xfer.html";
   const base::string16 kOKTitle1(base::ASCIIToUTF16("OK_1"));
   const base::string16 kFailTitle1(base::ASCIIToUTF16("FAIL_1"));
   content::TitleWatcher title_watcher1(shell()->web_contents(), kOKTitle1);
@@ -966,7 +1034,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossSiteTransfer) {
   ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
 
   // The second pages loads via the serviceworker including a subresource.
-  const std::string kConfirmPageUrl =
+  const char kConfirmPageUrl[] =
       "/service_worker/cross_site_xfer_scope/"
       "cross_site_xfer_confirm_via_serviceworker.html";
   const base::string16 kOKTitle2(base::ASCIIToUTF16("OK_2"));

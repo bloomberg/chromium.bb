@@ -26,9 +26,11 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     base::WeakPtr<ServiceWorkerContextCore> context,
+    const scoped_refptr<ServiceWorkerVersion>& version,
     int64 response_id)
     : net::URLRequestJob(request, network_delegate),
       context_(context),
+      version_(version),
       response_id_(response_id),
       has_been_killed_(false),
       weak_factory_(this) {
@@ -164,6 +166,8 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);
   http_info_io_buffer_ = NULL;
+  if (request_->url() == version_->script_url())
+    version_->SetMainScriptHttpResponseInfo(*http_info_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerReadFromCacheJob::ReadInfo",
                          this,

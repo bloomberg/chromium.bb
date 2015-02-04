@@ -31,8 +31,11 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
+#include "net/base/test_data_directory.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/ssl_info.h"
+#include "net/test/cert_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -125,6 +128,15 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         GURL("http://example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());
+    net::HttpResponseInfo http_info;
+    http_info.ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                "ok_cert.pem");
+    EXPECT_TRUE(http_info.ssl_info.is_valid());
+    http_info.ssl_info.security_bits = 0x100;
+    // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+    http_info.ssl_info.connection_status = 0x300039;
+    version_->SetMainScriptHttpResponseInfo(http_info);
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
@@ -180,6 +192,10 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     EXPECT_EQ(expected_status_text,
               request_->response_headers()->GetStatusText());
     EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+    const net::SSLInfo& ssl_info = request_->response_info().ssl_info;
+    EXPECT_TRUE(ssl_info.is_valid());
+    EXPECT_EQ(ssl_info.security_bits, 0x100);
+    EXPECT_EQ(ssl_info.connection_status, 0x300039);
   }
 
   bool HasInflightRequests() {

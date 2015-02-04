@@ -6,6 +6,7 @@
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
+          '../net/data/ssl/certificates/',
           '../media/test/data/',
           'test/data/',
         ],

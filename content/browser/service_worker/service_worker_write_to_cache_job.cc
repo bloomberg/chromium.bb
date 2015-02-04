@@ -418,6 +418,8 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
 
     if (!CheckPathRestriction(request))
       return;
+
+    version_->SetMainScriptHttpResponseInfo(net_request_->response_info());
   }
 
   WriteHeadersToCache();

@@ -112,7 +112,9 @@ bool ServiceWorkerURLRequestJob::GetMimeType(std::string* mime_type) const {
 void ServiceWorkerURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   if (!http_info())
     return;
+  const base::Time request_time = info->request_time;
   *info = *http_info();
+  info->request_time = request_time;
   info->response_time = response_time_;
 }
 
@@ -538,6 +540,16 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   fetch_end_time_ = base::TimeTicks::Now();
   load_timing_info_.send_end = fetch_end_time_;
 
+  // Creates a new HttpResponseInfo using the the ServiceWorker script's
+  // HttpResponseInfo to show HTTPS padlock.
+  // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
+  // ServiceWorker, we have to check the security level of the responses.
+  DCHECK(!http_response_info_);
+  const net::HttpResponseInfo* main_script_http_info =
+      provider_host_->active_version()->GetMainScriptHttpResponseInfo();
+  DCHECK(main_script_http_info);
+  http_response_info_.reset(new net::HttpResponseInfo(*main_script_http_info));
+
   // Set up a request for reading the stream.
   if (response.stream_url.is_valid()) {
     DCHECK(response.blob_uuid.empty());
@@ -610,8 +622,11 @@ void ServiceWorkerURLRequestJob::CreateResponseHeader(
 }
 
 void ServiceWorkerURLRequestJob::CommitResponseHeader() {
-  http_response_info_.reset(new net::HttpResponseInfo());
+  if (!http_response_info_)
+    http_response_info_.reset(new net::HttpResponseInfo());
   http_response_info_->headers.swap(http_response_headers_);
+  http_response_info_->vary_data = net::HttpVaryData();
+  http_response_info_->metadata = nullptr;
   NotifyHeadersComplete();
 }
 

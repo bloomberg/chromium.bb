@@ -83,7 +83,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   int64 response_id = kInvalidServiceWorkerResponseId;
   if (ShouldReadFromScriptCache(request->url(), &response_id)) {
     return new ServiceWorkerReadFromCacheJob(
-        request, network_delegate, context_, response_id);
+        request, network_delegate, context_, version_, response_id);
   }
 
   // NULL means use the network.
