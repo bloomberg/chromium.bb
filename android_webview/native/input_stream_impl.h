@@ -26,15 +26,16 @@ class InputStreamImpl : public InputStream {
   // |stream| should be an instance of the InputStream Java class.
   // |stream| can't be null.
   InputStreamImpl(const base::android::JavaRef<jobject>& stream);
-  virtual ~InputStreamImpl();
+  ~InputStreamImpl() override;
 
   // Gets the underlying Java object. Guaranteed non-NULL.
   const jobject jobj() const { return jobject_.obj(); }
 
   // InputStream implementation.
-  virtual bool BytesAvailable(int* bytes_available) const override;
-  virtual bool Skip(int64_t n, int64_t* bytes_skipped) override;
-  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) override;
+  bool BytesAvailable(int* bytes_available) const override;
+  bool Skip(int64_t n, int64_t* bytes_skipped) override;
+  bool Read(net::IOBuffer* dest, int length, int* bytes_read) override;
+
  protected:
   // Parameterless constructor exposed for testing.
   InputStreamImpl();

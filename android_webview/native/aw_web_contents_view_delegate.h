@@ -22,13 +22,12 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
   static content::WebContentsViewDelegate* Create(
       content::WebContents* web_contents);
 
-  virtual ~AwWebContentsViewDelegate();
+  ~AwWebContentsViewDelegate() override;
 
   // content::WebContentsViewDelegate implementation.
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() override;
-  virtual void ShowContextMenu(
-      content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) override;
+  content::WebDragDestDelegate* GetDragDestDelegate() override;
+  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
+                       const content::ContextMenuParams& params) override;
 
  private:
   AwWebContentsViewDelegate(content::WebContents* web_contents);

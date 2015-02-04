@@ -56,7 +56,7 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
 
  private:
   explicit AwQuotaManagerBridgeImpl(AwBrowserContext* browser_context);
-  virtual ~AwQuotaManagerBridgeImpl();
+  ~AwQuotaManagerBridgeImpl() override;
 
   content::StoragePartition* GetStoragePartition() const;
 

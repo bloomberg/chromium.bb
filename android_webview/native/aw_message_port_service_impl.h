@@ -26,7 +26,7 @@ class AwMessagePortServiceImpl : public AwMessagePortService {
   static AwMessagePortServiceImpl* GetInstance();
 
   AwMessagePortServiceImpl();
-  ~AwMessagePortServiceImpl();
+  ~AwMessagePortServiceImpl() override;
   void Init(JNIEnv* env, jobject object);
 
   void CreateMessageChannel(JNIEnv* env, jobject callback,

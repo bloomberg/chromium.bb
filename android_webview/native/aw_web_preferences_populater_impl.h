@@ -15,11 +15,11 @@ class AwSettings;
 class AwWebPreferencesPopulaterImpl : public AwWebPreferencesPopulater {
  public:
   AwWebPreferencesPopulaterImpl();
-  virtual ~AwWebPreferencesPopulaterImpl();
+  ~AwWebPreferencesPopulaterImpl() override;
 
   // AwWebPreferencesPopulater
-  virtual void PopulateFor(content::WebContents* web_contents,
-                           content::WebPreferences* web_prefs) override;
+  void PopulateFor(content::WebContents* web_contents,
+                   content::WebPreferences* web_prefs) override;
 };
 
 }  // namespace android_webview

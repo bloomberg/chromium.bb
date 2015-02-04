@@ -18,46 +18,44 @@ class AwWebContentsDelegate
     : public web_contents_delegate_android::WebContentsDelegateAndroid {
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
-  virtual ~AwWebContentsDelegate();
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+  ~AwWebContentsDelegate() override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
-  virtual void FindReply(content::WebContents* web_contents,
-                         int request_id,
-                         int number_of_matches,
-                         const gfx::Rect& selection_rect,
-                         int active_match_ordinal,
-                         bool final_update) override;
-  virtual void CanDownload(content::RenderViewHost* source,
-                           const GURL& url,
-                           const std::string& request_method,
-                           const base::Callback<void(bool)>& callback) override;
-  virtual void RunFileChooser(
-      content::WebContents* web_contents,
-      const content::FileChooserParams& params) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_rect,
-                              bool user_gesture,
-                              bool* was_blocked) override;
+  void FindReply(content::WebContents* web_contents,
+                 int request_id,
+                 int number_of_matches,
+                 const gfx::Rect& selection_rect,
+                 int active_match_ordinal,
+                 bool final_update) override;
+  void CanDownload(content::RenderViewHost* source,
+                   const GURL& url,
+                   const std::string& request_method,
+                   const base::Callback<void(bool)>& callback) override;
+  void RunFileChooser(content::WebContents* web_contents,
+                      const content::FileChooserParams& params) override;
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override;
 
-  virtual void WebContentsCreated(content::WebContents* source_contents,
-                                  int opener_render_frame_id,
-                                  const base::string16& frame_name,
-                                  const GURL& target_url,
-                                  content::WebContents* new_contents) override;
+  void WebContentsCreated(content::WebContents* source_contents,
+                          int opener_render_frame_id,
+                          const base::string16& frame_name,
+                          const GURL& target_url,
+                          content::WebContents* new_contents) override;
 
-  virtual void CloseContents(content::WebContents* source) override;
-  virtual void ActivateContents(content::WebContents* contents) override;
-  virtual void RequestMediaAccessPermission(
+  void CloseContents(content::WebContents* source) override;
+  void ActivateContents(content::WebContents* contents) override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual void EnterFullscreenModeForTab(content::WebContents* web_contents,
-                                         const GURL& origin) override;
-  virtual void ExitFullscreenModeForTab(
-      content::WebContents* web_contents) override;
-  virtual bool IsFullscreenForTabOrPending(
+  void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
+  bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
 
  private:

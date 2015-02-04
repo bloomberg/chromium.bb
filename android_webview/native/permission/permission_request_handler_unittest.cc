@@ -21,19 +21,13 @@ class TestAwPermissionRequestDelegate : public AwPermissionRequestDelegate {
         callback_(callback) {}
 
   // Get the origin which initiated the permission request.
-  virtual const GURL& GetOrigin() override {
-    return origin_;
-  }
+  const GURL& GetOrigin() override { return origin_; }
 
   // Get the resources the origin wanted to access.
-  virtual int64 GetResources() override {
-    return resources_;
-  }
+  int64 GetResources() override { return resources_; }
 
   // Notify the permission request is allowed or not.
-  virtual void NotifyRequestResult(bool allowed) override {
-    callback_.Run(allowed);
-  }
+  void NotifyRequestResult(bool allowed) override { callback_.Run(allowed); }
 
  private:
   GURL origin_;
@@ -57,14 +51,13 @@ class TestPermissionRequestHandlerClient :
   TestPermissionRequestHandlerClient()
       : request_(NULL) {}
 
-  virtual void OnPermissionRequest(AwPermissionRequest* request) override {
+  void OnPermissionRequest(AwPermissionRequest* request) override {
     request_ = request;
     requested_permission_ =
         Permission(request->GetOrigin(), request->GetResources());
   }
 
-  virtual void OnPermissionRequestCanceled(
-      AwPermissionRequest* request) override{
+  void OnPermissionRequestCanceled(AwPermissionRequest* request) override {
     canceled_permission_ =
         Permission(request->GetOrigin(), request->GetResources());
   }
@@ -129,7 +122,7 @@ class PermissionRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     origin_ = GURL("http://www.google.com");
     resources_ =

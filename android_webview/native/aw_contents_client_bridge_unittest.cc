@@ -41,7 +41,7 @@ class AwContentsClientBridgeTest : public Test {
   // Callback method called when a cert is selected.
   void CertSelected(X509Certificate* cert);
  protected:
-  virtual void SetUp();
+  void SetUp() override;
   void TestCertType(SSLClientCertType type, const std::string& expected_name);
   // Create the TestBrowserThreads. Just instantiate the member variable.
   content::TestBrowserThreadBundle thread_bundle_;

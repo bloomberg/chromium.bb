@@ -35,7 +35,7 @@ class InputStreamTest : public Test {
   InputStreamTest() {
   }
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     env_ = AttachCurrentThread();
     ASSERT_THAT(env_, NotNull());
     ASSERT_TRUE(android_webview::RegisterInputStream(env_));

@@ -15,10 +15,10 @@ namespace android_webview {
 // Interceptor to handle urls for media assets in the apk.
 class AwMediaUrlInterceptor : public media::MediaUrlInterceptor {
  public:
-  virtual bool Intercept(const std::string& url,
-                         int* fd,
-                         int64* offset,
-                         int64* size) const override;
+  bool Intercept(const std::string& url,
+                 int* fd,
+                 int64* offset,
+                 int64* size) const override;
 };
 
 }  // namespace android_webview

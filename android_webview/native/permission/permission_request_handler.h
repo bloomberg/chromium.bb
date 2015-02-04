@@ -27,7 +27,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
  public:
   PermissionRequestHandler(PermissionRequestHandlerClient* client,
                            content::WebContents* aw_contents);
-  virtual ~PermissionRequestHandler();
+  ~PermissionRequestHandler() override;
 
   // Send the given |request| to PermissionRequestHandlerClient.
   void SendRequest(scoped_ptr<AwPermissionRequestDelegate> request);
@@ -39,7 +39,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
   void PreauthorizePermission(const GURL& origin, int64 resources);
 
   // WebContentsObserver
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
  private:

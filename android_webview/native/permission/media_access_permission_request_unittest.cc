@@ -23,7 +23,7 @@ class TestMediaAccessPermissionRequest : public MediaAccessPermissionRequest {
 
 class MediaAccessPermissionRequestTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     audio_device_id_ = "audio";
     video_device_id_ = "video";
     first_audio_device_id_ = "audio1";

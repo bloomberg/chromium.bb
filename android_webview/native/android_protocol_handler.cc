@@ -60,33 +60,31 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
  public:
   AndroidStreamReaderURLRequestJobDelegateImpl();
 
-  virtual scoped_ptr<InputStream> OpenInputStream(
-      JNIEnv* env,
-      const GURL& url) override;
+  scoped_ptr<InputStream> OpenInputStream(JNIEnv* env,
+                                          const GURL& url) override;
 
-  virtual void OnInputStreamOpenFailed(net::URLRequest* request,
-                                       bool* restart) override;
+  void OnInputStreamOpenFailed(net::URLRequest* request,
+                               bool* restart) override;
 
-  virtual bool GetMimeType(JNIEnv* env,
-                           net::URLRequest* request,
-                           InputStream* stream,
-                           std::string* mime_type) override;
+  bool GetMimeType(JNIEnv* env,
+                   net::URLRequest* request,
+                   InputStream* stream,
+                   std::string* mime_type) override;
 
-  virtual bool GetCharset(JNIEnv* env,
-                          net::URLRequest* request,
-                          InputStream* stream,
-                          std::string* charset) override;
+  bool GetCharset(JNIEnv* env,
+                  net::URLRequest* request,
+                  InputStream* stream,
+                  std::string* charset) override;
 
-  virtual void AppendResponseHeaders(
-      JNIEnv* env,
-      net::HttpResponseHeaders* headers) override;
+  void AppendResponseHeaders(JNIEnv* env,
+                             net::HttpResponseHeaders* headers) override;
 
-  virtual ~AndroidStreamReaderURLRequestJobDelegateImpl();
+  ~AndroidStreamReaderURLRequestJobDelegateImpl() override;
 };
 
 class AndroidRequestInterceptorBase : public net::URLRequestInterceptor {
  public:
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
@@ -97,9 +95,8 @@ class AssetFileRequestInterceptor : public AndroidRequestInterceptorBase {
  public:
   AssetFileRequestInterceptor();
 
-  virtual ~AssetFileRequestInterceptor() override;
-  virtual bool ShouldHandleRequest(
-      const net::URLRequest* request) const override;
+  ~AssetFileRequestInterceptor() override;
+  bool ShouldHandleRequest(const net::URLRequest* request) const override;
 
  private:
   // file:///android_asset/
@@ -112,8 +109,7 @@ class AssetFileRequestInterceptor : public AndroidRequestInterceptorBase {
 class ContentSchemeRequestInterceptor : public AndroidRequestInterceptorBase {
  public:
   ContentSchemeRequestInterceptor();
-  virtual bool ShouldHandleRequest(
-      const net::URLRequest* request) const override;
+  bool ShouldHandleRequest(const net::URLRequest* request) const override;
 };
 
 static ScopedJavaLocalRef<jobject> GetResourceContext(JNIEnv* env) {

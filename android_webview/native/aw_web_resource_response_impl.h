@@ -23,17 +23,16 @@ class AwWebResourceResponseImpl : public AwWebResourceResponse {
   // It is expected that |obj| is an instance of the Java-side
   // org.chromium.android_webview.AwWebResourceResponse class.
   AwWebResourceResponseImpl(const base::android::JavaRef<jobject>& obj);
-  virtual ~AwWebResourceResponseImpl();
+  ~AwWebResourceResponseImpl() override;
 
-  virtual scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const override;
-  virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const override;
-  virtual bool GetCharset(JNIEnv* env, std::string* charset) const override;
-  virtual bool GetStatusInfo(JNIEnv* env,
-                             int* status_code,
-                             std::string* reason_phrase) const override;
-  virtual bool GetResponseHeaders(
-      JNIEnv* env,
-      net::HttpResponseHeaders* headers) const override;
+  scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const override;
+  bool GetMimeType(JNIEnv* env, std::string* mime_type) const override;
+  bool GetCharset(JNIEnv* env, std::string* charset) const override;
+  bool GetStatusInfo(JNIEnv* env,
+                     int* status_code,
+                     std::string* reason_phrase) const override;
+  bool GetResponseHeaders(JNIEnv* env,
+                          net::HttpResponseHeaders* headers) const override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

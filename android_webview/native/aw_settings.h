@@ -25,7 +25,7 @@ class AwSettings : public content::WebContentsObserver {
   static AwSettings* FromWebContents(content::WebContents* web_contents);
 
   AwSettings(JNIEnv* env, jobject obj, content::WebContents* web_contents);
-  virtual ~AwSettings();
+  ~AwSettings() override;
 
   // Called from Java. Methods with "Locked" suffix require that the settings
   // access lock is held during their execution.
@@ -46,9 +46,8 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateEverything();
 
   // WebContentsObserver overrides:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void WebContentsDestroyed() override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void WebContentsDestroyed() override;
 
   bool renderer_prefs_initialized_;
 

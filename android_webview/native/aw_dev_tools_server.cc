@@ -42,7 +42,7 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   AwDevToolsServerDelegate() {
   }
 
-  virtual ~AwDevToolsServerDelegate() {}
+  ~AwDevToolsServerDelegate() override {}
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
   std::string GetDiscoveryPageHTML() override;
@@ -81,7 +81,7 @@ class UnixDomainServerSocketFactory
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),

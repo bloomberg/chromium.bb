@@ -116,9 +116,9 @@ class ClientMapEntryUpdater : public content::WebContentsObserver {
   ClientMapEntryUpdater(JNIEnv* env, WebContents* web_contents,
                         jobject jdelegate);
 
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  virtual void WebContentsDestroyed() override;
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void WebContentsDestroyed() override;
 
  private:
   JavaObjectWeakGlobalRef jdelegate_;

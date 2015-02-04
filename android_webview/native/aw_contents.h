@@ -69,7 +69,7 @@ class AwContents : public FindHelper::Listener,
   static AwContents* FromID(int render_process_id, int render_view_id);
 
   AwContents(scoped_ptr<content::WebContents> web_contents);
-  virtual ~AwContents();
+  ~AwContents() override;
 
   AwRenderViewHostExt* render_view_host_ext() {
     return render_view_host_ext_.get();
@@ -139,9 +139,8 @@ class AwContents : public FindHelper::Listener,
                                  jstring origin);
 
   // PermissionRequestHandlerClient implementation.
-  virtual void OnPermissionRequest(AwPermissionRequest* request) override;
-  virtual void OnPermissionRequestCanceled(
-      AwPermissionRequest* request) override;
+  void OnPermissionRequest(AwPermissionRequest* request) override;
+  void OnPermissionRequestCanceled(AwPermissionRequest* request) override;
 
   PermissionRequestHandler* GetPermissionRequestHandler() {
     return permission_request_handler_.get();
@@ -153,17 +152,15 @@ class AwContents : public FindHelper::Listener,
                               jlong resources);
 
   // AwBrowserPermissionRequestDelegate implementation.
-  virtual void RequestProtectedMediaIdentifierPermission(
+  void RequestProtectedMediaIdentifierPermission(
       const GURL& origin,
       const base::Callback<void(bool)>& callback) override;
-  virtual void CancelProtectedMediaIdentifierPermissionRequests(
+  void CancelProtectedMediaIdentifierPermissionRequests(
       const GURL& origin) override;
-  virtual void RequestGeolocationPermission(
+  void RequestGeolocationPermission(
       const GURL& origin,
       const base::Callback<void(bool)>& callback) override;
-  virtual void CancelGeolocationPermissionRequests(
-      const GURL& origin) override;
-
+  void CancelGeolocationPermissionRequests(const GURL& origin) override;
 
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
@@ -175,36 +172,33 @@ class AwContents : public FindHelper::Listener,
   bool AllowThirdPartyCookies();
 
   // FindHelper::Listener implementation.
-  virtual void OnFindResultReceived(int active_ordinal,
-                                    int match_count,
-                                    bool finished) override;
+  void OnFindResultReceived(int active_ordinal,
+                            int match_count,
+                            bool finished) override;
   // IconHelper::Listener implementation.
-  virtual bool ShouldDownloadFavicon(const GURL& icon_url) override;
-  virtual void OnReceivedIcon(const GURL& icon_url,
-                              const SkBitmap& bitmap) override;
-  virtual void OnReceivedTouchIconUrl(const std::string& url,
-                                      const bool precomposed) override;
+  bool ShouldDownloadFavicon(const GURL& icon_url) override;
+  void OnReceivedIcon(const GURL& icon_url, const SkBitmap& bitmap) override;
+  void OnReceivedTouchIconUrl(const std::string& url,
+                              const bool precomposed) override;
 
   // AwRenderViewHostExtClient implementation.
-  virtual void OnWebLayoutPageScaleFactorChanged(
-      float page_scale_factor) override;
-  virtual void OnWebLayoutContentsSizeChanged(
-      const gfx::Size& contents_size) override;
+  void OnWebLayoutPageScaleFactorChanged(float page_scale_factor) override;
+  void OnWebLayoutContentsSizeChanged(const gfx::Size& contents_size) override;
 
   // BrowserViewRendererClient implementation.
-  virtual bool RequestDrawGL(bool wait_for_completion) override;
-  virtual void PostInvalidate() override;
-  virtual void InvalidateOnFunctorDestroy() override;
-  virtual void OnNewPicture() override;
-  virtual gfx::Point GetLocationOnScreen() override;
-  virtual void ScrollContainerViewTo(gfx::Vector2d new_value) override;
-  virtual bool IsFlingActive() const override;
-  virtual void UpdateScrollState(gfx::Vector2d max_scroll_offset,
-                                 gfx::SizeF contents_size_dip,
-                                 float page_scale_factor,
-                                 float min_page_scale_factor,
-                                 float max_page_scale_factor) override;
-  virtual void DidOverscroll(gfx::Vector2d overscroll_delta) override;
+  bool RequestDrawGL(bool wait_for_completion) override;
+  void PostInvalidate() override;
+  void InvalidateOnFunctorDestroy() override;
+  void OnNewPicture() override;
+  gfx::Point GetLocationOnScreen() override;
+  void ScrollContainerViewTo(gfx::Vector2d new_value) override;
+  bool IsFlingActive() const override;
+  void UpdateScrollState(gfx::Vector2d max_scroll_offset,
+                         gfx::SizeF contents_size_dip,
+                         float page_scale_factor,
+                         float min_page_scale_factor,
+                         float max_page_scale_factor) override;
+  void DidOverscroll(gfx::Vector2d overscroll_delta) override;
 
   const BrowserViewRenderer* GetBrowserViewRenderer() const;
 
