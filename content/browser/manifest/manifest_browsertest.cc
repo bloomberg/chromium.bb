@@ -281,4 +281,32 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParsingErrorsManifest) {
   EXPECT_EQ(6u, console_error_count());
 }
 
+// If a page has a manifest and the page is navigated to a page without a
+// manifest, the page's manifest should be updated.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
+  {
+    GURL test_url = GetTestUrl("manifest", "dummy-manifest.html");
+
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    shell()->LoadURL(test_url);
+    navigation_observer.Wait();
+
+    GetManifestAndWait();
+    EXPECT_FALSE(manifest().IsEmpty());
+    EXPECT_EQ(0u, console_error_count());
+  }
+
+  {
+    GURL test_url = GetTestUrl("manifest", "no-manifest.html");
+
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    shell()->LoadURL(test_url);
+    navigation_observer.Wait();
+
+    GetManifestAndWait();
+    EXPECT_TRUE(manifest().IsEmpty());
+    EXPECT_EQ(0u, console_error_count());
+  }
+}
+
 } // namespace content

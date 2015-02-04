@@ -42,6 +42,7 @@ class ManifestManager : public RenderFrameObserver {
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidChangeManifest() override;
+  void DidCommitProvisionalLoad(bool is_new_navigation) override;
 
  private:
   enum ResolveState {
