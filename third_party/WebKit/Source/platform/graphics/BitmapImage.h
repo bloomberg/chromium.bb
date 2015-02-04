@@ -79,6 +79,9 @@ public:
     virtual void resetAnimation() override;
     virtual bool maybeAnimated() override;
 
+    virtual void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
+    virtual ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
+
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
     virtual PassRefPtr<Image> imageForDefaultFrame() override;
     virtual bool currentFrameKnownToBeOpaque() override;

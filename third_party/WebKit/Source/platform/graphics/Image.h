@@ -31,6 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -114,6 +115,10 @@ public:
 
     // True if this image can potentially animate.
     virtual bool maybeAnimated() { return false; }
+
+    // Set animationPolicy
+    virtual void setAnimationPolicy(ImageAnimationPolicy) { }
+    virtual ImageAnimationPolicy animationPolicy() { return ImageAnimationPolicyAllowed; }
 
     // Typically the ImageResource that owns us.
     ImageObserver* imageObserver() const { return m_imageObserver; }

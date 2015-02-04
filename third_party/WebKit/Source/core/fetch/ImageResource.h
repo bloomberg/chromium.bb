@@ -88,6 +88,8 @@ public:
 
     bool isAccessAllowed(ExecutionContext*, SecurityOrigin*);
 
+    void updateImageAnimationPolicy();
+
     virtual void didAddClient(ResourceClient*) override;
     virtual void didRemoveClient(ResourceClient*) override;
 
@@ -110,7 +112,6 @@ public:
 
     virtual bool shouldPauseAnimation(const blink::Image*) override;
     virtual void animationAdvanced(const blink::Image*) override;
-    virtual void imageAnimationPolicy(const blink::Image*, ImageAnimationPolicy&) override;
     virtual void changedInRect(const blink::Image*, const IntRect&) override;
 
 protected:

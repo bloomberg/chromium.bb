@@ -473,15 +473,21 @@ void ImageResource::animationAdvanced(const blink::Image* image)
     notifyObservers();
 }
 
-void ImageResource::imageAnimationPolicy(const blink::Image* image, ImageAnimationPolicy& policy)
+void ImageResource::updateImageAnimationPolicy()
 {
-    if (!image || image != m_image)
+    if (!m_image)
         return;
 
+    ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
     ResourceClientWalker<ImageResourceClient> w(m_clients);
     while (ImageResourceClient* c = w.next()) {
-        if (c->getImageAnimationPolicy(this, policy))
-            return;
+        if (c->getImageAnimationPolicy(this, newPolicy))
+            break;
+    }
+
+    if (m_image->animationPolicy() != newPolicy) {
+        m_image->resetAnimation();
+        m_image->setAnimationPolicy(newPolicy);
     }
 }
 

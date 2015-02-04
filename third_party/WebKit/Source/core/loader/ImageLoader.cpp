@@ -389,6 +389,11 @@ void ImageLoader::notifyFinished(Resource* resource)
     ASSERT(resource == m_image.get());
 
     m_imageComplete = true;
+
+    // Update ImageAnimationPolicy for m_image.
+    if (m_image)
+        m_image->updateImageAnimationPolicy();
+
     updateRenderer();
 
     if (!m_hasPendingLoadEvent)
