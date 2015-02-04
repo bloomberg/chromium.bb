@@ -22,9 +22,7 @@ class SuddenMotionSensor;
 
 namespace content {
 
-#if defined(OS_CHROMEOS)
-class SensorManagerChromeOS;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 class AmbientLightSensor;
 #endif
 
@@ -44,10 +42,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   DeviceOrientationHardwareBuffer* orientation_buffer_;
   DeviceLightHardwareBuffer* light_buffer_;
 #endif
-
-#if defined(OS_CHROMEOS)
-  scoped_ptr<SensorManagerChromeOS> sensor_manager_;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   void Fetch(unsigned consumer_bitmask) override;
   FetcherType GetType() const override;
 
