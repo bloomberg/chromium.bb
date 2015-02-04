@@ -47,7 +47,7 @@ class PrintManager : public content::WebContentsObserver,
       int fd,
       PrintManagerDelegate* delegate);
 
-  virtual ~PrintManager();
+  ~PrintManager() override;
 
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
@@ -69,7 +69,7 @@ class PrintManager : public content::WebContentsObserver,
                 PrintManagerDelegate* delegate);
   friend class content::WebContentsUserData<PrintManager>;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidGetDocumentCookie(int cookie);
   void OnPrintingFailed(int cookie);

@@ -45,7 +45,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // as it internally handles RenderViewHost instances changing underneath us.
   AwRenderViewHostExt(
       AwRenderViewHostExtClient* client, content::WebContents* contents);
-  virtual ~AwRenderViewHostExt();
+  ~AwRenderViewHostExt() override;
 
   // |result| will be invoked with the outcome of the request.
   typedef base::Callback<void(bool)> DocumentHasImagesResult;
@@ -82,13 +82,12 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(content::RenderViewHost* view_host) override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
-  virtual void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void RenderViewCreated(content::RenderViewHost* view_host) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams& params) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);

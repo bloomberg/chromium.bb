@@ -29,13 +29,13 @@ class AwResourceDispatcherHostDelegate
   static void ResourceDispatcherHostCreated();
 
   // Overriden methods from ResourceDispatcherHostDelegate.
-  virtual void RequestBeginning(
+  void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       content::ResourceType resource_type,
       ScopedVector<content::ResourceThrottle>* throttles) override;
-  virtual void DownloadStarting(
+  void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       int child_id,
@@ -44,23 +44,21 @@ class AwResourceDispatcherHostDelegate
       bool is_content_initiated,
       bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) override;
-  virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       net::URLRequest* request) override;
-  virtual bool HandleExternalProtocol(const GURL& url,
-                                      int child_id,
-                                      int route_id) override;
-  virtual void OnResponseStarted(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceResponse* response,
-      IPC::Sender* sender) override;
+  bool HandleExternalProtocol(const GURL& url,
+                              int child_id,
+                              int route_id) override;
+  void OnResponseStarted(net::URLRequest* request,
+                         content::ResourceContext* resource_context,
+                         content::ResourceResponse* response,
+                         IPC::Sender* sender) override;
 
-  virtual void OnRequestRedirected(
-      const GURL& redirect_url,
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceResponse* response) override;
+  void OnRequestRedirected(const GURL& redirect_url,
+                           net::URLRequest* request,
+                           content::ResourceContext* resource_context,
+                           content::ResourceResponse* response) override;
 
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
 
@@ -74,7 +72,7 @@ class AwResourceDispatcherHostDelegate
   friend struct base::DefaultLazyInstanceTraits<
       AwResourceDispatcherHostDelegate>;
   AwResourceDispatcherHostDelegate();
-  virtual ~AwResourceDispatcherHostDelegate();
+  ~AwResourceDispatcherHostDelegate() override;
 
   // These methods must be called on IO thread.
   void OnIoThreadClientReadyInternal(int new_render_process_id,

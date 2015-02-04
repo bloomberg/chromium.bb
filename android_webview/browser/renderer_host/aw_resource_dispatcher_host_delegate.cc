@@ -63,12 +63,12 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   IoThreadClientThrottle(int render_process_id,
                          int render_frame_id,
                          net::URLRequest* request);
-  virtual ~IoThreadClientThrottle();
+  ~IoThreadClientThrottle() override;
 
   // From content::ResourceThrottle
-  virtual void WillStartRequest(bool* defer) override;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
-  virtual const char* GetNameForLogging() const override;
+  void WillStartRequest(bool* defer) override;
+  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  const char* GetNameForLogging() const override;
 
   void OnIoThreadClientReady(int new_render_process_id,
                              int new_render_frame_id);
