@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/navigator_connect_client.h"
@@ -227,15 +228,6 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
                     int /* client_id */)
 
-// Response to ServiceWorkerMsg_GetClientInfo.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClientInfoSuccess,
-                    int /* request_id */,
-                    content::ServiceWorkerClientInfo)
-
-// Response to ServiceWorkerMsg_GetClientInfo.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientInfoError,
-                    int /* request_id */)
-
 // Asks the browser to force this worker to become activated.
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
                     int /* request_id */)
@@ -402,13 +394,6 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_MessageToDocument,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
-
-// Sent to client documents to request document properties.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GetClientInfo,
-                     int /* thread_id */,
-                     int /* embedded_worker_id */,
-                     int /* request_id */,
-                     int /* provider_id */)
 
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_InstallEvent,

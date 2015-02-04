@@ -42,6 +42,7 @@ class EmbeddedWorkerContextClient;
 class WebServiceWorkerRegistrationImpl;
 struct NavigatorConnectClient;
 struct PlatformNotificationData;
+struct ServiceWorkerClientInfo;
 
 // TODO(kinuko): This should implement WebServiceWorkerContextClient
 // rather than having EmbeddedWorkerContextClient implement it.

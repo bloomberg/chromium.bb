@@ -491,6 +491,8 @@
       'common/screen_orientation_messages.h',
       'common/send_zygote_child_ping_linux.cc',
       'common/service_worker/embedded_worker_messages.h',
+      'common/service_worker/service_worker_client_info.cc',
+      'common/service_worker/service_worker_client_info.h',
       'common/service_worker/service_worker_messages.h',
       'common/service_worker/service_worker_status_code.cc',
       'common/service_worker/service_worker_status_code.h',

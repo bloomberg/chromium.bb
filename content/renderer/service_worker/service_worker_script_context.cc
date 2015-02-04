@@ -72,6 +72,21 @@ blink::WebURLRequest::FrameType GetBlinkFrameType(
   return static_cast<blink::WebURLRequest::FrameType>(frame_type);
 }
 
+blink::WebServiceWorkerClientInfo
+ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
+  DCHECK(client_info.IsValid());
+
+  blink::WebServiceWorkerClientInfo web_client_info;
+
+  web_client_info.clientID = client_info.client_id;
+  web_client_info.pageVisibilityState = client_info.page_visibility_state;
+  web_client_info.isFocused = client_info.is_focused;
+  web_client_info.url = client_info.url;
+  web_client_info.frameType = GetBlinkFrameType(client_info.frame_type);
+
+  return web_client_info;
+}
+
 }  // namespace
 
 ServiceWorkerScriptContext::ServiceWorkerScriptContext(
@@ -429,14 +444,8 @@ void ServiceWorkerScriptContext::OnDidGetClientDocuments(
       new blink::WebServiceWorkerClientsInfo);
   blink::WebVector<blink::WebServiceWorkerClientInfo> convertedClients(
       clients.size());
-  for (size_t i = 0; i < clients.size(); ++i) {
-    convertedClients[i].clientID = clients[i].client_id;
-    convertedClients[i].pageVisibilityState = clients[i].page_visibility_state;
-    convertedClients[i].isFocused = clients[i].is_focused;
-    convertedClients[i].url = clients[i].url;
-    convertedClients[i].frameType =
-        static_cast<blink::WebURLRequest::FrameType>(clients[i].frame_type);
-  }
+  for (size_t i = 0; i < clients.size(); ++i)
+    convertedClients[i] = ToWebServiceWorkerClientInfo(clients[i]);
   info->clients.swap(convertedClients);
   callbacks->onSuccess(info.release());
   pending_clients_callbacks_.Remove(request_id);

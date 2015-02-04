@@ -45,6 +45,8 @@ class ServiceWorkerVersion::GetClientDocumentsCallback
   friend class base::RefCounted<GetClientDocumentsCallback>;
 
   virtual ~GetClientDocumentsCallback() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
     if (version_->running_status() == RUNNING) {
       version_->embedded_worker_->SendMessage(
           ServiceWorkerMsg_DidGetClientDocuments(request_id_, clients_));
@@ -53,9 +55,7 @@ class ServiceWorkerVersion::GetClientDocumentsCallback
 
   std::vector<ServiceWorkerClientInfo> clients_;
   int request_id_;
-
-  // |version_| must outlive this callback.
-  ServiceWorkerVersion* version_;
+  scoped_refptr<ServiceWorkerVersion> version_;
 
   DISALLOW_COPY_AND_ASSIGN(GetClientDocumentsCallback);
 };
@@ -614,6 +614,8 @@ void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   DCHECK(!ContainsKey(controllee_map_, provider_host));
   int controllee_id = controllee_by_id_.Add(provider_host);
+  // IDMap<>'s last index is kInvalidServiceWorkerClientId.
+  CHECK(controllee_id != kInvalidServiceWorkerClientId);
   controllee_map_[provider_host] = controllee_id;
   // Reset the timer if it's running (so that it's kept alive a bit longer
   // right after a new controllee is added).
@@ -734,9 +736,6 @@ void ServiceWorkerVersion::OnStopped(
                     SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&geofencing_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&get_client_info_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED,
-                    ServiceWorkerClientInfo());
   RunIDMapCallbacks(&cross_origin_connect_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED,
                     false);
@@ -812,10 +811,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnPostMessageToDocument)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
                         OnFocusClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientInfoSuccess,
-                        OnGetClientInfoSuccess)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientInfoError,
-                        OnGetClientInfoError)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
                         OnSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
@@ -875,38 +870,12 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClientDocuments");
   while (!it.IsAtEnd()) {
-    int client_request_id = get_client_info_callbacks_.Add(
-        new GetClientInfoCallback(base::Bind(
-            &ServiceWorkerVersion::DidGetClientInfo,
-            weak_factory_.GetWeakPtr(), it.GetCurrentKey(), callback)));
-    it.GetCurrentValue()->GetClientInfo(embedded_worker_->embedded_worker_id(),
-                                        client_request_id);
+    // TODO(mlamouri): we could coalesce those requests into one.
+    it.GetCurrentValue()->GetClientInfo(
+        base::Bind(&ServiceWorkerVersion::DidGetClientInfo,
+                   weak_factory_.GetWeakPtr(), it.GetCurrentKey(), callback));
     it.Advance();
   }
-}
-
-void ServiceWorkerVersion::OnGetClientInfoSuccess(
-    int request_id,
-    const ServiceWorkerClientInfo& info) {
-  GetClientInfoCallback* callback =
-      get_client_info_callbacks_.Lookup(request_id);
-  if (!callback) {
-    // The callback may already have been cleared by OnStopped, just ignore.
-    return;
-  }
-  callback->Run(SERVICE_WORKER_OK, info);
-  RemoveCallbackAndStopIfDoomed(&get_client_info_callbacks_, request_id);
-}
-
-void ServiceWorkerVersion::OnGetClientInfoError(int request_id) {
-  GetClientInfoCallback* callback =
-      get_client_info_callbacks_.Lookup(request_id);
-  if (!callback) {
-    // The callback may already have been cleared by OnStopped, just ignore.
-    return;
-  }
-  callback->Run(SERVICE_WORKER_ERROR_FAILED, ServiceWorkerClientInfo());
-  RemoveCallbackAndStopIfDoomed(&get_client_info_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnActivateEventFinished(
@@ -1167,10 +1136,21 @@ void ServiceWorkerVersion::DidClaimClients(
 void ServiceWorkerVersion::DidGetClientInfo(
     int client_id,
     scoped_refptr<GetClientDocumentsCallback> callback,
-    ServiceWorkerStatusCode status,
     const ServiceWorkerClientInfo& info) {
-  if (status == SERVICE_WORKER_OK)
-    callback->AddClientInfo(client_id, info);
+  // If the request to the provider_host returned an empty
+  // ServiceWorkerClientInfo, that means that it wasn't possible to associate
+  // it with a valid RenderFrameHost. It might be because the frame was killed
+  // or navigated in between.
+  if (info.IsEmpty())
+    return;
+
+  // We can get info for a frame that was navigating end ended up with a
+  // different URL than expected. In such case, we should make sure to not
+  // expose cross-origin WindowClient.
+  if (info.url.GetOrigin() != script_url_.GetOrigin())
+    return;
+
+  callback->AddClientInfo(client_id, info);
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {
@@ -1208,7 +1188,6 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
     !notification_click_callbacks_.IsEmpty() ||
     !push_callbacks_.IsEmpty() ||
     !geofencing_callbacks_.IsEmpty() ||
-    !get_client_info_callbacks_.IsEmpty() ||
     !cross_origin_connect_callbacks_.IsEmpty() ||
     !streaming_url_request_jobs_.empty();
 }
