@@ -10,7 +10,9 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class InfoBarService;
+namespace infobars {
+class InfoBarManager;
+}  // namespace infobars
 
 namespace banners {
 
@@ -33,10 +35,13 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Creates a banner for the current page.
   // May return nullptr if the the infobar couldn't be created.
-  static infobars::InfoBar* CreateForWebApp(InfoBarService* infobar_service,
-                                            const AppDelegate* helper,
-                                            const base::string16& app_title,
-                                            const GURL& url);
+  static infobars::InfoBar* CreateForWebApp(
+      infobars::InfoBarManager* infobar_manager,
+      const AppDelegate* delegate,
+      const base::string16& app_title,
+      const GURL& url);
+
+  ~AppBannerInfoBarDelegate() override;
 
   // Changes the label of the button.
   void SetButtonLabel(const std::string& button_text);
@@ -57,8 +62,6 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
                            const base::string16& app_title,
                            const GURL& url);
 
-  ~AppBannerInfoBarDelegate() override;
-
   const AppDelegate* delegate_;
   base::string16 app_title_;
   GURL url_;
@@ -68,5 +71,7 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
 };  // AppBannerInfoBarDelegate
 
 }  // namespace banners
+
+bool RegisterAppBannerInfoBarDelegate(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_

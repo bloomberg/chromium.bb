@@ -6,25 +6,26 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace banners {
 
 infobars::InfoBar* AppBannerInfoBarDelegate::CreateForWebApp(
-    InfoBarService* infobar_service,
-    const AppDelegate* helper,
+    infobars::InfoBarManager* infobar_manager,
+    const AppDelegate* app_delegate,
     const base::string16& app_name,
     const GURL& url) {
-  AppBannerInfoBarDelegate* const delegate = new AppBannerInfoBarDelegate(
-      helper,
+  scoped_ptr<AppBannerInfoBarDelegate> delegate(new AppBannerInfoBarDelegate(
+      app_delegate,
       app_name,
-      url);
+      url));
 
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(delegate)));
+  return infobar_manager->AddInfoBar(
+      make_scoped_ptr(new AppBannerInfoBar(delegate.Pass(), url)));
 }
 
 AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(

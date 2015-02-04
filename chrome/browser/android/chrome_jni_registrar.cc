@@ -10,6 +10,7 @@
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
@@ -128,6 +129,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AndroidProfileOAuth2TokenService",
      AndroidProfileOAuth2TokenService::Register},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
+    {"AppBannerInfoBarDelegate", RegisterAppBannerInfoBarDelegate},
     {"AppBannerManager", banners::RegisterAppBannerManager},
     {"ApplicationLifetime", RegisterApplicationLifetimeAndroid},
     {"AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid},
