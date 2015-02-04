@@ -28,7 +28,6 @@
 #define InspectorClient_h
 
 #include "core/inspector/InspectorStateClient.h"
-#include "core/page/ContextMenuProvider.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
@@ -71,7 +70,6 @@ public:
     virtual float minimumPageScaleFactor() { return 1; }
     virtual float maximumPageScaleFactor() { return 1; }
     virtual void setPageScaleFactor(float) { }
-    virtual void showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) { }
 
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }

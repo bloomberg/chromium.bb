@@ -41,7 +41,6 @@
 namespace blink {
 
 class AsyncCallTracker;
-class ContextMenuProvider;
 class LocalFrame;
 class GraphicsContext;
 class GraphicsLayer;
@@ -54,7 +53,6 @@ class InspectorCSSAgent;
 class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorFrontendChannel;
-class InspectorFrontendClient;
 class InspectorLayerTreeAgent;
 class InspectorPageAgent;
 class InspectorResourceAgent;
@@ -85,11 +83,6 @@ public:
 
     void willBeDestroyed();
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
-
-    void setInspectorFrontendClient(InspectorFrontendClient*);
-    void didClearDocumentOfWindowObject(LocalFrame*);
-    void setInjectedScriptForOrigin(const String& origin, const String& source);
-    void showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
 
     void dispatchMessageFromFrontend(const String& message);
 
@@ -160,7 +153,6 @@ private:
     RawPtrWillBeMember<InspectorAnimationAgent> m_animationAgent;
 
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
-    InspectorFrontendClient* m_inspectorFrontendClient;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
     InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;

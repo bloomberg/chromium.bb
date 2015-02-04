@@ -68,7 +68,7 @@ interface InspectorInstrumentation {
 #include "core/dom/PseudoElement.h"
 
     // We should call PageDebuggerAgent method first otherwise this method resets script cache and removes scripts executed by other agents.
-    [PageDebugger, Page, Inspector, PageRuntime]
+    [PageDebugger, Page, PageRuntime]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger, Inline=FastReturn]

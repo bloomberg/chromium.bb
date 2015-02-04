@@ -75,24 +75,6 @@ void InspectorInspectorAgent::trace(Visitor* visitor)
     InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorInspectorAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    if (m_injectedScriptForOrigin.isEmpty())
-        return;
-
-    String origin = frame->document()->securityOrigin()->toRawString();
-    String script = m_injectedScriptForOrigin.get(origin);
-    if (script.isEmpty())
-        return;
-    int injectedScriptId = m_injectedScriptManager->injectedScriptIdFor(ScriptState::forMainWorld(frame));
-    StringBuilder scriptSource;
-    scriptSource.append(script);
-    scriptSource.append('(');
-    scriptSource.appendNumber(injectedScriptId);
-    scriptSource.append(')');
-    frame->script().executeScriptInMainWorld(scriptSource.toString());
-}
-
 void InspectorInspectorAgent::init()
 {
     m_instrumentingAgents->setInspectorInspectorAgent(this);
@@ -150,11 +132,6 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
     } else {
         m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
     }
-}
-
-void InspectorInspectorAgent::setInjectedScriptForOrigin(const String& origin, const String& source)
-{
-    m_injectedScriptForOrigin.set(origin, source);
 }
 
 void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)

@@ -36,6 +36,7 @@
 namespace blink {
 
 class WebDevToolsFrontendClient;
+class WebLocalFrame;
 class WebString;
 class WebView;
 
@@ -43,8 +44,14 @@ class WebView;
 // direct and delegate Apis to the host.
 class WebDevToolsFrontend {
 public:
+    // FIXME: remove once migrated to the WebLocalFrame.
     BLINK_EXPORT static WebDevToolsFrontend* create(
         WebView*,
+        WebDevToolsFrontendClient*,
+        const WebString& applicationLocale);
+
+    BLINK_EXPORT static WebDevToolsFrontend* create(
+        WebLocalFrame*,
         WebDevToolsFrontendClient*,
         const WebString& applicationLocale);
 

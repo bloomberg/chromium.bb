@@ -16,7 +16,7 @@ namespace blink {
 
 DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(DevToolsHost& host, const String& fileSystemName, const String& rootURL)
 {
-    ExecutionContext* context = host.frontendPage()->deprecatedLocalMainFrame()->document();
+    ExecutionContext* context = host.frontendFrame()->document();
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
 }
 

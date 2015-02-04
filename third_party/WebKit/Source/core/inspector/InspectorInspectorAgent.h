@@ -32,7 +32,6 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -65,16 +64,12 @@ public:
     virtual void setFrontend(InspectorFrontend*) override;
     virtual void clearFrontend() override;
 
-    void didClearDocumentOfWindowObject(LocalFrame*);
-
     void domContentLoadedEventFired(LocalFrame*);
 
     bool hasFrontend() const { return m_frontend; }
 
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);
-
-    void setInjectedScriptForOrigin(const String& origin, const String& source);
 
     void inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
 
@@ -87,8 +82,6 @@ private:
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;
     pair<RefPtr<TypeBuilder::Runtime::RemoteObject>, RefPtr<JSONObject> > m_pendingInspectData;
-    typedef HashMap<String, String> InjectedScriptForOriginMap;
-    InjectedScriptForOriginMap m_injectedScriptForOrigin;
 };
 
 } // namespace blink

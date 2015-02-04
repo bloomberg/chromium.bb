@@ -35,10 +35,10 @@
 #include "bindings/core/v8/V8DevToolsHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/DevToolsHost.h"
-#include "core/inspector/InspectorController.h"
-#include "core/page/Page.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsFrontendClient.h"
+#include "public/web/WebSecurityOrigin.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
@@ -48,16 +48,24 @@ WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebDevToolsFrontendClient* client,
     const WebString& applicationLocale)
 {
-    return new WebDevToolsFrontendImpl(toWebViewImpl(view), client);
+    return new WebDevToolsFrontendImpl(toWebLocalFrameImpl(view->mainFrame()), client);
+}
+
+WebDevToolsFrontend* WebDevToolsFrontend::create(
+    WebLocalFrame* frame,
+    WebDevToolsFrontendClient* client,
+    const WebString& applicationLocale)
+{
+    return new WebDevToolsFrontendImpl(toWebLocalFrameImpl(frame), client);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
-    WebViewImpl* webViewImpl,
+    WebLocalFrameImpl* webFrame,
     WebDevToolsFrontendClient* client)
-    : m_webViewImpl(webViewImpl)
+    : m_webFrame(webFrame)
     , m_client(client)
 {
-    m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(this);
+    m_webFrame->setDevToolsFrontend(this);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
@@ -65,29 +73,28 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
     ASSERT(!m_devtoolsHost);
 }
 
-void WebDevToolsFrontendImpl::dispose()
+void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
 {
-    if (m_devtoolsHost) {
-        m_devtoolsHost->disconnectClient();
-        m_devtoolsHost = nullptr;
+    if (m_webFrame == frame) {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        ScriptState* scriptState = ScriptState::forMainWorld(m_webFrame->frame());
+        ScriptState::Scope scope(scriptState);
+
+        if (m_devtoolsHost)
+            m_devtoolsHost->disconnectClient();
+        m_devtoolsHost = DevToolsHost::create(this, m_webFrame->frame());
+        v8::Handle<v8::Object> global = scriptState->context()->Global();
+        v8::Handle<v8::Value> devtoolsHostObj = toV8(m_devtoolsHost.get(), global, scriptState->isolate());
+        global->Set(v8::String::NewFromUtf8(isolate, "DevToolsHost"), devtoolsHostObj);
     }
-    m_client = 0;
-}
 
-void WebDevToolsFrontendImpl::windowObjectCleared()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    Page* page = m_webViewImpl->page();
-    ASSERT(page->mainFrame());
-    ScriptState* scriptState = ScriptState::forMainWorld(page->deprecatedLocalMainFrame());
-    ScriptState::Scope scope(scriptState);
+    if (m_injectedScriptForOrigin.isEmpty())
+        return;
 
-    if (m_devtoolsHost)
-        m_devtoolsHost->disconnectClient();
-    m_devtoolsHost = DevToolsHost::create(this, page);
-    v8::Handle<v8::Object> global = scriptState->context()->Global();
-    v8::Handle<v8::Value> devtoolsHostObj = toV8(m_devtoolsHost.get(), global, scriptState->isolate());
-    global->Set(v8::String::NewFromUtf8(isolate, "DevToolsHost"), devtoolsHostObj);
+    String origin = frame->securityOrigin().toString();
+    String script = m_injectedScriptForOrigin.get(origin);
+    if (!script.isEmpty())
+        frame->frame()->script().executeScriptInMainWorld(script + "()");
 }
 
 void WebDevToolsFrontendImpl::sendMessageToBackend(const String& message)
@@ -105,6 +112,16 @@ void WebDevToolsFrontendImpl::sendMessageToEmbedder(const String& message)
 bool WebDevToolsFrontendImpl::isUnderTest()
 {
     return m_client ? m_client->isUnderTest() : false;
+}
+
+void WebDevToolsFrontendImpl::showContextMenu(LocalFrame* targetFrame, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
+{
+    WebLocalFrameImpl::fromFrame(targetFrame)->viewImpl()->showContextMenuAtPoint(x, y, menuProvider);
+}
+
+void WebDevToolsFrontendImpl::setInjectedScriptForOrigin(const String& origin, const String& source)
+{
+    m_injectedScriptForOrigin.set(origin, source);
 }
 
 } // namespace blink

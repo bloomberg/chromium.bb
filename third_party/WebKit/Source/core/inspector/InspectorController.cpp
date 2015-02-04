@@ -48,7 +48,6 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorFrontendClient.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorInspectorAgent.h"
@@ -67,7 +66,6 @@
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
-#include "core/page/ContextMenuProvider.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "platform/PlatformMouseEvent.h"
@@ -83,7 +81,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
     , m_animationAgent(nullptr)
-    , m_inspectorFrontendClient(nullptr)
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_isUnderTest(false)
@@ -231,26 +228,11 @@ void InspectorController::willBeDestroyed()
     m_inspectorClient = 0;
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
-    if (m_inspectorFrontendClient)
-        m_inspectorFrontendClient->dispose();
 }
 
 void InspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
 {
     m_agents.append(agent);
-}
-
-void InspectorController::setInspectorFrontendClient(InspectorFrontendClient* inspectorFrontendClient)
-{
-    m_inspectorFrontendClient = inspectorFrontendClient;
-}
-
-void InspectorController::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    // If the page is supposed to serve as InspectorFrontend notify inspector frontend
-    // client that it's cleared so that the client can expose inspector bindings.
-    if (m_inspectorFrontendClient && frame == m_pageAgent->inspectedFrame())
-        m_inspectorFrontendClient->windowObjectCleared();
 }
 
 void InspectorController::connectFrontend(const String& hostId, InspectorFrontendChannel* frontendChannel)
@@ -362,19 +344,6 @@ void InspectorController::inspect(Node* node)
     if (injectedScript.isEmpty())
         return;
     injectedScript.inspectNode(node);
-}
-
-void InspectorController::setInjectedScriptForOrigin(const String& origin, const String& source)
-{
-    if (InspectorInspectorAgent* inspectorAgent = m_instrumentingAgents->inspectorInspectorAgent())
-        inspectorAgent->setInjectedScriptForOrigin(origin, source);
-}
-
-void InspectorController::showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
-{
-    if (!m_inspectorClient)
-        return;
-    m_inspectorClient->showContextMenu(x, y, menuProvider);
 }
 
 void InspectorController::dispatchMessageFromFrontend(const String& message)

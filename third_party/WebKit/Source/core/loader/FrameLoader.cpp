@@ -1362,8 +1362,6 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject()
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
-    if (Page* page = m_frame->page())
-        page->inspectorController().didClearDocumentOfWindowObject(m_frame);
     InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 
     // We just cleared the document, not the entire window object, but for the

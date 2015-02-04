@@ -31,6 +31,7 @@
 #ifndef WebViewImpl_h
 #define WebViewImpl_h
 
+#include "core/page/ContextMenuProvider.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"

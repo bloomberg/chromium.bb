@@ -34,35 +34,39 @@
 #include "core/inspector/InspectorFrontendClient.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebDevToolsFrontend.h"
+#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class DevToolsHost;
-class WebViewImpl;
+class WebLocalFrameImpl;
 
 class WebDevToolsFrontendImpl final : public WebDevToolsFrontend, public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:
-    WebDevToolsFrontendImpl(WebViewImpl*, WebDevToolsFrontendClient*);
+    WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
     virtual ~WebDevToolsFrontendImpl();
 
-    // InspectorFrontendClient implementation.
-    virtual void windowObjectCleared() override;
+    void didClearWindowObject(WebLocalFrameImpl*);
 
-    virtual void sendMessageToBackend(const WTF::String&) override;
+    void sendMessageToBackend(const WTF::String&) override;
 
-    virtual void sendMessageToEmbedder(const WTF::String&) override;
+    void sendMessageToEmbedder(const WTF::String&) override;
 
-    virtual bool isUnderTest() override;
+    bool isUnderTest() override;
 
-    virtual void dispose() override;
+    void showContextMenu(LocalFrame*, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) override;
+
+    void setInjectedScriptForOrigin(const String& origin, const String& source) override;
 
 private:
-    WebViewImpl* m_webViewImpl;
+    WebLocalFrameImpl* m_webFrame;
     WebDevToolsFrontendClient* m_client;
     RefPtrWillBePersistent<DevToolsHost> m_devtoolsHost;
+    typedef HashMap<String, String> InjectedScriptForOriginMap;
+    InjectedScriptForOriginMap m_injectedScriptForOrigin;
 };
 
 } // namespace blink

@@ -53,6 +53,7 @@ class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebAutofillClient;
 class WebDataSourceImpl;
+class WebDevToolsFrontendImpl;
 class WebFrameClient;
 class WebFrameWidgetImpl;
 class WebPerformance;
@@ -321,6 +322,10 @@ public:
     void setFrameWidget(WebFrameWidgetImpl*);
     WebFrameWidgetImpl* frameWidget() const;
 
+    // DevTools front-end bindings.
+    void setDevToolsFrontend(WebDevToolsFrontendImpl* frontend) { m_webDevToolsFrontend = frontend; }
+    WebDevToolsFrontendImpl* devToolsFrontend() { return m_webDevToolsFrontend; }
+
 #if ENABLE(OILPAN)
     void trace(Visitor*);
 #endif
@@ -366,6 +371,8 @@ private:
     UserMediaClientImpl m_userMediaClientImpl;
 
     OwnPtrWillBeMember<GeolocationClientProxy> m_geolocationClientProxy;
+
+    WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 
 #if ENABLE(OILPAN)
     // Oilpan: to provide the guarantee of having the frame live until

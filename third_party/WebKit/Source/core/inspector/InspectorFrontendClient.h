@@ -31,15 +31,17 @@
 #ifndef InspectorFrontendClient_h
 #define InspectorFrontendClient_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
+class ContextMenuProvider;
+class LocalFrame;
+
 class InspectorFrontendClient {
 public:
     virtual ~InspectorFrontendClient() { }
-
-    virtual void windowObjectCleared() = 0;
 
     virtual void sendMessageToBackend(const String&) = 0;
 
@@ -47,7 +49,9 @@ public:
 
     virtual bool isUnderTest() = 0;
 
-    virtual void dispose() = 0;
+    virtual void showContextMenu(LocalFrame* targetFrame, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) = 0;
+
+    virtual void setInjectedScriptForOrigin(const String& origin, const String& source) = 0;
 };
 
 } // namespace blink

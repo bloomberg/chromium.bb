@@ -1563,6 +1563,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
     , m_geolocationClientProxy(GeolocationClientProxy::create(client ? client->geolocationClient() : 0))
+    , m_webDevToolsFrontend(0)
 #if ENABLE(OILPAN)
     , m_selfKeepAlive(this)
 #endif

@@ -89,6 +89,7 @@
 #include "web/PluginPlaceholderImpl.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/WebDataSourceImpl.h"
+#include "web/WebDevToolsFrontendImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebPluginLoadObserver.h"
@@ -131,6 +132,10 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             DOMWindowStorageController::from(*document);
         }
     }
+    // FIXME: when extensions go out of process, this whole concept stops working.
+    WebDevToolsFrontendImpl* devToolsFrontend = m_webFrame->top()->isWebLocalFrame() ? toWebLocalFrameImpl(m_webFrame->top())->devToolsFrontend() : nullptr;
+    if (devToolsFrontend)
+        devToolsFrontend->didClearWindowObject(m_webFrame);
 }
 
 void FrameLoaderClientImpl::documentElementAvailable()

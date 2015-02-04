@@ -40,14 +40,14 @@ class ContextMenuItem;
 class Event;
 class FrontendMenuProvider;
 class InspectorFrontendClient;
-class Page;
+class LocalFrame;
 
 class DevToolsHost : public RefCountedWillBeGarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DevToolsHost> create(InspectorFrontendClient* client, Page* frontendPage)
+    static PassRefPtrWillBeRawPtr<DevToolsHost> create(InspectorFrontendClient* client, LocalFrame* frontendFrame)
     {
-        return adoptRefWillBeNoop(new DevToolsHost(client, frontendPage));
+        return adoptRefWillBeNoop(new DevToolsHost(client, frontendFrame));
     }
 
     ~DevToolsHost();
@@ -62,7 +62,7 @@ public:
 
     // Called from [Custom] implementations.
     void showContextMenu(Event*, const Vector<ContextMenuItem>& items);
-    void showContextMenu(Page*, float x, float y, const Vector<ContextMenuItem>& items);
+    void showContextMenu(LocalFrame* targetFrame, float x, float y, const Vector<ContextMenuItem>& items);
     void sendMessageToBackend(const String& message);
     void sendMessageToEmbedder(const String& message);
 
@@ -72,15 +72,15 @@ public:
     bool isUnderTest();
     bool isHostedMode();
 
-    Page* frontendPage() { return m_frontendPage; }
+    LocalFrame* frontendFrame() { return m_frontendFrame; }
 
     void clearMenuProvider() { m_menuProvider = nullptr; }
 
 private:
-    DevToolsHost(InspectorFrontendClient*, Page* frontendPage);
+    DevToolsHost(InspectorFrontendClient*, LocalFrame* frontendFrame);
 
     InspectorFrontendClient* m_client;
-    RawPtrWillBeMember<Page> m_frontendPage;
+    RawPtrWillBeMember<LocalFrame> m_frontendFrame;
     RawPtrWillBeMember<FrontendMenuProvider> m_menuProvider;
 };
 

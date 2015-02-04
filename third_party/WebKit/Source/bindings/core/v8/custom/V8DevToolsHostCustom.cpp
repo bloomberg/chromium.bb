@@ -159,12 +159,12 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
         DOMWindow* window = V8Window::toImpl(windowWrapper);
         document = window ? toLocalDOMWindow(window)->document() : nullptr;
     }
-    if (!document || !document->page())
+    if (!document || !document->frame())
         return;
 
     DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
-    devtoolsHost->showContextMenu(document->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
+    devtoolsHost->showContextMenu(document->frame(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }
 
 } // namespace blink
