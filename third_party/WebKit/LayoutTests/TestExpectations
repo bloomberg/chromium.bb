@@ -1842,3 +1842,5 @@ crbug.com/243871 virtual/threaded/fast/scroll-behavior/subframe-scroll.html [ Sk
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/subframe-scrollLeft.html [ Skip ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/subframe-scrollTo.html [ Skip ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/subframe-scrollTop.html [ Skip ]
+
+crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
