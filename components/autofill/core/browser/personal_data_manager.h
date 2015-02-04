@@ -23,6 +23,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
+class Browser;
 class PrefService;
 class RemoveAutofillTester;
 
@@ -241,6 +242,8 @@ class PersonalDataManager : public KeyedService,
       int, std::vector<autofill::AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(
       int, std::vector<autofill::CreditCard>*);
+  friend void SetTestProfiles(
+      Browser* browser, std::vector<AutofillProfile>* profiles);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.

@@ -210,17 +210,23 @@ cr.define('options.autofillOptions', function() {
         if (this.isPlaceholder) {
           // It is important that updateIndex is done before validateAndSave.
           // Otherwise we can not be sure about AddRow index.
-          this.list.dataModel.updateIndex(i);
+          this.list.ignoreChangeEvents(function() {
+            this.list.dataModel.updateIndex(i);
+          }.bind(this));
           this.list.validateAndSave(i, 0, value);
         } else {
           this.list.validateAndSave(i, 1, value);
         }
       } else {
         // Reject empty values and duplicates.
-        if (!this.isPlaceholder)
-          this.list.dataModel.splice(i, 1);
-        else
+        if (!this.isPlaceholder) {
+          this.list.ignoreChangeEvents(function() {
+            this.list.dataModel.splice(i, 1);
+          }.bind(this));
+          this.list.selectIndexWithoutFocusing(i);
+        } else {
           this.clearValue_();
+        }
       }
     },
   };
@@ -444,7 +450,10 @@ cr.define('options.autofillOptions', function() {
      * @param {string} value The value of the item to insert.
      */
     validateAndSave: function(index, remove, value) {
-      this.dataModel.splice(index, remove, value);
+      this.ignoreChangeEvents(function() {
+        this.dataModel.splice(index, remove, value);
+      }.bind(this));
+      this.selectIndexWithoutFocusing(index);
     },
   };
 
@@ -515,8 +524,6 @@ cr.define('options.autofillOptions', function() {
         while (this.validationPromiseResolvers_.length) {
           this.validationPromiseResolvers_.pop()();
         }
-        // List has been repopulated. Focus the placeholder.
-        this.focusPlaceholder();
       }
     },
 

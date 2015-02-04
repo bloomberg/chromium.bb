@@ -15,13 +15,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
@@ -35,12 +34,8 @@
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -51,7 +46,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,67 +126,6 @@ class AutofillManagerTestDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
 
-
-// WindowedPersonalDataManagerObserver ----------------------------------------
-
-class WindowedPersonalDataManagerObserver
-    : public PersonalDataManagerObserver,
-      public infobars::InfoBarManager::Observer {
- public:
-  explicit WindowedPersonalDataManagerObserver(Browser* browser)
-      : alerted_(false),
-        has_run_message_loop_(false),
-        browser_(browser),
-        infobar_service_(InfoBarService::FromWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents())) {
-    PersonalDataManagerFactory::GetForProfile(browser_->profile())->
-        AddObserver(this);
-    infobar_service_->AddObserver(this);
-  }
-
-  ~WindowedPersonalDataManagerObserver() override {
-    while (infobar_service_->infobar_count() > 0) {
-      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
-    }
-    infobar_service_->RemoveObserver(this);
-  }
-
-  // PersonalDataManagerObserver:
-  void OnPersonalDataChanged() override {
-    if (has_run_message_loop_) {
-      base::MessageLoopForUI::current()->Quit();
-      has_run_message_loop_ = false;
-    }
-    alerted_ = true;
-  }
-
-  void OnInsufficientFormData() override { OnPersonalDataChanged(); }
-
-
-  void Wait() {
-    if (!alerted_) {
-      has_run_message_loop_ = true;
-      content::RunMessageLoop();
-    }
-    PersonalDataManagerFactory::GetForProfile(browser_->profile())->
-        RemoveObserver(this);
-  }
-
- private:
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
-    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
-        Accept();
-  }
-
-  bool alerted_;
-  bool has_run_message_loop_;
-  Browser* browser_;
-  InfoBarService* infobar_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowedPersonalDataManagerObserver);
-};
-
 // AutofillInteractiveTest ----------------------------------------------------
 
 class AutofillInteractiveTest : public InProcessBrowserTest {
@@ -234,10 +167,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     autofill_manager->client()->HideAutofillPopup();
   }
 
-  PersonalDataManager* GetPersonalDataManager() {
-    return PersonalDataManagerFactory::GetForProfile(browser()->profile());
-  }
-
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -253,24 +182,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",
         "Basement", "Austin", "Texas", "78744", "US", "5125551234");
 
-    WindowedPersonalDataManagerObserver observer(browser());
-    GetPersonalDataManager()->AddProfile(profile);
-
-    // AddProfile is asynchronous. Wait for it to finish before continuing the
-    // tests.
-    observer.Wait();
-  }
-
-  void SetProfiles(std::vector<AutofillProfile>* profiles) {
-    WindowedPersonalDataManagerObserver observer(browser());
-    GetPersonalDataManager()->SetProfiles(profiles);
-    observer.Wait();
-  }
-
-  void SetProfile(const AutofillProfile& profile) {
-    std::vector<AutofillProfile> profiles;
-    profiles.push_back(profile);
-    SetProfiles(&profiles);
+    AddTestProfile(browser(), profile);
   }
 
   // Populates a webpage form using autofill data and keypress events.
@@ -1236,7 +1148,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("95110"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1-408-555-4567"));
-  SetProfile(profile);
+  SetTestProfile(browser(), profile);
 
   GURL url = test_server()->GetURL("files/autofill/form_phones.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1277,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("95110"));
   profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Company X"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("408-871-4567"));
-  SetProfile(profile);
+  SetTestProfile(browser(), profile);
 
   GURL url = test_server()->GetURL("files/autofill/read_only_field_test.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1348,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(email));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("4088714567"));
-  SetProfile(profile);
+  SetTestProfile(browser(), profile);
 
   GURL url = test_server()->GetURL(
       "files/autofill/autofill_confirmemail_form.html");
@@ -1407,7 +1319,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
     profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
     profiles.push_back(profile);
   }
-  SetProfiles(&profiles);
+  SetTestProfiles(browser(), &profiles);
   // TODO(isherman): once we're sure this test doesn't timeout on any bots, this
   // can be removd.
   LOG(INFO) << "Created " << kNumProfiles << " profiles in " <<

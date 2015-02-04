@@ -85,7 +85,8 @@ cr.define('options', function() {
 
     /** @override */
     selectionChanged: function() {
-      this.updateEditState();
+      if (!this.parentNode.ignoreChangeEvents_)
+        this.updateEditState();
     },
 
     /**
@@ -576,6 +577,15 @@ cr.define('options', function() {
     __proto__: DeletableItemList.prototype,
 
     /**
+     * Whether to ignore list change events.
+     * Used to modify the list without processing selection change and lead
+     * change events.
+     * @type {boolean}
+     * @private
+     */
+    ignoreChangeEvents_: false,
+
+    /**
      * Focuses the input element of the placeholder if true.
      * @type {boolean}
      * @private
@@ -624,6 +634,9 @@ cr.define('options', function() {
 
     /** @override */
     handleLeadChange: function(e) {
+      if (this.ignoreChangeEvents_)
+        return;
+
       DeletableItemList.prototype.handleLeadChange.call(this, e);
 
       var focusedColumnIndex = -1;
@@ -658,6 +671,54 @@ cr.define('options', function() {
           if (item.isPlaceholder)
             item.setEditableValuesFocusable(true);
         }
+      }
+    },
+
+    /**
+     * Execute |callback| with list change events disabled. Selection change and
+     * lead change events will not be processed.
+     * @param {!Function} callback The function to execute.
+     * @protected
+     */
+    ignoreChangeEvents: function(callback) {
+      assert(!this.ignoreChangeEvents_);
+      this.ignoreChangeEvents_ = true;
+      callback();
+      this.ignoreChangeEvents_ = false;
+    },
+
+    /**
+     * Set the selected index without changing the focused element on the page.
+     * Used to change the selected index when the list doesn't have focus (and
+     * doesn't want to take focus).
+     * @param {number} index The index to select.
+     */
+    selectIndexWithoutFocusing: function(index) {
+      // Remove focusability from old item.
+      var oldItem = this.getListItemByIndex(this.selectionModel.leadIndex) ||
+                    this.getInitialFocusableItem();
+      if (oldItem) {
+        oldItem.setEditableValuesFocusable(false);
+        oldItem.setStaticValuesFocusable(false);
+        oldItem.setCloseButtonFocusable(false);
+        oldItem.lead = false;
+      }
+
+      // Select the new item.
+      this.ignoreChangeEvents(function() {
+        this.selectionModel.selectedIndex = index;
+      }.bind(this));
+
+      // Add focusability to new item.
+      var newItem = this.getListItemByIndex(index);
+      if (newItem) {
+        if (newItem.isPlaceholder)
+          newItem.setEditableValuesFocusable(true);
+        else
+          newItem.setStaticValuesFocusable(true);
+
+        newItem.setCloseButtonFocusable(true);
+        newItem.lead = true;
       }
     },
 

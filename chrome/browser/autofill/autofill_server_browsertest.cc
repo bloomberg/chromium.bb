@@ -26,8 +26,8 @@
 namespace autofill {
 namespace {
 
-// TODO(isherman): Similar classes are defined in a few other Autofill browser
-// tests. It would be good to factor out the shared code into a helper file.
+// TODO(bondd): PdmChangeWaiter in autofill_uitest_util.cc is a replacement for
+// this class. Remove this class and use helper functions in that file instead.
 class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   explicit WindowedPersonalDataManagerObserver(Profile* profile)
