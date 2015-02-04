@@ -101,7 +101,7 @@ source_set("dl") {
     ]
   }
 
-  if (cpu_arch == "ia32" || cpu_arch == "x64") {
+  if (cpu_arch == "x86" || cpu_arch == "x64") {
     cflags += [ "-msse2" ]
 
     sources += [
