@@ -11,28 +11,46 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
+
+class LocalAuthTest;
 class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace chrome {
+class LocalAuth {
+ public:
+  static void RegisterLocalAuthPrefs(
+      user_prefs::PrefRegistrySyncable* registry);
 
-void RegisterLocalAuthPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void SetLocalAuthCredentials(size_t profile_info_index,
+                                      const std::string& password);
 
-void SetLocalAuthCredentials(size_t profile_info_index,
-                             const std::string& password);
 
-void SetLocalAuthCredentials(const Profile* profile,
-                             const std::string& password);
+  static void SetLocalAuthCredentials(const Profile* profile,
+                                      const std::string& password);
 
-bool ValidateLocalAuthCredentials(size_t profile_info_index,
-                                  const std::string& password);
+  static bool ValidateLocalAuthCredentials(size_t profile_info_index,
+                                           const std::string& password);
 
-bool ValidateLocalAuthCredentials(const Profile* profile,
-                                  const std::string& password);
+  static bool ValidateLocalAuthCredentials(const Profile* profile,
+                                           const std::string& password);
 
-}  // namespace chrome
+ private:
+  FRIEND_TEST_ALL_PREFIXES(LocalAuthTest, SetUpgradeAndCheckCredentials);
+  FRIEND_TEST_ALL_PREFIXES(LocalAuthTest, TruncateStringEvenly);
+  FRIEND_TEST_ALL_PREFIXES(LocalAuthTest, TruncateStringUnevenly);
+
+  // Return only the first |len_bits| bits of the string |str|. Defined here for
+  // testing.
+  static std::string TruncateStringByBits(const std::string& str,
+                                          const size_t len_bits);
+
+  static void SetLocalAuthCredentialsWithEncoding(size_t profile_info_index,
+                                                  const std::string& password,
+                                                  char encoding_version);
+};
 
 #endif  // CHROME_BROWSER_SIGNIN_LOCAL_AUTH_H_

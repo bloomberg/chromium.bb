@@ -248,7 +248,7 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
   // Don't store password hash except when lock is available for the user.
   if (!password.empty() && profiles::IsLockAvailable(profile_))
-    chrome::SetLocalAuthCredentials(profile_, password);
+    LocalAuth::SetLocalAuthCredentials(profile_, password);
 #endif
 }
 

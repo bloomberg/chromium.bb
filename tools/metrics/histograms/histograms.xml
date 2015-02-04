@@ -23290,6 +23290,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordHash.CreateTime">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Time required to create the local hash of the user's GAIA password.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountsPerSite">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
