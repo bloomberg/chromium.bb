@@ -45,6 +45,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/bubble/bubble_window_targeter.h"
+#include "ui/wm/core/masked_window_targeter.h"
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
@@ -108,6 +109,29 @@ class AppListOverlayView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(AppListOverlayView);
 };
+
+#if defined(USE_AURA)
+// An event targeter for the search box widget which will ignore events that
+// are on the search box's shadow.
+class SearchBoxWindowTargeter : public wm::MaskedWindowTargeter {
+ public:
+  explicit SearchBoxWindowTargeter(views::View* search_box)
+      : wm::MaskedWindowTargeter(search_box->GetWidget()->GetNativeWindow()),
+        search_box_(search_box) {}
+  ~SearchBoxWindowTargeter() override {}
+
+ private:
+  // wm::MaskedWindowTargeter:
+  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override {
+    mask->addRect(gfx::RectToSkRect(search_box_->GetContentsBounds()));
+    return true;
+  }
+
+  views::View* search_box_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxWindowTargeter);
+};
+#endif
 
 }  // namespace
 
@@ -425,6 +449,13 @@ void AppListView::InitChildWidgets() {
   search_box_widget_ = new views::Widget;
   search_box_widget_->Init(search_box_widget_params);
   search_box_widget_->SetContentsView(search_box_view_);
+
+#if defined(USE_AURA)
+  // Mouse events on the search box shadow should not be captured.
+  aura::Window* window = search_box_widget_->GetNativeWindow();
+  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+      new SearchBoxWindowTargeter(search_box_view_)));
+#endif
 
   app_list_main_view_->contents_view()->Layout();
 }

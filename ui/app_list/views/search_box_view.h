@@ -48,6 +48,11 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void ClearSearch();
   void InvalidateMenu();
 
+  // Returns the bounds to use for the view (including the shadow) given the
+  // desired bounds of the search box contents.
+  gfx::Rect GetViewBoundsForSearchBoxContentsBounds(
+      const gfx::Rect& rect) const;
+
   views::ImageButton* back_button() { return back_button_; }
   views::Textfield* search_box() { return search_box_; }
 
@@ -96,6 +101,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   scoped_ptr<AppListMenuViews> menu_;
 
+  views::View* content_container_;     // Owned by views hierarchy.
   views::ImageView* icon_view_;  // Owned by views hierarchy.
   views::ImageButton* back_button_;    // Owned by views hierarchy.
   views::ImageButton* speech_button_;  // Owned by views hierarchy.

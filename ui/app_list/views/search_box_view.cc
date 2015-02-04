@@ -24,6 +24,8 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/shadow_border.h"
 
 namespace app_list {
 
@@ -39,11 +41,11 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const int kMenuYOffsetFromButton = -4;
 const int kMenuXOffsetFromButton = -7;
 
-const int kBackgroundBorderWidth = 1;
-const int kBackgroundBorderBottomWidth = 1;
 const int kBackgroundBorderCornerRadius = 2;
-const SkColor kBackgroundBorderColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
-const SkColor kBackgroundBorderBottomColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
+
+const int kShadowBlur = 4;
+const int kShadowYOffset = 2;
+const SkColor kShadowColor = SkColorSetARGB(0x33, 0, 0, 0);
 
 // A background that paints a solid white rounded rect with a thin grey border.
 class ExperimentalSearchBoxBackground : public views::Background {
@@ -58,15 +60,6 @@ class ExperimentalSearchBoxBackground : public views::Background {
 
     SkPaint paint;
     paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(kBackgroundBorderColor);
-    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
-    bounds.Inset(kBackgroundBorderWidth,
-                 kBackgroundBorderWidth,
-                 kBackgroundBorderWidth,
-                 0);
-    paint.setColor(kBackgroundBorderBottomColor);
-    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
-    bounds.Inset(0, 0, 0, kBackgroundBorderBottomWidth);
     paint.setColor(kSearchBoxBackground);
     canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
   }
@@ -81,13 +74,19 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     : delegate_(delegate),
       view_delegate_(view_delegate),
       model_(NULL),
+      content_container_(new views::View),
       icon_view_(NULL),
       back_button_(NULL),
       speech_button_(NULL),
       menu_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
+  SetLayoutManager(new views::FillLayout);
+  AddChildView(content_container_);
+
   if (switches::IsExperimentalAppListEnabled()) {
+    SetBorder(make_scoped_ptr(
+        new views::ShadowBorder(kShadowBlur, kShadowColor, kShadowYOffset, 0)));
     back_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     back_button_->SetImage(
@@ -95,16 +94,16 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                     views::ImageButton::ALIGN_MIDDLE);
-    AddChildView(back_button_);
+    content_container_->AddChildView(back_button_);
 
-    set_background(new ExperimentalSearchBoxBackground());
+    content_container_->set_background(new ExperimentalSearchBoxBackground());
   } else {
     set_background(
         views::Background::CreateSolidBackground(kSearchBoxBackground));
     SetBorder(
         views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kTopSeparatorColor));
     icon_view_ = new views::ImageView;
-    AddChildView(icon_view_);
+    content_container_->AddChildView(icon_view_);
   }
 
   views::BoxLayout* layout =
@@ -112,7 +111,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                            kPadding,
                            0,
                            kPadding - views::Textfield::kTextPadding);
-  SetLayoutManager(layout);
+  content_container_->SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->set_minimum_cross_axis_size(kPreferredHeight);
@@ -123,7 +122,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);
-  AddChildView(search_box_);
+  content_container_->AddChildView(search_box_);
   layout->SetFlexForView(search_box_, 1);
 
 #if !defined(OS_CHROMEOS)
@@ -135,7 +134,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                          *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_HOVER));
   menu_button_->SetImage(views::Button::STATE_PRESSED,
                          *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_PRESSED));
-  AddChildView(menu_button_);
+  content_container_->AddChildView(menu_button_);
 #endif
 
   view_delegate_->GetSpeechUI()->AddObserver(this);
@@ -174,6 +173,13 @@ void SearchBoxView::ClearSearch() {
 
 void SearchBoxView::InvalidateMenu() {
   menu_.reset();
+}
+
+gfx::Rect SearchBoxView::GetViewBoundsForSearchBoxContentsBounds(
+    const gfx::Rect& rect) const {
+  gfx::Rect view_bounds = rect;
+  view_bounds.Inset(GetInsets().Scale(-1));
+  return view_bounds;
 }
 
 gfx::Size SearchBoxView::GetPreferredSize() const {
@@ -255,7 +261,7 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
   if (speech_button_prop) {
     if (!speech_button_) {
       speech_button_ = new views::ImageButton(this);
-      AddChildView(speech_button_);
+      content_container_->AddChildView(speech_button_);
     }
 
     if (view_delegate_->GetSpeechUI()->state() ==

@@ -469,8 +469,10 @@ void ContentsView::Layout() {
   // same as the app list widget so don't move it.
   views::Widget* search_box_widget = GetSearchBoxView()->GetWidget();
   if (search_box_widget && search_box_widget != GetWidget()) {
-    search_box_widget->SetBounds(
-        ConvertRectToWidget(GetSearchBoxBoundsForState(GetActiveState())));
+    gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(GetActiveState());
+    search_box_widget->SetBounds(ConvertRectToWidget(
+        GetSearchBoxView()->GetViewBoundsForSearchBoxContentsBounds(
+            search_box_bounds)));
   }
 
   // Immediately finish all current animations.

@@ -273,10 +273,15 @@ void AppListViewTestContext::Close() {
 
 bool AppListViewTestContext::CheckSearchBoxWidget(const gfx::Rect& expected) {
   ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-  gfx::Point point = expected.origin();
+  // Adjust for the search box view's shadow.
+  gfx::Rect expected_with_shadow =
+      view_->app_list_main_view()
+          ->search_box_view()
+          ->GetViewBoundsForSearchBoxContentsBounds(expected);
+  gfx::Point point = expected_with_shadow.origin();
   views::View::ConvertPointToScreen(contents_view, &point);
 
-  return gfx::Rect(point, expected.size()) ==
+  return gfx::Rect(point, expected_with_shadow.size()) ==
          view_->search_box_widget()->GetWindowBoundsInScreen();
 }
 

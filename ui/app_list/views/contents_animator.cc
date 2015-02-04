@@ -95,9 +95,9 @@ void ContentsAnimator::UpdateSearchBoxForDefaultAnimation(double progress,
   gfx::Rect search_box_rect =
       gfx::Tween::RectValueBetween(progress, search_box_from, search_box_to);
 
-  views::View* search_box = contents_view()->GetSearchBoxView();
-  search_box->GetWidget()->SetBounds(
-      contents_view()->ConvertRectToWidget(search_box_rect));
+  SearchBoxView* search_box = contents_view()->GetSearchBoxView();
+  search_box->GetWidget()->SetBounds(contents_view()->ConvertRectToWidget(
+      search_box->GetViewBoundsForSearchBoxContentsBounds(search_box_rect)));
 }
 
 void ContentsAnimator::ClipSearchResultsPageToOnscreenBounds(
