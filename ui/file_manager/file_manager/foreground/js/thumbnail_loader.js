@@ -54,7 +54,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
       case ThumbnailLoader.LoadTarget.CONTENT_METADATA:
         if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
           this.thumbnailUrl_ = opt_metadata.thumbnail.url;
-          this.thumbnailTransform =
+          this.transform_ =
               opt_metadata.thumbnail && opt_metadata.thumbnail.transform;
           this.loadTarget_ = ThumbnailLoader.LoadTarget.CONTENT_METADATA;
         }
@@ -239,6 +239,101 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
         return true;
       });
 };
+
+/**
+ * Loads thumbnail as data url. If data url of thumbnail can be fetched from
+ * metadata, this fetches it from it. Otherwise, this tries to load it from
+ * thumbnail loader.
+ * Compared with ThumbnailLoader.load, this method does not provide a
+ * functionality to fit image to a box. This method is responsible for rotating
+ * and flipping a thumbnail.
+ *
+ * @return {!Promise<{data:string, width:number, height:number}>} A promise
+ *     which is resolved when data url is fetched.
+ */
+ThumbnailLoader.prototype.loadAsDataUrl = function() {
+  return new Promise(function(resolve) {
+    // Load by using ImageLoaderClient.
+    var modificationTime = this.metadata_ &&
+                           this.metadata_.filesystem &&
+                           this.metadata_.filesystem.modificationTime &&
+                           this.metadata_.filesystem.modificationTime.getTime();
+    ImageLoaderClient.getInstance().load(
+        this.thumbnailUrl_,
+        resolve,
+        {
+          maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+          maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+          cache: true,
+          priority: this.priority_,
+          timestamp: modificationTime
+        });
+  }.bind(this)).then(function(result) {
+    if (!this.transform_)
+      return result;
+    else
+      return this.applyTransformToDataUrl_(
+          this.transform_, result.data, result.width, result.height);
+  }.bind(this));
+};
+
+/**
+ * Applies transform to data url.
+ *
+ * @param {{scaleX:number, scaleY:number, rotate90: number}} transform
+ *     Transform.
+ * @param {string} dataUrl Data url.
+ * @param {number} width Width.
+ * @param {number} height Height.
+ * @return {!Promise<{data:string, width:number, height:number}>} A promise
+ *     which is resolved with dataUrl and its width and height.
+ * @private
+ */
+ThumbnailLoader.prototype.applyTransformToDataUrl_ = function(
+    transform, dataUrl, width, height) {
+  var image = new Image();
+  var scaleX = this.transform_.scaleX;
+  var scaleY = this.transform_.scaleY;
+  var rotate90 = this.transform_.rotate90;
+
+  assert(scaleX === 1 || scaleX === -1);
+  assert(scaleY === 1 || scaleY === -1);
+  assert(rotate90 === 0 || rotate90 === 1);
+
+  return new Promise(function(resolve, reject) {
+    // Decode image for transformation.
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = dataUrl;
+  }).then(function() {
+    // Apply transform. Scale transformation should be applied before rotate
+    // transformation. i.e. When matrices for scale and rotate are A and B,
+    // transformation matrix should be BA.
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+
+    canvas.width = rotate90 === 1 ? height : width;
+    canvas.height = rotate90 === 1 ? width : height;
+
+    // Rotate 90 degree at center.
+    if (rotate90 === 1) {
+      context.translate(height, 0);
+      context.rotate(Math.PI / 2);
+    }
+
+    // Flip X and Y.
+    context.translate(scaleX === -1 ? width : 0, scaleY === -1 ? height : 0);
+    context.scale(scaleX, scaleY);
+
+    context.drawImage(image, 0, 0);
+
+    return {
+      data: canvas.toDataURL('image/png'),
+      width: canvas.width,
+      height: canvas.height
+    };
+  }.bind(this));
+}
 
 /**
  * Cancels loading the current image.
