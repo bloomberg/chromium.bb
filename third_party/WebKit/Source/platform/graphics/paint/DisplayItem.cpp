@@ -69,13 +69,14 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
 
     switch (type) {
-    case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
+    case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
+    case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
     case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
     case DisplayItem::ClipLayerFilter: return "ClipLayerFilter";
     case DisplayItem::ClipLayerForeground: return "ClipLayerForeground";
+    case DisplayItem::ClipLayerParent: return "ClipLayerParent";
+    case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
     case DisplayItem::ClipNodeImage: return "ClipNodeImage";
-    case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
-    case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
     case DisplayItem::ClipSelectionImage: return "ClipSelectionImage";
     case DisplayItem::PageWidgetDelegateClip: return "PageWidgetDelegateClip";
     case DisplayItem::TransparencyClip: return "TransparencyClip";
