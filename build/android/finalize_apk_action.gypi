@@ -12,7 +12,7 @@
 #      'input_apk_path': 'relative/path/to/input.apk',
 #      'output_apk_path': 'relative/path/to/output.apk',
 #    },
-#    'includes': [ '../../build/android/finalize_apk.gypi' ],
+#    'includes': [ '../../build/android/finalize_apk_action.gypi' ],
 #  },
 #
 
@@ -34,8 +34,8 @@
     ],
   },
   'inputs': [
-    '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(DEPTH)/build/android/gyp/finalize_apk.py',
+    '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(keystore_path)',
     '<(input_apk_path)',
   ],
