@@ -62,7 +62,7 @@ class RenderFrameProxyHost
   ~RenderFrameProxyHost() override;
 
   RenderProcessHost* GetProcess() {
-    return site_instance_->GetProcess();
+    return process_;
   }
 
   // Initializes the object and creates the RenderFrameProxy in the process
@@ -115,6 +115,12 @@ class RenderFrameProxyHost
 
   // The SiteInstance this proxy is associated with.
   scoped_refptr<SiteInstance> site_instance_;
+
+  // The renderer process this RenderFrameHostProxy is associated with. It is
+  // equivalent to the result of site_instance_->GetProcess(), but that
+  // method has the side effect of creating the process if it doesn't exist.
+  // Cache a pointer to avoid unnecessary process creation.
+  RenderProcessHost* process_;
 
   // The node in the frame tree where this proxy is located.
   FrameTreeNode* frame_tree_node_;

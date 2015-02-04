@@ -44,6 +44,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
                                            FrameTreeNode* frame_tree_node)
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
+      process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(g_routing_id_frame_proxy_map.Get().insert(
@@ -125,7 +126,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!site_instance_->GetProcess()->Init())
+  if (!GetProcess()->Init())
     return false;
 
   DCHECK(GetProcess()->HasConnection());

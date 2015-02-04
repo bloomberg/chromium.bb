@@ -41,6 +41,15 @@ class ChromeSitePerProcessTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeSitePerProcessTest);
 };
 
+// Verify that browser shutdown path works correctly when there's a
+// RenderFrameProxyHost for a child frame.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, RenderFrameProxyHostShutdown) {
+  GURL main_url(embedded_test_server()->GetURL(
+        "a.com",
+        "/frame_tree/page_with_two_frames_remote_and_local.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+}
+
 // Verify that origin replication allows JS access to localStorage, database,
 // and FileSystem APIs.  These features involve a check on the
 // WebSecurityOrigin of the topmost WebFrame in ContentSettingsObserver, and
