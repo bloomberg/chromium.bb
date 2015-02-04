@@ -166,7 +166,7 @@ public:
 
     virtual double evaluate(double fraction, double accuracy) const override;
     virtual void range(double* minValue, double* maxValue) const override;
-    virtual void partition(Vector<PartitionRegion>& regions) const override { ASSERT_NOT_REACHED(); }
+    virtual void partition(Vector<PartitionRegion>& regions) const override;
 
     double x1() const { return m_x1; }
     double y1() const { return m_y1; }
@@ -185,6 +185,11 @@ private:
         , m_subType(subType)
     {
     }
+
+    // Finds points on the cubic bezier that cross the given horizontal
+    // line, storing their x values in solution1-3 and returning the
+    // number of solutions found.
+    size_t findIntersections(double intersectionY, double& solution1, double& solution2, double& solution3) const;
 
     double m_x1;
     double m_y1;

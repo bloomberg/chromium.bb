@@ -437,6 +437,47 @@ static void checkSteps(int steps, StepsTimingFunction::StepAtPosition position, 
     EXPECT_TRUE(stepsFunction->evaluate(split + dt, 0) >= 0.5);
 }
 
+static void checkCubicRegions2(double x1, double y1, double x2, double y2)
+{
+    Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
+    RefPtrWillBeRawPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
+    cubic->partition(regions);
+
+    EXPECT_EQ(regions.size(), 2ul);
+    EXPECT_EQ(regions.at(0).half, TimingFunction::RangeHalf::Lower);
+    EXPECT_EQ(regions.at(1).half, TimingFunction::RangeHalf::Upper);
+
+    EXPECT_EQ(0, regions.at(0).start);
+    EXPECT_EQ(regions.at(0).end, regions.at(1).start);
+    EXPECT_EQ(1, regions.at(1).end);
+
+    UnitBezier bezier = UnitBezier(x1, y1, x2, y2);
+    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(0).end, std::numeric_limits<double>::epsilon()));
+}
+
+static void checkCubicRegions4(double x1, double y1, double x2, double y2)
+{
+    Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
+    RefPtrWillBeRawPtr<TimingFunction> cubic = CubicBezierTimingFunction::create(x1, y1, x2, y2);
+    cubic->partition(regions);
+
+    EXPECT_EQ(regions.size(), 4ul);
+    EXPECT_EQ(regions.at(0).half, TimingFunction::RangeHalf::Lower);
+    EXPECT_EQ(regions.at(1).half, TimingFunction::RangeHalf::Upper);
+    EXPECT_EQ(regions.at(2).half, TimingFunction::RangeHalf::Lower);
+    EXPECT_EQ(regions.at(3).half, TimingFunction::RangeHalf::Upper);
+
+    EXPECT_EQ(0, regions.at(0).start);
+    EXPECT_EQ(regions.at(0).end, regions.at(1).start);
+    EXPECT_EQ(regions.at(1).end, regions.at(2).start);
+    EXPECT_EQ(regions.at(2).end, regions.at(3).start);
+    EXPECT_EQ(1, regions.at(3).end);
+
+    UnitBezier bezier = UnitBezier(x1, y1, x2, y2);
+    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(0).end, std::numeric_limits<double>::epsilon()));
+    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(1).end, std::numeric_limits<double>::epsilon()));
+}
+
 TEST_F(TimingFunctionTest, StepsPartitioning)
 {
     checkSteps(1, StepsTimingFunction::StepAtPosition::Start, 0.0);
@@ -462,6 +503,47 @@ TEST_F(TimingFunctionTest, StepsPartitioning)
     checkSteps(8, StepsTimingFunction::StepAtPosition::Start, 0.375);
     checkSteps(8, StepsTimingFunction::StepAtPosition::Middle, 0.4375);
     checkSteps(8, StepsTimingFunction::StepAtPosition::End, 0.5);
+}
+
+TEST_F(TimingFunctionTest, CubicPartitioning)
+{
+    // Preset timing functions
+    checkCubicRegions2(0.25, 0.1, 0.25, 1.0);
+    checkCubicRegions2(0.42, 0.0, 1.0, 1.0);
+    checkCubicRegions2(0.0, 0.0, 0.58, 1.0);
+    checkCubicRegions2(0.42, 0.0, 0.58, 1.0);
+
+    // Line y = x
+    checkCubicRegions2(0.0, 0.0, 1.0, 1.0);
+
+    // Curves with horizontal point of inflexion
+    checkCubicRegions2(0.0, 1.0, 1.0, 0.0);
+    checkCubicRegions2(0.0, 1.0, 1.0, -2e-16);
+    checkCubicRegions2(0.0, 4.0 / 7.0, 1.0, -2.0 / 7.0);
+
+    // Curves with no stationary points in (0,1)
+    checkCubicRegions2(1.0, 0.0, 0.0, 1.0);
+    checkCubicRegions2(0.3, 0.8, 0.2, 1.0);
+
+    // Curves with 2 stationary points, 1 intersection
+    checkCubicRegions2(0.5, 1.0, 1.0, -1.0);
+    checkCubicRegions2(1.0, 2.0, 0.0, -3.0);
+
+    // Curves with 2 stationary points, 3 intersections
+    checkCubicRegions4(1.0, 2.0, 0.0, -1.0);
+    checkCubicRegions4(0.7, 1.5, 1.0, -0.5);
+
+    // Curves with derivative discriminant < 0
+    checkCubicRegions2(0.5, 1.0, 0.0, 0.8);
+    checkCubicRegions2(0.4, 1.3, 0.1, 0.8);
+
+    // Curves with extremely close points of intersection
+    checkCubicRegions4(0.0, 1.65, 0.0, -1.5);
+    checkCubicRegions2(0.0, 1.64, 0.0, -1.5);
+
+    // Curves with turning points touching y = 0.5
+    checkCubicRegions2(0.0, 41.0 / 27.0, 1.0, -10.0 / 9.0);
+    checkCubicRegions2(0.0, 19.0 / 9.0, 1.0, -14.0 / 27.0);
 }
 
 } // namespace

@@ -145,6 +145,8 @@
       'WindowsKeyboardCodes.h',
       'animation/AnimationUtilities.h',
       'animation/AnimationValue.h',
+      'animation/CubicBezierControlPoints.cpp',
+      'animation/CubicBezierControlPoints.h',
       'animation/KeyframeValueList.cpp',
       'animation/KeyframeValueList.h',
       'animation/TimingFunction.cpp',

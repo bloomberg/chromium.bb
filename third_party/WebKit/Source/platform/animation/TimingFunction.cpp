@@ -5,6 +5,7 @@
 #include "config.h"
 #include "platform/animation/TimingFunction.h"
 
+#include "platform/animation/CubicBezierControlPoints.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -102,7 +103,7 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
     // actually evaluated in [0,1]. After that we take the tangent at that point
     // and linearly project it out.
     if (0 < t1 && t1 < 1)
-        solution1= m_bezier->sampleCurveY(t1);
+        solution1 = m_bezier->sampleCurveY(t1);
 
     if (0 < t2 && t2 < 1)
         solution2 = m_bezier->sampleCurveY(t2);
@@ -115,6 +116,139 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
     *maxValue = std::max(std::max(solutionMin, solutionMax), 1.0);
     *minValue = std::min(std::min(*minValue, solution1), solution2);
     *maxValue = std::max(std::max(*maxValue, solution1), solution2);
+}
+
+size_t CubicBezierTimingFunction::findIntersections(double intersectionY, double& solution1, double& solution2, double& solution3) const
+{
+    size_t numberOfIntersections = 0;
+
+    // Divide the bezier into a number of monotonically
+    // increasing/decreasing segments, so each can intersect the
+    // horizontal line at most once.
+    Vector<CubicBezierControlPoints> monotonicSegments;
+
+    CubicBezierControlPoints initialSegment = CubicBezierControlPoints(0, 0, m_x1, m_y1, m_x2, m_y2, 1, 1);
+
+    // Find the curve's turning points, so we can split it into
+    // monotonically increasing/decreasing segments.
+    double turningPoint1 = 0.0;
+    double turningPoint2 = 0.0;
+
+    // Note the x values of each turning point, so we can discard
+    // intersections at these points (since they don't actually
+    // cross the horizontal line, but just touch it).
+    if (!m_bezier)
+        m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
+    double turningX1 = 0.0;
+    double turningX2 = 0.0;
+
+    size_t numberOfTurningPoints = initialSegment.findTurningPoints(turningPoint1, turningPoint2);
+    switch (numberOfTurningPoints) {
+    case 2:
+        {
+            // Split into three segments.
+            CubicBezierControlPoints leftSegment = CubicBezierControlPoints();
+            CubicBezierControlPoints middleSegment = CubicBezierControlPoints();
+            CubicBezierControlPoints rightSegment = CubicBezierControlPoints();
+
+            CubicBezierControlPoints tmpSegment = CubicBezierControlPoints();
+
+            initialSegment.divide(turningPoint2, tmpSegment, rightSegment);
+            tmpSegment.divide(turningPoint1 / turningPoint2, leftSegment, middleSegment);
+
+            monotonicSegments.append(leftSegment);
+            monotonicSegments.append(middleSegment);
+            monotonicSegments.append(rightSegment);
+
+            turningX1 = m_bezier->sampleCurveX(turningPoint1);
+            turningX2 = m_bezier->sampleCurveX(turningPoint2);
+
+            break;
+        }
+    case 1:
+        {
+            // Split into two segments.
+            CubicBezierControlPoints leftSegment = CubicBezierControlPoints();
+            CubicBezierControlPoints rightSegment = CubicBezierControlPoints();
+
+            initialSegment.divide(turningPoint1, leftSegment, rightSegment);
+
+            monotonicSegments.append(leftSegment);
+            monotonicSegments.append(rightSegment);
+
+            turningX1 = m_bezier->sampleCurveX(turningPoint1);
+
+            break;
+        }
+    case 0:
+        monotonicSegments.append(initialSegment);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+
+    double intersectionX = 0.0;
+
+    for (const auto& segment : monotonicSegments) {
+        if (segment.findIntersection(intersectionY, intersectionX)) {
+            // Ensure that this intersection isn't one of the turning
+            // points!
+            switch (numberOfTurningPoints) {
+            case 2:
+                if (std::abs(intersectionX - turningX2) < std::numeric_limits<double>::epsilon())
+                    continue;
+            case 1:
+                if (std::abs(intersectionX - turningX1) < std::numeric_limits<double>::epsilon())
+                    continue;
+            }
+
+            switch (numberOfIntersections) {
+            case 0:
+                solution1 = intersectionX;
+                break;
+            case 1:
+                solution2 = intersectionX;
+                break;
+            case 2:
+                solution3 = intersectionX;
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
+
+            numberOfIntersections++;
+        }
+    }
+
+    return numberOfIntersections;
+}
+
+void CubicBezierTimingFunction::partition(Vector<PartitionRegion>& regions) const
+{
+    double solution1 = 0.0;
+    double solution2 = 0.0;
+    double solution3 = 0.0;
+
+    size_t numberOfIntersections = findIntersections(0.5, solution1, solution2, solution3);
+
+    // A valid cubic bezier should only cross the horizontal line
+    // 1 or 3 times.
+    switch (numberOfIntersections) {
+    case 1:
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Lower, 0.0, solution1));
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Upper, solution1, 1.0));
+        break;
+    case 3:
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Lower, 0.0, solution1));
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Upper, solution1, solution2));
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Lower, solution2, solution3));
+        regions.append(PartitionRegion(TimingFunction::RangeHalf::Upper, solution3, 1.0));
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
 }
 
 String StepsTimingFunction::toString() const
