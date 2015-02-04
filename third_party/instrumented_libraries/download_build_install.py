@@ -111,10 +111,12 @@ def destdir_configure_make_install(parsed_arguments, environment,
   run_shell_commands(build_and_install_in_destdir,
                      parsed_arguments.verbose, environment)
   fix_rpaths(destdir)
-  shell_call(
+  run_shell_commands([
       # Now move the contents of the temporary destdir to their final place.
-      'cp %s/* %s/ -rdf' % (destdir, install_prefix),
-      parsed_arguments.verbose, environment)
+      # We only care for the contents of lib/.
+      'mkdir -p %s/lib' % install_prefix,
+      'cp %s/lib/* %s/lib/ -rdf' % (destdir, install_prefix)],
+                     parsed_arguments.verbose, environment)
 
 
 def nss_make_and_copy(parsed_arguments, environment, install_prefix):
@@ -176,10 +178,12 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
              (parsed_arguments.jobs, ' '.join(install_args)),
              parsed_arguments.verbose, environment)
   fix_rpaths(destdir)
-  shell_call([
+  run_shell_commands([
       # Now move the contents of the temporary destdir to their final place.
-      'cp %s/* %s/ -rdf' % (destdir, install_prefix)],
-                     parsed_arguments.verbose, environment)
+      # We only care for the contents of lib/.
+      'mkdir -p %s/lib' % install_prefix,
+      'cp %s/lib/* %s/lib/ -rdf' % (destdir, install_prefix)],
+                      parsed_arguments.verbose, environment)
 
 
 def libpci3_make_install(parsed_arguments, environment, install_prefix):
@@ -220,10 +224,9 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
           ' '.join(install_args + paths))],
                      parsed_arguments.verbose, environment)
   fix_rpaths(destdir)
-  # Now move the contents of the temporary destdir to their final place.
+  # Now install the DSOs to their final place.
   run_shell_commands([
-      'cp %s/* %s/ -rd' % (destdir, install_prefix),
-      'mkdir -p %s/lib/' % install_prefix,
+      'mkdir -p %s/lib' % install_prefix,
       'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
       'ln -sf libpci.so.%s %s/lib/libpci.so.3' % (version, install_prefix)],
                      parsed_arguments.verbose, environment)
