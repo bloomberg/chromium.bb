@@ -482,6 +482,7 @@ void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 {
     m_styleSheetCollectionMap.remove(shadowRoot);
     m_activeTreeScopes.remove(shadowRoot);
+    m_dirtyTreeScopes.remove(shadowRoot);
 }
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot)
@@ -526,15 +527,15 @@ void StyleEngine::clearResolver()
     ASSERT(isMaster() || !m_resolver);
 
     document().clearScopedStyleResolver();
-    // clearResolver might be invoked while destryoing document. In this case,
-    // treescopes in m_activeTreeScopes might have already been destoryed,
-    // because m_activeTreeScopes are updated in updateActiveStyleSheets, not
-    // in removeStyleSheetCandidateNode. So we should not invoke
-    // treeScope->clearScopedStyleResolver when document is not active.
-    if (document().isActive()) {
-        for (UnorderedTreeScopeSet::iterator it = m_activeTreeScopes.beginUnordered(); it != m_activeTreeScopes.endUnordered(); ++it)
-            (*it)->clearScopedStyleResolver();
-    }
+    // StyleEngine::shadowRootRemovedFromDocument removes not-in-document
+    // treescopes from activeTreeScopes. StyleEngine::didRemoveShadowRoot
+    // removes treescopes which are being destroyed from activeTreeScopes.
+    // So we need to clearScopedStyleResolver for treescopes which have been
+    // just removed from document. If document is destroyed before invoking
+    // updateActiveStyleSheets, the treescope has a scopedStyleResolver which
+    // has destroyed StyleSheetContents.
+    for (UnorderedTreeScopeSet::iterator it = m_activeTreeScopes.beginUnordered(); it != m_activeTreeScopes.endUnordered(); ++it)
+        (*it)->clearScopedStyleResolver();
 
     if (m_resolver)
         document().updateStyleInvalidationIfNeeded();

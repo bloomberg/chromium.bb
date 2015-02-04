@@ -78,6 +78,7 @@ unsigned ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
 void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
+        ASSERT(m_authorStyleSheets[i]->ownerNode());
         StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
         if (contents->hasOneClient() || visitedSharedStyleSheetContents.add(contents).isNewEntry)
             features.add(contents->ruleSet().features());
@@ -123,6 +124,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
+        ASSERT(m_authorStyleSheets[i]->ownerNode());
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingRules(matchRequest, ruleRange, cascadeOrder);
     }
@@ -135,6 +137,7 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& c
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
+        ASSERT(m_authorStyleSheets[i]->ownerNode());
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingShadowHostRules(matchRequest, ruleRange, cascadeOrder);
     }
