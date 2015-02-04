@@ -35,7 +35,10 @@ def get_sandbox_env(env):
 def trim_cmd(cmd):
   """Removes internal flags from cmd since they're just used to communicate from
   the host machine to this script running on the swarm slaves."""
-  internal_flags = frozenset(['--asan=0', '--asan=1', '--lsan=0', '--lsan=1'])
+  sanitizers = ['asan', 'lsan', 'msan', 'tsan']
+  internal_flags = frozenset('--%s=%d' % (name, value)
+                             for name in sanitizers
+                             for value in [0, 1])
   return [i for i in cmd if i not in internal_flags]
 
 
@@ -49,12 +52,12 @@ def fix_python_path(cmd):
   return out
 
 
-def get_asan_env(cmd, lsan):
-  """Returns the envirnoment flags needed for ASan and LSan."""
+def get_sanitizer_env(cmd, asan, lsan, msan, tsan):
+  """Returns the envirnoment flags needed for sanitizer tools."""
 
   extra_env = {}
 
-  # Instruct GTK to use malloc while running ASan or LSan tests.
+  # Instruct GTK to use malloc while running sanitizer-instrumented tests.
   extra_env['G_SLICE'] = 'always-malloc'
 
   extra_env['NSS_DISABLE_ARENA_FREE_LIST'] = '1'
@@ -65,25 +68,12 @@ def get_asan_env(cmd, lsan):
   symbolizer_path = os.path.abspath(os.path.join(ROOT_DIR, 'third_party',
       'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer'))
 
-  asan_options = []
-  if lsan:
-    asan_options.append('detect_leaks=1')
-    if sys.platform == 'linux2':
-      # Use the debug version of libstdc++ under LSan. If we don't, there will
-      # be a lot of incomplete stack traces in the reports.
-      extra_env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
-
+  if lsan or tsan:
     # LSan is not sandbox-compatible, so we can use online symbolization. In
     # fact, it needs symbolization to be able to apply suppressions.
     symbolization_options = ['symbolize=1',
                              'external_symbolizer_path=%s' % symbolizer_path]
-
-    suppressions_file = os.path.join(ROOT_DIR, 'tools', 'lsan',
-        'suppressions.txt')
-    lsan_options = ['suppressions=%s' % suppressions_file,
-                    'print_suppressions=1']
-    extra_env['LSAN_OPTIONS'] = ' '.join(lsan_options)
-  else:
+  elif asan or msan:
     # ASan uses a script for offline symbolization.
     # Important note: when running ASan with leak detection enabled, we must use
     # the LSan symbolization options above.
@@ -91,16 +81,45 @@ def get_asan_env(cmd, lsan):
     # Set the path to llvm-symbolizer to be used by asan_symbolize.py
     extra_env['LLVM_SYMBOLIZER_PATH'] = symbolizer_path
 
-  asan_options.extend(symbolization_options)
+  if asan:
+    asan_options = symbolization_options[:]
+    if lsan:
+      asan_options.append('detect_leaks=1')
 
-  extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
+    extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
 
-  if sys.platform == 'darwin':
-    isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
-    # This is needed because the test binary has @executable_path embedded in it
-    # it that the OS tries to resolve to the cache directory and not the mapped
-    #  directory.
-    extra_env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
+    if sys.platform == 'darwin':
+      isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
+      # This is needed because the test binary has @executable_path embedded in
+      # it that the OS tries to resolve to the cache directory and not the
+      # mapped directory.
+      extra_env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
+
+  if lsan:
+    if asan or msan:
+      lsan_options = []
+    else:
+      lsan_options = symbolization_options[:]
+    if sys.platform == 'linux2':
+      # Use the debug version of libstdc++ under LSan. If we don't, there will
+      # be a lot of incomplete stack traces in the reports.
+      extra_env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
+
+    suppressions_file = os.path.join(ROOT_DIR, 'tools', 'lsan',
+        'suppressions.txt')
+    lsan_options += ['suppressions=%s' % suppressions_file,
+                     'print_suppressions=1']
+    extra_env['LSAN_OPTIONS'] = ' '.join(lsan_options)
+
+  if msan:
+    msan_options = symbolization_options[:]
+    if lsan:
+      msan_options.append('detect_leaks=1')
+    extra_env['MSAN_OPTIONS'] = ' '.join(msan_options)
+
+  if tsan:
+    tsan_options = symbolization_options[:]
+    extra_env['TSAN_OPTIONS'] = ' '.join(tsan_options)
 
   return extra_env
 
@@ -159,15 +178,17 @@ def run_executable(cmd, env):
   # Copy logic from  tools/build/scripts/slave/runtest.py.
   asan = '--asan=1' in cmd
   lsan = '--lsan=1' in cmd
-  use_symbolization_script = asan and not lsan
+  msan = '--msan=1' in cmd
+  tsan = '--tsan=1' in cmd
+  use_symbolization_script = (asan or msan) and not lsan
 
-  if asan:
-    extra_env.update(get_asan_env(cmd, lsan))
-    # ASan is not yet sandbox-friendly on Windows (http://crbug.com/382867).
-    if sys.platform == 'win32':
+  if asan or lsan or msan or tsan:
+    extra_env.update(get_sanitizer_env(cmd, asan, lsan, msan, tsan))
+
+  if lsan or tsan or (asan and sys.platform == 'win32'):
+      # ASan is not yet sandbox-friendly on Windows (http://crbug.com/382867).
+      # LSan and TSan are not sandbox-friendly.
       cmd.append('--no-sandbox')
-  if lsan:
-    cmd.append('--no-sandbox')
 
   cmd = trim_cmd(cmd)
 

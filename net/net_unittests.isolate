@@ -19,6 +19,8 @@
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
           '--lsan=<(lsan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
         ],
         'files': [
           '../testing/test_env.py',

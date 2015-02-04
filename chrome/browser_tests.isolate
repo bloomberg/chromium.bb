@@ -12,6 +12,8 @@
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
           '--lsan=<(lsan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
         ],
         'files': [
           '../testing/xvfb.py',
@@ -174,6 +176,8 @@
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
           '--lsan=<(lsan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
         ],
       },
     }],

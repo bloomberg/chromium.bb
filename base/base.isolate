@@ -9,10 +9,17 @@
     '../third_party/icu/icu.isolate',
   ],
   'conditions': [
-    ['OS=="linux" and asan==1 and chromeos==0', {
+    ['use_custom_libcxx==1', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib/libc++.so',
+        ],
+      },
+    }],
+    ['use_instrumented_libraries==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/instrumented_libraries/',
         ],
       },
     }],
@@ -30,7 +37,7 @@
         ],
       },
     }],
-    ['OS=="linux" and asan==1', {
+    ['OS=="linux" and (asan==1 or lsan==1 or msan==1 or tsan==1)', {
       'variables': {
         'files': [
           # For llvm-symbolizer.
@@ -38,7 +45,7 @@
         ],
       },
     }],
-    ['asan==1', {
+    ['asan==1 or lsan==1 or msan==1 or tsan==1', {
       'variables': {
         'files': [
           '../tools/valgrind/asan/',
