@@ -759,7 +759,6 @@
             'test_support_content',
             '../skia/skia.gyp:skia',
             '../ui/accessibility/accessibility.gyp:ax_gen',
-            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../v8/tools/gyp/v8.gyp:v8',
           ],
           'include_dirs': [
@@ -783,7 +782,6 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../ui/accessibility/accessibility.gyp:ax_gen',
-        '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/events/events.gyp:dom4_keycode_converter',
@@ -1258,7 +1256,6 @@
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../ui/accessibility/accessibility.gyp:ax_gen',
-            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
           ],
           'sources': [
             # Source list duplicated in GN build.

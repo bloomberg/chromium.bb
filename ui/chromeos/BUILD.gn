@@ -49,7 +49,6 @@ component("ui_chromeos") {
     "//skia",
     "//ui/aura",
     "//ui/base",
-    "//ui/base/ime",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/events",

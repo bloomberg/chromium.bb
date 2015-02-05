@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ui_base_export.h"
 
 class Profile;
 
@@ -34,7 +34,7 @@ class ImeKeyboard;
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
 // InputMethodManager::Get().
-class UI_BASE_IME_EXPORT InputMethodManager {
+class UI_BASE_EXPORT InputMethodManager {
  public:
   enum UISessionState {
     STATE_LOGIN_SCREEN = 0,
@@ -181,16 +181,16 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
   // Gets the global instance of InputMethodManager. Initialize() must be called
   // first.
-  static UI_BASE_IME_EXPORT InputMethodManager* Get();
+  static UI_BASE_EXPORT InputMethodManager* Get();
 
   // Sets the global instance. |instance| will be owned by the internal pointer
   // and deleted by Shutdown().
   // TODO(nona): Instanciate InputMethodManagerImpl inside of this function once
   //             crbug.com/164375 is fixed.
-  static UI_BASE_IME_EXPORT void Initialize(InputMethodManager* instance);
+  static UI_BASE_EXPORT void Initialize(InputMethodManager* instance);
 
   // Destroy the global instance.
-  static UI_BASE_IME_EXPORT void Shutdown();
+  static UI_BASE_EXPORT void Shutdown();
 
   // Get the current UI session state (e.g. login screen, lock screen, etc.).
   virtual UISessionState GetUISessionState() = 0;

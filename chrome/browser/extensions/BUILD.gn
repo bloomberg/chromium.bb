@@ -72,7 +72,6 @@ static_library("extensions") {
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/accessibility:ax_gen",
     "//ui/base",
-    "//ui/base/ime",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/resources",

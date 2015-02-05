@@ -25,7 +25,6 @@
         '../../../../printing/printing.gyp:printing',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/aura/aura.gyp:aura',
-        '../../../../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../../../../ui/base/ui_base.gyp:ui_base',
         '../../../../ui/events/events.gyp:events',
         '../../../../ui/events/events.gyp:events_base',

@@ -16,7 +16,6 @@
         '../../base/base.gyp:base_i18n',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
-        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
@@ -150,7 +149,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
-        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../base/ui_base.gyp:ui_base_test_support',
         '../compositor/compositor.gyp:compositor_test_support',
@@ -273,7 +271,6 @@
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
-        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../base/ui_base.gyp:ui_base_test_support',
         '../compositor/compositor.gyp:compositor',

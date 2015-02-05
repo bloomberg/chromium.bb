@@ -17,7 +17,7 @@
 namespace ui {
 
 // A common InputMethod implementation based on IMM32.
-class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
+class UI_BASE_EXPORT InputMethodWin : public InputMethodBase {
  public:
   InputMethodWin(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);

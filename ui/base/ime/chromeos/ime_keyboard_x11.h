@@ -24,12 +24,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class UI_BASE_IME_EXPORT ImeKeyboardX11 : public ImeKeyboard {
+class UI_BASE_EXPORT ImeKeyboardX11 : public ImeKeyboard {
  public:
   ImeKeyboardX11();
   ~ImeKeyboardX11() override;

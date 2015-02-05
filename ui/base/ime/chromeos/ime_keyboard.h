@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -35,7 +35,7 @@ enum ModifierKey {
 
 class InputMethodUtil;
 
-class UI_BASE_IME_EXPORT ImeKeyboard {
+class UI_BASE_EXPORT ImeKeyboard {
  public:
   class Observer {
    public:
@@ -101,16 +101,16 @@ class UI_BASE_IME_EXPORT ImeKeyboard {
 
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.
-  static UI_BASE_IME_EXPORT bool GetAutoRepeatRateForTesting(
+  static UI_BASE_EXPORT bool GetAutoRepeatRateForTesting(
       AutoRepeatRate* out_rate);
 
   // Returns false if |layout_name| contains a bad character.
-  static UI_BASE_IME_EXPORT bool CheckLayoutNameForTesting(
+  static UI_BASE_EXPORT bool CheckLayoutNameForTesting(
       const std::string& layout_name);
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the ImeKeyboard class.
-  static UI_BASE_IME_EXPORT ImeKeyboard* Create();
+  static UI_BASE_EXPORT ImeKeyboard* Create();
 
   bool caps_lock_is_enabled_;
   std::string last_layout_;

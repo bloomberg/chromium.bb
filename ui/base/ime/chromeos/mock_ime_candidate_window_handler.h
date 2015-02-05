@@ -7,11 +7,11 @@
 
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 
-class UI_BASE_IME_EXPORT MockIMECandidateWindowHandler
+class UI_BASE_EXPORT MockIMECandidateWindowHandler
     : public IMECandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {

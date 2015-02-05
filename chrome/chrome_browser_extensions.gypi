@@ -931,7 +931,6 @@
             '../chromeos/ime/input_method.gyp:gencode',
             '../remoting/remoting.gyp:remoting_it2me_host_static',
             '../third_party/libevent/libevent.gyp:libevent',
-            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
           ],
           'sources': [
             '<@(chrome_browser_extensions_chromeos_sources)',

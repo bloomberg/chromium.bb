@@ -21,7 +21,6 @@
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ui_base.gyp:ui_base',
-    '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:gesture_detection',
     '../ui/gfx/gfx.gyp:gfx',

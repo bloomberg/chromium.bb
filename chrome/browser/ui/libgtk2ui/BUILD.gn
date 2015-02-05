@@ -120,7 +120,6 @@ component("libgtk2ui") {
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/aura",
     "//ui/base",
-    "//ui/base/ime",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gfx",

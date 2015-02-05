@@ -51,7 +51,6 @@
         '../../chromeos/chromeos.gyp:power_manager_proto',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
-        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',
         '../events/events.gyp:gesture_detection',

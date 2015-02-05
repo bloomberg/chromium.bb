@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class UI_BASE_IME_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
+class UI_BASE_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
  public:
   typedef base::Callback<base::string16 (const std::string& language_code)>
       LanguageNameLocalizationCallback;
