@@ -312,7 +312,8 @@ class RegistryWatcher : public base::NonThreadSafe {
   void OnObjectSignaled() {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("RegistryWatcher_OnObjectSignaled"));
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "418183 RegistryWatcher::OnObjectSignaled"));
 
     DCHECK(CalledOnValidThread());
     DCHECK(!callback_.is_null());

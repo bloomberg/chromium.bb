@@ -683,7 +683,8 @@ void PolicyLoaderWin::SetupWatches() {
 void PolicyLoaderWin::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("PolicyLoaderWin_OnObjectSignaled"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 PolicyLoaderWin::OnObjectSignaled"));
 
   DCHECK(object == user_policy_changed_event_.handle() ||
          object == machine_policy_changed_event_.handle())

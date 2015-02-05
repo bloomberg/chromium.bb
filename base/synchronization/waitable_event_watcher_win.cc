@@ -39,7 +39,8 @@ WaitableEvent* WaitableEventWatcher::GetWatchedEvent() {
 void WaitableEventWatcher::OnObjectSignaled(HANDLE h) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("WaitableEventWatche_OnObjectSignaled"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 WaitableEventWatcher::OnObjectSignaled"));
 
   WaitableEvent* event = event_;
   EventCallback callback = callback_;

@@ -2288,7 +2288,7 @@ void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "SSLClientSocketNSS::Core::DoReadCallback"));
+          "418183 SSLClientSocketNSS::Core::DoReadCallback"));
   PostOrRunCallback(
       FROM_HERE,
       base::Bind(base::ResetAndReturn(&user_read_callback_), rv));

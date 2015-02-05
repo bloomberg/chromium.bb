@@ -73,7 +73,8 @@ void TimerExpiredTask::TimedOut() {
 void TimerExpiredTask::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("TimerExpiredTask_OnObjectSignaled"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 TimerExpiredTask::OnObjectSignaled"));
 
   process_.Close();
 }

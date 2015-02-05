@@ -92,7 +92,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "PrintSystemWatcherWin_OnObjectSignaled"));
+            "418183 PrintSystemWatcherWin::OnObjectSignaled"));
 
     crash_keys::ScopedPrinterInfo crash_key(printer_info_);
     DWORD change = 0;

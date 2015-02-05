@@ -250,7 +250,7 @@ void TCPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "TCPSocketWin_Core_ReadDelegate_OnObjectSignaled"));
+          "418183 TCPSocketWin::Core::ReadDelegate::OnObjectSignaled"));
 
   DCHECK_EQ(object, core_->read_overlapped_.hEvent);
   if (core_->socket_) {
@@ -268,7 +268,7 @@ void TCPSocketWin::Core::WriteDelegate::OnObjectSignaled(
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "TCPSocketWin_Core_WriteDelegate_OnObjectSignaled"));
+          "418183 TCPSocketWin::Core::WriteDelegate::OnObjectSignaled"));
 
   DCHECK_EQ(object, core_->write_overlapped_.hEvent);
   if (core_->socket_)
@@ -774,7 +774,8 @@ int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
 void TCPSocketWin::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("TCPSocketWin_OnObjectSignaled"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418383 TCPSocketWin::OnObjectSignaled"));
 
   WSANETWORKEVENTS ev;
   if (WSAEnumNetworkEvents(socket_, accept_event_, &ev) == SOCKET_ERROR) {
@@ -963,6 +964,10 @@ void TCPSocketWin::DidCompleteConnect() {
   DCHECK(!read_callback_.is_null());
   int result;
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 TCPSocketWin::DidCompleteConnect1"));
   WSANETWORKEVENTS events;
   int rv = WSAEnumNetworkEvents(socket_, core_->read_overlapped_.hEvent,
                                 &events);
@@ -972,6 +977,11 @@ void TCPSocketWin::DidCompleteConnect() {
     os_error = WSAGetLastError();
     result = MapSystemError(os_error);
   } else if (events.lNetworkEvents & FD_CONNECT) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "418183 TCPSocketWin::DidCompleteConnect2"));
     os_error = events.iErrorCode[FD_CONNECT_BIT];
     result = MapConnectError(os_error);
   } else {
@@ -979,10 +989,18 @@ void TCPSocketWin::DidCompleteConnect() {
     result = ERR_UNEXPECTED;
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 TCPSocketWin::DidCompleteConnect3"));
   connect_os_error_ = os_error;
   DoConnectComplete(result);
   waiting_connect_ = false;
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 TCPSocketWin::DidCompleteConnect4"));
   DCHECK_NE(result, ERR_IO_PENDING);
   base::ResetAndReturn(&read_callback_).Run(result);
 }
@@ -1030,6 +1048,9 @@ void TCPSocketWin::DidSignalRead() {
   DCHECK(waiting_read_);
   DCHECK(!read_callback_.is_null());
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("418183 TCPSocketWin::DidSignalRead1"));
   int os_error = 0;
   WSANETWORKEVENTS network_events;
   int rv = WSAEnumNetworkEvents(socket_, core_->read_overlapped_.hEvent,
@@ -1038,6 +1059,11 @@ void TCPSocketWin::DidSignalRead() {
     os_error = WSAGetLastError();
     rv = MapSystemError(os_error);
   } else if (network_events.lNetworkEvents) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "418183 TCPSocketWin::DidSignalRead2"));
     DCHECK_EQ(network_events.lNetworkEvents & ~(FD_READ | FD_CLOSE), 0);
     // If network_events.lNetworkEvents is FD_CLOSE and
     // network_events.iErrorCode[FD_CLOSE_BIT] is 0, it is a graceful
@@ -1058,6 +1084,11 @@ void TCPSocketWin::DidSignalRead() {
     if (rv == ERR_IO_PENDING)
       return;
   } else {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/418183 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "418183 TCPSocketWin::DidSignalRead3"));
     // This may happen because Read() may succeed synchronously and
     // consume all the received data without resetting the event object.
     core_->WatchForRead();
@@ -1068,10 +1099,10 @@ void TCPSocketWin::DidSignalRead() {
   core_->read_iobuffer_ = NULL;
   core_->read_buffer_length_ = 0;
 
-  DCHECK_NE(rv, ERR_IO_PENDING);
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("TCPSocketWin::DidSignalRead"));
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("418183 TCPSocketWin::DidSignalRead4"));
+  DCHECK_NE(rv, ERR_IO_PENDING);
   base::ResetAndReturn(&read_callback_).Run(rv);
 }
 

@@ -7,6 +7,7 @@
 #include <limits>
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace content {
@@ -109,6 +110,11 @@ Result WebDataConsumerHandleImpl::HandleReadResult(MojoResult mojo_result) {
 }
 
 void WebDataConsumerHandleImpl::OnHandleGotReadable(MojoResult) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455434 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455434 WebDataConsumerHandleImpl::OnHandleGotReadable"));
   DCHECK(client_);
   client_->didGetReadable();
 }

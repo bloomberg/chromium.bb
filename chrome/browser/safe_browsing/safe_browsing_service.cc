@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
@@ -462,18 +463,34 @@ void SafeBrowsingService::StartOnIOThread(
     return;
   enabled_ = true;
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingService::GetProtocolConfig"));
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
 
 #if defined(FULL_SAFE_BROWSING)
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingDatabaseManager::StartOnIOThread"));
   DCHECK(database_manager_.get());
   database_manager_->StartOnIOThread();
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingProtocolManager::Create"));
   DCHECK(!protocol_manager_);
   protocol_manager_ = SafeBrowsingProtocolManager::Create(
       database_manager_.get(), url_request_context_getter, config);
   protocol_manager_->Initialize();
 #endif
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingPingManager::Create"));
   DCHECK(!ping_manager_);
   ping_manager_ = SafeBrowsingPingManager::Create(
       url_request_context_getter, config);

@@ -249,7 +249,8 @@ void StreamListenSocket::UnwatchSocket() {
 void StreamListenSocket::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("StreamListenSocket_OnObjectSignaled"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 StreamListenSocket::OnObjectSignaled"));
 
   WSANETWORKEVENTS ev;
   if (kSocketError == WSAEnumNetworkEvents(socket_, socket_event_, &ev)) {
