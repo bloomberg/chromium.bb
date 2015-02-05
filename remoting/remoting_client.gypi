@@ -159,12 +159,21 @@
             'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2_pnacl.zip',
             'webapp_type': 'v2_pnacl',
             'extra_files': [
-              'webapp/crd/remoting_client_pnacl.nmf',
+              'webapp/crd/remoting_client_pnacl.nmf.jinja2',
               '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
             ],
           },
           'dependencies': [
             'remoting_nacl.gyp:remoting_client_plugin_nacl',
+          ],
+          'conditions': [
+            ['buildtype == "Dev"', {
+              'variables': {
+                'extra_files': [
+                  '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe.debug',
+                ],
+              },
+            }],
           ],
           'includes': [ 'remoting_webapp.gypi', ],
         },  # end of target 'remoting_webapp_v2_pnacl'

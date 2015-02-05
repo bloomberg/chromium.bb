@@ -118,29 +118,20 @@ def buildWebApp(buildtype, version, destination, zip_path,
   if buildtype != 'Official' and buildtype != 'Release' and buildtype != 'Dev':
     raise Exception('Unknown buildtype: ' + buildtype)
 
-  # Use symlinks on linux and mac for faster compile/edit cycle.
-  #
-  # On Windows Vista platform.system() can return 'Microsoft' with some
-  # versions of Python, see http://bugs.python.org/issue1082
-  # should_symlink = platform.system() not in ['Windows', 'Microsoft']
-  #
-  # TODO(ajwong): Pending decision on http://crbug.com/27185 we may not be
-  # able to load symlinked resources.
-  should_symlink = False
+  jinja_context = {
+    'webapp_type': webapp_type,
+    'buildtype': buildtype,
+  }
 
   # Copy all the files.
   for current_file in files:
     destination_file = os.path.join(destination, os.path.basename(current_file))
-    destination_dir = os.path.dirname(destination_file)
-    if not os.path.exists(destination_dir):
-      os.makedirs(destination_dir, 0775)
 
-    if should_symlink:
-      # TODO(ajwong): Detect if we're vista or higher.  Then use win32file
-      # to create a symlink in that case.
-      targetname = os.path.relpath(os.path.realpath(current_file),
-                                   os.path.realpath(destination_file))
-      os.symlink(targetname, destination_file)
+    # Process *.jinja2 files as jinja2 templates
+    if current_file.endswith(".jinja2"):
+      destination_file = destination_file[:-len(".jinja2")]
+      processJinjaTemplate(current_file, jinja_paths,
+                           destination_file, jinja_context)
     else:
       shutil.copy2(current_file, destination_file)
 
