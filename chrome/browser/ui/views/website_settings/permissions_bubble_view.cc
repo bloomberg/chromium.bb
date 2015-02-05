@@ -133,43 +133,10 @@ void PermissionCombobox::PermissionChanged(
       index_, permission.setting == CONTENT_SETTING_ALLOW);
 }
 
-// A combobox originating on the Allow button allowing for customization
-// of permissions.
-class CustomizeAllowComboboxModel : public ui::ComboboxModel {
- public:
-  enum Item {
-    INDEX_ALLOW = 0,
-    INDEX_CUSTOMIZE = 1
-  };
-
-  CustomizeAllowComboboxModel() {}
-  ~CustomizeAllowComboboxModel() override {}
-
-  int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
-  int GetDefaultIndex() const override;
-};
-
-int CustomizeAllowComboboxModel::GetItemCount() const {
-  return 2;
-}
-
-base::string16 CustomizeAllowComboboxModel::GetItemAt(int index) {
-  if (index == INDEX_ALLOW)
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-  else
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_CUSTOMIZE);
-}
-
-int CustomizeAllowComboboxModel::GetDefaultIndex() const {
-  return INDEX_ALLOW;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the permissions bubble.
 class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
                                       public views::ButtonListener,
-                                      public views::ComboboxListener,
                                       public PermissionCombobox::Listener {
  public:
   PermissionsBubbleDelegateView(
@@ -177,8 +144,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
       PermissionBubbleViewViews* owner,
       const std::string& languages,
       const std::vector<PermissionBubbleRequest*>& requests,
-      const std::vector<bool>& accept_state,
-      bool customization_mode);
+      const std::vector<bool>& accept_state);
   ~PermissionsBubbleDelegateView() override;
 
   void Close();
@@ -193,9 +159,6 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
 
   // ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
-
-  // ComboboxListener:
-  void OnPerformAction(views::Combobox* combobox) override;
 
   // PermissionCombobox::Listener:
   void PermissionSelectionChanged(int index, bool allowed) override;
@@ -217,8 +180,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     PermissionBubbleViewViews* owner,
     const std::string& languages,
     const std::vector<PermissionBubbleRequest*>& requests,
-    const std::vector<bool>& accept_state,
-    bool customization_mode)
+    const std::vector<bool>& accept_state)
     : views::BubbleDelegateView(anchor, views::BubbleBorder::TOP_LEFT),
       owner_(owner),
       allow_(NULL),
@@ -244,8 +206,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   for (size_t index = 0; index < requests.size(); index++) {
     DCHECK(index < accept_state.size());
     // The row is laid out containing a leading-aligned label area and a
-    // trailing column which will be filled during customization with a
-    // combobox.
+    // trailing column which will be filled if there are multiple permission
+    // requests.
     views::View* row = new views::View();
     views::GridLayout* row_layout = new views::GridLayout(row);
     row->SetLayoutManager(row_layout);
@@ -272,7 +234,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     label_container->AddChildView(label);
     row_layout->AddView(label_container);
 
-    if (customization_mode) {
+    if (requests.size() > 1) {
       PermissionCombobox* combobox = new PermissionCombobox(
           this,
           index,
@@ -293,8 +255,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   button_row->SetLayoutManager(button_layout);
   AddChildView(button_row);
 
-  // Customization case: just an "OK" button
-  if (customization_mode) {
+  // For multiple permissions: just an "OK" button.
+  if (requests.size() > 1) {
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                        100, views::GridLayout::USE_PREF, 0, 0);
     button_layout->StartRowWithPadding(0, 0, 0, 4);
@@ -308,8 +270,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     return;
   }
 
-  // No customization: lay out the Deny/Allow buttons.
-
+  // For a single permission: lay out the Deny/Allow buttons.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                      100, views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kItemMajorSpacing - (2*kButtonBorderSize));
@@ -317,26 +278,11 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                      0, views::GridLayout::USE_PREF, 0, 0);
   button_layout->StartRow(0, 0);
 
-  // Allow button is a regular button when there's only one option, and a
-  // STYLE_ACTION Combobox when there are more than one option and
-  // customization is an option.
-
   base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-  if (requests.size() == 1) {
-    views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
-    allow_button->SetStyle(views::Button::STYLE_BUTTON);
-    button_layout->AddView(allow_button);
-    allow_ = allow_button;
-  } else {
-    views::Combobox* allow_combobox = new views::Combobox(
-        new CustomizeAllowComboboxModel());
-    allow_combobox->set_listener(this);
-    allow_combobox->SetStyle(views::Combobox::STYLE_ACTION);
-    allow_combobox->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_COMBOBOX));
-    button_layout->AddView(allow_combobox);
-    allow_combobox_ = allow_combobox;
-  }
+  views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
+  allow_button->SetStyle(views::Button::STYLE_BUTTON);
+  button_layout->AddView(allow_button);
+  allow_ = allow_button;
 
   base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
   views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
@@ -403,18 +349,6 @@ void PermissionsBubbleDelegateView::PermissionSelectionChanged(
   owner_->Toggle(index, allowed);
 }
 
-void PermissionsBubbleDelegateView::OnPerformAction(
-    views::Combobox* combobox) {
-  if (combobox == allow_combobox_) {
-    if (combobox->selected_index() ==
-        CustomizeAllowComboboxModel::INDEX_CUSTOMIZE)
-      owner_->SetCustomizationMode();
-    else if (combobox->selected_index() ==
-             CustomizeAllowComboboxModel::INDEX_ALLOW)
-      owner_->Accept();
-  }
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // PermissionBubbleViewViews
 
@@ -437,14 +371,13 @@ void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
 
 void PermissionBubbleViewViews::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
-    const std::vector<bool>& values,
-    bool customization_mode) {
+    const std::vector<bool>& values) {
   if (bubble_delegate_ != NULL)
     bubble_delegate_->Close();
 
   bubble_delegate_ =
       new PermissionsBubbleDelegateView(anchor_view_, this, languages_,
-                                        requests, values, customization_mode);
+                                        requests, values);
   views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();
 }
@@ -484,9 +417,4 @@ void PermissionBubbleViewViews::Accept() {
 void PermissionBubbleViewViews::Deny() {
   if (delegate_)
     delegate_->Deny();
-}
-
-void PermissionBubbleViewViews::SetCustomizationMode() {
-  if (delegate_)
-    delegate_->SetCustomizationMode();
 }

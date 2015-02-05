@@ -26,8 +26,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   // PermissionBubbleView:
   void SetDelegate(Delegate* delegate) override;
   void Show(const std::vector<PermissionBubbleRequest*>& requests,
-            const std::vector<bool>& accept_state,
-            bool customization_mode) override;
+            const std::vector<bool>& accept_state) override;
   bool CanAcceptRequestUpdate() override;
   void Hide() override;
   bool IsVisible() override;
@@ -36,7 +35,6 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   void Toggle(int index, bool value);
   void Accept();
   void Deny();
-  void SetCustomizationMode();
 
  private:
   views::View* anchor_view_;

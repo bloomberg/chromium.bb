@@ -17,7 +17,7 @@ class PermissionBubbleRequest;
     BaseBubbleController<NSTextViewDelegate> {
  @private
   // Array of views that are the checkboxes for every requested permission.
-  // Only populated if |customizationMode| is YES when the UI is shown.
+  // Only populated if multiple requests are shown at once.
   base::scoped_nsobject<NSMutableArray> checkboxes_;
 
   // Delegate to be informed of user actions.
@@ -43,10 +43,6 @@ class PermissionBubbleRequest;
 - (void)showAtAnchor:(NSPoint)anchor
          withDelegate:(PermissionBubbleView::Delegate*)delegate
           forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
-         acceptStates:(const std::vector<bool>&)acceptStates
-    customizationMode:(BOOL)customizationMode;
-
-// Called when a menu item is selected.
-- (void)onMenuItemClicked:(int)commandId;
+         acceptStates:(const std::vector<bool>&)acceptStates;
 
 @end

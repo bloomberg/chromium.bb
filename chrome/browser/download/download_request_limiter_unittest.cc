@@ -41,8 +41,7 @@ class FakePermissionBubbleView : public PermissionBubbleView {
   void SetDelegate(Delegate* delegate) override { delegate_ = delegate; }
 
   void Show(const std::vector<PermissionBubbleRequest*>& requests,
-            const std::vector<bool>& accept_state,
-            bool customization_mode) override;
+            const std::vector<bool>& accept_state) override;
 
   bool CanAcceptRequestUpdate() override { return false; }
 
@@ -206,8 +205,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
 void FakePermissionBubbleView::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
-    const std::vector<bool>& accept_state,
-    bool customization_mode) {
+    const std::vector<bool>& accept_state) {
   test_->AskAllow();
   int action = test_->GetAction();
   if (action == DownloadRequestLimiterTest::ACCEPT) {

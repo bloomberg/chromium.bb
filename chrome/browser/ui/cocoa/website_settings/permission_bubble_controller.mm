@@ -57,9 +57,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                                   ui::Accelerator* accelerator) override {
     return false;
   }
-  void ExecuteCommand(int command_id, int event_flags) override {
-    [bubble_controller_ onMenuItemClicked:command_id];
-  }
  private:
   PermissionBubbleController* bubble_controller_;  // Weak, owns us.
   DISALLOW_COPY_AND_ASSIGN(MenuDelegate);
@@ -68,8 +65,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }  // namespace
 
 // NSPopUpButton with a menu containing two items: allow and block.
-// One AllowBlockMenuButton is used for each requested permission, but only when
-// the permission bubble is in 'customize' mode.
+// One AllowBlockMenuButton is used for each requested permission when there are
+// multiple permissions in the bubble.
 @interface AllowBlockMenuButton : NSPopUpButton {
  @private
   scoped_ptr<PermissionMenuModel> menuModel_;
@@ -183,10 +180,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // Returns an autoreleased NSView displaying a block button.
 - (NSView*)blockButton;
 
-// Returns an autoreleased NSView with a block button and a drop-down menu
-// with one item, which will change the UI to allow customizing the permissions.
-- (NSView*)blockButtonWithCustomizeMenu;
-
 // Returns an autoreleased NSView displaying the close 'x' button.
 - (NSView*)closeButton;
 
@@ -201,9 +194,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 // Called when the 'close' button is pressed.
 - (void)onClose:(id)sender;
-
-// Called when the 'customize' button is pressed.
-- (void)onCustomize:(id)sender;
 
 // Sets the width of both |viewA| and |viewB| to be the larger of the
 // two views' widths.  Does not change either view's origin or height.
@@ -267,32 +257,31 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)showAtAnchor:(NSPoint)anchorPoint
          withDelegate:(PermissionBubbleView::Delegate*)delegate
           forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
-         acceptStates:(const std::vector<bool>&)acceptStates
-    customizationMode:(BOOL)customizationMode {
+         acceptStates:(const std::vector<bool>&)acceptStates {
   DCHECK(!requests.empty());
   DCHECK(delegate);
-  DCHECK(!customizationMode || (requests.size() == acceptStates.size()));
   delegate_ = delegate;
 
   NSView* contentView = [[self window] contentView];
   [contentView setSubviews:@[]];
 
+  BOOL singlePermission = requests.size() == 1;
+
   // Create one button to use as a guide for the permissions' y-offsets.
   base::scoped_nsobject<NSView> allowOrOkButton;
-  if (customizationMode) {
-    NSString* okTitle = l10n_util::GetNSString(IDS_OK);
-    allowOrOkButton.reset([[self buttonWithTitle:okTitle
-                                          action:@selector(ok:)] retain]);
-  } else {
+  if (singlePermission) {
     NSString* allowTitle = l10n_util::GetNSString(IDS_PERMISSION_ALLOW);
     allowOrOkButton.reset([[self buttonWithTitle:allowTitle
                                           action:@selector(onAllow:)] retain]);
+  } else {
+    NSString* okTitle = l10n_util::GetNSString(IDS_OK);
+    allowOrOkButton.reset([[self buttonWithTitle:okTitle
+                                          action:@selector(ok:)] retain]);
   }
   CGFloat yOffset = 2 * kVerticalPadding + NSMaxY([allowOrOkButton frame]);
-  BOOL singlePermission = requests.size() == 1;
 
   base::scoped_nsobject<NSMutableArray> permissionMenus;
-  if (customizationMode)
+  if (!singlePermission)
     permissionMenus.reset([[NSMutableArray alloc] init]);
 
   CGFloat maxPermissionLineWidth = 0;
@@ -305,7 +294,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [permissionView setFrameOrigin:origin];
     [contentView addSubview:permissionView];
 
-    if (customizationMode) {
+    if (!singlePermission) {
       int index = it - requests.begin();
       base::scoped_nsobject<NSView> menu(
           [[self menuForRequest:(*it)
@@ -342,7 +331,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   bubbleFrame.size.height = NSMaxY([titleView frame]) + kVerticalPadding +
                             info_bubble::kBubbleArrowHeight;
 
-  if (customizationMode) {
+  if (!singlePermission) {
     // Add the maximum menu width to the bubble width.
     CGFloat maxMenuWidth = 0;
     for (AllowBlockMenuButton* button in permissionMenus.get()) {
@@ -380,20 +369,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [allowOrOkButton setFrameOrigin:NSMakePoint(xOrigin, kVerticalPadding)];
   [contentView addSubview:allowOrOkButton];
 
-  if (customizationMode) {
-    // Adjust the horizontal origin for each menu so that its right edge
-    // lines up with the right edge of the ok button.
-    CGFloat rightEdge = NSMaxX([allowOrOkButton frame]);
-    for (NSView* view in permissionMenus.get()) {
-      [view setFrameOrigin:NSMakePoint(rightEdge - NSWidth([view frame]),
-                                       NSMinY([view frame]))];
-    }
-  } else {
+  if (singlePermission) {
     base::scoped_nsobject<NSView> blockButton;
-    if (singlePermission)
-      blockButton.reset([[self blockButton] retain]);
-    else
-      blockButton.reset([[self blockButtonWithCustomizeMenu] retain]);
+    blockButton.reset([[self blockButton] retain]);
     CGFloat width = [PermissionBubbleController matchWidthsOf:blockButton
                                                         andOf:allowOrOkButton];
     // Ensure the allow/ok button is still in the correct position.
@@ -403,6 +381,14 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     xOrigin = NSMinX([allowOrOkButton frame]) - width - kBetweenButtonsPadding;
     [blockButton setFrameOrigin:NSMakePoint(xOrigin, kVerticalPadding)];
     [contentView addSubview:blockButton];
+  } else {
+    // Adjust the horizontal origin for each menu so that its right edge
+    // lines up with the right edge of the ok button.
+    CGFloat rightEdge = NSMaxX([allowOrOkButton frame]);
+    for (NSView* view in permissionMenus.get()) {
+      [view setFrameOrigin:NSMakePoint(rightEdge - NSWidth([view frame]),
+                                       NSMinY([view frame]))];
+    }
   }
 
   bubbleFrame = [[self window] frameRectForContentRect:bubbleFrame];
@@ -518,17 +504,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                         action:@selector(onBlock:)];
 }
 
-- (NSView*)blockButtonWithCustomizeMenu {
-  menuDelegate_.reset(new MenuDelegate(self));
-  base::scoped_nsobject<SplitBlockButton> blockButton([[SplitBlockButton alloc]
-      initWithMenuDelegate:menuDelegate_.get()]);
-  [blockButton sizeToFit];
-  [blockButton setEnabled:YES];
-  [blockButton setAction:@selector(onBlock:)];
-  [blockButton setTarget:self];
-  return blockButton.autorelease();
-}
-
 - (NSView*)closeButton {
   int dimension = chrome_style::GetCloseButtonSize();
   NSRect frame = NSMakeRect(0, 0, dimension, dimension);
@@ -557,16 +532,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)onClose:(id)sender {
   DCHECK(delegate_);
   delegate_->Closing();
-}
-
-- (void)onCustomize:(id)sender {
-  DCHECK(delegate_);
-  delegate_->SetCustomizationMode();
-}
-
-- (void)onMenuItemClicked:(int)commandId {
-  DCHECK(commandId == 0);
-  [self onCustomize:nil];
 }
 
 - (void)activateTabWithContents:(content::WebContents*)newContents

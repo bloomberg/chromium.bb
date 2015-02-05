@@ -83,7 +83,6 @@ PermissionBubbleManager::PermissionBubbleManager(
     bubble_showing_(false),
     view_(NULL),
     request_url_has_loaded_(false),
-    customization_mode_(false),
     weak_factory_(this) {}
 
 PermissionBubbleManager::~PermissionBubbleManager() {
@@ -271,12 +270,6 @@ void PermissionBubbleManager::ToggleAccept(int request_index, bool new_value) {
   accept_states_[request_index] = new_value;
 }
 
-void PermissionBubbleManager::SetCustomizationMode() {
-  customization_mode_ = true;
-  if (view_)
-    view_->Show(requests_, accept_states_, customization_mode_);
-}
-
 void PermissionBubbleManager::Accept() {
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   std::vector<bool>::iterator accepts_iter = accept_states_.begin();
@@ -352,7 +345,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
   // Note: this should appear above Show() for testing, since in that
   // case we may do in-line calling of finalization.
   bubble_showing_ = true;
-  view_->Show(requests_, accept_states_, customization_mode_);
+  view_->Show(requests_, accept_states_);
 }
 
 void PermissionBubbleManager::FinalizeBubble() {

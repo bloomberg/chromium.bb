@@ -85,7 +85,6 @@ class PermissionBubbleManager
 
   // PermissionBubbleView::Delegate:
   void ToggleAccept(int request_index, bool new_value) override;
-  void SetCustomizationMode() override;
   void Accept() override;
   void Deny() override;
   void Closing() override;
@@ -137,7 +136,6 @@ class PermissionBubbleManager
   bool request_url_has_loaded_;
 
   std::vector<bool> accept_states_;
-  bool customization_mode_;
 
   base::WeakPtrFactory<PermissionBubbleManager> weak_factory_;
 };

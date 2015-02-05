@@ -32,8 +32,7 @@ class MockView : public PermissionBubbleView {
   void SetDelegate(Delegate* delegate) override { delegate_ = delegate; }
 
   void Show(const std::vector<PermissionBubbleRequest*>& requests,
-            const std::vector<bool>& accept_state,
-            bool customization_state_) override {
+            const std::vector<bool>& accept_state) override {
     shown_ = true;
     permission_requests_ = requests;
     permission_states_ = accept_state;

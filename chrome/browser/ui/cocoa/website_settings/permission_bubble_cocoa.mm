@@ -21,8 +21,7 @@ PermissionBubbleCocoa::~PermissionBubbleCocoa() {
 
 void PermissionBubbleCocoa::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
-    const std::vector<bool>& accept_state,
-    bool customization_mode) {
+    const std::vector<bool>& accept_state) {
   DCHECK(parent_window_);
 
   if (!bubbleController_) {
@@ -34,8 +33,7 @@ void PermissionBubbleCocoa::Show(
   [bubbleController_ showAtAnchor:GetAnchorPoint()
                      withDelegate:delegate_
                       forRequests:requests
-                     acceptStates:accept_state
-                customizationMode:customization_mode];
+                     acceptStates:accept_state];
 }
 
 void PermissionBubbleCocoa::Hide() {

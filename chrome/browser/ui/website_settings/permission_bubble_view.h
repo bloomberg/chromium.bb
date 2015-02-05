@@ -23,7 +23,6 @@ class PermissionBubbleView {
     virtual ~Delegate() {}
 
     virtual void ToggleAccept(int index, bool new_value) = 0;
-    virtual void SetCustomizationMode() = 0;
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;
@@ -43,8 +42,7 @@ class PermissionBubbleView {
   // in this call.
   virtual void Show(
       const std::vector<PermissionBubbleRequest*>& requests,
-      const std::vector<bool>& accept_state,
-      bool customization_mode) = 0;
+      const std::vector<bool>& accept_state) = 0;
 
   // Returns true if the view can accept a new Show() command to coalesce
   // requests. Currently the policy is that this should return true if the view
