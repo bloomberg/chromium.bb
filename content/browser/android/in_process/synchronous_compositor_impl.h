@@ -59,31 +59,29 @@ class SynchronousCompositorImpl
   void NeedsBeginFramesChanged() const;
 
   // SynchronousCompositor
-  virtual bool InitializeHwDraw() override;
-  virtual void ReleaseHwDraw() override;
-  virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
+  bool InitializeHwDraw() override;
+  void ReleaseHwDraw() override;
+  scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
       gfx::Rect clip,
       gfx::Rect viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
-  virtual bool DemandDrawSw(SkCanvas* canvas) override;
-  virtual void ReturnResources(
-      const cc::CompositorFrameAck& frame_ack) override;
-  virtual void SetMemoryPolicy(size_t bytes_limit) override;
-  virtual void DidChangeRootLayerScrollOffset() override;
+  bool DemandDrawSw(SkCanvas* canvas) override;
+  void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
+  void SetMemoryPolicy(size_t bytes_limit) override;
+  void DidChangeRootLayerScrollOffset() override;
 
   // LayerScrollOffsetDelegate
-  virtual gfx::ScrollOffset GetTotalScrollOffset() override;
-  virtual void UpdateRootLayerState(
-      const gfx::ScrollOffset& total_scroll_offset,
-      const gfx::ScrollOffset& max_scroll_offset,
-      const gfx::SizeF& scrollable_size,
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) override;
-  virtual bool IsExternalFlingActive() const override;
+  gfx::ScrollOffset GetTotalScrollOffset() override;
+  void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
+                            const gfx::ScrollOffset& max_scroll_offset,
+                            const gfx::SizeF& scrollable_size,
+                            float page_scale_factor,
+                            float min_page_scale_factor,
+                            float max_page_scale_factor) override;
+  bool IsExternalFlingActive() const override;
 
   void SetInputHandler(cc::InputHandler* input_handler);
   void DidOverscroll(const DidOverscrollParams& params);
@@ -93,7 +91,7 @@ class SynchronousCompositorImpl
   friend class WebContentsUserData<SynchronousCompositorImpl>;
   friend class SynchronousCompositor;
   explicit SynchronousCompositorImpl(WebContents* contents);
-  virtual ~SynchronousCompositorImpl();
+  ~SynchronousCompositorImpl() override;
 
   void SetClient(SynchronousCompositorClient* compositor_client);
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);

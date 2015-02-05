@@ -18,14 +18,14 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   CompositedTouchHandleDrawable(cc::Layer* root_layer,
                                 float dpi_scale,
                                 jobject context);
-  virtual ~CompositedTouchHandleDrawable();
+  ~CompositedTouchHandleDrawable() override;
 
   // ui::TouchHandleDrawable implementation.
-  virtual void SetEnabled(bool enabled) override;
-  virtual void SetOrientation(ui::TouchHandleOrientation orientation) override;
-  virtual void SetAlpha(float alpha) override;
-  virtual void SetFocus(const gfx::PointF& position) override;
-  virtual gfx::RectF GetVisibleBounds() const override;
+  void SetEnabled(bool enabled) override;
+  void SetOrientation(ui::TouchHandleOrientation orientation) override;
+  void SetAlpha(float alpha) override;
+  void SetFocus(const gfx::PointF& position) override;
+  gfx::RectF GetVisibleBounds() const override;
 
   static bool RegisterHandleViewResources(JNIEnv* env);
 

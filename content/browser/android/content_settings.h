@@ -23,10 +23,10 @@ class ContentSettings : public WebContentsObserver {
 
  private:
   // Self-deletes when the underlying WebContents is destroyed.
-  virtual ~ContentSettings();
+  ~ContentSettings() override;
 
   // WebContentsObserver overrides:
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // The Java counterpart to this class.
   JavaObjectWeakGlobalRef content_settings_;

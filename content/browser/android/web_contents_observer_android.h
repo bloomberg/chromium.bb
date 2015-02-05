@@ -27,7 +27,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   WebContentsObserverAndroid(JNIEnv* env,
                              jobject obj,
                              WebContents* web_contents);
-  virtual ~WebContentsObserverAndroid();
+  ~WebContentsObserverAndroid() override;
 
   void Destroy(JNIEnv* env, jobject obj);
 

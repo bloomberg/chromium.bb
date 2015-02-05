@@ -38,9 +38,7 @@ class JavaBridgeThread : public base::android::JavaHandlerThread {
   JavaBridgeThread() : base::android::JavaHandlerThread("JavaBridge") {
     Start();
   }
-  virtual ~JavaBridgeThread() {
-    Stop();
-  }
+  ~JavaBridgeThread() override { Stop(); }
   static bool CurrentlyOn();
 };
 

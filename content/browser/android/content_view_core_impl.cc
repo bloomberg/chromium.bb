@@ -171,7 +171,7 @@ class ContentViewCoreImpl::ContentViewUserData
       : content_view_core_(content_view_core) {
   }
 
-  virtual ~ContentViewUserData() {
+  ~ContentViewUserData() override {
     // TODO(joth): When chrome has finished removing the TabContents class (see
     // crbug.com/107201) consider inverting relationship, so ContentViewCore
     // would own WebContents. That effectively implies making the WebContents

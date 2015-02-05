@@ -73,20 +73,22 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   struct JavaObject;
   friend struct DefaultSingletonTraits<DownloadControllerAndroidImpl>;
   DownloadControllerAndroidImpl();
-  virtual ~DownloadControllerAndroidImpl();
+  ~DownloadControllerAndroidImpl() override;
 
   // DownloadControllerAndroid implementation.
-  virtual void CreateGETDownload(int render_process_id, int render_view_id,
-                                 int request_id) override;
-  virtual void OnDownloadStarted(DownloadItem* download_item) override;
-  virtual void StartContextMenuDownload(
-      const ContextMenuParams& params, WebContents* web_contents,
-      bool is_link) override;
-  virtual void DangerousDownloadValidated(
-      WebContents* web_contents, int download_id, bool accept) override;
+  void CreateGETDownload(int render_process_id,
+                         int render_view_id,
+                         int request_id) override;
+  void OnDownloadStarted(DownloadItem* download_item) override;
+  void StartContextMenuDownload(const ContextMenuParams& params,
+                                WebContents* web_contents,
+                                bool is_link) override;
+  void DangerousDownloadValidated(WebContents* web_contents,
+                                  int download_id,
+                                  bool accept) override;
 
   // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* item) override;
+  void OnDownloadUpdated(DownloadItem* item) override;
 
   typedef base::Callback<void(const DownloadInfoAndroid&)>
       GetDownloadInfoCB;

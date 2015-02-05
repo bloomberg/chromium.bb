@@ -26,19 +26,19 @@ namespace content {
 class SynchronousInputEventFilter : public InputHandlerManagerClient {
  public:
   SynchronousInputEventFilter();
-  virtual ~SynchronousInputEventFilter();
+  ~SynchronousInputEventFilter() override;
 
   InputEventAckState HandleInputEvent(int routing_id,
                                       const blink::WebInputEvent& input_event);
 
   // InputHandlerManagerClient implementation.
-  virtual void SetBoundHandler(const Handler& handler) override;
-  virtual void DidAddInputHandler(int routing_id,
-                                  cc::InputHandler* input_handler) override;
-  virtual void DidRemoveInputHandler(int routing_id) override;
-  virtual void DidOverscroll(int routing_id,
-                             const DidOverscrollParams& params) override;
-  virtual void DidStopFlinging(int routing_id) override;
+  void SetBoundHandler(const Handler& handler) override;
+  void DidAddInputHandler(int routing_id,
+                          cc::InputHandler* input_handler) override;
+  void DidRemoveInputHandler(int routing_id) override;
+  void DidOverscroll(int routing_id,
+                     const DidOverscrollParams& params) override;
+  void DidStopFlinging(int routing_id) override;
 
  private:
   void SetBoundHandlerOnUIThread(const Handler& handler);

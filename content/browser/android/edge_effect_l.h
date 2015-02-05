@@ -29,21 +29,21 @@ namespace content {
 class EdgeEffectL : public EdgeEffectBase {
  public:
   explicit EdgeEffectL(ui::ResourceManager* resource_manager);
-  virtual ~EdgeEffectL();
+  ~EdgeEffectL() override;
 
-  virtual void Pull(base::TimeTicks current_time,
-                    float delta_distance,
-                    float displacement) override;
-  virtual void Absorb(base::TimeTicks current_time, float velocity) override;
-  virtual bool Update(base::TimeTicks current_time) override;
-  virtual void Release(base::TimeTicks current_time) override;
+  void Pull(base::TimeTicks current_time,
+            float delta_distance,
+            float displacement) override;
+  void Absorb(base::TimeTicks current_time, float velocity) override;
+  bool Update(base::TimeTicks current_time) override;
+  void Release(base::TimeTicks current_time) override;
 
-  virtual void Finish() override;
-  virtual bool IsFinished() const override;
+  void Finish() override;
+  bool IsFinished() const override;
 
-  virtual void ApplyToLayers(const gfx::SizeF& size,
-                             const gfx::Transform& transform) override;
-  virtual void SetParent(cc::Layer* parent) override;
+  void ApplyToLayers(const gfx::SizeF& size,
+                     const gfx::Transform& transform) override;
+  void SetParent(cc::Layer* parent) override;
 
   // Thread-safe trigger to load resources.
   static void PreloadResources(ui::ResourceManager* resource_manager);

@@ -16,14 +16,14 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
   PopupTouchHandleDrawable(base::android::ScopedJavaLocalRef<jobject> drawable,
                            float dpi_scale);
-  virtual ~PopupTouchHandleDrawable();
+  ~PopupTouchHandleDrawable() override;
 
   // ui::TouchHandleDrawable implementation.
-  virtual void SetEnabled(bool enabled) override;
-  virtual void SetOrientation(ui::TouchHandleOrientation orientation) override;
-  virtual void SetAlpha(float alpha) override;
-  virtual void SetFocus(const gfx::PointF& position) override;
-  virtual gfx::RectF GetVisibleBounds() const override;
+  void SetEnabled(bool enabled) override;
+  void SetOrientation(ui::TouchHandleOrientation orientation) override;
+  void SetAlpha(float alpha) override;
+  void SetFocus(const gfx::PointF& position) override;
+  gfx::RectF GetVisibleBounds() const override;
 
   static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
 

@@ -39,7 +39,7 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
   OverscrollControllerAndroid(WebContents* web_contents,
                               ui::WindowAndroidCompositor* compositor,
                               float dpi_scale);
-  virtual ~OverscrollControllerAndroid();
+  ~OverscrollControllerAndroid() override;
 
   // Returns true if |event| is consumed by an overscroll effect, in which
   // case it should cease propagation.

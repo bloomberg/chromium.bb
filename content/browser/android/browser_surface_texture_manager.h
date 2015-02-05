@@ -15,20 +15,18 @@ class BrowserSurfaceTextureManager : public SurfaceTextureManager,
                                      public SurfaceTexturePeer {
  public:
   BrowserSurfaceTextureManager();
-  virtual ~BrowserSurfaceTextureManager();
+  ~BrowserSurfaceTextureManager() override;
 
   // Overridden from SurfaceTextureManager:
-  virtual void RegisterSurfaceTexture(
-      int surface_texture_id,
-      int client_id,
-      gfx::SurfaceTexture* surface_texture) override;
-  virtual void UnregisterSurfaceTexture(int surface_texture_id,
-                                        int client_id) override;
-  virtual gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
+  void RegisterSurfaceTexture(int surface_texture_id,
+                              int client_id,
+                              gfx::SurfaceTexture* surface_texture) override;
+  void UnregisterSurfaceTexture(int surface_texture_id, int client_id) override;
+  gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override;
 
   // Overridden from SurfaceTexturePeer:
-  virtual void EstablishSurfaceTexturePeer(
+  void EstablishSurfaceTexturePeer(
       base::ProcessHandle render_process_handle,
       scoped_refptr<gfx::SurfaceTexture> surface_texture,
       int render_frame_id,

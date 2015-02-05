@@ -18,7 +18,7 @@ class SynchronousCompositorExternalBeginFrameSource
     : public cc::BeginFrameSourceMixIn {
  public:
   explicit SynchronousCompositorExternalBeginFrameSource(int routing_id);
-  virtual ~SynchronousCompositorExternalBeginFrameSource();
+  ~SynchronousCompositorExternalBeginFrameSource() override;
 
   void BeginFrame();
 

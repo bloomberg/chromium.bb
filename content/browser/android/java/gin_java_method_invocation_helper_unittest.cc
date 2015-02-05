@@ -18,29 +18,27 @@ class NullObjectDelegate
  public:
   NullObjectDelegate() {}
 
-  virtual ~NullObjectDelegate() {}
+  ~NullObjectDelegate() override {}
 
-  virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
-      JNIEnv* env) override {
+  base::android::ScopedJavaLocalRef<jobject> GetLocalRef(JNIEnv* env) override {
     return base::android::ScopedJavaLocalRef<jobject>();
   }
 
-  virtual base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
+  base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
       JNIEnv* env) override {
     return base::android::ScopedJavaLocalRef<jclass>();
   }
 
-  virtual const JavaMethod* FindMethod(const std::string& method_name,
-                                       size_t num_parameters) override {
+  const JavaMethod* FindMethod(const std::string& method_name,
+                               size_t num_parameters) override {
     return NULL;
   }
 
-  virtual bool IsObjectGetClassMethod(const JavaMethod* method) override {
+  bool IsObjectGetClassMethod(const JavaMethod* method) override {
     return false;
   }
 
-  virtual const base::android::JavaRef<jclass>& GetSafeAnnotationClass()
-      override {
+  const base::android::JavaRef<jclass>& GetSafeAnnotationClass() override {
     return safe_annotation_class_;
   }
 
@@ -55,9 +53,9 @@ class NullDispatcherDelegate
  public:
   NullDispatcherDelegate() {}
 
-  virtual ~NullDispatcherDelegate() {}
+  ~NullDispatcherDelegate() override {}
 
-  virtual JavaObjectWeakGlobalRef GetObjectWeakRef(
+  JavaObjectWeakGlobalRef GetObjectWeakRef(
       GinJavaBoundObject::ObjectID object_id) override {
     return JavaObjectWeakGlobalRef();
   }
@@ -77,9 +75,9 @@ class CountingDispatcherDelegate
  public:
   CountingDispatcherDelegate() {}
 
-  virtual ~CountingDispatcherDelegate() {}
+  ~CountingDispatcherDelegate() override {}
 
-  virtual JavaObjectWeakGlobalRef GetObjectWeakRef(
+  JavaObjectWeakGlobalRef GetObjectWeakRef(
       GinJavaBoundObject::ObjectID object_id) override {
     counters_[object_id]++;
     return JavaObjectWeakGlobalRef();
@@ -176,16 +174,15 @@ class ObjectIsGoneObjectDelegate : public NullObjectDelegate {
     method_.reset(new JavaMethod(method_obj));
   }
 
-  virtual ~ObjectIsGoneObjectDelegate() {}
+  ~ObjectIsGoneObjectDelegate() override {}
 
-  virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
-      JNIEnv* env) override {
+  base::android::ScopedJavaLocalRef<jobject> GetLocalRef(JNIEnv* env) override {
     get_local_ref_called_ = true;
     return NullObjectDelegate::GetLocalRef(env);
   }
 
-  virtual const JavaMethod* FindMethod(const std::string& method_name,
-                                       size_t num_parameters) override {
+  const JavaMethod* FindMethod(const std::string& method_name,
+                               size_t num_parameters) override {
     return method_.get();
   }
 
@@ -230,16 +227,15 @@ class MethodNotFoundObjectDelegate : public NullObjectDelegate {
  public:
   MethodNotFoundObjectDelegate() : find_method_called_(false) {}
 
-  virtual ~MethodNotFoundObjectDelegate() {}
+  ~MethodNotFoundObjectDelegate() override {}
 
-  virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
-      JNIEnv* env) override {
+  base::android::ScopedJavaLocalRef<jobject> GetLocalRef(JNIEnv* env) override {
     return base::android::ScopedJavaLocalRef<jobject>(
         env, static_cast<jobject>(env->FindClass("java/lang/String")));
   }
 
-  virtual const JavaMethod* FindMethod(const std::string& method_name,
-                                       size_t num_parameters) override {
+  const JavaMethod* FindMethod(const std::string& method_name,
+                               size_t num_parameters) override {
     find_method_called_ = true;
     return NULL;
   }
@@ -282,15 +278,15 @@ class GetClassObjectDelegate : public MethodNotFoundObjectDelegate {
  public:
   GetClassObjectDelegate() : get_class_called_(false) {}
 
-  virtual ~GetClassObjectDelegate() {}
+  ~GetClassObjectDelegate() override {}
 
-  virtual const JavaMethod* FindMethod(const std::string& method_name,
-                                       size_t num_parameters) override {
+  const JavaMethod* FindMethod(const std::string& method_name,
+                               size_t num_parameters) override {
     find_method_called_ = true;
     return kFakeGetClass;
   }
 
-  virtual bool IsObjectGetClassMethod(const JavaMethod* method) override {
+  bool IsObjectGetClassMethod(const JavaMethod* method) override {
     get_class_called_ = true;
     return kFakeGetClass == method;
   }

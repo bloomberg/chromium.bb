@@ -50,12 +50,12 @@ class SynchronousCompositorOutputSurface
   explicit SynchronousCompositorOutputSurface(
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
-  virtual ~SynchronousCompositorOutputSurface();
+  ~SynchronousCompositorOutputSurface() override;
 
   // OutputSurface.
-  virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) override;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
+  void Reshape(const gfx::Size& size, float scale_factor) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
   void SetBeginFrameSource(
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source);

@@ -15,17 +15,15 @@ class GinJavaBoundObjectDelegate
     : public GinJavaMethodInvocationHelper::ObjectDelegate {
  public:
   GinJavaBoundObjectDelegate(scoped_refptr<GinJavaBoundObject> object);
-  virtual ~GinJavaBoundObjectDelegate();
+  ~GinJavaBoundObjectDelegate() override;
 
-  virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
+  base::android::ScopedJavaLocalRef<jobject> GetLocalRef(JNIEnv* env) override;
+  base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
       JNIEnv* env) override;
-  virtual base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
-      JNIEnv* env) override;
-  virtual const JavaMethod* FindMethod(const std::string& method_name,
-                                       size_t num_parameters) override;
-  virtual bool IsObjectGetClassMethod(const JavaMethod* method) override;
-  virtual const base::android::JavaRef<jclass>& GetSafeAnnotationClass()
-      override;
+  const JavaMethod* FindMethod(const std::string& method_name,
+                               size_t num_parameters) override;
+  bool IsObjectGetClassMethod(const JavaMethod* method) override;
+  const base::android::JavaRef<jclass>& GetSafeAnnotationClass() override;
 
  private:
   scoped_refptr<GinJavaBoundObject> object_;

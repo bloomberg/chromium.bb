@@ -38,7 +38,7 @@ jmethodID GetMethodIDWrapper(JNIEnv* env, jclass clazz, const char* method,
 
 class JNIAndroidTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     g_previous_functions = env->functions;
     hooked_functions = *g_previous_functions;
@@ -46,7 +46,7 @@ class JNIAndroidTest : public testing::Test {
     hooked_functions.GetMethodID = &GetMethodIDWrapper;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     env->functions = g_previous_functions;
     Reset();

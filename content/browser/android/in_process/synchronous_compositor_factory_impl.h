@@ -25,28 +25,27 @@ namespace content {
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
   SynchronousCompositorFactoryImpl();
-  virtual ~SynchronousCompositorFactoryImpl();
+  ~SynchronousCompositorFactoryImpl() override;
 
   // SynchronousCompositorFactory
-  virtual scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop()
-      override;
-  virtual bool RecordFullLayer() override;
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+  scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop() override;
+  bool RecordFullLayer() override;
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
       override;
-  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() override;
-  virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+  InputHandlerManagerClient* GetInputHandlerManagerClient() override;
+  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
-  virtual scoped_refptr<cc_blink::ContextProviderWebContext>
+  scoped_refptr<cc_blink::ContextProviderWebContext>
   CreateOffscreenContextProvider(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       const std::string& debug_name) override;
-  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
+  scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) override;
-  virtual gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
-      CreateOffscreenGraphicsContext3D(
-          const blink::WebGraphicsContext3D::Attributes& attributes) override;
+  gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
+  CreateOffscreenGraphicsContext3D(
+      const blink::WebGraphicsContext3D::Attributes& attributes) override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;
