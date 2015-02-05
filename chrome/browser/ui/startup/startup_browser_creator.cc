@@ -276,8 +276,7 @@ bool StartupBrowserCreator::LaunchBrowser(
     Profile* profile,
     const base::FilePath& cur_dir,
     chrome::startup::IsProcessStartup process_startup,
-    chrome::startup::IsFirstRun is_first_run,
-    int* return_code) {
+    chrome::startup::IsFirstRun is_first_run) {
   in_synchronous_profile_launch_ =
       process_startup == chrome::startup::IS_PROCESS_STARTUP;
   DCHECK(profile);
@@ -320,8 +319,6 @@ bool StartupBrowserCreator::LaunchBrowser(
     in_synchronous_profile_launch_ = false;
     if (!launched) {
       LOG(ERROR) << "launch error";
-      if (return_code)
-        *return_code = chrome::RESULT_CODE_INVALID_CMDLINE_URL;
       return false;
     }
   } else {
@@ -485,7 +482,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles,
-    int* return_code,
     StartupBrowserCreator* browser_creator) {
   VLOG(2) << "ProcessCmdLineImpl : BEGIN";
   DCHECK(last_used_profile);
@@ -719,7 +715,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     VLOG(2) << "ProcessCmdLineImpl: PLACE 8.A";
     if (!browser_creator->LaunchBrowser(command_line, profile_to_open,
                                         cur_dir, is_process_startup,
-                                        is_first_run, return_code)) {
+                                        is_first_run)) {
       return false;
     }
   } else {
@@ -761,7 +757,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
       if (!browser_creator->LaunchBrowser((*it == last_used_profile) ?
           command_line : command_line_without_urls, *it, cur_dir,
-          is_process_startup, is_first_run, return_code))
+          is_process_startup, is_first_run))
         return false;
       // We've launched at least one browser.
       is_process_startup = chrome::startup::IS_NOT_PROCESS_STARTUP;
@@ -815,9 +811,9 @@ void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
     const base::FilePath& cur_dir,
     Profile* profile,
     Profile::CreateStatus status) {
-  if (status == Profile::CREATE_STATUS_INITIALIZED)
-    ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL,
-                       NULL);
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+  ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL);
 }
 
 // static
@@ -837,8 +833,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     return;
   }
 
-  ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL,
-                     NULL);
+  ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL);
 }
 
 // static

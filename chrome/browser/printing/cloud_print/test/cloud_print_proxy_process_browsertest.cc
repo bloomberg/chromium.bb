@@ -322,11 +322,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   base::CommandLine MakeCmdLine(const std::string& procname) override;
 
   bool LaunchBrowser(const base::CommandLine& command_line, Profile* profile) {
-    int return_code = 0;
     StartupBrowserCreator browser_creator;
     return StartupBrowserCreator::ProcessCmdLineImpl(
         command_line, base::FilePath(), false, profile,
-        StartupBrowserCreator::Profiles(), &return_code, &browser_creator);
+        StartupBrowserCreator::Profiles(), &browser_creator);
   }
 
  protected:

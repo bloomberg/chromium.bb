@@ -60,7 +60,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
 
-  int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile_1);
@@ -68,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   last_opened_profiles.push_back(profile_3);
   last_opened_profiles.push_back(profile_4);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_2,
-                        last_opened_profiles, &return_code);
+                        last_opened_profiles);
 
   while (!browser_creator.ActivatedProfile())
     base::MessageLoop::current()->RunUntilIdle();
@@ -104,6 +103,5 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
                                        browser()->host_desktop_type());
   ASSERT_TRUE(new_browser);
   EXPECT_FALSE(new_browser->window()->IsActive());
-
 }
 #endif  // !OS_MACOSX && !OS_CHROMEOS

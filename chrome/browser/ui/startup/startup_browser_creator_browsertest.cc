@@ -659,13 +659,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
 
-  int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(default_profile);
   last_opened_profiles.push_back(other_profile);
   browser_creator.Start(dummy, profile_manager->user_data_dir(),
-                        default_profile, last_opened_profiles, &return_code);
+                        default_profile, last_opened_profiles);
 
   // urls1 were opened in a browser for default_profile, and urls2 were opened
   // in a browser for other_profile.
@@ -776,13 +775,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Simulate a launch after a browser update.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile1);
   last_opened_profiles.push_back(profile2);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile1,
-                        last_opened_profiles, &return_code);
+                        last_opened_profiles);
 
   while (SessionRestore::IsRestoring(profile1) ||
          SessionRestore::IsRestoring(profile2))
@@ -880,7 +878,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
 
-  int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile_home1);
@@ -888,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   last_opened_profiles.push_back(profile_last);
   last_opened_profiles.push_back(profile_urls);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home1,
-                        last_opened_profiles, &return_code);
+                        last_opened_profiles);
 
   while (SessionRestore::IsRestoring(default_profile) ||
          SessionRestore::IsRestoring(profile_home1) ||
@@ -997,14 +994,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   dummy.AppendSwitchASCII(switches::kTestType, "browser");
-  int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile_home);
   last_opened_profiles.push_back(profile_last);
   last_opened_profiles.push_back(profile_urls);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home,
-                        last_opened_profiles, &return_code);
+                        last_opened_profiles);
 
   // No profiles are getting restored, since they all display the crash info
   // bar.

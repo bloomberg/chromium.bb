@@ -262,10 +262,9 @@ void FindOrCreateNewWindowForProfile(
 
   content::RecordAction(UserMetricsAction("NewWindow"));
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  int return_code;
   StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowser(command_line, profile, base::FilePath(),
-                                process_startup, is_first_run, &return_code);
+  browser_creator.LaunchBrowser(
+      command_line, profile, base::FilePath(), process_startup, is_first_run);
 #endif  // defined(OS_IOS)
 }
 

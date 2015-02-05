@@ -1482,14 +1482,13 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   if (should_launch_browser_) {
     StartupBrowserCreator browser_creator;
-    int return_code;
     chrome::startup::IsFirstRun first_run =
         ::first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
                                         : chrome::startup::IS_NOT_FIRST_RUN;
 
     browser_creator.LaunchBrowser(
         *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
-        chrome::startup::IS_PROCESS_STARTUP, first_run, &return_code);
+        chrome::startup::IS_PROCESS_STARTUP, first_run);
 
     // Triggers app launcher start page service to load start page web contents.
     app_list::StartPageService::Get(profile);
