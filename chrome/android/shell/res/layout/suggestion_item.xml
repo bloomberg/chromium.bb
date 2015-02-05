@@ -12,7 +12,7 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/inner_layout"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -28,6 +28,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textAlignment="viewStart"
+            android:gravity="start"
             android:textSize="18sp"
             android:includeFontPadding="false"/>
 
@@ -41,6 +42,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textAlignment="viewStart"
+            android:gravity="start"
             android:includeFontPadding="false"/>
     </LinearLayout>
 
@@ -51,6 +53,7 @@
         android:layout_height="match_parent"
         android:gravity="end"
         android:scaleType="center"
-        android:src="@drawable/suggestion_arrow"/>
+        android:src="@drawable/suggestion_arrow"
+        android:contentDescription="@null" />
 </LinearLayout>
 

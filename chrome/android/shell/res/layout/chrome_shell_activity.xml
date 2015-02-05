@@ -39,8 +39,6 @@
                 android:layout_weight="1"
                 android:gravity="bottom"
                 android:textSize="18sp"
-                android:autoText="true"
-                android:capitalize="sentences"
                 android:singleLine="true"
                 android:selectAllOnFocus="true"
                 android:hint="@string/url_hint"

@@ -9,7 +9,7 @@
     <group
         android:id="@+id/MAIN_MENU"
         android:visible="false" >
-        <item>
+        <item android:title="@null">
             <menu>
                 <item
                     android:id="@+id/back_menu_id"
@@ -37,7 +37,7 @@
         <item
             android:id="@+id/distill_page"
             android:title="@string/distill_page_menu"/>
-        <item>
+        <item android:title="@null">
             <menu>
                 <item
                     android:id="@+id/share_menu_id"
