@@ -1238,81 +1238,44 @@ class DeviceUtilsStatTest(DeviceUtilsNewImplTest):
         self.device.Stat('/data/local/tmp/does.not.exist.txt')
 
 
-class DeviceUtilsSetJavaAssertsTest(DeviceUtilsOldImplTest):
-
-  @staticmethod
-  def mockNamedTemporary(name='/tmp/file/property.file',
-                         read_contents=''):
-    mock_file = mock.MagicMock(spec=file)
-    mock_file.name = name
-    mock_file.__enter__.return_value = mock_file
-    mock_file.read.return_value = read_contents
-    return mock_file
+class DeviceUtilsSetJavaAssertsTest(DeviceUtilsNewImplTest):
 
   def testSetJavaAsserts_enable(self):
-    mock_file = self.mockNamedTemporary()
-    with mock.patch('tempfile.NamedTemporaryFile',
-                    return_value=mock_file), (
-         mock.patch('__builtin__.open', return_value=mock_file)):
-      with self.assertCallsSequence(
-          [('adb -s 0123456789abcdef shell ls %s' %
-                constants.DEVICE_LOCAL_PROPERTIES_PATH,
-            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
-           ('adb -s 0123456789abcdef pull %s %s' %
-                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
-            '100 B/s (100 bytes in 1.000s)\r\n'),
-           ('adb -s 0123456789abcdef push %s %s' %
-                (mock_file.name, constants.DEVICE_LOCAL_PROPERTIES_PATH),
-            '100 B/s (100 bytes in 1.000s)\r\n'),
-           ('adb -s 0123456789abcdef shell '
-                'getprop dalvik.vm.enableassertions',
-            '\r\n'),
-           ('adb -s 0123456789abcdef shell '
-                'setprop dalvik.vm.enableassertions "all"',
-            '')]):
-        self.assertTrue(self.device.SetJavaAsserts(True))
+    with self.assertCalls(
+        (self.call.device.ReadFile(constants.DEVICE_LOCAL_PROPERTIES_PATH),
+         'some.example.prop=with an example value\n'
+         'some.other.prop=value_ok\n'),
+        self.call.device.WriteFile(
+            constants.DEVICE_LOCAL_PROPERTIES_PATH,
+            'some.example.prop=with an example value\n'
+            'some.other.prop=value_ok\n'
+            'dalvik.vm.enableassertions=all\n'),
+        (self.call.device.GetProp('dalvik.vm.enableassertions'), ''),
+        self.call.device.SetProp('dalvik.vm.enableassertions', 'all')):
+      self.assertTrue(self.device.SetJavaAsserts(True))
 
   def testSetJavaAsserts_disable(self):
-    mock_file = self.mockNamedTemporary(
-        read_contents='dalvik.vm.enableassertions=all\n')
-    with mock.patch('tempfile.NamedTemporaryFile',
-                    return_value=mock_file), (
-         mock.patch('__builtin__.open', return_value=mock_file)):
-      with self.assertCallsSequence(
-          [('adb -s 0123456789abcdef shell ls %s' %
-                constants.DEVICE_LOCAL_PROPERTIES_PATH,
-            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
-           ('adb -s 0123456789abcdef pull %s %s' %
-                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
-            '100 B/s (100 bytes in 1.000s)\r\n'),
-           ('adb -s 0123456789abcdef push %s %s' %
-                (mock_file.name, constants.DEVICE_LOCAL_PROPERTIES_PATH),
-            '100 B/s (100 bytes in 1.000s)\r\n'),
-           ('adb -s 0123456789abcdef shell '
-                'getprop dalvik.vm.enableassertions',
-            'all\r\n'),
-           ('adb -s 0123456789abcdef shell '
-                'setprop dalvik.vm.enableassertions ""',
-            '')]):
-        self.assertTrue(self.device.SetJavaAsserts(False))
+    with self.assertCalls(
+        (self.call.device.ReadFile(constants.DEVICE_LOCAL_PROPERTIES_PATH),
+         'some.example.prop=with an example value\n'
+         'dalvik.vm.enableassertions=all\n'
+         'some.other.prop=value_ok\n'),
+        self.call.device.WriteFile(
+            constants.DEVICE_LOCAL_PROPERTIES_PATH,
+            'some.example.prop=with an example value\n'
+            'some.other.prop=value_ok\n'),
+        (self.call.device.GetProp('dalvik.vm.enableassertions'), 'all'),
+        self.call.device.SetProp('dalvik.vm.enableassertions', '')):
+      self.assertTrue(self.device.SetJavaAsserts(False))
 
   def testSetJavaAsserts_alreadyEnabled(self):
-    mock_file = self.mockNamedTemporary(
-        read_contents='dalvik.vm.enableassertions=all\n')
-    with mock.patch('tempfile.NamedTemporaryFile',
-                    return_value=mock_file), (
-         mock.patch('__builtin__.open', return_value=mock_file)):
-      with self.assertCallsSequence(
-          [('adb -s 0123456789abcdef shell ls %s' %
-                constants.DEVICE_LOCAL_PROPERTIES_PATH,
-            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
-           ('adb -s 0123456789abcdef pull %s %s' %
-                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
-            '100 B/s (100 bytes in 1.000s)\r\n'),
-           ('adb -s 0123456789abcdef shell '
-                'getprop dalvik.vm.enableassertions',
-            'all\r\n')]):
-        self.assertFalse(self.device.SetJavaAsserts(True))
+    with self.assertCalls(
+        (self.call.device.ReadFile(constants.DEVICE_LOCAL_PROPERTIES_PATH),
+         'some.example.prop=with an example value\n'
+         'dalvik.vm.enableassertions=all\n'
+         'some.other.prop=value_ok\n'),
+        (self.call.device.GetProp('dalvik.vm.enableassertions'), 'all')):
+      self.assertFalse(self.device.SetJavaAsserts(True))
 
 
 class DeviceUtilsGetPropTest(DeviceUtilsNewImplTest):
