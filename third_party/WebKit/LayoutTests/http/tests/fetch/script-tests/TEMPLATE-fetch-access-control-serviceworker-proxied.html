@@ -12,15 +12,13 @@ function onlyOnServiceWorkerProxiedTest(checkFuncs) {
   return checkFuncs;
 }
 </script>
-<script src = "../script-tests/TESTNAME.js"></script>
+<script src = "../script-tests/TESTNAME.js?OPTIONS"></script>
 </head>
 <body>
 <script>
-if (window.testRunner) {
-    testRunner.setAlwaysAcceptCookies(true);
+function start() {
+  executeServiceWorkerProxiedTests(TEST_TARGETS);
 }
-
-var test = async_test('Verify access control of fetch() in a Service Worker');
-executeServiceWorkerProxiedTests(test, TEST_TARGETS);
 </script>
+<script src = "../resources/fetch-access-control-util-init.js"></script>
 </body>

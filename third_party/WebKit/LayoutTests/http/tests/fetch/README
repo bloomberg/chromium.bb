@@ -10,6 +10,9 @@ For each test (say X), we have
 Some tests that require a serviceworker to test CORS requests are executed in
 - /fetch/serviceworker-proxied/X.html.
 
+Fetch-access-control tests has more files related to HTTPS tests.
+See generate.py for more details.
+
 Run
 $ python generate.py
 at this (/LayoutTests/http/tests/fetch/) directory to generate these files

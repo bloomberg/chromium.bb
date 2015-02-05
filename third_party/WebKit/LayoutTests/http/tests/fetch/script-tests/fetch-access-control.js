@@ -7,14 +7,16 @@ var referer;
 
 if (self.importScripts) {
   // fetch/workers or fetch/serviceworker
-  referer = 'http://127.0.0.1:8000/fetch/script-tests/fetch-access-control.js';
-} else if(location.pathname ==
-    '/fetch/serviceworker-proxied/fetch-access-control.html') {
+  referer = BASE_ORIGIN +
+            '/fetch/script-tests/fetch-access-control.js?' + TEST_OPTIONS;
+} else if(location.pathname.startsWith(
+    '/fetch/serviceworker-proxied/fetch-access-control')) {
   // fetch/serviceworker-proxied
   referer = WORKER_URL;
 } else {
   // fetch/window
-  referer = 'http://127.0.0.1:8000/fetch/window/fetch-access-control.html';
+  referer = BASE_ORIGIN +
+            '/fetch/window/fetch-access-control' + TEST_OPTIONS + '.html';
 }
 
 var TEST_TARGETS = [

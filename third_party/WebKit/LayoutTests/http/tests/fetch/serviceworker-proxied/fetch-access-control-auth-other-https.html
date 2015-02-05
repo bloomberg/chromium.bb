@@ -1,0 +1,24 @@
+<!doctype html>
+<head>
+<meta name="timeout" content="long"></meta>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/resources/testharness-helpers.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+<script src = "../resources/fetch-test-helpers.js"></script>
+<script src = "/serviceworker/resources/fetch-access-control-util.js"></script>
+<script>
+function onlyOnServiceWorkerProxiedTest(checkFuncs) {
+  return checkFuncs;
+}
+</script>
+<script src = "../script-tests/fetch-access-control-auth.js?-other-https"></script>
+</head>
+<body>
+<script>
+function start() {
+  executeServiceWorkerProxiedTests(TEST_TARGETS);
+}
+</script>
+<script src = "../resources/fetch-access-control-util-init.js"></script>
+</body>

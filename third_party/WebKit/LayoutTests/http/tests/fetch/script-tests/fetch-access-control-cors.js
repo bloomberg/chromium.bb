@@ -42,10 +42,11 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN,
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000,http://www.example.com',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN +
+   ',http://www.example.com',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://www.example.com',
    [fetchRejected]],
@@ -56,13 +57,15 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*&ACEHeaders=X-ServiceWorker-ServerHeader',
    [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN +
+   '&ACEHeaders=X-ServiceWorker-ServerHeader',
    [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN +
+   '&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET]],
 
@@ -73,18 +76,22 @@ var TEST_TARGETS = [
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN,
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, hasCustomHeader]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN +
+   '&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET, hasCustomHeader]],
 
@@ -146,10 +153,11 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPOST]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=' + BASE_ORIGIN,
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPOST]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000,http://www.example.com',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=' + BASE_ORIGIN +
+   ',http://www.example.com',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://www.example.com',
    [fetchRejected]],
@@ -160,13 +168,15 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*&ACEHeaders=X-ServiceWorker-ServerHeader',
    [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=' + BASE_ORIGIN +
+   '&ACEHeaders=X-ServiceWorker-ServerHeader',
    [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST]],
   [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=' + BASE_ORIGIN +
+   '&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST]],
 
@@ -183,12 +193,16 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN,
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPOST, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=' +
+   BASE_ORIGIN +
+   '&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPOST, hasCustomHeader]],
 
@@ -274,25 +288,32 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN,
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&ACAMethods=PUT',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&ACAMethods=PUT',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPUT]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
 
@@ -386,25 +407,32 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN,
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&ACAMethods=XXX',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&ACAMethods=XXX',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsXXX]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=XXX',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
-  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=' + BASE_ORIGIN +
+   '&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
 

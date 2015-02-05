@@ -80,7 +80,8 @@ var TEST_TARGETS = [
   // success if ACAOrigin is * or request's origin, or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=' +
+   BASE_ORIGIN,
    [fetchResolved, hasBody], [checkJsonpError]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=http://www.example.com',
    [fetchRejected]],
@@ -90,26 +91,30 @@ var TEST_TARGETS = [
   // or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN,
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://www.example.com',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&ACACredentials=true',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&ACACredentials=true',
    [fetchResolved, hasBody, typeCors], [authCheck2]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://www.example.com&ACACredentials=true',
    [fetchRejected]],
 
   // Test that Access-Control-Allow-Credentials is case-sensitive.
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=True',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&ACACredentials=True',
    [fetchRejected]],
 
   // If credentials mode is not include,
   // success if ACAOrigin is * or request's origin, or failure otherwise.
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=http://127.0.0.1:8000',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=' +
+   BASE_ORIGIN,
    [fetchResolved, hasBody], [checkJsonpError]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=http://www.example.com',
    [fetchRejected]],
@@ -121,7 +126,9 @@ var TEST_TARGETS = [
    [fetchResolved, hasBody], [checkJsonpError]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*&PACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchResolved, hasBody], [checkJsonpError]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&PACAOrigin=' + BASE_ORIGIN +
+   '&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchResolved, hasBody, typeCors], [authCheck2]],
 
   // Rejected because CORS preflight response returns 401.
@@ -129,22 +136,36 @@ var TEST_TARGETS = [
    [fetchRejected]],
   [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=same-origin&ACAOrigin=*&pACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&PACAOrigin=' + BASE_ORIGIN +
+   '&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
 
   // Check that Access-Control-Allow-Origin/Access-Control-Allow-Credentials
   // headers are checked in both CORS preflight and main fetch.
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN +
+   '&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&PACAOrigin=' +
+   BASE_ORIGIN +
+   '&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL +
+   'Auth&mode=cors&credentials=include&ACAOrigin=*&PACAOrigin=' + BASE_ORIGIN +
+   '&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=*&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN +
+   '&PACAOrigin=*&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&PACAOrigin=' + BASE_ORIGIN +
+   '&ACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
-  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=' +
+   BASE_ORIGIN + '&PACAOrigin=' + BASE_ORIGIN +
+   '&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
    [fetchRejected]],
 ];
 

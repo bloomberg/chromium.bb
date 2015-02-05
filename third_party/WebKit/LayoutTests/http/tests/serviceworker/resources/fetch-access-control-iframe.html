@@ -1,3 +1,4 @@
+<script src = "fetch-access-control-util.js"></script>
 <script>
 function onMessage(event) {
   var script = document.createElement('script');
@@ -10,7 +11,7 @@ function onMessage(event) {
 function report(data) {
   window.parent.postMessage(
     data,
-    'http://127.0.0.1:8000');
+    BASE_ORIGIN);
 }
 function onload() {
   window.addEventListener('message', onMessage, false);

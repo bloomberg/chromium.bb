@@ -188,7 +188,7 @@ var TEST_TARGETS = [
   [REDIRECT_URL +
    encodeURIComponent(
      OTHER_BASE_URL +
-     '&ACAOrigin=http://127.0.0.1:8000' +
+     '&ACAOrigin=' + BASE_ORIGIN +
      '&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader') +
    '&mode=cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
@@ -206,36 +206,36 @@ var TEST_TARGETS = [
    [fetchRejected]],
 
   [REDIRECT_URL +
-   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=' + BASE_ORIGIN + '') +
    '&mode=cors&credentials=omit&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL +
-                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+                      '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true') +
    '&mode=cors&credentials=omit&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
 
   [REDIRECT_URL +
-   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=' + BASE_ORIGIN + '') +
    '&mode=cors&credentials=include&method=GET',
    [fetchRejected]],
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL +
-                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+                      '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true') +
    '&mode=cors&credentials=include&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheck2]],
 
   [REDIRECT_URL +
-   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=' + BASE_ORIGIN + '') +
    '&mode=cors&credentials=same-origin&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL +
-                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+                      '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true') +
    '&mode=cors&credentials=same-origin&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
@@ -335,7 +335,7 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL +
    encodeURIComponent(
        BASE_URL +
-       'ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test') +
+       'ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test') +
    '&mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*',
    [fetchRejected]],
 
@@ -354,19 +354,19 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
    '&mode=cors&credentials=omit&method=GET' +
-   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
    '&mode=cors&credentials=include&method=GET' +
-   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheck1]],
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
    '&mode=cors&credentials=same-origin&method=GET' +
-   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
 
@@ -389,17 +389,17 @@ var TEST_TARGETS = [
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [OTHER_REDIRECT_URL +
-   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=http://127.0.0.1:8000') +
+   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=' + BASE_ORIGIN + '') +
    '&mode=cors&method=GET&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*') +
-   '&mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+   '&mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN + '',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
   [OTHER_REDIRECT_URL +
-   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=http://127.0.0.1:8000') +
-   '&mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=' + BASE_ORIGIN + '') +
+   '&mode=cors&method=GET&ACAOrigin=' + BASE_ORIGIN + '',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
 
@@ -451,9 +451,9 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL +
    encodeURIComponent(
      OTHER_BASE_URL +
-     'ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test') +
+     'ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test') +
    '&mode=cors&method=GET&headers=CUSTOM' +
-   '&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+   '&ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test',
    [fetchRejected]],
 
   // Redirect loop: same origin -> same origin

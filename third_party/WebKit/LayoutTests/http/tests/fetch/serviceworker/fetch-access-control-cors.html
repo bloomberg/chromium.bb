@@ -10,17 +10,11 @@
 </head>
 <body>
 <script>
-if (window.testRunner) {
-    testRunner.setAlwaysAcceptCookies(true);
+function start() {
+  service_worker_test(
+    '../script-tests/fetch-access-control-cors.js?',
+    'fetch-access-control');
 }
-
-var test = async_test("Login");
-login(test)
-  .then(function() {
-      service_worker_test(
-        '../script-tests/fetch-access-control-cors.js',
-        'fetch-access-control');
-      test.done();
-    });
 </script>
+<script src = "../resources/fetch-access-control-util-init.js"></script>
 </body>

@@ -1,13 +1,37 @@
-var SCOPE = '/serviceworker/resources/fetch-access-control-iframe.html';
-var BASE_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?';
-var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?';
-var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
-var OTHER_REDIRECT_URL = 'http://localhost:8000/serviceworker/resources/redirect.php?Redirect=';
-var REDIRECT_LOOP_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect-loop.php?Redirect=';
-var OTHER_REDIRECT_LOOP_URL = 'http://localhost:8000/serviceworker/resources/redirect-loop.php?Redirect=';
-var IFRAME_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-iframe.html';
-var WORKER_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-worker.js';
-var IFRAME_ORIGIN = 'http://127.0.0.1:8000';
+var BASE_ORIGIN = 'http://127.0.0.1:8000';
+var OTHER_ORIGIN = 'http://localhost:8000';
+var TEST_OPTIONS = '';
+// TEST_OPTIONS is '', '-base-https', or '-base-https-other-https'.
+
+if (location.href.includes('base-https')) {
+  BASE_ORIGIN = 'https://127.0.0.1:8443';
+  TEST_OPTIONS += '-base-https';
+}
+
+if (location.href.includes('other-https')) {
+  OTHER_ORIGIN = 'https://localhost:8443';
+  TEST_OPTIONS += '-other-https';
+}
+
+var SCOPE = BASE_ORIGIN +
+  '/serviceworker/resources/fetch-access-control-iframe.html?' + TEST_OPTIONS;
+var IFRAME_ORIGIN = BASE_ORIGIN;
+var BASE_URL = BASE_ORIGIN +
+  '/serviceworker/resources/fetch-access-control.php?';
+var OTHER_BASE_URL = OTHER_ORIGIN +
+  '/serviceworker/resources/fetch-access-control.php?';
+var REDIRECT_URL = BASE_ORIGIN +
+  '/serviceworker/resources/redirect.php?Redirect=';
+var OTHER_REDIRECT_URL = OTHER_ORIGIN +
+  '/serviceworker/resources/redirect.php?Redirect=';
+var REDIRECT_LOOP_URL = BASE_ORIGIN +
+  '/serviceworker/resources/redirect-loop.php?Redirect=';
+var OTHER_REDIRECT_LOOP_URL = OTHER_ORIGIN +
+  '/serviceworker/resources/redirect-loop.php?Redirect=';
+var IFRAME_URL = SCOPE;
+var WORKER_URL = BASE_ORIGIN +
+  '/serviceworker/resources/fetch-access-control-worker.js?' +
+  TEST_OPTIONS;
 
 function onlyOnServiceWorkerProxiedTest(checkFuncs) {
   return [];
@@ -149,6 +173,12 @@ var cookieCheckB = checkJsonpCookie.bind(this, 'cookieB');
 var cookieCheckC = checkJsonpCookie.bind(this, 'cookieC');
 var cookieCheckNone = checkJsonpCookie.bind(this, 'undefined');
 
+if (location.href.includes('base-https'))
+  authCheck1 = checkJsonpAuth.bind(this, 'username1s', 'password1s', 'cookie1');
+
+if (location.href.includes('other-https'))
+  authCheck2 = checkJsonpAuth.bind(this, 'username2s', 'password2s', 'cookie2');
+
 function login(test) {
   var login1 =
     test_login(test, 'http://127.0.0.1:8000',
@@ -159,19 +189,28 @@ function login(test) {
   return Promise.all([login1, login2]);
 }
 
-function executeServiceWorkerProxiedTests(test, test_targets) {
+function login_https(test) {
+  var login1 =
+    test_login(test, 'https://127.0.0.1:8443',
+               'username1s', 'password1s', 'cookie1');
+  var login2 =
+    test_login(test, 'https://localhost:8443',
+               'username2s', 'password2s', 'cookie2');
+  return Promise.all([login1, login2]);
+}
+
+function executeServiceWorkerProxiedTests(test_targets) {
+  var test = async_test('Verify access control of fetch() in a Service Worker');
   test.step(function() {
-      var workerScript =
-        '/serviceworker/resources/fetch-access-control-worker.js';
       var worker = undefined;
       var frameWindow = {};
       var counter = 0;
       window.addEventListener('message', test.step_func(onMessage), false);
 
-      login(test)
+      Promise.resolve()
         .then(function() {
             return service_worker_unregister_and_register(test,
-                                                          workerScript,
+                                                          WORKER_URL,
                                                           SCOPE);
           })
         .then(function(registration) {
