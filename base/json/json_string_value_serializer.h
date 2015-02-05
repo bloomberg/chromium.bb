@@ -14,24 +14,15 @@
 
 class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
  public:
-  // json_string is the string that will be source of the deserialization
+  // |json_string| is the string that will be source of the deserialization
   // or the destination of the serialization.  The caller of the constructor
-  // retains ownership of the string.
-  explicit JSONStringValueSerializer(std::string* json_string)
-      : json_string_(json_string),
-        initialized_with_const_string_(false),
-        pretty_print_(false),
-        allow_trailing_comma_(false) {
-  }
+  // retains ownership of the string. |json_string| must not be null.
+  explicit JSONStringValueSerializer(std::string* json_string);
 
   // This version allows initialization with a const string reference for
-  // deserialization only.
-  explicit JSONStringValueSerializer(const std::string& json_string)
-      : json_string_(&const_cast<std::string&>(json_string)),
-        initialized_with_const_string_(true),
-        pretty_print_(false),
-        allow_trailing_comma_(false) {
-  }
+  // deserialization only. Retains a reference to |json_string|, so the string
+  // argument must outlive the JSONStringValueSerializer.
+  explicit JSONStringValueSerializer(const std::string& json_string);
 
   ~JSONStringValueSerializer() override;
 
@@ -46,7 +37,7 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
 
   // Attempt to deserialize the data structure encoded in the string passed
   // in to the constructor into a structure of Value objects.  If the return
-  // value is NULL, and if |error_code| is non-null, |error_code| will
+  // value is null, and if |error_code| is non-null, |error_code| will
   // contain an integer error code (a JsonParseError in this case).
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
@@ -64,7 +55,7 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
  private:
   bool SerializeInternal(const base::Value& root, bool omit_binary_values);
 
-  std::string* json_string_;
+  std::string* json_string_;  // Not null.
   bool initialized_with_const_string_;
   bool pretty_print_;  // If true, serialization will span multiple lines.
   // If true, deserialization will allow trailing commas.
