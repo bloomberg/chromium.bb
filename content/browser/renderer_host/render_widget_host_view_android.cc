@@ -158,8 +158,7 @@ GLHelperHolder::CreateContext3D() {
   scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
   // GLHelper can only be used in asynchronous APIs for postprocessing after
   // Browser Compositor operations (i.e. readback).
-  DCHECK(gpu_channel_host.get()) << "Illegal access to GPU channel at startup";
-  if (gpu_channel_host->IsLost()) {
+  if (!gpu_channel_host.get()) {
     // The Browser Compositor is in charge of reestablishing the channel.
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   }
