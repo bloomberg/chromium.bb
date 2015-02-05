@@ -101,7 +101,7 @@
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
                                        NSViewMinYMargin];
     if (hasTabStrip)
-      [self insertTabStripView:tabStripView_ intoWindow:[self window]];
+      [windowView addSubview:tabStripView_];
   }
   return self;
 }
@@ -189,7 +189,7 @@
                           positioned:NSWindowBelow
                           relativeTo:nil];
     originalContentView_.frame = [[window contentView] bounds];
-    [self insertTabStripView:[self tabStripView] intoWindow:window];
+    [[window contentView] addSubview:[self tabStripView]];
     [[window contentView] updateTrackingAreas];
 
     [focusBeforeOverlay_ restoreFocusInWindow:window];
@@ -325,18 +325,6 @@
 // during a drag.
 - (void)deferPerformClose {
   closeDeferred_ = YES;
-}
-
-- (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window {
-  NSView* contentParent = [window contentView];
-  if (contentParent == [[window contentView] superview]) {
-    // Add the tab strip directly above the content view, if they are siblings.
-    [contentParent addSubview:tabStripView
-                   positioned:NSWindowAbove
-                   relativeTo:[window contentView]];
-  } else {
-    [contentParent addSubview:tabStripView];
-  }
 }
 
 - (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window {

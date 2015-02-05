@@ -377,7 +377,7 @@ willPositionSheet:(NSWindow*)sheet
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
   if ([self hasTabStrip])
-    [self insertTabStripView:tabStripView intoWindow:destWindow];
+    [[destWindow contentView] addSubview:tabStripView];
 
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];

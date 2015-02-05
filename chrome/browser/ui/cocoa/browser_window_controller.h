@@ -353,11 +353,10 @@ class Command;
 // Gets the window style.
 - (ThemedWindowStyle)themedWindowStyle;
 
-// Returns the position in the coordinates of the root view
-// ([[self contentView] superview]) that the top left of a theme image with
-// |alignment| should be painted at. If the window does not have a tab strip,
-// the offset for THEME_IMAGE_ALIGN_WITH_FRAME is always returned. The result of
-// this method can be used in conjunction with
+// Returns the position in window coordinates that the top left of a theme
+// image with |alignment| should be painted at. If the window does not have a
+// tab strip, the offset for THEME_IMAGE_ALIGN_WITH_FRAME is always returned.
+// The result of this method can be used in conjunction with
 // [NSGraphicsContext cr_setPatternPhase:] to set the offset of pattern colors.
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment;
 

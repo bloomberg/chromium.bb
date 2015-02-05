@@ -36,11 +36,10 @@ enum ThemeImageAlignment {
 - (ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
 
-// Returns the position in the coordinates of the root view
-// ([[self contentView] superview]) that the top left of a theme image with
-// |alignment| should be painted at. The result of this method can be used in
-// conjunction with [NSGraphicsContext cr_setPatternPhase:] to set the offset of
-// pattern colors.
+// Returns the position in window coordinates that the top left of a theme
+// image with |alignment| should be painted at. The result of this method can
+// be used in conjunction with [NSGraphicsContext cr_setPatternPhase:] to set
+// the offset of pattern colors.
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment;
 @end
 

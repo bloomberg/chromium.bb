@@ -154,15 +154,6 @@
 // during a drag.
 - (void)deferPerformClose;
 
-// The tab strip should always be inserted directly above the content view.
-- (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window;
-
-// The tab strip background view should always be inserted as the back-most
-// subview of the root view. It cannot be a subview of the contentView, as that
-// would cause it to become layer backed, which would cause it to draw on top
-// of non-layer backed content like the window controls.
-- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window;
-
 @end
 
 @interface TabWindowController(ProtectedMethods)

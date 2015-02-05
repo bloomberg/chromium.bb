@@ -41,7 +41,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)adjustZoomButton:(NSNotification*)notification;
 - (void)adjustButton:(NSButton*)button
               ofKind:(NSWindowButton)kind;
-- (NSView*)frameView;
 
 @end
 
@@ -111,10 +110,6 @@ const CGFloat kWindowGradientHeight = 24.0;
                selector:@selector(adjustZoomButton:)
                    name:NSViewFrameDidChangeNotification
                  object:zoomButton_];
-    [center addObserver:self
-               selector:@selector(themeDidChangeNotification:)
-                   name:kBrowserThemeDidChangeNotification
-                 object:nil];
   }
 
   return self;
@@ -143,7 +138,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)adjustButton:(NSButton*)button
               ofKind:(NSWindowButton)kind {
   NSRect buttonFrame = [button frame];
-  NSRect frameViewBounds = [[self frameView] bounds];
 
   CGFloat xOffset = hasTabStrip_
       ? kFramedWindowButtonsWithTabStripOffsetFromLeft
@@ -152,7 +146,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       ? kFramedWindowButtonsWithTabStripOffsetFromTop
       : kFramedWindowButtonsWithoutTabStripOffsetFromTop;
   buttonFrame.origin =
-      NSMakePoint(xOffset, (NSHeight(frameViewBounds) -
+      NSMakePoint(xOffset, (NSHeight([self frame]) -
                             NSHeight(buttonFrame) - yOffset));
 
   switch (kind) {
@@ -174,10 +168,6 @@ const CGFloat kWindowGradientHeight = 24.0;
   [button setPostsFrameChangedNotifications:didPost];
 }
 
-- (NSView*)frameView {
-  return [[self contentView] superview];
-}
-
 // The tab strip view covers our window buttons. So we add hit testing here
 // to find them properly and return them to the accessibility system.
 - (id)accessibilityHitTest:(NSPoint)point {
@@ -194,60 +184,6 @@ const CGFloat kWindowGradientHeight = 24.0;
     value = [super accessibilityHitTest:point];
   }
   return value;
-}
-
-- (void)windowMainStatusChanged {
-  NSView* frameView = [self frameView];
-  NSView* contentView = [self contentView];
-  NSRect updateRect = [frameView frame];
-  NSRect contentRect = [contentView frame];
-  CGFloat tabStripHeight = [TabStripController defaultTabHeight];
-  updateRect.size.height -= NSHeight(contentRect) - tabStripHeight;
-  updateRect.origin.y = NSMaxY(contentRect) - tabStripHeight;
-  [[self frameView] setNeedsDisplayInRect:updateRect];
-}
-
-- (void)becomeMainWindow {
-  [self windowMainStatusChanged];
-  [super becomeMainWindow];
-}
-
-- (void)resignMainWindow {
-  [self windowMainStatusChanged];
-  [super resignMainWindow];
-}
-
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  [[self frameView] setNeedsDisplay:YES];
-}
-
-- (void)sendEvent:(NSEvent*)event {
-  // For Cocoa windows, clicking on the close and the miniaturize buttons (but
-  // not the zoom button) while a window is in the background does NOT bring
-  // that window to the front. We don't get that behavior for free (probably
-  // because the tab strip view covers those buttons), so we handle it here.
-  // Zoom buttons do bring the window to the front. Note that Finder windows (in
-  // Leopard) behave differently in this regard in that zoom buttons don't bring
-  // the window to the foreground.
-  BOOL eventHandled = NO;
-  if (![self isMainWindow]) {
-    if ([event type] == NSLeftMouseDown) {
-      NSView* frameView = [self frameView];
-      NSPoint mouse = [frameView convertPoint:[event locationInWindow]
-                                     fromView:nil];
-      if (NSPointInRect(mouse, [closeButton_ frame])) {
-        [closeButton_ mouseDown:event];
-        eventHandled = YES;
-      } else if (NSPointInRect(mouse, [miniaturizeButton_ frame])) {
-        [miniaturizeButton_ mouseDown:event];
-        eventHandled = YES;
-      }
-    }
-  }
-  if (!eventHandled) {
-    [super sendEvent:event];
-  }
 }
 
 - (void)setShouldHideTitle:(BOOL)flag {
@@ -367,14 +303,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 
     NSPoint position = [[view window] themeImagePositionForAlignment:
         THEME_IMAGE_ALIGN_WITH_FRAME];
-
-    // Align the phase to physical pixels so resizing the window under HiDPI
-    // doesn't cause wiggling of the theme.
-    NSView* frameView = [[[view window] contentView] superview];
-    position = [frameView convertPointToBase:position];
-    position.x = floor(position.x);
-    position.y = floor(position.y);
-    position = [frameView convertPointFromBase:position];
     [[NSGraphicsContext currentContext] cr_setPatternPhase:position
                                                    forView:view];
 
@@ -400,10 +328,9 @@ const CGFloat kWindowGradientHeight = 24.0;
 
   if (overlayImage) {
     // Anchor to top-left and don't scale.
-    NSView* frameView = [[[view window] contentView] superview];
     NSPoint position = [[view window] themeImagePositionForAlignment:
         THEME_IMAGE_ALIGN_WITH_FRAME];
-    position = [view convertPoint:position fromView:frameView];
+    position = [view convertPoint:position fromView:nil];
     NSSize overlaySize = [overlayImage size];
     NSRect imageFrame = NSMakeRect(0, 0, overlaySize.width, overlaySize.height);
     [overlayImage drawAtPoint:NSMakePoint(position.x,
