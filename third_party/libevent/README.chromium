@@ -23,3 +23,4 @@ static library using GYP.
    nacl_nonsfi/event-config.h are derived from linux/ counterparts.
    nacl_nonsfi/random.c is also added to provide the random() function,
    which is missing in the newlib-based PNaCl toolchain.
+8) Apply https://github.com/libevent/libevent/commit/ea6b1df
