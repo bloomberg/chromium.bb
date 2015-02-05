@@ -209,7 +209,7 @@ void DriverEGL::InitializeStaticBindings() {
   }
 
   debug_fn.eglWaitSyncKHRFn = 0;
-  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_wait_sync) {
+  if (ext.b_EGL_KHR_wait_sync) {
     fn.eglWaitSyncKHRFn = reinterpret_cast<eglWaitSyncKHRProc>(
         GetGLProcAddress("eglWaitSyncKHR"));
     DCHECK(fn.eglWaitSyncKHRFn);
