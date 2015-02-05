@@ -1103,6 +1103,7 @@ const char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 
 // Bluetooth Adapter methods.
 const char kStartDiscovery[] = "StartDiscovery";
+const char kStartFilteredDiscovery[] = "StartFilteredDiscvoery";
 const char kStopDiscovery[] = "StopDiscovery";
 const char kRemoveDevice[] = "RemoveDevice";
 
