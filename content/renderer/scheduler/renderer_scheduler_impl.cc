@@ -147,6 +147,15 @@ void RendererSchedulerImpl::UpdateForInputEvent() {
   last_input_time_ = Now();
 }
 
+bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
+  main_thread_checker_.CalledOnValidThread();
+  if (!task_queue_manager_)
+    return false;
+
+  MaybeUpdatePolicy();
+  return SchedulerPolicy() == COMPOSITOR_PRIORITY_POLICY;
+}
+
 bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
   main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
@@ -157,6 +166,8 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
   // work outstanding. Note: even though the control queue is higher priority
   // we don't yield for it since these tasks are not user-provided work and they
   // are only intended to run before the next task, not interrupt the tasks.
+  // Note: This function could conceivably be implemented in terms of
+  // |IsHighPriorityWorkAnticipated|, but for clarity is not.
   return SchedulerPolicy() == COMPOSITOR_PRIORITY_POLICY &&
          !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
 }

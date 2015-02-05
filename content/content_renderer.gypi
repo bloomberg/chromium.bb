@@ -369,6 +369,8 @@
       'renderer/scheduler/renderer_scheduler_impl.h',
       'renderer/scheduler/renderer_task_queue_selector.cc',
       'renderer/scheduler/renderer_task_queue_selector.h',
+      'renderer/scheduler/resource_dispatch_throttler.cc',
+      'renderer/scheduler/resource_dispatch_throttler.h',
       'renderer/scheduler/single_thread_idle_task_runner.cc',
       'renderer/scheduler/single_thread_idle_task_runner.h',
       'renderer/scheduler/task_queue_manager.cc',
