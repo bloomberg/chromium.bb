@@ -284,7 +284,7 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   user_data_.clear();
 }
 
-bool EasyUnlockServiceSignin::IsAllowedInternal() {
+bool EasyUnlockServiceSignin::IsAllowedInternal() const {
   return service_active_ &&
          !user_id_.empty() &&
          !chromeos::LoginState::Get()->IsUserLoggedIn();

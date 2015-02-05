@@ -313,6 +313,12 @@ bool EasyUnlockService::IsAllowed() {
 #endif
 }
 
+bool EasyUnlockService::IsEnabled() const {
+  // The feature is enabled iff there are any paired devices.
+  const base::ListValue* devices = GetRemoteDevices();
+  return devices && !devices->empty();
+}
+
 void EasyUnlockService::SetHardlockState(
     EasyUnlockScreenlockStateHandler::HardlockState state) {
   const std::string user_id = GetUserEmail();

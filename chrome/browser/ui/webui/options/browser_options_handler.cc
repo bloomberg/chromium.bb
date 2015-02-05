@@ -2035,14 +2035,11 @@ void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
 }
 
 void BrowserOptionsHandler::SetupEasyUnlock() {
-  // TODO(xiyuan): Update when pairing data is really availble.
-  const base::ListValue* devices =
-      EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->GetRemoteDevices();
-  bool has_pairing = devices && !devices->empty();
-  base::FundamentalValue has_pairing_value(has_pairing);
+  base::FundamentalValue is_enabled(
+      EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsEnabled());
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateEasyUnlock",
-      has_pairing_value);
+      is_enabled);
 }
 
 void BrowserOptionsHandler::SetupExtensionControlledIndicators() {

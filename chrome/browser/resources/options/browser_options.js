@@ -1097,14 +1097,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Update the UI depending on whether the current profile has a pairing for
-     * Easy Unlock.
-     * @param {boolean} hasPairing True if the current profile has a pairing.
+     * Update the UI depending on whether Easy Unlock is enabled for the current
+     * profile.
+     * @param {boolean} isEnabled True if the feature is enabled for the current
+     *     profile.
      */
-    updateEasyUnlock_: function(hasPairing) {
-      $('easy-unlock-setup').hidden = hasPairing;
-      $('easy-unlock-enable').hidden = !hasPairing;
-      if (!hasPairing && EasyUnlockTurnOffOverlay.getInstance().visible) {
+    updateEasyUnlock_: function(isEnabled) {
+      $('easy-unlock-disabled').hidden = isEnabled;
+      $('easy-unlock-enabled').hidden = !isEnabled;
+      if (!isEnabled && EasyUnlockTurnOffOverlay.getInstance().visible) {
         EasyUnlockTurnOffOverlay.dismiss();
       }
     },

@@ -273,7 +273,7 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   registrar_.RemoveAll();
 }
 
-bool EasyUnlockServiceRegular::IsAllowedInternal() {
+bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 #if defined(OS_CHROMEOS)
   if (!user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount())
     return false;

@@ -59,7 +59,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   void RecordPasswordLoginEvent(const std::string& user_id) const override;
   void InitializeInternal() override;
   void ShutdownInternal() override;
-  bool IsAllowedInternal() override;
+  bool IsAllowedInternal() const override;
 
   // Opens the component packaged app responsible for setting up Smart Lock.
   void OpenSetupApp();

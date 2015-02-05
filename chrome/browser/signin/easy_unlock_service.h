@@ -131,6 +131,9 @@ class EasyUnlockService : public KeyedService {
   // permitted either the flag is enabled or its field trial is enabled.
   bool IsAllowed();
 
+  // Whether Easy Unlock is currently enabled for this user.
+  bool IsEnabled() const;
+
   // Sets the hardlock state for the associated user.
   void SetHardlockState(EasyUnlockScreenlockStateHandler::HardlockState state);
 
@@ -192,7 +195,7 @@ class EasyUnlockService : public KeyedService {
   // Service type specific tests for whether the service is allowed. Returns
   // false if service is not allowed. If true is returned, the service may still
   // not be allowed if common tests fail (e.g. if Bluetooth is not available).
-  virtual bool IsAllowedInternal() = 0;
+  virtual bool IsAllowedInternal() const = 0;
 
   // KeyedService override:
   void Shutdown() override;
