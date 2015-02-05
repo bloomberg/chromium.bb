@@ -31,6 +31,8 @@
 #ifndef WebEmbeddedWorkerImpl_h
 #define WebEmbeddedWorkerImpl_h
 
+#include "core/workers/WorkerLoaderProxy.h"
+
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
@@ -48,12 +50,11 @@ class WorkerThread;
 class WebEmbeddedWorkerImpl final
     : public WebEmbeddedWorker
     , public WebFrameClient
-    , public WebDevToolsAgentClient {
+    , public WebDevToolsAgentClient
+    , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
-    WebEmbeddedWorkerImpl(
-        PassOwnPtr<WebServiceWorkerContextClient>,
-        PassOwnPtr<WebWorkerPermissionClientProxy>);
+    WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerPermissionClientProxy>);
     virtual ~WebEmbeddedWorkerImpl();
 
     // Terminate all WebEmbeddedWorkerImpl for testing purposes.
@@ -74,7 +75,6 @@ public:
 
 private:
     class Loader;
-    class LoaderProxy;
 
     void prepareShadowPageForLoader();
     void loadShadowPage();
@@ -92,6 +92,10 @@ private:
     void onScriptLoaderFinished();
     void startWorkerThread();
 
+    // WorkerLoaderProxyProvider
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+
     WebEmbeddedWorkerStartData m_workerStartData;
 
     OwnPtr<WebServiceWorkerContextClient> m_workerContextClient;
@@ -108,7 +112,7 @@ private:
     OwnPtr<Loader> m_mainScriptLoader;
 
     RefPtr<WorkerThread> m_workerThread;
-    OwnPtr<LoaderProxy> m_loaderProxy;
+    RefPtr<WorkerLoaderProxy> m_loaderProxy;
     OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
     OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
 

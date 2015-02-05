@@ -87,7 +87,7 @@ namespace blink {
         class MainThreadBridge final : public ThreadableLoaderClient {
         public:
             // All executed on the worker context's thread.
-            MainThreadBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, WorkerLoaderProxy&, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const String& outgoingReferrer);
+            MainThreadBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, PassRefPtr<WorkerLoaderProxy>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const String& outgoingReferrer);
             void overrideTimeout(unsigned long timeoutMilliseconds);
             void cancel();
             void destroy();
@@ -122,7 +122,7 @@ namespace blink {
             RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
             // Used on the worker context thread.
-            WorkerLoaderProxy& m_loaderProxy;
+            RefPtr<WorkerLoaderProxy> m_loaderProxy;
         };
 
         WorkerThreadableLoader(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);

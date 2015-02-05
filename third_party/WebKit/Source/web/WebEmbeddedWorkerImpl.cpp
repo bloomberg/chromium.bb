@@ -122,39 +122,7 @@ private:
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
-class WebEmbeddedWorkerImpl::LoaderProxy : public WorkerLoaderProxy {
-public:
-    static PassOwnPtr<LoaderProxy> create(WebEmbeddedWorkerImpl& embeddedWorker)
-    {
-        return adoptPtr(new LoaderProxy(embeddedWorker));
-    }
-
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) override
-    {
-        toWebLocalFrameImpl(m_embeddedWorker.m_mainFrame)->frame()->document()->postTask(task);
-    }
-
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) override
-    {
-        if (m_embeddedWorker.m_askedToTerminate || !m_embeddedWorker.m_workerThread)
-            return false;
-        m_embeddedWorker.m_workerThread->postTask(task);
-        return !m_embeddedWorker.m_workerThread->terminated();
-    }
-
-private:
-    explicit LoaderProxy(WebEmbeddedWorkerImpl& embeddedWorker)
-        : m_embeddedWorker(embeddedWorker)
-    {
-    }
-
-    // Not owned, embedded worker owns this.
-    WebEmbeddedWorkerImpl& m_embeddedWorker;
-};
-
-WebEmbeddedWorker* WebEmbeddedWorker::create(
-    WebServiceWorkerContextClient* client,
-    WebWorkerPermissionClientProxy* permissionClient)
+WebEmbeddedWorker* WebEmbeddedWorker::create(WebServiceWorkerContextClient* client, WebWorkerPermissionClientProxy* permissionClient)
 {
     return new WebEmbeddedWorkerImpl(adoptPtr(client), adoptPtr(permissionClient));
 }
@@ -165,9 +133,7 @@ static HashSet<WebEmbeddedWorkerImpl*>& runningWorkerInstances()
     return set;
 }
 
-WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
-    PassOwnPtr<WebServiceWorkerContextClient> client,
-    PassOwnPtr<WebWorkerPermissionClientProxy> permissionClient)
+WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient> client, PassOwnPtr<WebWorkerPermissionClientProxy> permissionClient)
     : m_workerContextClient(client)
     , m_permissionClient(permissionClient)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
@@ -197,6 +163,8 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
 
     m_webView->close();
     m_mainFrame->close();
+    if (m_loaderProxy)
+        m_loaderProxy->detachProvider(this);
 }
 
 void WebEmbeddedWorkerImpl::terminateAll()
@@ -292,6 +260,20 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
     if (!pageInspector)
         return;
     pageInspector->dispatchMessageFromWorker(message);
+}
+
+void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+{
+    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
+}
+
+bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+{
+    if (m_askedToTerminate || !m_workerThread)
+        return false;
+
+    m_workerThread->postTask(task);
+    return !m_workerThread->terminated();
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
@@ -441,8 +423,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     m_mainScriptLoader.clear();
 
     m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *document, *m_workerContextClient);
-    m_loaderProxy = LoaderProxy::create(*this);
-    m_workerThread = ServiceWorkerThread::create(*m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());
+    m_loaderProxy = WorkerLoaderProxy::create(this);
+    m_workerThread = ServiceWorkerThread::create(m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());
     m_workerThread->start();
     m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }

@@ -39,14 +39,14 @@ class WorkerThreadStartupData;
 
 class SharedWorkerThread : public WorkerThread {
 public:
-    static PassRefPtr<SharedWorkerThread> create(const String& name, WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    static PassRefPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
     virtual ~SharedWorkerThread();
 
 protected:
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) override;
 
 private:
-    SharedWorkerThread(const String& name, WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 
     String m_name;
 };

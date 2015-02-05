@@ -109,7 +109,7 @@ void WorkerThreadableLoader::cancel()
 WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
     PassOwnPtr<ThreadableLoaderClient> clientBridge,
-    WorkerLoaderProxy& loaderProxy,
+    PassRefPtr<WorkerLoaderProxy> loaderProxy,
     const ResourceRequest& request,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resourceLoaderOptions,
@@ -120,7 +120,7 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
 {
     ASSERT(m_workerClientWrapper.get());
     ASSERT(m_clientBridge.get());
-    m_loaderProxy.postTaskToLoader(
+    m_loaderProxy->postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, AllowCrossThreadAccess(this), request, options, resourceLoaderOptions, outgoingReferrer));
 }
 
@@ -156,7 +156,7 @@ void WorkerThreadableLoader::MainThreadBridge::destroy()
     clearClientWrapper();
 
     // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
-    m_loaderProxy.postTaskToLoader(
+    m_loaderProxy->postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadDestroy, AllowCrossThreadAccess(this)));
 }
 
@@ -172,7 +172,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadOverrideTimeout(Executi
 
 void WorkerThreadableLoader::MainThreadBridge::overrideTimeout(unsigned long timeoutMilliseconds)
 {
-    m_loaderProxy.postTaskToLoader(
+    m_loaderProxy->postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadOverrideTimeout, AllowCrossThreadAccess(this),
             timeoutMilliseconds));
 }
@@ -190,7 +190,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext
 
 void WorkerThreadableLoader::MainThreadBridge::cancel()
 {
-    m_loaderProxy.postTaskToLoader(
+    m_loaderProxy->postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadCancel, AllowCrossThreadAccess(this)));
     ThreadableLoaderClientWrapper* clientWrapper = m_workerClientWrapper.get();
     if (!clientWrapper->done()) {

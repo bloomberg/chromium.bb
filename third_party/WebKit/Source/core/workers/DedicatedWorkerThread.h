@@ -40,7 +40,7 @@ class WorkerThreadStartupData;
 
 class DedicatedWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<DedicatedWorkerThread> create(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    static PassRefPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     virtual ~DedicatedWorkerThread();
 
@@ -49,7 +49,7 @@ protected:
     virtual void postInitialize() override;
 
 private:
-    DedicatedWorkerThread(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;

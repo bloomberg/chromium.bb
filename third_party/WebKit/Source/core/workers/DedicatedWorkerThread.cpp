@@ -38,12 +38,12 @@
 
 namespace blink {
 
-PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
     return adoptRef(new DedicatedWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin, startupData));
 }
 
-DedicatedWorkerThread::DedicatedWorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
     : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)

@@ -83,7 +83,7 @@ public:
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
-        Peer(Bridge*, WorkerLoaderProxy&, WebSocketChannelSyncHelper*);
+        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*);
         virtual ~Peer();
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
@@ -116,7 +116,7 @@ public:
         void initializeInternal(ExecutionContext*, const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
 
         Member<Bridge> m_bridge;
-        WorkerLoaderProxy& m_loaderProxy;
+        RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannel> m_mainWebSocketChannel;
         Member<WebSocketChannelSyncHelper> m_syncHelper;
     };
@@ -149,7 +149,7 @@ public:
 
         Member<WebSocketChannelClient> m_client;
         RefPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
-        WorkerLoaderProxy& m_loaderProxy;
+        RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannelSyncHelper> m_syncHelper;
         Member<Peer> m_peer;
     };

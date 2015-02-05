@@ -635,7 +635,7 @@ void MemoryCache::removeURLFromCache(ExecutionContext* context, const KURL& url)
 {
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        workerGlobalScope->thread()->workerLoaderProxy().postTaskToLoader(createCrossThreadTask(&removeURLFromCacheInternal, url));
+        workerGlobalScope->thread()->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&removeURLFromCacheInternal, url));
         return;
     }
     removeURLFromCacheInternal(context, url);

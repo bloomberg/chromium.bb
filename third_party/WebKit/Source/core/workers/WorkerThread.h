@@ -30,6 +30,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerLoaderProxy.h"
 #include "platform/SharedTimer.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -44,7 +45,6 @@ namespace blink {
 class WebWaitableEvent;
 class WorkerGlobalScope;
 class WorkerInspectorController;
-class WorkerLoaderProxy;
 class WorkerReportingProxy;
 class WorkerSharedTimer;
 class WorkerThreadShutdownFinishTask;
@@ -75,7 +75,12 @@ public:
     static void terminateAndWaitForAllWorkers();
 
     bool isCurrentThread() const;
-    WorkerLoaderProxy& workerLoaderProxy() const { return m_workerLoaderProxy; }
+    WorkerLoaderProxy* workerLoaderProxy() const
+    {
+        RELEASE_ASSERT(m_workerLoaderProxy);
+        return m_workerLoaderProxy.get();
+    }
+
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
     void postTask(PassOwnPtr<ExecutionContextTask>);
@@ -101,7 +106,7 @@ public:
     void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
-    WorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 
     // Factory method for creating a new worker context for the thread.
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) = 0;
@@ -125,7 +130,7 @@ private:
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
-    WorkerLoaderProxy& m_workerLoaderProxy;
+    RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
 
     RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;

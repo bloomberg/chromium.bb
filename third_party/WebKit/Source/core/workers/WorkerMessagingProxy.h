@@ -46,8 +46,11 @@ class Worker;
 class WorkerClients;
 class WorkerInspectorProxy;
 
-class WorkerMessagingProxy final : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
-    WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
+class WorkerMessagingProxy final
+    : public WorkerGlobalScopeProxy
+    , private WorkerLoaderProxyProvider {
+    WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 
@@ -72,12 +75,6 @@ public:
     void workerGlobalScopeClosed();
     void workerThreadTerminated();
 
-    // Implementation of WorkerLoaderProxy.
-    // These methods are called on different threads to schedule loading
-    // requests and to send callbacks back to WorkerGlobalScope.
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
-
     void workerThreadCreated(PassRefPtr<DedicatedWorkerThread>);
 
 protected:
@@ -86,6 +83,12 @@ protected:
 private:
     static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
     void terminateInternally();
+
+    // WorkerLoaderProxyProvider
+    // These methods are called on different threads to schedule loading
+    // requests and to send callbacks back to WorkerGlobalScope.
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
@@ -102,6 +105,8 @@ private:
     OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
 
     OwnPtrWillBePersistent<WorkerClients> m_workerClients;
+
+    RefPtr<WorkerLoaderProxy> m_loaderProxy;
 };
 
 } // namespace blink

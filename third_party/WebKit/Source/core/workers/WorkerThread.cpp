@@ -251,7 +251,7 @@ private:
     WorkerThread* m_thread;
 };
 
-WorkerThread::WorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
     : m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)

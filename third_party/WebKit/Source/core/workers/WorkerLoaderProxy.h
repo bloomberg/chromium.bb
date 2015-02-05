@@ -34,17 +34,30 @@
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 
-// A proxy to talk to the loader context. Normally, the document on the main thread
-// provides loading services for the subordinate workers. This interface provides 2-way
-// communications to the Document context and back to the worker.
+// The WorkerLoaderProxy is a proxy to the loader context. Normally, the
+// document on the main thread provides loading services for the subordinate
+// workers. WorkerLoaderProxy provides 2-way communications to the Document
+// context and back to the worker.
+//
 // Note that in multi-process browsers, the Worker object context and the Document
 // context can be distinct.
-class WorkerLoaderProxy {
+
+// The abstract interface providing the methods for actually posting tasks; separated
+// from the thread-safe & ref-counted WorkerLoaderProxy object which keeps a protected
+// reference to the provider object. This to support non-overlapping lifetimes, the
+// provider may be destructed before all references to the WorkerLoaderProxy object
+// have been dropped.
+//
+// A provider implementation must detach itself when finalizing by calling
+// WorkerLoaderProxy::detachProvider(). This stops the WorkerLoaderProxy from accessing
+// the now-dead object, but it will remain alive while ref-ptrs are still kept to it.
+class WorkerLoaderProxyProvider {
 public:
-    virtual ~WorkerLoaderProxy() { }
+    virtual ~WorkerLoaderProxyProvider() { }
 
     // Posts a task to the thread which runs the loading code (normally, the main thread).
     virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) = 0;
@@ -52,6 +65,30 @@ public:
     // Posts callbacks from loading code to the WorkerGlobalScope.
     // Returns true if the task was posted successfully.
     virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) = 0;
+};
+
+class WorkerLoaderProxy : public ThreadSafeRefCounted<WorkerLoaderProxy>, public WorkerLoaderProxyProvider {
+public:
+    static PassRefPtr<WorkerLoaderProxy> create(WorkerLoaderProxyProvider* loaderProxyProvider)
+    {
+        return adoptRef(new WorkerLoaderProxy(loaderProxyProvider));
+    }
+
+    ~WorkerLoaderProxy() override;
+
+    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+
+    // Notification from the provider that it can no longer be
+    // accessed. An implementation of WorkerLoaderProxyProvider is
+    // required to call detachProvider() when finalizing.
+    void detachProvider(WorkerLoaderProxyProvider*);
+
+private:
+    explicit WorkerLoaderProxy(WorkerLoaderProxyProvider*);
+
+    Mutex m_lock;
+    WorkerLoaderProxyProvider* m_loaderProxyProvider;
 };
 
 } // namespace blink

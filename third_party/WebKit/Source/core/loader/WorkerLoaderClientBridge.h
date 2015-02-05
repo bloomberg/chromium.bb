@@ -45,7 +45,7 @@ class WorkerLoaderProxy;
 // data to the client wrapper on the worker context thread.
 class WorkerLoaderClientBridge : public ThreadableLoaderClient {
 public:
-    static PassOwnPtr<ThreadableLoaderClient> create(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&);
+    static PassOwnPtr<ThreadableLoaderClient> create(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
     virtual ~WorkerLoaderClientBridge();
 
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
@@ -59,13 +59,13 @@ public:
     virtual void didFailRedirectCheck() override;
 
 private:
-    WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&);
+    WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
 
     // Used on the worker context thread, while its refcounting is done on
     // either thread.
     RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
-    WorkerLoaderProxy& m_loaderProxy;
+    RefPtr<WorkerLoaderProxy> m_loaderProxy;
 };
 
 } // namespace blink

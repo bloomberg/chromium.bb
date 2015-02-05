@@ -47,6 +47,7 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
+#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -171,6 +172,8 @@ WebSharedWorkerImpl::~WebSharedWorkerImpl()
 
     m_webView->close();
     m_mainFrame->close();
+    if (m_loaderProxy)
+        m_loaderProxy->detachProvider(this);
 }
 
 void WebSharedWorkerImpl::stopWorkerThread()
@@ -317,7 +320,7 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
     delete this;
 }
 
-// WorkerLoaderProxy -----------------------------------------------------------
+// WorkerLoaderProxyProvider -----------------------------------------------------------
 
 void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
@@ -392,7 +395,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), startMode, m_contentSecurityPolicy, static_cast<ContentSecurityPolicyHeaderType>(m_policyType), starterOrigin, workerClients.release());
-    setWorkerThread(SharedWorkerThread::create(m_name, *this, *this, startupData.release()));
+    m_loaderProxy = WorkerLoaderProxy::create(this);
+    setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this, startupData.release()));
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());
     m_mainScriptLoader.clear();
 

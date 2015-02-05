@@ -1980,6 +1980,7 @@
             'workers/WorkerGlobalScopeProxyProvider.h',
             'workers/WorkerInspectorProxy.cpp',
             'workers/WorkerInspectorProxy.h',
+            'workers/WorkerLoaderProxy.cpp',
             'workers/WorkerLoaderProxy.h',
             'workers/WorkerLocation.h',
             'workers/WorkerMessagingProxy.cpp',
