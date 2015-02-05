@@ -184,7 +184,8 @@ void AppInfoFooterPanel::UninstallApp() {
 }
 
 bool AppInfoFooterPanel::CanUninstallApp() const {
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(app_, NULL);
+  extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile_)->management_policy();
+  return policy->UserMayModifySettings(app_, nullptr) &&
+         !policy->MustRemainInstalled(app_, nullptr);
 }

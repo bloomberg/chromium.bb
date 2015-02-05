@@ -156,8 +156,10 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
         extension_action_->HasPopup(SessionTabHelper::IdForTab(web_contents));
   } else if (command_id == UNINSTALL) {
     // Some extension types can not be uninstalled.
-    return extensions::ExtensionSystem::Get(
-        profile_)->management_policy()->UserMayModifySettings(extension, NULL);
+    extensions::ManagementPolicy* policy =
+        extensions::ExtensionSystem::Get(profile_)->management_policy();
+    return policy->UserMayModifySettings(extension, nullptr) &&
+           !policy->MustRemainInstalled(extension, nullptr);
   }
   return true;
 }

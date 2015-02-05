@@ -514,9 +514,10 @@ bool ManagementUninstallFunctionBase::Uninstall(
     return false;
   }
 
-  if (!ExtensionSystem::Get(browser_context())
-           ->management_policy()
-           ->UserMayModifySettings(target_extension, NULL)) {
+  ManagementPolicy* policy =
+      ExtensionSystem::Get(browser_context())->management_policy();
+  if (!policy->UserMayModifySettings(target_extension, nullptr) ||
+      policy->MustRemainInstalled(target_extension, nullptr)) {
     error_ = ErrorUtils::FormatErrorMessage(keys::kUserCantModifyError,
                                             extension_id_);
     return false;
