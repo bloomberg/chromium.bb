@@ -71,15 +71,22 @@ class DataSourceSender::PendingSend::Buffer : public WritableBuffer {
   uint32_t buffer_size_;
 };
 
-DataSourceSender::DataSourceSender(const ReadyCallback& ready_callback,
-                                   const ErrorCallback& error_callback)
-    : ready_callback_(ready_callback),
+DataSourceSender::DataSourceSender(
+    mojo::InterfaceRequest<serial::DataSource> source,
+    mojo::InterfacePtr<serial::DataSourceClient> client,
+    const ReadyCallback& ready_callback,
+    const ErrorCallback& error_callback)
+    : binding_(this, source.Pass()),
+      client_(client.Pass()),
+      ready_callback_(ready_callback),
       error_callback_(error_callback),
       available_buffer_capacity_(0),
       paused_(false),
       shut_down_(false),
       weak_factory_(this) {
   DCHECK(!ready_callback.is_null() && !error_callback.is_null());
+  binding_.set_error_handler(this);
+  client_.set_error_handler(this);
 }
 
 void DataSourceSender::ShutDown() {
@@ -138,7 +145,7 @@ void DataSourceSender::DoneWithError(const std::vector<char>& data,
                                      int32_t error) {
   DoneInternal(data);
   if (!shut_down_)
-    client()->OnError(error);
+    client_->OnError(error);
   paused_ = true;
   // We don't call GetMoreData here so we don't send any additional data until
   // Resume() is called.
@@ -153,7 +160,7 @@ void DataSourceSender::DoneInternal(const std::vector<char>& data) {
   if (!data.empty()) {
     mojo::Array<uint8_t> data_to_send(data.size());
     std::copy(data.begin(), data.end(), &data_to_send[0]);
-    client()->OnData(data_to_send.Pass());
+    client_->OnData(data_to_send.Pass());
   }
   pending_send_.reset();
 }

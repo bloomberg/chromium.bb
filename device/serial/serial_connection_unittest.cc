@@ -74,17 +74,19 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
             scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator)),
         &service);
     service.set_error_handler(this);
-    mojo::InterfacePtr<serial::DataSink> consumer;
-    mojo::InterfacePtr<serial::DataSource> producer;
-    service->Connect("device",
-                     serial::ConnectionOptions::New(),
-                     mojo::GetProxy(&connection_),
-                     mojo::GetProxy(&consumer),
-                     mojo::GetProxy(&producer));
-    sender_.reset(new DataSender(
-        consumer.Pass(), kBufferSize, serial::SEND_ERROR_DISCONNECTED));
-    receiver_ = new DataReceiver(
-        producer.Pass(), kBufferSize, serial::RECEIVE_ERROR_DISCONNECTED);
+    mojo::InterfacePtr<serial::DataSink> sink;
+    mojo::InterfacePtr<serial::DataSource> source;
+    mojo::InterfacePtr<serial::DataSourceClient> source_client;
+    mojo::InterfaceRequest<serial::DataSourceClient> source_client_request =
+        mojo::GetProxy(&source_client);
+    service->Connect("device", serial::ConnectionOptions::New(),
+                     mojo::GetProxy(&connection_), mojo::GetProxy(&sink),
+                     mojo::GetProxy(&source), source_client.Pass());
+    sender_.reset(new DataSender(sink.Pass(), kBufferSize,
+                                 serial::SEND_ERROR_DISCONNECTED));
+    receiver_ =
+        new DataReceiver(source.Pass(), source_client_request.Pass(),
+                         kBufferSize, serial::RECEIVE_ERROR_DISCONNECTED);
     connection_.set_error_handler(this);
     connection_->GetInfo(
         base::Bind(&SerialConnectionTest::StoreInfo, base::Unretained(this)));

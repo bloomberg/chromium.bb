@@ -7,9 +7,55 @@
 #include "device/serial/data_source_sender.h"
 #include "device/serial/data_stream.mojom.h"
 #include "extensions/renderer/api_test_base.h"
+#include "gin/dictionary.h"
+#include "gin/wrappable.h"
 #include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
+
+class DataReceiverFactory : public gin::Wrappable<DataReceiverFactory> {
+ public:
+  using Callback = base::Callback<void(
+      mojo::InterfaceRequest<device::serial::DataSource>,
+      mojo::InterfacePtr<device::serial::DataSourceClient>)>;
+  static gin::Handle<DataReceiverFactory> Create(v8::Isolate* isolate,
+                                                 const Callback& callback) {
+    return gin::CreateHandle(isolate,
+                             new DataReceiverFactory(callback, isolate));
+  }
+
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) override {
+    return Wrappable<DataReceiverFactory>::GetObjectTemplateBuilder(isolate)
+        .SetMethod("create", &DataReceiverFactory::CreateReceiver);
+  }
+
+  gin::Dictionary CreateReceiver() {
+    mojo::InterfacePtr<device::serial::DataSource> sink;
+    mojo::InterfacePtr<device::serial::DataSourceClient> client;
+    mojo::InterfaceRequest<device::serial::DataSourceClient> client_request =
+        mojo::GetProxy(&client);
+    callback_.Run(mojo::GetProxy(&sink), client.Pass());
+
+    gin::Dictionary result = gin::Dictionary::CreateEmpty(isolate_);
+    result.Set("source", sink.PassMessagePipe().release());
+    result.Set("client", client_request.PassMessagePipe().release());
+    return result;
+  }
+
+  static gin::WrapperInfo kWrapperInfo;
+
+ private:
+  DataReceiverFactory(const Callback& callback, v8::Isolate* isolate)
+      : callback_(callback), isolate_(isolate) {}
+
+  base::Callback<void(mojo::InterfaceRequest<device::serial::DataSource>,
+                      mojo::InterfacePtr<device::serial::DataSourceClient>)>
+      callback_;
+  v8::Isolate* isolate_;
+};
+
+gin::WrapperInfo DataReceiverFactory::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // Runs tests defined in extensions/test/data/data_receiver_unittest.js
 class DataReceiverTest : public ApiTestBase {
@@ -18,8 +64,13 @@ class DataReceiverTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    service_provider()->AddService(base::Bind(
-        &DataReceiverTest::CreateDataSource, base::Unretained(this)));
+    gin::ModuleRegistry::From(env()->context()->v8_context())
+        ->AddBuiltinModule(env()->isolate(),
+                           "device/serial/data_receiver_test_factory",
+                           DataReceiverFactory::Create(
+                               env()->isolate(),
+                               base::Bind(&DataReceiverTest::CreateDataSource,
+                                          base::Unretained(this))).ToV8());
   }
 
   void TearDown() override {
@@ -35,12 +86,12 @@ class DataReceiverTest : public ApiTestBase {
 
  private:
   void CreateDataSource(
-      mojo::InterfaceRequest<device::serial::DataSource> request) {
-    sender_ = mojo::WeakBindToRequest(
-        new device::DataSourceSender(
-            base::Bind(&DataReceiverTest::ReadyToSend, base::Unretained(this)),
-            base::Bind(base::DoNothing)),
-        &request);
+      mojo::InterfaceRequest<device::serial::DataSource> request,
+      mojo::InterfacePtr<device::serial::DataSourceClient> client) {
+    sender_ = new device::DataSourceSender(
+        request.Pass(), client.Pass(),
+        base::Bind(&DataReceiverTest::ReadyToSend, base::Unretained(this)),
+        base::Bind(base::DoNothing));
   }
 
   void ReadyToSend(scoped_ptr<device::WritableBuffer> buffer) {

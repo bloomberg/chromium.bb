@@ -21,8 +21,8 @@ define('data_sender', [
    */
   function PendingSend(data) {
     /**
-     * The remaining data to be sent.
-     * @type {!ArrayBuffer}
+     * The data to be sent.
+     * @type {ArrayBuffer}
      * @private
      */
     this.data_ = data;
@@ -32,12 +32,6 @@ define('data_sender', [
      * @private
      */
     this.length_ = data.byteLength;
-    /**
-     * The number of bytes that have been received by the DataSink.
-     * @type {number}
-     * @private
-     */
-    this.bytesReceivedBySink_ = 0;
     /**
      * The promise that will be resolved or rejected when this send completes
      * or fails, respectively.
@@ -70,29 +64,13 @@ define('data_sender', [
   };
 
   /**
-   * @typedef module:data_sender~PendingSend.ReportBytesResult
-   * @property {number} bytesUnreported The number of bytes reported that were
-   *     not part of the send.
-   * @property {boolean} done Whether this send has completed.
-   * @property {?number} bytesToFlush The number of bytes to flush in the event
-   *     of an error.
-   */
-
-  /**
    * Invoked when the DataSink reports that bytes have been sent. Resolves the
    * promise returned by
    * [getPromise()]{@link module:data_sender~PendingSend#getPromise} once all
    * bytes have been reported as sent.
-   * @param {number} numBytes The number of bytes sent.
-   * @return {!module:data_sender~PendingSend.ReportBytesResult}
    */
-  PendingSend.prototype.reportBytesSent = function(numBytes) {
-    var result = this.reportBytesSentInternal_(numBytes);
-    if (this.bytesReceivedBySink_ == this.length_) {
-      result.done = true;
-      this.successCallback_(this.bytesReceivedBySink_);
-    }
-    return result;
+  PendingSend.prototype.reportBytesSent = function() {
+    this.successCallback_(this.length_);
   };
 
   /**
@@ -102,83 +80,39 @@ define('data_sender', [
    * the nubmer of outstanding bytes.
    * @param {number} numBytes The number of bytes sent.
    * @param {number} error The error reported by the DataSink.
-   * @return {!module:data_sender~PendingSend.ReportBytesResult}
    */
   PendingSend.prototype.reportBytesSentAndError = function(numBytes, error) {
-    var result = this.reportBytesSentInternal_(numBytes);
-    // If there are remaining bytes to report, the error occurred after this
-    // PendingSend so we should report success.
-    if (result.bytesUnreported > 0) {
-      this.successCallback_(this.bytesReceivedBySink_);
-      result.bytesToFlush = 0;
-      return result;
-    }
-
     var e = new Error();
     e.error = error;
-    e.bytesSent = this.bytesReceivedBySink_;
+    e.bytesSent = numBytes;
     this.errorCallback_(e);
-    this.done = true;
-    result.bytesToFlush =
-        this.length_ - this.data_.byteLength - this.bytesReceivedBySink_;
-    return result;
-  };
-
-  /**
-   * Updates the internal state in response to a report from the DataSink.
-   * @param {number} numBytes The number of bytes sent.
-   * @return {!module:data_sender~PendingSend.ReportBytesResult}
-   * @private
-   */
-  PendingSend.prototype.reportBytesSentInternal_ = function(numBytes) {
-    this.bytesReceivedBySink_ += numBytes;
-    var result = {bytesUnreported: 0};
-    if (this.bytesReceivedBySink_ > this.length_) {
-      result.bytesUnreported = this.bytesReceivedBySink_ - this.length_;
-      this.bytesReceivedBySink_ = this.length_;
-    }
-    result.done = false;
-    return result;
   };
 
   /**
    * Writes pending data into the data pipe.
    * @param {!DataSink} sink The DataSink to receive the data.
-   * @param {number} availableBufferCapacity The maximum number of bytes to
-   *     send.
    * @return {!Object} result The send result.
    * @return {boolean} result.completed Whether all of the pending data was
    *     sent.
-   * @return {number} result.remainingBufferCapacity The remaining send buffer
-   *     capacity.
    */
-  PendingSend.prototype.sendData = function(sink, availableBufferCapacity) {
-    var numBytesToSend =
-        Math.min(availableBufferCapacity, this.data_.byteLength);
-    sink.onData(new Uint8Array(this.data_, 0, numBytesToSend));
-    this.data_ = this.data_.slice(numBytesToSend);
-    return {
-      completed: this.data_.byteLength == 0,
-      remainingBufferCapacity: availableBufferCapacity - numBytesToSend,
-    };
+  PendingSend.prototype.sendData = function(sink) {
+    var dataSent = sink.onData(new Uint8Array(this.data_));
+    this.data_ = null;
+    return dataSent;
   };
 
   /**
    * A DataSender that sends data to a DataSink.
-   * @param {!MojoHandle} handle The handle to the DataSink.
+   * @param {!MojoHandle} sink The handle to the DataSink.
    * @param {number} bufferSize How large a buffer to use for data.
    * @param {number} fatalErrorValue The send error value to report in the
    *     event of a fatal error.
    * @constructor
    * @alias module:data_sender.DataSender
    */
-  function DataSender(handle, bufferSize, fatalErrorValue) {
-    this.init_(handle, fatalErrorValue, bufferSize);
-    this.sink_.init(bufferSize);
+  function DataSender(sink, bufferSize, fatalErrorValue) {
+    this.init_(sink, fatalErrorValue);
   }
-
-  DataSender.prototype =
-      $Object.create(dataStreamMojom.DataSinkClient.stubClass.prototype);
 
   /**
    * Closes this DataSender.
@@ -188,10 +122,6 @@ define('data_sender', [
       return;
     this.shutDown_ = true;
     this.router_.close();
-    while (this.pendingSends_.length) {
-      this.pendingSends_.pop().reportBytesSentAndError(
-          0, this.fatalErrorValue_);
-    }
     while (this.sendsAwaitingAck_.length) {
       this.sendsAwaitingAck_.pop().reportBytesSentAndError(
           0, this.fatalErrorValue_);
@@ -201,13 +131,12 @@ define('data_sender', [
 
   /**
    * Initialize this DataSender.
-   * @param {!MojoHandle} sink A handle to the DataSink
+   * @param {!MojoHandle} sink A handle to the DataSink.
    * @param {number} fatalErrorValue The error to dispatch in the event of a
    *     fatal error.
-   * @param {number} bufferSize The size of the send buffer.
    * @private
    */
-  DataSender.prototype.init_ = function(sink, fatalErrorValue, bufferSize) {
+  DataSender.prototype.init_ = function(sink, fatalErrorValue) {
     /**
      * The error to be dispatched in the event of a fatal error.
      * @const {number}
@@ -231,13 +160,6 @@ define('data_sender', [
      * @private
      */
     this.sink_ = new dataStreamMojom.DataSink.proxyClass(this.router_);
-    this.router_.setIncomingReceiver(this);
-    /**
-     * A queue of sends that have not fully sent their data to the DataSink.
-     * @type {!module:data_sender~PendingSend[]}
-     * @private
-     */
-    this.pendingSends_ = [];
     /**
      * A queue of sends that have sent their data to the DataSink, but have not
      * been received by the DataSink.
@@ -260,12 +182,6 @@ define('data_sender', [
      * @private
      */
     this.cancelPromise_ = null;
-    /**
-     * The available send buffer capacity.
-     * @type {number}
-     * @private
-     */
-    this.availableBufferCapacity_ = bufferSize;
   };
 
   /**
@@ -281,7 +197,7 @@ define('data_sender', [
       return Promise.resolve(null);
 
     var readyToSerialize = Promise.resolve();
-    if (this.pendingSends_.length || this.sendsAwaitingAck_.length) {
+    if (this.sendsAwaitingAck_.length) {
       if (this.pendingCancel_)
         readyToSerialize = this.cancelPromise_;
       else
@@ -291,7 +207,6 @@ define('data_sender', [
       var serialized = new serialization.SerializedDataSender();
       serialized.sink = this.router_.connector_.handle_;
       serialized.fatal_error_value = this.fatalErrorValue_;
-      serialized.buffer_size = this.availableBufferCapacity_;
       this.router_.connector_.handle_ = null;
       this.router_.close();
       this.shutDown_ = true;
@@ -320,8 +235,8 @@ define('data_sender', [
       this.shutDown_ = true;
       return;
     }
-    this.init_(
-        serialized.sink, serialized.fatal_error_value, serialized.buffer_size);
+    this.init_(serialized.sink, serialized.fatal_error_value,
+               serialized.buffer_size);
   };
 
   /**
@@ -338,20 +253,9 @@ define('data_sender', [
     if (this.pendingCancel_)
       throw new Error('Cancel in progress');
     var send = new PendingSend(data);
-    this.pendingSends_.push(send);
-    this.sendInternal_();
+    this.sendsAwaitingAck_.push(send);
+    send.sendData(this.sink_).then(this.reportBytesSentAndError.bind(this));
     return send.getPromise();
-  };
-
-  DataSender.prototype.sendInternal_ = function() {
-    while (this.pendingSends_.length && this.availableBufferCapacity_) {
-      var result = this.pendingSends_[0].sendData(
-          this.sink_, this.availableBufferCapacity_);
-      this.availableBufferCapacity_ = result.remainingBufferCapacity;
-      if (result.completed) {
-        this.sendsAwaitingAck_.push(this.pendingSends_.shift());
-      }
-    }
   };
 
   /**
@@ -368,7 +272,7 @@ define('data_sender', [
       throw new Error('DataSender has been closed');
     if (this.pendingCancel_)
       throw new Error('Cancel already in progress');
-    if (this.pendingSends_.length + this.sendsAwaitingAck_.length == 0)
+    if (this.sendsAwaitingAck_.length == 0)
       return Promise.resolve();
 
     this.sink_.cancel(error);
@@ -392,28 +296,17 @@ define('data_sender', [
 
   /**
    * Invoked by the DataSink to report that data has been successfully sent.
-   * @param {number} numBytes The number of bytes sent.
    * @private
    */
-  DataSender.prototype.reportBytesSent = function(numBytes) {
-    this.availableBufferCapacity_ += numBytes;
-    while (numBytes > 0 && this.sendsAwaitingAck_.length) {
-      var result = this.sendsAwaitingAck_[0].reportBytesSent(numBytes);
-      numBytes = result.bytesUnreported;
-      if (result.done)
-        this.sendsAwaitingAck_.shift();
-    }
-    if (numBytes > 0 && this.pendingSends_.length) {
-      var result = this.pendingSends_[0].reportBytesSent(numBytes);
-      numBytes = result.bytesUnreported;
-    }
+  DataSender.prototype.reportBytesSent = function() {
+    var result = this.sendsAwaitingAck_[0].reportBytesSent();
+    this.sendsAwaitingAck_.shift();
+
     // A cancel is completed when all of the sends that were in progress have
     // completed or failed. This is the case where all sends complete
     // successfully.
-    if (this.pendingSends_.length + this.sendsAwaitingAck_.length == 0)
+    if (this.sendsAwaitingAck_.length == 0)
       this.callCancelCallback_();
-
-    this.sendInternal_();
   };
 
   /**
@@ -422,26 +315,20 @@ define('data_sender', [
    * @param {number} error The error reported by the DataSink.
    * @private
    */
-  DataSender.prototype.reportBytesSentAndError = function(numBytes, error) {
-    this.availableBufferCapacity_ += numBytes;
-    while (this.sendsAwaitingAck_.length) {
-      var result = this.sendsAwaitingAck_[0].reportBytesSentAndError(
-          numBytes, error);
-      numBytes = result.bytesUnreported;
-      this.sendsAwaitingAck_.shift();
-      this.availableBufferCapacity_ += result.bytesToFlush;
+  DataSender.prototype.reportBytesSentAndError = function(result) {
+    var numBytes = result.bytes_sent;
+    var error = result.error;
+    if (!error) {
+      this.reportBytesSent();
+      return;
     }
-    while (this.pendingSends_.length) {
-      var result = this.pendingSends_[0].reportBytesSentAndError(
-          numBytes, error);
-      numBytes = result.bytesUnreported;
-      this.pendingSends_.shift();
-      // Note: Only the first PendingSend in |pendingSends_| will have data to
-      // flush as only the first can have sent data to the DataSink.
-      this.availableBufferCapacity_ += result.bytesToFlush;
-    }
+    var result =
+        this.sendsAwaitingAck_[0].reportBytesSentAndError(numBytes, error);
+    this.sendsAwaitingAck_.shift();
+    if (this.sendsAwaitingAck_.length)
+      return;
     this.callCancelCallback_();
-    return Promise.resolve();
+    this.sink_.clearError();
   };
 
   return {DataSender: DataSender};

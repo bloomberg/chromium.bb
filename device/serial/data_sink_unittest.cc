@@ -38,12 +38,11 @@ class DataSinkTest : public testing::Test {
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::DataSink> sink_handle;
-    sink_receiver_ = mojo::WeakBindToProxy(
-        new DataSinkReceiver(
-            base::Bind(&DataSinkTest::OnDataToRead, base::Unretained(this)),
-            base::Bind(&DataSinkTest::OnCancel, base::Unretained(this)),
-            base::Bind(&DataSinkTest::OnError, base::Unretained(this))),
-        &sink_handle);
+    sink_receiver_ = new DataSinkReceiver(
+        mojo::GetProxy(&sink_handle),
+        base::Bind(&DataSinkTest::OnDataToRead, base::Unretained(this)),
+        base::Bind(&DataSinkTest::OnCancel, base::Unretained(this)),
+        base::Bind(&DataSinkTest::OnError, base::Unretained(this)));
     sender_.reset(new DataSender(sink_handle.Pass(), kBufferSize, kFatalError));
   }
 

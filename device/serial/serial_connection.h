@@ -22,7 +22,8 @@ class SerialConnection : public mojo::InterfaceImpl<serial::Connection> {
  public:
   SerialConnection(scoped_refptr<SerialIoHandler> io_handler,
                    mojo::InterfaceRequest<serial::DataSink> sink,
-                   mojo::InterfaceRequest<serial::DataSource> source);
+                   mojo::InterfaceRequest<serial::DataSource> source,
+                   mojo::InterfacePtr<serial::DataSourceClient> source_client);
   ~SerialConnection() override;
 
   // mojo::InterfaceImpl<serial::Connection> overrides.

@@ -17,7 +17,7 @@
 namespace device {
 
 // A DataSender sends data to a DataSink.
-class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
+class DataSender : public mojo::ErrorHandler {
  public:
   typedef base::Callback<void(uint32_t bytes_sent)> DataSentCallback;
   typedef base::Callback<void(uint32_t bytes_sent, int32_t error)>
@@ -49,20 +49,14 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
  private:
   class PendingSend;
 
-  // serial::DataSinkClient overrides.
-  void ReportBytesSent(uint32_t bytes_sent) override;
-  void ReportBytesSentAndError(uint32_t bytes_sent,
-                               int32_t error,
-                               const mojo::Callback<void()>& callback) override;
+  // Invoked when a PendingSend completes.
+  void SendComplete();
+
+  // Invoked when a PendingSend fails with |error|.
+  void SendFailed(int32_t error);
 
   // mojo::ErrorHandler override.
   void OnConnectionError() override;
-
-  // Sends up to |available_buffer_capacity_| bytes of data from
-  // |pending_sends_| to |sink_|. When a PendingSend in |pending_sends_| has
-  // been fully copied transmitted to |sink_|, it moves to
-  // |sends_awaiting_ack_|.
-  void SendInternal();
 
   // Dispatches a cancel callback if one is pending.
   void RunCancelCallback();
@@ -77,19 +71,13 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
   // The error value to report in the event of a fatal error.
   const int32_t fatal_error_value_;
 
-  // A queue of PendingSend that have not yet been fully sent to |sink_|.
-  std::queue<linked_ptr<PendingSend> > pending_sends_;
-
   // A queue of PendingSend that have been sent to |sink_|, but have not yet
   // been acked by the DataSink.
-  std::queue<linked_ptr<PendingSend> > sends_awaiting_ack_;
+  std::queue<linked_ptr<PendingSend>> sends_awaiting_ack_;
 
   // The callback to report cancel completion if a cancel operation is in
   // progress.
   CancelCallback pending_cancel_;
-
-  // The number of bytes available for buffering in the DataSink.
-  uint32_t available_buffer_capacity_;
 
   // Whether we have encountered a fatal error and shut down.
   bool shut_down_;

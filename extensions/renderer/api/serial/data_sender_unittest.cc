@@ -38,12 +38,11 @@ class DataSenderTest : public ApiTestBase {
  private:
   void CreateDataSink(
       mojo::InterfaceRequest<device::serial::DataSink> request) {
-    receiver_ = mojo::WeakBindToRequest(
-        new device::DataSinkReceiver(
-            base::Bind(&DataSenderTest::ReadyToReceive, base::Unretained(this)),
-            base::Bind(&DataSenderTest::OnCancel, base::Unretained(this)),
-            base::Bind(base::DoNothing)),
-        &request);
+    receiver_ = new device::DataSinkReceiver(
+        request.Pass(),
+        base::Bind(&DataSenderTest::ReadyToReceive, base::Unretained(this)),
+        base::Bind(&DataSenderTest::OnCancel, base::Unretained(this)),
+        base::Bind(base::DoNothing));
   }
 
   void ReadyToReceive(scoped_ptr<device::ReadOnlyBuffer> buffer) {

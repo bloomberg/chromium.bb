@@ -94,7 +94,8 @@ interface SerialService {
           ConnectionOptions? options,
           Connection& connection,
           DataSink& sink,
-          DataSource& source);
+          DataSource& source,
+          DataSourceClient source_client);
 };
 
 interface Connection {

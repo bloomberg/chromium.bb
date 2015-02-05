@@ -18,7 +18,8 @@
 namespace device {
 
 class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
-                         public mojo::InterfaceImpl<serial::DataSink> {
+                         public serial::DataSink,
+                         public mojo::ErrorHandler {
  public:
   typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReadyCallback;
   typedef base::Callback<void(int32_t error)> CancelCallback;
@@ -29,9 +30,10 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // |ready_callback| will not be called again until the previous ReadOnlyBuffer
   // is destroyed. If a connection error occurs, |error_callback| will be called
   // and the DataSinkReceiver will act as if ShutDown() had been called. If
-  // |cancel_callback| is valid, it will be called when the DataSinkClient
+  // |cancel_callback| is valid, it will be called when the DataSink client
   // requests cancellation of the in-progress read.
-  DataSinkReceiver(const ReadyCallback& ready_callback,
+  DataSinkReceiver(mojo::InterfaceRequest<serial::DataSink> request,
+                   const ReadyCallback& ready_callback,
                    const CancelCallback& cancel_callback,
                    const ErrorCallback& error_callback);
 
@@ -47,9 +49,11 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   ~DataSinkReceiver() override;
 
   // mojo::InterfaceImpl<serial::DataSink> overrides.
-  void Init(uint32_t buffer_size) override;
   void Cancel(int32_t error) override;
-  void OnData(mojo::Array<uint8_t> data) override;
+  void OnData(mojo::Array<uint8_t> data,
+              const mojo::Callback<void(uint32_t, int32_t)>& callback) override;
+  void ClearError() override;
+
   void OnConnectionError() override;
 
   // Dispatches data to |ready_callback_|.
@@ -65,15 +69,13 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // Marks |bytes_read| bytes as being read.
   bool DoneInternal(uint32_t bytes_read);
 
-  // Sends an ReportBytesSentAndError message to the client.
-  void ReportBytesSentAndError(uint32_t bytes_read, int32_t error);
-
-  // Invoked in response to an ReportBytesSentAndError call to the client at
-  // the point in the data stream to flush.
-  void DoFlush();
+  // Reports an error to the client.
+  void ReportError(uint32_t bytes_read, int32_t error);
 
   // Reports a fatal error to the client and shuts down.
   void DispatchFatalError();
+
+  mojo::Binding<serial::DataSink> binding_;
 
   // The callback to call when there is data ready to read.
   const ReadyCallback ready_callback_;
@@ -84,18 +86,12 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // The callback to call if a fatal error occurs.
   const ErrorCallback error_callback_;
 
-  // Whether we are waiting for a flush.
-  bool flush_pending_;
+  // The current error that has not been cleared by a ClearError message..
+  int32_t current_error_;
 
   // The buffer passed to |ready_callback_| if one exists. This is not owned,
   // but the Buffer will call Done or DoneWithError before being deleted.
   Buffer* buffer_in_use_;
-
-  // Whether this has received an Init() call from the client.
-  bool initialized_;
-
-  // The remaining number of bytes of data that we can buffer.
-  uint32_t available_buffer_capacity_;
 
   // The data we have received from the client that has not been passed to
   // |ready_callback_|.
