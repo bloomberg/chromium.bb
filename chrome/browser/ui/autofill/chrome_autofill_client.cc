@@ -186,13 +186,13 @@ void ChromeAutofillClient::ShowAutofillPopup(
       element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
-  popup_controller_ =
-      AutofillPopupControllerImpl::GetOrCreate(popup_controller_,
-                                               delegate,
-                                               web_contents(),
-                                               web_contents()->GetNativeView(),
-                                               element_bounds_in_screen_space,
-                                               text_direction);
+  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
+      popup_controller_,
+      delegate,
+      web_contents(),
+      web_contents()->GetContentNativeView(),
+      element_bounds_in_screen_space,
+      text_direction);
 
   popup_controller_->Show(suggestions);
 }
