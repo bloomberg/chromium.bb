@@ -97,7 +97,7 @@ HttpNetworkSession::Params::Params()
       enable_user_alternate_protocol_ports(false),
       quic_crypto_client_stream_factory(NULL),
       proxy_delegate(NULL) {
-  quic_supported_versions.push_back(QUIC_VERSION_23);
+  quic_supported_versions.push_back(QUIC_VERSION_24);
 }
 
 HttpNetworkSession::Params::~Params() {}
