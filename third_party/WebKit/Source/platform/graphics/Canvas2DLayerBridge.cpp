@@ -120,6 +120,8 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     ASSERT(m_destructionInProgress);
     ASSERT(!Canvas2DLayerManager::get().isInList(this));
+    if (m_canvas)
+        m_canvas->setNotificationClient(nullptr);
     m_layer.clear();
     ASSERT(m_mailboxes.size() == 0);
 #ifndef NDEBUG
