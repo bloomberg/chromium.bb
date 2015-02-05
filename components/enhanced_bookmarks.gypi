@@ -92,4 +92,20 @@
       'includes': [ '../build/protoc.gypi' ],
     },
   ],
+  'conditions' : [
+    ['OS=="android"', {
+      'targets': [
+        {
+          # GN: //components/enhanced_bookmarks:enhanced_bookmarks_launch_location_srcjar
+          'target_name': 'enhanced_bookmarks_launch_location_srcjar',
+          'type': 'none',
+          'variables': {
+            'source_file': 'enhanced_bookmarks/enhanced_bookmark_utils.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+      ],
+     },
+   ],
+  ],
 }
