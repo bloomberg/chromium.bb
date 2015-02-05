@@ -690,7 +690,6 @@ const char kOpenVPNTLSRemoteProperty[] = "OpenVPN.TLSRemote";
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
 
 // FlimFlam PPPoE property names.
-const char kPPPoEDeviceProperty[] = "PPPoE.Device";
 const char kPPPoEUsernameProperty[] = "PPPoE.Username";
 const char kPPPoEPasswordProperty[] = "PPPoE.Password";
 
@@ -823,6 +822,7 @@ const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 const char kProviderRequiresRoamingProperty[] =
     "Cellular.ProviderRequiresRoaming";
+const char kPPPoEProperty[] = "Ethernet.PPPoE";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
