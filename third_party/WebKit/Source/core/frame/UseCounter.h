@@ -623,6 +623,7 @@ public:
         SVGElementXmlbase = 681,
         SVGElementXmllang = 682,
         SVGElementXmlspace = 683,
+        WindowMoveResizeMissingArguments = 684,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

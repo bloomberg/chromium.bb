@@ -1403,8 +1403,11 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     scrollViewportTo(frame(), DoublePoint(scaledX, scaledY), scrollBehavior);
 }
 
-void LocalDOMWindow::moveBy(int x, int y) const
+void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
 {
+    if (!hasX || !hasY)
+        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
+
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1420,6 +1423,9 @@ void LocalDOMWindow::moveBy(int x, int y) const
 
 void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
 {
+    if (!hasX || !hasY)
+        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
+
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1433,8 +1439,11 @@ void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
     host->chrome().setWindowRect(adjustWindowRect(*frame(), windowRect));
 }
 
-void LocalDOMWindow::resizeBy(int x, int y) const
+void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
 {
+    if (!hasX || !hasY)
+        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
+
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1450,6 +1459,9 @@ void LocalDOMWindow::resizeBy(int x, int y) const
 
 void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
 {
+    if (!hasWidth || !hasHeight)
+        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
+
     if (!frame() || !frame()->isMainFrame())
         return;
 
