@@ -33,8 +33,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
                         ClientSocketFactory* socket_factory);
   ~FtpNetworkTransaction() override;
 
-  virtual int Stop(int error);
-  virtual int RestartIgnoringLastError(const CompletionCallback& callback);
+  int Stop(int error);
 
   // FtpTransaction methods:
   int Start(const FtpRequestInfo* request_info,

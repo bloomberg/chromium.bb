@@ -239,11 +239,6 @@ int FtpNetworkTransaction::Stop(int error) {
   return OK;
 }
 
-int FtpNetworkTransaction::RestartIgnoringLastError(
-    const CompletionCallback& callback) {
-  return ERR_NOT_IMPLEMENTED;
-}
-
 int FtpNetworkTransaction::Start(const FtpRequestInfo* request_info,
                                  const CompletionCallback& callback,
                                  const BoundNetLog& net_log) {
@@ -1033,16 +1028,18 @@ int FtpNetworkTransaction::DoCtrlWriteRETR() {
 
 int FtpNetworkTransaction::ProcessResponseRETR(
     const FtpCtrlResponse& response) {
+  // Resource type should be either filled in by DetectTypecode() or
+  // detected with CWD. RETR is sent only when the resource is a file.
+  DCHECK_EQ(RESOURCE_TYPE_FILE, resource_type_);
+
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
       // We want the client to start reading the response at this point.
       // It got here either through Start or RestartWithAuth. We want that
       // method to complete. Not setting next state here will make DoLoop exit
       // and in turn make Start/RestartWithAuth complete.
-      resource_type_ = RESOURCE_TYPE_FILE;
       break;
     case ERROR_CLASS_OK:
-      resource_type_ = RESOURCE_TYPE_FILE;
       next_state_ = STATE_CTRL_WRITE_QUIT;
       break;
     case ERROR_CLASS_INFO_NEEDED:
@@ -1055,10 +1052,6 @@ int FtpNetworkTransaction::ProcessResponseRETR(
       NOTREACHED();
       return Stop(ERR_UNEXPECTED);
   }
-
-  // We should be sure about our resource type now. Otherwise we risk
-  // an infinite loop (RETR can later send CWD, and CWD can later send RETR).
-  DCHECK_NE(RESOURCE_TYPE_UNKNOWN, resource_type_);
 
   return OK;
 }
@@ -1095,6 +1088,7 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
       break;
     case ERROR_CLASS_PERMANENT_ERROR:
       // It's possible that SIZE failed because the path is a directory.
+      // TODO(xunjieli): Add a test for this case.
       if (resource_type_ == RESOURCE_TYPE_UNKNOWN &&
           response.status_code != 550) {
         return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
@@ -1104,6 +1098,9 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
       NOTREACHED();
       return Stop(ERR_UNEXPECTED);
   }
+
+  // If the resource is known beforehand to be a file, RETR should be issued,
+  // otherwise do CWD which will detect the resource type.
   if (resource_type_ == RESOURCE_TYPE_FILE)
     EstablishDataConnection(STATE_CTRL_WRITE_RETR);
   else
@@ -1119,13 +1116,14 @@ int FtpNetworkTransaction::DoCtrlWriteCWD() {
 }
 
 int FtpNetworkTransaction::ProcessResponseCWD(const FtpCtrlResponse& response) {
-  // We should never issue CWD if we know the target resource is a file.
+  // CWD should be invoked only when the resource is not a file.
   DCHECK_NE(RESOURCE_TYPE_FILE, resource_type_);
 
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
       return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_OK:
+      resource_type_ = RESOURCE_TYPE_DIRECTORY;
       EstablishDataConnection(STATE_CTRL_WRITE_LIST);
       break;
     case ERROR_CLASS_INFO_NEEDED:
@@ -1158,9 +1156,7 @@ int FtpNetworkTransaction::ProcessResponseCWDNotADirectory() {
     return Stop(ERR_FILE_NOT_FOUND);
   }
 
-  // We are here because SIZE failed and we are not sure what the resource
-  // type is. It could still be file, and SIZE could fail because of
-  // an access error (http://crbug.com/56734). Try RETR just to be sure.
+  // If it is not a directory, it is probably a file.
   resource_type_ = RESOURCE_TYPE_FILE;
 
   EstablishDataConnection(STATE_CTRL_WRITE_RETR);
@@ -1182,6 +1178,10 @@ int FtpNetworkTransaction::DoCtrlWriteLIST() {
 
 int FtpNetworkTransaction::ProcessResponseLIST(
     const FtpCtrlResponse& response) {
+  // Resource type should be either filled in by DetectTypecode() or
+  // detected with CWD. LIST is sent only when the resource is a directory.
+  DCHECK_EQ(RESOURCE_TYPE_DIRECTORY, resource_type_);
+
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
       // We want the client to start reading the response at this point.

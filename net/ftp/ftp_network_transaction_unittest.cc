@@ -918,7 +918,7 @@ TEST_P(FtpNetworkTransactionTest, DirectoryTransactionWithPasvFallback) {
 
 TEST_P(FtpNetworkTransactionTest, DirectoryTransactionWithTypecode) {
   FtpSocketDataProviderDirectoryListing ctrl_socket;
-  ExecuteTransaction(&ctrl_socket, "ftp://host;type=d", OK);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/;type=d", OK);
 
   EXPECT_TRUE(transaction_.GetResponseInfo()->is_directory_listing);
   EXPECT_EQ(-1, transaction_.GetResponseInfo()->expected_content_size);
