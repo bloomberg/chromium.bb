@@ -318,13 +318,14 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     it = alternate_protocol_map_.Put(server, alternate);
   }
   it->second.is_broken = true;
-  int count = ++broken_alternate_protocol_map_[server];
+  const BrokenAlternateProtocolEntry entry(server, alternate.port,
+                                           alternate.protocol);
+  int count = ++broken_alternate_protocol_map_[entry];
   base::TimeDelta delay =
       base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
-  BrokenAlternateProtocolEntry entry;
-  entry.server = server;
-  entry.when = base::TimeTicks::Now() + delay * (1 << (count - 1));
-  broken_alternate_protocol_list_.push_back(entry);
+  base::TimeTicks when = base::TimeTicks::Now() + delay * (1 << (count - 1));
+  broken_alternate_protocol_list_.push_back(
+      BrokenAlternateProtocolEntryWithTime(entry, when));
 
   // Do not leave this host as canonical so that we don't infer the other
   // hosts are also broken without testing them first.
@@ -339,12 +340,22 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
 
 bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
     const HostPortPair& server) {
-  return ContainsKey(broken_alternate_protocol_map_, server);
+  const AlternateProtocolInfo alternate_protocol = GetAlternateProtocol(server);
+  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    return false;
+  const BrokenAlternateProtocolEntry entry(server, alternate_protocol.port,
+                                           alternate_protocol.protocol);
+  return ContainsKey(broken_alternate_protocol_map_, entry);
 }
 
 void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
     const HostPortPair& server) {
-  broken_alternate_protocol_map_.erase(server);
+  const AlternateProtocolInfo alternate_protocol = GetAlternateProtocol(server);
+  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    return;
+  const BrokenAlternateProtocolEntry entry(server, alternate_protocol.port,
+                                           alternate_protocol.protocol);
+  broken_alternate_protocol_map_.erase(entry);
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
@@ -494,12 +505,14 @@ void HttpServerPropertiesImpl::RemoveCanonicalHost(
 void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
   base::TimeTicks now = base::TimeTicks::Now();
   while (!broken_alternate_protocol_list_.empty()) {
-    BrokenAlternateProtocolEntry entry =
+    BrokenAlternateProtocolEntryWithTime entry_with_time =
         broken_alternate_protocol_list_.front();
-    if (now < entry.when) {
+    if (now < entry_with_time.when) {
       break;
     }
 
+    const BrokenAlternateProtocolEntry& entry =
+        entry_with_time.broken_alternate_protocol_entry;
     ClearAlternateProtocol(entry.server);
     broken_alternate_protocol_list_.pop_front();
   }
