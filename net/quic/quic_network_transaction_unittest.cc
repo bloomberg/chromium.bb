@@ -102,6 +102,21 @@ class MockQuicData {
   scoped_ptr<SocketDataProvider> socket_data_;
 };
 
+class ProxyHeadersHandler {
+ public:
+  ProxyHeadersHandler() : was_called_(false) {}
+
+  bool was_called() { return was_called_; }
+
+  void OnBeforeProxyHeadersSent(const ProxyInfo& proxy_info,
+                                HttpRequestHeaders* request_headers) {
+    was_called_ = true;
+  }
+
+ private:
+  bool was_called_;
+};
+
 class QuicNetworkTransactionTest
     : public PlatformTest,
       public ::testing::WithParamInterface<QuicVersion> {
@@ -269,11 +284,11 @@ class QuicNetworkTransactionTest
   }
 
   void SendRequestAndExpectQuicResponse(const std::string& expected) {
-    scoped_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-    RunTransaction(trans.get());
-    CheckWasQuicResponse(trans);
-    CheckResponseData(trans.get(), expected);
+    SendRequestAndExpectQuicResponseMaybeFromProxy(expected, false);
+  }
+
+  void SendRequestAndExpectQuicResponseFromProxy(const std::string& expected) {
+    SendRequestAndExpectQuicResponseMaybeFromProxy(expected, true);
   }
 
   void AddQuicAlternateProtocolMapping(
@@ -321,6 +336,22 @@ class QuicNetworkTransactionTest
   HttpRequestInfo request_;
   CapturingBoundNetLog net_log_;
   StaticSocketDataProvider hanging_data_;
+
+ private:
+  void SendRequestAndExpectQuicResponseMaybeFromProxy(
+      const std::string& expected,
+      bool used_proxy) {
+    scoped_ptr<HttpNetworkTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+    ProxyHeadersHandler proxy_headers_handler;
+    trans->SetBeforeProxyHeadersSentCallback(
+        base::Bind(&ProxyHeadersHandler::OnBeforeProxyHeadersSent,
+                   base::Unretained(&proxy_headers_handler)));
+    RunTransaction(trans.get());
+    CheckWasQuicResponse(trans);
+    CheckResponseData(trans.get(), expected);
+    EXPECT_EQ(used_proxy, proxy_headers_handler.was_called());
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(Version, QuicNetworkTransactionTest,
@@ -411,7 +442,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 
   CreateSession();
 
-  SendRequestAndExpectQuicResponse("hello!");
+  SendRequestAndExpectQuicResponseFromProxy("hello!");
 }
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {

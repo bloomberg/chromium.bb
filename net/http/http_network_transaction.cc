@@ -571,7 +571,8 @@ bool HttpNetworkTransaction::is_https_request() const {
 }
 
 bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
-  return (proxy_info_.is_http() || proxy_info_.is_https()) &&
+  return (proxy_info_.is_http() || proxy_info_.is_https() ||
+          proxy_info_.is_quic()) &&
          !(request_->url.SchemeIs("https") || request_->url.SchemeIsWSOrWSS());
 }
 
