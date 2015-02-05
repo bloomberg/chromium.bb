@@ -1588,6 +1588,12 @@
             'sysroot%': '<(sysroot)',
             'CXX%': '<(CXX)',
           }],
+          # Use a 64-bit linker to avoid running out of address space. The
+          # buildbots should have a 64-bit kernel and a 64-bit libc installed.
+          ['host_arch=="ia32" and target_arch=="ia32"', {
+            'linux_use_bundled_gold%': '1',
+            'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
+          }],
           # All Chrome builds have breakpad symbols, but only process the
           # symbols from official builds.
           ['(branding=="Chrome" and buildtype=="Official")', {
@@ -1596,16 +1602,6 @@
             # Omit unwind support in official release builds to save space. We
             # can use breakpad for these builds.
             'release_unwind_tables%': 0,
-
-            'conditions': [
-              # For official builds, use a 64-bit linker to avoid running out
-              # of address space. The buildbots should have a 64-bit kernel
-              # and a 64-bit libc installed.
-              ['host_arch=="ia32" and target_arch=="ia32"', {
-                'linux_use_bundled_gold%': '1',
-                'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
-              }],
-            ],
           }],
         ],
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
