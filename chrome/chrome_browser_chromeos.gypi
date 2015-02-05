@@ -429,8 +429,6 @@
         'browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_refresh_keys_operation.cc',
         'browser/chromeos/login/easy_unlock/easy_unlock_refresh_keys_operation.h',
-        'browser/chromeos/login/easy_unlock/easy_unlock_metrics.cc',
-        'browser/chromeos/login/easy_unlock/easy_unlock_metrics.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_reauth.cc',
         'browser/chromeos/login/easy_unlock/easy_unlock_reauth.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_remove_keys_operation.cc',

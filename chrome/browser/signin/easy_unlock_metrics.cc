@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
+#include "chrome/browser/signin/easy_unlock_metrics.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
-
-namespace chromeos {
+#include "base/metrics/histogram_macros.h"
 
 void RecordEasyUnlockLoginEvent(EasyUnlockLoginEvent event) {
   DCHECK_LT(event, EASY_SIGN_IN_LOGIN_EVENT_COUNT);
@@ -16,5 +14,3 @@ void RecordEasyUnlockLoginEvent(EasyUnlockLoginEvent event) {
                             event,
                             EASY_SIGN_IN_LOGIN_EVENT_COUNT);
 }
-
-}  // namespace chromeos

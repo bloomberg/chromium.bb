@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_
-
-namespace chromeos {
+#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
+#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
 
 // Tracking login events for Easy unlock metrics.
 // This enum is used to define the buckets for an enumerated UMA histogram.
@@ -43,7 +41,7 @@ enum EasyUnlockLoginEvent {
   PASSWORD_SIGN_IN_RSSI_TOO_LOW = 12,
   // Password is used for sign-in because phone is not supported.
   PASSWORD_SIGN_IN_PHONE_UNSUPPORTED = 13,
-  // Password is used for sign-in because user types in passowrd. This is
+  // Password is used for sign-in because user types in password. This is
   // unlikely to happen though.
   PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE = 14,
   // Password is used for sign-in because phone is not right next to the
@@ -62,11 +60,9 @@ enum EasyUnlockLoginEvent {
   // right next to the Chromebook.
   PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH = 19,
 
-  EASY_SIGN_IN_LOGIN_EVENT_COUNT  // Must be the last.
+  EASY_SIGN_IN_LOGIN_EVENT_COUNT  // Must be the last entry.
 };
 
 void RecordEasyUnlockLoginEvent(EasyUnlockLoginEvent event);
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_
+#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_

@@ -13,8 +13,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
@@ -174,9 +174,8 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
     bool success) const {
   DCHECK_EQ(GetUserEmail(), user_id);
 
-  chromeos::RecordEasyUnlockLoginEvent(success
-                                           ? chromeos::EASY_SIGN_IN_SUCCESS
-                                           : chromeos::EASY_SIGN_IN_FAILURE);
+  RecordEasyUnlockLoginEvent(
+      success ? EASY_SIGN_IN_SUCCESS : EASY_SIGN_IN_FAILURE);
   DVLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
 }
 
@@ -186,11 +185,10 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
   if (GetUserEmail() != user_id)
     return;
 
-  chromeos::EasyUnlockLoginEvent event =
-      chromeos::EASY_SIGN_IN_LOGIN_EVENT_COUNT;
+  EasyUnlockLoginEvent event = EASY_SIGN_IN_LOGIN_EVENT_COUNT;
   if (!GetRemoteDevices() ||
       GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_PAIRING) {
-    event = chromeos::PASSWORD_SIGN_IN_NO_PAIRING;
+    event = PASSWORD_SIGN_IN_NO_PAIRING;
   } else if (GetHardlockState() !=
              EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
     switch (GetHardlockState()) {
@@ -199,63 +197,63 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
         NOTREACHED();
         break;
       case EasyUnlockScreenlockStateHandler::USER_HARDLOCK:
-        event = chromeos::PASSWORD_SIGN_IN_USER_HARDLOCK;
+        event = PASSWORD_SIGN_IN_USER_HARDLOCK;
         break;
       case EasyUnlockScreenlockStateHandler::PAIRING_CHANGED:
-        event = chromeos::PASSWORD_SIGN_IN_PAIRING_CHANGED;
+        event = PASSWORD_SIGN_IN_PAIRING_CHANGED;
         break;
       case EasyUnlockScreenlockStateHandler::LOGIN_FAILED:
-        event = chromeos::PASSWORD_SIGN_IN_LOGIN_FAILED;
+        event = PASSWORD_SIGN_IN_LOGIN_FAILED;
         break;
       case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
-        event = chromeos::PASSWORD_SIGN_IN_PAIRING_ADDED;
+        event = PASSWORD_SIGN_IN_PAIRING_ADDED;
         break;
     }
   } else if (!screenlock_state_handler()) {
-    event = chromeos::PASSWORD_SIGN_IN_NO_SCREENLOCK_STATE_HANDLER;
+    event = PASSWORD_SIGN_IN_NO_SCREENLOCK_STATE_HANDLER;
   } else {
     switch (screenlock_state_handler()->state()) {
       case EasyUnlockScreenlockStateHandler::STATE_INACTIVE:
-        event = chromeos::PASSWORD_SIGN_IN_SERVICE_NOT_ACTIVE;
+        event = PASSWORD_SIGN_IN_SERVICE_NOT_ACTIVE;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
-        event = chromeos::PASSWORD_SIGN_IN_NO_BLUETOOTH;
+        event = PASSWORD_SIGN_IN_NO_BLUETOOTH;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
-        event = chromeos::PASSWORD_SIGN_IN_BLUETOOTH_CONNECTING;
+        event = PASSWORD_SIGN_IN_BLUETOOTH_CONNECTING;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
-        event = chromeos::PASSWORD_SIGN_IN_NO_PHONE;
+        event = PASSWORD_SIGN_IN_NO_PHONE;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_NOT_AUTHENTICATED;
+        event = PASSWORD_SIGN_IN_PHONE_NOT_AUTHENTICATED;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_LOCKED;
+        event = PASSWORD_SIGN_IN_PHONE_LOCKED;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE;
+        event = PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_UNSUPPORTED;
+        event = PASSWORD_SIGN_IN_PHONE_UNSUPPORTED;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
-        event = chromeos::PASSWORD_SIGN_IN_RSSI_TOO_LOW;
+        event = PASSWORD_SIGN_IN_RSSI_TOO_LOW;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
-        event = chromeos::PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH;
+        event = PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH;
         break;
       case EasyUnlockScreenlockStateHandler::
                STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+        event = PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
-        event = chromeos::PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE;
+        event = PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE;
         break;
     }
   }
 
-  chromeos::RecordEasyUnlockLoginEvent(event);
+  RecordEasyUnlockLoginEvent(event);
   DVLOG(1) << "EasySignIn password login event, event=" << event;
 }
 
