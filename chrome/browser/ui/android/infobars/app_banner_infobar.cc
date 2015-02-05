@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
-#include "jni/AppBannerInfoBarDelegate_jni.h"
+#include "jni/AppBannerInfoBar_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -24,33 +24,31 @@ AppBannerInfoBar::~AppBannerInfoBar() {
 
 base::android::ScopedJavaLocalRef<jobject>
 AppBannerInfoBar::CreateRenderInfoBar(JNIEnv* env) {
-  java_delegate_.Reset(Java_AppBannerInfoBarDelegate_create(env));
+  ConfirmInfoBarDelegate* app_banner_infobar_delegate = GetDelegate();
 
-  base::android::ScopedJavaLocalRef<jstring> ok_button_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
-
-  ConfirmInfoBarDelegate* delegate = GetDelegate();
   base::android::ScopedJavaLocalRef<jstring> app_title =
       base::android::ConvertUTF16ToJavaString(
-          env, delegate->GetMessageText());
+          env, app_banner_infobar_delegate->GetMessageText());
 
+  base::android::ScopedJavaLocalRef<jobject> java_bitmap;
+  if (!app_banner_infobar_delegate->GetIcon().IsEmpty()) {
+    java_bitmap = gfx::ConvertToJavaBitmap(
+        app_banner_infobar_delegate->GetIcon().ToSkBitmap());
+  }
+
+  base::android::ScopedJavaLocalRef<jobject> infobar;
   base::android::ScopedJavaLocalRef<jstring> app_url =
       base::android::ConvertUTF8ToJavaString(env, app_url_.spec());
 
-  ScopedJavaLocalRef<jobject> java_bitmap;
-  if (!delegate->GetIcon().IsEmpty()) {
-    java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
-  }
-
-  return Java_AppBannerInfoBarDelegate_showInfoBar(
+  infobar.Reset(Java_AppBannerInfoBar_createWebAppInfoBar(
       env,
-      java_delegate_.obj(),
       reinterpret_cast<intptr_t>(this),
       app_title.obj(),
       java_bitmap.obj(),
-      ok_button_text.obj(),
-      app_url.obj());
+      app_url.obj()));
+
+  java_infobar_.Reset(env, infobar.obj());
+  return infobar;
 }
 
 // Native JNI methods ---------------------------------------------------------

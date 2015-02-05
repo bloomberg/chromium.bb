@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
 
+#include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/gfx/image/image.h"
@@ -13,6 +14,8 @@
 namespace infobars {
 class InfoBarManager;
 }  // namespace infobars
+
+class AppBannerInfoBar;
 
 namespace banners {
 
@@ -26,25 +29,28 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
     // User has elected to block the banner from being displayed.
     virtual void Block() const = 0;
 
-    // User has requested that the app be installed.
-    virtual void Install() const = 0;
+    // User has clicked the button.
+    // Returns true if the infobar should be dismissed.
+    virtual bool OnButtonClicked() const = 0;
 
-    // Icon to display for the app.
+    // Called when the infobar has been destroyed.
+    virtual void OnInfoBarDestroyed() = 0;
+
+    // Returns the title of the app.
+    virtual base::string16 GetTitle() const = 0;
+
+    // Returns the icon to display for the app.
     virtual gfx::Image GetIcon() const = 0;
   };
 
-  // Creates a banner for the current page.
+  // Creates a banner for the current page that promotes a web app.
   // May return nullptr if the the infobar couldn't be created.
-  static infobars::InfoBar* CreateForWebApp(
+  static AppBannerInfoBar* CreateForWebApp(
       infobars::InfoBarManager* infobar_manager,
-      const AppDelegate* delegate,
-      const base::string16& app_title,
+      AppDelegate* delegate,
       const GURL& url);
 
   ~AppBannerInfoBarDelegate() override;
-
-  // Changes the label of the button.
-  void SetButtonLabel(const std::string& button_text);
 
   // InfoBarDelegate overrides.
   gfx::Image GetIcon() const override;
@@ -53,19 +59,12 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate overrides.
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
 
  private:
-  // Constructor for a banner for web apps.
-  AppBannerInfoBarDelegate(const AppDelegate* helper,
-                           const base::string16& app_title,
-                           const GURL& url);
+  explicit AppBannerInfoBarDelegate(AppDelegate* delegate);
 
-  const AppDelegate* delegate_;
-  base::string16 app_title_;
-  GURL url_;
-  base::string16 button_text_;
+  AppDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegate);
 };  // AppBannerInfoBarDelegate

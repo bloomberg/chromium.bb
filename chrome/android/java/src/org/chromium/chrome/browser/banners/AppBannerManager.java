@@ -5,18 +5,16 @@
 package org.chromium.chrome.browser.banners;
 
 import android.app.PendingIntent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.R;
 
 /**
  * Manages an AppBannerView for a Tab and its ContentView.
@@ -30,7 +28,8 @@ import org.chromium.ui.R;
  * from the network.
  */
 @JNINamespace("banners")
-public class AppBannerManager implements AppBannerView.Observer, AppDetailsDelegate.Observer {
+public class AppBannerManager extends EmptyTabObserver
+        implements AppBannerView.Observer, AppDetailsDelegate.Observer {
     private static final String TAG = "AppBannerManager";
 
     /** Retrieves information about a given package. */
@@ -75,35 +74,26 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
     public AppBannerManager(Tab tab) {
         mNativePointer = nativeInit();
         mTab = tab;
-        mTab.addObserver(createTabObserver());
+        updatePointers();
+    }
+
+    @Override
+    public void onWebContentsSwapped(Tab tab, boolean didStartLoad,
+            boolean didFinishLoad) {
+        updatePointers();
+    }
+
+    @Override
+    public void onContentChanged(Tab tab) {
         updatePointers();
     }
 
     /**
-     * Creates a TabObserver for monitoring a Tab, used to react to changes in the ContentView
-     * or to trigger its own destruction.
-     * @return TabObserver that can be used to monitor a Tab.
+     * Destroys the native AppBannerManager.
      */
-    private TabObserver createTabObserver() {
-        return new EmptyTabObserver() {
-            @Override
-            public void onWebContentsSwapped(Tab tab, boolean didStartLoad,
-                    boolean didFinishLoad) {
-                updatePointers();
-            }
-
-            @Override
-            public void onContentChanged(Tab tab) {
-                updatePointers();
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                nativeDestroy(mNativePointer);
-                mContentViewCore = null;
-                resetState();
-            }
-        };
+    public void destroy() {
+        nativeDestroy(mNativePointer);
+        resetState();
     }
 
     /**
@@ -117,7 +107,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
 
     @CalledByNative
     private int getPreferredIconSize() {
-        return AppBannerView.getIconSize(mContentViewCore.getContext());
+        return ApplicationStatus.getApplicationContext().getResources().getDimensionPixelSize(
+                R.dimen.app_banner_icon_size);
     }
 
     /**
@@ -127,9 +118,6 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      */
     @CalledByNative
     private void prepareBanner(String url, String packageName) {
-        // Get rid of whatever banner is there currently.
-        if (mBannerView != null) dismissCurrentBanner(AppBannerMetricsIds.DISMISS_ERROR);
-
         if (sAppDetailsDelegate == null || !isBannerForCurrentPage(url)) return;
 
         int iconSize = getPreferredIconSize();
@@ -148,38 +136,6 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
         mAppData = data;
         String imageUrl = data.imageUrl();
         if (TextUtils.isEmpty(imageUrl) || !nativeFetchIcon(mNativePointer, imageUrl)) resetState();
-    }
-
-    /**
-     * Called when all the data required to show a banner has finally been retrieved.
-     * Creates the banner and shows it, as long as the banner is still meant for the current page.
-     * @param imageUrl URL of the icon.
-     * @param appIcon Bitmap containing the icon itself.
-     * @return Whether or not the banner was created.
-     */
-    @CalledByNative
-    private boolean createBanner(String imageUrl, Bitmap appIcon) {
-        if (mAppData == null || !isBannerForCurrentPage(mAppData.siteUrl())) return false;
-
-        if (!TextUtils.equals(mAppData.imageUrl(), imageUrl)) {
-            resetState();
-            return false;
-        }
-
-        mAppData.setIcon(new BitmapDrawable(mContentViewCore.getContext().getResources(), appIcon));
-        mBannerView = AppBannerView.create(mContentViewCore, this, mAppData);
-        return true;
-    }
-
-    /**
-     * Dismisses whatever banner is currently being displayed. This is treated as an automatic
-     * dismissal and not one that blocks the banner from appearing in the future.
-     * @param dismissalType What triggered the dismissal.
-     */
-    @CalledByNative
-    private void dismissCurrentBanner(int dismissalType) {
-        if (mBannerView != null) mBannerView.dismiss(dismissalType);
-        resetState();
     }
 
     @Override

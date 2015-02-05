@@ -1241,12 +1241,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Perform any subclass-specific initialization tasks.
+     * Perform any class-specific initialization tasks.
      * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
      *                          content will be managed/displayed manually.
      */
     protected void internalInit(TabContentManager tabContentManager) {
         initializeNative();
+
+        if (AppBannerManager.isEnabled()) {
+            mAppBannerManager = new AppBannerManager(this);
+            addObserver(mAppBannerManager);
+        }
     }
 
     /**
@@ -1370,10 +1375,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
         mInfoBarContainer.setContentViewCore(mContentViewCore);
 
-        if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
-            mAppBannerManager = new AppBannerManager(this);
-        }
-
         if (DomDistillerFeedbackReporter.isEnabled() && mDomDistillerFeedbackReporter == null) {
             mDomDistillerFeedbackReporter = new DomDistillerFeedbackReporter(this);
         }
@@ -1465,6 +1466,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mInfoBarContainer != null) {
             mInfoBarContainer.destroy();
             mInfoBarContainer = null;
+        }
+
+        // Destroy the AppBannerManager after the InfoBarContainer because it monitors for infobar
+        // removals.
+        if (mAppBannerManager != null) {
+            mAppBannerManager.destroy();
+            mAppBannerManager = null;
         }
 
         mPreviousFullscreenTopControlsOffsetY = Float.NaN;

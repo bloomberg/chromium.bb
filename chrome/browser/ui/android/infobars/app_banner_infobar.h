@@ -32,8 +32,7 @@ class AppBannerInfoBar : public ConfirmInfoBar {
   // Web app: URL for the app.
   GURL app_url_;
 
-  // Java delegate for creating AppBannerInfoBars.
-  base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
+  base::android::ScopedJavaGlobalRef<jobject> java_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBar);
 };

@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.infobar;
 import android.graphics.Bitmap;
 import android.widget.TextView;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CalledByNative;
+import org.chromium.chrome.R;
+
 /**
  * Infobar informing the user about an app related to this page.
  */
@@ -14,9 +18,9 @@ public class AppBannerInfoBar extends ConfirmInfoBar {
     /** Web app: URL pointing to the web app. */
     private final String mAppUrl;
 
-    public AppBannerInfoBar(long nativeInfoBar, String appTitle, Bitmap iconBitmap,
-            String installText, String url) {
-        super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, installText, null);
+    // Banner for web apps.
+    public AppBannerInfoBar(long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
+        super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
         mAppUrl = url;
     }
 
@@ -26,5 +30,15 @@ public class AppBannerInfoBar extends ConfirmInfoBar {
         url.setText(mAppUrl);
         layout.setCustomContent(url);
         super.createContent(layout);
+    }
+
+    private static String getAddToHomescreenText() {
+        return ApplicationStatus.getApplicationContext().getString(R.string.menu_add_to_homescreen);
+    }
+
+    @CalledByNative
+    private static InfoBar createWebAppInfoBar(
+            long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
+        return new AppBannerInfoBar(nativeInfoBar, appTitle, iconBitmap, url);
     }
 }

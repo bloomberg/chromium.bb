@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
 
@@ -18,6 +20,10 @@ struct FrameNavigateParams;
 struct LoadCommittedDetails;
 struct Manifest;
 }  // namespace content
+
+namespace infobars {
+class InfoBar;
+}  // namspace infobars
 
 /**
  * Manages when an app banner is created or dismissed.
@@ -105,7 +111,9 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
 
   // AppBannerInfoBarDelegate::AppDelegate overrides.
   void Block() const override;
-  void Install() const override;
+  bool OnButtonClicked() const override;
+  void OnInfoBarDestroyed() override;
+  base::string16 GetTitle() const override;
   gfx::Image GetIcon() const override;
 
  private:
@@ -128,8 +136,15 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;
   GURL validated_url_;
-  content::Manifest manifest_;
+  GURL app_icon_url_;
+
+  base::string16 app_title_;
   scoped_ptr<SkBitmap> app_icon_;
+
+  content::Manifest web_app_data_;
+
+  // Weak pointer to the InfoBar that is being managed.
+  AppBannerInfoBar* weak_infobar_ptr_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

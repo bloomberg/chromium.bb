@@ -35,6 +35,7 @@
 #include "ui/gfx/screen.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 
@@ -67,21 +68,34 @@ void AppBannerManager::BlockBanner(JNIEnv* env,
 }
 
 void AppBannerManager::Block() const {
-  if (!web_contents() || manifest_.IsEmpty())
-    return;
-
-  AppBannerSettingsHelper::Block(web_contents(),
-                                 web_contents()->GetURL(),
-                                 manifest_.start_url.spec());
-}
-
-void AppBannerManager::Install() const {
   if (!web_contents())
     return;
 
-  if (!manifest_.IsEmpty()) {
-    InstallManifestApp(manifest_, *app_icon_.get());
+  if (!web_app_data_.IsEmpty()) {
+    AppBannerSettingsHelper::Block(web_contents(),
+                                   web_contents()->GetURL(),
+                                   web_app_data_.start_url.spec());
   }
+}
+
+void AppBannerManager::OnInfoBarDestroyed() {
+  weak_infobar_ptr_ = nullptr;
+}
+
+bool AppBannerManager::OnButtonClicked() const {
+  if (!web_contents())
+    return true;
+
+  if (!web_app_data_.IsEmpty()) {
+    InstallManifestApp(web_app_data_, *app_icon_.get());
+    return true;
+  }
+
+  return true;
+}
+
+base::string16 AppBannerManager::GetTitle() const {
+  return app_title_;
 }
 
 gfx::Image AppBannerManager::GetIcon() const {
@@ -101,15 +115,9 @@ void AppBannerManager::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // Clear current state.
   fetcher_.reset();
-  manifest_ = content::Manifest();
+  app_title_ = base::string16();
   app_icon_.reset();
-
-  // Get rid of the current banner.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-  if (jobj.is_null())
-    return;
-  Java_AppBannerManager_dismissCurrentBanner(env, jobj.obj(), DISMISS_NAVIGATE);
+  web_app_data_ = content::Manifest();
 }
 
 void AppBannerManager::DidFinishLoad(
@@ -144,8 +152,8 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
   // tag.
 
   // Create an infobar to promote the manifest's app.
-  manifest_ = manifest;
-
+  web_app_data_ = manifest;
+  app_title_ = web_app_data_.name.string();
   GURL icon_url =
       ManifestIconSelector::FindBestMatchingIcon(
           manifest.icons,
@@ -168,40 +176,30 @@ bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
-  if (bitmap) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-
-    ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-    if (jobj.is_null())
-      return;
-
-    bool displayed;
-    if (manifest_.IsEmpty()) {
-      ScopedJavaLocalRef<jobject> jimage = gfx::ConvertToJavaBitmap(bitmap);
-      ScopedJavaLocalRef<jstring> jimage_url(
-          ConvertUTF8ToJavaString(env, url.spec()));
-
-      displayed = Java_AppBannerManager_createBanner(env,
-                                                     jobj.obj(),
-                                                     jimage_url.obj(),
-                                                     jimage.obj());
-    } else {
-      app_icon_.reset(new SkBitmap(*bitmap));
-      InfoBarService* service = InfoBarService::FromWebContents(web_contents());
-      displayed = AppBannerInfoBarDelegate::CreateForWebApp(
-          service,
-          this,
-          manifest_.name.string(),
-          manifest_.start_url) != NULL;
-    }
-
-    if (displayed)
-      banners::TrackDisplayEvent(DISPLAY_CREATED);
-  } else {
+  fetcher_.reset();
+  if (!bitmap || url != app_icon_url_) {
     DVLOG(1) << "Failed to retrieve image: " << url;
+    return;
   }
 
-  fetcher_.reset();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
+  if (jobj.is_null())
+    return;
+
+  app_icon_.reset(new SkBitmap(*bitmap));
+  InfoBarService* service = InfoBarService::FromWebContents(web_contents());
+
+  weak_infobar_ptr_ = nullptr;
+  if (!web_app_data_.IsEmpty()){
+    weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForWebApp(
+        service,
+        this,
+        web_app_data_.start_url);
+  }
+
+  if (weak_infobar_ptr_ != nullptr)
+    banners::TrackDisplayEvent(DISPLAY_CREATED);
 }
 
 void AppBannerManager::OnDidRetrieveMetaTagContent(
@@ -259,6 +257,7 @@ bool AppBannerManager::FetchIcon(const GURL& image_url) {
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  app_icon_url_ = image_url;
   return true;
 }
 

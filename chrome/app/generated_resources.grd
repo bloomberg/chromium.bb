@@ -15025,9 +15025,6 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
           If enabled, websites will be parsed for app install alert meta tags.
         </message>
-        <message name="IDS_APP_INSTALL_ALERTS_ADD_TO_HOMESCREEN" desc="Infobar button text indicating that an app can be added to the home screen.">
-          Add to homescreen
-        </message>
 
         <!-- Flag strings for seccomp-bpf sandbox flag. -->
         <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
