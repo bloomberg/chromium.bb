@@ -183,8 +183,8 @@ bool ScreenOrientationController::ScreenOrientationProviderSupported() {
   return Shell::GetInstance()
              ->maximize_mode_controller()
              ->IsMaximizeModeWindowManagerEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableTouchViewTesting);
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshDisableScreenOrientationLock);
 }
 
 void ScreenOrientationController::Unlock(content::WebContents* web_contents) {

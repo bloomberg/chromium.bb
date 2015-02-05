@@ -50992,6 +50992,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
+  <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="413081240" label="enable-new-md-input-view"/>

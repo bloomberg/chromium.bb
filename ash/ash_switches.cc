@@ -33,6 +33,12 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // WorkspaceLayoutManager.
 const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
 
+#if defined(OS_CHROMEOS)
+// Disable the support for WebContents to lock the screen orientation.
+const char kAshDisableScreenOrientationLock[] =
+    "ash-disable-screen-orientation-lock";
+#endif
+
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
