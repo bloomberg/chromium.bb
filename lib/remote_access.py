@@ -599,6 +599,21 @@ class RemoteDevice(object):
 
     return True
 
+  def IsFileExecutable(self, path):
+    """Check if the given file is executable on the device.
+
+    Args:
+      path: full path to the file on the device to check.
+
+    Returns:
+      True if the file is executable, and false if the file does not exist or is
+      not executable.
+    """
+    cmd = ['test', '-f', path, '-a', '-x', path,]
+    result = self.agent.RemoteSh(cmd, remote_sudo=True, error_code_ok=True,
+                                 capture_output=True)
+    return result.returncode == 0
+
   def PipeOverSSH(self, filepath, cmd, **kwargs):
     """Cat a file and pipe over SSH."""
     producer_cmd = ['cat', filepath]
