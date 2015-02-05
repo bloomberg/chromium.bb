@@ -16,7 +16,7 @@ class Value;
 // Base class for unit tests for JSONSchemaValidator. There is currently only
 // one implementation, JSONSchemaValidatorCPPTest.
 //
-// TODO(aa): Refactor chrome/test/data/json_schema_test.js into
+// TODO(aa): Refactor extensions/test/data/json_schema_test.js into
 // JSONSchemaValidatorJSTest that inherits from this.
 class JSONSchemaValidatorTestBase : public testing::Test {
  public:
