@@ -148,7 +148,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void Focus(const FocusCallback& callback);
 
   // Asks the renderer to send back the document information.
-  void GetClientInfo(const GetClientInfoCallback& callback);
+  void GetClientInfo(const GetClientInfoCallback& callback) const;
 
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.

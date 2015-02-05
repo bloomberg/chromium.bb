@@ -14,11 +14,22 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/child_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "net/http/http_response_info.h"
 
 namespace content {
@@ -149,6 +160,110 @@ void RunErrorCrossOriginConnectCallback(
     const ServiceWorkerVersion::CrossOriginConnectCallback& callback,
     ServiceWorkerStatusCode status) {
   callback.Run(status, false);
+}
+
+using WindowOpenedCallback = base::Callback<void(int, int)>;
+
+// The WindowOpenedObserver class is a WebContentsObserver that will wait for a
+// new Window's WebContents to be initialized, run the |callback| passed to its
+// constructor then self destroy.
+// The callback will receive the process and frame ids. If something went wrong
+// those will be (kInvalidUniqueID, MSG_ROUTING_NONE).
+// The callback will be called in the IO thread.
+class WindowOpenedObserver : public WebContentsObserver {
+ public:
+  WindowOpenedObserver(WebContents* web_contents,
+                       const WindowOpenedCallback& callback)
+    : WebContentsObserver(web_contents),
+      callback_(callback)
+  {}
+
+  void DidCommitProvisionalLoadForFrame(
+      RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      ui::PageTransition transition_type) override {
+    DCHECK(web_contents());
+
+    if (render_frame_host != web_contents()->GetMainFrame())
+      return;
+
+    RunCallback(render_frame_host->GetProcess()->GetID(),
+                render_frame_host->GetRoutingID());
+  }
+
+  void RenderProcessGone(base::TerminationStatus status) override {
+    RunCallback(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
+  }
+
+  void WebContentsDestroyed() override {
+    RunCallback(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
+  }
+
+ private:
+  void RunCallback(int render_process_id, int render_frame_id) {
+    // After running the callback, |this| will stop observing, thus
+    // web_contents() should return nullptr and |RunCallback| should no longer
+    // be called. Then, |this| will self destroy.
+    DCHECK(web_contents());
+
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback_,
+                                       render_process_id,
+                                       render_frame_id));
+    Observe(nullptr);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+  const WindowOpenedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowOpenedObserver);
+};
+
+void OpenWindowOnUI(
+    const GURL& url,
+    const GURL& script_url,
+    int process_id,
+    const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper,
+    const WindowOpenedCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserContext* browser_context = context_wrapper->storage_partition()
+      ? context_wrapper->storage_partition()->browser_context()
+      : nullptr;
+  // We are shutting down.
+  if (!browser_context)
+    return;
+
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(process_id);
+  if (render_process_host->IsIsolatedGuest()) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback,
+                                       ChildProcessHost::kInvalidUniqueID,
+                                       MSG_ROUTING_NONE));
+    return;
+  }
+
+  OpenURLParams params(url,
+                       Referrer(script_url, blink::WebReferrerPolicyDefault),
+                       NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                       true /* is_renderer_initiated */);
+
+  WebContents* web_contents =
+      GetContentClient()->browser()->OpenURL(browser_context, params);
+  DCHECK(web_contents);
+
+  new WindowOpenedObserver(web_contents, callback);
+}
+
+void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(process_id);
+  if (render_process_host->GetHandle() != base::kNullProcessHandle)
+    render_process_host->ReceivedBadMessage();
 }
 
 }  // namespace
@@ -807,6 +922,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnGeofencingEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
                         OnCrossOriginConnectEventFinished)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
+                        OnOpenWindow)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
                         OnPostMessageToDocument)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
@@ -1027,6 +1144,89 @@ void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK, accept_connection);
   RemoveCallbackAndStopIfDoomed(&cross_origin_connect_callbacks_, request_id);
+}
+
+void ServiceWorkerVersion::OnOpenWindow(int request_id, const GURL& url) {
+  // Just abort if we are shutting down.
+  if (!context_)
+    return;
+
+  if (url.GetOrigin() != script_url_.GetOrigin()) {
+    // There should be a same origin check by Blink, if the request is still not
+    // same origin, the process might be compromised and should be eliminated.
+    DVLOG(1) << "Received a cross origin openWindow() request from a service "
+                "worker. Killing associated process.";
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&KillEmbeddedWorkerProcess,
+                                       embedded_worker_->process_id(),
+                                       RESULT_CODE_KILLED_BAD_MESSAGE));
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OpenWindowOnUI,
+                 url,
+                 script_url_,
+                 embedded_worker_->process_id(),
+                 make_scoped_refptr(context_->wrapper()),
+                 base::Bind(&ServiceWorkerVersion::DidOpenWindow,
+                            weak_factory_.GetWeakPtr(),
+                            request_id)));
+}
+
+void ServiceWorkerVersion::DidOpenWindow(int request_id,
+                                         int render_process_id,
+                                         int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (running_status() != RUNNING)
+    return;
+
+  if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
+      render_frame_id == MSG_ROUTING_NONE) {
+    embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowError(request_id));
+    return;
+  }
+
+  for (const auto& it : controllee_map_) {
+    const ServiceWorkerProviderHost* provider_host = it.first;
+    if (provider_host->process_id() != render_process_id ||
+        provider_host->frame_id() != render_frame_id) {
+      continue;
+    }
+
+    // it.second is the client_id associated with the provider_host.
+    provider_host->GetClientInfo(
+        base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
+                   weak_factory_.GetWeakPtr(), request_id, it.second));
+    return;
+  }
+
+  // If here, it means that no provider_host was found, in which case, the
+  // renderer should still be informed that the window was opened.
+  OnOpenWindowFinished(request_id, 0, ServiceWorkerClientInfo());
+}
+
+void ServiceWorkerVersion::OnOpenWindowFinished(
+    int request_id,
+    int client_id,
+    const ServiceWorkerClientInfo& client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (running_status() != RUNNING)
+    return;
+
+  ServiceWorkerClientInfo client(client_info);
+
+  // If the |client_info| is empty, it means that the opened window wasn't
+  // controlled but the action still succeeded. The renderer process is
+  // expecting an empty client in such case.
+  if (!client.IsEmpty())
+    client.client_id = client_id;
+
+  embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowResponse(
+      request_id, client));
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(

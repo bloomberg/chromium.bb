@@ -118,6 +118,10 @@ void ServiceWorkerScriptContext::OnMessageReceived(
                         OnCrossOriginMessageToWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
+                        OnOpenWindowResponse)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowError,
+                        OnOpenWindowError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FocusClientResponse,
                         OnFocusClientResponse)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
@@ -220,6 +224,13 @@ void ServiceWorkerScriptContext::GetClientDocuments(
   int request_id = pending_clients_callbacks_.Add(callbacks);
   Send(new ServiceWorkerHostMsg_GetClientDocuments(
       GetRoutingID(), request_id));
+}
+
+void ServiceWorkerScriptContext::OpenWindow(
+    const GURL& url, blink::WebServiceWorkerClientCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_client_callbacks_.Add(callbacks);
+  Send(new ServiceWorkerHostMsg_OpenWindow(GetRoutingID(), request_id, url));
 }
 
 void ServiceWorkerScriptContext::PostMessageToDocument(
@@ -449,6 +460,44 @@ void ServiceWorkerScriptContext::OnDidGetClientDocuments(
   info->clients.swap(convertedClients);
   callbacks->onSuccess(info.release());
   pending_clients_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnOpenWindowResponse(
+    int request_id,
+    const ServiceWorkerClientInfo& client) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnOpenWindowResponse");
+  blink::WebServiceWorkerClientCallbacks* callbacks =
+      pending_client_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (!client.IsEmpty()) {
+    DCHECK(client.IsValid());
+    web_client.reset(new blink::WebServiceWorkerClientInfo(
+        ToWebServiceWorkerClientInfo(client)));
+  }
+  callbacks->onSuccess(web_client.release());
+  pending_client_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnOpenWindowError(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnOpenWindowError");
+  blink::WebServiceWorkerClientCallbacks* callbacks =
+      pending_client_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerError> error(
+      new blink::WebServiceWorkerError(
+          blink::WebServiceWorkerError::ErrorTypeUnknown,
+          "Something went wrong while trying to open the window."));
+  callbacks->onError(error.release());
+  pending_client_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerScriptContext::OnFocusClientResponse(int request_id,

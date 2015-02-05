@@ -342,6 +342,11 @@ ContentBrowserClient::GetPresentationServiceDelegate(
   return nullptr;
 }
 
+WebContents* ContentBrowserClient::OpenURL(BrowserContext* browser_context,
+                                           const OpenURLParams& params) {
+  return nullptr;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return nullptr;

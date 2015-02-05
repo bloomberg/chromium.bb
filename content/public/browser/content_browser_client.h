@@ -108,6 +108,7 @@ class SpeechRecognitionManagerDelegate;
 class WebContents;
 class WebContentsViewDelegate;
 struct MainFunctionParams;
+struct OpenURLParams;
 struct Referrer;
 struct WebPreferences;
 
@@ -613,6 +614,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // implementation. Returns nullptr if unavailable.
   virtual PresentationServiceDelegate* GetPresentationServiceDelegate(
       WebContents* web_contents);
+
+  // Allows programmatic opening of a new tab/window without going through
+  // another WebContents. For example, from a Worker.
+  virtual WebContents* OpenURL(BrowserContext* browser_context,
+                               const OpenURLParams& params);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

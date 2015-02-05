@@ -2585,6 +2585,27 @@ bool ChromeContentBrowserClient::CheckMediaAccessPermission(
           browser_context, security_origin, type);
 }
 
+content::WebContents* ChromeContentBrowserClient::OpenURL(
+    content::BrowserContext* browser_context,
+    const content::OpenURLParams& params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  NavigateParams nav_params(Profile::FromBrowserContext(browser_context),
+                            params.url,
+                            params.transition);
+  FillNavigateParamsFromOpenURLParams(&nav_params, params);
+  nav_params.user_gesture = params.user_gesture;
+
+  Navigate(&nav_params);
+  return nav_params.target_contents;
+#else
+  // TODO(mlamouri): write a chrome::Navigate() method for Android and iOS.
+  // See https://crbug.com/448409.
+  return nullptr;
+#endif // !defined(OS_ANDROID) && !defined(OS_IOS)
+}
+
 content::DevToolsManagerDelegate*
 ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
 #if defined(OS_ANDROID)

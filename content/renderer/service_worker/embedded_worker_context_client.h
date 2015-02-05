@@ -64,6 +64,8 @@ class EmbeddedWorkerContextClient
   virtual blink::WebServiceWorkerCacheStorage* cacheStorage();
   virtual void didPauseAfterDownload();
   virtual void getClients(blink::WebServiceWorkerClientsCallbacks*);
+  virtual void openWindow(const blink::WebURL&,
+                          blink::WebServiceWorkerClientCallbacks*);
   virtual void workerReadyForInspection();
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);

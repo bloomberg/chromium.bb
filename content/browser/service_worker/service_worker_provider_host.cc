@@ -295,7 +295,7 @@ void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
 }
 
 void ServiceWorkerProviderHost::GetClientInfo(
-    const GetClientInfoCallback& callback) {
+    const GetClientInfoCallback& callback) const {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GetClientInfoOnUIThread,
                                      render_process_id_,

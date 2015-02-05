@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -300,6 +301,14 @@ bool ShellContentBrowserClient::ShouldSwapProcessesForRedirect(
 DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ShellDevToolsManagerDelegate(browser_context());
+}
+
+WebContents* ShellContentBrowserClient::OpenURL(BrowserContext* browser_context,
+                                                const OpenURLParams& params) {
+  return Shell::CreateNewWindow(browser_context,
+                                params.url,
+                                nullptr,
+                                gfx::Size())->web_contents();
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

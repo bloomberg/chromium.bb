@@ -23,7 +23,7 @@
 
 namespace chrome {
 
-typedef testing::Test ChromeContentBrowserClientTest;
+using ChromeContentBrowserClientTest = testing::Test;
 
 TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   ChromeContentBrowserClient client;
@@ -31,6 +31,43 @@ TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   EXPECT_TRUE(client.ShouldAssignSiteForURL(GURL("http://www.google.com")));
   EXPECT_TRUE(client.ShouldAssignSiteForURL(GURL("https://www.google.com")));
 }
+
+using ChromeContentBrowserClientWindowTest = BrowserWithTestWindowTest;
+
+// BrowserWithTestWindowTest doesn't work on iOS and Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+// This test opens two URLs using ContentBrowserClient::OpenURL. It expects the
+// URLs to be opened in new tabs and activated, changing the active tabs after
+// each call and increasing the tab count by 2.
+TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
+  ChromeContentBrowserClient client;
+
+  int previous_count = browser()->tab_strip_model()->count();
+
+  GURL urls[] = { GURL("https://www.google.com"),
+                  GURL("https://www.chromium.org") };
+
+  for (const GURL& url : urls) {
+    content::OpenURLParams params(url,
+                                  content::Referrer(),
+                                  NEW_FOREGROUND_TAB,
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                  false);
+    content::WebContents* contents =
+        client.OpenURL(browser()->profile(), params);
+    EXPECT_TRUE(contents);
+
+    content::WebContents* active_contents = browser()->tab_strip_model()->
+        GetActiveWebContents();
+    EXPECT_EQ(contents, active_contents);
+    EXPECT_EQ(url, active_contents->GetVisibleURL());
+  }
+
+  EXPECT_EQ(previous_count + 2, browser()->tab_strip_model()->count());
+}
+
+#endif // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(ENABLE_WEBRTC)
 

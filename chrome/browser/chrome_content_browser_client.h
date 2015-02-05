@@ -281,6 +281,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
 
+  content::WebContents* OpenURL(content::BrowserContext* browser_context,
+                                const content::OpenURLParams& params) override;
+
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 

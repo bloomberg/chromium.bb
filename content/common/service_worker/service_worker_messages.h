@@ -223,6 +223,11 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
                     base::string16 /* message */,
                     std::vector<int> /* sent_message_port_ids */)
 
+// Ask the browser to open a tab/window (renderer->browser).
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenWindow,
+                    int /* request_id */,
+                    GURL /* url */)
+
 // Ask the browser to focus a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
@@ -443,6 +448,15 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerClientInfo>)
+
+// Sent via EmbeddedWorker as a response of OpenWindow.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,
+                     int /* request_id */,
+                     content::ServiceWorkerClientInfo /* client */)
+
+// Sent via EmbeddedWorker as an error response of OpenWindow.
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_OpenWindowError,
+                     int /* request_id */ )
 
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,

@@ -75,6 +75,8 @@ class ServiceWorkerScriptContext {
   void DidHandleCrossOriginConnectEvent(int request_id, bool accept_connection);
   void GetClientDocuments(
       blink::WebServiceWorkerClientsCallbacks* callbacks);
+  void OpenWindow(const GURL& url,
+                  blink::WebServiceWorkerClientCallbacks* callbacks);
   void PostMessageToDocument(
       int client_id,
       const base::string16& message,
@@ -104,6 +106,8 @@ class ServiceWorkerScriptContext {
       ClientsCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerClientsClaimCallbacks, IDMapOwnPointer>
       ClaimClientsCallbacksMap;
+  typedef IDMap<blink::WebServiceWorkerClientCallbacks, IDMapOwnPointer>
+      ClientCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerClientFocusCallback, IDMapOwnPointer>
       FocusClientCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>
@@ -134,6 +138,9 @@ class ServiceWorkerScriptContext {
       const std::vector<int>& new_routing_ids);
   void OnDidGetClientDocuments(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
+  void OnOpenWindowResponse(int request_id,
+                            const ServiceWorkerClientInfo& client);
+  void OnOpenWindowError(int request_id);
   void OnFocusClientResponse(int request_id, bool result);
   void OnDidSkipWaiting(int request_id);
   void OnDidClaimClients(int request_id);
@@ -156,6 +163,9 @@ class ServiceWorkerScriptContext {
 
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap pending_clients_callbacks_;
+
+  // Pending callbacks for OpenWindow().
+  ClientCallbacksMap pending_client_callbacks_;
 
   // Pending callbacks for FocusClient().
   FocusClientCallbacksMap pending_focus_client_callbacks_;

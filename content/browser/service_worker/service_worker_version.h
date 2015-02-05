@@ -358,6 +358,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGeofencingEventFinished(int request_id);
   void OnCrossOriginConnectEventFinished(int request_id,
                                          bool accept_connection);
+  void OnOpenWindow(int request_id, const GURL& url);
+  void DidOpenWindow(int request_id,
+                     int render_process_id,
+                     int render_frame_id);
+  void OnOpenWindowFinished(int request_id,
+                            int client_id,
+                            const ServiceWorkerClientInfo& client_info);
+
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
@@ -366,11 +374,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClaimClients(int request_id);
 
   void OnFocusClientFinished(int request_id, bool result);
+
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
   void DidGetClientInfo(int client_id,
                         scoped_refptr<GetClientDocumentsCallback> callback,
                         const ServiceWorkerClientInfo& info);
+
   void ScheduleStopWorker();
   void StopWorkerIfIdle();
   bool HasInflightRequests() const;
@@ -407,6 +417,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;
+  // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ObserverList<Listener> listeners_;
   ServiceWorkerScriptCacheMap script_cache_map_;

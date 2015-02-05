@@ -63,6 +63,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                                       const GURL& new_url) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
+  WebContents* OpenURL(BrowserContext* browser_context,
+                       const OpenURLParams& params) override;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

@@ -153,6 +153,13 @@ void EmbeddedWorkerContextClient::getClients(
   script_context_->GetClientDocuments(callbacks);
 }
 
+void EmbeddedWorkerContextClient::openWindow(
+    const blink::WebURL& url,
+    blink::WebServiceWorkerClientCallbacks* callbacks) {
+  DCHECK(script_context_);
+  script_context_->OpenWindow(url, callbacks);
+}
+
 void EmbeddedWorkerContextClient::workerReadyForInspection() {
   Send(new EmbeddedWorkerHostMsg_WorkerReadyForInspection(embedded_worker_id_));
 }
