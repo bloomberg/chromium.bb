@@ -1,8 +1,8 @@
 <html>
 <head>
     <title>throttled loading metadata</title>
-    <script src=../../../media-resources/media-file.js></script>
-    <script src=../../../media-resources/video-test.js></script>
+    <script src="../../media-resources/media-file.js"></script>
+    <script src="../../media-resources/video-test.js"></script>
     <script>
         function loadedmetadata(e)
         {
@@ -28,9 +28,12 @@
             worker.onmessage = function (event) {
                 logResult(true, event.data);
             }
-            var movie = findMediaFile("video", "resources/test");
-            var type = mimeTypeForExtension(movie.split('.').pop());
-            video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=400&type=" + type;
+
+            // Use a .webm to ensure metadata is near the beginning of the file.
+            var mediaFile = "resources/media-source/webm/test.webm";
+            video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?" +
+                "nph=1&name=" + mediaFile + "&throttle=40&type=video/webm";
+
             video.load();
         }
     </script>

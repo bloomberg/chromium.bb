@@ -218,6 +218,8 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
 
     m_webMediaPlayer->setPoster(poster);
 
+    setPreload(mediaElement().preloadType());
+
     m_webMediaPlayer->load(loadType, kurl, corsMode);
 
     if (mediaElement().isFullscreen())
