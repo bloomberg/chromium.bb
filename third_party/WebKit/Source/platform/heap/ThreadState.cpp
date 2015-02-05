@@ -58,6 +58,10 @@ extern "C" void* __libc_stack_end;  // NOLINT
 #include <sanitizer/msan_interface.h>
 #endif
 
+#if ENABLE(GC_PROFILING)
+#include <limits>
+#endif
+
 #if OS(FREEBSD)
 #include <pthread_np.h>
 #endif
@@ -314,6 +318,9 @@ ThreadState::ThreadState()
     , m_traceDOMWrappers(nullptr)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
+#endif
+#if ENABLE(GC_PROFILING)
+    , m_nextFreeListSnapshotTime(-std::numeric_limits<double>::infinity())
 #endif
 {
     checkThread();
@@ -1171,6 +1178,10 @@ void ThreadState::postGCProcessing()
     setGCState(Sweeping);
     completeSweep();
 #endif
+
+#if ENABLE(GC_PROFILING)
+    snapshotFreeListIfNecessary();
+#endif
 }
 
 void ThreadState::addInterruptor(Interruptor* interruptor)
@@ -1248,6 +1259,46 @@ const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
     if (needLockForIteration)
         threadAttachMutex().unlock();
     return nullptr;
+}
+
+void ThreadState::snapshotFreeListIfNecessary()
+{
+    bool enabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &enabled);
+    if (!enabled)
+        return;
+
+    static const double recordIntervalSeconds = 0.010;
+    double now = monotonicallyIncreasingTime();
+    if (now > m_nextFreeListSnapshotTime) {
+        snapshotFreeList();
+        m_nextFreeListSnapshotTime = now + recordIntervalSeconds;
+    }
+}
+
+void ThreadState::snapshotFreeList()
+{
+    RefPtr<TracedValue> json = TracedValue::create();
+
+#define SNAPSHOT_FREE_LIST(HeapType)                            \
+    {                                                           \
+        json->beginDictionary();                                \
+        json->setString("name", #HeapType);                     \
+        m_heaps[HeapType##Heap]->snapshotFreeList(*json);       \
+        json->endDictionary();                                  \
+    }
+
+    json->beginArray("heaps");
+    SNAPSHOT_FREE_LIST(General);
+    SNAPSHOT_FREE_LIST(VectorBacking);
+    SNAPSHOT_FREE_LIST(InlineVectorBacking);
+    SNAPSHOT_FREE_LIST(HashTableBacking);
+    FOR_EACH_TYPED_HEAP(SNAPSHOT_FREE_LIST);
+    json->endArray();
+
+#undef SNAPSHOT_FREE_LIST
+
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "FreeList", this, json.release());
 }
 #endif
 

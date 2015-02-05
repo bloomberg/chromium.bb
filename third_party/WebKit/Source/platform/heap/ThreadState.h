@@ -533,6 +533,8 @@ public:
     };
 
     void snapshot();
+
+    void snapshotFreeListIfNecessary();
 #endif
 
     void pushWeakPointerCallback(void*, WeakPointerCallback);
@@ -620,6 +622,10 @@ private:
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
 
+#if ENABLE(GC_PROFILING)
+    void snapshotFreeList();
+#endif
+
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static uintptr_t s_mainThreadStackStart;
     static uintptr_t s_mainThreadUnderestimatedStackSize;
@@ -668,6 +674,10 @@ private:
 #endif
 
     Vector<PageMemoryRegion*> m_allocatedRegionsSinceLastGC;
+
+#if ENABLE(GC_PROFILING)
+    double m_nextFreeListSnapshotTime;
+#endif
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;

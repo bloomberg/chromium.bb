@@ -705,6 +705,15 @@ public:
     // All FreeListEntries in the given bucket, n, have size >= 2^n.
     static int bucketIndexForSize(size_t);
 
+#if ENABLE(GC_PROFILING)
+    struct PerBucketFreeListStats {
+        size_t entryCount;
+        size_t freeSize;
+    };
+
+    void getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalSize) const;
+#endif
+
 private:
     int m_biggestFreeListIndex;
 
@@ -772,6 +781,10 @@ public:
     void shrinkObject(HeapObjectHeader*, size_t);
     void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
 
+#if ENABLE(GC_PROFILING)
+    void snapshotFreeList(TracedValue&);
+#endif
+
 private:
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -814,6 +827,12 @@ private:
 
     // The size of promptly freed objects in the heap.
     size_t m_promptlyFreedSize;
+
+#if ENABLE(GC_PROFILING)
+    size_t m_cumulativeAllocationSize;
+    size_t m_allocationCount;
+    size_t m_inlineAllocationCount;
+#endif
 };
 
 // Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
@@ -1333,7 +1352,15 @@ size_t ThreadHeap::allocationSizeFromSize(size_t size)
 
 Address ThreadHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
+#if ENABLE(GC_PROFILING)
+    m_cumulativeAllocationSize += allocationSize;
+    ++m_allocationCount;
+#endif
+
     if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
+#if ENABLE(GC_PROFILING)
+        ++m_inlineAllocationCount;
+#endif
         Address headerAddress = m_currentAllocationPoint;
         m_currentAllocationPoint += allocationSize;
         m_remainingAllocationSize -= allocationSize;

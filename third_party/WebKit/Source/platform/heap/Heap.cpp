@@ -548,6 +548,11 @@ ThreadHeap::ThreadHeap(ThreadState* state, int index)
     , m_threadState(state)
     , m_index(index)
     , m_promptlyFreedSize(0)
+#if ENABLE(GC_PROFILING)
+    , m_cumulativeAllocationSize(0)
+    , m_allocationCount(0)
+    , m_inlineAllocationCount(0)
+#endif
 {
     clearFreeLists();
 }
@@ -615,6 +620,10 @@ Address ThreadHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex)
 {
     ASSERT(allocationSize > remainingAllocationSize());
     ASSERT(allocationSize >= allocationGranularity);
+
+#if ENABLE(GC_PROFILING)
+    m_threadState->snapshotFreeListIfNecessary();
+#endif
 
     // 1. If this allocation is big enough, allocate a large object.
     if (allocationSize >= largeObjectSizeThreshold)
@@ -1493,6 +1502,39 @@ void ThreadHeap::clearFreeLists()
     m_freeList.clear();
 }
 
+#if ENABLE(GC_PROFILING)
+void ThreadHeap::snapshotFreeList(TracedValue& json)
+{
+    json.setInteger("cumulativeAllocationSize", m_cumulativeAllocationSize);
+    json.setDouble("inlineAllocationRate", static_cast<double>(m_inlineAllocationCount) / m_allocationCount);
+    json.setInteger("inlineAllocationCount", m_inlineAllocationCount);
+    json.setInteger("allocationCount", m_allocationCount);
+    size_t pageCount = 0;
+    size_t totalPageSize = 0;
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
+        ++pageCount;
+        totalPageSize += page->payloadSize();
+    }
+    json.setInteger("pageCount", pageCount);
+    json.setInteger("totalPageSize", totalPageSize);
+
+    FreeList::PerBucketFreeListStats bucketStats[blinkPageSizeLog2];
+    size_t totalFreeSize;
+    m_freeList.getFreeSizeStats(bucketStats, totalFreeSize);
+    json.setInteger("totalFreeSize", totalFreeSize);
+
+    json.beginArray("perBucketEntryCount");
+    for (size_t i = 0; i < blinkPageSizeLog2; ++i)
+        json.pushInteger(bucketStats[i].entryCount);
+    json.endArray();
+
+    json.beginArray("perBucketFreeSize");
+    for (size_t i = 0; i < blinkPageSizeLog2; ++i)
+        json.pushInteger(bucketStats[i].freeSize);
+    json.endArray();
+}
+#endif
+
 void FreeList::clear()
 {
     m_biggestFreeListIndex = 0;
@@ -1510,6 +1552,22 @@ int FreeList::bucketIndexForSize(size_t size)
     }
     return index;
 }
+
+#if ENABLE(GC_PROFILING)
+void FreeList::getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalFreeSize) const
+{
+    totalFreeSize = 0;
+    for (size_t i = 0; i < blinkPageSizeLog2; i++) {
+        size_t& entryCount = bucketStats[i].entryCount;
+        size_t& freeSize = bucketStats[i].freeSize;
+        for (FreeListEntry* entry = m_freeLists[i]; entry; entry = entry->next()) {
+            ++entryCount;
+            freeSize += entry->size();
+        }
+        totalFreeSize += freeSize;
+    }
+}
+#endif
 
 HeapPage::HeapPage(PageMemory* storage, ThreadHeap* heap)
     : BaseHeapPage(storage, heap)
