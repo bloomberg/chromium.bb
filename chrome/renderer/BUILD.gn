@@ -192,12 +192,6 @@ source_set("test_support") {
   if (enable_print_preview) {
     deps += [ "//chrome/service" ]
   }
-  if (enable_basic_printing || enable_print_preview) {
-    sources += [
-      "printing/mock_printer.cc",
-      "printing/mock_printer.h",
-    ]
-  }
 
   if (enable_webrtc) {
     sources += [

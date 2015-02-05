@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_
-#define CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_
+#ifndef COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_
+#define COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_
 
 #include <string>
 #include <vector>
@@ -80,7 +80,8 @@ class MockPrinter {
                      int expected_pages_count,
                      bool has_selection,
                      PrintMsg_PrintPages_Params* settings);
-  void UpdateSettings(int cookie, PrintMsg_PrintPages_Params* params,
+  void UpdateSettings(int cookie,
+                      PrintMsg_PrintPages_Params* params,
                       const std::vector<int>& page_range_array,
                       int margins_type);
   void SetPrintedPagesCount(int cookie, int number_pages);
@@ -158,9 +159,9 @@ class MockPrinter {
   // Used for generating invalid settings.
   bool use_invalid_settings_;
 
-  std::vector<scoped_refptr<MockPrinterPage> > pages_;
+  std::vector<scoped_refptr<MockPrinterPage>> pages_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinter);
 };
 
-#endif  // CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_
+#endif  // COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_

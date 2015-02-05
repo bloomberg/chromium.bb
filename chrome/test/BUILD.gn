@@ -981,9 +981,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         "data/webui/print_preview.js",
       ]
     }
-    if (!enable_basic_printing && !enable_print_preview) {
-      sources -= [ "../renderer/printing/print_web_view_helper_browsertest.cc" ]
-    }
     if (enable_mdns) {
       sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
     }

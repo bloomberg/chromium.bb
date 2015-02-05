@@ -4,12 +4,13 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/renderer/printing/mock_printer.h"
-#include "chrome/test/base/chrome_render_view_test.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/test/mock_printer.h"
+#include "components/printing/test/print_mock_render_thread.h"
+#include "components/printing/test/print_test_content_renderer_client.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/test/render_view_test.h"
 #include "ipc/ipc_listener.h"
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,14 +45,14 @@ const char kPrintOnUserAction[] =
 
 // HTML with 3 pages.
 const char kMultipageHTML[] =
-  "<html><head><style>"
-  ".break { page-break-after: always; }"
-  "</style></head>"
-  "<body>"
-  "<div class='break'>page1</div>"
-  "<div class='break'>page2</div>"
-  "<div>page3</div>"
-  "</body></html>";
+    "<html><head><style>"
+    ".break { page-break-after: always; }"
+    "</style></head>"
+    "<body>"
+    "<div class='break'>page1</div>"
+    "<div class='break'>page2</div>"
+    "<div>page3</div>"
+    "</body></html>";
 
 // A simple web page with print page size css.
 const char kHTMLWithPageSizeCss[] =
@@ -125,12 +126,32 @@ class DidPreviewPageListener : public IPC::Listener {
 
 }  // namespace
 
-class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
+class PrintWebViewHelperTestBase : public content::RenderViewTest {
  public:
-  PrintWebViewHelperTestBase() {}
+  PrintWebViewHelperTestBase() : print_render_thread_(NULL) {}
   ~PrintWebViewHelperTestBase() override {}
 
  protected:
+  void SetUp() override {
+    print_render_thread_ = new PrintMockRenderThread();
+    render_thread_.reset(print_render_thread_);
+
+    content::RenderViewTest::SetUp();
+  }
+
+  content::ContentRendererClient* CreateContentRendererClient() override {
+    return new PrintTestContentRendererClient();
+  }
+
+  void TearDown() override {
+#if defined(LEAK_SANITIZER)
+    // Do this before shutting down V8 in RenderViewTest::TearDown().
+    // http://crbug.com/328552
+    __lsan_do_leak_check();
+#endif
+    content::RenderViewTest::TearDown();
+  }
+
   void PrintWithJavaScript() {
     ExecuteJavaScript("window.print();");
     ProcessPendingMessages();
@@ -140,9 +161,9 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
   // Verify the page count is correct.
   void VerifyPageCount(int count) {
 #if defined(OS_CHROMEOS)
-    // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
-    // always print all pages, and there are checks to that effect built into
-    // the print code.
+// The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
+// always print all pages, and there are checks to that effect built into
+// the print code.
 #else
     const IPC::Message* page_cnt_msg =
         render_thread_->sink().GetUniqueMessageMatching(
@@ -161,7 +182,7 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
   void VerifyPreviewPageCount(int count) {
     const IPC::Message* page_cnt_msg =
         render_thread_->sink().GetUniqueMessageMatching(
-        PrintHostMsg_DidGetPreviewPageCount::ID);
+            PrintHostMsg_DidGetPreviewPageCount::ID);
     ASSERT_TRUE(page_cnt_msg);
     PrintHostMsg_DidGetPreviewPageCount::Param post_page_count_param;
     PrintHostMsg_DidGetPreviewPageCount::Read(page_cnt_msg,
@@ -172,8 +193,9 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool printed) {
 #if defined(OS_CHROMEOS)
-    bool did_print_msg = (render_thread_->sink().GetUniqueMessageMatching(
-        PrintHostMsg_TempFileForPrintingWritten::ID) != NULL);
+    bool did_print_msg =
+        (render_thread_->sink().GetUniqueMessageMatching(
+             PrintHostMsg_TempFileForPrintingWritten::ID) != NULL);
     ASSERT_EQ(printed, did_print_msg);
 #else
     const IPC::Message* print_msg =
@@ -220,6 +242,9 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
     ProcessPendingMessages();
   }
 
+  // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
+  PrintMockRenderThread* print_render_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
 };
 
@@ -228,7 +253,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
   PrintWebViewHelperTest() {}
   ~PrintWebViewHelperTest() override {}
 
-  void SetUp() override { ChromeRenderViewTest::SetUp(); }
+  void SetUp() override { PrintWebViewHelperTestBase::SetUp(); }
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTest);
@@ -240,7 +265,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
 // frequently.
 TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
-  chrome_render_thread_->set_print_dialog_user_response(false);
+  print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
   PrintWithJavaScript();
   PrintWithJavaScript();
@@ -248,13 +273,13 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
-  chrome_render_thread_->set_print_dialog_user_response(true);
+  print_render_thread_->set_print_dialog_user_response(true);
   PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
   PrintWebViewHelper::Get(view_)->scripting_throttler_.Reset();
-  chrome_render_thread_->printer()->ResetPrinter();
+  print_render_thread_->printer()->ResetPrinter();
   PrintWithJavaScript();
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
@@ -264,7 +289,7 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
 // initiated.
 TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   // Pretend user will cancel printing.
-  chrome_render_thread_->set_print_dialog_user_response(false);
+  print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
   PrintWithJavaScript();
   PrintWithJavaScript();
@@ -272,12 +297,12 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
-  chrome_render_thread_->set_print_dialog_user_response(true);
+  print_render_thread_->set_print_dialog_user_response(true);
   PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Try again as if user initiated, without resetting the print count.
-  chrome_render_thread_->printer()->ResetPrinter();
+  print_render_thread_->printer()->ResetPrinter();
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
   Resize(new_size, gfx::Rect(), false);
@@ -352,7 +377,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   VerifyPagesPrinted(true);
 
   // Verify output through MockPrinter.
-  const MockPrinter* printer(chrome_render_thread_->printer());
+  const MockPrinter* printer(print_render_thread_->printer());
   ASSERT_EQ(1, printer->GetPrintedPages());
   const Image& image1(printer->GetPrintedPage(0)->image());
 
@@ -380,26 +405,32 @@ struct TestPageData {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 const TestPageData kTestPages[] = {
-  {"<html>"
-  "<head>"
-  "<meta"
-  "  http-equiv=\"Content-Type\""
-  "  content=\"text/html; charset=utf-8\"/>"
-  "<title>Test 1</title>"
-  "</head>"
-  "<body style=\"background-color: white;\">"
-  "<p style=\"font-family: arial;\">Hello World!</p>"
-  "</body>",
+    {
+     "<html>"
+     "<head>"
+     "<meta"
+     "  http-equiv=\"Content-Type\""
+     "  content=\"text/html; charset=utf-8\"/>"
+     "<title>Test 1</title>"
+     "</head>"
+     "<body style=\"background-color: white;\">"
+     "<p style=\"font-family: arial;\">Hello World!</p>"
+     "</body>",
 #if defined(OS_MACOSX)
-  // Mac printing code compensates for the WebKit scale factor while generating
-  // the metafile, so we expect smaller pages.
-  1, 600, 780,
+     // Mac printing code compensates for the WebKit scale factor while
+     // generating
+     // the metafile, so we expect smaller pages.
+     1,
+     600,
+     780,
 #else
-  1, 675, 900,
+     1,
+     675,
+     900,
 #endif
-  NULL,
-  NULL,
-  },
+     NULL,
+     NULL,
+    },
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }  // namespace
@@ -412,7 +443,7 @@ const TestPageData kTestPages[] = {
 TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
-  EXPECT_TRUE(chrome_render_thread_->printer() != NULL);
+  EXPECT_TRUE(print_render_thread_->printer() != NULL);
   for (size_t i = 0; i < arraysize(kTestPages); ++i) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
@@ -425,12 +456,12 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     // has been already finished.
     // So, we can start checking the output pages of this printing job.
     // Retrieve the number of pages actually printed.
-    size_t pages = chrome_render_thread_->printer()->GetPrintedPages();
+    size_t pages = print_render_thread_->printer()->GetPrintedPages();
     EXPECT_EQ(kTestPages[i].printed_pages, pages);
 
     // Retrieve the width and height of the output page.
-    int width = chrome_render_thread_->printer()->GetWidth(0);
-    int height = chrome_render_thread_->printer()->GetHeight(0);
+    int width = print_render_thread_->printer()->GetWidth(0);
+    int height = print_render_thread_->printer()->GetHeight(0);
 
     // Check with margin for error.  This has been failing with a one pixel
     // offset on our buildbot.
@@ -438,13 +469,13 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     EXPECT_GT(kTestPages[i].width * (100 + kErrorMargin) / 100, width);
     EXPECT_LT(kTestPages[i].width * (100 - kErrorMargin) / 100, width);
     EXPECT_GT(kTestPages[i].height * (100 + kErrorMargin) / 100, height);
-    EXPECT_LT(kTestPages[i].height* (100 - kErrorMargin) / 100, height);
+    EXPECT_LT(kTestPages[i].height * (100 - kErrorMargin) / 100, height);
 
     // Retrieve the checksum of the bitmap data from the pseudo printer and
     // compare it with the expected result.
     std::string bitmap_actual;
     EXPECT_TRUE(
-        chrome_render_thread_->printer()->GetBitmapChecksum(0, &bitmap_actual));
+        print_render_thread_->printer()->GetBitmapChecksum(0, &bitmap_actual));
     if (kTestPages[i].checksum)
       EXPECT_EQ(kTestPages[i].checksum, bitmap_actual);
 
@@ -453,11 +484,11 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
       // create base-line results.
       base::FilePath source_path;
       base::CreateTemporaryFile(&source_path);
-      chrome_render_thread_->printer()->SaveSource(0, source_path);
+      print_render_thread_->printer()->SaveSource(0, source_path);
 
       base::FilePath bitmap_path;
       base::CreateTemporaryFile(&bitmap_path);
-      chrome_render_thread_->printer()->SaveBitmap(0, bitmap_path);
+      print_render_thread_->printer()->SaveBitmap(0, bitmap_path);
     }
   }
 }
@@ -474,14 +505,14 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   void VerifyPrintPreviewCancelled(bool did_cancel) {
     bool print_preview_cancelled =
         (render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewCancelled::ID) != NULL);
+             PrintHostMsg_PrintPreviewCancelled::ID) != NULL);
     EXPECT_EQ(did_cancel, print_preview_cancelled);
   }
 
   void VerifyPrintPreviewFailed(bool did_fail) {
     bool print_preview_failed =
         (render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewFailed::ID) != NULL);
+             PrintHostMsg_PrintPreviewFailed::ID) != NULL);
     EXPECT_EQ(did_fail, print_preview_failed);
   }
 
@@ -502,14 +533,14 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 
   void VerifyPrintFailed(bool did_fail) {
     bool print_failed = (render_thread_->sink().GetUniqueMessageMatching(
-        PrintHostMsg_PrintingFailed::ID) != NULL);
+                             PrintHostMsg_PrintingFailed::ID) != NULL);
     EXPECT_EQ(did_fail, print_failed);
   }
 
   void VerifyPrintPreviewInvalidPrinterSettings(bool settings_invalid) {
     bool print_preview_invalid_printer_settings =
         (render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID) != NULL);
+             PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID) != NULL);
     EXPECT_EQ(settings_invalid, print_preview_invalid_printer_settings);
   }
 
@@ -535,9 +566,12 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     ASSERT_EQ(generate_draft_pages, msg_found);
   }
 
-  void VerifyDefaultPageLayout(int content_width, int content_height,
-                               int margin_top, int margin_bottom,
-                               int margin_left, int margin_right,
+  void VerifyDefaultPageLayout(int content_width,
+                               int content_height,
+                               int margin_top,
+                               int margin_bottom,
+                               int margin_left,
+                               int margin_right,
                                bool page_has_print_css) {
     const IPC::Message* default_page_layout_msg =
         render_thread_->sink().GetUniqueMessageMatching(
@@ -604,7 +638,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -633,7 +667,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(519, 432, 216, 144, 21, 72, false);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -653,7 +687,7 @@ TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(612, 792, 0, 0, 0, 0, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -670,11 +704,10 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, true);
-  dict.SetInteger(kSettingMarginsType,
-                  PRINTABLE_AREA_MARGINS);
+  dict.SetInteger(kSettingMarginsType, PRINTABLE_AREA_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(252, 252, 18, 18, 18, 18, true);
@@ -706,7 +739,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(915, 648, 216, 144, 21, 72, true);
@@ -726,7 +759,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(216, 216, 288, 288, 198, 198, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -756,7 +789,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(571, 652, 69, 71, 20, 21, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -774,7 +807,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(792, 612, 0, 0, 0, 0, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -792,7 +825,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
   dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(748, 568, 21, 23, 21, 23, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -861,7 +894,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   base::DictionaryValue empty_dict;
   OnPrintPreview(empty_dict);
 
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(true);
   VerifyPrintPreviewGenerated(false);
@@ -873,14 +906,13 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
 
   const int kCancelPage = 3;
-  chrome_render_thread_->set_print_preview_cancel_page_number(kCancelPage);
+  print_render_thread_->set_print_preview_cancel_page_number(kCancelPage);
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(kCancelPage,
-            chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(kCancelPage, print_render_thread_->print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(true);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
@@ -920,7 +952,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   LoadHTML(kPrintPreviewHTML);
 
   // Set mock printer to provide invalid settings.
-  chrome_render_thread_->printer()->UseInvalidSettings();
+  print_render_thread_->printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
   base::DictionaryValue dict;
@@ -929,7 +961,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
   // We should have received invalid printer settings from |printer_|.
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
@@ -938,18 +970,17 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
 // Tests that when the selected printer has invalid page settings, print preview
 // receives error message.
-TEST_F(PrintWebViewHelperPreviewTest,
-       OnPrintPreviewUsingInvalidPageSize) {
+TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidPageSize) {
   LoadHTML(kPrintPreviewHTML);
 
-  chrome_render_thread_->printer()->UseInvalidPageSize();
+  print_render_thread_->printer()->UseInvalidPageSize();
 
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
@@ -958,18 +989,17 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
 // Tests that when the selected printer has invalid content settings, print
 // preview receives error message.
-TEST_F(PrintWebViewHelperPreviewTest,
-       OnPrintPreviewUsingInvalidContentSize) {
+TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidContentSize) {
   LoadHTML(kPrintPreviewHTML);
 
-  chrome_render_thread_->printer()->UseInvalidContentSize();
+  print_render_thread_->printer()->UseInvalidContentSize();
 
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
@@ -981,7 +1011,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   LoadHTML(kPrintPreviewHTML);
 
   // Set mock printer to provide invalid settings.
-  chrome_render_thread_->printer()->UseInvalidSettings();
+  print_render_thread_->printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
   base::DictionaryValue dict;

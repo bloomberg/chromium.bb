@@ -1873,12 +1873,6 @@
             'service',
           ],
         }],
-        ['enable_basic_printing==1 or enable_print_preview==1', {
-          'sources': [
-            'renderer/printing/mock_printer.cc',
-            'renderer/printing/mock_printer.h',
-          ],
-        }],
         ['enable_extensions==1', {
           'dependencies': [
             '../components/components.gyp:storage_monitor_test_support',

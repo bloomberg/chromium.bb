@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/printing/mock_printer.h"
+#include "components/printing/test/mock_printer.h"
 
 #include "base/basictypes.h"
 #include "base/files/file_util.h"
@@ -45,45 +45,44 @@ void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
 MockPrinterPage::MockPrinterPage(const void* source_data,
                                  uint32 source_size,
                                  const printing::Image& image)
-    : source_size_(source_size),
-      image_(image) {
+    : source_size_(source_size), image_(image) {
   // Create copies of the source data
   source_data_.reset(new uint8[source_size]);
   if (source_data_.get())
     memcpy(source_data_.get(), source_data, source_size);
 }
 
-MockPrinterPage::~MockPrinterPage() {}
+MockPrinterPage::~MockPrinterPage() {
+}
 
 MockPrinter::MockPrinter()
-  : dpi_(printing::kPointsPerInch),
-    max_shrink_(2.0),
-    min_shrink_(1.25),
-    desired_dpi_(printing::kPointsPerInch),
-    selection_only_(false),
-    should_print_backgrounds_(false),
-    document_cookie_(-1),
-    current_document_cookie_(0),
-    printer_status_(PRINTER_READY),
-    number_pages_(0),
-    page_number_(0),
-    is_first_request_(true),
-    print_to_pdf_(false),
-    preview_request_id_(0),
-    print_scaling_option_(blink::WebPrintScalingOptionSourceSize),
-    display_header_footer_(false),
-    title_(base::ASCIIToUTF16("title")),
-    url_(base::ASCIIToUTF16("url")),
-    use_invalid_settings_(false) {
+    : dpi_(printing::kPointsPerInch),
+      max_shrink_(2.0),
+      min_shrink_(1.25),
+      desired_dpi_(printing::kPointsPerInch),
+      selection_only_(false),
+      should_print_backgrounds_(false),
+      document_cookie_(-1),
+      current_document_cookie_(0),
+      printer_status_(PRINTER_READY),
+      number_pages_(0),
+      page_number_(0),
+      is_first_request_(true),
+      print_to_pdf_(false),
+      preview_request_id_(0),
+      print_scaling_option_(blink::WebPrintScalingOptionSourceSize),
+      display_header_footer_(false),
+      title_(base::ASCIIToUTF16("title")),
+      url_(base::ASCIIToUTF16("url")),
+      use_invalid_settings_(false) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));
   content_size_.SetSize(static_cast<int>((7.5 * dpi_)),
-                          static_cast<int>((10.0 * dpi_)));
+                        static_cast<int>((10.0 * dpi_)));
   margin_left_ = margin_top_ = static_cast<int>(0.5 * dpi_);
-  printable_area_.SetRect(static_cast<int>(0.25 * dpi_),
-                          static_cast<int>(0.25 *dpi_),
-                          static_cast<int>(8 * dpi_),
-                          static_cast<int>(10.5 * dpi_));
+  printable_area_.SetRect(
+      static_cast<int>(0.25 * dpi_), static_cast<int>(0.25 * dpi_),
+      static_cast<int>(8 * dpi_), static_cast<int>(10.5 * dpi_));
 }
 
 MockPrinter::~MockPrinter() {
@@ -220,9 +219,8 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
 #endif
   metafile.InitFromData(metafile_data.memory(), params.data_size);
   printing::Image image(metafile);
-  MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
-                                                   params.data_size,
-                                                   image);
+  MockPrinterPage* page_data =
+      new MockPrinterPage(metafile_data.memory(), params.data_size, image);
   scoped_refptr<MockPrinterPage> page(page_data);
   pages_.push_back(page);
 #endif
@@ -259,16 +257,16 @@ int MockPrinter::GetHeight(unsigned int page) const {
   return pages_[page]->height();
 }
 
-bool MockPrinter::GetBitmapChecksum(
-    unsigned int page, std::string* checksum) const {
+bool MockPrinter::GetBitmapChecksum(unsigned int page,
+                                    std::string* checksum) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
   *checksum = pages_[page]->image().checksum();
   return true;
 }
 
-bool MockPrinter::SaveSource(
-    unsigned int page, const base::FilePath& filepath) const {
+bool MockPrinter::SaveSource(unsigned int page,
+                             const base::FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
   const uint8* source_data = pages_[page]->source_data();
@@ -278,8 +276,8 @@ bool MockPrinter::SaveSource(
   return true;
 }
 
-bool MockPrinter::SaveBitmap(
-    unsigned int page, const base::FilePath& filepath) const {
+bool MockPrinter::SaveBitmap(unsigned int page,
+                             const base::FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
 

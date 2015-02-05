@@ -1037,6 +1037,14 @@
         '../content/content_shell_and_tests.gyp:content_shell',  # Needed for Content Shell.app's Helper.
               ],
             }],
+            ['enable_basic_printing==1 or enable_print_preview==1', {
+              'dependencies': [
+                'components.gyp:printing_test_support',
+              ],
+              'sources' : [
+                'printing/test/print_web_view_helper_browsertest.cc',
+              ],
+            }]
           ],
         },
       ],

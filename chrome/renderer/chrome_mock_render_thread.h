@@ -7,24 +7,11 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "content/public/test/mock_render_thread.h"
 
-namespace base {
-class DictionaryValue;
-}
-
-class MockPrinter;
 struct ExtensionMsg_ExternalConnectionInfo;
-struct PrintHostMsg_DidGetPreviewPageCount_Params;
-struct PrintHostMsg_DidPreviewPage_Params;
-struct PrintHostMsg_DidPrintPage_Params;
-struct PrintHostMsg_ScriptedPrint_Params;
-struct PrintMsg_PrintPages_Params;
-struct PrintMsg_Print_Params;
 
-// Extends content::MockRenderThread to know about printing and
-// extension messages.
+// Extends content::MockRenderThread to know about extension messages.
 class ChromeMockRenderThread : public content::MockRenderThread {
  public:
   ChromeMockRenderThread();
@@ -40,21 +27,6 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   void set_io_message_loop_proxy(
       const scoped_refptr<base::MessageLoopProxy>& proxy);
 
-#if defined(ENABLE_PRINTING)
-  // Returns the pseudo-printer instance.
-  MockPrinter* printer();
-
-  // Call with |response| set to true if the user wants to print.
-  // False if the user decides to cancel.
-  void set_print_dialog_user_response(bool response);
-
-  // Cancel print preview when print preview has |page| remaining pages.
-  void set_print_preview_cancel_page_number(int page);
-
-  // Get the number of pages to generate for print preview.
-  int print_preview_pages_remaining() const;
-#endif
-
  private:
   // Overrides base class implementation to add custom handling for
   // print and extensions.
@@ -67,51 +39,6 @@ class ChromeMockRenderThread : public content::MockRenderThread {
                                 const std::string& channel_name,
                                 bool include_tls_channel_id,
                                 int* port_id);
-#endif
-
-#if defined(ENABLE_PRINTING)
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  void OnAllocateTempFileForPrinting(int render_view_id,
-                                     base::FileDescriptor* renderer_fd,
-                                     int* browser_fd);
-  void OnTempFileForPrintingWritten(int render_view_id, int browser_fd);
-#endif
-
-  // PrintWebViewHelper expects default print settings.
-  void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
-
-  // PrintWebViewHelper expects final print settings from the user.
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
-                       PrintMsg_PrintPages_Params* settings);
-
-  void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params);
-  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
-  void OnCheckForCancel(int32 preview_ui_id,
-                        int preview_request_id,
-                        bool* cancel);
-
-
-  // For print preview, PrintWebViewHelper will update settings.
-  void OnUpdatePrintSettings(int document_cookie,
-                             const base::DictionaryValue& job_settings,
-                             PrintMsg_PrintPages_Params* params,
-                             bool* canceled);
-
-  // A mock printer device used for printing tests.
-  scoped_ptr<MockPrinter> printer_;
-
-  // True to simulate user clicking print. False to cancel.
-  bool print_dialog_user_response_;
-
-  // Simulates cancelling print preview if |print_preview_pages_remaining_|
-  // equals this.
-  int print_preview_cancel_page_number_;
-
-  // Number of pages to generate for print preview.
-  int print_preview_pages_remaining_;
 #endif
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

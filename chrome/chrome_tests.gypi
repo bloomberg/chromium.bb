@@ -539,7 +539,6 @@
       'renderer/autofill/password_generation_agent_browsertest.cc',
       'renderer/content_settings_observer_browsertest.cc',
       'renderer/media/cast_session_browsertest.cc',
-      'renderer/printing/print_web_view_helper_browsertest.cc',
       'renderer/translate/translate_helper_browsertest.cc',
       'renderer/translate/translate_script_browsertest.cc',
       'test/base/chrome_render_view_test.cc',
@@ -2361,11 +2360,6 @@
             'test/data/webui/print_preview.cc',
             'test/data/webui/print_preview.h',
             'test/data/webui/print_preview.js',
-          ],
-        }],
-        ['enable_basic_printing==0 and enable_print_preview==0', {
-          'sources!': [
-            'renderer/printing/print_web_view_helper_browsertest.cc',
           ],
         }],
         ['enable_mdns==1', {

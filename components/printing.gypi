@@ -45,6 +45,22 @@
       ],
       # TODO(dgn): C4267: http://crbug.com/167187 size_t -> int
       'msvs_disabled_warnings': [ 4267 ],
+    },{
+      # GN: //components/printing/test:printing_test_support
+      'target_name': 'printing_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        'printing_renderer',
+      ],
+      'sources': [
+        'printing/test/mock_printer.h',
+        'printing/test/mock_printer.cc',
+        'printing/test/print_mock_render_thread.h',
+        'printing/test/print_mock_render_thread.cc',
+        'printing/test/print_test_content_renderer_client.cc',
+        'printing/test/print_test_content_renderer_client.h',
+      ],
     },
   ],
 }
