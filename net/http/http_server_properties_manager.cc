@@ -450,46 +450,59 @@ void HttpServerPropertiesManager::AddToSpdySettingsMap(
   spdy_settings_map->Put(server, settings_map);
 }
 
+AlternateProtocolInfo HttpServerPropertiesManager::ParseAlternateProtocolDict(
+    const base::DictionaryValue& alternate_protocol_dict,
+    const std::string& server_str) {
+  AlternateProtocolInfo alternate_protocol;
+  int port = 0;
+  if (!alternate_protocol_dict.GetInteger(kPortKey, &port) ||
+      !IsPortValid(port)) {
+    DVLOG(1) << "Malformed AltSvc port for server: " << server_str;
+    return alternate_protocol;
+  }
+  alternate_protocol.port = static_cast<uint16>(port);
+
+  double probability = 1.0;
+  if (alternate_protocol_dict.HasKey(kProbabilityKey) &&
+      !alternate_protocol_dict.GetDoubleWithoutPathExpansion(kProbabilityKey,
+                                                             &probability)) {
+    DVLOG(1) << "Malformed AltSvc probability for server: " << server_str;
+    return alternate_protocol;
+  }
+  alternate_protocol.probability = probability;
+
+  std::string protocol_str;
+  if (!alternate_protocol_dict.GetStringWithoutPathExpansion(kProtocolKey,
+                                                             &protocol_str)) {
+    DVLOG(1) << "Malformed AltSvc protocol string for server: " << server_str;
+    return alternate_protocol;
+  }
+  AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
+  if (!IsAlternateProtocolValid(protocol)) {
+    DVLOG(1) << "Invalid AltSvc protocol string for server: " << server_str;
+    return alternate_protocol;
+  }
+  alternate_protocol.protocol = protocol;
+
+  return alternate_protocol;
+}
+
 bool HttpServerPropertiesManager::AddToAlternateProtocolMap(
     const HostPortPair& server,
     const base::DictionaryValue& server_pref_dict,
     AlternateProtocolMap* alternate_protocol_map) {
   // Get alternate_protocol server.
   DCHECK(alternate_protocol_map->Peek(server) == alternate_protocol_map->end());
-  const base::DictionaryValue* port_alternate_protocol_dict = NULL;
+  const base::DictionaryValue* alternate_protocol_dict = NULL;
   if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
-          kAlternateProtocolKey, &port_alternate_protocol_dict)) {
+          kAlternateProtocolKey, &alternate_protocol_dict)) {
     return true;
   }
-  int port = 0;
-  if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(kPortKey,
-                                                                    &port) ||
-      !IsPortValid(port)) {
-    DVLOG(1) << "Malformed Alternate-Protocol server: " << server.ToString();
+  AlternateProtocolInfo alternate_protocol =
+      ParseAlternateProtocolDict(*alternate_protocol_dict, server.ToString());
+  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return false;
-  }
-  std::string protocol_str;
-  if (!port_alternate_protocol_dict->GetStringWithoutPathExpansion(
-          kProtocolKey, &protocol_str)) {
-    DVLOG(1) << "Malformed Alternate-Protocol server: " << server.ToString();
-    return false;
-  }
-  AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
-  if (!IsAlternateProtocolValid(protocol)) {
-    DVLOG(1) << "Malformed Alternate-Protocol server: " << server.ToString();
-    return false;
-  }
-  double probability = 1;
-  if (port_alternate_protocol_dict->HasKey(kProbabilityKey) &&
-      !port_alternate_protocol_dict->GetDoubleWithoutPathExpansion(
-          kProbabilityKey, &probability)) {
-    DVLOG(1) << "Malformed Alternate-Protocol server: " << server.ToString();
-    return false;
-  }
-
-  AlternateProtocolInfo port_alternate_protocol(static_cast<uint16>(port),
-                                                protocol, probability);
-  alternate_protocol_map->Put(server, port_alternate_protocol);
+  alternate_protocol_map->Put(server, alternate_protocol);
   return true;
 }
 

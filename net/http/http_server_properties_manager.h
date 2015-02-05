@@ -182,6 +182,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void AddToSpdySettingsMap(const HostPortPair& server,
                             const base::DictionaryValue& server_dict,
                             SpdySettingsMap* spdy_settings_map);
+  AlternateProtocolInfo ParseAlternateProtocolDict(
+      const base::DictionaryValue& alternate_protocol_dict,
+      const std::string& server_str);
   bool AddToAlternateProtocolMap(const HostPortPair& server,
                                  const base::DictionaryValue& server_dict,
                                  AlternateProtocolMap* alternate_protocol_map);
