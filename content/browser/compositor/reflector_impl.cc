@@ -21,16 +21,12 @@ ReflectorImpl::ReflectorImpl(
     int surface_id)
     : impl_unsafe_(output_surface_map),
       main_unsafe_(mirrored_compositor, mirroring_layer),
+      impl_message_loop_(compositor_thread_loop),
       main_message_loop_(base::MessageLoopProxy::current()),
       surface_id_(surface_id) {
   GLHelper* helper = ImageTransportFactory::GetInstance()->GetGLHelper();
   MainThreadData& main = GetMain();
   main.mailbox = new OwnedMailbox(helper);
-  if (!compositor_thread_loop) {
-    impl_message_loop_ = main_message_loop_;
-  } else {
-    impl_message_loop_ = compositor_thread_loop;
-  }
   impl_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(
