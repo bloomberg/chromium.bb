@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
@@ -579,10 +580,11 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Remove XSSI guard for JSON parsing.
   size_t json_start_index = json_data.find("{");
+  base::StringPiece json_data_substr(json_data);
   if (json_start_index != std::string::npos)
-    json_data.erase(0, json_start_index);
+    json_data_substr.remove_prefix(json_start_index);
 
-  JSONStringValueSerializer deserializer(json_data);
+  JSONStringValueSerializer deserializer(json_data_substr);
   deserializer.set_allow_trailing_comma(true);
   int error_code = 0;
   scoped_ptr<base::Value> doodle_json(
