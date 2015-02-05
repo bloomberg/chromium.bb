@@ -242,8 +242,27 @@ class VideoImageGenerator : public SkImageGenerator {
                     (frame_->visible_rect().y() >> y_shift)) +
                    (frame_->visible_rect().x() >> 1);
         }
-        row_bytes[plane] = static_cast<size_t>(frame_->stride(plane));
-        planes[plane] = frame_->data(plane) + offset;
+
+        // Copy the frame to the supplied memory.
+        // TODO: Find a way (API change?) to avoid this copy.
+        char* out_line = static_cast<char*>(planes[plane]);
+        int out_line_stride = row_bytes[plane];
+        uint8* in_line = frame_->data(plane) + offset;
+        int in_line_stride = frame_->stride(plane);
+        int plane_height = sizes[plane].height();
+        if (in_line_stride == out_line_stride) {
+          memcpy(out_line, in_line, plane_height * in_line_stride);
+        } else {
+          // Different line padding so need to copy one line at a time.
+          int bytes_to_copy_per_line = out_line_stride < in_line_stride
+                                           ? out_line_stride
+                                           : in_line_stride;
+          for (int line_no = 0; line_no < plane_height; line_no++) {
+            memcpy(out_line, in_line, bytes_to_copy_per_line);
+            in_line += in_line_stride;
+            out_line += out_line_stride;
+          }
+        }
       }
     }
     return true;
