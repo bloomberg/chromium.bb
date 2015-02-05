@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os.path
+import platform
 import re
 import subprocess
 import sys
@@ -205,16 +206,29 @@ def BuildScript(status, context):
       'use_clang_newlib=' + gn_newlib,
     ]
 
+    gn_cmd = [
+      'gn',
+      '--dotfile=../native_client/.gn', '--root=..',
+      # Note: quotes are not needed around this space-separated
+      # list of args.  The shell would remove them before passing
+      # them to a program, and Python bypasses the shell.  Adding
+      # quotes will cause an error because GN will see unexpected
+      # double quotes.
+      '--args=%s' % ' '.join(gn_gen_args),
+      'gen', gn_out,
+      ]
+
+    # If this is a 32-bit build but the kernel reports as 64-bit,
+    # then gn will set build_cpu_arch=x64 when we want build_cpu_arch=x32.
+    # TODO(mcgrathr): dpranke said he'll change gn so that you can override
+    # this on the command line; when that gn arrives, we'll use that argument
+    # rather than this kludge.  The 'linux32' utility runs a command with
+    # the process "personality" set to report i686 rather than x86_64.
+    if context['arch'] == '32' and platform.machine() == 'x86_64':
+      gn_cmd.insert(0, 'linux32')
+
     with Step('gn_compile', status):
-      Command(context,
-              cmd=['gn', '--dotfile=../native_client/.gn', '--root=..',
-                   # Note: quotes are not needed around this space-separated
-                   # list of args.  The shell would remove them before passing
-                   # them to a program, and Python bypasses the shell.  Adding
-                   # quotes will cause an error because GN will see unexpected
-                   # double quotes.
-                   '--args=%s' % ' '.join(gn_gen_args),
-                   'gen', gn_out])
+      Command(context, cmd=gn_cmd)
       Command(context, cmd=['ninja', '-C', gn_out])
 
   if context['clang']:
@@ -264,7 +278,14 @@ def BuildScript(status, context):
               cmd=['bash', '../../breakpad/configure',
                    'CXXFLAGS=-I../..'])  # For third_party/lss
     with Step('breakpad make', status):
-      Command(context, cmd=['make', '-j%d' % context['max_jobs']],
+      Command(context, cmd=['make', '-j%d' % context['max_jobs'],
+                            # This avoids a broken dependency on
+                            # src/third_party/lss files within the breakpad
+                            # source directory.  We are not putting lss
+                            # there, but using the -I switch above to
+                            # find the lss in ../third_party instead.
+                            'includelss_HEADERS=',
+                            ],
               cwd='breakpad-out')
 
   # The main compile step.

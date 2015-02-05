@@ -8,10 +8,10 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 275800
+  # chrome_rev: 314402
   "valgrind_rev": "59886873b4b8258a8e0f098c23e1958e0d0c0a26", # from svn revision 231553
-  "tools_valgrind_rev": "4989a1b19c3a33c828e385d3a07e83e202e1e651", # from svn revision 275521
-  "clang_rev": "dc89dfdeeeb610545184911529aed5d3e4e8558f", # from cr commit position 307492
+  "tools_valgrind_rev": "b81cde70b77b0461b18ad24616bdadb98a466647", # from svn revision 275834
+  "clang_rev": "0825693c3460f23b1d78ad272999f850447ad333", # from cr commit position 313267
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -19,11 +19,11 @@ vars = {
   # (This is not essential for Breakpad, because we do not use its code
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
-  "gtest_rev": "74de57c951aedebc5dfe26a27604353432392b98", # from svn revision 643
-  "gyp_rev": "adb7d24b9fc166f01ab2da50478556b518a9218f", # from svn revision 2027
-  "lss_rev": "2f724fced658cd6182096c615efdf3767b7c57fe", # from svn revision 26
-  "breakpad_rev": "fe34e3f9fef1eb425b25a79f0da84e2f277d433b", # from svn revision 1338
-  "android_tools_rev": "ea50cccc11657404ce22cf928062ed1a3927eb39",
+  "gtest_rev": "be1868139ffe0ccd0e8e3b37292b84c821d9c8ad", # from svn revision 704
+  "gyp_rev": "4d7c139b1820c5fcb993868c61f170a02cda8a40", # from svn revision 2030
+  "lss_rev": "952107fa7cea0daaabead28c0e92d579bee517eb",
+  "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
+  "android_tools_rev": "f6e2370dff438125897bb3b3800de1ad7aa62c27",
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "7e4c04567bd393069233676fc648333885e18da9", # from svn revision 13800
@@ -39,7 +39,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  "buildtools_revision": "c27f95bd1d9baaef70c879dea375090dd1496147"
+  "buildtools_revision": "451dcd05a5b34936f5be67b2472cd63aaa508401"
 }
 
 deps = {
