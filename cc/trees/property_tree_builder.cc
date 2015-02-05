@@ -171,10 +171,12 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   }
 
   TransformNode* node = data_for_children->transform_tree->back();
+  layer->set_transform_tree_index(node->id);
 
   node->data.flattens = layer->should_flatten_transform();
   node->data.target_id =
       data_from_ancestor.render_target->transform_tree_index();
+  DCHECK_NE(node->data.target_id, -1);
   node->data.is_animated = layer->TransformIsAnimating();
 
   gfx::Transform transform;
@@ -214,7 +216,6 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   data_from_ancestor.transform_tree->UpdateScreenSpaceTransform(node->id);
 
   layer->set_offset_to_transform_parent(gfx::Vector2dF());
-  layer->set_transform_tree_index(node->id);
 }
 
 void BuildPropertyTreesInternal(Layer* layer,
