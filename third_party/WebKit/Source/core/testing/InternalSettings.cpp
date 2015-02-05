@@ -473,4 +473,11 @@ void InternalSettings::setScrollTopLeftInteropEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(enabled);
 }
+
+void InternalSettings::setDnsPrefetchLogging(bool enabled, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setLogDnsPrefetchAndPreconnect(enabled);
+}
+
 }

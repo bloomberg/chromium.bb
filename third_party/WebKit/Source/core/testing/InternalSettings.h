@@ -130,6 +130,7 @@ public:
     void setPrimaryPointerType(const String&, ExceptionState&);
     void setAvailableHoverTypes(const String&, ExceptionState&);
     void setPrimaryHoverType(const String&, ExceptionState&);
+    void setDnsPrefetchLogging(bool, ExceptionState&);
 
 private:
     explicit InternalSettings(Page&);

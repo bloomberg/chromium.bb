@@ -38,6 +38,8 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
 #include "core/html/LinkRelAttribute.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/loader/LinkHeader.h"
 #include "core/loader/PrerenderHandle.h"
 #include "platform/Prerender.h"
 #include "platform/network/NetworkHints.h"
@@ -117,8 +119,11 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
         Settings* settings = document.settings();
         // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt
         // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
-        if (settings && settings->dnsPrefetchingEnabled() && href.isValid() && !href.isEmpty())
+        if (settings && settings->dnsPrefetchingEnabled() && href.isValid() && !href.isEmpty()) {
+            if (settings->logDnsPrefetchAndPreconnect())
+                document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("DNS prefetch triggered for " + href.host())));
             prefetchDNS(href.host());
+        }
     }
 
     if (relAttribute.isPreconnect() && href.isValid()) {
