@@ -31,13 +31,19 @@ HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
   return CreateCompatibleDC(NULL);
 }
 
+typedef DWORD (WINAPI* GetFontDataPtr) (HDC hdc,
+                                        DWORD table,
+                                        DWORD offset,
+                                        LPVOID buffer,
+                                        DWORD length);
+GetFontDataPtr g_original_get_font_data = NULL;
 static base::win::IATPatchFunction g_iat_patch_get_font_data;
 DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD table,
                               DWORD offset,
                               LPVOID buffer,
                               DWORD length) {
-  int rv = GetFontData(hdc, table, offset, buffer, length);
+  int rv = g_original_get_font_data(hdc, table, offset, buffer, length);
   if (rv == GDI_ERROR && hdc) {
     HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
 
@@ -45,7 +51,7 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
       content::ChildThread::Get()->PreCacheFont(logfont);
-      rv = GetFontData(hdc, table, offset, buffer, length);
+      rv = g_original_get_font_data(hdc, table, offset, buffer, length);
       content::ChildThread::Get()->ReleaseCachedFonts();
     }
   }
@@ -72,6 +78,8 @@ void InitializePDF() {
                               CreateDCAPatch);
   g_iat_patch_get_font_data.Patch(current_module_name, "gdi32.dll",
                                   "GetFontData", GetFontDataPatch);
+  g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
+      g_iat_patch_get_font_data.original_function());
 #endif  // OS_WIN
 }
 
