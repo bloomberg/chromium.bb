@@ -2541,6 +2541,17 @@ void WebContentsImpl::DidStartProvisionalLoad(
       observers_,
       DidStartProvisionalLoadForFrame(
           render_frame_host, validated_url, is_error_page, is_iframe_srcdoc));
+
+  // Notify accessibility if this is a reload.
+  NavigationEntry* entry = controller_.GetVisibleEntry();
+  if (entry && ui::PageTransitionCoreTypeIs(
+          entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD)) {
+    FrameTreeNode* ftn = render_frame_host->frame_tree_node();
+    BrowserAccessibilityManager* manager =
+        ftn->current_frame_host()->browser_accessibility_manager();
+    if (manager)
+      manager->UserIsReloading();
+  }
 }
 
 void WebContentsImpl::DidStartNavigationTransition(
@@ -2562,6 +2573,12 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
                                            validated_url,
                                            params.error_code,
                                            params.error_description));
+
+  FrameTreeNode* ftn = render_frame_host->frame_tree_node();
+  BrowserAccessibilityManager* manager =
+      ftn->current_frame_host()->browser_accessibility_manager();
+  if (manager)
+    manager->NavigationFailed();
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -2637,6 +2654,11 @@ void WebContentsImpl::DidCommitProvisionalLoad(
                     observers_,
                     DidCommitProvisionalLoadForFrame(
                         render_frame_host, url, transition_type));
+
+  BrowserAccessibilityManager* manager =
+      render_frame_host->browser_accessibility_manager();
+  if (manager)
+    manager->NavigationSucceeded();
 }
 
 void WebContentsImpl::DidNavigateMainFramePreCommit(
@@ -3808,6 +3830,17 @@ void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
                                       bool to_different_document) {
   SetIsLoading(render_frame_host->GetRenderViewHost(), true,
                to_different_document, NULL);
+
+  // Notify accessibility that the user is navigating away from the
+  // current document.
+  //
+  // TODO(dmazzoni): do this using a WebContentsObserver.
+  FrameTreeNode* ftn = static_cast<RenderFrameHostImpl*>(render_frame_host)->
+      frame_tree_node();
+  BrowserAccessibilityManager* manager =
+      ftn->current_frame_host()->browser_accessibility_manager();
+  if (manager)
+    manager->UserIsNavigatingAway();
 }
 
 void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {

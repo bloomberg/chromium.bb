@@ -179,6 +179,10 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
   BrowserAccessibilityManager::OnWindowFocused();
 }
 
+void BrowserAccessibilityManagerWin::UserIsReloading() {
+  MaybeCallNotifyWinEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
+}
+
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
@@ -187,6 +191,11 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     LOG(WARNING) << "Not firing AX event because of no root_delegate or hwnd";
     return;
   }
+
+  // Don't fire events when this document might be stale as the user has
+  // started navigating to a new document.
+  if (user_is_navigating_away_)
+    return;
 
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.

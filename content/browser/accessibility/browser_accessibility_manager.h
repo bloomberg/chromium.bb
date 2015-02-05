@@ -146,6 +146,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // view lost focus.
   virtual void OnWindowBlurred();
 
+  // Notify the accessibility manager about page navigation.
+  void UserIsNavigatingAway();
+  virtual void UserIsReloading();
+  void NavigationSucceeded();
+  void NavigationFailed();
+
   // Called to notify the accessibility manager that a mouse down event
   // occurred in the tab.
   void GotMouseDown();
@@ -303,6 +309,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32, BrowserAccessibility*> id_wrapper_map_;
+
+  // True if the user has initiated a navigation to another page.
+  bool user_is_navigating_away_;
 
   // The on-screen keyboard state.
   OnScreenKeyboardState osk_state_;
