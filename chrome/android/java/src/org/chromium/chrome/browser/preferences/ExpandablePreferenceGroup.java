@@ -64,8 +64,8 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
     }
 
     @Override
-    public void setIcon(int resourceId) {
-        mDrawable = getContext().getResources().getDrawable(resourceId);
+    public void setIcon(Drawable drawable) {
+        mDrawable = drawable;
         if (mImageView != null) mImageView.setImageDrawable(mDrawable);
     }
 

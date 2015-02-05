@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -437,8 +438,9 @@ public class WebsitePreferences extends PreferenceFragment
 
         // Set the title and arrow icons for the header.
         allowedGroup.setGroupTitle(resourceId, numAllowed);
-        allowedGroup.setIcon(
-                mAllowListExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
+                mAllowListExpanded ? R.drawable.ic_expand : R.drawable.ic_collapse);
+        allowedGroup.setIcon(icon);
     }
 
     private void updateBlockedHeader(int numBlocked) {
@@ -452,19 +454,22 @@ public class WebsitePreferences extends PreferenceFragment
 
         // Set the title and arrow icons for the header.
         blockedGroup.setGroupTitle(R.string.website_settings_blocked_group_heading, numBlocked);
-        blockedGroup.setIcon(
-                mBlockListExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
+                mBlockListExpanded ? R.drawable.ic_expand : R.drawable.ic_collapse);
+        blockedGroup.setIcon(icon);
     }
 
     private Website createSiteByOrigin(WebsiteAddress address) {
         String origin = address.getOrigin();
         String host = address.getHost();
         Website site = new Website(address);
-        if (!mSitesByOrigin.containsKey(origin))
+        if (!mSitesByOrigin.containsKey(origin)) {
             mSitesByOrigin.put(origin, new HashSet<Website>());
+        }
         mSitesByOrigin.get(origin).add(site);
-        if (!mSitesByHost.containsKey(host))
+        if (!mSitesByHost.containsKey(host)) {
             mSitesByHost.put(host, new HashSet<Website>());
+        }
         mSitesByHost.get(host).add(site);
         return site;
     }
