@@ -24,6 +24,7 @@ import sys
 import tempfile
 
 from chromite.cbuildbot import afdo
+from chromite.cbuildbot import builders
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import constants
@@ -934,10 +935,19 @@ def _RunBuildStagesWrapper(options, build_config):
     builder_run = cbuildbot_run.BuilderRun(options, build_config, manager)
     if metadata_dump_dict:
       builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
-    if _IsDistributedBuilder(options, chrome_rev, build_config):
-      builder_cls = DistributedBuilder
+
+    builder_cls_name = builder_run.config.builder_class_name
+    if builder_cls_name is None:
+      if _IsDistributedBuilder(options, chrome_rev, build_config):
+        builder_cls = DistributedBuilder
+      else:
+        builder_cls = SimpleBuilder
     else:
-      builder_cls = SimpleBuilder
+      builder_cls = builders.GetBuilderCls(builder_cls_name)
+    if builder_cls is None:
+      cros_build_lib.Die('config %s uses an unknown builder_class_name: %s',
+                         build_config.name, builder_cls_name)
+
     builder = builder_cls(builder_run)
     if not builder.Run():
       sys.exit(1)

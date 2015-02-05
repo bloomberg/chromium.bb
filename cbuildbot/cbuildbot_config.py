@@ -508,6 +508,14 @@ _settings = dict(
 # build_type -- Type of builder.  Check constants.VALID_BUILD_TYPES.
   build_type=constants.PFQ_TYPE,
 
+# builder_class_name -- The class name used to build this config.  See the
+# modules in cbuildbot/builders/*_builders.py for possible values.  This
+# should be the name in string form -- e.g. "simple_builders.SimpleBuilder"
+# to get the SimpleBuilder class in the simple_builders module.  If not
+# specified, we'll fallback to legacy probing behavior until everyone has
+# been converted (see the scripts/cbuildbot.py file for details).
+  builder_class_name=None,
+
 # Whether the tests for the board we are building can be run on the builder.
 # Normally, we wouldn't be able to run unit and VM tests form non-x86 boards.
   tests_supported=True,
