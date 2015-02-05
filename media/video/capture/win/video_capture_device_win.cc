@@ -351,22 +351,21 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   if (hr != S_OK) {
     SetErrorState("Failed to get capture device capabilities");
     return;
-  } else {
-    if (media_type->formattype == FORMAT_VideoInfo) {
-      VIDEOINFOHEADER* h =
-          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-      if (format.frame_rate > 0)
-        h->AvgTimePerFrame = kSecondsToReferenceTime / format.frame_rate;
-    }
-    // Set the sink filter to request this format.
-    sink_filter_->SetRequestedMediaFormat(format);
-    // Order the capture device to use this format.
-    hr = stream_config->SetFormat(media_type.get());
-    if (FAILED(hr)) {
-      // TODO(grunell): Log the error. http://crbug.com/405016.
-      SetErrorState("Failed to set capture device output format");
-      return;
-    }
+  }
+  if (media_type->formattype == FORMAT_VideoInfo) {
+    VIDEOINFOHEADER* h =
+        reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+    if (format.frame_rate > 0)
+      h->AvgTimePerFrame = kSecondsToReferenceTime / format.frame_rate;
+  }
+  // Set the sink filter to request this format.
+  sink_filter_->SetRequestedMediaFormat(format);
+  // Order the capture device to use this format.
+  hr = stream_config->SetFormat(media_type.get());
+  if (FAILED(hr)) {
+    // TODO(grunell): Log the error. http://crbug.com/405016.
+    SetErrorState("Failed to set capture device output format");
+    return;
   }
 
   SetAntiFlickerInCaptureFilter();

@@ -45,6 +45,24 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   media_type->formattype = FORMAT_VideoInfo;
   media_type->bTemporalCompression = FALSE;
 
+  if (requested_format_.pixel_format == PIXEL_FORMAT_MJPEG) {
+    // If the requested pixel format is MJPEG, accept only MJPEG.
+    // This is ok since the capabilities of the capturer have been
+    // enumerated and we know that it is supported.
+    if (index != 0)
+      return false;
+
+    pvi->bmiHeader.biCompression = MAKEFOURCC('M', 'J', 'P', 'G');
+    pvi->bmiHeader.biBitCount = 0;
+    pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
+    pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
+    pvi->bmiHeader.biSizeImage = 0;
+    media_type->subtype = MEDIASUBTYPE_MJPG;
+    media_type->bFixedSizeSamples = FALSE;
+    media_type->lSampleSize = pvi->bmiHeader.biSizeImage;
+    return true;
+  }
+
   switch (index) {
     case 0: {
       pvi->bmiHeader.biCompression = MAKEFOURCC('I', '4', '2', '0');
@@ -66,15 +84,6 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       break;
     }
     case 2: {
-      pvi->bmiHeader.biCompression = MAKEFOURCC('M', 'J', 'P', 'G');
-      pvi->bmiHeader.biBitCount = 0;
-      pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
-      pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage = 0;
-      media_type->subtype = MEDIASUBTYPE_MJPG;
-      break;
-    }
-    case 3: {
       pvi->bmiHeader.biCompression = BI_RGB;
       pvi->bmiHeader.biBitCount = 24;
       pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
