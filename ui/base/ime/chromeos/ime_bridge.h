@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace gfx {
 class Rect;
@@ -27,7 +27,7 @@ namespace chromeos {
 
 class CompositionText;
 
-class UI_BASE_EXPORT IMEInputContextHandlerInterface {
+class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
@@ -43,7 +43,7 @@ class UI_BASE_EXPORT IMEInputContextHandlerInterface {
 
 
 // A interface to handle the engine handler method call.
-class UI_BASE_EXPORT IMEEngineHandlerInterface {
+class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
@@ -111,7 +111,7 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
 };
 
 // A interface to handle the candidate window related method call.
-class UI_BASE_EXPORT IMECandidateWindowHandlerInterface {
+class UI_BASE_IME_EXPORT IMECandidateWindowHandlerInterface {
  public:
   virtual ~IMECandidateWindowHandlerInterface() {}
 
@@ -140,7 +140,7 @@ class UI_BASE_EXPORT IMECandidateWindowHandlerInterface {
 
 // IMEBridge provides access of each IME related handler. This class
 // is used for IME implementation.
-class UI_BASE_EXPORT IMEBridge {
+class UI_BASE_IME_EXPORT IMEBridge {
  public:
   virtual ~IMEBridge();
 

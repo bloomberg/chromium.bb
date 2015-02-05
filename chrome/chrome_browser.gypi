@@ -3006,6 +3006,7 @@
             '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/smhasher/smhasher.gyp:cityhash',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../ui/gl/gl.gyp:gl',
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',

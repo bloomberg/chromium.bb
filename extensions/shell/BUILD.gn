@@ -50,6 +50,8 @@ source_set("app_shell_lib") {
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/mojo/src/mojo/edk/system",
+    "//ui/base",
+    "//ui/base/ime",
     "//ui/wm",
     "//v8",
   ]

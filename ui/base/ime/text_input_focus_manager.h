@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -16,7 +16,7 @@ namespace ui {
 class TextInputClient;
 
 // Manages the focused TextInputClient across windows and their contents.
-class UI_BASE_EXPORT TextInputFocusManager {
+class UI_BASE_IME_EXPORT TextInputFocusManager {
  public:
   static TextInputFocusManager* GetInstance();
 

@@ -60,6 +60,7 @@
         '../storage/storage_browser.gyp:storage',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/public/blink.gyp:blink_test_support',
+        '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',

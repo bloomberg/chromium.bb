@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -20,12 +20,12 @@ class InputMethodDelegate;
 class InputMethod;
 
 // Creates a new instance of InputMethod and returns it.
-UI_BASE_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
+UI_BASE_IME_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
     internal::InputMethodDelegate* delegate,
     gfx::AcceleratedWidget widget);
 
 // Makes CreateInputMethod return a MockInputMethod.
-UI_BASE_EXPORT void SetUpInputMethodFactoryForTesting();
+UI_BASE_IME_EXPORT void SetUpInputMethodFactoryForTesting();
 
 }  // namespace ui;
 

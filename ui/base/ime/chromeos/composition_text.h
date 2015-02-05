@@ -10,11 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {
 
-class UI_BASE_EXPORT CompositionText {
+class UI_BASE_IME_EXPORT CompositionText {
  public:
   enum UnderlineType {
     COMPOSITION_TEXT_UNDERLINE_SINGLE = 1,

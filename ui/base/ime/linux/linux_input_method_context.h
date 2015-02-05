@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace gfx {
 class Rect;
@@ -20,7 +20,7 @@ class KeyEvent;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
-class UI_BASE_EXPORT LinuxInputMethodContext {
+class UI_BASE_IME_EXPORT LinuxInputMethodContext {
  public:
   virtual ~LinuxInputMethodContext() {}
 
@@ -42,7 +42,7 @@ class UI_BASE_EXPORT LinuxInputMethodContext {
 };
 
 // An interface of callback functions called from LinuxInputMethodContext.
-class UI_BASE_EXPORT LinuxInputMethodContextDelegate {
+class UI_BASE_IME_EXPORT LinuxInputMethodContextDelegate {
  public:
   virtual ~LinuxInputMethodContextDelegate() {}
 

@@ -259,6 +259,7 @@ static_library("content_shell_lib") {
     "//third_party/WebKit/public:test_support",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

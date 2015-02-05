@@ -13,7 +13,7 @@ namespace ui {
 // On the Mac, key events don't pass through InputMethod.
 // Instead, NSTextInputClient calls are bridged to the currently focused
 // ui::TextInputClient object.
-class UI_BASE_EXPORT InputMethodMac : public InputMethodBase {
+class UI_BASE_IME_EXPORT InputMethodMac : public InputMethodBase {
  public:
   explicit InputMethodMac(internal::InputMethodDelegate* delegate);
   ~InputMethodMac() override;

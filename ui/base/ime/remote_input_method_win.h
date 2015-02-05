@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -46,11 +46,11 @@ bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget);
 // Returns the public interface of RemoteInputMethodWin.
 // Caveats: Currently only one instance of RemoteInputMethodWin is able to run
 // at the same time.
-UI_BASE_EXPORT scoped_ptr<InputMethod> CreateRemoteInputMethodWin(
+UI_BASE_IME_EXPORT scoped_ptr<InputMethod> CreateRemoteInputMethodWin(
     internal::InputMethodDelegate* delegate);
 
 // Private interface of RemoteInputMethodWin.
-class UI_BASE_EXPORT RemoteInputMethodPrivateWin {
+class UI_BASE_IME_EXPORT RemoteInputMethodPrivateWin {
  public:
   RemoteInputMethodPrivateWin();
 

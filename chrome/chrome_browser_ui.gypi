@@ -2738,6 +2738,7 @@
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/re2/re2.gyp:re2',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/native_theme/native_theme.gyp:native_theme',
             '../ui/surface/surface.gyp:surface',

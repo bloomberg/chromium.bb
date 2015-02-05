@@ -8,14 +8,14 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 class KeyEvent;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
-class UI_BASE_EXPORT CharacterComposer {
+class UI_BASE_IME_EXPORT CharacterComposer {
  public:
   CharacterComposer();
   ~CharacterComposer();

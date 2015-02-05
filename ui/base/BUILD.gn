@@ -316,143 +316,6 @@ component("base") {
     "//url",
   ]
 
-  if (build_ime) {
-    sources += [
-      "ime/candidate_window.cc",
-      "ime/candidate_window.h",
-      "ime/chromeos/character_composer.cc",
-      "ime/chromeos/character_composer.h",
-      "ime/chromeos/component_extension_ime_manager.cc",
-      "ime/chromeos/component_extension_ime_manager.h",
-      "ime/chromeos/composition_text.cc",
-      "ime/chromeos/composition_text.h",
-      "ime/chromeos/extension_ime_util.cc",
-      "ime/chromeos/extension_ime_util.h",
-      "ime/chromeos/fake_ime_keyboard.cc",
-      "ime/chromeos/fake_ime_keyboard.h",
-      "ime/chromeos/fake_input_method_delegate.cc",
-      "ime/chromeos/fake_input_method_delegate.h",
-      "ime/chromeos/ime_bridge.cc",
-      "ime/chromeos/ime_bridge.h",
-      "ime/chromeos/ime_keyboard.cc",
-      "ime/chromeos/ime_keyboard.h",
-      "ime/chromeos/ime_keyboard_ozone.cc",
-      "ime/chromeos/ime_keyboard_ozone.h",
-      "ime/chromeos/ime_keyboard_x11.cc",
-      "ime/chromeos/ime_keyboard_x11.h",
-      "ime/chromeos/ime_keymap.cc",
-      "ime/chromeos/ime_keymap.h",
-      "ime/chromeos/input_method_delegate.h",
-      "ime/chromeos/input_method_descriptor.cc",
-      "ime/chromeos/input_method_descriptor.h",
-      "ime/chromeos/input_method_manager.cc",
-      "ime/chromeos/input_method_manager.h",
-      "ime/chromeos/input_method_whitelist.cc",
-      "ime/chromeos/input_method_whitelist.h",
-      "ime/chromeos/mock_component_extension_ime_manager_delegate.cc",
-      "ime/chromeos/mock_component_extension_ime_manager_delegate.h",
-      "ime/chromeos/mock_ime_candidate_window_handler.cc",
-      "ime/chromeos/mock_ime_candidate_window_handler.h",
-      "ime/chromeos/mock_ime_engine_handler.cc",
-      "ime/chromeos/mock_ime_engine_handler.h",
-      "ime/chromeos/mock_ime_input_context_handler.cc",
-      "ime/chromeos/mock_ime_input_context_handler.h",
-      "ime/composition_text.cc",
-      "ime/composition_text.h",
-      "ime/composition_text_util_pango.cc",
-      "ime/composition_text_util_pango.h",
-      "ime/composition_underline.h",
-      "ime/dummy_input_method_delegate.cc",
-      "ime/dummy_input_method_delegate.h",
-      "ime/infolist_entry.cc",
-      "ime/infolist_entry.h",
-      "ime/input_method.h",
-      "ime/input_method_auralinux.cc",
-      "ime/input_method_auralinux.h",
-      "ime/input_method_base.cc",
-      "ime/input_method_base.h",
-      "ime/input_method_chromeos.cc",
-      "ime/input_method_chromeos.h",
-      "ime/input_method_delegate.h",
-      "ime/input_method_factory.cc",
-      "ime/input_method_factory.h",
-      "ime/input_method_initializer.cc",
-      "ime/input_method_initializer.h",
-      "ime/input_method_mac.h",
-      "ime/input_method_mac.mm",
-      "ime/input_method_minimal.cc",
-      "ime/input_method_minimal.h",
-      "ime/input_method_observer.h",
-      "ime/input_method_win.cc",
-      "ime/input_method_win.h",
-      "ime/linux/fake_input_method_context.cc",
-      "ime/linux/fake_input_method_context.h",
-      "ime/linux/fake_input_method_context_factory.cc",
-      "ime/linux/fake_input_method_context_factory.h",
-      "ime/linux/linux_input_method_context.h",
-      "ime/linux/linux_input_method_context_factory.cc",
-      "ime/linux/linux_input_method_context_factory.h",
-      "ime/mock_input_method.cc",
-      "ime/mock_input_method.h",
-      "ime/remote_input_method_delegate_win.h",
-      "ime/remote_input_method_win.cc",
-      "ime/remote_input_method_win.h",
-      "ime/text_input_client.cc",
-      "ime/text_input_client.h",
-      "ime/text_input_focus_manager.cc",
-      "ime/text_input_focus_manager.h",
-      "ime/text_input_type.h",
-      "ime/win/imm32_manager.cc",
-      "ime/win/imm32_manager.h",
-      "ime/win/tsf_input_scope.cc",
-      "ime/win/tsf_input_scope.h",
-    ]
-
-    if (!use_aura || (!is_linux && !use_ozone)) {
-      sources -= [
-        "ime/input_method_auralinux.cc",
-        "ime/input_method_auralinux.h",
-      ]
-    }
-
-    if (!toolkit_views && !use_aura) {
-      sources -= [
-        "ime/input_method_factory.cc",
-        "ime/input_method_factory.h",
-        "ime/input_method_minimal.cc",
-        "ime/input_method_minimal.h",
-      ]
-    }
-
-    if (is_chromeos) {
-      deps += [
-        "//chromeos",
-        "//chromeos/ime:gencode",
-      ]
-      if (!use_ozone) {
-        sources -= [
-          "ime/chromeos/ime_keyboard_ozone.cc",
-          "ime/chromeos/ime_keyboard_ozone.h",
-        ]
-      }
-      if (!use_x11) {
-        sources -= [
-          "ime/chromeos/ime_keyboard_x11.cc",
-          "ime/chromeos/ime_keyboard_x11.h",
-        ]
-      }
-    }
-
-    if (use_pango) {
-      configs += [ "//build/config/linux:pangocairo" ]
-    } else {
-      sources -= [
-        "ime/composition_text_util_pango.cc",
-        "ime/composition_text_util_pango.h",
-      ]
-    }
-  }
-
   if (is_ios) {
     sources += [
       "l10n/l10n_util_mac.h",
@@ -563,7 +426,6 @@ component("base") {
       "d2d1.lib",
       "d3d10_1.lib",
       "dwmapi.lib",
-      "imm32.lib",
       "d2d1.lib",
       "dwmapi.lib",
       "oleacc.lib",
@@ -730,6 +592,8 @@ source_set("test_support") {
       "ime/dummy_text_input_client.cc",
       "ime/dummy_text_input_client.h",
     ]
+
+    deps += [ "//ui/base/ime" ]
   }
 
   if (!use_aura) {
@@ -854,6 +718,10 @@ test("ui_base_unittests") {
 
   if (is_ios) {
     # TODO(GYP) lots of iOS-only steps for ui_base_unittests
+  }
+
+  if (build_ime) {
+    deps += [ "//ui/base/ime" ]
   }
 
   if (is_win) {

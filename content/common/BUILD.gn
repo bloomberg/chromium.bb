@@ -111,6 +111,7 @@ source_set("common") {
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/events/ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",

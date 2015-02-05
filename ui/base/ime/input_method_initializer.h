@@ -6,25 +6,25 @@
 #define UI_BASE_IME_INPUT_METHOD_INITIALIZER_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
 // Initializes thread-local resources for input method. This function should be
 // called in the UI thread before input method is used.
-UI_BASE_EXPORT void InitializeInputMethod();
+UI_BASE_IME_EXPORT void InitializeInputMethod();
 
 // Shutdown thread-local resources for input method. This function should be
 // called in the UI thread after input method is used.
-UI_BASE_EXPORT void ShutdownInputMethod();
+UI_BASE_IME_EXPORT void ShutdownInputMethod();
 
 // Initializes thread-local resources for input method. This function is
 // intended to be called from Setup function of unit tests.
-UI_BASE_EXPORT void InitializeInputMethodForTesting();
+UI_BASE_IME_EXPORT void InitializeInputMethodForTesting();
 
 // Initializes thread-local resources for input method. This function is
 // intended to be called from TearDown function of unit tests.
-UI_BASE_EXPORT void ShutdownInputMethodForTesting();
+UI_BASE_IME_EXPORT void ShutdownInputMethodForTesting();
 
 }  // namespace ui
 
