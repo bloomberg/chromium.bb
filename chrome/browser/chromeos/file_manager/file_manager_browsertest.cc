@@ -1083,18 +1083,6 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
-#define MAYBE_Thumbnails DISABLED_Thumbnails
-#else
-#define MAYBE_Thumbnails Thumbnails
-#endif
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Thumbnails,
-    FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
-                      TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
-
 // Fails on official build. http://crbug.com/429294
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenFileDialog DISABLED_OpenFileDialog

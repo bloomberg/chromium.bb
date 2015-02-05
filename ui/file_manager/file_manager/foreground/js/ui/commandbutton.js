@@ -88,7 +88,7 @@ CommandButton.prototype.setCommand = function(command) {
  * @return {string} Button label.
  */
 CommandButton.prototype.getLabel = function() {
-  return this.textContent;
+  return this.command_ ? this.command_.label : '';
 };
 
 /**
@@ -96,7 +96,16 @@ CommandButton.prototype.getLabel = function() {
  * @param {string} label New button label.
  */
 CommandButton.prototype.setLabel = function(label) {
-  this.textContent = label;
+  // Swap the textContent with current label only when this button doesn't have
+  // any elements as children.
+  //
+  // TODO(fukino): If a user customize the button content, it becomes the
+  // user's responsibility to update the content on command label's change.
+  // Updating the label in customized button content should be done
+  // automatically by specifying an element which should be synced with the
+  // command label using class name or polymer's template binding.
+  if (!this.firstElementChild)
+    this.textContent = label;
 };
 
 /**

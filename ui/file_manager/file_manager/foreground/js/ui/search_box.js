@@ -181,6 +181,15 @@ SearchBox.prototype.clear = function() {
 };
 
 /**
+ * Sets hidden attribute for components of search box.
+ * @param {boolean} hidden True when the search box need to be hidden.
+ */
+SearchBox.prototype.setHidden = function(hidden) {
+  this.element.hidden = hidden;
+  this.searchButton.hidden = hidden;
+}
+
+/**
  * @private
  */
 SearchBox.prototype.onInput_ = function() {

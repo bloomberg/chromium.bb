@@ -128,6 +128,14 @@ function FileManagerUI(element, launchParam) {
   this.locationLine = null;
 
   /**
+   * The label showing how many files are selected.
+   * @type {!HTMLElement}
+   * @const
+   */
+  this.filesSelectedLabel =
+      queryRequiredElement(this.element, '#files-selected-label');
+
+  /**
    * Search box.
    * @type {!SearchBox}
    * @const
@@ -207,11 +215,6 @@ function FileManagerUI(element, launchParam) {
       queryRequiredElement(this.fileContextMenu, '#default-action-separator');
 
   /**
-   * @type {PreviewPanel}
-   */
-  this.previewPanel = null;
-
-  /**
    * The combo button to specify the task.
    * @type {!cr.ui.ComboButton}
    * @const
@@ -259,28 +262,10 @@ function FileManagerUI(element, launchParam) {
  *
  * @param {!FileTable} table
  * @param {!FileGrid} grid
- * @param {!PreviewPanel} previewPanel
  * @param {!LocationLine} locationLine
  */
 FileManagerUI.prototype.initAdditionalUI = function(
-    table, grid, previewPanel, locationLine) {
-  // Listen to drag events to hide preview panel while user is dragging files.
-  // Files.app prevents default actions in 'dragstart' in some situations,
-  // so we listen to 'drag' to know the list is actually being dragged.
-  var draggingBound = this.onDragging_.bind(this);
-  var dragEndBound = this.onDragEnd_.bind(this);
-  table.list.addEventListener('drag', draggingBound);
-  grid.addEventListener('drag', draggingBound);
-  table.list.addEventListener('dragend', dragEndBound);
-  grid.addEventListener('dragend', dragEndBound);
-
-  // Listen to dragselection events to hide preview panel while the user is
-  // selecting files by drag operation.
-  table.list.addEventListener('dragselectionstart', draggingBound);
-  grid.addEventListener('dragselectionstart', draggingBound);
-  table.list.addEventListener('dragselectionend', dragEndBound);
-  grid.addEventListener('dragselectionend', dragEndBound);
-
+    table, grid, locationLine) {
   // List container.
   this.listContainer = new ListContainer(
       queryRequiredElement(this.element, '#list-container'), table, grid);
@@ -288,12 +273,6 @@ FileManagerUI.prototype.initAdditionalUI = function(
   // Splitter.
   this.decorateSplitter_(
       queryRequiredElement(this.element, '#navigation-list-splitter'));
-
-  // Preview panel.
-  this.previewPanel = previewPanel;
-  this.previewPanel.addEventListener(
-      PreviewPanel.Event.VISIBILITY_CHANGE,
-      this.onPreviewPanelVisibilityChange_.bind(this));
 
   // Location line.
   this.locationLine = locationLine;
@@ -398,44 +377,6 @@ FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
 
   if (this.dialogType_ != DialogType.FULL_PAGE)
     this.dialogFooter.cancelButton.click();
-};
-
-/**
- * Invoked while the drag is being performed on the list or the grid.
- * Note: this method may be called multiple times before onDragEnd_().
- * @private
- */
-FileManagerUI.prototype.onDragging_ = function() {
-  // On open file dialog, the preview panel is always shown.
-  if (DialogType.isOpenDialog(this.dialogType_))
-    return;
-  this.previewPanel.visibilityType =
-      PreviewPanelModel.VisibilityType.ALWAYS_HIDDEN;
-};
-
-/**
- * Invoked when the drag is ended on the list or the grid.
- * @private
- */
-FileManagerUI.prototype.onDragEnd_ = function() {
-  // On open file dialog, the preview panel is always shown.
-  if (DialogType.isOpenDialog(this.dialogType_))
-    return;
-  this.previewPanel.visibilityType =
-      PreviewPanelModel.VisibilityType.AUTO;
-};
-
-/**
- * Resize details and thumb views to fit the new window size.
- * @private
- */
-FileManagerUI.prototype.onPreviewPanelVisibilityChange_ = function() {
-  // This method may be called on initialization. Some object may not be
-  // initialized.
-  var panelHeight = this.previewPanel.visible ?
-      this.previewPanel.height : 0;
-  this.listContainer.table.setBottomMarginForPanel(panelHeight);
-  this.listContainer.grid.setBottomMarginForPanel(panelHeight);
 };
 
 /**

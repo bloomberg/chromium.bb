@@ -141,7 +141,7 @@ a:focus {
   min-width: 100px;
   overflow: hidden;
   position: relative;
-  width: 272px;
+  width: 240px;
 }
 
 .dialog-navigation-list-contents {
@@ -278,12 +278,8 @@ div.splitter {
   flex: auto;
 }
 
-.dialog-header button,
-.dialog-header paper-button {
-  height: 32px;
-  margin-right: 4px;
-  min-width: 32px;
-  width: 32px;
+.dialog-header button {
+  text-transform: uppercase;
 }
 
 .dialog-header button,
@@ -291,8 +287,28 @@ div.splitter {
   color: white;
 }
 
-.dialog-header button > core-icon,
-.dialog-header paper-button > core-icon {
+.dialog-header .icon-button {
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: 0;
+  background: transparent;
+  border: 0;
+  height: 32px;
+  line-height: 16px;
+  min-width: 32px;
+  padding: 0;
+  width: 32px;
+}
+
+.dialog-header .icon-button:hover,
+.dialog-header .icon-button:focus {
+  background: rgba(204, 204, 204, 0.15);
+}
+
+.dialog-header .icon-button[disabled] {
+  display: none !important;
+}
+
+.dialog-header .icon-button > core-icon {
   height: 16px;
   width: 16px;
 }
@@ -301,10 +317,8 @@ div.splitter {
   padding: 8px;
 }
 
-#gear-button,
-#cloud-import-button {
+.dialog-header button.icon-button {
   -webkit-app-region: no-drag;
-  -webkit-margin-end: 10px;
   background-color: transparent;
   background-image: none;
   background-position: center;
@@ -319,9 +333,15 @@ div.splitter {
   width: 32px;
 }
 
-#gear-button > core-icon,
-#cloud-import-button > core-icon {
+.dialog-header button.icon-button > core-icon {
   margin: 8px;
+}
+
+#files-selected-label {
+  /* TODO(fukino): Move dynamically with the navigation area's separator. */
+  left: 252px;
+  position: absolute;
+  top: 18px;
 }
 
 /* Search box */
@@ -1133,24 +1153,6 @@ li[renaming=''] .filename-label {
 
 .preview-panel .spacer {
   flex: auto;
-}
-
-#delete-button {
-  min-width: 21px;  /* overrride */
-  padding: 0;  /* overrride */
-  width: 21px;
-}
-
-#delete-button::before {
-  /* Background image should be specified in the before pseudo element because
-   * border image fill is specified to delete-button. */
-  background: -webkit-image-set(
-    url(../images/files/ui/onbutton_trash.png) 1x,
-    url(../images/files/ui/2x/onbutton_trash.png) 2x) no-repeat center;
-  content: '';
-  display: block;
-  height: 100%;
-  width: 100%;
 }
 
 #delete-button[disabled] {

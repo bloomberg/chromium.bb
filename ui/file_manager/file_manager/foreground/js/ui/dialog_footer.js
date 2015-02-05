@@ -92,8 +92,7 @@ DialogFooter.findDialogFooter = function(dialogType, document) {
   var hasFooterPanel = dialogType == DialogType.SELECT_SAVEAS_FILE;
   return new DialogFooter(
       dialogType,
-      queryRequiredElement(
-          document, hasFooterPanel ? '.dialog-footer' : '.preview-panel'),
+      queryRequiredElement(document, '.dialog-footer'),
       queryRequiredElement(document, '#filename-input-box input'));
 };
 

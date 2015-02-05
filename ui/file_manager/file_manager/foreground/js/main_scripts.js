@@ -104,7 +104,6 @@
 //<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">
-//<include src="preview_panel_model.js">
 //<include src="progress_center_item_group.js">
 //<include src="scan_controller.js">
 //<include src="search_controller.js">
@@ -126,7 +125,6 @@
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">
 //<include src="ui/multi_profile_share_dialog.js">
-//<include src="ui/preview_panel.js">
 //<include src="ui/progress_center_panel.js">
 //<include src="ui/scrollbar.js">
 //<include src="ui/search_box.js">

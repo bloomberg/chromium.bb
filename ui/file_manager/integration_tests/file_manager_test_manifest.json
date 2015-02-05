@@ -29,7 +29,6 @@
       "file_manager/suggest_app_dialog.js",
       "file_manager/tab_index.js",
       "file_manager/tasks.js",
-      "file_manager/thumbnails.js",
       "file_manager/transfer.js",
       "file_manager/traverse.js"
     ]

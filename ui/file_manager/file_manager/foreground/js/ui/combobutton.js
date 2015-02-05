@@ -58,23 +58,7 @@ cr.define('cr.ui', function() {
     },
     set defaultItem(defaultItem) {
       this.defaultItem_ = defaultItem;
-
       this.actionNode_.textContent = defaultItem.label || '';
-
-      if (defaultItem.iconType) {
-        this.actionNode_.classList.add('with-icon');
-        this.actionNode_.style.backgroundImage = '';
-        this.actionNode_.setAttribute('file-type-icon', defaultItem.iconType);
-      } else if (defaultItem.iconUrl) {
-        this.actionNode_.classList.add('with-icon');
-        this.actionNode_.style.backgroundImage =
-            'url(' + defaultItem.iconUrl + ')';
-        this.actionNode_.removeAttribute('file-type-icon');
-      } else {
-        this.actionNode_.classList.remove('with-icon');
-        this.actionNode_.style.backgroundImage = '';
-        this.actionNode_.removeAttribute('file-type-icon');
-      }
     },
 
     /**

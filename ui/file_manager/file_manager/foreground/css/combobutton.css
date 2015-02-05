@@ -2,50 +2,58 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.buttonbar button.combobutton {
+.dialog-header button.combobutton {
+  -webkit-user-select: none;
   align-items: stretch;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
   display: flex;
+  margin: 0 0.29em;
+  min-width: 16px;
+  outline: none;
+  padding: 8px;
 }
 
-.buttonbar .combobutton > .action {
+.dialog-header .combobutton > .action {
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }
 
-.buttonbar .combobutton > .with-icon {
+.dialog-header .combobutton > .with-icon {
   -webkit-padding-start: 21px;
 }
 
-html[dir='rtl'] .buttonbar .combobutton > .action {
+html[dir='rtl'] .dialog-header .combobutton > .action {
   background-position: right center;
 }
 
-.buttonbar .combobutton > .trigger {
-  -webkit-border-start: solid 1px #dcdcdc;
+.dialog-header .combobutton > .trigger {
   -webkit-margin-end: -8px;
-  -webkit-margin-start: 8px;
+  -webkit-margin-start: 2px;
   width: 22px;
 }
 
 /* This pseudo element expands clickable area of the .trigger */
-.buttonbar .combobutton > .trigger::before {
+.dialog-header .combobutton > .trigger::before {
   content: '';
   display: block;
   height: 31px;
   position: absolute;
-  top: -5px;
+  top: -2px;
   width: 30px;
 }
 
-.buttonbar .combobutton:not([multiple]) > .trigger {
+.dialog-header .combobutton:not([multiple]) > .trigger {
   display: none;
 }
 
-.buttonbar .combobutton > div > span.disclosureindicator {
+.dialog-header .combobutton > div > span.disclosureindicator {
   -webkit-transform: rotate(90deg);
 }
 
-.buttonbar .combobutton[hidden] {
+.dialog-header .combobutton[hidden] {
   display: none;
 }

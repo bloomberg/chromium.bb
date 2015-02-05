@@ -737,14 +737,6 @@ FileManager.prototype = /** @struct */ {
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
-        new PreviewPanel(
-            queryRequiredElement(dom, '.preview-panel'),
-            DialogType.isOpenDialog(this.dialogType) ?
-                PreviewPanelModel.VisibilityType.ALWAYS_VISIBLE :
-                PreviewPanelModel.VisibilityType.AUTO,
-            this.metadataCache_,
-            this.volumeManager_,
-            this.historyLoader_),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
             this.metadataCache_,
