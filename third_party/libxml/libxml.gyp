@@ -237,6 +237,7 @@
                 'libraries': [
                   # We need dl for dlopen() and friends.
                   '-ldl',
+                  '-lm',
                 ],
               },
             }],
