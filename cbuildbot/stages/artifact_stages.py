@@ -633,6 +633,13 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Uploads prebuilts for master and slave builders."""
+
+    if self._run.config.build_type == constants.CHROOT_BUILDER_TYPE:
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.Warning('XXX:HACK Skipping stage on SDK Bots only. '
+                             'See crbug.com/455798')
+      return
+
     prebuilt_type = self._prebuilt_type
     board = self._current_board
     binhosts = []
