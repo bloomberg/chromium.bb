@@ -342,6 +342,12 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!info.Holder()->GetRealNamedProperty(nameString).IsEmpty())
         return;
 
+    // Frame could have been detached in call to GetRealNamedProperty.
+    frame = window->frame();
+    // window is detached.
+    if (!frame)
+        return;
+
     // Search named items in the document.
     Document* doc = frame->document();
 
