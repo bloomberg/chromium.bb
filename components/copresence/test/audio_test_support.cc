@@ -10,15 +10,14 @@
 
 namespace copresence {
 
-void PopulateSamples(int random_seed, size_t size, float* samples) {
-  srand(random_seed);
+void PopulateSamples(unsigned int random_seed, size_t size, float* samples) {
 #if defined(OS_WIN)
+  srand(random_seed);
   for (size_t i = 0; i < size; ++i)
     samples[i] = (2.0 * rand() / RAND_MAX) - 1;
 #else
-  unsigned int rand_state;
   for (size_t i = 0; i < size; ++i)
-    samples[i] = (2.0 * rand_r(&rand_state) / RAND_MAX) - 1;
+    samples[i] = (2.0 * rand_r(&random_seed) / RAND_MAX) - 1;
 #endif
 }
 

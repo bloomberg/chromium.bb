@@ -18,7 +18,7 @@ class AudioBusRefCounted;
 namespace copresence {
 
 // Populate random samples given a random seed into the samples array.
-void PopulateSamples(int random_seed, size_t size, float* samples);
+void PopulateSamples(unsigned int random_seed, size_t size, float* samples);
 
 // Create an ref counted audio bus populated with random samples.
 scoped_refptr<media::AudioBusRefCounted>
