@@ -17,7 +17,6 @@
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-
 namespace printing {
 
 using blink::WebFrame;
@@ -160,10 +159,10 @@ void PrintWebViewHelper::PrintPageInternal(
   // Calculate the actual page size and content area in dpi.
   if (page_size_in_dpi) {
     *page_size_in_dpi =
-        gfx::Size(static_cast<int>(ConvertUnitDouble(
-                      page_size.width(), kPointsPerInch, dpi)),
-                  static_cast<int>(ConvertUnitDouble(
-                      page_size.height(), kPointsPerInch, dpi)));
+        gfx::Size(static_cast<int>(ConvertUnitDouble(page_size.width(),
+                                                     kPointsPerInch, dpi)),
+                  static_cast<int>(ConvertUnitDouble(page_size.height(),
+                                                     kPointsPerInch, dpi)));
   }
 
   if (content_area_in_dpi) {

@@ -66,7 +66,6 @@ class PrintWebViewHelper
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<PrintWebViewHelper> {
  public:
-
   class Delegate {
    public:
     virtual ~Delegate() {}

@@ -161,9 +161,9 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   // Verify the page count is correct.
   void VerifyPageCount(int count) {
 #if defined(OS_CHROMEOS)
-// The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
-// always print all pages, and there are checks to that effect built into
-// the print code.
+    // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
+    // always print all pages, and there are checks to that effect built into
+    // the print code.
 #else
     const IPC::Message* page_cnt_msg =
         render_thread_->sink().GetUniqueMessageMatching(

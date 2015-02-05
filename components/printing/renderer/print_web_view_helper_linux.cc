@@ -118,8 +118,9 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   {
     scoped_ptr<base::SharedMemory> shared_mem(
-        content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
-            buf_size).release());
+        content::RenderThread::Get()
+            ->HostAllocateSharedMemoryBuffer(buf_size)
+            .release());
     if (!shared_mem.get()) {
       NOTREACHED() << "AllocateSharedMemoryBuffer failed";
       return false;
