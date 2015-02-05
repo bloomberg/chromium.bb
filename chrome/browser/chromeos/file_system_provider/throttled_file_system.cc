@@ -195,7 +195,8 @@ void ThrottledFileSystem::OnOpenFileCompleted(int queue_token,
                                               const OpenFileCallback& callback,
                                               int file_handle,
                                               base::File::Error result) {
-  open_queue_->Complete(queue_token);
+  if (result != base::File::FILE_ERROR_ABORT)
+    open_queue_->Complete(queue_token);
 
   // If the file is opened successfully then hold the queue token until the file
   // is closed.
