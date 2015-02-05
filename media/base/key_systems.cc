@@ -120,7 +120,8 @@ class KeySystems {
   bool IsSupportedKeySystemWithMediaMimeType(
       const std::string& mime_type,
       const std::vector<std::string>& codecs,
-      const std::string& key_system);
+      const std::string& key_system,
+      bool reportToUma);
 
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
@@ -475,7 +476,8 @@ bool KeySystems::IsSupportedKeySystemWithInitDataType(
 bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
-    const std::string& key_system) {
+    const std::string& key_system,
+    bool reportToUma) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If |key_system| is a parent key system, use its concrete child.
@@ -483,7 +485,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
 
   bool has_type = !mime_type.empty();
 
-  key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
+  if (reportToUma)
+    key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
 
   // Check key system support.
   KeySystemPropertiesMap::const_iterator key_system_iter =
@@ -491,7 +494,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
   if (key_system_iter == concrete_key_system_map_.end())
     return false;
 
-  key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
+  if (reportToUma)
+    key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
 
   if (!has_type) {
     DCHECK(codecs.empty());
@@ -510,7 +514,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
     return false;
   }
 
-  key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
+  if (reportToUma)
+    key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
   return true;
 }
 
@@ -621,7 +626,15 @@ bool IsSupportedKeySystemWithMediaMimeType(
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
   return KeySystems::GetInstance().IsSupportedKeySystemWithMediaMimeType(
-      mime_type, codecs, key_system);
+      mime_type, codecs, key_system, false);
+}
+
+bool PrefixedIsSupportedKeySystemWithMediaMimeType(
+    const std::string& mime_type,
+    const std::vector<std::string>& codecs,
+    const std::string& key_system) {
+  return KeySystems::GetInstance().IsSupportedKeySystemWithMediaMimeType(
+      mime_type, codecs, key_system, true);
 }
 
 std::string GetKeySystemNameForUMA(const std::string& key_system) {

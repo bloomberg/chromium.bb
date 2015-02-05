@@ -419,7 +419,7 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
     std::vector<std::string> strict_codecs;
     net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, true);
 
-    if (!media::IsSupportedKeySystemWithMediaMimeType(
+    if (!media::PrefixedIsSupportedKeySystemWithMediaMimeType(
             mime_type_ascii, strict_codecs, key_system_ascii)) {
       return IsNotSupported;
     }
@@ -458,6 +458,9 @@ bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
       mime_type_ascii, parsed_codec_ids);
 }
 
+// TODO(jrummell): This method is only used by unprefixed EME, and should not
+// be called when http://crbug.com/385874 is fixed. Remove this method once
+// that happens.
 bool RendererBlinkPlatformImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
     const WebString& key_system,
     const WebString& mime_type,

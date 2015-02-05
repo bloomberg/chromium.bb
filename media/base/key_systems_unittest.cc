@@ -718,4 +718,22 @@ TEST_F(KeySystemsTest, KeySystemsUpdate) {
       kVideoWebM, no_codecs(), kExternal));
 }
 
+TEST_F(KeySystemsTest, PrefixedKeySystemsUpdate) {
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kUsesAes));
+  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kUsesAes));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kExternal));
+  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kExternal));
+
+  UpdateClientKeySystems();
+
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kUsesAes));
+  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kUsesAes));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternal));
+  EXPECT_FALSE(PrefixedIsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kExternal));
+}
+
 }  // namespace media

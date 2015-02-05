@@ -52,8 +52,15 @@ MEDIA_EXPORT bool IsSupportedKeySystemWithInitDataType(
 // systems.
 MEDIA_EXPORT bool IsConcreteSupportedKeySystem(const std::string& key_system);
 
-// Returns whether |key_sytem| supports the specified media type and codec(s).
+// Returns whether |key_system| supports the specified media type and codec(s).
 MEDIA_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
+    const std::string& mime_type,
+    const std::vector<std::string>& codecs,
+    const std::string& key_system);
+
+// Returns whether |key_system| supports the specified media type and codec(s).
+// To be used with prefixed EME only as it generates UMAs based on the query.
+MEDIA_EXPORT bool PrefixedIsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system);
