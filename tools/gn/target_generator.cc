@@ -283,6 +283,16 @@ bool TargetGenerator::FillOutputs(bool allow_substitutions) {
   return true;
 }
 
+bool TargetGenerator::FillCheckIncludes() {
+  const Value* value = scope_->GetValue(variables::kCheckIncludes, true);
+  if (!value)
+    return true;
+  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+    return false;
+  target_->set_check_includes(value->boolean_value());
+  return true;
+}
+
 bool TargetGenerator::EnsureSubstitutionIsInOutputDir(
     const SubstitutionPattern& pattern,
     const Value& original_value) {

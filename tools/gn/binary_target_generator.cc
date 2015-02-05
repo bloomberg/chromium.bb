@@ -63,16 +63,6 @@ void BinaryTargetGenerator::DoRun() {
     return;
 }
 
-bool BinaryTargetGenerator::FillCheckIncludes() {
-  const Value* value = scope_->GetValue(variables::kCheckIncludes, true);
-  if (!value)
-    return true;
-  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
-    return false;
-  target_->set_check_includes(value->boolean_value());
-  return true;
-}
-
 bool BinaryTargetGenerator::FillCompleteStaticLib() {
   if (target_->output_type() == Target::STATIC_LIBRARY) {
     const Value* value = scope_->GetValue(variables::kCompleteStaticLib, true);

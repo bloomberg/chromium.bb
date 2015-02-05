@@ -54,6 +54,9 @@ void ActionTargetGenerator::DoRun() {
   if (!FillDepfile())
     return;
 
+  if (!FillCheckIncludes())
+    return;
+
   if (!CheckOutputs())
     return;
 

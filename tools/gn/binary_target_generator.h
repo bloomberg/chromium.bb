@@ -23,7 +23,6 @@ class BinaryTargetGenerator : public TargetGenerator {
   void DoRun() override;
 
  private:
-  bool FillCheckIncludes();
   bool FillCompleteStaticLib();
   bool FillOutputName();
   bool FillOutputExtension();
