@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,6 +37,7 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
  @private
   HistoryOverlayMode mode_;
   CGFloat shieldAlpha_;
+  base::scoped_nsobject<CAShapeLayer> shapeLayer_;
 }
 @property(nonatomic) CGFloat shieldAlpha;
 - (id)initWithMode:(HistoryOverlayMode)mode
@@ -51,6 +53,12 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   NSRect frame = NSMakeRect(0, 0, kShieldWidth, kShieldHeight);
   if ((self = [super initWithFrame:frame])) {
     mode_ = mode;
+    shieldAlpha_ = 1.0;  // CAShapeLayer's fillColor defaults to opaque black.
+
+    // A layer-hosting view.
+    shapeLayer_.reset([[CAShapeLayer alloc] init]);
+    [self setLayer:shapeLayer_];
+    [self setWantsLayer:YES];
 
     // If going backward, the arrow needs to be in the right half of the circle,
     // so offset the X position.
@@ -67,11 +75,25 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   return self;
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-  NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:self.bounds];
-  NSColor* fillColor = [NSColor colorWithCalibratedWhite:0 alpha:shieldAlpha_];
-  [fillColor set];
-  [path fill];
+- (void)setFrameSize:(CGSize)newSize {
+  NSSize oldSize = [self frame].size;
+  [super setFrameSize:newSize];
+
+  if (![shapeLayer_ path] || !NSEqualSizes(oldSize, newSize))  {
+    base::ScopedCFTypeRef<CGMutablePathRef> oval(CGPathCreateMutable());
+    CGRect ovalRect = CGRectMake(0, 0, newSize.width, newSize.height);
+    CGPathAddEllipseInRect(oval, nullptr, ovalRect);
+    [shapeLayer_ setPath:oval];
+  }
+}
+
+- (void)setShieldAlpha:(CGFloat)shieldAlpha {
+  if (shieldAlpha != shieldAlpha_) {
+    shieldAlpha_ = shieldAlpha;
+    base::ScopedCFTypeRef<CGColorRef> fillColor(
+        CGColorCreateGenericGray(0, shieldAlpha));
+    [shapeLayer_ setFillColor:fillColor];
+  }
 }
 
 @end
@@ -129,13 +151,12 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 
   self.view.frame = frame;
   [contentView_ setShieldAlpha:shieldAlpha];
-  [contentView_ setNeedsDisplay:YES];
 }
 
 - (void)showPanelForView:(NSView*)view {
   parent_.reset([view retain]);
   [self setProgress:0 finished:NO];  // Set initial view position.
-  [parent_  addSubview:self.view];
+  [parent_ addSubview:self.view];
 }
 
 - (void)dismiss {
@@ -143,25 +164,8 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 
   [NSAnimationContext beginGrouping];
   [NSAnimationContext currentContext].duration = kFadeOutDurationSeconds;
-  NSView* overlay = self.view;
-
-  base::scoped_nsobject<CAAnimation> animation(
-      [[overlay animationForKey:@"alphaValue"] copy]);
-  [animation setDelegate:self];
-  [animation setDuration:kFadeOutDurationSeconds];
-  NSMutableDictionary* dictionary =
-      [NSMutableDictionary dictionaryWithCapacity:1];
-  [dictionary setObject:animation forKey:@"alphaValue"];
-  [overlay setAnimations:dictionary];
-  [[overlay animator] setAlphaValue:0.0];
+  [[self.view animator] removeFromSuperview];
   [NSAnimationContext endGrouping];
-}
-
-- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
-  [self.view removeFromSuperview];
-  // Destroy the CAAnimation and its strong reference to its delegate (this
-  // class).
-  [self.view setAnimations:nil];
 }
 
 @end
