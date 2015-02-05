@@ -315,6 +315,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/448203
 "race:blink::RemoteFrame::detach\n"
 
+// https://crbug.com/455665
+"race:mojo::common::*::tick_clock\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
