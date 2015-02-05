@@ -17,11 +17,12 @@ namespace internal {
 
 namespace {
 
-// Delays larger than this many microseconds are often bogus, and a warning
-// should be emitted in debug builds to warn developers.
-// http://crbug.com/450045
-const int kTaskDelayWarningThresholdInMicroseconds =
-    std::numeric_limits<int>::max() / 2;  // A little less than 18 minutes.
+#ifndef NDEBUG
+// Delays larger than this are often bogus, and a warning should be emitted in
+// debug builds to warn developers.  http://crbug.com/450045
+const int kTaskDelayWarningThresholdInSeconds =
+    14 * 24 * 60 * 60;  // 14 days.
+#endif
 
 // Returns true if MessagePump::ScheduleWork() must be called one
 // time for every task that is added to the MessageLoop incoming queue.
@@ -52,9 +53,9 @@ bool IncomingTaskQueue::AddToIncomingQueue(
     TimeDelta delay,
     bool nestable) {
   DLOG_IF(WARNING,
-          delay.InMicroseconds() > kTaskDelayWarningThresholdInMicroseconds)
-      << "Requesting super-long task delay period of " << delay.InMicroseconds()
-      << " usec from here: " << from_here.ToString();
+          delay.InSeconds() > kTaskDelayWarningThresholdInSeconds)
+      << "Requesting super-long task delay period of " << delay.InSeconds()
+      << " seconds from here: " << from_here.ToString();
 
   AutoLock locked(incoming_queue_lock_);
   PendingTask pending_task(
