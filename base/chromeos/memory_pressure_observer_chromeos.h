@@ -76,6 +76,10 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
   // critical pressure levels.
   void CheckMemoryPressure();
 
+  // The function periodically checks the memory pressure changes and records
+  // the UMA histogram statistics for the current memory pressure level.
+  void CheckMemoryPressureAndRecordStatistics();
+
   // Get the memory pressure in percent (virtual for testing).
   virtual int GetUsedMemoryInPercent();
 

@@ -2701,6 +2701,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.MemoryPressureLevel"
+    enum="ChromeOSMemoryPressureLevel">
+  <owner>xdai@chromium.org</owner>
+  <summary>
+    The memory pressure level in ChromeOS, which is recorded periodically (once
+    per second). This is used to show the relative frequency of the system being
+    in a critical vs relaxed memory pressure state.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.PlatformVerification.Available"
     enum="BooleanAvailable">
   <owner>dkrahn@chromium.org</owner>
@@ -43918,6 +43928,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Dynamic"/>
   <int value="2" label="Movie"/>
   <int value="3" label="Reading"/>
+</enum>
+
+<enum name="ChromeOSMemoryPressureLevel" type="int">
+  <int value="0" label="No memory pressure"/>
+  <int value="1" label="Medium memory pressure"/>
+  <int value="2" label="High memory pressure"/>
 </enum>
 
 <enum name="ChromeOSPlatformVerificationResult" type="int">

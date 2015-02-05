@@ -5,6 +5,7 @@
 #include "base/chromeos/memory_pressure_observer_chromeos.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "base/time/time.h"
 
@@ -28,6 +29,16 @@ const int kNormalMemoryPressureModerateThresholdPercent = 60;
 const int kNormalMemoryPressureCriticalThresholdPercent = 90;
 const int kAggressiveMemoryPressureModerateThresholdPercent = 35;
 const int kAggressiveMemoryPressureCriticalThresholdPercent = 70;
+
+// The possible state for memory pressure level. The values should be in line
+// with values in MemoryPressureListener::MemoryPressureLevel and should be
+// updated if more memory pressure levels are introduced.
+enum MemoryPressureLevelUMA {
+  MEMORY_PRESSURE_LEVEL_NONE = 0,
+  MEMORY_PRESSURE_LEVEL_MODERATE,
+  MEMORY_PRESSURE_LEVEL_CRITICAL,
+  NUM_MEMORY_PRESSURE_LEVELS
+};
 
 // Converts a |MemoryPressureThreshold| value into a used memory percentage for
 // the moderate pressure event.
@@ -92,13 +103,36 @@ void MemoryPressureObserverChromeOS::ScheduleEarlyCheck() {
 void MemoryPressureObserverChromeOS::StartObserving() {
   timer_.Start(FROM_HERE,
                TimeDelta::FromMilliseconds(kMemoryPressureIntervalMs),
-               Bind(&MemoryPressureObserverChromeOS::CheckMemoryPressure,
+               Bind(&MemoryPressureObserverChromeOS::
+                        CheckMemoryPressureAndRecordStatistics,
                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MemoryPressureObserverChromeOS::StopObserving() {
   // If StartObserving failed, StopObserving will still get called.
   timer_.Stop();
+}
+
+void MemoryPressureObserverChromeOS::CheckMemoryPressureAndRecordStatistics() {
+  CheckMemoryPressure();
+
+  // Record UMA histogram statistics for the current memory pressure level.
+  MemoryPressureLevelUMA memory_pressure_level_uma(MEMORY_PRESSURE_LEVEL_NONE);
+  switch (current_memory_pressure_level_) {
+    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      memory_pressure_level_uma = MEMORY_PRESSURE_LEVEL_NONE;
+      break;
+    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      memory_pressure_level_uma = MEMORY_PRESSURE_LEVEL_MODERATE;
+      break;
+    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      memory_pressure_level_uma = MEMORY_PRESSURE_LEVEL_CRITICAL;
+      break;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel",
+                            memory_pressure_level_uma,
+                            NUM_MEMORY_PRESSURE_LEVELS);
 }
 
 void MemoryPressureObserverChromeOS::CheckMemoryPressure() {
