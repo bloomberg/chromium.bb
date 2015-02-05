@@ -41,8 +41,8 @@
 class DeleteTraceLogForTesting {
  public:
   static void Delete() {
-    Singleton<base::debug::TraceLog,
-              LeakySingletonTraits<base::debug::TraceLog> >::OnExit(0);
+    Singleton<base::trace_event::TraceLog,
+              LeakySingletonTraits<base::trace_event::TraceLog>>::OnExit(0);
   }
 };
 
@@ -50,7 +50,7 @@ class DeleteTraceLogForTesting {
 BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
 
 namespace base {
-namespace debug {
+namespace trace_event {
 
 namespace {
 
@@ -2560,7 +2560,7 @@ const CategoryFilter::StringList&
   return delays_;
 }
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base
 
 namespace trace_event_internal {

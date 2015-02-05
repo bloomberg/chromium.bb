@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace debug {
+namespace trace_event {
 
 #if !defined(OS_IOS)
 // Tests for the system stats monitor.
@@ -62,5 +62,5 @@ TEST_F(TraceSystemStatsMonitorTest, TraceEventSystemStatsMonitor) {
 }
 #endif  // !defined(OS_IOS)
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base

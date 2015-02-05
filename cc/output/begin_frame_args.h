@@ -12,11 +12,18 @@
 #include "cc/base/cc_export.h"
 
 namespace base {
-namespace debug {
+namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
+
+// TODO(ssid): remove these aliases after the tracing clients are moved to the
+// new trace_event namespace. See crbug.com/451032. ETA: March 2015
+namespace debug {
+using ::base::trace_event::ConvertableToTraceFormat;
+using ::base::trace_event::TracedValue;
 }
+}  // namespace base
 
 /**
  * In debug builds we trace the creation origin of BeginFrameArgs objects. We

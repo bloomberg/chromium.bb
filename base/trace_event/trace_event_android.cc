@@ -24,8 +24,8 @@ void WriteEvent(
     unsigned long long id,
     const char** arg_names,
     const unsigned char* arg_types,
-    const base::debug::TraceEvent::TraceValue* arg_values,
-    const scoped_refptr<base::debug::ConvertableToTraceFormat>*
+    const base::trace_event::TraceEvent::TraceValue* arg_values,
+    const scoped_refptr<base::trace_event::ConvertableToTraceFormat>*
         convertable_values,
     unsigned char flags) {
   std::string out = base::StringPrintf("%c|%d|%s", phase, getpid(), name);
@@ -33,7 +33,8 @@ void WriteEvent(
     base::StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id));
   out += '|';
 
-  for (int i = 0; i < base::debug::kTraceMaxNumArgs && arg_names[i]; ++i) {
+  for (int i = 0; i < base::trace_event::kTraceMaxNumArgs && arg_names[i];
+       ++i) {
     if (i)
       out += ';';
     out += arg_names[i];
@@ -42,8 +43,8 @@ void WriteEvent(
     if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
       convertable_values[i]->AppendAsTraceFormat(&out);
     } else {
-      base::debug::TraceEvent::AppendValueAsJSON(
-          arg_types[i], arg_values[i], &out);
+      base::trace_event::TraceEvent::AppendValueAsJSON(arg_types[i],
+                                                       arg_values[i], &out);
     }
     // Remove the quotes which may confuse the atrace script.
     ReplaceSubstringsAfterOffset(&out, value_start, "\\\"", "'");
@@ -65,7 +66,7 @@ void NoOpOutputCallback(base::WaitableEvent* complete_event,
     complete_event->Signal();
 }
 
-void EndChromeTracing(base::debug::TraceLog* trace_log,
+void EndChromeTracing(base::trace_event::TraceLog* trace_log,
                       base::WaitableEvent* complete_event) {
   trace_log->SetDisabled();
   // Delete the buffered trace events as they have been sent to atrace.
@@ -75,7 +76,7 @@ void EndChromeTracing(base::debug::TraceLog* trace_log,
 }  // namespace
 
 namespace base {
-namespace debug {
+namespace trace_event {
 
 // These functions support Android systrace.py when 'webview' category is
 // traced. With the new adb_profile_chrome, we may have two phases:
@@ -195,5 +196,5 @@ void TraceLog::AddClockSyncMetadataEvent() {
   close(atrace_fd);
 }
 
-}  // namespace debug
+}  // namespace trace_event
 }  // namespace base
