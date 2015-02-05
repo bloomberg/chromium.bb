@@ -27,13 +27,12 @@ class FakeContentLayerClient : public ContentLayerClient {
   FakeContentLayerClient();
   ~FakeContentLayerClient() override;
 
-  void PaintContents(
-      SkCanvas* canvas,
-      const gfx::Rect& rect,
-      ContentLayerClient::GraphicsContextStatus gc_status) override;
+  void PaintContents(SkCanvas* canvas,
+                     const gfx::Rect& rect,
+                     PaintingControlSetting painting_control) override;
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
-      GraphicsContextStatus gc_status) override;
+      PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
 
   void set_fill_with_nonsolid_color(bool nonsolid) {
@@ -56,8 +55,8 @@ class FakeContentLayerClient : public ContentLayerClient {
 
   SkCanvas* last_canvas() const { return last_canvas_; }
 
-  ContentLayerClient::GraphicsContextStatus last_context_status() const {
-    return last_context_status_;
+  PaintingControlSetting last_painting_control() const {
+    return last_painting_control_;
   }
 
  private:
@@ -68,7 +67,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   RectPaintVector draw_rects_;
   BitmapVector draw_bitmaps_;
   SkCanvas* last_canvas_;
-  ContentLayerClient::GraphicsContextStatus last_context_status_;
+  PaintingControlSetting last_painting_control_;
 };
 
 }  // namespace cc

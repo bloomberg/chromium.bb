@@ -181,7 +181,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
-    Picture::RecordingMode recording_mode) {
+    RecordingSource::RecordingMode recording_mode) {
   bool can_use_lcd_text_changed = can_use_lcd_text_ != can_use_lcd_text;
   can_use_lcd_text_ = can_use_lcd_text;
 
@@ -532,7 +532,7 @@ void PicturePile::GetInvalidTileRects(const gfx::Rect& interest_rect,
 }
 
 void PicturePile::CreatePictures(ContentLayerClient* painter,
-                                 Picture::RecordingMode recording_mode,
+                                 RecordingSource::RecordingMode recording_mode,
                                  const std::vector<gfx::Rect>& record_rects) {
   for (const auto& record_rect : record_rects) {
     gfx::Rect padded_record_rect = PadRect(record_rect);

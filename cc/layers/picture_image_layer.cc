@@ -47,7 +47,7 @@ void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
 void PictureImageLayer::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& clip,
-    ContentLayerClient::GraphicsContextStatus gc_status) {
+    ContentLayerClient::PaintingControlSetting painting_control) {
   if (!bitmap_.width() || !bitmap_.height())
     return;
 
@@ -65,12 +65,12 @@ void PictureImageLayer::PaintContents(
 
 scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
-    GraphicsContextStatus gc_status) {
+    ContentLayerClient::PaintingControlSetting painting_control) {
   scoped_refptr<DisplayItemList> display_item_list = DisplayItemList::Create();
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
-  PaintContents(canvas, clip, gc_status);
+  PaintContents(canvas, clip, painting_control);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   display_item_list->AppendItem(

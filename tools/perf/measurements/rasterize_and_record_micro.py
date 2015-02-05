@@ -83,14 +83,24 @@ class RasterizeAndRecordMicro(page_test.PageTest):
         picture_memory_usage))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time', 'ms', record_time))
+
     record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
     record_time_painting_disabled = data['record_time_painting_disabled_ms']
+    # TODO(schenney): Remove this workaround when reference builds get past
+    # the change that adds this comment.
+    if ('record_time_caching_disabled_ms' in data):
+      record_time_caching_disabled = data['record_time_caching_disabled_ms']
+    else:
+      record_time_caching_disabled = 0
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_sk_null_canvas', 'ms',
         record_time_sk_null_canvas))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_painting_disabled', 'ms',
         record_time_painting_disabled))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time_caching_disabled', 'ms',
+        record_time_caching_disabled))
 
     if self._report_detailed_results:
       pixels_rasterized_with_non_solid_color = \

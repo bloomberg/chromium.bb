@@ -26,10 +26,9 @@ class MaskContentLayerClient : public ContentLayerClient {
 
   bool FillsBoundsCompletely() const override { return false; }
 
-  void PaintContents(
-      SkCanvas* canvas,
-      const gfx::Rect& rect,
-      ContentLayerClient::GraphicsContextStatus gc_status) override {
+  void PaintContents(SkCanvas* canvas,
+                     const gfx::Rect& rect,
+                     PaintingControlSetting picture_control) override {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(2));
@@ -49,7 +48,7 @@ class MaskContentLayerClient : public ContentLayerClient {
 
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
-      GraphicsContextStatus gc_status) override {
+      PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
     return DisplayItemList::Create();
   }
@@ -97,9 +96,8 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   SkCanvas canvas(bitmap);
   canvas.scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
-  client.PaintContents(&canvas,
-                       gfx::Rect(mask_bounds),
-                       ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
+  client.PaintContents(&canvas, gfx::Rect(mask_bounds),
+                       ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask->SetBitmap(bitmap);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(

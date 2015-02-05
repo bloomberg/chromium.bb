@@ -120,8 +120,9 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   gfx::Rect bounds(tiling().TileBounds(x, y));
   bounds.Inset(-buffer_pixels(), -buffer_pixels());
 
-  scoped_refptr<Picture> picture(Picture::Create(
-      bounds, &client_, tile_grid_size_, true, Picture::RECORD_NORMALLY));
+  scoped_refptr<Picture> picture(
+      Picture::Create(bounds, &client_, tile_grid_size_, true,
+                      RecordingSource::RECORD_NORMALLY));
   picture_map_[std::pair<int, int>(x, y)].SetPicture(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));
 

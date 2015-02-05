@@ -12,7 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/tiling_data.h"
-#include "cc/resources/recording_source.h"
+#include "cc/resources/picture.h"
 
 namespace cc {
 class PicturePileImpl;
@@ -23,14 +23,13 @@ class CC_EXPORT PicturePile : public RecordingSource {
   ~PicturePile() override;
 
   // RecordingSource overrides.
-  bool UpdateAndExpandInvalidation(
-      ContentLayerClient* painter,
-      Region* invalidation,
-      bool can_use_lcd_text,
-      const gfx::Size& layer_size,
-      const gfx::Rect& visible_layer_rect,
-      int frame_number,
-      Picture::RecordingMode recording_mode) override;
+  bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
+                                   Region* invalidation,
+                                   bool can_use_lcd_text,
+                                   const gfx::Size& layer_size,
+                                   const gfx::Rect& visible_layer_rect,
+                                   int frame_number,
+                                   RecordingMode recording_mode) override;
   scoped_refptr<RasterSource> CreateRasterSource() const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
@@ -106,7 +105,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   friend class PicturePileImpl;
 
   void CreatePictures(ContentLayerClient* painter,
-                      Picture::RecordingMode recording_mode,
+                      RecordingMode recording_mode,
                       const std::vector<gfx::Rect>& record_rects);
   void GetInvalidTileRects(const gfx::Rect& interest_rect,
                            Region* invalidation,

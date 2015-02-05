@@ -53,11 +53,12 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
 
 }  // namespace
 
-scoped_refptr<Picture> Picture::Create(const gfx::Rect& layer_rect,
-                                       ContentLayerClient* client,
-                                       const gfx::Size& tile_grid_size,
-                                       bool gather_pixel_refs,
-                                       RecordingMode recording_mode) {
+scoped_refptr<Picture> Picture::Create(
+    const gfx::Rect& layer_rect,
+    ContentLayerClient* client,
+    const gfx::Size& tile_grid_size,
+    bool gather_pixel_refs,
+    RecordingSource::RecordingMode recording_mode) {
   scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
 
   picture->Record(client, tile_grid_size, recording_mode);
@@ -169,7 +170,7 @@ bool Picture::HasText() const {
 
 void Picture::Record(ContentLayerClient* painter,
                      const gfx::Size& tile_grid_size,
-                     RecordingMode recording_mode) {
+                     RecordingSource::RecordingMode recording_mode) {
   TRACE_EVENT2("cc",
                "Picture::Record",
                "data",
@@ -189,23 +190,27 @@ void Picture::Record(ContentLayerClient* painter,
       layer_rect_.width(), layer_rect_.height(), &factory,
       SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag));
 
-  ContentLayerClient::GraphicsContextStatus graphics_context_status =
-      ContentLayerClient::GRAPHICS_CONTEXT_ENABLED;
+  ContentLayerClient::PaintingControlSetting painting_control =
+      ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
 
   switch (recording_mode) {
-    case RECORD_NORMALLY:
+    case RecordingSource::RECORD_NORMALLY:
       // Already setup for normal recording.
       break;
-    case RECORD_WITH_SK_NULL_CANVAS:
+    case RecordingSource::RECORD_WITH_SK_NULL_CANVAS:
       canvas = skia::AdoptRef(SkCreateNullCanvas());
       break;
-    case RECORD_WITH_PAINTING_DISABLED:
+    case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
       // We pass a disable flag through the paint calls when perfromance
       // testing (the only time this case should ever arise) when we want to
       // prevent the Blink GraphicsContext object from consuming any compute
       // time.
       canvas = skia::AdoptRef(SkCreateNullCanvas());
-      graphics_context_status = ContentLayerClient::GRAPHICS_CONTEXT_DISABLED;
+      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+      break;
+    case RecordingSource::RECORD_WITH_CACHING_DISABLED:
+      // This mode should give the same results as RECORD_NORMALLY.
+      painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
       break;
     default:
       NOTREACHED();
@@ -221,7 +226,7 @@ void Picture::Record(ContentLayerClient* painter,
                                          layer_rect_.height());
   canvas->clipRect(layer_skrect);
 
-  painter->PaintContents(canvas.get(), layer_rect_, graphics_context_status);
+  painter->PaintContents(canvas.get(), layer_rect_, painting_control);
 
   canvas->restore();
   picture_ = skia::AdoptRef(recorder.endRecording());

@@ -726,9 +726,10 @@ void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(request.Pass());
 }
 
-void Layer::PaintContents(SkCanvas* sk_canvas,
-                          const gfx::Rect& clip,
-                          ContentLayerClient::GraphicsContextStatus gc_status) {
+void Layer::PaintContents(
+    SkCanvas* sk_canvas,
+    const gfx::Rect& clip,
+    ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, device_scale_factor_));
@@ -738,7 +739,7 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
 
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
-    ContentLayerClient::GraphicsContextStatus gc_status) {
+    ContentLayerClient::PaintingControlSetting painting_control) {
   NOTIMPLEMENTED();
   return cc::DisplayItemList::Create();
 }

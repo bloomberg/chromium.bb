@@ -22,9 +22,9 @@ FakeContentLayerClient::~FakeContentLayerClient() {
 void FakeContentLayerClient::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& paint_rect,
-    ContentLayerClient::GraphicsContextStatus gc_status) {
+    PaintingControlSetting painting_control) {
   last_canvas_ = canvas;
-  last_context_status_ = gc_status;
+  last_painting_control_ = painting_control;
 
   canvas->clipRect(gfx::RectToSkRect(paint_rect));
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
@@ -58,7 +58,7 @@ void FakeContentLayerClient::PaintContents(
 scoped_refptr<DisplayItemList>
 FakeContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,
-    GraphicsContextStatus gc_status) {
+    PaintingControlSetting painting_control) {
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
   skia::RefPtr<SkPicture> picture;

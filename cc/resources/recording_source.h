@@ -5,8 +5,8 @@
 #ifndef CC_RESOURCES_RECORDING_SOURCE_H_
 #define CC_RESOURCES_RECORDING_SOURCE_H_
 
+#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "cc/resources/picture.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -18,20 +18,27 @@ class RasterSource;
 
 class CC_EXPORT RecordingSource {
  public:
+  enum RecordingMode {
+    RECORD_NORMALLY,
+    RECORD_WITH_SK_NULL_CANVAS,
+    RECORD_WITH_PAINTING_DISABLED,
+    RECORD_WITH_CACHING_DISABLED,
+    RECORDING_MODE_COUNT,  // Must be the last entry.
+  };
+
   virtual ~RecordingSource() {}
   // Re-record parts of the picture that are invalid.
   // Invalidations are in layer space, and will be expanded to cover everything
   // that was either recorded/changed or that has no recording, leaving out only
   // pieces that we had a recording for and it was not changed.
   // Return true iff the pile was modified.
-  virtual bool UpdateAndExpandInvalidation(
-      ContentLayerClient* painter,
-      Region* invalidation,
-      bool can_use_lcd_text,
-      const gfx::Size& layer_size,
-      const gfx::Rect& visible_layer_rect,
-      int frame_number,
-      Picture::RecordingMode recording_mode) = 0;
+  virtual bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
+                                           Region* invalidation,
+                                           bool can_use_lcd_text,
+                                           const gfx::Size& layer_size,
+                                           const gfx::Rect& visible_layer_rect,
+                                           int frame_number,
+                                           RecordingMode recording_mode) = 0;
 
   virtual scoped_refptr<RasterSource> CreateRasterSource() const = 0;
 

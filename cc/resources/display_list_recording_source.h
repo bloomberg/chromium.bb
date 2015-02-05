@@ -18,14 +18,13 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   ~DisplayListRecordingSource() override;
 
   // RecordingSource overrides.
-  bool UpdateAndExpandInvalidation(
-      ContentLayerClient* painter,
-      Region* invalidation,
-      bool can_use_lcd_text,
-      const gfx::Size& layer_size,
-      const gfx::Rect& visible_layer_rect,
-      int frame_number,
-      Picture::RecordingMode recording_mode) override;
+  bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
+                                   Region* invalidation,
+                                   bool can_use_lcd_text,
+                                   const gfx::Size& layer_size,
+                                   const gfx::Rect& visible_layer_rect,
+                                   int frame_number,
+                                   RecordingMode recording_mode) override;
   scoped_refptr<RasterSource> CreateRasterSource() const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;

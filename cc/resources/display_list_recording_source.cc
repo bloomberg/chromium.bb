@@ -45,7 +45,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
-    Picture::RecordingMode recording_mode) {
+    RecordingMode recording_mode) {
   bool updated = false;
 
   if (size_ != layer_size) {
@@ -81,12 +81,37 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   if (!updated && !invalidation->Intersects(recorded_viewport_))
     return false;
 
-  // TODO(ajuma): Does repeating this way really makes sense with display lists?
-  // With Blink caching recordings, repeated calls will not cause re-recording.
-  int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
+  ContentLayerClient::PaintingControlSetting painting_control =
+      ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
+
+  switch (recording_mode) {
+    case RECORD_NORMALLY:
+      // Already setup for normal recording.
+      break;
+    case RECORD_WITH_SK_NULL_CANVAS:
+    // TODO(schenney): Remove this when DisplayList recording is the only
+    // option. For now, fall through and disable construction.
+    case RECORD_WITH_PAINTING_DISABLED:
+      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+      break;
+    case RECORD_WITH_CACHING_DISABLED:
+      painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  int repeat_count = 1;
+  if (slow_down_raster_scale_factor_for_debug_ > 1) {
+    repeat_count = slow_down_raster_scale_factor_for_debug_;
+    if (painting_control !=
+        ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED) {
+      painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
+    }
+  }
   for (int i = 0; i < repeat_count; ++i) {
-    display_list_ = painter->PaintContentsToDisplayList(
-        recorded_viewport_, ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
+    display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
+                                                        painting_control);
   }
   display_list_->set_layer_rect(recorded_viewport_);
   is_suitable_for_gpu_rasterization_ =

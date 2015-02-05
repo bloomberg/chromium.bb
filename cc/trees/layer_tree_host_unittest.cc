@@ -1106,17 +1106,16 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 
   void SetTestLayer(Layer* test_layer) { test_layer_ = test_layer; }
 
-  void PaintContents(
-      SkCanvas* canvas,
-      const gfx::Rect& clip,
-      ContentLayerClient::GraphicsContextStatus gc_status) override {
+  void PaintContents(SkCanvas* canvas,
+                     const gfx::Rect& clip,
+                     PaintingControlSetting picture_control) override {
     // Set layer opacity to 0.
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
   }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
-      GraphicsContextStatus gc_status) override {
+      PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
     return DisplayItemList::Create();
   }
@@ -2329,17 +2328,16 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
 
     int paint_count() const { return paint_count_; }
 
-    void PaintContents(
-        SkCanvas* canvas,
-        const gfx::Rect& clip,
-        ContentLayerClient::GraphicsContextStatus gc_status) override {
-      FakeContentLayerClient::PaintContents(canvas, clip, gc_status);
+    void PaintContents(SkCanvas* canvas,
+                       const gfx::Rect& clip,
+                       PaintingControlSetting picture_control) override {
+      FakeContentLayerClient::PaintContents(canvas, clip, picture_control);
       ++paint_count_;
     }
 
     scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
         const gfx::Rect& clip,
-        GraphicsContextStatus gc_status) override {
+        PaintingControlSetting picture_control) override {
       NOTIMPLEMENTED();
       return DisplayItemList::Create();
     }
@@ -2607,16 +2605,15 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 
     void set_layer(Layer* layer) { layer_ = layer; }
 
-    void PaintContents(
-        SkCanvas* canvas,
-        const gfx::Rect& clip,
-        ContentLayerClient::GraphicsContextStatus gc_status) override {
+    void PaintContents(SkCanvas* canvas,
+                       const gfx::Rect& clip,
+                       PaintingControlSetting picture_control) override {
       layer_->SetBounds(gfx::Size(2, 2));
     }
 
     scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
         const gfx::Rect& clip,
-        GraphicsContextStatus gc_status) override {
+        PaintingControlSetting picture_control) override {
       NOTIMPLEMENTED();
       return DisplayItemList::Create();
     }

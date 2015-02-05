@@ -34,10 +34,8 @@ const int kTimeLimitMillis = 1;
 const int kWarmupRuns = 0;
 const int kTimeCheckInterval = 1;
 
-const char* kModeSuffixes[Picture::RECORDING_MODE_COUNT] = {
-    "",
-    "_sk_null_canvas",
-    "_painting_disabled"};
+const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] =
+    {"", "_sk_null_canvas", "_painting_disabled", "_caching_disabled"};
 
 }  // namespace
 
@@ -74,7 +72,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   results_->SetInteger("pixels_recorded", record_results_.pixels_recorded);
   results_->SetInteger("picture_memory_usage", record_results_.bytes_used);
 
-  for (int i = 0; i < Picture::RECORDING_MODE_COUNT; i++) {
+  for (int i = 0; i < RecordingSource::RECORDING_MODE_COUNT; i++) {
     std::string name = base::StringPrintf("record_time%s_ms", kModeSuffixes[i]);
     results_->SetDouble(name,
                         record_results_.total_best_time[i].InMillisecondsF());
@@ -132,10 +130,10 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
 
   gfx::Size tile_grid_size = host_->settings().default_tile_size;
 
-  for (int mode_index = 0; mode_index < Picture::RECORDING_MODE_COUNT;
+  for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
        mode_index++) {
-    Picture::RecordingMode mode =
-        static_cast<Picture::RecordingMode>(mode_index);
+    RecordingSource::RecordingMode mode =
+        static_cast<RecordingSource::RecordingMode>(mode_index);
     base::TimeDelta min_time = base::TimeDelta::Max();
     size_t memory_used = 0;
 
@@ -164,7 +162,7 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
         min_time = duration;
     }
 
-    if (mode == Picture::RECORD_NORMALLY) {
+    if (mode == RecordingSource::RECORD_NORMALLY) {
       record_results_.bytes_used += memory_used;
       record_results_.pixels_recorded +=
           visible_content_rect.width() * visible_content_rect.height();
@@ -180,49 +178,62 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
 
   DCHECK(host_ && host_->settings().use_display_lists);
 
-  base::TimeDelta min_time = base::TimeDelta::Max();
-  size_t memory_used = 0;
+  for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
+       mode_index++) {
+    ContentLayerClient::PaintingControlSetting painting_control =
+        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
+    switch (static_cast<RecordingSource::RecordingMode>(mode_index)) {
+      case RecordingSource::RECORD_NORMALLY:
+        // Already setup for normal recording.
+        break;
+      case RecordingSource::RECORD_WITH_SK_NULL_CANVAS:
+      // TODO(schenney): Remove this when DisplayList recording is the only
+      // option. For now, fall through and disable construction.
+      case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
+        painting_control =
+            ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+        break;
+      case RecordingSource::RECORD_WITH_CACHING_DISABLED:
+        painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
+        break;
+      default:
+        NOTREACHED();
+    }
+    base::TimeDelta min_time = base::TimeDelta::Max();
+    size_t memory_used = 0;
 
-  // TODO(schenney): What are the corresponding Picture::RecordingMode modes
-  // for Slimming Paint. We could disable SkPicture creation in
-  // DrawingDisplayItems, or we could only generate the display list and not
-  // do any work on it in the compositor, or something else, or all of the
-  // above.
-  scoped_refptr<DisplayItemList> display_list;
-  for (int i = 0; i < record_repeat_count_; ++i) {
-    // Run for a minimum amount of time to avoid problems with timer
-    // quantization when the layer is very small.
-    LapTimer timer(kWarmupRuns,
-                   base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
-                   kTimeCheckInterval);
+    scoped_refptr<DisplayItemList> display_list;
+    for (int i = 0; i < record_repeat_count_; ++i) {
+      // Run for a minimum amount of time to avoid problems with timer
+      // quantization when the layer is very small.
+      LapTimer timer(kWarmupRuns,
+                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+                     kTimeCheckInterval);
 
-    do {
-      // TODO(schenney): Cached content will not be regenerated, which skews
-      // the results significantly in favor of Slimming Paint (or should).
-      // Add a flag or API call to disable caching, and maybe run the test
-      // twice, without and with caching.
-      display_list = painter->PaintContentsToDisplayList(
-          visible_content_rect, ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
+      do {
+        display_list = painter->PaintContentsToDisplayList(visible_content_rect,
+                                                           painting_control);
 
-      if (memory_used) {
-        // Verify we are recording the same thing each time.
-        DCHECK(memory_used == display_list->PictureMemoryUsage());
-      } else {
-        memory_used = display_list->PictureMemoryUsage();
-      }
+        if (memory_used) {
+          // Verify we are recording the same thing each time.
+          DCHECK(memory_used == display_list->PictureMemoryUsage());
+        } else {
+          memory_used = display_list->PictureMemoryUsage();
+        }
 
-      timer.NextLap();
-    } while (!timer.HasTimeLimitExpired());
-    base::TimeDelta duration =
-        base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
-    if (duration < min_time)
-      min_time = duration;
+        timer.NextLap();
+      } while (!timer.HasTimeLimitExpired());
+      base::TimeDelta duration =
+          base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
+      if (duration < min_time)
+        min_time = duration;
+    }
+
+    record_results_.bytes_used += memory_used;
+    record_results_.pixels_recorded +=
+        visible_content_rect.width() * visible_content_rect.height();
+    record_results_.total_best_time[mode_index] += min_time;
   }
-
-  record_results_.bytes_used += memory_used;
-  record_results_.pixels_recorded +=
-      visible_content_rect.width() * visible_content_rect.height();
-  record_results_.total_best_time[Picture::RECORD_NORMALLY] += min_time;
 }
 
 RasterizeAndRecordBenchmark::RecordResults::RecordResults()

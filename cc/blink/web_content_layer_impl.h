@@ -38,11 +38,10 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   // ContentLayerClient implementation.
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& clip,
-                     ContentLayerClient::GraphicsContextStatus
-                         graphics_context_status) override;
+                     PaintingControlSetting painting_control) override;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
-      GraphicsContextStatus graphics_context_status) override;
+      PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
 
   scoped_ptr<WebLayerImpl> layer_;

@@ -148,7 +148,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   updated |= recording_source_->UpdateAndExpandInvalidation(
       client_, &recording_invalidation_, can_use_lcd_text_for_update_,
       layer_size, visible_layer_rect, update_source_frame_number_,
-      Picture::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
   last_updated_visible_content_rect_ = visible_content_rect();
 
   if (updated) {
@@ -192,9 +192,8 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(width, height, nullptr, 0);
-  client_->PaintContents(canvas,
-                         gfx::Rect(width, height),
-                         ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
+  client_->PaintContents(canvas, gfx::Rect(width, height),
+                         ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   return picture;
 }

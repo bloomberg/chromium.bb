@@ -4644,7 +4644,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation, false, layer_bounds, layer_rect, frame_number++,
-      Picture::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> pending_raster_source =
       recording_source->CreateRasterSource();
@@ -4707,7 +4707,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation1(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation1, false, layer_bounds, layer_rect, frame_number++,
-      Picture::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source1 =
       recording_source->CreateRasterSource();
@@ -4725,7 +4725,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation2(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation2, false, layer_bounds, layer_rect, frame_number++,
-      Picture::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source2 =
       recording_source->CreateRasterSource();

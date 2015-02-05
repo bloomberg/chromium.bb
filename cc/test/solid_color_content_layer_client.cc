@@ -14,7 +14,7 @@ namespace cc {
 void SolidColorContentLayerClient::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& rect,
-    ContentLayerClient::GraphicsContextStatus gc_status) {
+    PaintingControlSetting painting_control) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(color_);
@@ -28,7 +28,7 @@ void SolidColorContentLayerClient::PaintContents(
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,
-    GraphicsContextStatus gc_status) {
+    PaintingControlSetting painting_control) {
   NOTIMPLEMENTED();
   return DisplayItemList::Create();
 }

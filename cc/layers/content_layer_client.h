@@ -19,18 +19,19 @@ namespace cc {
 
 class CC_EXPORT ContentLayerClient {
  public:
-  enum GraphicsContextStatus {
-    GRAPHICS_CONTEXT_DISABLED,
-    GRAPHICS_CONTEXT_ENABLED
+  enum PaintingControlSetting {
+    PAINTING_BEHAVIOR_NORMAL,
+    DISPLAY_LIST_CONSTRUCTION_DISABLED,
+    DISPLAY_LIST_CACHING_DISABLED
   };
 
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& clip,
-                             GraphicsContextStatus gc_status) = 0;
+                             PaintingControlSetting painting_status) = 0;
 
   virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
-      GraphicsContextStatus gc_status) = 0;
+      PaintingControlSetting painting_status) = 0;
 
   // If true the layer may skip clearing the background before rasterizing,
   // because it will cover any uncleared data with content.

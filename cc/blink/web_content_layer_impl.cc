@@ -19,6 +19,21 @@ using cc::PictureLayer;
 
 namespace cc_blink {
 
+static blink::WebContentLayerClient::PaintingControlSetting
+PaintingControlToWeb(
+    cc::ContentLayerClient::PaintingControlSetting painting_control) {
+  switch (painting_control) {
+    case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL:
+      return blink::WebContentLayerClient::PaintDefaultBehavior;
+    case cc::ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED:
+      return blink::WebContentLayerClient::DisplayListConstructionDisabled;
+    case cc::ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED:
+      return blink::WebContentLayerClient::DisplayListCachingDisabled;
+  }
+  NOTREACHED();
+  return blink::WebContentLayerClient::PaintDefaultBehavior;
+}
+
 WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
     : client_(client) {
   if (WebLayerImpl::UsingPictureLayer())
@@ -50,30 +65,22 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
 void WebContentLayerImpl::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& clip,
-    ContentLayerClient::GraphicsContextStatus graphics_context_status) {
+    cc::ContentLayerClient::PaintingControlSetting painting_control) {
   if (!client_)
     return;
 
-  client_->paintContents(
-      canvas, clip,
-      graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
-          ? blink::WebContentLayerClient::GraphicsContextEnabled
-          : blink::WebContentLayerClient::GraphicsContextDisabled);
+  client_->paintContents(canvas, clip, PaintingControlToWeb(painting_control));
 }
 
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,
-    ContentLayerClient::GraphicsContextStatus graphics_context_status) {
+    cc::ContentLayerClient::PaintingControlSetting painting_control) {
   if (!client_)
     return cc::DisplayItemList::Create();
 
   WebDisplayItemListImpl list;
-  client_->paintContents(
-      &list, clip,
-      graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
-          ? blink::WebContentLayerClient::GraphicsContextEnabled
-          : blink::WebContentLayerClient::GraphicsContextDisabled);
+  client_->paintContents(&list, clip, PaintingControlToWeb(painting_control));
   return list.ToDisplayItemList();
 }
 
