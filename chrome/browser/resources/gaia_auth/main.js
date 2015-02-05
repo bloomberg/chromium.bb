@@ -36,6 +36,15 @@ Authenticator.API_KEY_TYPES = [
 ];
 
 /**
+ * Allowed origins of the hosting page.
+ * @type {Array.<string>}
+ */
+Authenticator.ALLOWED_PARENT_ORIGINS = [
+  'chrome://oobe',
+  'chrome://chrome-signin'
+];
+
+/**
  * Singleton getter of Authenticator.
  * @return {Object} The singleton instance of Authenticator.
  */
@@ -73,23 +82,32 @@ Authenticator.prototype = {
 
   GAIA_URL: 'https://accounts.google.com/',
   GAIA_PAGE_PATH: 'ServiceLogin?skipvpage=true&sarp=1&rm=hide',
-  PARENT_PAGE: 'chrome://oobe/',
   SERVICE_ID: 'chromeoslogin',
   CONTINUE_URL: Authenticator.THIS_EXTENSION_ORIGIN + '/success.html',
   CONSTRAINED_FLOW_SOURCE: 'chrome',
 
   initialize: function() {
-    var params = getUrlSearchParams(location.search);
-    this.parentPage_ = params.parentPage || this.PARENT_PAGE;
+    var handleInitializeMessage = function(e) {
+      if (Authenticator.ALLOWED_PARENT_ORIGINS.indexOf(e.origin) == -1) {
+        console.error('Unexpected parent message, origin=' + e.origin);
+        return;
+      }
+      window.removeEventListener('message', handleInitializeMessage);
+
+      var params = e.data;
+      params.parentPage = e.origin;
+      this.initializeFromParent_(params);
+      this.onPageLoad_();
+    }.bind(this);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      window.addEventListener('message', handleInitializeMessage);
+    });
+  },
+
+  initializeFromParent_: function(params) {
+    this.parentPage_ = params.parentPage;
     this.gaiaUrl_ = params.gaiaUrl || this.GAIA_URL;
-
-    // Sanitize Gaia url before continuing.
-    var scheme = extractProtocol(this.gaiaUrl_);
-    if (scheme != 'https:' && scheme != 'http:') {
-      console.error('Bad Gaia URL, url=' + this.gaiaURL_);
-      return;
-    }
-
     this.gaiaPath_ = params.gaiaPath || this.GAIA_PAGE_PATH;
     this.inputLang_ = params.hl;
     this.inputEmail_ = params.email;
@@ -108,8 +126,6 @@ Authenticator.prototype = {
     this.assumeLoadedOnLoadEvent_ =
         this.gaiaPath_.indexOf('ServiceLogin') !== 0 ||
         this.service_ !== 'chromeoslogin';
-
-    document.addEventListener('DOMContentLoaded', this.onPageLoad_.bind(this));
   },
 
   isGaiaMessage_: function(msg) {

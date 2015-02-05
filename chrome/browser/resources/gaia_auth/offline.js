@@ -6,9 +6,11 @@
  * @fileoverview Offline login implementation.
  */
 
-function load() {
-  var params = getUrlSearchParams(location.search);
-
+/**
+ * Initialize the offline page.
+ * @param {Object} params Intialization params passed from parent page.
+ */
+function load(params) {
   // Setup localized strings.
   $('sign-in-title').textContent = decodeURIComponent(params['stringSignIn']);
   $('email-label').textContent = decodeURIComponent(params['stringEmail']);
@@ -59,4 +61,26 @@ function load() {
   window.parent.postMessage({'method': 'loginUILoaded'}, 'chrome://oobe/');
 }
 
-document.addEventListener('DOMContentLoaded', load);
+/**
+ * Handles initialization message from parent page.
+ * @param {MessageEvent} e
+ */
+function handleInitializeMessage(e) {
+  var ALLOWED_PARENT_ORIGINS = [
+    'chrome://oobe',
+    'chrome://chrome-signin'
+  ];
+
+  if (ALLOWED_PARENT_ORIGINS.indexOf(e.origin) == -1)
+    return;
+
+  window.removeEventListener('message', handleInitializeMessage);
+
+  var params = e.data;
+  params.parentPage = e.origin;
+  load(params);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('message', handleInitializeMessage);
+});

@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -60,11 +62,12 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
       signin::GetLandingURL(signin::kSignInPromoQueryKeySource,
                             static_cast<int>(source)).spec());
 
+  Profile* profile = Profile::FromWebUI(web_ui());
   std::string default_email;
   if (source != signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
       source != signin_metrics::SOURCE_REAUTH) {
-    default_email = Profile::FromWebUI(web_ui())->GetPrefs()->GetString(
-        prefs::kGoogleServicesLastUsername);
+    default_email =
+        profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
   } else {
     if (!net::GetValueForKeyInQuery(current_url, "email", &default_email))
       default_email.clear();
@@ -72,10 +75,16 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   if (!default_email.empty())
     params.SetString("email", default_email);
 
+  std::string frame_url_id_str;
+  net::GetValueForKeyInQuery(current_url, "frameUrlId", &frame_url_id_str);
+  int frame_url_id;
   std::string frame_url;
-  net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
-  if (!frame_url.empty())
+  if (!frame_url_id_str.empty() &&
+      base::StringToInt(frame_url_id_str, &frame_url_id) &&
+      extensions::GaiaAuthExtensionLoader::Get(profile)
+          ->GetData(frame_url_id, &frame_url)) {
     params.SetString("frameUrl", frame_url);
+  }
 
   std::string is_constrained;
   net::GetValueForKeyInQuery(
@@ -101,13 +110,17 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
 
 void InlineLoginHandler::HandleSwitchToFullTabMessage(
     const base::ListValue* args) {
-  base::string16 url_str;
+  std::string url_str;
   CHECK(args->GetString(0, &url_str));
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  const int frame_url_id =
+      extensions::GaiaAuthExtensionLoader::Get(profile)->AddData(url_str);
 
   content::WebContents* web_contents = web_ui()->GetWebContents();
   GURL main_frame_url(web_contents->GetURL());
   main_frame_url = net::AppendOrReplaceQueryParameter(
-      main_frame_url, "frameUrl", base::UTF16ToASCII(url_str));
+      main_frame_url, "frameUrlId", base::IntToString(frame_url_id));
 
   // Adds extra parameters to the signin URL so that Chrome will close the tab
   // and show the account management view of the avatar menu upon completion.
@@ -117,7 +130,7 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       main_frame_url, signin::kSignInPromoQueryKeyShowAccountManagement, "1");
 
   chrome::NavigateParams params(
-      Profile::FromWebUI(web_ui()),
+      profile,
       net::AppendOrReplaceQueryParameter(
           main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0"),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);

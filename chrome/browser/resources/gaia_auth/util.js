@@ -12,31 +12,6 @@ function $(id) {
 }
 
 /**
- * Extract query params from given search string of an URL.
- * @param {string} search The search portion of an URL to extract params.
- * @return {Object} The key value pairs of the extracted params.
- */
-function getUrlSearchParams(search) {
-  var params = {};
-
-  if (search) {
-    // Strips leading '?'
-    search = search.substring(1);
-    var pairs = search.split('&');
-    for (var i = 0; i < pairs.length; ++i) {
-      var pair = pairs[i].split('=');
-      if (pair.length == 2) {
-        params[pair[0]] = decodeURIComponent(pair[1]);
-      } else {
-        params[pair] = true;
-      }
-    }
-  }
-
-  return params;
-}
-
-/**
  * Creates a new URL which is the old URL with a GET param of key=value.
  * Copied from ui/webui/resources/js/util.js.
  * @param {string} url The base URL. There is not sanity checking on the URL so
@@ -72,15 +47,3 @@ function extractDomain(url) {
   a.href = url;
   return a.hostname;
 }
-
-/**
- * Extract protocol from an URL.
- * @param {string} url An URL string.
- * @return {string} The protocol of the URL.
- */
-function extractProtocol(url) {
-  var a = document.createElement('a');
-  a.href = url;
-  return a.protocol;
-}
-

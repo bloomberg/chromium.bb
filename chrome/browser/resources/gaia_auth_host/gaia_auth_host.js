@@ -110,6 +110,12 @@ cr.define('cr.login', function() {
     __proto__: cr.EventTarget.prototype,
 
     /**
+     * Auth extension params
+     * @type {Object}
+     */
+    authParams_: {},
+
+    /**
      * An url to use with {@code reload}.
      * @type {?string}
      * @private
@@ -237,7 +243,7 @@ cr.define('cr.login', function() {
      *     invoked with a credential object.
      */
     load: function(authMode, data, successCallback) {
-      var params = [];
+      var params = {};
 
       var populateParams = function(nameList, values) {
         if (!values)
@@ -246,14 +252,13 @@ cr.define('cr.login', function() {
         for (var i in nameList) {
           var name = nameList[i];
           if (values[name])
-            params.push(name + '=' + encodeURIComponent(values[name]));
+            params[name] = values[name];
         }
       };
 
       populateParams(SUPPORTED_PARAMS, data);
       populateParams(LOCALIZED_STRING_PARAMS, data.localizedStrings);
-      params.push('parentPage=' + encodeURIComponent(window.location.origin));
-      params.push('needPassword=1');
+      params['needPassword'] = true;
 
       var url;
       switch (authMode) {
@@ -262,23 +267,29 @@ cr.define('cr.login', function() {
           break;
         case AuthMode.DESKTOP:
           url = AUTH_URL;
-          params.push('desktopMode=1');
+          params['desktopMode'] = true;
           break;
         default:
           url = AUTH_URL;
       }
-      url += '?' + params.join('&');
 
-      this.frame_.src = url;
+      this.authParams_ = params;
       this.reloadUrl_ = url;
       this.successCallback_ = successCallback;
-      this.authFlow = AuthFlow.GAIA;
+
+      this.reload();
     },
 
     /**
      * Reloads the auth extension.
      */
     reload: function() {
+      var sendParamsOnLoad = function() {
+        this.frame_.removeEventListener('load', sendParamsOnLoad);
+        this.frame_.contentWindow.postMessage(this.authParams_, AUTH_URL_BASE);
+      }.bind(this);
+
+      this.frame_.addEventListener('load', sendParamsOnLoad);
       this.frame_.src = this.reloadUrl_;
       this.authFlow = AuthFlow.GAIA;
     },

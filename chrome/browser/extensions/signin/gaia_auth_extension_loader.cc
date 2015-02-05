@@ -86,7 +86,7 @@ void UnloadGaiaAuthExtension(BrowserContext* context) {
 namespace extensions {
 
 GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(BrowserContext* context)
-    : browser_context_(context), load_count_(0) {}
+    : browser_context_(context), load_count_(0), last_data_id_(0) {}
 
 GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
   DCHECK_EQ(0, load_count_);
@@ -100,8 +100,25 @@ void GaiaAuthExtensionLoader::LoadIfNeeded() {
 
 void GaiaAuthExtensionLoader::UnloadIfNeeded() {
   --load_count_;
-  if (load_count_ == 0)
+  if (load_count_ == 0) {
     UnloadGaiaAuthExtension(browser_context_);
+    data_.clear();
+  }
+}
+
+int GaiaAuthExtensionLoader::AddData(const std::string& data) {
+  ++last_data_id_;
+  data_[last_data_id_] = data;
+  return last_data_id_;
+}
+
+bool GaiaAuthExtensionLoader::GetData(int data_id, std::string* data) {
+  auto it = data_.find(data_id);
+  if (it == data_.end())
+    return false;
+
+  *data = it->second;
+  return true;
 }
 
 void GaiaAuthExtensionLoader::Shutdown() {
@@ -109,6 +126,7 @@ void GaiaAuthExtensionLoader::Shutdown() {
     UnloadGaiaAuthExtension(browser_context_);
     load_count_ = 0;
   }
+  data_.clear();
 }
 
 // static

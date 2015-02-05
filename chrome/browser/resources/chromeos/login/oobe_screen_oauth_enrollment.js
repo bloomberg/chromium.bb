@@ -23,6 +23,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     signInUrl_: null,
 
     /**
+     * Gaia auth params for sign in frame.
+     */
+    signInParams_: {},
+
+    /**
      * The current step. This is the last value passed to showStep().
      */
     currentStep_: null,
@@ -132,18 +137,17 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * URL.
      */
     onBeforeShow: function(data) {
-      var url = data.signin_url;
-      url += '?gaiaUrl=' + encodeURIComponent(data.gaiaUrl);
-      url += '&needPassword=0';
-      this.signInUrl_ = url;
+      this.signInParams_ = {};
+      this.signInParams_['gaiaUrl'] = data.gaiaUrl;
+      this.signInParams_['needPassword'] = false;
+      this.signInUrl_ = data.signin_url;
       var modes = ['manual', 'forced', 'recovery'];
       for (var i = 0; i < modes.length; ++i) {
         this.classList.toggle('mode-' + modes[i],
                               data.enrollment_mode == modes[i]);
       }
       this.managementDomain_ = data.management_domain;
-      $('oauth-enroll-signin-frame').contentWindow.location.href =
-          this.signInUrl_;
+      this.doReload();
       this.learnMoreHelpTopicID_ = data.learn_more_help_topic_id;
       this.updateLocalizedContent();
       this.showStep(STEP_SIGNIN);
@@ -187,8 +191,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     doReload: function() {
-      $('oauth-enroll-signin-frame').contentWindow.location.href =
-          this.signInUrl_;
+      var signInFrame = $('oauth-enroll-signin-frame');
+
+      var sendParamsOnLoad = function() {
+        signInFrame.removeEventListener('load', sendParamsOnLoad);
+        signInFrame.contentWindow.postMessage(this.signInParams_,
+            'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik');
+      }.bind(this);
+
+      signInFrame.addEventListener('load', sendParamsOnLoad);
+      signInFrame.contentWindow.location.href = this.signInUrl_;
     },
 
     /**
