@@ -53,13 +53,14 @@ ContentLayerDelegate::~ContentLayerDelegate()
 
 void ContentLayerDelegate::paintContents(
     SkCanvas* canvas, const WebRect& clip,
-    WebContentLayerClient::GraphicsContextStatus contextStatus)
+    WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     static const unsigned char* annotationsEnabled = 0;
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    GraphicsContext context(canvas, m_painter->displayItemList(), contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
+    GraphicsContext context(canvas, m_painter->displayItemList(),
+        paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
     context.setCertainlyOpaque(m_opaque);
     if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
@@ -72,11 +73,14 @@ void ContentLayerDelegate::paintContents(
 
 void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
-    WebContentLayerClient::GraphicsContextStatus contextStatus)
+    WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     // Once Slimming Paint is fully implemented, this method will no longer
     // be needed since Blink will be in charge of creating the display list
     // during the document lifecylcle.
+
+    if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled)
+        m_painter->displayItemList()->invalidateAll();
 
     // Some layers don't yet produce display lists. To handle such layers, we
     // create a canvas backed by an SkPicture, and manually insert this
@@ -88,7 +92,7 @@ void ContentLayerDelegate::paintContents(
     canvas->save();
     canvas->translate(-clip.x, -clip.y);
     canvas->clipRect(SkRect::MakeXYWH(clip.x, clip.y, clip.width, clip.height));
-    paintContents(canvas, clip, contextStatus);
+    paintContents(canvas, clip, paintingControl);
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
 

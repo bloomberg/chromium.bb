@@ -237,13 +237,13 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutLayerModelO
     return pathHasChanged;
 }
 
-void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, WebContentLayerClient::GraphicsContextStatus contextStatus)
+void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->renderer())
         return;
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
-    if (contextStatus != WebContentLayerClient::GraphicsContextEnabled)
+    if (paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
 
     OwnPtr<GraphicsContext> graphicsContext;

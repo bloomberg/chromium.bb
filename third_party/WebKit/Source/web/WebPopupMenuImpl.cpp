@@ -210,14 +210,14 @@ void WebPopupMenuImpl::layout()
 {
 }
 
-void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, WebContentLayerClient::GraphicsContextStatus contextStatus)
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_widget)
         return;
 
     if (!rect.isEmpty()) {
         GraphicsContext context(canvas, nullptr,
-            contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
+            paintingControl == PaintingControlSetting::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
         m_widget->paint(&context, rect);
     }
 }
