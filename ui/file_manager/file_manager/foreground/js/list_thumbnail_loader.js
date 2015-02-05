@@ -14,9 +14,8 @@
  * The following list is a todo list for this class. This list will be deleted
  * after all of them are implemented.
  * * Done: Fetch thumbnails with range based priority control.
- * * Implement cache size limitation.
- * * Modest queueing for low priority thumbnail fetches (i.e. not to use up IO
- *     by low priority tasks).
+ * * Done: Implement cache size limitation.
+ * * Done: Modest queueing for low priority thumbnail fetches.
  * * Handle other event types of FileListModel, e.g. sort.
  * * Change ThumbnailLoader to directly return dataUrl.
  * * Handle file types for which generic images are used.
@@ -66,12 +65,12 @@ function ListThumbnailLoader(
   this.active_ = {};
 
   /**
-   * @type {Object<string, !Object>}
+   * @type {LRUCache<!Object>}
    * @private
    *
-   * TODO(yawano) Add size limitation to the cache.
+   * TODO(yawano): After ThumbnailData class is created, type this with it.
    */
-  this.cache_ = {};
+  this.cache_ = new LRUCache(ListThumbnailLoader.CACHE_SIZE);
 
   /**
    * @type {number}
@@ -92,7 +91,7 @@ function ListThumbnailLoader(
    */
   this.cursor_ = 0;
 
-  // TODO(yawano) Handle other event types of FileListModel, e.g. sort.
+  // TODO(yawano): Handle other event types of FileListModel, e.g. sort.
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
 }
 
@@ -105,19 +104,25 @@ ListThumbnailLoader.prototype.__proto__ = cr.EventTarget.prototype;
 ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 5;
 
 /**
+ * Number of prefetch requests.
+ * @const {number}
+ */
+ListThumbnailLoader.NUM_OF_PREFETCH = 10;
+
+/**
+ * Cache size. Cache size must be larger than sum of high priority range size
+ * and number of prefetch tasks.
+ * @const {number}
+ */
+ListThumbnailLoader.CACHE_SIZE = 100;
+
+/**
  * An event handler for splice event of data model. When list is changed, start
  * to rescan items.
  *
  * @param {!Event} event Event
  */
 ListThumbnailLoader.prototype.onSplice_ = function(event) {
-  // Delete thumbnails of removed items from cache.
-  for (var i = 0; i < event.removed.length; i++) {
-    var removedItem = event.removed[i];
-    if (this.cache_[removedItem.toURL()])
-      delete this.cache_[removedItem.toURL()];
-  }
-
   this.cursor_ = this.beginIndex_;
   this.continue_();
 }
@@ -146,7 +151,9 @@ ListThumbnailLoader.prototype.setHighPriorityRange = function(
  * @return {Object} If the thumbnail is not in cache, this returns null.
  */
 ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
-  return this.cache_[entry.toURL()] || null;
+  // Since we want to evict cache based on high priority range, we use peek here
+  // instead of get.
+  return this.cache_.peek(entry.toURL()) || null;
 }
 
 /**
@@ -156,7 +163,8 @@ ListThumbnailLoader.prototype.continue_ = function() {
   // If tasks are running full or all items are scanned, do nothing.
   if (!(Object.keys(this.active_).length <
         ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS) ||
-      !(this.cursor_ < this.dataModel_.length)) {
+      !(this.cursor_ < this.dataModel_.length) ||
+      !(this.cursor_ < this.endIndex_ + ListThumbnailLoader.NUM_OF_PREFETCH)) {
     return;
   }
 
@@ -164,7 +172,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
 
   // If the entry is a directory, already in cache or fetching, skip it.
   if (entry.isDirectory ||
-      this.cache_[entry.toURL()] ||
+      this.cache_.get(entry.toURL()) ||
       this.active_[entry.toURL()]) {
     this.continue_();
     return;
@@ -188,7 +196,7 @@ ListThumbnailLoader.prototype.enqueue_ = function(entry) {
 
   task.fetch().then(function(thumbnail) {
     delete this.active_[thumbnail.fileUrl];
-    this.cache_[thumbnail.fileUrl] = thumbnail;
+    this.cache_.put(thumbnail.fileUrl, thumbnail);
     this.dispatchThumbnailLoaded_(thumbnail);
     this.continue_();
   }.bind(this));
@@ -200,7 +208,7 @@ ListThumbnailLoader.prototype.enqueue_ = function(entry) {
  * @param {Object} thumbnail Thumbnail.
  */
 ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(thumbnail) {
-  // TODO(yawano) Create ThumbnailLoadedEvent class.
+  // TODO(yawano): Create ThumbnailLoadedEvent class.
   var event = new Event('thumbnailLoaded');
   event.fileUrl = thumbnail.fileUrl;
   event.dataUrl = thumbnail.dataUrl;
@@ -230,7 +238,7 @@ ListThumbnailLoader.Task = function(
 
 /**
  * Fetches thumbnail.
- * TODO(yawano) Add error handling.
+ * TODO(yawano): Add error handling.
  *
  * @return {!Promise} A promise which is resolved when thumbnail is fetched.
  */
@@ -239,7 +247,7 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
     this.metadataCache_.getOne(this.entry_,
         'thumbnail|filesystem|external|media',
         function(metadata) {
-          // TODO(yawano) Change ThumbnailLoader to directly return data url of
+          // TODO(yawano): Change ThumbnailLoader to directly return data url of
           // an image.
           var box = this.document_.createElement('div');
 
@@ -251,7 +259,7 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
               ThumbnailLoader.FillMode.FIT,
               ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
               function(image, transform) {
-                // TODO(yawano) Transform an image if necessary.
+                // TODO(yawano): Transform an image if necessary.
                 var canvas = this.document_.createElement('canvas');
                 canvas.width = image.width;
                 canvas.height = image.height;
@@ -259,7 +267,7 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
                 var context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0);
 
-                // TODO(yawano) Create ThumbnailData class.
+                // TODO(yawano): Create ThumbnailData class.
                 resolve({
                   fileUrl: this.entry_.toURL(),
                   dataUrl: canvas.toDataURL('image/jpeg', 0.5),

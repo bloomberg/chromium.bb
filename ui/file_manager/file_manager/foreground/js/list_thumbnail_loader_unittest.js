@@ -52,9 +52,12 @@ var entry2 = new MockEntry(fileSystem, '/Test2.jpg');
 var entry3 = new MockEntry(fileSystem, '/Test3.jpg');
 var entry4 = new MockEntry(fileSystem, '/Test4.jpg');
 var entry5 = new MockEntry(fileSystem, '/Test5.jpg');
+var entry6 = new MockEntry(fileSystem, '/Test6.jpg');
 
 function setUp() {
   ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 2;
+  ListThumbnailLoader.NUM_OF_PREFETCH = 1;
+  ListThumbnailLoader.CACHE_SIZE = 5;
   MockThumbnailLoader.setTestImageDataUrl(generateSampleImageDataUrl(document));
 
   getOneCallbacks = {};
@@ -79,6 +82,14 @@ function resolveGetOneCallback(url) {
   assert(getOneCallbacks[url]);
   getOneCallbacks[url]();
   delete getOneCallbacks[url];
+}
+
+function areEntriesInCache(entries) {
+  for (var i = 0; i < entries.length; i++) {
+    if (null === listThumbnailLoader.getThumbnailFromCache(entries[i]))
+      return false;
+  }
+  return true;
 }
 
 /**
@@ -142,14 +153,6 @@ function testStory(callback) {
           !!getOneCallbacks[entry4.toURL()] &&
           Object.keys(getOneCallbacks).length === 2;
     });
-  }).then(function() {
-    // Cache is deleted when the item is removed from the list.
-    var result = fileListModel.splice(2, 1); // Remove Test2.jpg.
-
-    // Fail to fetch thumbnail from cache.
-    return waitUntil(function() {
-      return listThumbnailLoader.getThumbnailFromCache(entry2) === null;
-    });
   }), callback);
 }
 
@@ -166,4 +169,55 @@ function testRangeIsAtTheEndOfList() {
   assertEquals(1, Object.keys(getOneCallbacks).length);
   assertEquals('filesystem:volume-id/Test5.jpg',
       Object.keys(getOneCallbacks)[0]);
+}
+
+function testCache(callback) {
+  ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 5;
+
+  // Set high priority range to 0 - 2.
+  listThumbnailLoader.setHighPriorityRange(0, 2);
+  fileListModel.push(entry1, entry2, entry3, entry4, entry5, entry6);
+
+  resolveGetOneCallback(entry1.toURL());
+  // In this test case, entry 3 is resolved earlier than entry 2.
+  resolveGetOneCallback(entry3.toURL());
+  resolveGetOneCallback(entry2.toURL());
+  assertEquals(0, Object.keys(getOneCallbacks).length);
+
+  reportPromise(waitUntil(function() {
+    return areEntriesInCache([entry3, entry2, entry1]);
+  }).then(function() {
+    // Move high priority range to 1 - 3.
+    listThumbnailLoader.setHighPriorityRange(1, 3);
+    resolveGetOneCallback(entry4.toURL());
+    assertEquals(0, Object.keys(getOneCallbacks).length);
+
+    return waitUntil(function() {
+      return areEntriesInCache([entry4, entry3, entry2, entry1]);
+    });
+  }).then(function() {
+    // Move high priority range to 4 - 6.
+    listThumbnailLoader.setHighPriorityRange(4, 6);
+    resolveGetOneCallback(entry5.toURL());
+    resolveGetOneCallback(entry6.toURL());
+    assertEquals(0, Object.keys(getOneCallbacks).length);
+
+    return waitUntil(function() {
+      return areEntriesInCache([entry6, entry5, entry4, entry3, entry2]);
+    });
+  }).then(function() {
+    // Move high priority range to 3 - 5.
+    listThumbnailLoader.setHighPriorityRange(3, 5);
+    assertEquals(0, Object.keys(getOneCallbacks).length);
+    assertTrue(areEntriesInCache([entry6, entry5, entry4, entry3, entry2]));
+
+    // Move high priority range to 0 - 2.
+    listThumbnailLoader.setHighPriorityRange(0, 2);
+    resolveGetOneCallback(entry1.toURL());
+    assertEquals(0, Object.keys(getOneCallbacks).length);
+
+    return waitUntil(function() {
+      return areEntriesInCache([entry3, entry2, entry1, entry6, entry5]);
+    });
+  }), callback);
 }
