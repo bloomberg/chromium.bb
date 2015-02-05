@@ -107,7 +107,7 @@ public:
     // Moves the selection extent point. This function does not allow the
     // selection to collapse. If the new extent is set to the same position as
     // the current base, this function will do nothing.
-    virtual void moveRangeSelectionExtent(const WebPoint&) = 0;
+    virtual void moveRangeSelectionExtent(const WebPoint&, TextGranularity = CharacterGranularity) = 0;
 };
 
 } // namespace blink

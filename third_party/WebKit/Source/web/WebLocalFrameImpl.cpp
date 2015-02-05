@@ -1197,20 +1197,12 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
-void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
+void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point, WebFrame::TextGranularity granularity)
 {
-    VisibleSelection currentSelection = frame()->selection().selection();
-
-    VisiblePosition basePosition = currentSelection.isBaseFirst() ?
-        currentSelection.visibleStart() : currentSelection.visibleEnd();
-    VisiblePosition extentPosition = visiblePositionForWindowPoint(point);
-
-    // Prevent the selection from collapsing.
-    if (comparePositions(basePosition, extentPosition) == 0)
-        return;
-
-    VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | UserTriggered, FrameSelection::AlignCursorOnScrollIfNeeded, CharacterGranularity);
+    blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
+    if (granularity == WebFrame::WordGranularity)
+        blinkGranularity = blink::WordGranularity;
+    frame()->selection().moveRangeSelectionExtent(visiblePositionForWindowPoint(point), blinkGranularity);
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)

@@ -169,7 +169,7 @@ public:
     virtual bool selectWordAroundCaret() override;
     virtual void selectRange(const WebPoint& base, const WebPoint& extent) override;
     virtual void selectRange(const WebRange&) override;
-    virtual void moveRangeSelectionExtent(const WebPoint&) override;
+    virtual void moveRangeSelectionExtent(const WebPoint&, TextGranularity = CharacterGranularity) override;
     virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent) override;
     virtual void moveCaretSelection(const WebPoint&) override;
     virtual bool setEditableSelectionOffsets(int start, int end) override;

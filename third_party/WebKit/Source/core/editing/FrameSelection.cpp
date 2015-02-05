@@ -1912,6 +1912,29 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position)
     return false;
 }
 
+void FrameSelection::moveRangeSelectionExtent(const VisiblePosition& extentPosition, TextGranularity granularity)
+{
+    if (isNone())
+        return;
+
+    const VisiblePosition basePosition = m_selection.isBaseFirst() ?
+        m_selection.visibleStart() : m_selection.visibleEnd();
+
+    int order = comparePositions(basePosition, extentPosition);
+    if (!order)
+        return;
+
+    // Currently we support only CharaterGranularity and WordGranurarity.
+    // If |granurarity| is not of them, we fall back it to
+    // CharacterGranularity.
+    VisiblePosition newExtentPosition = extentPosition;
+    if (granularity == WordGranularity)
+        newExtentPosition = order < 0 ? endOfWord(extentPosition) : startOfWord(extentPosition);
+
+    VisibleSelection newSelection = VisibleSelection(basePosition, newExtentPosition);
+    setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | UserTriggered, FrameSelection::AlignCursorOnScrollIfNeeded, granularity);
+}
+
 }
 
 #ifndef NDEBUG

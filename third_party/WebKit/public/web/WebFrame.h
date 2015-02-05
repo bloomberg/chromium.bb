@@ -105,6 +105,18 @@ public:
     };
     typedef unsigned LayoutAsTextControls;
 
+    // FIXME: We already have blink::TextGranularity. For now we support only
+    // a part of blink::TextGranularity.
+    // Ideally it seems blink::TextGranularity should be broken up into
+    // blink::TextGranularity and perhaps blink::TextBoundary and then
+    // TextGranularity enum could be moved somewhere to public/, and we could
+    // just use it here directly without introducing a new enum.
+    enum TextGranularity {
+        CharacterGranularity = 0,
+        WordGranularity,
+        TextGranularityLast = WordGranularity,
+    };
+
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
 

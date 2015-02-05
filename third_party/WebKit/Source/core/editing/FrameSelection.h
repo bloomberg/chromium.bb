@@ -122,6 +122,8 @@ public:
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered = NotUserTriggered);
     enum VerticalDirection { DirectionUp, DirectionDown };
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
+    // Currently we support only CharaterGranularity and WordGranurarity.
+    void moveRangeSelectionExtent(const VisiblePosition&, TextGranularity);
 
     TextGranularity granularity() const { return m_granularity; }
 
