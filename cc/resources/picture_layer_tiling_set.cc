@@ -116,15 +116,16 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
   }
 
   if (!tilings_.empty()) {
-    size_t num_high_res = std::count_if(tilings_.begin(), tilings_.end(),
-                                        [](PictureLayerTiling* tiling) {
-      return tiling->resolution() == HIGH_RESOLUTION;
-    });
-    DCHECK_LE(num_high_res, 1u);
+    DCHECK_LE(NumHighResTilings(), 1);
     // When commiting from the main thread the high res tiling may get dropped,
     // but when cloning to the active tree, there should always be one.
-    if (twin_set)
-      DCHECK_EQ(1u, num_high_res);
+    if (twin_set) {
+      DCHECK_EQ(1, NumHighResTilings())
+          << " num tilings on active: " << tilings_.size()
+          << " num tilings on pending: " << twin_set->tilings_.size()
+          << " num high res on pending: " << twin_set->NumHighResTilings()
+          << " are on active tree: " << (client_->GetTree() == ACTIVE_TREE);
+    }
   }
 #endif
 }
@@ -214,12 +215,10 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
 }
 
 int PictureLayerTilingSet::NumHighResTilings() const {
-  int num_high_res = 0;
-  for (size_t i = 0; i < tilings_.size(); ++i) {
-    if (tilings_[i]->resolution() == HIGH_RESOLUTION)
-      num_high_res++;
-  }
-  return num_high_res;
+  return std::count_if(tilings_.begin(), tilings_.end(),
+                       [](PictureLayerTiling* tiling) {
+    return tiling->resolution() == HIGH_RESOLUTION;
+  });
 }
 
 PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScale(
