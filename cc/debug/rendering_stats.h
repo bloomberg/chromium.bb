@@ -24,7 +24,8 @@ struct CC_EXPORT RenderingStats {
     ~TimeDeltaList();
 
     void Append(base::TimeDelta value);
-    void AddToTracedValue(base::debug::TracedValue* list_value) const;
+    void AddToTracedValue(const char* name,
+                          base::debug::TracedValue* list_value) const;
 
     void Add(const TimeDeltaList& other);
 

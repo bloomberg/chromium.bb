@@ -15,9 +15,7 @@ namespace {
 static std::string ToString(const RenderingStats::TimeDeltaList& list) {
   scoped_refptr<base::debug::TracedValue> value =
       new base::debug::TracedValue();
-  value->BeginArray("list_value");
-  list.AddToTracedValue(value.get());
-  value->EndArray();
+  list.AddToTracedValue("list_value", value.get());
   return value->ToString();
 }
 
