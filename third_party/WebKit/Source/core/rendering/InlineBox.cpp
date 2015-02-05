@@ -20,9 +20,9 @@
 #include "config.h"
 #include "core/rendering/InlineBox.h"
 
+#include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObjectInlines.h"

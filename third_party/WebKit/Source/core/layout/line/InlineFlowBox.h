@@ -21,7 +21,7 @@
 #ifndef InlineFlowBox_h
 #define InlineFlowBox_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderOverflow.h"
@@ -38,7 +38,7 @@ class VerticalPositionCache;
 
 struct GlyphOverflow;
 
-typedef HashMap<const InlineTextBox*, pair<Vector<const SimpleFontData*>, GlyphOverflow> > GlyphOverflowAndFallbackFontsMap;
+typedef HashMap<const InlineTextBox*, pair<Vector<const SimpleFontData*>, GlyphOverflow>> GlyphOverflowAndFallbackFontsMap;
 
 class InlineFlowBox : public InlineBox {
 public:
@@ -186,13 +186,9 @@ public:
             clearKnownToHaveNoOverflow();
     }
 
-    void computeLogicalBoxHeights(RootInlineBox*, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom,
-                                  int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent,
-                                  bool strictMode, GlyphOverflowAndFallbackFontsMap&, FontBaseline, VerticalPositionCache&);
-    void adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent,
-                                   int maxPositionTop, int maxPositionBottom);
-    void placeBoxesInBlockDirection(LayoutUnit logicalTop, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, LayoutUnit& selectionBottom, bool& setLineTop,
-                                    LayoutUnit& lineTopIncludingMargins, LayoutUnit& lineBottomIncludingMargins, bool& hasAnnotationsBefore, bool& hasAnnotationsAfter, FontBaseline);
+    void computeLogicalBoxHeights(RootInlineBox*, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom, int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent, bool strictMode, GlyphOverflowAndFallbackFontsMap&, FontBaseline, VerticalPositionCache&);
+    void adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, int maxPositionTop, int maxPositionBottom);
+    void placeBoxesInBlockDirection(LayoutUnit logicalTop, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, LayoutUnit& selectionBottom, bool& setLineTop, LayoutUnit& lineTopIncludingMargins, LayoutUnit& lineBottomIncludingMargins, bool& hasAnnotationsBefore, bool& hasAnnotationsAfter, FontBaseline);
     void flipLinesInBlockDirection(LayoutUnit lineTop, LayoutUnit lineBottom);
     bool requiresIdeographicBaseline(const GlyphOverflowAndFallbackFontsMap&) const;
 

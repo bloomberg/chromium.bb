@@ -24,7 +24,7 @@
 #define RenderText_h
 
 #include "core/dom/Text.h"
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/TextPath.h"

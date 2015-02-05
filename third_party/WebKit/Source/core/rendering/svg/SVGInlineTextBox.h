@@ -22,7 +22,7 @@
 #ifndef SVGInlineTextBox_h
 #define SVGInlineTextBox_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 

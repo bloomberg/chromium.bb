@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/InlineFlowBox.h"
+#include "core/layout/line/InlineFlowBox.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
@@ -123,9 +123,9 @@ void InlineFlowBox::addToLine(InlineBox* child)
         RenderStyle* parentStyle = renderer().style(isFirstLineStyle());
         RenderStyle* childStyle = child->renderer().style(isFirstLineStyle());
         bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
-        if (child->renderer().isReplaced())
+        if (child->renderer().isReplaced()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
-        else if (child->isText()) {
+        } else if (child->isText()) {
             if (child->renderer().isBR() || child->renderer().parent() != renderer()) {
                 if (!parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
                     || parentStyle->lineHeight() != childStyle->lineHeight()
@@ -335,9 +335,9 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
             // (2) The logicallyLastRun is not a descendant of this renderer.
             // (3) The logicallyLastRun is a descendant of this renderer, but it is the last child of this renderer and it does not wrap to the next line.
             // (4) The decoration break is set to clone therefore there will be borders on every sides.
-            if (renderer().style()->boxDecorationBreak() == DCLONE)
+            if (renderer().style()->boxDecorationBreak() == DCLONE) {
                 includeLeftEdge = includeRightEdge = true;
-            else if (ltr) {
+            } else if (ltr) {
                 if (!nextLineBox()
                     && ((lastLine || isLastObjectOnLine) && !inlineFlow.continuation()))
                     includeRightEdge = true;
@@ -500,8 +500,7 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, i
             if (curr->verticalAlign() == TOP) {
                 if (maxAscent + maxDescent < lineHeight)
                     maxDescent = lineHeight - maxAscent;
-            }
-            else {
+            } else {
                 if (maxAscent + maxDescent < lineHeight)
                     maxAscent = lineHeight - maxDescent;
             }
@@ -515,10 +514,7 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, i
     }
 }
 
-void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom,
-                                             int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent,
-                                             bool strictMode, GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-                                             FontBaseline baselineType, VerticalPositionCache& verticalPositionCache)
+void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom, int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent, bool strictMode, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, FontBaseline baselineType, VerticalPositionCache& verticalPositionCache)
 {
     // The primary purpose of this function is to compute the maximal ascent and descent values for
     // a line. These values are computed based off the block's line-box-contain property, which indicates
@@ -584,8 +580,7 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         } else if (curr->verticalAlign() == BOTTOM) {
             if (maxPositionBottom < boxHeight)
                 maxPositionBottom = boxHeight;
-        } else if (!inlineFlowBox || strictMode || inlineFlowBox->hasTextChildren() || (inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants())
-                   || inlineFlowBox->boxModelObject()->hasInlineDirectionBordersOrPadding()) {
+        } else if (!inlineFlowBox || strictMode || inlineFlowBox->hasTextChildren() || (inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants()) || inlineFlowBox->boxModelObject()->hasInlineDirectionBordersOrPadding()) {
             // Note that these values can be negative.  Even though we only affect the maxAscent and maxDescent values
             // if our box (excluding line-height) was above (for ascent) or below (for descent) the root baseline, once you factor in line-height
             // the final box can end up being fully above or fully below the root box's baseline!  This is ok, but what it
@@ -606,14 +601,11 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         }
 
         if (inlineFlowBox)
-            inlineFlowBox->computeLogicalBoxHeights(rootBox, maxPositionTop, maxPositionBottom, maxAscent, maxDescent,
-                                                    setMaxAscent, setMaxDescent, strictMode, textBoxDataMap,
-                                                    baselineType, verticalPositionCache);
+            inlineFlowBox->computeLogicalBoxHeights(rootBox, maxPositionTop, maxPositionBottom, maxAscent, maxDescent, setMaxAscent, setMaxDescent, strictMode, textBoxDataMap, baselineType, verticalPositionCache);
     }
 }
 
-void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, LayoutUnit& selectionBottom, bool& setLineTop,
-                                               LayoutUnit& lineTopIncludingMargins, LayoutUnit& lineBottomIncludingMargins, bool& hasAnnotationsBefore, bool& hasAnnotationsAfter, FontBaseline baselineType)
+void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, LayoutUnit& selectionBottom, bool& setLineTop, LayoutUnit& lineTopIncludingMargins, LayoutUnit& lineBottomIncludingMargins, bool& hasAnnotationsBefore, bool& hasAnnotationsAfter, FontBaseline baselineType)
 {
     bool isRootBox = isRootInlineBox();
     if (isRootBox) {
@@ -641,11 +633,11 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
 
         InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : 0;
         bool childAffectsTopBottomPos = true;
-        if (curr->verticalAlign() == TOP)
+        if (curr->verticalAlign() == TOP) {
             curr->setLogicalTop(top.toFloat());
-        else if (curr->verticalAlign() == BOTTOM)
+        } else if (curr->verticalAlign() == BOTTOM) {
             curr->setLogicalTop((top + maxHeight - curr->lineHeight()).toFloat());
-        else {
+        } else {
             if (!strictMode && inlineFlowBox && !inlineFlowBox->hasTextChildren() && !curr->boxModelObject()->hasInlineDirectionBordersOrPadding()
                 && !(inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants()))
                 childAffectsTopBottomPos = false;
@@ -724,8 +716,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         // Adjust boxes to use their real box y/height and not the logical height (as dictated by
         // line-height).
         if (inlineFlowBox)
-            inlineFlowBox->placeBoxesInBlockDirection(top, maxHeight, maxAscent, strictMode, lineTop, lineBottom, selectionBottom, setLineTop,
-                                                      lineTopIncludingMargins, lineBottomIncludingMargins, hasAnnotationsBefore, hasAnnotationsAfter, baselineType);
+            inlineFlowBox->placeBoxesInBlockDirection(top, maxHeight, maxAscent, strictMode, lineTop, lineBottom, selectionBottom, setLineTop, lineTopIncludingMargins, lineBottomIncludingMargins, hasAnnotationsBefore, hasAnnotationsAfter, baselineType);
     }
 
     if (isRootBox) {
@@ -896,8 +887,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     LayoutUnit logicalLeftVisualOverflow = std::min(textBox->pixelSnappedLogicalLeft() + childOverflowLogicalLeft, logicalVisualOverflow.x());
     LayoutUnit logicalRightVisualOverflow = std::max(textBox->pixelSnappedLogicalRight() + childOverflowLogicalRight, logicalVisualOverflow.maxX());
 
-    logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow,
-                                       logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
+    logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow, logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
 
     textBox->setLogicalOverflowRect(logicalVisualOverflow);
 }
@@ -1153,8 +1143,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, FloatWillBeLayou
         if (ltr) {
             visibleLeftEdge += box->logicalWidth();
             box = box->nextOnLine();
-        }
-        else {
+        } else {
             visibleRightEdge -= box->logicalWidth();
             box = box->prevOnLine();
         }
@@ -1309,8 +1298,9 @@ void InlineFlowBox::collectLeafBoxesInLogicalOrder(Vector<InlineBox*>& leafBoxes
             if (customReverseImplementation) {
                 ASSERT(userData);
                 (*customReverseImplementation)(userData, first, last);
-            } else
+            } else {
                 std::reverse(first, last);
+            }
         }
         ++minLevel;
     }

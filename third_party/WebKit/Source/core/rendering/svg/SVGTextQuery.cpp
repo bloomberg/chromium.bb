@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/svg/SVGTextQuery.h"
 
-#include "core/rendering/InlineFlowBox.h"
+#include "core/layout/line/InlineFlowBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"

@@ -5,7 +5,7 @@
 #ifndef TextPainter_h
 #define TextPainter_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"

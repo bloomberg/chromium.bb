@@ -24,10 +24,10 @@
 #include "config.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
+#include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 
 namespace blink {

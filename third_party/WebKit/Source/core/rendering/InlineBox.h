@@ -21,7 +21,7 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "platform/graphics/paint/DisplayItemClient.h"

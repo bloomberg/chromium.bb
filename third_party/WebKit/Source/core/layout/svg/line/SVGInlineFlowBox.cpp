@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGInlineFlowBox.h"
+#include "core/layout/svg/line/SVGInlineFlowBox.h"
 
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"

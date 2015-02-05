@@ -21,8 +21,8 @@
 #ifndef SVGInlineFlowBox_h
 #define SVGInlineFlowBox_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
-#include "core/rendering/InlineFlowBox.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
+#include "core/layout/line/InlineFlowBox.h"
 
 namespace blink {
 

@@ -23,7 +23,7 @@
 #ifndef InlineTextBox_h
 #define InlineTextBox_h
 
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
 #include "platform/text/TextRun.h"

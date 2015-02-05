@@ -30,7 +30,7 @@
 #include "modules/accessibility/AXInlineTextBox.h"
 
 #include "core/dom/Range.h"
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/RenderText.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/LayoutUnit.h"

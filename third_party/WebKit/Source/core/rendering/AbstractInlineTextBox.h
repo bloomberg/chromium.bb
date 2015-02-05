@@ -32,7 +32,7 @@
 #define AbstractInlineTextBox_h
 
 #include "core/dom/Range.h"
-#include "core/rendering/FloatToLayoutUnit.h"
+#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/HashMap.h"

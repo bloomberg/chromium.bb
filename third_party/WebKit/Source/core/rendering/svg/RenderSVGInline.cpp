@@ -23,8 +23,8 @@
 
 #include "core/rendering/svg/RenderSVGInline.h"
 
+#include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGAElement.h"
