@@ -323,7 +323,7 @@ void SyncFileSystemService::DumpDatabase(const DumpFilesCallback& callback) {
 void SyncFileSystemService::GetFileSyncStatus(
     const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_service_);
-  DCHECK(GetRemoteService(url.origin()));
+  DCHECK(remote_service_);
 
   // It's possible to get an invalid FileEntry.
   if (!url.is_valid()) {
@@ -352,7 +352,7 @@ void SyncFileSystemService::RemoveSyncEventObserver(
 
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
     const GURL& origin) {
-  return GetRemoteService(origin)->GetLocalChangeProcessor();
+  return remote_service_->GetLocalChangeProcessor();
 }
 
 void SyncFileSystemService::OnSyncIdle() {
@@ -525,7 +525,7 @@ void SyncFileSystemService::DidRegisterOrigin(
 
   if (status == SYNC_STATUS_FAILED) {
     // If we got generic error return the service status information.
-    switch (GetRemoteService(app_origin)->GetCurrentState()) {
+    switch (remote_service_->GetCurrentState()) {
       case REMOTE_SERVICE_AUTHENTICATION_REQUIRED:
         callback.Run(SYNC_STATUS_AUTHENTICATION_FAILED);
         return;
@@ -556,7 +556,7 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
     return;
   }
 
-  GetRemoteService(origin)->DumpFiles(
+  remote_service_->DumpFiles(
       origin,
       base::Bind(
           &SyncFileSystemService::DidDumpFiles,
@@ -682,7 +682,7 @@ void SyncFileSystemService::OnExtensionUnloaded(
 
   DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
            << app_origin;
-  GetRemoteService(app_origin)->DisableOrigin(
+  remote_service_->DisableOrigin(
       app_origin,
       base::Bind(&DidHandleUnloadedEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, false);
@@ -705,7 +705,7 @@ void SyncFileSystemService::OnExtensionUninstalled(
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for UNINSTALLED: "
            << app_origin;
-  GetRemoteService(app_origin)->UninstallOrigin(
+  remote_service_->UninstallOrigin(
       app_origin, flag,
       base::Bind(&DidHandleUninstalledEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, false);
@@ -716,7 +716,7 @@ void SyncFileSystemService::OnExtensionLoaded(
     const Extension* extension) {
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for LOADED: " << app_origin;
-  GetRemoteService(app_origin)->EnableOrigin(
+  remote_service_->EnableOrigin(
       app_origin,
       base::Bind(&DidHandleLoadEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, true);
@@ -762,11 +762,6 @@ void SyncFileSystemService::RunForEachSyncRunners(
            remote_sync_runners_.begin();
        iter != remote_sync_runners_.end(); ++iter)
     ((*iter)->*method)();
-}
-
-RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
-    const GURL& origin) {
-  return remote_service_.get();
 }
 
 }  // namespace sync_file_system

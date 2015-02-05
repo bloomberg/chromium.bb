@@ -163,10 +163,6 @@ class SyncFileSystemService
   // and Remote sync).
   void RunForEachSyncRunners(void(SyncProcessRunner::*method)());
 
-  // Returns the appropriate RemoteFileSyncService for the given origin/app.
-  // (crbug.com/324215)
-  RemoteFileSyncService* GetRemoteService(const GURL& origin);
-
   Profile* profile_;
 
   scoped_ptr<LocalFileSyncService> local_service_;
