@@ -61,7 +61,7 @@ void AuraDesktopCapturer::OnFrameCaptured(
   scoped_ptr<webrtc::DesktopFrame> frame(
       SkiaBitmapDesktopFrame::Create(bitmap.Pass()));
 
-  // |VideoScheduler| will not encode the frame if |updated_region| is empty.
+  // |VideoFramePump| will not encode the frame if |updated_region| is empty.
   const webrtc::DesktopRect& rect = webrtc::DesktopRect::MakeWH(
       frame->size().width(), frame->size().height());
 

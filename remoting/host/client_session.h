@@ -42,7 +42,7 @@ class DesktopEnvironmentFactory;
 class InputInjector;
 class ScreenControls;
 class VideoEncoder;
-class VideoScheduler;
+class VideoFramePump;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -219,10 +219,10 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Schedulers for audio and video capture.
-  // |video_scheduler_| may be nullptr if the video channel is not required -
+  // |video_frame_pump_| may be nullptr if the video channel is not required -
   // see ResetVideoPipeline().
   scoped_refptr<AudioScheduler> audio_scheduler_;
-  scoped_refptr<VideoScheduler> video_scheduler_;
+  scoped_refptr<VideoFramePump> video_frame_pump_;
 
   // The set of all capabilities supported by the client.
   scoped_ptr<std::string> client_capabilities_;

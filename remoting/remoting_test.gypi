@@ -181,7 +181,7 @@
         'host/shaped_desktop_capturer_unittest.cc',
         'host/token_validator_factory_impl_unittest.cc',
         'host/video_frame_recorder_unittest.cc',
-        'host/video_scheduler_unittest.cc',
+        'host/video_frame_pump_unittest.cc',
         'host/win/rdp_client_unittest.cc',
         'host/win/worker_process_launcher.cc',
         'host/win/worker_process_launcher.h',

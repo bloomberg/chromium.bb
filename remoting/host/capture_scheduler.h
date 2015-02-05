@@ -18,7 +18,7 @@
 
 namespace remoting {
 
-// CaptureScheduler is used by the VideoScheduler to schedule frame capturer,
+// CaptureScheduler is used by the VideoFramePump to schedule frame capturer,
 // taking into account capture delay, encoder delay, network bandwidth, etc.
 class CaptureScheduler : public base::NonThreadSafe {
  public:

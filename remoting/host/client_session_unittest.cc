@@ -774,7 +774,7 @@ TEST_F(ClientSessionTest, Extensions) {
 }
 
 // Verifies that an extension can "steal" the video capture, in which case no
-// VideoScheduler is instantiated.
+// VideoFramePump is instantiated.
 TEST_F(ClientSessionTest, StealVideoCapturer) {
   FakeExtension extension("ext1", "cap1");
   extensions_.push_back(&extension);

@@ -22,7 +22,7 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/video_scheduler.h"
+#include "remoting/host/video_frame_pump.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
@@ -101,7 +101,7 @@ ClientSession::~ClientSession() {
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_scheduler_.get());
+  DCHECK(!video_frame_pump_.get());
 
   connection_.reset();
 }
@@ -136,28 +136,28 @@ void ClientSession::NotifyClientResolution(
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
   DCHECK(CalledOnValidThread());
 
-  // Note that |video_scheduler_| may be null, depending upon whether extensions
-  // choose to wrap or "steal" the video capturer or encoder.
+  // Note that |video_frame_pump_| may be null, depending upon whether
+  // extensions choose to wrap or "steal" the video capturer or encoder.
   if (video_control.has_enable()) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
     pause_video_ = !video_control.enable();
-    if (video_scheduler_.get())
-      video_scheduler_->Pause(pause_video_);
+    if (video_frame_pump_.get())
+      video_frame_pump_->Pause(pause_video_);
   }
   if (video_control.has_lossless_encode()) {
     VLOG(1) << "Received VideoControl (lossless_encode="
             << video_control.lossless_encode() << ")";
     lossless_video_encode_ = video_control.lossless_encode();
-    if (video_scheduler_.get())
-      video_scheduler_->SetLosslessEncode(lossless_video_encode_);
+    if (video_frame_pump_.get())
+      video_frame_pump_->SetLosslessEncode(lossless_video_encode_);
   }
   if (video_control.has_lossless_color()) {
     VLOG(1) << "Received VideoControl (lossless_color="
             << video_control.lossless_color() << ")";
     lossless_video_color_ = video_control.lossless_color();
-    if (video_scheduler_.get())
-      video_scheduler_->SetLosslessColor(lossless_video_color_);
+    if (video_frame_pump_.get())
+      video_frame_pump_->SetLosslessColor(lossless_video_color_);
   }
 }
 
@@ -250,7 +250,7 @@ void ClientSession::OnConnectionAuthenticated(
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_scheduler_.get());
+  DCHECK(!video_frame_pump_.get());
 
   auth_input_filter_.set_enabled(true);
   auth_clipboard_filter_.set_enabled(true);
@@ -368,9 +368,9 @@ void ClientSession::OnConnectionClosed(
     audio_scheduler_->Stop();
     audio_scheduler_ = nullptr;
   }
-  if (video_scheduler_.get()) {
-    video_scheduler_->Stop();
-    video_scheduler_ = nullptr;
+  if (video_frame_pump_.get()) {
+    video_frame_pump_->Stop();
+    video_frame_pump_ = nullptr;
   }
 
   client_clipboard_factory_.InvalidateWeakPtrs();
@@ -388,8 +388,8 @@ void ClientSession::OnEventTimestamp(protocol::ConnectionToClient* connection,
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
-  if (video_scheduler_.get())
-    video_scheduler_->SetLatestEventTimestamp(timestamp);
+  if (video_frame_pump_.get())
+    video_frame_pump_->SetLatestEventTimestamp(timestamp);
 }
 
 void ClientSession::OnRouteChange(
@@ -434,9 +434,9 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 void ClientSession::ResetVideoPipeline() {
   DCHECK(CalledOnValidThread());
 
-  if (video_scheduler_.get()) {
-    video_scheduler_->Stop();
-    video_scheduler_ = nullptr;
+  if (video_frame_pump_.get()) {
+    video_frame_pump_->Stop();
+    video_frame_pump_ = nullptr;
   }
 
   // Create VideoEncoder and DesktopCapturer to match the session's video
@@ -448,12 +448,12 @@ void ClientSession::ResetVideoPipeline() {
       CreateVideoEncoder(connection_->session()->config());
   extension_manager_->OnCreateVideoEncoder(&video_encoder);
 
-  // Don't start the VideoScheduler if either capturer or encoder are missing.
+  // Don't start the VideoFramePump if either capturer or encoder are missing.
   if (!video_capturer || !video_encoder)
     return;
 
-  // Create a VideoScheduler to pump frames from the capturer to the client.
-  video_scheduler_ = new VideoScheduler(
+  // Create a VideoFramePump to pump frames from the capturer to the client.
+  video_frame_pump_ = new VideoFramePump(
       video_capture_task_runner_,
       video_encode_task_runner_,
       network_task_runner_,
@@ -464,14 +464,14 @@ void ClientSession::ResetVideoPipeline() {
       &mouse_clamping_filter_);
 
   // Apply video-control parameters to the new scheduler.
-  video_scheduler_->SetLosslessEncode(lossless_video_encode_);
-  video_scheduler_->SetLosslessColor(lossless_video_color_);
+  video_frame_pump_->SetLosslessEncode(lossless_video_encode_);
+  video_frame_pump_->SetLosslessColor(lossless_video_color_);
 
   // Start capturing the screen.
-  video_scheduler_->Start();
+  video_frame_pump_->Start();
 
   // Pause capturing if necessary.
-  video_scheduler_->Pause(pause_video_);
+  video_frame_pump_->Pause(pause_video_);
 }
 
 void ClientSession::SetGnubbyAuthHandlerForTesting(

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_VIDEO_SCHEDULER_H_
-#define REMOTING_HOST_VIDEO_SCHEDULER_H_
+#ifndef REMOTING_HOST_VIDEO_FRAME_PUMP_H_
+#define REMOTING_HOST_VIDEO_FRAME_PUMP_H_
 
 #include <vector>
 
@@ -28,7 +28,6 @@ class DesktopCapturer;
 namespace remoting {
 
 class CaptureScheduler;
-class CursorShapeInfo;
 
 namespace protocol {
 class CursorShapeInfo;
@@ -68,24 +67,24 @@ class VideoStub;
 // | Time
 // v
 //
-// VideoScheduler would ideally schedule captures so as to saturate the slowest
+// VideoFramePump would ideally schedule captures so as to saturate the slowest
 // of the capture, encode and network processes.  However, it also needs to
 // rate-limit captures to avoid overloading the host system, either by consuming
 // too much CPU, or hogging the host's graphics subsystem.
 //
-// TODO(sergeyu): Rename this class to VideoFramePipe.
-class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
+// TODO(sergeyu): Rename this class to VideoFramePump.
+class VideoFramePump : public base::RefCountedThreadSafe<VideoFramePump>,
                        public webrtc::DesktopCapturer::Callback,
                        public webrtc::MouseCursorMonitor::Callback {
  public:
   // Enables timestamps for generated frames. Used for testing.
   static void EnableTimestampsForTests();
 
-  // Creates a VideoScheduler running capture, encode and network tasks on the
+  // Creates a VideoFramePump running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
   // |video_stub| and |client_stub|, which must remain valid until Stop() is
   // called. |capturer| is used to capture frames.
-  VideoScheduler(
+  VideoFramePump(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
@@ -116,13 +115,13 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   void SetLosslessColor(bool want_lossless);
 
  private:
-  friend class base::RefCountedThreadSafe<VideoScheduler>;
-  ~VideoScheduler() override;
+  friend class base::RefCountedThreadSafe<VideoFramePump>;
+  ~VideoFramePump() override;
 
   // Capturer thread ----------------------------------------------------------
 
   // TODO(sergeyu): Move all methods that run on the capture thread to a
-  // separate class and make VideoScheduler not ref-counted.
+  // separate class and make VideoFramePump not ref-counted.
 
   // webrtc::DesktopCapturer::Callback implementation.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
@@ -189,16 +188,16 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Timer used to ensure that we send empty keep-alive frames to the client
   // even when the video stream is paused or encoder is busy.
-  scoped_ptr<base::DelayTimer<VideoScheduler> > keep_alive_timer_;
+  scoped_ptr<base::DelayTimer<VideoFramePump> > keep_alive_timer_;
 
   // Number updated by the caller to trace performance.
   int64 latest_event_timestamp_;
 
   scoped_ptr<CaptureScheduler> capture_scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoScheduler);
+  DISALLOW_COPY_AND_ASSIGN(VideoFramePump);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_VIDEO_SCHEDULER_H_
+#endif  // REMOTING_HOST_VIDEO_FRAME_PUMP_H_
