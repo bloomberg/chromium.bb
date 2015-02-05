@@ -67,7 +67,6 @@ cr.define('cr.ui', function() {
         row.makeRowActive(row.contains(target));
       });
 
-      e.preventDefault();
       return true;
     },
   };
