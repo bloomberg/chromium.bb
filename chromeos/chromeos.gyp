@@ -524,7 +524,6 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',
         'ime/input_method.gyp:gencode',

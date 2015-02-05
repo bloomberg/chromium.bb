@@ -40,7 +40,7 @@ const char kAccelerometerScanIndexPath[] =
     "scan_elements/in_accel_%s_%s_index";
 
 // The names of the accelerometers. Matches up with the enum AccelerometerSource
-// in ui/accelerometer/accelerometer_types.h.
+// in chromeos/accelerometer/accelerometer_types.h.
 const char kAccelerometerNames[ACCELEROMETER_SOURCE_COUNT][5] = {"lid", "base"};
 
 // The axes on each accelerometer.
@@ -120,7 +120,7 @@ bool DetectAndReadAccelerometerConfiguration(
   }
 
   // Adjust the directions of accelerometers to match the AccelerometerUpdate
-  // type specified in ui/accelerometer/accelerometer_types.h.
+  // type specified in chromeos/accelerometer/accelerometer_types.h.
   configuration->data.scale[ACCELEROMETER_SOURCE_SCREEN][0] *= -1.0f;
   for (int i = 0; i < 3; ++i) {
     configuration->data.scale[ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD][i] *=
