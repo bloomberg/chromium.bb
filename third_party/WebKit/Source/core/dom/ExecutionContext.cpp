@@ -72,7 +72,7 @@ ExecutionContext::ExecutionContext()
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
     , m_strictMixedContentCheckingEnforced(false)
-    , m_windowFocusTokens(0)
+    , m_windowInteractionTokens(0)
 {
 }
 
@@ -226,24 +226,24 @@ bool ExecutionContext::isIteratingOverObservers() const
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
 }
 
-void ExecutionContext::allowWindowFocus()
+void ExecutionContext::allowWindowInteraction()
 {
-    ++m_windowFocusTokens;
+    ++m_windowInteractionTokens;
 }
 
-void ExecutionContext::consumeWindowFocus()
+void ExecutionContext::consumeWindowInteraction()
 {
-    if (m_windowFocusTokens == 0)
+    if (m_windowInteractionTokens == 0)
         return;
-    --m_windowFocusTokens;
+    --m_windowInteractionTokens;
 }
 
-bool ExecutionContext::isWindowFocusAllowed() const
+bool ExecutionContext::isWindowInteractionAllowed() const
 {
     // FIXME: WindowFocusAllowedIndicator::windowFocusAllowed() is temporary,
     // it will be removed as soon as WebScopedWindowFocusAllowedIndicator will
     // be updated to not use WindowFocusAllowedIndicator.
-    return m_windowFocusTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
+    return m_windowInteractionTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
 }
 
 void ExecutionContext::trace(Visitor* visitor)

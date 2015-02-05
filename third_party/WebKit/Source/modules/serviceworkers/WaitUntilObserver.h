@@ -7,6 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -50,11 +51,14 @@ private:
     void incrementPendingActivity();
     void decrementPendingActivity();
 
+    void consumeWindowInteraction(Timer<WaitUntilObserver>*);
+
     EventType m_type;
     int m_eventID;
     int m_pendingActivity;
     bool m_hasError;
     bool m_eventDispatched;
+    Timer<WaitUntilObserver> m_consumeWindowInteractionTimer;
 };
 
 } // namespace blink

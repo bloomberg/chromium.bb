@@ -900,9 +900,9 @@ void LocalDOMWindow::focus(ExecutionContext* context)
 
     ASSERT(context);
 
-    bool allowFocus = context->isWindowFocusAllowed();
+    bool allowFocus = context->isWindowInteractionAllowed();
     if (allowFocus) {
-        context->consumeWindowFocus();
+        context->consumeWindowInteraction();
     } else {
         ASSERT(isMainThread());
         allowFocus = opener() && (opener() != this) && (toDocument(context)->domWindow() == opener());

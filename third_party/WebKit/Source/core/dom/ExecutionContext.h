@@ -130,9 +130,11 @@ public:
     void enforceStrictMixedContentChecking() { m_strictMixedContentCheckingEnforced = true; }
     bool shouldEnforceStrictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
 
-    void allowWindowFocus();
-    void consumeWindowFocus();
-    bool isWindowFocusAllowed() const;
+    // Methods related to window interaction. It should be used to manage window
+    // focusing and window creation permission for an ExecutionContext.
+    void allowWindowInteraction();
+    void consumeWindowInteraction();
+    bool isWindowInteractionAllowed() const;
 
 protected:
     ExecutionContext();
@@ -167,11 +169,11 @@ private:
 
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 
-    // Counter that keeps track of how many window focus calls are allowed for
-    // this ExecutionContext. Callers are expected to call |allowWindowFocus()|
-    // and |consumeWindowFocus()| in order to increment and decrement the
-    // counter.
-    int m_windowFocusTokens;
+    // Counter that keeps track of how many window interaction calls are allowed
+    // for this ExecutionContext. Callers are expected to call
+    // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
+    // increment and decrement the counter.
+    int m_windowInteractionTokens;
 };
 
 } // namespace blink
