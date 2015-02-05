@@ -25,12 +25,12 @@ class AudioDecoderJob : public MediaDecoderJob {
   // demuxer config has changed.
   AudioDecoderJob(const base::Closure& request_data_cb,
                   const base::Closure& on_demuxer_config_changed_cb);
-  virtual ~AudioDecoderJob();
+  ~AudioDecoderJob() override;
 
   // MediaDecoderJob implementation.
-  virtual bool HasStream() const override;
-  virtual void Flush() override;
-  virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
+  bool HasStream() const override;
+  void Flush() override;
+  void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
 
   // Sets the volume of the audio output.
   void SetVolume(double volume);
@@ -40,17 +40,16 @@ class AudioDecoderJob : public MediaDecoderJob {
 
  private:
   // MediaDecoderJob implementation.
-  virtual void ReleaseOutputBuffer(
+  void ReleaseOutputBuffer(
       int output_buffer_index,
       size_t size,
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) override;
-  virtual bool ComputeTimeToRender() const override;
-  virtual bool AreDemuxerConfigsChanged(
-      const DemuxerConfigs& configs) const override;
-  virtual MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
-  virtual void OnOutputFormatChanged() override;
+  bool ComputeTimeToRender() const override;
+  bool AreDemuxerConfigsChanged(const DemuxerConfigs& configs) const override;
+  MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
+  void OnOutputFormatChanged() override;
 
   // Helper method to set the audio output volume.
   void SetVolumeInternal();

@@ -37,7 +37,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   };
 
   explicit VideoCaptureDeviceAndroid(const Name& device_name);
-  virtual ~VideoCaptureDeviceAndroid();
+  ~VideoCaptureDeviceAndroid() override;
 
   static VideoCaptureDevice* Create(const Name& device_name);
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
@@ -48,9 +48,9 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<Client> client) override;
+  void StopAndDeAllocate() override;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(

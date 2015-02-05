@@ -35,7 +35,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
 
   typedef base::Callback<void(bool)> ResetCredentialsCB;
 
-  virtual ~MediaDrmBridge();
+  ~MediaDrmBridge() override;
 
   // Checks whether MediaDRM is available.
   // All other static methods check IsAvailable() internally. There's no need

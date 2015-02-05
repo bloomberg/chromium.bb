@@ -31,15 +31,15 @@ class OpenSLESOutputStream : public AudioOutputStream {
                        const AudioParameters& params,
                        SLint32 stream_type);
 
-  virtual ~OpenSLESOutputStream();
+  ~OpenSLESOutputStream() override;
 
   // Implementation of AudioOutputStream.
-  virtual bool Open() override;
-  virtual void Close() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
+  bool Open() override;
+  void Close() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
 
   // Set the value of |muted_|. It does not affect |volume_| which can be
   // got by calling GetVolume(). See comments for |muted_| below.

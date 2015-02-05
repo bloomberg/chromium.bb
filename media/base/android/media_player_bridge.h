@@ -50,29 +50,29 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     const RequestMediaResourcesCB& request_media_resources_cb,
                     const GURL& frame_url,
                     bool allow_credentials);
-  virtual ~MediaPlayerBridge();
+  ~MediaPlayerBridge() override;
 
   // Initialize this object and extract the metadata from the media.
   virtual void Initialize();
 
   // MediaPlayerAndroid implementation.
-  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
-  virtual void Start() override;
-  virtual void Pause(bool is_media_related_action) override;
-  virtual void SeekTo(base::TimeDelta timestamp) override;
-  virtual void Release() override;
-  virtual void SetVolume(double volume) override;
-  virtual int GetVideoWidth() override;
-  virtual int GetVideoHeight() override;
-  virtual base::TimeDelta GetCurrentTime() override;
-  virtual base::TimeDelta GetDuration() override;
-  virtual bool IsPlaying() override;
-  virtual bool CanPause() override;
-  virtual bool CanSeekForward() override;
-  virtual bool CanSeekBackward() override;
-  virtual bool IsPlayerReady() override;
-  virtual GURL GetUrl() override;
-  virtual GURL GetFirstPartyForCookies() override;
+  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void Start() override;
+  void Pause(bool is_media_related_action) override;
+  void SeekTo(base::TimeDelta timestamp) override;
+  void Release() override;
+  void SetVolume(double volume) override;
+  int GetVideoWidth() override;
+  int GetVideoHeight() override;
+  base::TimeDelta GetCurrentTime() override;
+  base::TimeDelta GetDuration() override;
+  bool IsPlaying() override;
+  bool CanPause() override;
+  bool CanSeekForward() override;
+  bool CanSeekBackward() override;
+  bool IsPlayerReady() override;
+  GURL GetUrl() override;
+  GURL GetFirstPartyForCookies() override;
 
   void OnDidSetDataUriDataSource(JNIEnv* env, jobject obj, jboolean success);
 
@@ -87,10 +87,10 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void Prepare();
 
   // MediaPlayerAndroid implementation.
-  virtual void OnVideoSizeChanged(int width, int height) override;
-  virtual void OnPlaybackComplete() override;
-  virtual void OnMediaInterrupted() override;
-  virtual void OnMediaPrepared() override;
+  void OnVideoSizeChanged(int width, int height) override;
+  void OnPlaybackComplete() override;
+  void OnMediaInterrupted() override;
+  void OnMediaPrepared() override;
 
   // Create the corresponding Java class instance.
   virtual void CreateJavaMediaPlayerBridge();

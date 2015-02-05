@@ -25,35 +25,33 @@ class VideoDecoderJob : public MediaDecoderJob {
       const base::Closure& request_data_cb,
       const base::Closure& request_resources_cb,
       const base::Closure& on_demuxer_config_changed_cb);
-  virtual ~VideoDecoderJob();
+  ~VideoDecoderJob() override;
 
   // Passes a java surface object to the codec. Returns true if the surface
   // can be used by the decoder, or false otherwise.
   bool SetVideoSurface(gfx::ScopedJavaSurface surface);
 
   // MediaDecoderJob implementation.
-  virtual bool HasStream() const override;
-  virtual void ReleaseDecoderResources() override;
-  virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
+  bool HasStream() const override;
+  void ReleaseDecoderResources() override;
+  void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
 
   int output_width() const { return output_width_; }
   int output_height() const { return output_height_; }
 
  private:
   // MediaDecoderJob implementation.
-  virtual void ReleaseOutputBuffer(
+  void ReleaseOutputBuffer(
       int output_buffer_index,
       size_t size,
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) override;
-  virtual bool ComputeTimeToRender() const override;
-  virtual bool IsCodecReconfigureNeeded(
-      const DemuxerConfigs& configs) const override;
-  virtual bool AreDemuxerConfigsChanged(
-      const DemuxerConfigs& configs) const override;
-  virtual MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
-  virtual bool UpdateOutputFormat() override;
+  bool ComputeTimeToRender() const override;
+  bool IsCodecReconfigureNeeded(const DemuxerConfigs& configs) const override;
+  bool AreDemuxerConfigsChanged(const DemuxerConfigs& configs) const override;
+  MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
+  bool UpdateOutputFormat() override;
 
   // Returns true if a protected surface is required for video playback.
   bool IsProtectedSurfaceRequired();

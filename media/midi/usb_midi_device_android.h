@@ -23,12 +23,11 @@ class MEDIA_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   static scoped_ptr<Factory> CreateFactory();
 
   UsbMidiDeviceAndroid(ObjectRef raw_device, UsbMidiDeviceDelegate* delegate);
-  virtual ~UsbMidiDeviceAndroid();
+  ~UsbMidiDeviceAndroid() override;
 
   // UsbMidiDevice implementation.
-  virtual std::vector<uint8> GetDescriptor() override;
-  virtual void Send(int endpoint_number,
-                    const std::vector<uint8>& data) override;
+  std::vector<uint8> GetDescriptor() override;
+  void Send(int endpoint_number, const std::vector<uint8>& data) override;
 
   // Called by the Java world.
   void OnData(JNIEnv* env,

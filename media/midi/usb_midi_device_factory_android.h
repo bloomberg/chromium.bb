@@ -22,11 +22,11 @@ namespace media {
 class MEDIA_EXPORT UsbMidiDeviceFactoryAndroid : public UsbMidiDevice::Factory {
  public:
   UsbMidiDeviceFactoryAndroid();
-  virtual ~UsbMidiDeviceFactoryAndroid();
+  ~UsbMidiDeviceFactoryAndroid() override;
 
   // UsbMidiDevice::Factory implementation.
-  virtual void EnumerateDevices(UsbMidiDeviceDelegate* delegate,
-                                Callback callback) override;
+  void EnumerateDevices(UsbMidiDeviceDelegate* delegate,
+                        Callback callback) override;
 
   void OnUsbMidiDeviceRequestDone(JNIEnv* env,
                                   jobject caller,

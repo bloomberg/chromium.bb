@@ -23,34 +23,31 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   AudioManagerAndroid(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
-  virtual bool HasAudioOutputDevices() override;
-  virtual bool HasAudioInputDevices() override;
-  virtual void GetAudioInputDeviceNames(
-      AudioDeviceNames* device_names) override;
-  virtual void GetAudioOutputDeviceNames(
-      AudioDeviceNames* device_names) override;
-  virtual AudioParameters GetInputStreamParameters(
+  bool HasAudioOutputDevices() override;
+  bool HasAudioInputDevices() override;
+  void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
+  void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override;
+  AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
 
-  virtual AudioOutputStream* MakeAudioOutputStream(
+  AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeAudioInputStream(
-      const AudioParameters& params,
-      const std::string& device_id) override;
-  virtual void ReleaseOutputStream(AudioOutputStream* stream) override;
-  virtual void ReleaseInputStream(AudioInputStream* stream) override;
+  AudioInputStream* MakeAudioInputStream(const AudioParameters& params,
+                                         const std::string& device_id) override;
+  void ReleaseOutputStream(AudioOutputStream* stream) override;
+  void ReleaseInputStream(AudioInputStream* stream) override;
 
   // Implementation of AudioManagerBase.
-  virtual AudioOutputStream* MakeLinearOutputStream(
+  AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) override;
-  virtual AudioOutputStream* MakeLowLatencyOutputStream(
+  AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeLinearInputStream(
+  AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeLowLatencyInputStream(
+  AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
 
@@ -59,9 +56,9 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void SetMute(JNIEnv* env, jobject obj, jboolean muted);
 
  protected:
-  virtual ~AudioManagerAndroid();
+  ~AudioManagerAndroid() override;
 
-  virtual AudioParameters GetPreferredOutputStreamParameters(
+  AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 

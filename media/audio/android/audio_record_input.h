@@ -28,19 +28,19 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   AudioRecordInputStream(AudioManagerAndroid* manager,
                          const AudioParameters& params);
 
-  virtual ~AudioRecordInputStream();
+  ~AudioRecordInputStream() override;
 
   // Implementation of AudioInputStream.
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual bool SetAutomaticGainControl(bool enabled) override;
-  virtual bool GetAutomaticGainControl() override;
-  virtual bool IsMuted() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool SetAutomaticGainControl(bool enabled) override;
+  bool GetAutomaticGainControl() override;
+  bool IsMuted() override;
 
   static bool RegisterAudioRecordInput(JNIEnv* env);
 
