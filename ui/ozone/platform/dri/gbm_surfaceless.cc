@@ -23,8 +23,7 @@ intptr_t GbmSurfaceless::GetNativeWindow() {
 }
 
 bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
-  NOTIMPLEMENTED();
-  return false;
+  return true;
 }
 
 bool GbmSurfaceless::OnSwapBuffers() {
