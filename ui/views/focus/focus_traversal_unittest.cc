@@ -795,19 +795,19 @@ void FocusTraversalNonFocusableTest::InitContentView() {
   // the x1-x3-x2 triangles, it will traverse the left sibling of x1, (x+1)0,
   // twice, which means it will visit O(2^n) nodes.)
   //
-  //              0
-  //            /   \
-  //          /       \
-  //         10        1
-  //        /  \      / \
-  //      /      \   /   \
-  //     20      11  2   3
-  //    / \      / \
-  //   /   \    /   \
-  //  ...  21  12   13
-  //       / \
-  //      /   \
-  //     22   23
+  // |              0         |
+  // |            /   \       |
+  // |          /       \     |
+  // |         10        1    |
+  // |        /  \      / \   |
+  // |      /      \   /   \  |
+  // |     20      11  2   3  |
+  // |    / \      / \        |
+  // |   /   \    /   \       |
+  // |  ...  21  12   13      |
+  // |       / \              |
+  // |      /   \             |
+  // |     22   23            |
 
   View* v = GetContentsView();
   // Create 30 groups of 4 nodes. |v| is the top of each group.
