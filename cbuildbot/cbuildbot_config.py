@@ -1303,6 +1303,7 @@ _cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
   # are bundled up for inclusion in the sdk.
   boards=('x86-generic', 'arm-generic', 'amd64-generic'),
   build_type=constants.CHROOT_BUILDER_TYPE,
+  builder_class_name='sdk_builders.ChrootSdkBuilder',
   use_sdk=False,
   trybot_list=True,
   description='Build the SDK and all the cross-compilers',

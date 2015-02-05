@@ -9594,6 +9594,7 @@
             "amd64-generic"
         ],
         "build_type": "chroot",
+        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Build the SDK and all the cross-compilers",
@@ -23274,6 +23275,7 @@
             "daisy"
         ],
         "build_type": "chroot",
+        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chromeos_official": true,
         "chroot_replace": true,
@@ -23307,6 +23309,7 @@
             "daisy"
         ],
         "build_type": "chroot",
+        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chromeos_official": true,
         "chroot_replace": true,
@@ -61154,6 +61157,7 @@
             "amd64-generic"
         ],
         "build_type": "chroot",
+        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Test next major toolchain revision",
@@ -61179,6 +61183,7 @@
             "amd64-generic"
         ],
         "build_type": "chroot",
+        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Test next minor toolchain revision",

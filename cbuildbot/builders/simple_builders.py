@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import collections
-import datetime
 
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_config
@@ -21,7 +20,6 @@ from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import release_stages
-from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cros_logging as logging
@@ -184,22 +182,6 @@ class SimpleBuilder(generic_builders.Builder):
         self._RunStage(build_stages.SetupBoardStage, board,
                        builder_run=builder_run)
 
-  def _RunChrootBuilderTypeBuild(self):
-    """Runs through stages of a CHROOT_BUILDER_TYPE build."""
-    # Unlike normal CrOS builds, the SDK has no concept of pinned CrOS manifest
-    # or specific Chrome version.  Use a datestamp instead.
-    version = datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
-    self._RunStage(build_stages.UprevStage, boards=[], enter_chroot=False)
-    self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
-    self._RunStage(chrome_stages.SyncChromeStage)
-    self._RunStage(chrome_stages.PatchChromeStage)
-    self._RunStage(sdk_stages.SDKBuildToolchainsStage)
-    self._RunStage(sdk_stages.SDKPackageStage, version=version)
-    self._RunStage(sdk_stages.SDKTestStage)
-    self._RunStage(artifact_stages.UploadPrebuiltsStage,
-                   constants.CHROOT_BUILDER_BOARD, version=version)
-
   def _RunMasterPaladinOrChromePFQBuild(self):
     """Runs through the stages of the paladin or chrome PFQ master build."""
     self._RunStage(build_stages.InitSDKStage)
@@ -289,8 +271,6 @@ class SimpleBuilder(generic_builders.Builder):
     # TODO(sosa): Split these out into classes.
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
       self._RunStage(sync_stages.PreCQLauncherStage)
-    elif self._run.config.build_type == constants.CHROOT_BUILDER_TYPE:
-      self._RunChrootBuilderTypeBuild()
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or
            self._run.config.build_type == constants.CHROME_PFQ_TYPE) and
           self._run.config.master):
