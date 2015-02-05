@@ -4,8 +4,11 @@
 
 #include "content/child/runtime_features.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_split.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -186,6 +189,29 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableV8IdleTasks(false);
   else
     WebRuntimeFeatures::enableV8IdleTasks(true);
+
+  // Enable explicitly enabled features, and then disable explicitly disabled
+  // ones.
+  if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
+    std::vector<std::string> enabled_features;
+    base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kEnableBlinkFeatures), ',',
+        &enabled_features);
+    for (const std::string& feature : enabled_features) {
+      WebRuntimeFeatures::enableFeatureFromString(
+          blink::WebString::fromLatin1(feature), true);
+    }
+  }
+  if (command_line.HasSwitch(switches::kDisableBlinkFeatures)) {
+    std::vector<std::string> disabled_features;
+    base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kDisableBlinkFeatures), ',',
+        &disabled_features);
+    for (const std::string& feature : disabled_features) {
+      WebRuntimeFeatures::enableFeatureFromString(
+          blink::WebString::fromLatin1(feature), false);
+    }
+  }
 }
 
 }  // namespace content

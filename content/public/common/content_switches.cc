@@ -84,6 +84,12 @@ const char kDisableAcceleratedVideoDecode[] =
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
+// Disable one or more Blink runtime-enabled features.
+// Use names from RuntimeEnabledFeatures.in, separated by commas.
+// Applied after kEnableBlinkFeatures, and after other flags that change these
+// features.
+const char kDisableBlinkFeatures[]          = "disable-blink-features";
+
 // Disable the Blink Scheduler. Ensures there's no reordering of blink tasks.
 // This switch is intended only for performance tests.
 const char kDisableBlinkScheduler[]         = "disable-blink-scheduler";
@@ -284,6 +290,12 @@ const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 // Enable the creation of compositing layers when it would prevent LCD text.
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";
+
+// Disable one or more Blink runtime-enabled features.
+// Use names from RuntimeEnabledFeatures.in, separated by commas.
+// Applied before kDisableBlinkFeatures, and after other flags that change these
+// features.
+const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
 // PlzNavigate: Use the experimental browser-side navigation path.
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
