@@ -861,8 +861,8 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen_build_lib, '_GenerateSinglePayload')
 
     expected_payload_args = [
-        (basic_payload, mox.IsA(str), True, test_dry_run),
-        (premp_payload, mox.IsA(str), True, test_dry_run)
+        (basic_payload, mox.IsA(str), True, None, test_dry_run),
+        (premp_payload, mox.IsA(str), True, None, test_dry_run)
     ]
 
     if run_parallel:
@@ -870,10 +870,10 @@ fsi_images: 2913.331.0,2465.105.0
                                      expected_payload_args)
     else:
       paygen_build_lib._GenerateSinglePayload(basic_payload, mox.IsA(str),
-                                              True, test_dry_run)
+                                              True, None, test_dry_run)
 
       paygen_build_lib._GenerateSinglePayload(premp_payload, mox.IsA(str),
-                                              True, test_dry_run)
+                                              True, None, test_dry_run)
 
     # Run the test verification.
     self.mox.ReplayAll()
@@ -904,13 +904,14 @@ fsi_images: 2913.331.0,2465.105.0
         mox.IsA(download_cache.DownloadCache),
         work_dir=self.tempdir,
         sign=False,
-        dry_run=True)
+        dry_run=True,
+        au_generator_uri='foo.zip')
 
     # Run the test verification.
     self.mox.ReplayAll()
 
     paygen_build_lib._GenerateSinglePayload(basic_payload, self.tempdir,
-                                            sign=False, dry_run=True)
+                                            False, 'foo.zip', True)
 
   def testCleanupBuild(self):
     """Test _PaygenBuild._CleanupBuild."""

@@ -240,7 +240,7 @@ def _FilterForTest(artifacts):
           if i.image_type == 'test']
 
 
-def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
+def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
   """Generate a single payload.
 
   This is intended to be safe to call inside a new process.
@@ -249,6 +249,7 @@ def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
     payload: gspath.Payload object defining the payloads to generate.
     work_dir: Working directory for payload generation.
     sign: boolean to decide if payload should be signed.
+    au_generator_uri: URI of the au_generator.zip to use, None for the default.
     dry_run: boolean saying if this is a dry run.
   """
   # This cache dir will be shared with other processes, but we need our
@@ -262,6 +263,7 @@ def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
         cache,
         work_dir=work_dir,
         sign=sign,
+        au_generator_uri=au_generator_uri,
         dry_run=dry_run)
 
 
@@ -316,7 +318,7 @@ class _PaygenBuild(object):
                skip_full_payloads=False, skip_delta_payloads=False,
                skip_test_payloads=False, skip_nontest_payloads=False,
                control_dir=None, output_dir=None,
-               run_parallel=False, run_on_builder=False):
+               run_parallel=False, run_on_builder=False, au_generator_uri=None):
     """Initializer."""
     self._build = build
     self._work_dir = work_dir
@@ -334,6 +336,7 @@ class _PaygenBuild(object):
     self._archive_board = None
     self._archive_build = None
     self._archive_build_uri = None
+    self._au_generator_uri = au_generator_uri
 
   def _GetFlagURI(self, flag):
     """Find the URI of the lock file associated with this build.
@@ -861,6 +864,7 @@ class _PaygenBuild(object):
     payloads_args = [(payload,
                       self._work_dir,
                       isinstance(payload.tgt_image, gspaths.Image),
+                      self._au_generator_uri,
                       bool(self._drm))
                      for payload in payloads]
 
@@ -1306,7 +1310,7 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
                    skip_full_payloads=False, skip_delta_payloads=False,
                    skip_test_payloads=False, skip_nontest_payloads=False,
                    disable_tests=False, output_dir=None, run_parallel=False,
-                   run_on_builder=False):
+                   run_on_builder=False, au_generator_uri=None):
   """Helper method than generates payloads for a given build.
 
   Args:
@@ -1322,6 +1326,7 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
     output_dir: Directory for payload files, or None for GS default locations.
     run_parallel: Generate payloads in parallel processes.
     run_on_builder: Running in a cbuildbot environment on a builder.
+    au_generator_uri: URI of au_generator.zip to use, None to use the default.
   """
   ValidateBoardConfig(build.board)
 
@@ -1338,7 +1343,8 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
                  skip_nontest_payloads=skip_nontest_payloads,
                  control_dir=control_dir, output_dir=output_dir,
                  run_parallel=run_parallel,
-                 run_on_builder=run_on_builder).CreatePayloads()
+                 run_on_builder=run_on_builder,
+                 au_generator_uri=au_generator_uri).CreatePayloads()
 
   finally:
     if control_dir:
