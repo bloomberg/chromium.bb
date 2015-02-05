@@ -160,6 +160,13 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // corresponds to whether or not the menu should close.
   void OnDragComplete(bool should_close);
 
+  // Called while dispatching messages to intercept key events.
+  // If |character| is other than 0, it is handled as a mnemonic.
+  // Otherwise, |key_code| is handled as a menu navigation command.
+  // Returns ui::POST_DISPATCH_NONE if the event was swallowed by the menu.
+  ui::PostDispatchAction OnWillDispatchKeyEvent(base::char16 character,
+                                                ui::KeyboardCode key_code);
+
   // Update the submenu's selection based on the current mouse location
   void UpdateSubmenuSelection(SubmenuView* source);
 

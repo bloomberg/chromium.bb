@@ -14,8 +14,11 @@
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+using views::MenuController;
 
 namespace {
 
@@ -135,6 +138,15 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   if (!hostedView_)
     return;
 
+  // If there's an active MenuController it gets preference, and it will likely
+  // swallow the event.
+  MenuController* menuController = MenuController::GetActiveInstance();
+  if (menuController && menuController->owner() == hostedView_->GetWidget()) {
+    if (menuController->OnWillDispatchKeyEvent(0, keyCode) ==
+        ui::POST_DISPATCH_NONE)
+      return;
+  }
+
   // If there's an active TextInputClient, it ignores the key and processes the
   // logical editing action.
   if (commandId && textInputClient_ &&
@@ -174,6 +186,20 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
   hostedView_->GetWidget()->OnNativeWidgetPaint(&canvas);
+}
+
+- (NSTextInputContext*)inputContext {
+  if (!hostedView_)
+    return [super inputContext];
+
+  // If a menu is active, and -[NSView interpretKeyEvents:] asks for the
+  // input context, return nil. This ensures the action message is sent to
+  // the view, rather than any NSTextInputClient a subview has installed.
+  MenuController* menuController = MenuController::GetActiveInstance();
+  if (menuController && menuController->owner() == hostedView_->GetWidget())
+    return nil;
+
+  return [super inputContext];
 }
 
 // NSResponder implementation.
@@ -474,11 +500,36 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 }
 
 - (void)insertText:(id)text replacementRange:(NSRange)replacementRange {
-  if (!textInputClient_)
+  if (!hostedView_)
     return;
 
   if ([text isKindOfClass:[NSAttributedString class]])
     text = [text string];
+
+  MenuController* menuController = MenuController::GetActiveInstance();
+  if (menuController && menuController->owner() == hostedView_->GetWidget()) {
+    // Handle menu mnemonics (e.g. "sav" jumps to "Save"). Handles both single-
+    // characters and input from IME. For IME, swallow the entire string unless
+    // the very first character gives ui::POST_DISPATCH_PERFORM_DEFAULT.
+    bool swallowedAny = false;
+    for (NSUInteger i = 0; i < [text length]; ++i) {
+      if (!menuController ||
+          menuController->OnWillDispatchKeyEvent([text characterAtIndex:i],
+                                                 ui::VKEY_UNKNOWN) ==
+              ui::POST_DISPATCH_PERFORM_DEFAULT) {
+        if (swallowedAny)
+          return;  // Swallow remainder.
+        break;
+      }
+      swallowedAny = true;
+      // Ensure the menu remains active.
+      menuController = MenuController::GetActiveInstance();
+    }
+  }
+
+  if (!textInputClient_)
+    return;
+
   textInputClient_->DeleteRange(gfx::Range(replacementRange));
   textInputClient_->InsertText(base::SysNSStringToUTF16(text));
 }

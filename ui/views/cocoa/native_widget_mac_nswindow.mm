@@ -6,11 +6,13 @@
 
 #include "base/mac/foundation_util.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget_mac.h"
 
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (views::Widget*)viewsWidget;
+- (BOOL)hasViewsMenuActive;
 @end
 
 @implementation NativeWidgetMacNSWindow
@@ -23,6 +25,12 @@
   return [[self viewsNSWindowDelegate] nativeWidgetMac]->GetWidget();
 }
 
+- (BOOL)hasViewsMenuActive {
+  views::MenuController* menuController =
+      views::MenuController::GetActiveInstance();
+  return menuController && menuController->owner() == [self viewsWidget];
+}
+
 // Ignore [super canBecome{Key,Main}Window]. The default is NO for windows with
 // NSBorderlessWindowMask, which is not the desired behavior.
 // Note these can be called via -[NSWindow close] while the widget is being torn
@@ -33,6 +41,24 @@
 
 - (BOOL)canBecomeMainWindow {
   return [self delegate] && [self viewsWidget]->CanActivate();
+}
+
+// Override sendEvent to allow key events to be forwarded to a toolkit-views
+// menu while it is active, and while still allowing any native subview to
+// retain firstResponder status.
+- (void)sendEvent:(NSEvent*)event {
+  NSEventType type = [event type];
+  if ((type != NSKeyDown && type != NSKeyUp) || ![self hasViewsMenuActive]) {
+    [super sendEvent:event];
+    return;
+  }
+
+  // Send to the menu, after converting the event into an action message using
+  // the content view.
+  if (type == NSKeyDown)
+    [[self contentView] keyDown:event];
+  else
+    [[self contentView] keyUp:event];
 }
 
 // Override display, since this is the first opportunity Cocoa gives to detect

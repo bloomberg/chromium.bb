@@ -804,6 +804,22 @@ void MenuController::OnDragComplete(bool should_close) {
   }
 }
 
+ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
+    base::char16 character,
+    ui::KeyboardCode key_code) {
+  if (exit_type() == MenuController::EXIT_ALL ||
+      exit_type() == MenuController::EXIT_DESTROYED) {
+    TerminateNestedMessageLoop();
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
+  }
+
+  bool should_quit = character ? SelectByChar(character) : !OnKeyDown(key_code);
+  if (should_quit || exit_type() != MenuController::EXIT_NONE)
+    TerminateNestedMessageLoop();
+
+  return ui::POST_DISPATCH_NONE;
+}
+
 void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   if (submenu->IsShowing()) {
     gfx::Point point = GetScreen()->GetCursorScreenPoint();
@@ -1028,16 +1044,22 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         CloseSubmenu();
       break;
 
+// On Mac, treat space the same as return.
+#if !defined(OS_MACOSX)
     case ui::VKEY_SPACE:
       if (SendAcceleratorToHotTrackedView() == ACCELERATOR_PROCESSED_EXIT)
         return false;
       break;
+#endif
 
     case ui::VKEY_F4:
       if (!is_combobox_)
         break;
     // Fallthrough to accept or dismiss combobox menus on F4, like windows.
     case ui::VKEY_RETURN:
+#if defined(OS_MACOSX)
+    case ui::VKEY_SPACE:
+#endif
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           if (key_code == ui::VKEY_F4 &&
