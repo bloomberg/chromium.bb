@@ -25,6 +25,9 @@ class PushMessagingPermissionContext : public PermissionContextBase {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 
+  void CancelPermissionRequest(content::WebContents* web_contents,
+                               const PermissionRequestID& id) override;
+
  protected:
   // PermissionContextBase:
   void DecidePermission(content::WebContents* web_contents,

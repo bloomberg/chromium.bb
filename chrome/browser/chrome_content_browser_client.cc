@@ -632,6 +632,7 @@ PermissionContextBase* GetPermissionContext(Profile* profile,
       return DesktopNotificationServiceFactory::GetForProfile(profile);
 #else
       NOTIMPLEMENTED();
+      break;
 #endif
     case content::PERMISSION_GEOLOCATION:
       return GeolocationPermissionContextFactory::GetForProfile(profile);
@@ -650,6 +651,28 @@ PermissionContextBase* GetPermissionContext(Profile* profile,
       break;
   }
   return nullptr;
+}
+
+// Helper method to translate from Permissions to ContentSettings
+ContentSettingsType PermissionToContentSetting(
+    content::PermissionType permission) {
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+    case content::PERMISSION_PUSH_MESSAGING:
+      return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
+    case content::PERMISSION_NOTIFICATIONS:
+      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+    case content::PERMISSION_GEOLOCATION:
+      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+#endif
+    default:
+      NOTREACHED() << "Unknown content setting for permission " << permission;
+      return CONTENT_SETTINGS_TYPE_DEFAULT;
+  }
 }
 
 }  // namespace
@@ -1908,67 +1931,19 @@ void ChromeContentBrowserClient::RequestPermission(
     const base::Callback<void(bool)>& result_callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
   const PermissionRequestID request_id(render_process_id,
                                        render_view_id,
                                        bridge_id,
                                        requesting_frame);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PermissionContextBase* context = GetPermissionContext(profile, permission);
 
-  switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
-      MidiPermissionContextFactory::GetForProfile(profile)
-          ->RequestPermission(web_contents,
-                              request_id,
-                              requesting_frame,
-                              user_gesture,
-                              result_callback);
-      break;
-    case content::PERMISSION_NOTIFICATIONS:
-#if defined(ENABLE_NOTIFICATIONS)
-      DesktopNotificationServiceFactory::GetForProfile(profile)
-          ->RequestNotificationPermission(web_contents,
-                                          request_id,
-                                          requesting_frame,
-                                          user_gesture,
-                                          result_callback);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_GEOLOCATION:
-      GeolocationPermissionContextFactory::GetForProfile(profile)
-          ->RequestPermission(web_contents,
-                              request_id,
-                              requesting_frame.GetOrigin(),
-                              user_gesture,
-                              result_callback);
-      break;
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
-          ->RequestPermission(web_contents,
-                              request_id,
-                              requesting_frame.GetOrigin(),
-                              user_gesture,
-                              result_callback);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_PUSH_MESSAGING:
-      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile)
-          ->RequestPermission(web_contents,
-                              request_id,
-                              requesting_frame.GetOrigin(),
-                              user_gesture,
-                              result_callback);
-      break;
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid RequestPermission for " << permission;
-      break;
-  }
+  if (!context)
+    return;
+
+  context->RequestPermission(web_contents, request_id, requesting_frame,
+                             user_gesture, result_callback);
 }
 
 content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
@@ -2011,67 +1986,16 @@ void ChromeContentBrowserClient::CancelPermissionRequest(
     const GURL& requesting_frame) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-
   const PermissionRequestID request_id(render_process_id,
                                        render_view_id,
                                        bridge_id,
                                        requesting_frame);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
-      MidiPermissionContextFactory::GetForProfile(profile)
-          ->CancelPermissionRequest(web_contents, request_id);
-      break;
-    case content::PERMISSION_NOTIFICATIONS:
-#if defined(ENABLE_NOTIFICATIONS)
-      DesktopNotificationServiceFactory::GetForProfile(profile)
-          ->CancelPermissionRequest(web_contents, request_id);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_GEOLOCATION:
-      GeolocationPermissionContextFactory::GetForProfile(profile)
-          ->CancelPermissionRequest(web_contents, request_id);
-      break;
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
-          ->CancelPermissionRequest(web_contents, request_id);
-#else
-      NOTIMPLEMENTED();
-#endif
-      break;
-    case content::PERMISSION_PUSH_MESSAGING:
-      NOTIMPLEMENTED() << "CancelPermission not implemented for " << permission;
-      break;
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid CancelPermission for " << permission;
-      break;
-  }
-}
-
-// Helper method to translate from Permissions to ContentSettings
-static ContentSettingsType PermissionToContentSetting(
-    content::PermissionType permission) {
-  switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
-      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-    case content::PERMISSION_PUSH_MESSAGING:
-      return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-    case content::PERMISSION_NOTIFICATIONS:
-      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-    case content::PERMISSION_GEOLOCATION:
-      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
-      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
-#endif
-    default:
-      NOTREACHED() << "Unknown content setting for permission " << permission;
-      return CONTENT_SETTINGS_TYPE_DEFAULT;
-  }
+  PermissionContextBase* context = GetPermissionContext(profile, permission);
+  if (!context)
+    return;
+  context->CancelPermissionRequest(web_contents, request_id);
 }
 
 void ChromeContentBrowserClient::RegisterPermissionUsage(
