@@ -7,7 +7,7 @@
 
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #define IPC_MESSAGE_START PlatformNotificationMsgStart

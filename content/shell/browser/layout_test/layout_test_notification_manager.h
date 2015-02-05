@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/platform_notification_data.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
-#include "third_party/WebKit/public/platform/WebNotificationData.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 
 namespace content {
 

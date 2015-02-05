@@ -15,9 +15,9 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/common/platform_notification_data.h"
-#include "third_party/WebKit/public/platform/WebNotificationData.h"
-#include "third_party/WebKit/public/platform/WebNotificationDelegate.h"
 #include "third_party/WebKit/public/platform/WebSerializedOrigin.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using blink::WebNotificationPermission;

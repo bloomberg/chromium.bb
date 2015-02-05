@@ -15,7 +15,7 @@
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_image_loader.h"
 #include "content/child/worker_task_runner.h"
-#include "third_party/WebKit/public/platform/WebNotificationManager.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
 class SkBitmap;
 

@@ -17,11 +17,11 @@
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
-#include "third_party/WebKit/public/platform/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
 
