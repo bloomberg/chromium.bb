@@ -28,9 +28,9 @@
 #ifndef ExecutionContext_h
 #define ExecutionContext_h
 
-#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/AccessControlStatus.h"
+#include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -41,6 +41,7 @@ namespace blink {
 
 class ActiveDOMObject;
 class ConsoleMessage;
+class ContextLifecycleNotifier;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
@@ -52,7 +53,8 @@ class SecurityOrigin;
 class ScriptCallStack;
 
 class ExecutionContext
-    : public ContextLifecycleNotifier, public WillBeHeapSupplementable<ExecutionContext> {
+    : public LifecycleContext<ExecutionContext>
+    , public WillBeHeapSupplementable<ExecutionContext> {
 public:
     virtual void trace(Visitor*) override;
 
@@ -92,6 +94,9 @@ public:
 
     PublicURLManager& publicURLManager();
 
+    // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
+    bool hasPendingActivity();
+
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
@@ -125,11 +130,9 @@ public:
     void enforceStrictMixedContentChecking() { m_strictMixedContentCheckingEnforced = true; }
     bool shouldEnforceStrictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
 
-    // Methods related to window interaction. It should be used to manage window
-    // focusing and window creation permission for an ExecutionContext.
-    void allowWindowInteraction();
-    void consumeWindowInteraction();
-    bool isWindowInteractionAllowed() const;
+    void allowWindowFocus();
+    void consumeWindowFocus();
+    bool isWindowFocusAllowed() const;
 
 protected:
     ExecutionContext();
@@ -162,11 +165,13 @@ private:
 
     bool m_strictMixedContentCheckingEnforced;
 
-    // Counter that keeps track of how many window interaction calls are allowed
-    // for this ExecutionContext. Callers are expected to call
-    // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
-    // increment and decrement the counter.
-    int m_windowInteractionTokens;
+    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
+
+    // Counter that keeps track of how many window focus calls are allowed for
+    // this ExecutionContext. Callers are expected to call |allowWindowFocus()|
+    // and |consumeWindowFocus()| in order to increment and decrement the
+    // counter.
+    int m_windowFocusTokens;
 };
 
 } // namespace blink

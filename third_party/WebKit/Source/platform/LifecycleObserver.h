@@ -56,7 +56,7 @@ public:
 #if ENABLE(OILPAN)
         ThreadState::current()->registerPreFinalizer(*this);
 #endif
-        setContext(context);
+        observeContext(context);
     }
     virtual ~LifecycleObserver()
     {
@@ -72,7 +72,7 @@ public:
     virtual void contextDestroyed() { }
     void dispose()
     {
-        setContext(nullptr);
+        observeContext(nullptr);
     }
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
@@ -80,7 +80,7 @@ public:
     Type observerType() const { return m_observerType; }
 
 protected:
-    void setContext(Context*);
+    void observeContext(Context*);
 
     RawPtrWillBeWeakMember<Context> m_lifecycleContext;
     Type m_observerType;
@@ -89,20 +89,20 @@ protected:
 //
 // These functions should be specialized for each LifecycleObserver instances.
 //
-template<typename T> void observeContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
-template<typename T> void unobserveContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
+template<typename T> void observerContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
+template<typename T> void unobserverContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
 
 
 template<typename T>
-inline void LifecycleObserver<T>::setContext(typename LifecycleObserver<T>::Context* context)
+inline void LifecycleObserver<T>::observeContext(typename LifecycleObserver<T>::Context* context)
 {
     if (m_lifecycleContext)
-        unobserveContext(m_lifecycleContext.get(), this);
+        unobserverContext(m_lifecycleContext.get(), this);
 
     m_lifecycleContext = context;
 
     if (m_lifecycleContext)
-        observeContext(m_lifecycleContext.get(), this);
+        observerContext(m_lifecycleContext.get(), this);
 }
 
 } // namespace blink

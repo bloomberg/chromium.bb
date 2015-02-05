@@ -389,6 +389,8 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8:
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return throwStackOverflowExceptionIfNeeded(isolate);
 
+    RELEASE_ASSERT(!context->isIteratingOverObservers());
+
     // Run the script and keep track of the current recursion depth.
     v8::Local<v8::Value> result;
     {
@@ -436,6 +438,8 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return throwStackOverflowExceptionIfNeeded(isolate);
+
+    RELEASE_ASSERT(!context->isIteratingOverObservers());
 
     if (ScriptForbiddenScope::isScriptForbidden())
         return v8::Local<v8::Value>();

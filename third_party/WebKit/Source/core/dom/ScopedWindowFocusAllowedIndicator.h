@@ -31,13 +31,13 @@ private:
             : ContextLifecycleObserver(executionContext)
         {
             if (executionContext)
-                executionContext->allowWindowInteraction();
+                executionContext->allowWindowFocus();
         }
 
         void dispose()
         {
             if (executionContext())
-                executionContext()->consumeWindowInteraction();
+                executionContext()->consumeWindowFocus();
         }
 
         void trace(Visitor* visitor)
@@ -49,7 +49,7 @@ private:
     // In Oilpan, destructors are not allowed to touch other on-heap objects.
     // The Observer indirection is needed to keep
     // ScopedWindowFocusAllowedIndicator off-heap and thus allows its destructor
-    // to call executionContext()->consumeWindowInteraction().
+    // to call executionContext()->consumeWindowFocus().
     OwnPtrWillBePersistent<Observer> m_observer;
 };
 

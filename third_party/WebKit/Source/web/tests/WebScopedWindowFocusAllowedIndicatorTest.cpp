@@ -60,17 +60,17 @@ TEST(WebScopedWindowFocusAllowedIndicatorTest, WithDocument)
     RefPtrWillBePersistent<Document> document = Document::create();
     WebDocument webDocument(document);
 
-    EXPECT_FALSE(document->isWindowInteractionAllowed());
+    EXPECT_FALSE(document->isWindowFocusAllowed());
     {
         WebScopedWindowFocusAllowedIndicator indicator1(&webDocument);
-        EXPECT_TRUE(document->isWindowInteractionAllowed());
+        EXPECT_TRUE(document->isWindowFocusAllowed());
         {
             WebScopedWindowFocusAllowedIndicator indicator2(&webDocument);
-            EXPECT_TRUE(document->isWindowInteractionAllowed());
+            EXPECT_TRUE(document->isWindowFocusAllowed());
         }
-        EXPECT_TRUE(document->isWindowInteractionAllowed());
+        EXPECT_TRUE(document->isWindowFocusAllowed());
     }
-    EXPECT_FALSE(document->isWindowInteractionAllowed());
+    EXPECT_FALSE(document->isWindowFocusAllowed());
 }
 
 }

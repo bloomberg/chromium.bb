@@ -50,6 +50,7 @@
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
+#include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -112,8 +113,7 @@ float deviceScaleFactor(LocalFrame* frame)
 }
 
 Page::Page(PageClients& pageClients)
-    : PageLifecycleNotifier(this)
-    , SettingsDelegate(Settings::create())
+    : SettingsDelegate(Settings::create())
     , m_animator(PageAnimator::create(*this))
     , m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))
@@ -427,7 +427,7 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
 
     if (!isInitialState)
-        notifyPageVisibilityChanged();
+        lifecycleNotifier().notifyPageVisibilityChanged();
 
     if (!isInitialState && m_mainFrame && m_mainFrame->isLocalFrame())
         deprecatedLocalMainFrame()->didChangeVisibilityState();
@@ -533,7 +533,7 @@ void Page::updateAcceleratedCompositingSettings()
 
 void Page::didCommitLoad(LocalFrame* frame)
 {
-    notifyDidCommitLoad(frame);
+    lifecycleNotifier().notifyDidCommitLoad(frame);
     if (m_mainFrame == frame) {
         frame->console().clearMessages();
         useCounter().didCommitLoad();
@@ -557,6 +557,16 @@ void Page::acceptLanguagesChanged()
         frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
+PageLifecycleNotifier& Page::lifecycleNotifier()
+{
+    return static_cast<PageLifecycleNotifier&>(LifecycleContext<Page>::lifecycleNotifier());
+}
+
+PassOwnPtr<LifecycleNotifier<Page>> Page::createLifecycleNotifier()
+{
+    return PageLifecycleNotifier::create(this);
+}
+
 void Page::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
@@ -574,7 +584,7 @@ void Page::trace(Visitor* visitor)
     visitor->trace(m_frameHost);
     HeapSupplementable<Page>::trace(visitor);
 #endif
-    PageLifecycleNotifier::trace(visitor);
+    LifecycleContext<Page>::trace(visitor);
 }
 
 void Page::willBeDestroyed()

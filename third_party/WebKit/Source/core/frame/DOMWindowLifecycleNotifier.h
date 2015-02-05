@@ -26,19 +26,19 @@
 #ifndef DOMWindowLifecycleNotifier_h
 #define DOMWindowLifecycleNotifier_h
 
+#include "core/frame/DOMWindowLifecycleObserver.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "platform/LifecycleNotifier.h"
-#include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class DOMWindowLifecycleObserver;
-class LocalDOMWindow;
-
-class DOMWindowLifecycleNotifier : public LifecycleNotifier<LocalDOMWindow> {
+class DOMWindowLifecycleNotifier final : public LifecycleNotifier<LocalDOMWindow> {
 public:
+    static PassOwnPtr<DOMWindowLifecycleNotifier> create(LocalDOMWindow*);
+
     void notifyAddEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveAllEventListeners(LocalDOMWindow*);
@@ -46,10 +46,9 @@ public:
     virtual void addObserver(Observer*) override;
     virtual void removeObserver(Observer*) override;
 
-protected:
+private:
     explicit DOMWindowLifecycleNotifier(LocalDOMWindow*);
 
-private:
     typedef HashSet<DOMWindowLifecycleObserver*> DOMWindowObserverSet;
     DOMWindowObserverSet m_windowObservers;
 };

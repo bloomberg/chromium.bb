@@ -27,19 +27,18 @@
 #include "config.h"
 #include "core/dom/ContextLifecycleObserver.h"
 
-#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
-template<> void observeContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
+template<> void observerContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
 {
-    context->addObserver(observer);
+    context->wasObservedBy(observer);
 }
 
-template<> void unobserveContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
+template<> void unobserverContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
 {
-    context->removeObserver(observer);
+    context->wasUnobservedBy(observer);
 }
 
 ContextLifecycleObserver::ContextLifecycleObserver(ExecutionContext* executionContext, Type type)

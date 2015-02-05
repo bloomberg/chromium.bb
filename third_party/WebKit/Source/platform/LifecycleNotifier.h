@@ -40,8 +40,12 @@ public:
     typedef LifecycleObserver<T> Observer;
     typedef T Context;
 
+    static PassOwnPtr<LifecycleNotifier> create(Context* context)
+    {
+        return adoptPtr(new LifecycleNotifier(context));
+    }
+
     virtual ~LifecycleNotifier();
-    virtual bool isContextThread() const { return true; }
 
     // notifyContextDestroyed() should be explicitly dispatched from an
     // observed context to notify observers contextDestroyed().
@@ -53,7 +57,7 @@ public:
     virtual void addObserver(Observer*);
     virtual void removeObserver(Observer*);
 
-    virtual void trace(Visitor*) { }
+    bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
 
 protected:
     explicit LifecycleNotifier(Context* context)
@@ -91,7 +95,7 @@ inline LifecycleNotifier<T>::~LifecycleNotifier()
     // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
 
 #if !ENABLE(OILPAN)
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
         ASSERT(observer->lifecycleContext() == m_context);
         observer->clearLifecycleContext();
@@ -106,7 +110,7 @@ inline void LifecycleNotifier<T>::notifyContextDestroyed()
     if (m_didCallContextDestroyed)
         return;
 
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
     Vector<Observer*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {

@@ -34,7 +34,7 @@ namespace blink {
 
 class ActiveDOMObject : public ContextLifecycleObserver {
 public:
-    explicit ActiveDOMObject(ExecutionContext*);
+    ActiveDOMObject(ExecutionContext*);
 
     // suspendIfNeeded() should be called exactly once after object construction to synchronize
     // the suspend state with that in ExecutionContext.

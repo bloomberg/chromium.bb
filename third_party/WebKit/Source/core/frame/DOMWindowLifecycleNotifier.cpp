@@ -27,8 +27,6 @@
 #include "config.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 
-#include "core/frame/DOMWindowLifecycleObserver.h"
-
 namespace blink {
 
 DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
@@ -56,23 +54,28 @@ void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Obse
     LifecycleNotifier<LocalDOMWindow>::removeObserver(observer);
 }
 
+PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LocalDOMWindow* context)
+{
+    return adoptPtr(new DOMWindowLifecycleNotifier(context));
+}
+
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverDOMWindowObservers);
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (const auto& windowObserver : m_windowObservers)
         windowObserver->didAddEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverDOMWindowObservers);
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (const auto& windowObserver : m_windowObservers)
         windowObserver->didRemoveEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverDOMWindowObservers);
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (const auto& windowObserver : m_windowObservers)
         windowObserver->didRemoveAllEventListeners(window);
 }

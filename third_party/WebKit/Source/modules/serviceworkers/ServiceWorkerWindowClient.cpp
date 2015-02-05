@@ -76,11 +76,11 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    if (!scriptState->executionContext()->isWindowInteractionAllowed()) {
+    if (!scriptState->executionContext()->isWindowFocusAllowed()) {
         resolver->reject(DOMException::create(InvalidAccessError, "Not allowed to focus a window."));
         return promise;
     }
-    scriptState->executionContext()->consumeWindowInteraction();
+    scriptState->executionContext()->consumeWindowFocus();
 
     ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(id(), new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
     return promise;

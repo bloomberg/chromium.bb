@@ -29,9 +29,9 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -41,6 +41,7 @@
 namespace blink {
 
 class DOMWindowEventQueue;
+class DOMWindowLifecycleNotifier;
 class DOMWindowProperty;
 class DocumentInit;
 class EventListener;
@@ -60,7 +61,7 @@ enum PageshowEventPersistence {
 
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
-class LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
+class LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
 public:
     static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
@@ -198,6 +199,8 @@ public:
 
     bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString) override;
 
+    PassOwnPtr<LifecycleNotifier<LocalDOMWindow>> createLifecycleNotifier();
+
     EventQueue* eventQueue() const;
     void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -214,6 +217,9 @@ public:
     void acceptLanguagesChanged();
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
+
+protected:
+    DOMWindowLifecycleNotifier& lifecycleNotifier();
 
 private:
     // Rather than simply inheriting FrameDestructionObserver like most other
