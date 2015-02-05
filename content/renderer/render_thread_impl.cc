@@ -105,6 +105,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/renderer/scheduler/resource_dispatch_throttler.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
@@ -195,6 +196,16 @@ namespace {
 
 const int64 kInitialIdleHandlerDelayMs = 1000;
 const int64 kLongIdleHandlerDelayMs = 30*1000;
+
+#if defined(OS_ANDROID)
+// On Android, resource messages can each take ~1.5ms to dispatch on the browser
+// IO thread. Limiting the message rate to 3/frame at 60hz ensures that the
+// induced work takes but a fraction (~1/4) of the overall frame budget.
+const int kMaxResourceRequestsPerFlushWhenThrottled = 3;
+#else
+const int kMaxResourceRequestsPerFlushWhenThrottled = 8;
+#endif
+const double kThrottledResourceRequestFlushPeriodS = 1. / 60.;
 
 // Maximum allocation size allowed for image scaling filters that
 // require pre-scaling. Skia will fallback to a filter that doesn't
@@ -474,6 +485,14 @@ void RenderThreadImpl::Init() {
   renderer_scheduler_ = RendererScheduler::Create();
   channel()->SetListenerTaskRunner(renderer_scheduler_->DefaultTaskRunner());
   embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
+
+  // Note: This may reorder messages from the ResourceDispatcher with respect to
+  // other subsystems.
+  resource_dispatch_throttler_.reset(new ResourceDispatchThrottler(
+      static_cast<RenderThread*>(this), renderer_scheduler_.get(),
+      base::TimeDelta::FromSecondsD(kThrottledResourceRequestFlushPeriodS),
+      kMaxResourceRequestsPerFlushWhenThrottled));
+  resource_dispatcher()->set_message_sender(resource_dispatch_throttler_.get());
 
   media_stream_center_ = NULL;
 
