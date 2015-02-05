@@ -12,6 +12,7 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/request_extra_data.h"
@@ -23,7 +24,6 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -177,9 +177,8 @@ void EmbeddedWorkerContextClient::workerContextFailedToStart() {
 void EmbeddedWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());
-  worker_task_runner_ = new WorkerThreadTaskRunner(
-      WorkerTaskRunner::Instance()->CurrentWorkerId());
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
+  worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   // g_worker_client_tls.Pointer()->Get() could return NULL if this context
   // gets deleted before workerContextStarted() is called.
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
