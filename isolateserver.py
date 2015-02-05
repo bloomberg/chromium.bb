@@ -1071,8 +1071,8 @@ class IsolateServer(StorageApi):
       assert isinstance(content, types.GeneratorType), repr(content)
       slept = False
       # HACK HACK HACK. Please forgive me for my sins but OMG, it works!
-      # One byte less than 1gb. This is to cope with incompressible content.
-      max_size = int(sys.maxsize * 0.5)
+      # One byte less than 512mb. This is to cope with incompressible content.
+      max_size = int(sys.maxsize * 0.25)
       while True:
         with self._lock:
           # This is due to 32 bits python when uploading very large files. The
