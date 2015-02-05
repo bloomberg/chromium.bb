@@ -147,10 +147,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
       const GURL& page_url);
 
   // May be called on any thread.
-  int64 AllocateSessionId() {
-    return session_id_sequence_.GetNext();
-  }
-
+  int64 AllocateSessionId();
   std::string AllocatePersistentSessionId();
 
   // Must be called on the background thread.
@@ -207,7 +204,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   // We use a 32 bit identifier for per tab storage sessions.
   // At a tab per second, this range is large enough for 68 years.
+  // The offset is to more quickly detect the error condition where
+  // an id related to one context is mistakenly used in another.
   base::AtomicSequenceNumber session_id_sequence_;
+  const int session_id_offset_;
 
   bool is_shutdown_;
   bool force_keep_session_state_;

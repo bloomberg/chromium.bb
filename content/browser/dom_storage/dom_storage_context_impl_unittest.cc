@@ -63,6 +63,8 @@ class DOMStorageContextImplTest : public testing::Test {
     EXPECT_EQ(origin, infos[0].origin);
   }
 
+  int session_id_offset() { return context_->session_id_offset_; }
+
  protected:
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
@@ -80,7 +82,7 @@ TEST_F(DOMStorageContextImplTest, Basics) {
   EXPECT_EQ(base::FilePath(), context_->sessionstorage_directory());
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
   context_->DeleteLocalStorage(GURL("http://chromium.org/"));
-  const int kFirstSessionStorageNamespaceId = 1;
+  const int kFirstSessionStorageNamespaceId = 1 + session_id_offset();
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));
   EXPECT_FALSE(context_->GetStorageNamespace(kFirstSessionStorageNamespaceId));
   EXPECT_EQ(kFirstSessionStorageNamespaceId, context_->AllocateSessionId());
@@ -162,7 +164,7 @@ TEST_F(DOMStorageContextImplTest, SetForceKeepSessionState) {
 }
 
 TEST_F(DOMStorageContextImplTest, PersistentIds) {
-  const int kFirstSessionStorageNamespaceId = 1;
+  const int kFirstSessionStorageNamespaceId = 1 + session_id_offset();
   const std::string kPersistentId = "persistent";
   context_->CreateSessionNamespace(kFirstSessionStorageNamespaceId,
                                    kPersistentId);
@@ -175,7 +177,7 @@ TEST_F(DOMStorageContextImplTest, PersistentIds) {
   EXPECT_EQ(kPersistentId, area->persistent_namespace_id_);
 
   // Verify that the persistent IDs are handled correctly when cloning.
-  const int kClonedSessionStorageNamespaceId = 2;
+  const int kClonedSessionStorageNamespaceId = 2 + session_id_offset();
   const std::string kClonedPersistentId = "cloned";
   context_->CloneSessionNamespace(kFirstSessionStorageNamespaceId,
                                   kClonedSessionStorageNamespaceId,
@@ -200,7 +202,7 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   ASSERT_EQ(temp_dir_.path(), context_->sessionstorage_directory());
 
   // Write data.
-  const int kSessionStorageNamespaceId = 1;
+  const int kSessionStorageNamespaceId = 1 + session_id_offset();
   const std::string kPersistentId = "persistent";
   context_->CreateSessionNamespace(kSessionStorageNamespaceId,
                                    kPersistentId);
