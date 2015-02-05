@@ -7,6 +7,10 @@
 *.pc
 *.so
 *.swp
+.*.sw?
+.sw?
+*.sublime-project
+*.sublime-workspace
 *.trs
 *~
 ctags
@@ -16,14 +20,20 @@ cscope.out
 /aclocal.m4
 /autom4te.cache
 /build-aux/
+/config.guess
 /config.h
 /config.h.in
 /config.log
 /config.mk
 /config.status
+/config.sub
 /configure
+/depcomp
+/install-sh
 /libtool
+/ltmain.sh
 /logs
+/missing
 /stamp-h1
 /test-driver
 /weston.ini
@@ -32,6 +42,8 @@ Makefile.in
 TAGS
 protocol/.*.valid
 protocol/*.[ch]
+
+00*.patch
 
 weston-calibrator
 weston-clickdot
