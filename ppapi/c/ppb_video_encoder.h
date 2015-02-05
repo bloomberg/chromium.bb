@@ -1,9 +1,9 @@
-/* Copyright (c) 2015 The Chromium Authors. All rights reserved.
+/* Copyright 2015 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_video_encoder.idl modified Wed Feb  4 05:24:29 2015. */
+/* From ppb_video_encoder.idl modified Thu Feb  5 10:33:32 2015. */
 
 #ifndef PPAPI_C_PPB_VIDEO_ENCODER_H_
 #define PPAPI_C_PPB_VIDEO_ENCODER_H_
@@ -19,9 +19,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_video_frame.h"
 
-#define PPB_VIDEOENCODER_INTERFACE_0_1 "PPB_VideoEncoder;0.1"
-#define PPB_VIDEOENCODER_INTERFACE PPB_VIDEOENCODER_INTERFACE_0_1
-
+#define PPB_VIDEOENCODER_INTERFACE_0_1 "PPB_VideoEncoder;0.1" /* dev */
 /**
  * @file
  * This file defines the <code>PPB_VideoEncoder</code> interface.
@@ -56,7 +54,7 @@
  * Chrome and ChromeOS: h264.
  * ChromeOS: mpeg4.
  */
-struct PPB_VideoEncoder_0_1 {
+struct PPB_VideoEncoder_0_1 { /* dev */
   /**
    * Creates a new video encoder resource.
    *
@@ -237,8 +235,6 @@ struct PPB_VideoEncoder_0_1 {
    */
   void (*Close)(PP_Resource video_encoder);
 };
-
-typedef struct PPB_VideoEncoder_0_1 PPB_VideoEncoder;
 /**
  * @}
  */
