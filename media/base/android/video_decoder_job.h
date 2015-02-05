@@ -33,13 +33,8 @@ class VideoDecoderJob : public MediaDecoderJob {
 
   // MediaDecoderJob implementation.
   virtual bool HasStream() const override;
-  virtual void Flush() override;
   virtual void ReleaseDecoderResources() override;
   virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
-
-  bool next_video_data_is_iframe() {
-    return next_video_data_is_iframe_;
-  }
 
   int output_width() const { return output_width_; }
   int output_height() const { return output_height_; }
@@ -57,8 +52,7 @@ class VideoDecoderJob : public MediaDecoderJob {
       const DemuxerConfigs& configs) const override;
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const override;
-  virtual bool CreateMediaCodecBridgeInternal() override;
-  virtual void CurrentDataConsumed(bool is_config_change) override;
+  virtual MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
   virtual bool UpdateOutputFormat() override;
 
   // Returns true if a protected surface is required for video playback.
@@ -79,11 +73,6 @@ class VideoDecoderJob : public MediaDecoderJob {
   // Callbacks to inform the caller about decoder resources change.
   base::Closure request_resources_cb_;
   base::Closure release_resources_cb_;
-
-  // Track whether the next access unit is an I-frame. The first access
-  // unit after Flush() and CurrentDataConsumed(true) is guaranteed to be an
-  // I-frame.
-  bool next_video_data_is_iframe_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderJob);
 };

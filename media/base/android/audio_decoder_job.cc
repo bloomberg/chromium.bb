@@ -135,16 +135,17 @@ bool AudioDecoderJob::AreDemuxerConfigsChanged(
                  configs.audio_extra_data.begin());
 }
 
-bool AudioDecoderJob::CreateMediaCodecBridgeInternal() {
+MediaDecoderJob::MediaDecoderJobStatus
+    AudioDecoderJob::CreateMediaCodecBridgeInternal() {
   media_codec_bridge_.reset(AudioCodecBridge::Create(audio_codec_));
   if (!media_codec_bridge_)
-    return false;
+    return STATUS_FAILURE;
 
   if (!(static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))->Start(
       audio_codec_, config_sampling_rate_, num_channels_, &audio_extra_data_[0],
       audio_extra_data_.size(), true, GetMediaCrypto().obj())) {
     media_codec_bridge_.reset();
-    return false;
+    return STATUS_FAILURE;
   }
 
   SetVolumeInternal();
@@ -153,7 +154,7 @@ bool AudioDecoderJob::CreateMediaCodecBridgeInternal() {
   frame_count_ = 0;
   ResetTimestampHelper();
 
-  return true;
+  return STATUS_SUCCESS;
 }
 
 void AudioDecoderJob::SetVolumeInternal() {

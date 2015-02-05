@@ -37,8 +37,7 @@ VideoDecoderJob::VideoDecoderJob(
       config_height_(0),
       output_width_(0),
       output_height_(0),
-      request_resources_cb_(request_resources_cb),
-      next_video_data_is_iframe_(true) {
+      request_resources_cb_(request_resources_cb) {
 }
 
 VideoDecoderJob::~VideoDecoderJob() {}
@@ -59,11 +58,6 @@ bool VideoDecoderJob::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 
 bool VideoDecoderJob::HasStream() const {
   return video_codec_ != kUnknownVideoCodec;
-}
-
-void VideoDecoderJob::Flush() {
-  MediaDecoderJob::Flush();
-  next_video_data_is_iframe_ = true;
 }
 
 void VideoDecoderJob::ReleaseDecoderResources() {
@@ -124,16 +118,17 @@ bool VideoDecoderJob::AreDemuxerConfigsChanged(
       config_height_ != configs.video_size.height();
 }
 
-bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
+MediaDecoderJob::MediaDecoderJobStatus
+    VideoDecoderJob::CreateMediaCodecBridgeInternal() {
   if (surface_.IsEmpty()) {
     ReleaseMediaCodecBridge();
-    return false;
+    return STATUS_FAILURE;
   }
 
-  // If the next data is not iframe, return false so that the player need to
-  // perform a browser seek.
-  if (!next_video_data_is_iframe_)
-    return false;
+  // If we cannot find a key frame in cache, browser seek is needed.
+  bool next_video_data_is_iframe = SetCurrentFrameToPreviouslyCachedKeyFrame();
+  if (!next_video_data_is_iframe)
+    return STATUS_KEY_FRAME_REQUIRED;
 
   bool is_secure = is_content_encrypted() && drm_bridge() &&
       drm_bridge()->IsProtectedSurfaceRequired();
@@ -143,14 +138,10 @@ bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
       surface_.j_surface().obj(), GetMediaCrypto().obj()));
 
   if (!media_codec_bridge_)
-    return false;
+    return STATUS_FAILURE;
 
   request_resources_cb_.Run();
-  return true;
-}
-
-void VideoDecoderJob::CurrentDataConsumed(bool is_config_change) {
-  next_video_data_is_iframe_ = is_config_change;
+  return STATUS_SUCCESS;
 }
 
 bool VideoDecoderJob::UpdateOutputFormat() {

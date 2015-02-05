@@ -435,6 +435,10 @@ class MediaSourcePlayerTest : public testing::Test {
     return data;
   }
 
+  bool HasData(bool is_audio) {
+    return GetMediaDecoderJob(is_audio)->HasData();
+  }
+
   // Helper method for use at test start. It starts an audio decoder job and
   // immediately feeds it some data to decode. Then, without letting the decoder
   // job complete a decode cycle, it also starts player SeekTo(). Upon return,
@@ -1043,7 +1047,9 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
 
   // Playback resumes once a non-empty surface is passed.
   CreateNextTextureAndSetVideoSurface();
-  EXPECT_EQ(1, demuxer_->num_browser_seek_requests());
+  EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
+  while(demuxer_->num_browser_seek_requests() != 1)
+    message_loop_.RunUntilIdle();
   WaitForVideoDecodeDone();
 }
 
@@ -1532,6 +1538,34 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
   player_.OnDemuxerSeekDone(base::TimeDelta());
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, NoBrowserSeekWithKeyFrameInCache) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that browser seek is not needed if a key frame is found in data
+  // cache.
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob();
+  DemuxerData data = CreateReadFromDemuxerAckForVideo(false);
+  data.access_units[0].is_key_frame = true;
+
+  // Simulate demuxer's response to the video data request.
+  player_.OnDemuxerDataAvailable(data);
+
+  // Trigger decoder recreation later by changing surfaces.
+  CreateNextTextureAndSetVideoSurface();
+
+  // Wait for the media codec bridge to finish decoding and be reset.
+  WaitForVideoDecodeDone();
+  EXPECT_FALSE(HasData(false));
+
+  // Send a non key frame to decoder so that decoder can continue. This will
+  // not trigger any browser seeks as the previous key frame is still in the
+  // buffer.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo(false));
+  WaitForVideoDecodeDone();
+  EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
 }
 
 TEST_F(MediaSourcePlayerTest, PrerollAudioAfterSeek) {

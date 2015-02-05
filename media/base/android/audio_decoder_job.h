@@ -49,7 +49,7 @@ class AudioDecoderJob : public MediaDecoderJob {
   virtual bool ComputeTimeToRender() const override;
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const override;
-  virtual bool CreateMediaCodecBridgeInternal() override;
+  virtual MediaDecoderJobStatus CreateMediaCodecBridgeInternal() override;
   virtual void OnOutputFormatChanged() override;
 
   // Helper method to set the audio output volume.

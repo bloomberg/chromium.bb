@@ -564,18 +564,25 @@ void MediaSourcePlayer::DecodeMoreAudio() {
   DCHECK(!audio_decoder_job_->is_decoding());
   DCHECK(!AudioFinished());
 
-  if (audio_decoder_job_->Decode(
+  MediaDecoderJob::MediaDecoderJobStatus status = audio_decoder_job_->Decode(
       start_time_ticks_,
       start_presentation_timestamp_,
-      base::Bind(&MediaSourcePlayer::MediaDecoderCallback, weak_this_, true))) {
-    TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
-                             audio_decoder_job_.get());
-    return;
-  }
+      base::Bind(&MediaSourcePlayer::MediaDecoderCallback, weak_this_, true));
 
-  is_waiting_for_audio_decoder_ = true;
-  if (!IsEventPending(DECODER_CREATION_EVENT_PENDING))
-    SetPendingEvent(DECODER_CREATION_EVENT_PENDING);
+  switch (status) {
+    case MediaDecoderJob::STATUS_SUCCESS:
+      TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
+                               audio_decoder_job_.get());
+      break;
+    case MediaDecoderJob::STATUS_KEY_FRAME_REQUIRED:
+      NOTREACHED();
+      break;
+    case MediaDecoderJob::STATUS_FAILURE:
+      is_waiting_for_audio_decoder_ = true;
+      if (!IsEventPending(DECODER_CREATION_EVENT_PENDING))
+        SetPendingEvent(DECODER_CREATION_EVENT_PENDING);
+      break;
+  }
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
@@ -583,25 +590,26 @@ void MediaSourcePlayer::DecodeMoreVideo() {
   DCHECK(!video_decoder_job_->is_decoding());
   DCHECK(!VideoFinished());
 
-  if (video_decoder_job_->Decode(
+  MediaDecoderJob::MediaDecoderJobStatus status = video_decoder_job_->Decode(
       start_time_ticks_,
       start_presentation_timestamp_,
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback, weak_this_,
-                 false))) {
-    TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
-                             video_decoder_job_.get());
-    return;
-  }
+                 false));
 
-  // If the decoder is waiting for iframe, trigger a browser seek.
-  if (!video_decoder_job_->next_video_data_is_iframe()) {
-    BrowserSeekToCurrentTime();
-    return;
+  switch (status) {
+    case MediaDecoderJob::STATUS_SUCCESS:
+      TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
+                               video_decoder_job_.get());
+      break;
+    case MediaDecoderJob::STATUS_KEY_FRAME_REQUIRED:
+      BrowserSeekToCurrentTime();
+      break;
+    case MediaDecoderJob::STATUS_FAILURE:
+      is_waiting_for_video_decoder_ = true;
+      if (!IsEventPending(DECODER_CREATION_EVENT_PENDING))
+        SetPendingEvent(DECODER_CREATION_EVENT_PENDING);
+      break;
   }
-
-  is_waiting_for_video_decoder_ = true;
-  if (!IsEventPending(DECODER_CREATION_EVENT_PENDING))
-    SetPendingEvent(DECODER_CREATION_EVENT_PENDING);
 }
 
 void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
