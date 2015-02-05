@@ -16,6 +16,7 @@ Data Fields</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p___video_picture.html#ae1a9b538db9e422e9f4c9126e941ea25">texture_id</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p___video_picture.html#a5e2d5f24f86223ad71f2efb83116f118">texture_target</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___size.html">PP_Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p___video_picture.html#a0f3c7022b44215e06f98f771f75641cc">texture_size</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___rect.html">PP_Rect</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p___video_picture.html#a1068a6b0ec8376cadcc7b08e607085f2">visible_rect</a></td></tr>
 </table>
 <hr /><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Struct describing a decoded video picture. </p>
@@ -75,6 +76,20 @@ Data Fields</h2><table class="memberdecls">
 <p>The GL texture target for the decoded picture. </p>
 <p>Possible values are: GL_TEXTURE_2D GL_TEXTURE_RECTANGLE_ARB GL_TEXTURE_EXTERNAL_OES</p>
 <p>The pixel format of the texture is GL_RGBA. </p>
+</div>
+</div>
+<a class="anchor" id="a1068a6b0ec8376cadcc7b08e607085f2"></a><!-- doxytag: member="PP_VideoPicture::visible_rect" ref="a1068a6b0ec8376cadcc7b08e607085f2" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">struct <a class="el" href="struct_p_p___rect.html">PP_Rect</a> <a class="el" href="struct_p_p___video_picture.html#a1068a6b0ec8376cadcc7b08e607085f2">PP_VideoPicture::visible_rect</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>The visible subrectangle of the picture. </p>
+<p>The plugin should display only this part of the picture. </p>
 </div>
 </div>
 <hr />The documentation for this struct was generated from the following file:<ul>

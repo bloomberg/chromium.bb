@@ -7,8 +7,8 @@
 Pepper C++ API Reference (Dev)
 ############################################
 
-This page lists the C++ API for Pepper 40. Apps that use this API can
-run in Chrome 40 or higher.
+This page lists the C++ API for Pepper 42. Apps that use this API can
+run in Chrome 42 or higher.
 
 `Classes <pepper_dev/cpp/inherits.html>`__
 ==================================================
@@ -248,3 +248,4 @@ Files
   * `view.h <pepper_dev/cpp/view_8h.html>`__
 
   * `websocket.h <pepper_dev/cpp/websocket_8h.html>`__
+

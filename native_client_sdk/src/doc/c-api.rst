@@ -7,8 +7,8 @@
 Pepper C API Reference (Stable)
 ##########################################
 
-This page lists the C API for Pepper 38. Apps that use this API can
-run in Chrome 38 or higher.
+This page lists the C API for Pepper 40. Apps that use this API can
+run in Chrome 40 or higher.
 
 `Interfaces <pepper_stable/c/group___interfaces.html>`__
 =============================================================
@@ -60,7 +60,7 @@ run in Chrome 38 or higher.
 
   * `PPB_MessageLoop <pepper_stable/c/struct_p_p_b___message_loop__1__0.html>`__
 
-  * `PPB_Messaging <pepper_stable/c/struct_p_p_b___messaging__1__0.html>`__
+  * `PPB_Messaging <pepper_stable/c/struct_p_p_b___messaging__1__2.html>`__
 
   * `PPB_MouseCursor <pepper_stable/c/struct_p_p_b___mouse_cursor__1__0.html>`__
 
@@ -75,6 +75,38 @@ run in Chrome 38 or higher.
   * `PPB_NetworkMonitor <pepper_stable/c/struct_p_p_b___network_monitor__1__0.html>`__
 
   * `PPB_NetworkProxy <pepper_stable/c/struct_p_p_b___network_proxy__1__0.html>`__
+
+  * `PPB_OpenGLES2 <pepper_stable/c/struct_p_p_b___open_g_l_e_s2.html>`__
+
+  * `PPB_OpenGLES2 <pepper_stable/c/struct_p_p_b___open_g_l_e_s2__1__0.html>`__
+
+  * `PPB_OpenGLES2ChromiumEnableFeature <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_chromium_enable_feature.html>`__
+
+  * `PPB_OpenGLES2ChromiumEnableFeature <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_chromium_enable_feature__1__0.html>`__
+
+  * `PPB_OpenGLES2ChromiumMapSub <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_chromium_map_sub.html>`__
+
+  * `PPB_OpenGLES2ChromiumMapSub <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_chromium_map_sub__1__0.html>`__
+
+  * `PPB_OpenGLES2FramebufferBlit <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_framebuffer_blit.html>`__
+
+  * `PPB_OpenGLES2FramebufferBlit <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_framebuffer_blit__1__0.html>`__
+
+  * `PPB_OpenGLES2FramebufferMultisample <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_framebuffer_multisample.html>`__
+
+  * `PPB_OpenGLES2FramebufferMultisample <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_framebuffer_multisample__1__0.html>`__
+
+  * `PPB_OpenGLES2InstancedArrays <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_instanced_arrays.html>`__
+
+  * `PPB_OpenGLES2InstancedArrays <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_instanced_arrays__1__0.html>`__
+
+  * `PPB_OpenGLES2Query <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_query.html>`__
+
+  * `PPB_OpenGLES2Query <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_query__1__0.html>`__
+
+  * `PPB_OpenGLES2VertexArrayObject <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_vertex_array_object.html>`__
+
+  * `PPB_OpenGLES2VertexArrayObject <pepper_stable/c/struct_p_p_b___open_g_l_e_s2_vertex_array_object__1__0.html>`__
 
   * `PPB_TCPSocket <pepper_stable/c/struct_p_p_b___t_c_p_socket__1__1.html>`__
 
@@ -98,7 +130,7 @@ run in Chrome 38 or higher.
 
   * `PPB_VarDictionary <pepper_stable/c/struct_p_p_b___var_dictionary__1__0.html>`__
 
-  * `PPB_VideoDecoder <pepper_stable/c/struct_p_p_b___video_decoder__0__1.html>`__
+  * `PPB_VideoDecoder <pepper_stable/c/struct_p_p_b___video_decoder__1__0.html>`__
 
   * `PPB_VideoFrame <pepper_stable/c/struct_p_p_b___video_frame__0__1.html>`__
 
@@ -113,6 +145,8 @@ run in Chrome 38 or higher.
   * `PPP_InputEvent <pepper_stable/c/struct_p_p_p___input_event__0__1.html>`__
 
   * `PPP_Instance <pepper_stable/c/struct_p_p_p___instance__1__1.html>`__
+
+  * `PPP_MessageHandler <pepper_stable/c/struct_p_p_p___message_handler__0__2.html>`__
 
   * `PPP_Messaging <pepper_stable/c/struct_p_p_p___messaging__1__0.html>`__
 
@@ -166,6 +200,8 @@ run in Chrome 38 or higher.
   * `PP_Var <pepper_stable/c/struct_p_p___var.html>`__
 
   * `PP_VideoPicture <pepper_stable/c/struct_p_p___video_picture.html>`__
+
+  * `PP_VideoPicture <pepper_stable/c/struct_p_p___video_picture__0__1.html>`__
 
   * `PP_VarValue <pepper_stable/c/union_p_p___var_value.html>`__
 
@@ -282,6 +318,8 @@ Files
 
   * `ppb_network_proxy.h <pepper_stable/c/ppb__network__proxy_8h.html>`__
 
+  * `ppb_opengles2.h <pepper_stable/c/ppb__opengles2_8h.html>`__
+
   * `ppb_tcp_socket.h <pepper_stable/c/ppb__tcp__socket_8h.html>`__
 
   * `ppb_text_input_controller.h <pepper_stable/c/ppb__text__input__controller_8h.html>`__
@@ -317,6 +355,8 @@ Files
   * `ppp_input_event.h <pepper_stable/c/ppp__input__event_8h.html>`__
 
   * `ppp_instance.h <pepper_stable/c/ppp__instance_8h.html>`__
+
+  * `ppp_message_handler.h <pepper_stable/c/ppp__message__handler_8h.html>`__
 
   * `ppp_messaging.h <pepper_stable/c/ppp__messaging_8h.html>`__
 

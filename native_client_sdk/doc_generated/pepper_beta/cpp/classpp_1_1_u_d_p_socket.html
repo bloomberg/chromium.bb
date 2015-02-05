@@ -356,7 +356,7 @@ Static Public Member Functions</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A non-negative number on success to indicate how many bytes have been sent; otherwise, an error code from <code>pp_errors.h</code>. <code>PP_ERROR_NOACCESS</code> will be returned if the caller doesn't have required permissions. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A non-negative number on success to indicate how many bytes have been sent; otherwise, an error code from <code>pp_errors.h</code>. <code>PP_ERROR_NOACCESS</code> will be returned if the caller doesn't have required permissions. <code>PP_ERROR_INPROGRESS</code> will be returned if the socket is busy sending. The caller should wait until a pending send completes before retrying. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a5ff91fd2342e534b57980c0c2e414251"></a><!-- doxytag: member="pp::UDPSocket::SetOption" ref="a5ff91fd2342e534b57980c0c2e414251" args="(PP_UDPSocket_Option name, const Var &amp;value, const CompletionCallback &amp;callback)" -->

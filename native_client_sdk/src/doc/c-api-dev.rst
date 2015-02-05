@@ -7,8 +7,8 @@
 Pepper C API Reference (Dev)
 ##########################################
 
-This page lists the C API for Pepper 40. Apps that use this API can
-run in Chrome 40 or higher.
+This page lists the C API for Pepper 42. Apps that use this API can
+run in Chrome 42 or higher.
 
 `Interfaces <pepper_dev/c/group___interfaces.html>`__
 =============================================================
@@ -108,13 +108,13 @@ run in Chrome 40 or higher.
 
   * `PPB_OpenGLES2VertexArrayObject <pepper_dev/c/struct_p_p_b___open_g_l_e_s2_vertex_array_object__1__0.html>`__
 
-  * `PPB_TCPSocket <pepper_dev/c/struct_p_p_b___t_c_p_socket__1__1.html>`__
+  * `PPB_TCPSocket <pepper_dev/c/struct_p_p_b___t_c_p_socket__1__2.html>`__
 
   * `PPB_TextInputController <pepper_dev/c/struct_p_p_b___text_input_controller__1__0.html>`__
 
   * `PPB_TouchInputEvent <pepper_dev/c/struct_p_p_b___touch_input_event__1__0.html>`__
 
-  * `PPB_UDPSocket <pepper_dev/c/struct_p_p_b___u_d_p_socket__1__0.html>`__
+  * `PPB_UDPSocket <pepper_dev/c/struct_p_p_b___u_d_p_socket__1__1.html>`__
 
   * `PPB_URLLoader <pepper_dev/c/struct_p_p_b___u_r_l_loader__1__0.html>`__
 
@@ -130,7 +130,7 @@ run in Chrome 40 or higher.
 
   * `PPB_VarDictionary <pepper_dev/c/struct_p_p_b___var_dictionary__1__0.html>`__
 
-  * `PPB_VideoDecoder <pepper_dev/c/struct_p_p_b___video_decoder__0__2.html>`__
+  * `PPB_VideoDecoder <pepper_dev/c/struct_p_p_b___video_decoder__1__0.html>`__
 
   * `PPB_VideoFrame <pepper_dev/c/struct_p_p_b___video_frame__0__1.html>`__
 
@@ -200,6 +200,8 @@ run in Chrome 40 or higher.
   * `PP_Var <pepper_dev/c/struct_p_p___var.html>`__
 
   * `PP_VideoPicture <pepper_dev/c/struct_p_p___video_picture.html>`__
+
+  * `PP_VideoPicture <pepper_dev/c/struct_p_p___video_picture__0__1.html>`__
 
   * `PP_VarValue <pepper_dev/c/union_p_p___var_value.html>`__
 
@@ -359,3 +361,4 @@ Files
   * `ppp_messaging.h <pepper_dev/c/ppp__messaging_8h.html>`__
 
   * `ppp_mouse_lock.h <pepper_dev/c/ppp__mouse__lock_8h.html>`__
+

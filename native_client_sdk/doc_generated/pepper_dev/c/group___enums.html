@@ -1644,16 +1644,16 @@ Variables</h2><table class="memberdecls">
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga1557c0bbce8739a3418e6027a9c44e12a4b17558654d1df4452aa98f7d2609a10"></a><!-- doxytag: member="PP_TCPSOCKET_OPTION_NO_DELAY" ref="gga1557c0bbce8739a3418e6027a9c44e12a4b17558654d1df4452aa98f7d2609a10" args="" -->PP_TCPSOCKET_OPTION_NO_DELAY</em>&nbsp;</td><td>
 <p>Disables coalescing of small writes to make TCP segments, and instead delivers data immediately. </p>
-<p>Value's type is <code>PP_VARTYPE_BOOL</code>. This option can only be set after a successful <code>Connect()</code> call. </p>
+<p>Value's type is <code>PP_VARTYPE_BOOL</code>. On version 1.1 or earlier, this option can only be set after a successful <code>Connect()</code> call. On version 1.2 or later, there is no such limitation. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga1557c0bbce8739a3418e6027a9c44e12a61ce27ba7853d05f7af51be1bed5d1a6"></a><!-- doxytag: member="PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE" ref="gga1557c0bbce8739a3418e6027a9c44e12a61ce27ba7853d05f7af51be1bed5d1a6" args="" -->PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE</em>&nbsp;</td><td>
 <p>Specifies the total per-socket buffer space reserved for sends. </p>
-<p>Value's type should be <code>PP_VARTYPE_INT32</code>. This option can only be set after a successful <code>Connect()</code> call.</p>
+<p>Value's type should be <code>PP_VARTYPE_INT32</code>. On version 1.1 or earlier, this option can only be set after a successful <code>Connect()</code> call. On version 1.2 or later, there is no such limitation.</p>
 <p>Note: This is only treated as a hint for the browser to set the buffer size. Even if <code>SetOption()</code> succeeds, the browser doesn't guarantee it will conform to the size. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga1557c0bbce8739a3418e6027a9c44e12aef57736e294acb30fb7b3b2f4a425f72"></a><!-- doxytag: member="PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE" ref="gga1557c0bbce8739a3418e6027a9c44e12aef57736e294acb30fb7b3b2f4a425f72" args="" -->PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE</em>&nbsp;</td><td>
 <p>Specifies the total per-socket buffer space reserved for receives. </p>
-<p>Value's type should be <code>PP_VARTYPE_INT32</code>. This option can only be set after a successful <code>Connect()</code> call.</p>
+<p>Value's type should be <code>PP_VARTYPE_INT32</code>. On version 1.1 or earlier, this option can only be set after a successful <code>Connect()</code> call. On version 1.2 or later, there is no such limitation.</p>
 <p>Note: This is only treated as a hint for the browser to set the buffer size. Even if <code>SetOption()</code> succeeds, the browser doesn't guarantee it will conform to the size. </p>
 </td></tr>
 </table>
@@ -1741,16 +1741,16 @@ Variables</h2><table class="memberdecls">
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga1a8472fa3e7150615c45c38fa8c12ce2aeceda8fe978a52382b96939de7707c00"></a><!-- doxytag: member="PP_UDPSOCKET_OPTION_BROADCAST" ref="gga1a8472fa3e7150615c45c38fa8c12ce2aeceda8fe978a52382b96939de7707c00" args="" -->PP_UDPSOCKET_OPTION_BROADCAST</em>&nbsp;</td><td>
 <p>Allows sending and receiving packets to and from broadcast addresses. </p>
-<p>Value's type should be <code>PP_VARTYPE_BOOL</code>. This option can only be set before calling <code>Bind()</code>. </p>
+<p>Value's type should be <code>PP_VARTYPE_BOOL</code>. On version 1.0, this option can only be set before calling <code>Bind()</code>. On version 1.1 or later, there is no such limitation. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga1a8472fa3e7150615c45c38fa8c12ce2a905f0adde2912a5db26883d45fb75d57"></a><!-- doxytag: member="PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE" ref="gga1a8472fa3e7150615c45c38fa8c12ce2a905f0adde2912a5db26883d45fb75d57" args="" -->PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE</em>&nbsp;</td><td>
 <p>Specifies the total per-socket buffer space reserved for sends. </p>
-<p>Value's type should be <code>PP_VARTYPE_INT32</code>. This option can only be set after a successful <code>Bind()</code> call.</p>
+<p>Value's type should be <code>PP_VARTYPE_INT32</code>. On version 1.0, this option can only be set after a successful <code>Bind()</code> call. On version 1.1 or later, there is no such limitation.</p>
 <p>Note: This is only treated as a hint for the browser to set the buffer size. Even if <code>SetOption()</code> succeeds, the browser doesn't guarantee it will conform to the size. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga1a8472fa3e7150615c45c38fa8c12ce2a1264eb1d6d16eb3a074ee3d21ebb3b64"></a><!-- doxytag: member="PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE" ref="gga1a8472fa3e7150615c45c38fa8c12ce2a1264eb1d6d16eb3a074ee3d21ebb3b64" args="" -->PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE</em>&nbsp;</td><td>
 <p>Specifies the total per-socket buffer space reserved for receives. </p>
-<p>Value's type should be <code>PP_VARTYPE_INT32</code>. This option can only be set after a successful <code>Bind()</code> call.</p>
+<p>Value's type should be <code>PP_VARTYPE_INT32</code>. On version 1.0, this option can only be set after a successful <code>Bind()</code> call. On version 1.1 or later, there is no such limitation.</p>
 <p>Note: This is only treated as a hint for the browser to set the buffer size. Even if <code>SetOption()</code> succeeds, the browser doesn't guarantee it will conform to the size. </p>
 </td></tr>
 </table>
