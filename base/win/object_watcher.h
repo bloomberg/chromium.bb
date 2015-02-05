@@ -74,9 +74,11 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   //
   bool StopWatching();
 
-  // Returns the handle of the object being watched, or NULL if the object
-  // watcher is stopped.
-  HANDLE GetWatchedObject();
+  // Returns true if currently watching an object.
+  bool IsWatching() const;
+
+  // Returns the handle of the object being watched.
+  HANDLE GetWatchedObject() const;
 
  private:
   // Called on a background thread when done waiting.

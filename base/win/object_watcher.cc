@@ -77,7 +77,11 @@ bool ObjectWatcher::StopWatching() {
   return true;
 }
 
-HANDLE ObjectWatcher::GetWatchedObject() {
+bool ObjectWatcher::IsWatching() const {
+  return object_ != NULL;
+}
+
+HANDLE ObjectWatcher::GetWatchedObject() const {
   return object_;
 }
 
