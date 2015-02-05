@@ -43,6 +43,11 @@ var tests = [
 
 { description: "start(when, 9_frames): play with explicit offset past end of buffer",
   offsetFrame: 8, durationFrames: 0, renderFrames: 16, playbackRate: 1, expected: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+
+// When the duration exceeds the buffer, just play to the end of the buffer.
+// (This is different from the case when we're looping, which is tested in loop-comprehensive.)
+{ description: "start(when, 0, 15_frames): play with whole buffer, with long duration (clipped)",
+  offsetFrame: 0, durationFrames: 15, renderFrames: 16, playbackRate: 1, expected: [0,1,2,3,4,5,6,7,0,0,0,0,0,0,0,0] },
       
 // Enable test when AudioBufferSourceNode hack is fixed: https://bugs.webkit.org/show_bug.cgi?id=77224
 // { description: "start(when, 3_frames, 3_frames): play a middle section with explicit offset and duration",

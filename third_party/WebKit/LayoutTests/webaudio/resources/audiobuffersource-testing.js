@@ -29,7 +29,15 @@ function checkSingleTest(renderedBuffer, i) {
             description += " with playbackRate of " + test.playbackRate;
     }
 
-    for (var j = 0; j < test.renderFrames; ++j) {
+    var framesToTest;
+
+    if (test.renderFrames)
+        framesToTest = test.renderFrames;
+    else if (test.durationFrames)
+        framesToTest = test.durationFrames;
+
+    // Verify that the output matches
+    for (var j = 0; j < framesToTest; ++j) {
         if (expected[j] != renderedData[offsetFrame + j]) {
             // Copy from Float32Array to regular JavaScript array for error message.
             var renderedArray = new Array();
@@ -37,6 +45,21 @@ function checkSingleTest(renderedBuffer, i) {
                 renderedArray[j] = renderedData[offsetFrame + j];
 
             var s = description + ": expected: " + expected + " actual: " + renderedArray;
+            testFailed(s);
+            success = false;
+            break;
+        }
+    }
+
+    // Verify that we get all zeroes after the buffer (or duration) has passed.
+    for (var j = framesToTest; j < testSpacingFrames; ++j) {
+        if (renderedData[offsetFrame + j]) {
+            // Copy from Float32Array to regular JavaScript array for error message.
+            var renderedArray = new Array();
+            for (var j = framesToTest; j < testSpacingFrames; ++j)
+                renderedArray[j - framesToTest] = renderedData[offsetFrame + j];
+
+            var s = description + ": expected: all zeroes actual: " + renderedArray;
             testFailed(s);
             success = false;
             break;

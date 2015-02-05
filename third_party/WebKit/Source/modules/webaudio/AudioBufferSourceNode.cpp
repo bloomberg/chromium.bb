@@ -404,7 +404,17 @@ void AudioBufferSourceNode::clampGrainParameters(const AudioBuffer* buffer)
     double bufferDuration = buffer->duration();
 
     m_grainOffset = clampTo(m_grainOffset, 0.0, bufferDuration);
-    m_grainDuration = clampTo(m_grainDuration, 0.0, bufferDuration - m_grainOffset);
+
+    if (loop()) {
+        // We're looping a grain with a grain duration specified. Schedule the loop to stop after
+        // grainDuration seconds after starting, possibly running the loop multiple times if
+        // grainDuration is larger than the buffer duration. The net effect is as if the user called
+        // stop(when + grainDuration).
+        m_grainDuration = clampTo(m_grainDuration, 0.0, std::numeric_limits<double>::infinity());
+        m_endTime = m_startTime + m_grainDuration;
+    } else {
+        m_grainDuration = clampTo(m_grainDuration, 0.0, bufferDuration - m_grainOffset);
+    }
 
     // We call timeToSampleFrame here since at playbackRate == 1 we don't want to go through
     // linear interpolation at a sub-sample position since it will degrade the quality. When
@@ -459,10 +469,11 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
     m_grainOffset = grainOffset;
     m_grainDuration = grainDuration;
 
+    m_startTime = when;
+
     if (buffer())
         clampGrainParameters(buffer());
 
-    m_startTime = when;
     m_playbackState = SCHEDULED_STATE;
 }
 

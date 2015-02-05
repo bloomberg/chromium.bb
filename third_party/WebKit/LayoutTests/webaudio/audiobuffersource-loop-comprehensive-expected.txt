@@ -18,4 +18,5 @@ PASS illegal loop: loopStartFrame > loopEndFrame
 PASS illegal loop: loopStartFrame == loopEndFrame
 PASS illegal loop: loopStartFrame < 0
 PASS illegal loop: loopEndFrame > bufferLength
+PASS loop from 3 -> 6 with offset 1 for 31 frames
 

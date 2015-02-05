@@ -10,4 +10,5 @@ PASS start(when, 4_frames, 4_frames): play with explicit non-zero offset and dur
 PASS start(when, 7_frames): play with explicit non-zero offset near end of buffer
 PASS start(when, 8_frames): play with explicit offset at end of buffer
 PASS start(when, 9_frames): play with explicit offset past end of buffer
+PASS start(when, 0, 15_frames): play with whole buffer, with long duration (clipped)
 
