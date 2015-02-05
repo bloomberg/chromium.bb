@@ -42,8 +42,6 @@ public:
 
     void configureLimit();
 
-    static size_t getUnderestimatedStackSize();
-
 private:
     // The maximum depth of eager, unrolled trace() calls that is
     // considered safe and allowed.
