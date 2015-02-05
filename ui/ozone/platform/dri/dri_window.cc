@@ -178,6 +178,7 @@ void DriWindow::OnChannelDestroyed() {
 void DriWindow::SendBoundsChange() {
   cursor_->PrepareForBoundsChange(widget_);
   sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
+  cursor_->ConfineCursorToBounds(widget_, GetCursorConfinedBounds());
 }
 
 }  // namespace ui
