@@ -50,6 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -508,9 +509,22 @@ void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
 {
     InspectorController* ic = inspectorController();
     if (ic) {
-        GraphicsContext context(canvas, nullptr);
-        context.setCertainlyOpaque(false);
-        ic->drawHighlight(context);
+        OwnPtr<GraphicsContext> graphicsContext;
+        OwnPtr<DisplayItemList> displayItemList;
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            displayItemList = DisplayItemList::create();
+            graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get()));
+        } else {
+            graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr));
+        }
+
+        graphicsContext->setCertainlyOpaque(false);
+        ic->drawHighlight(*graphicsContext);
+
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            GraphicsContext context(canvas, nullptr);
+            displayItemList->replay(&context);
+        }
     }
 }
 

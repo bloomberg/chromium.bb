@@ -55,7 +55,7 @@
 #include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/Vector.h"
@@ -367,7 +367,6 @@ void InspectorOverlay::paint(GraphicsContext& context)
 {
     if (isEmpty())
         return;
-    GraphicsContextStateSaver stateSaver(context);
     FrameView* view = toLocalFrame(overlayPage()->mainFrame())->view();
     ASSERT(!view->needsLayout());
     view->paint(&context, IntRect(0, 0, view->width(), view->height()));
