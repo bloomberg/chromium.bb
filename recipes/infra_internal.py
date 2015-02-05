@@ -25,18 +25,6 @@ class InfraInternal(recipe_util.Recipe):
           'deps_file': '.DEPS.git',
           'managed': False
         },
-        {
-          'name': 'testing/expect_tests',
-          'url': url('chromium', 'infra/testing/expect_tests'),
-          'deps_file': '.DEPS.git',
-          'managed': False
-        },
-        {
-          'name': 'testing/testing_support',
-          'url': url('chromium', 'infra/testing/testing_support'),
-          'deps_file': '.DEPS.git',
-          'managed': False
-        },
       ],
     }
     return {
