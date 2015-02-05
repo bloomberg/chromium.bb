@@ -49,42 +49,6 @@ if (is_chromeos && cpu_arch != "arm") {
   }
 }
 
-if (is_chromeos && use_v4lplugin) {
-  action("libv4l2_generate_stubs") {
-    extra_header = "gpu/media/v4l2_stub_header.fragment"
-
-    script = "../../tools/generate_stubs/generate_stubs.py"
-    sources = [
-      "gpu/media/v4l2.sig",
-    ]
-    inputs = [
-      extra_header,
-    ]
-    stubs_filename_root = "v4l2_stubs"
-
-    outputs = [
-      "$target_gen_dir/gpu/media/$stubs_filename_root.cc",
-      "$target_gen_dir/gpu/media/$stubs_filename_root.h",
-    ]
-    args = [
-      "-i",
-      rebase_path("$target_gen_dir/gpu/media", root_build_dir),
-      "-o",
-      rebase_path("$target_gen_dir/gpu/media", root_build_dir),
-      "-t",
-      "posix_stubs",
-      "-e",
-      rebase_path(extra_header, root_build_dir),
-      "-s",
-      stubs_filename_root,
-      "-p",
-      "content/common/gpu/media",
-    ]
-
-    args += rebase_path(sources, root_build_dir)
-  }
-}
-
 if (is_mac) {
   action("libvt_generate_stubs") {
     extra_header = "gpu/media/vt_stubs_header.fragment"
@@ -316,46 +280,32 @@ source_set("common") {
   }
 
   if (is_chromeos) {
-    if (use_v4lplugin) {
-      defines += [ "USE_LIBV4L2" ]
-      sources += get_target_outputs(":libv4l2_generate_stubs")
-      deps += [ ":libv4l2_generate_stubs" ]
-    }
     if (use_v4l2_codec) {
       defines += [ "USE_V4L2_CODEC" ]
+    }
+    if (cpu_arch == "arm" || (use_ozone && use_v4l2_codec)) {
       sources += [
-        "gpu/media/accelerated_video_decoder.h",
         "gpu/media/generic_v4l2_video_device.cc",
         "gpu/media/generic_v4l2_video_device.h",
-        "gpu/media/h264_decoder.cc",
-        "gpu/media/h264_decoder.h",
-        "gpu/media/h264_dpb.cc",
-        "gpu/media/h264_dpb.h",
         "gpu/media/v4l2_image_processor.cc",
         "gpu/media/v4l2_image_processor.h",
-        "gpu/media/v4l2_slice_video_decode_accelerator.cc",
-        "gpu/media/v4l2_slice_video_decode_accelerator.h",
         "gpu/media/v4l2_video_decode_accelerator.cc",
         "gpu/media/v4l2_video_decode_accelerator.h",
         "gpu/media/v4l2_video_device.cc",
         "gpu/media/v4l2_video_device.h",
         "gpu/media/v4l2_video_encode_accelerator.cc",
         "gpu/media/v4l2_video_encode_accelerator.h",
-        "gpu/media/vp8_decoder.cc",
-        "gpu/media/vp8_decoder.h",
-        "gpu/media/vp8_picture.cc",
-        "gpu/media/vp8_picture.h",
       ]
       libs = [
         "EGL",
         "GLESv2",
       ]
-    }
-    if (cpu_arch == "arm") {
-      sources += [
-        "gpu/media/tegra_v4l2_video_device.cc",
-        "gpu/media/tegra_v4l2_video_device.h",
-      ]
+      if (cpu_arch == "arm") {
+        sources += [
+          "gpu/media/tegra_v4l2_video_device.cc",
+          "gpu/media/tegra_v4l2_video_device.h",
+        ]
+      }
     }
     if (cpu_arch != "arm") {
       sources += [

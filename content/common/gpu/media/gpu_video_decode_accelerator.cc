@@ -31,15 +31,18 @@
 #elif defined(OS_MACOSX)
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS)
-#if defined(USE_V4L2_CODEC)
+#if defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
 #include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
+#endif  // defined(ARCH_CPU_ARMEL)
+#if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
+// defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "ui/gl/gl_implementation.h"
-#endif
+#endif  // defined(ARCH_CPU_X86_FAMILY)
 #elif defined(USE_OZONE)
 #include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
@@ -300,7 +303,8 @@ GpuVideoDecodeAccelerator::CreateDXVAVDA() {
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateV4L2VDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
+    (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2VideoDecodeAccelerator(
@@ -318,7 +322,7 @@ GpuVideoDecodeAccelerator::CreateV4L2VDA() {
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2SliceVideoDecodeAccelerator(
