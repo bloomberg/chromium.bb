@@ -850,23 +850,6 @@ const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
 }
 
 // static
-std::vector<base::string16> ProfileInfoCache::GetProfileNames() {
-  std::vector<base::string16> names;
-  PrefService* local_state = g_browser_process->local_state();
-  const base::DictionaryValue* cache = local_state->GetDictionary(
-      prefs::kProfileInfoCache);
-  base::string16 name;
-  for (base::DictionaryValue::Iterator it(*cache); !it.IsAtEnd();
-       it.Advance()) {
-    const base::DictionaryValue* info = NULL;
-    it.value().GetAsDictionary(&info);
-    info->GetString(kNameKey, &name);
-    names.push_back(name);
-  }
-  return names;
-}
-
-// static
 void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }

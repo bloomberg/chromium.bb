@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_observer.h"
@@ -530,7 +531,19 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
   ASSERT_EQ(4U, GetCache()->GetNumberOfProfiles());
 
   // Check that the profiles can be extracted from the local state.
-  std::vector<base::string16> names = ProfileInfoCache::GetProfileNames();
+  std::vector<base::string16> names;
+  PrefService* local_state = g_browser_process->local_state();
+  const base::DictionaryValue* cache = local_state->GetDictionary(
+      prefs::kProfileInfoCache);
+  base::string16 name;
+  for (base::DictionaryValue::Iterator it(*cache); !it.IsAtEnd();
+       it.Advance()) {
+    const base::DictionaryValue* info = NULL;
+    it.value().GetAsDictionary(&info);
+    info->GetString("name", &name);
+    names.push_back(name);
+  }
+
   for (size_t i = 0; i < 4; i++)
     ASSERT_FALSE(names[i].empty());
 }
