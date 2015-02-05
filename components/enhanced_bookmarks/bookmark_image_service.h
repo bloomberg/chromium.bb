@@ -84,8 +84,8 @@ class BookmarkImageService : public KeyedService,
   // Returns true if the image for the page_url is currently being fetched.
   bool IsPageUrlInProgress(const GURL& page_url);
 
-  // Once an image has been retrieved, store the image and notify all the
-  // consumers that were waiting on it.
+  // Stores the image to local storage. If update_bookmarks is true, relates the
+  // corresponding bookmark to image_url.
   void ProcessNewImage(const GURL& page_url,
                        bool update_bookmarks,
                        const gfx::Image& image,
@@ -113,10 +113,10 @@ class BookmarkImageService : public KeyedService,
   EnhancedBookmarkModel* enhanced_bookmark_model_;
 
  private:
-  // Same as SalientImageForUrl(const GURL&, ImageCallback) but can
-  // prevent the network request if fetch_from_bookmark is false.
+  // If fetch_from_web is true, retrieves the salient image via a network
+  // request; else only gets the image from local storage.
   void SalientImageForUrl(const GURL& page_url,
-                          bool fetch_from_bookmark,
+                          bool fetch_from_web,
                           ImageCallback stack_callback);
 
   // Processes the requests that have been waiting on an image.

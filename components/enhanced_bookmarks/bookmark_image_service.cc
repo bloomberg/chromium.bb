@@ -166,7 +166,7 @@ void BookmarkImageService::FetchCallback(const GURL& page_url,
 }
 
 void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
-                                              bool fetch_from_bookmark,
+                                              bool fetch_from_web,
                                               ImageCallback callback) {
   DCHECK(CalledOnValidThread());
 
@@ -177,7 +177,7 @@ void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
     return;
   }
 
-  if (!fetch_from_bookmark) {
+  if (!fetch_from_web) {
     RetrieveImageFromStore(page_url, callback);
   } else {
     RetrieveImageFromStore(page_url,

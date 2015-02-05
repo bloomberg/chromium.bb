@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import android.graphics.Bitmap;
+import android.util.LruCache;
+import android.util.Pair;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ObserverList;
@@ -13,6 +17,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Access gate to C++ side enhanced bookmarks functionalities.
@@ -24,6 +29,22 @@ public final class EnhancedBookmarksBridge {
             new ObserverList<FiltersObserver>();
     private final ObserverList<SearchServiceObserver> mSearchObservers =
             new ObserverList<SearchServiceObserver>();
+
+    private LruCache<String, Pair<String, Bitmap>> mSalientImageCache;
+
+    /**
+     * Interface for getting result back from SalientImageForUrl function.
+     */
+    public interface SalientImageCallback {
+        /**
+         * Callback method for fetching salient image.
+         * @param image Salient image. This can be null if the image cannot be found.
+         * @param imageUrl Url of the image. Note this is not the same as the url of the website
+         *            containing the image.
+         */
+        @CalledByNative("SalientImageCallback")
+        void onSalientImageReady(Bitmap image, String imageUrl);
+    }
 
     /**
      * Interface to provide consumers notifications to changes in clusters
@@ -46,6 +67,19 @@ public final class EnhancedBookmarksBridge {
         void onSearchResultsReturned();
     }
 
+    public EnhancedBookmarksBridge(Profile profile, int maxCacheSize) {
+        this(profile);
+        // Do not initialize LruCache if cache size is set to 0.
+        if (maxCacheSize != 0) {
+            mSalientImageCache = new LruCache<String, Pair<String, Bitmap>>(maxCacheSize) {
+                @Override
+                protected int sizeOf(String key, Pair<String, Bitmap> urlImage) {
+                    return urlImage.first.length() + urlImage.second.getByteCount();
+                }
+            };
+        }
+    }
+
     public EnhancedBookmarksBridge(Profile profile) {
         mNativeEnhancedBookmarksBridge = nativeInit(profile);
     }
@@ -54,6 +88,14 @@ public final class EnhancedBookmarksBridge {
         assert mNativeEnhancedBookmarksBridge != 0;
         nativeDestroy(mNativeEnhancedBookmarksBridge);
         mNativeEnhancedBookmarksBridge = 0;
+
+        if (mSalientImageCache != null) {
+            for (Map.Entry<String, Pair<String, Bitmap>> entry :
+                    mSalientImageCache.snapshot().entrySet()) {
+                entry.getValue().second.recycle();
+            }
+            mSalientImageCache.evictAll();
+        }
     }
 
     /**
@@ -171,6 +213,39 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
+     * Request bookmark salient image for the given URL. Please refer to
+     * |BookmarkImageService::SalientImageForUrl|.
+     * @return True if this method is executed synchronously. False if
+     *         {@link SalientImageCallback#onSalientImageReady(Bitmap, String)} is called later
+     *         (asynchronously).
+     */
+    public boolean salientImageForUrl(final String url, final SalientImageCallback callback) {
+        assert callback != null;
+        SalientImageCallback callbackWrapper = callback;
+
+        if (mSalientImageCache != null) {
+            Pair<String, Bitmap> cached = mSalientImageCache.get(url);
+            if (cached != null) {
+                callback.onSalientImageReady(cached.second, cached.first);
+                return true;
+            }
+
+            callbackWrapper = new SalientImageCallback() {
+                @Override
+                public void onSalientImageReady(Bitmap image, String imageUrl) {
+                    if (image != null) {
+                        mSalientImageCache.put(url, new Pair<String, Bitmap>(imageUrl, image));
+                    }
+                    callback.onSalientImageReady(image, imageUrl);
+                }
+            };
+        }
+
+        nativeSalientImageForUrl(mNativeEnhancedBookmarksBridge, url, callbackWrapper);
+        return false;
+    }
+
+    /**
      * Get all filters associated with the given bookmark.
      *
      * @param bookmark The bookmark to find filters for.
@@ -235,4 +310,6 @@ public final class EnhancedBookmarksBridge {
     private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
             BookmarkId parent, int index, String title, String url);
     private native void nativeSendSearchRequest(long nativeEnhancedBookmarksBridge, String query);
+    private static native void nativeSalientImageForUrl(long nativeEnhancedBookmarksBridge,
+            String url, SalientImageCallback callback);
 }

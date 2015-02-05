@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
+#ifndef CHROME_BROWSER_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_
+#define CHROME_BROWSER_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -15,6 +15,7 @@
 namespace enhanced_bookmarks {
 
 class BookmarkServerClusterService;
+class BookmarkImageService;
 
 namespace android {
 
@@ -23,6 +24,11 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   EnhancedBookmarksBridge(JNIEnv* env, jobject obj, Profile* profile);
   ~EnhancedBookmarksBridge() override;
   void Destroy(JNIEnv*, jobject);
+
+  void SalientImageForUrl(JNIEnv* env,
+                          jobject obj,
+                          jstring j_url,
+                          jobject j_callback);
 
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkDescription(
       JNIEnv* env,
@@ -79,8 +85,9 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   bool IsEditable(const bookmarks::BookmarkNode* node) const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
-  EnhancedBookmarkModel* enhanced_bookmark_model_; // weak
-  BookmarkServerClusterService* cluster_service_;  // weak
+  EnhancedBookmarkModel* enhanced_bookmark_model_;  // weak
+  BookmarkServerClusterService* cluster_service_;   // weak
+  BookmarkImageService* bookmark_image_service_;    // weak
   scoped_ptr<BookmarkServerSearchService> search_service_;
   Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);
@@ -91,4 +98,4 @@ bool RegisterEnhancedBookmarksBridge(JNIEnv* env);
 }  // namespace android
 }  // namespace enhanced_bookmarks
 
-#endif  // CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
+#endif  // CHROME_BROWSER_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_

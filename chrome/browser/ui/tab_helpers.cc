@@ -39,6 +39,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "chrome/browser/enhanced_bookmarks/android/enhanced_bookmark_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
@@ -161,6 +162,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if defined(OS_ANDROID)
   ContextMenuHelper::CreateForWebContents(web_contents);
+  EnhancedBookmarkTabHelper::CreateForWebContents(web_contents);
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   WindowAndroidHelper::CreateForWebContents(web_contents);
 #else
