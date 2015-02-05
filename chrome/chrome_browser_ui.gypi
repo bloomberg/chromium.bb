@@ -1646,6 +1646,8 @@
       'browser/ui/webui/identity_internals_ui.h',
       'browser/ui/webui/inspect_ui.cc',
       'browser/ui/webui/inspect_ui.h',
+      'browser/ui/webui/md_settings_ui.cc',
+      'browser/ui/webui/md_settings_ui.h',
       'browser/ui/webui/ntp/app_launcher_handler.cc',
       'browser/ui/webui/ntp/app_launcher_handler.h',
       'browser/ui/webui/ntp/app_resource_cache_factory.cc',

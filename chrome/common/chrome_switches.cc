@@ -1376,6 +1376,12 @@ bool PdfMaterialUIEnabled() {
   return false;
 }
 
+
+bool MdSettingsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignSettings);
+}
+
 bool SettingsWindowEnabled() {
 #if defined(OS_CHROMEOS)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(

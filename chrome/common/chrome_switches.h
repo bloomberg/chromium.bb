@@ -397,6 +397,7 @@ extern const char kFileManagerExtensionPath[];
 #endif
 
 bool AboutInSettingsEnabled();
+bool MdSettingsEnabled();
 bool NewOfflineErrorPageEnabled();
 bool OutOfProcessPdfEnabled();
 bool PdfMaterialUIEnabled();

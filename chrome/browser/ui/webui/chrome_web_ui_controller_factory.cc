@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
+#include "chrome/browser/ui/webui/md_settings_ui.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
@@ -367,6 +368,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<IdentityInternalsUI>;
   if (url.host() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
+  if (url.host() == chrome::kChromeUIMdSettingsHost &&
+      ::switches::MdSettingsEnabled()) {
+    return &NewWebUI<MdSettingsUI>;
+  }
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
