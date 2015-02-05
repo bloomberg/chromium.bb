@@ -134,14 +134,12 @@ class GCMDriverDesktop : public GCMDriver {
   scoped_ptr<GCMChannelStatusSyncer> gcm_channel_status_syncer_;
 
   // Flag to indicate whether the user is signed in to a GAIA account.
-  // TODO(jianli): To be removed when sign-in enforcement is dropped.
   bool signed_in_;
 
   // Flag to indicate if GCM is started.
   bool gcm_started_;
 
   // Flag to indicate if GCM is enabled.
-  // TODO(jianli): Removed when we switch completely to support all users.
   bool gcm_enabled_;
 
   // Flag to indicate the last known state of the GCM client. Because this

@@ -970,17 +970,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     // know about this.
   }
 
-  ReadNode gcm_channel_node(&trans);
-  if (gcm_channel_node.InitByClientTagLookup(
-          syncer::EXPERIMENTS,
-          syncer::kGCMChannelTag) == BaseNode::INIT_OK &&
-      gcm_channel_node.GetExperimentsSpecifics().gcm_channel().has_enabled()) {
-    experiments->gcm_channel_state =
-        (gcm_channel_node.GetExperimentsSpecifics().gcm_channel().enabled() ?
-         syncer::Experiments::ENABLED : syncer::Experiments::SUPPRESSED);
-    found_experiment = true;
-  }
-
   ReadNode enhanced_bookmarks_node(&trans);
   if (enhanced_bookmarks_node.InitByClientTagLookup(
           syncer::EXPERIMENTS, syncer::kEnhancedBookmarksTag) ==

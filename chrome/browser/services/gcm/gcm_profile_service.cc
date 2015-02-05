@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
@@ -26,6 +25,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -120,16 +120,16 @@ void GCMProfileService::IdentityObserver::StartAccountTracker() {
 
 // static
 bool GCMProfileService::IsGCMEnabled(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kGCMChannelEnabled);
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return profile->GetPrefs()->GetBoolean(gcm::prefs::kGCMChannelStatus);
+#endif  // defined(OS_ANDROID)
 }
 
 // static
 void GCMProfileService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kGCMChannelEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   PushMessagingServiceImpl::RegisterProfilePrefs(registry);
 }
 

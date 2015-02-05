@@ -1206,9 +1206,6 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 // a preference was reset.
 const char kPreferenceResetTime[] = "prefs.preference_reset_time";
 
-// The GCM channel's enabled state.
-const char kGCMChannelEnabled[] = "gcm.channel_enabled";
-
 // How many Service Workers are registered with the Push API (could be zero).
 const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";

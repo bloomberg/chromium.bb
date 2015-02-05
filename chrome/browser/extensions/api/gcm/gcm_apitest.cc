@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -11,7 +10,6 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/test/result_catcher.h"
 
@@ -85,9 +83,6 @@ void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void GcmApiTest::SetUpOnMainThread() {
-  // Enable GCM such that tests could be run on all channels.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
-
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
       browser()->profile(), &gcm::FakeGCMProfileService::Build);
   fake_gcm_profile_service_ = static_cast<gcm::FakeGCMProfileService*>(

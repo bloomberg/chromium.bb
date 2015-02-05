@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_app_handler.h"
 #include "components/gcm_driver/fake_gcm_client.h"
@@ -232,9 +230,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     extension_service_->set_extensions_enabled(true);
     extension_service_->set_show_extensions_prompts(false);
     extension_service_->set_install_updates_when_idle_for_test(false);
-
-    // Enable GCM such that tests could be run on all channels.
-    profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
 
     // Create GCMProfileService that talks with fake GCMClient.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(

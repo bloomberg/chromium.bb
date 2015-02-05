@@ -34,8 +34,6 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -63,7 +61,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -1140,17 +1137,6 @@ void ProfileSyncService::OnExperimentsChanged(
     return;
 
   current_experiments_ = experiments;
-
-  // Handle preference-backed experiments first.
-  if (experiments.gcm_channel_state == syncer::Experiments::SUPPRESSED) {
-    profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, false);
-    gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver()
-        ->Disable();
-  } else {
-    profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
-    gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver()
-        ->Enable();
-  }
 
   profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                     experiments.gcm_invalidations_enabled);

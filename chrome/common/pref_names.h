@@ -402,7 +402,6 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 
 extern const char kPreferenceResetTime[];
 
-extern const char kGCMChannelEnabled[];
 extern const char kPushMessagingRegistrationCount[];
 
 extern const char kEasyUnlockAllowed[];

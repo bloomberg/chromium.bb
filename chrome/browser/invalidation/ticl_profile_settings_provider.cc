@@ -12,6 +12,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/gcm_driver/gcm_channel_status_syncer.h"
 
 namespace invalidation {
 
@@ -23,7 +24,7 @@ TiclProfileSettingsProvider::TiclProfileSettingsProvider(Profile* profile)
       base::Bind(&TiclProfileSettingsProvider::FireOnUseGCMChannelChanged,
                  base::Unretained(this)));
   registrar_.Add(
-      prefs::kGCMChannelEnabled,
+      gcm::prefs::kGCMChannelStatus,
       base::Bind(&TiclProfileSettingsProvider::FireOnUseGCMChannelChanged,
                  base::Unretained(this)));
 }

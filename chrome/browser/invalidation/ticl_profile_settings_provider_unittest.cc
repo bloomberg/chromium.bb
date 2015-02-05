@@ -11,6 +11,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
 #include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/ticl_invalidation_service.h"
@@ -79,26 +80,26 @@ TEST_F(TiclProfileSettingsProviderTest, ChannelSelectionTest) {
 
   // If GCM is enabled and invalidation channel setting is not set or set to
   // true then use GCM channel.
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
+  prefs->SetBoolean(gcm::prefs::kGCMChannelStatus, true);
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
+  prefs->SetBoolean(gcm::prefs::kGCMChannelStatus, true);
   prefs->ClearPref(prefs::kInvalidationServiceUseGCMChannel);
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
-  prefs->ClearPref(prefs::kGCMChannelEnabled);
+  prefs->ClearPref(gcm::prefs::kGCMChannelStatus);
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
   // If invalidation channel setting is set to false, fall back to push channel.
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
+  prefs->SetBoolean(gcm::prefs::kGCMChannelStatus, true);
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, false);
   EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
 
   // If invalidation channel setting says use GCM but GCM is not enabled, fall
   // back to push channel.
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, false);
+  prefs->SetBoolean(gcm::prefs::kGCMChannelStatus, false);
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
   EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
 }

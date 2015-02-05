@@ -21,15 +21,6 @@ namespace gcm {
 
 namespace {
 
-// The GCM channel's enabled state.
-const char kGCMChannelStatus[] = "gcm.channel_status";
-
-// The GCM channel's polling interval (in seconds).
-const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
-
-// Last time when checking with the GCM channel status server is done.
-const char kGCMChannelLastCheckTime[] = "gcm.check_time";
-
 // A small delay to avoid sending request at browser startup time for first-time
 // request.
 const int kFirstTimeDelaySeconds = 1 * 60;  // 1 minute.
@@ -45,6 +36,19 @@ const int kMaxNumberToUseCustomPollInterval = 10;
 
 }  // namespace
 
+namespace prefs {
+
+// The GCM channel's enabled state.
+const char kGCMChannelStatus[] = "gcm.channel_status";
+
+// The GCM channel's polling interval (in seconds).
+const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
+
+// Last time when checking with the GCM channel status server is done.
+const char kGCMChannelLastCheckTime[] = "gcm.check_time";
+
+}  // namepsace prefs
+
 namespace switches {
 
 // Override the default poll interval for testing purpose.
@@ -54,26 +58,26 @@ const char kCustomPollIntervalMinutes[] = "gcm-channel-poll-interval";
 
 // static
 void GCMChannelStatusSyncer::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kGCMChannelStatus, true);
+  registry->RegisterBooleanPref(prefs::kGCMChannelStatus, true);
   registry->RegisterIntegerPref(
-      kGCMChannelPollIntervalSeconds,
+      prefs::kGCMChannelPollIntervalSeconds,
       GCMChannelStatusRequest::default_poll_interval_seconds());
-  registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
+  registry->RegisterInt64Pref(prefs::kGCMChannelLastCheckTime, 0);
 }
 
 // static
 void GCMChannelStatusSyncer::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
-      kGCMChannelStatus,
+      prefs::kGCMChannelStatus,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      kGCMChannelPollIntervalSeconds,
+      prefs::kGCMChannelPollIntervalSeconds,
       GCMChannelStatusRequest::default_poll_interval_seconds(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterInt64Pref(
-      kGCMChannelLastCheckTime,
+      prefs::kGCMChannelLastCheckTime,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
@@ -101,8 +105,9 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
       custom_poll_interval_use_count_(0),
       delay_removed_for_testing_(false),
       weak_ptr_factory_(this) {
-  gcm_enabled_ = prefs_->GetBoolean(kGCMChannelStatus);
-  poll_interval_seconds_ = prefs_->GetInteger(kGCMChannelPollIntervalSeconds);
+  gcm_enabled_ = prefs_->GetBoolean(prefs::kGCMChannelStatus);
+  poll_interval_seconds_ = prefs_->GetInteger(
+      prefs::kGCMChannelPollIntervalSeconds);
   if (poll_interval_seconds_ <
       GCMChannelStatusRequest::min_poll_interval_seconds()) {
     poll_interval_seconds_ =
@@ -123,7 +128,7 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
     }
   }
   last_check_time_ = base::Time::FromInternalValue(
-      prefs_->GetInt64(kGCMChannelLastCheckTime));
+      prefs_->GetInt64(prefs::kGCMChannelLastCheckTime));
 }
 
 GCMChannelStatusSyncer::~GCMChannelStatusSyncer() {
@@ -152,13 +157,13 @@ void GCMChannelStatusSyncer::OnRequestCompleted(bool update_received,
 
   // Persist the current time as the last request complete time.
   last_check_time_ = base::Time::Now();
-  prefs_->SetInt64(kGCMChannelLastCheckTime,
+  prefs_->SetInt64(prefs::kGCMChannelLastCheckTime,
                    last_check_time_.ToInternalValue());
 
   if (update_received) {
     if (gcm_enabled_ != enabled) {
       gcm_enabled_ = enabled;
-      prefs_->SetBoolean(kGCMChannelStatus, enabled);
+      prefs_->SetBoolean(prefs::kGCMChannelStatus, enabled);
       if (gcm_enabled_)
         driver_->Enable();
       else
@@ -171,7 +176,7 @@ void GCMChannelStatusSyncer::OnRequestCompleted(bool update_received,
                 GCMChannelStatusRequest::min_poll_interval_seconds());
       if (poll_interval_seconds_ != poll_interval_seconds) {
         poll_interval_seconds_ = poll_interval_seconds;
-        prefs_->SetInteger(kGCMChannelPollIntervalSeconds,
+        prefs_->SetInteger(prefs::kGCMChannelPollIntervalSeconds,
                            poll_interval_seconds_);
       }
     }

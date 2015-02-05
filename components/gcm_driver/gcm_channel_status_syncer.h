@@ -28,6 +28,11 @@ namespace gcm {
 class GCMChannelStatusRequest;
 class GCMDriver;
 
+namespace prefs {
+// The GCM channel's enabled state.
+extern const char kGCMChannelStatus[];
+}  // namepsace prefs
+
 // Syncing with the server for GCM channel status that controls if GCM
 // functionality should be enabled or disabled.
 class GCMChannelStatusSyncer {
