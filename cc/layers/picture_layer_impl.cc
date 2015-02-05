@@ -602,8 +602,12 @@ void PictureLayerImpl::DidBeginTracing() {
 void PictureLayerImpl::ReleaseResources() {
   // Recreate tilings with new settings, since some of those might change when
   // we release resources.
-  tilings_ = CreatePictureLayerTilingSet();
+  tilings_ = nullptr;
   ResetRasterScale();
+}
+
+void PictureLayerImpl::RecreateResources() {
+  tilings_ = CreatePictureLayerTilingSet();
 
   // To avoid an edge case after lost context where the tree is up to date but
   // the tilings have not been managed, request an update draw properties

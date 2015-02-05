@@ -547,6 +547,7 @@ class CC_EXPORT LayerTreeHostImpl
   void CreateAndSetTileManager();
   void DestroyTileManager();
   void ReleaseTreeResources();
+  void RecreateTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 
   bool UsePendingTreeForSync() const;

@@ -122,7 +122,12 @@ void LayerTreeImpl::Shutdown() {
 
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_)
-    ReleaseResourcesRecursive(root_layer_.get());
+    ProcessLayersRecursive(root_layer_.get(), &LayerImpl::ReleaseResources);
+}
+
+void LayerTreeImpl::RecreateResources() {
+  if (root_layer_)
+    ProcessLayersRecursive(root_layer_.get(), &LayerImpl::RecreateResources);
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
@@ -1159,15 +1164,16 @@ const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
   return layers_with_copy_output_request_;
 }
 
-void LayerTreeImpl::ReleaseResourcesRecursive(LayerImpl* current) {
+void LayerTreeImpl::ProcessLayersRecursive(LayerImpl* current,
+                                           void (LayerImpl::*function)()) {
   DCHECK(current);
-  current->ReleaseResources();
+  (current->*function)();
   if (current->mask_layer())
-    ReleaseResourcesRecursive(current->mask_layer());
+    ProcessLayersRecursive(current->mask_layer(), function);
   if (current->replica_layer())
-    ReleaseResourcesRecursive(current->replica_layer());
+    ProcessLayersRecursive(current->replica_layer(), function);
   for (size_t i = 0; i < current->children().size(); ++i)
-    ReleaseResourcesRecursive(current->children()[i]);
+    ProcessLayersRecursive(current->children()[i], function);
 }
 
 template <typename LayerType>

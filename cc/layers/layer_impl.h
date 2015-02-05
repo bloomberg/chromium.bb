@@ -547,6 +547,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // that rendered this layer was lost or a rendering mode switch has occured.
   virtual void ReleaseResources();
 
+  // Recreate resources that are required after they were released by a
+  // ReleaseResources call.
+  virtual void RecreateResources();
+
   ScrollbarAnimationController* scrollbar_animation_controller() const {
     return scrollbar_animation_controller_.get();
   }

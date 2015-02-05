@@ -62,6 +62,7 @@ class CC_EXPORT PictureLayerImpl
   void NotifyTileStateChanged(const Tile* tile) override;
   void DidBeginTracing() override;
   void ReleaseResources() override;
+  void RecreateResources() override;
   skia::RefPtr<SkPicture> GetPicture() override;
 
   // PictureLayerTilingClient overrides.

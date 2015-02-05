@@ -278,11 +278,14 @@ class PictureLayerImplTest : public testing::Test {
 
   void ResetTilingsAndRasterScales() {
     pending_layer_->ReleaseResources();
+    EXPECT_FALSE(pending_layer_->tilings());
+    pending_layer_->RecreateResources();
+    EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+
     active_layer_->ReleaseResources();
-    if (pending_layer_)
-      EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
-    if (active_layer_)
-      EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+    EXPECT_FALSE(active_layer_->tilings());
+    active_layer_->RecreateResources();
+    EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
   }
 
   void AssertAllTilesRequired(PictureLayerTiling* tiling) {
@@ -711,7 +714,7 @@ TEST_F(PictureLayerImplTest, CloneFullInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), pending_pile.get());
 }
 
-TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
+TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
@@ -726,6 +729,8 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   EXPECT_LT(low_res_factor, 1.f);
 
   active_layer_->ReleaseResources();
+  EXPECT_FALSE(active_layer_->tilings());
+  active_layer_->RecreateResources();
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
 
   SetupDrawPropertiesAndUpdateTiles(active_layer_,
@@ -796,6 +801,8 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
   EXPECT_LT(low_res_factor, 1.f);
 
   pending_layer_->ReleaseResources();
+  EXPECT_FALSE(pending_layer_->tilings());
+  pending_layer_->RecreateResources();
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_,
@@ -1326,6 +1333,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   // Drop resources and recreate them, still the same.
   pending_mask->ReleaseResources();
   active_mask->ReleaseResources();
+  pending_mask->RecreateResources();
+  active_mask->RecreateResources();
   SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
@@ -1369,6 +1378,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   // Drop resources and recreate them, still the same.
   pending_mask->ReleaseResources();
   active_mask->ReleaseResources();
+  pending_mask->RecreateResources();
+  active_mask->RecreateResources();
   SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
@@ -1475,8 +1486,12 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
 
   // All tilings should be removed when losing output surface.
   active_layer_->ReleaseResources();
+  EXPECT_FALSE(active_layer_->tilings());
+  active_layer_->RecreateResources();
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
   pending_layer_->ReleaseResources();
+  EXPECT_FALSE(pending_layer_->tilings());
+  pending_layer_->RecreateResources();
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // This should create new tilings.
@@ -3744,8 +3759,12 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
 
   // All tilings should be removed when losing output surface.
   active_layer_->ReleaseResources();
+  EXPECT_FALSE(active_layer_->tilings());
+  active_layer_->RecreateResources();
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
   pending_layer_->ReleaseResources();
+  EXPECT_FALSE(pending_layer_->tilings());
+  pending_layer_->RecreateResources();
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // This should create new tilings.

@@ -116,7 +116,6 @@ class ViewportAnchor {
   gfx::ScrollOffset viewport_in_content_coordinates_;
 };
 
-
 void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   if (visible) {
     TRACE_EVENT_ASYNC_BEGIN1("cc", "LayerTreeHostImpl::SetVisible", id,
@@ -1616,6 +1615,7 @@ void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
     DestroyTileManager();
     CreateAndSetTileManager();
   }
+  RecreateTreeResources();
 
   // We have released tilings for both active and pending tree.
   // We would not have any content to draw until the pending tree is activated.
@@ -1934,6 +1934,14 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
   EvictAllUIResources();
 }
 
+void LayerTreeHostImpl::RecreateTreeResources() {
+  active_tree_->RecreateResources();
+  if (pending_tree_)
+    pending_tree_->RecreateResources();
+  if (recycle_tree_)
+    recycle_tree_->RecreateResources();
+}
+
 void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(!renderer_);
   DCHECK(output_surface_);
@@ -2125,8 +2133,12 @@ bool LayerTreeHostImpl::InitializeRenderer(
   resource_provider_ = nullptr;
   output_surface_ = nullptr;
 
-  if (!output_surface->BindToClient(this))
+  if (!output_surface->BindToClient(this)) {
+    // Avoid recreating tree resources because we might not have enough
+    // information to do this yet (eg. we don't have a TileManager at this
+    // point).
     return false;
+  }
 
   output_surface_ = output_surface.Pass();
   resource_provider_ = ResourceProvider::Create(
@@ -2143,6 +2155,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   if (settings_.impl_side_painting)
     CreateAndSetTileManager();
+  RecreateTreeResources();
 
   // Initialize vsync parameters to sane values.
   const base::TimeDelta display_refresh_interval =
@@ -2192,6 +2205,7 @@ void LayerTreeHostImpl::DeferredInitialize() {
   CreateAndSetRenderer();
   EnforceZeroBudget(false);
   CreateAndSetTileManager();
+  RecreateTreeResources();
 
   client_->SetNeedsCommitOnImplThread();
 }
@@ -2211,6 +2225,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   CreateAndSetRenderer();
   EnforceZeroBudget(true);
   CreateAndSetTileManager();
+  RecreateTreeResources();
 
   client_->SetNeedsCommitOnImplThread();
 }

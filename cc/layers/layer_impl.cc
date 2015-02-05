@@ -1189,6 +1189,9 @@ void LayerImpl::DidBeginTracing() {}
 
 void LayerImpl::ReleaseResources() {}
 
+void LayerImpl::RecreateResources() {
+}
+
 gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   if (!scroll_clip_layer_ || bounds().IsEmpty())
     return gfx::ScrollOffset();
