@@ -66,6 +66,18 @@ TEST_F(DataReductionProxyConfiguratorTest, TestUnrestricted) {
       "", "");
 }
 
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedQuic) {
+  config_->Enable(false,
+                  false,
+                  "quic://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "");
+  CheckProxyConfig(
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "QUIC www.foo.com:443;PROXY www.bar.com:80;DIRECT",
+      "", "");
+}
+
 TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedSSL) {
   config_->Enable(false,
                   false,
@@ -75,6 +87,19 @@ TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedSSL) {
   CheckProxyConfig(
       net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       "HTTPS www.foo.com:443;PROXY www.bar.com:80;DIRECT",
+      "PROXY www.ssl.com:80;DIRECT",
+      "");
+}
+
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedSSLQuic) {
+  config_->Enable(false,
+                  false,
+                  "quic://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "http://www.ssl.com:80/");
+  CheckProxyConfig(
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "QUIC www.foo.com:443;PROXY www.bar.com:80;DIRECT",
       "PROXY www.ssl.com:80;DIRECT",
       "");
 }
@@ -93,16 +118,47 @@ TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRule) {
       "<local>;*.goo.com;");
 }
 
+TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRuleQuic) {
+  config_->AddHostPatternToBypass("<local>");
+  config_->AddHostPatternToBypass("*.goo.com");
+  config_->Enable(false,
+                  false,
+                  "quic://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "");
+  CheckProxyConfig(
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "QUIC www.foo.com:443;PROXY www.bar.com:80;DIRECT", "",
+      "<local>;*.goo.com;");
+}
+
 TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithoutFallback) {
   config_->Enable(false, false, "https://www.foo.com:443/", "", "");
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
                    "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
+TEST_F(DataReductionProxyConfiguratorTest,
+       TestUnrestrictedWithoutFallbackQuic) {
+  config_->Enable(false, false, "quic://www.foo.com:443/", "", "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "QUIC www.foo.com:443;DIRECT", "", "");
+}
+
 TEST_F(DataReductionProxyConfiguratorTest, TestRestricted) {
   config_->Enable(true,
                   false,
                   "https://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "PROXY www.bar.com:80;DIRECT", "", "");
+}
+
+TEST_F(DataReductionProxyConfiguratorTest, TestRestrictedQuic) {
+  config_->Enable(true,
+                  false,
+                  "quic://www.foo.com:443/",
                   "http://www.bar.com:80/",
                   "");
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
@@ -119,14 +175,24 @@ TEST_F(DataReductionProxyConfiguratorTest, TestFallbackRestricted) {
                    "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
+TEST_F(DataReductionProxyConfiguratorTest, TestFallbackRestrictedQuic) {
+  config_->Enable(false,
+                  true,
+                  "quic://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "QUIC www.foo.com:443;DIRECT", "", "");
+}
+
 TEST_F(DataReductionProxyConfiguratorTest, TestDisable) {
   data_reduction_proxy::DataReductionProxyParams params(
       data_reduction_proxy::DataReductionProxyParams::
           kAllowAllProxyConfigurations);
   config_->Enable(false,
                   false,
-                  params.origin().spec(),
-                  params.fallback_origin().spec(),
+                  params.origin().ToURI(),
+                  params.fallback_origin().ToURI(),
                   "");
   config_->Disable();
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_NO_RULES, "", "", "");

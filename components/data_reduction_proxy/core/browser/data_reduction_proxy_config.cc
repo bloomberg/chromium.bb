@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
+#include <string>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -12,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -92,12 +95,12 @@ void DataReductionProxyConfig::SetProxyConfigs(bool enabled,
     if (alternative_enabled) {
       configurator_->Enable(restricted,
                             !params()->alternative_fallback_allowed(),
-                            params()->alt_origin().spec(), std::string(),
-                            params()->ssl_origin().spec());
+                            params()->alt_origin().ToURI(), std::string(),
+                            params()->ssl_origin().ToURI());
     } else {
       configurator_->Enable(restricted, !params()->fallback_allowed(),
-                            params()->origin().spec(),
-                            params()->fallback_origin().spec(), std::string());
+                            params()->origin().ToURI(),
+                            params()->fallback_origin().ToURI(), std::string());
     }
   } else {
     configurator_->Disable();

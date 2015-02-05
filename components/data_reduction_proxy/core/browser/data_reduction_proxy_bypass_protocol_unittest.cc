@@ -27,6 +27,7 @@
 #include "net/base/network_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -287,11 +288,11 @@ class DataReductionProxyProtocolTest : public testing::Test {
 
   // Returns the key to the |ProxyRetryInfoMap|.
   std::string GetProxyKey(std::string proxy) {
-    GURL gurl(proxy);
-    std::string host_port = HostPortPair::FromURL(GURL(proxy)).ToString();
-    if (gurl.SchemeIs("https"))
-      return "https://" + host_port;
-    return host_port;
+    net::ProxyServer proxy_server = net::ProxyServer::FromURI(
+        proxy, net::ProxyServer::SCHEME_HTTP);
+    if (!proxy_server.is_valid())
+      return HostPortPair::FromURL(GURL(std::string())).ToString();
+    return proxy_server.host_port_pair().ToString();
   }
 
   // Checks that |expected_num_bad_proxies| proxies are on the proxy retry list.
@@ -773,9 +774,11 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
   std::string fallback = proxy_params_->DefaultFallbackOrigin();
   for (size_t i = 0; i < arraysize(tests); ++i) {
     ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
-        "PROXY " +
-        HostPortPair::FromURL(GURL(primary)).ToString() + "; PROXY " +
-        HostPortPair::FromURL(GURL(fallback)).ToString() + "; DIRECT"));
+        net::ProxyServer::FromURI(
+            primary, net::ProxyServer::SCHEME_HTTP).ToPacString() + "; " +
+            net::ProxyServer::FromURI(
+                fallback,
+                net::ProxyServer::SCHEME_HTTP).ToPacString() + "; DIRECT"));
     TestProxyFallback(tests[i].method,
                       tests[i].first_response,
                       tests[i].expected_retry,
@@ -799,9 +802,12 @@ TEST_F(DataReductionProxyProtocolTest,
       "DataReductionProxyRemoveMissingViaHeaderOtherBypass", "Relaxed");
 
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
-      "PROXY " +
-      HostPortPair::FromURL(GURL(primary)).ToString() + "; PROXY " +
-      HostPortPair::FromURL(GURL(fallback)).ToString() + "; DIRECT"));
+      net::ProxyServer::FromURI(
+          primary, net::ProxyServer::SCHEME_HTTP).ToPacString() + "; " +
+          net::ProxyServer::FromURI(
+              fallback,
+              net::ProxyServer::SCHEME_HTTP).ToPacString() +
+              "; DIRECT"));
 
   // This response with the DRP via header should be accepted without causing a
   // bypass.

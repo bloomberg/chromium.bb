@@ -30,6 +30,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -437,14 +438,14 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
     if (alternative_enabled) {
       configurator_->Enable(restricted,
                             !params()->alternative_fallback_allowed(),
-                            params()->alt_origin().spec(),
+                            params()->alt_origin().ToURI(),
                             std::string(),
-                            params()->ssl_origin().spec());
+                            params()->ssl_origin().ToURI());
     } else {
       configurator_->Enable(restricted,
                             !params()->fallback_allowed(),
-                            params()->origin().spec(),
-                            params()->fallback_origin().spec(),
+                            params()->origin().ToURI(),
+                            params()->fallback_origin().ToURI(),
                             std::string());
     }
   } else {

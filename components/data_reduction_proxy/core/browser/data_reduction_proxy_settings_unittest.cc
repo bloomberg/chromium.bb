@@ -18,7 +18,6 @@
 #include "net/http/http_auth_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -38,8 +37,8 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
   // SetUp() adds the origin to the command line, which should be returned here.
   std::string result =
-      settings_->params()->origin().spec();
-  EXPECT_EQ(GURL(expected_params_->DefaultOrigin()), GURL(result));
+      settings_->params()->origin().ToURI();
+  EXPECT_EQ(expected_params_->DefaultOrigin(), result);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
@@ -47,8 +46,8 @@ TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
       switches::kDataReductionProxyDev, expected_params_->DefaultDevOrigin());
   ResetSettings(true, true, false, true, false);
   std::string result =
-      settings_->params()->origin().spec();
-  EXPECT_EQ(GURL(expected_params_->DefaultDevOrigin()), GURL(result));
+      settings_->params()->origin().ToURI();
+  EXPECT_EQ(expected_params_->DefaultDevOrigin(), result);
 }
 
 
@@ -59,15 +58,12 @@ TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxies) {
   unsigned int expected_proxy_size = 2u;
   EXPECT_EQ(expected_proxy_size, proxies.size());
 
-  net::HostPortPair expected_origin =
-      net::HostPortPair::FromURL(GURL(expected_params_->DefaultOrigin()));
-  net::HostPortPair expected_fallback_origin =
-      net::HostPortPair::FromURL(
-          GURL(expected_params_->DefaultFallbackOrigin()));
-  EXPECT_EQ(expected_origin.host(), proxies[0].host());
-  EXPECT_EQ(expected_origin.port() ,proxies[0].EffectiveIntPort());
-  EXPECT_EQ(expected_fallback_origin.host(), proxies[1].host());
-  EXPECT_EQ(expected_fallback_origin.port(), proxies[1].EffectiveIntPort());
+  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            proxies[0]);
+  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultFallbackOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            proxies[1]);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
@@ -92,36 +88,43 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
 
   settings_->SetProxyConfigs(true, true, false, false);
   EXPECT_TRUE(configurator->enabled());
-  EXPECT_TRUE(net::HostPortPair::FromString(
-      expected_params_->DefaultAltOrigin()).Equals(
-          net::HostPortPair::FromString(configurator->origin())));
-  EXPECT_TRUE(net::HostPortPair::FromString(
-      expected_params_->DefaultAltFallbackOrigin()).Equals(
-          net::HostPortPair::FromString(configurator->fallback_origin())));
-  EXPECT_TRUE(net::HostPortPair::FromString(
-      expected_params_->DefaultSSLOrigin()).Equals(
-          net::HostPortPair::FromString(configurator->ssl_origin())));
+  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultAltOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            net::ProxyServer::FromURI(configurator->origin(),
+                                      net::ProxyServer::SCHEME_HTTP));
+  EXPECT_TRUE(
+      net::ProxyServer::FromURI(expected_params_->DefaultAltFallbackOrigin(),
+                                net::ProxyServer::SCHEME_HTTP).is_valid());
+  EXPECT_TRUE(configurator->fallback_origin().empty());
+  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultSSLOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            net::ProxyServer::FromURI(configurator->ssl_origin(),
+                                      net::ProxyServer::SCHEME_HTTP));
 
   settings_->SetProxyConfigs(true, false, false, false);
   EXPECT_TRUE(configurator->enabled());
-  EXPECT_TRUE(net::HostPortPair::FromString(drp_params.DefaultOrigin()).Equals(
-      net::HostPortPair::FromString(configurator->origin())));
-  EXPECT_TRUE(net::HostPortPair::FromString(
-      drp_params.DefaultFallbackOrigin()).Equals(
-          net::HostPortPair::FromString(configurator->fallback_origin())));
-  EXPECT_EQ("", configurator->ssl_origin());
+  EXPECT_EQ(net::ProxyServer::FromURI(drp_params.DefaultOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            net::ProxyServer::FromURI(configurator->origin(),
+                                      net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(net::ProxyServer::FromURI(drp_params.DefaultFallbackOrigin(),
+                                      net::ProxyServer::SCHEME_HTTP),
+            net::ProxyServer::FromURI(
+                configurator->fallback_origin(),
+                net::ProxyServer::SCHEME_HTTP));
+  EXPECT_TRUE(configurator->ssl_origin().empty());
 
   settings_->SetProxyConfigs(false, true, false, false);
   EXPECT_FALSE(configurator->enabled());
-  EXPECT_EQ("", configurator->origin());
-  EXPECT_EQ("", configurator->fallback_origin());
-  EXPECT_EQ("", configurator->ssl_origin());
+  EXPECT_TRUE(configurator->origin().empty());
+  EXPECT_TRUE(configurator->fallback_origin().empty());
+  EXPECT_TRUE(configurator->ssl_origin().empty());
 
   settings_->SetProxyConfigs(false, false, false, false);
   EXPECT_FALSE(configurator->enabled());
-  EXPECT_EQ("", configurator->origin());
-  EXPECT_EQ("", configurator->fallback_origin());
-  EXPECT_EQ("", configurator->ssl_origin());
+  EXPECT_TRUE(configurator->origin().empty());
+  EXPECT_TRUE(configurator->fallback_origin().empty());
+  EXPECT_TRUE(configurator->ssl_origin().empty());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigsHoldback) {

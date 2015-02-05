@@ -6,20 +6,20 @@
 
 namespace {
 // Test values to replace the values specified in preprocessor defines.
-static const char kDefaultDevOrigin[] = "https://dev.net:443/";
-static const char kDefaultDevFallbackOrigin[] = "http://dev.net:80/";
-static const char kDefaultOrigin[] = "http://origin.net:80/";
-static const char kDefaultFallbackOrigin[] = "http://fallback.net:80/";
-static const char kDefaultSSLOrigin[] = "http://ssl.net:1080/";
-static const char kDefaultAltOrigin[] = "https://alt.net:443/";
-static const char kDefaultAltFallbackOrigin[] = "http://altfallback.net:80/";
+static const char kDefaultDevOrigin[] = "https://dev.net:443";
+static const char kDefaultDevFallbackOrigin[] = "dev.net:80";
+static const char kDefaultOrigin[] = "origin.net:80";
+static const char kDefaultFallbackOrigin[] = "fallback.net:80";
+static const char kDefaultSSLOrigin[] = "ssl.net:1080";
+static const char kDefaultAltOrigin[] = "https://alt.net:443";
+static const char kDefaultAltFallbackOrigin[] = "altfallback.net:80";
 static const char kDefaultProbeURL[] = "http://probe.net/";
 
-static const char kFlagOrigin[] = "https://origin.org:443/";
-static const char kFlagFallbackOrigin[] = "http://fallback.org:80/";
-static const char kFlagSSLOrigin[] = "http://ssl.org:1080/";
-static const char kFlagAltOrigin[] = "https://alt.org:443/";
-static const char kFlagAltFallbackOrigin[] = "http://altfallback.org:80/";
+static const char kFlagOrigin[] = "https://origin.org:443";
+static const char kFlagFallbackOrigin[] = "fallback.org:80";
+static const char kFlagSSLOrigin[] = "ssl.org:1080";
+static const char kFlagAltOrigin[] = "https://alt.org:443";
+static const char kFlagAltFallbackOrigin[] = "altfallback.org:80";
 static const char kFlagProbeURL[] = "http://probe.org/";
 }
 
@@ -96,12 +96,12 @@ std::string TestDataReductionProxyParams::FlagProbeURL() {
   return kFlagProbeURL;
 }
 
-void TestDataReductionProxyParams::set_origin(const GURL& origin) {
+void TestDataReductionProxyParams::set_origin(const net::ProxyServer& origin) {
   origin_ = origin;
 }
 
 void TestDataReductionProxyParams::set_fallback_origin(
-    const GURL& fallback_origin) {
+    const net::ProxyServer& fallback_origin) {
  fallback_origin_ = fallback_origin;
 }
 

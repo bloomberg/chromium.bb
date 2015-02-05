@@ -26,6 +26,7 @@
 #include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
@@ -361,7 +362,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   base::TrimString(test_params.DefaultOrigin(), "/", &data_reduction_proxy);
   data_reduction_proxy_info.UsePacString(
       "PROXY " +
-      net::HostPortPair::FromURL(GURL(test_params.DefaultOrigin())).ToString() +
+      net::ProxyServer::FromURI(
+        test_params.DefaultOrigin(),
+        net::ProxyServer::SCHEME_HTTP).host_port_pair().ToString() +
       "; DIRECT");
   EXPECT_FALSE(data_reduction_proxy_info.is_empty());
 

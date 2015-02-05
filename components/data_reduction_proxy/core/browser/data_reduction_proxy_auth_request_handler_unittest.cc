@@ -15,9 +15,9 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace {
 const char kChromeProxyHeader[] = "chrome-proxy";
@@ -181,19 +181,16 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIOThread) {
   // Don't write headers with a valid data reduction ssl proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
-      net::ProxyServer::FromURI(
-          net::HostPortPair::FromURL(
-              GURL(params->DefaultSSLOrigin())).ToString(),
-          net::ProxyServer::SCHEME_HTTP),
+      net::ProxyServer::FromURI(params->DefaultSSLOrigin(),
+                                net::ProxyServer::SCHEME_HTTP),
       &headers);
   EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
 
   // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
-      net::ProxyServer::FromURI(
-          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
-          net::ProxyServer::SCHEME_HTTP),
+      net::ProxyServer::FromURI(params->DefaultOrigin(),
+                                net::ProxyServer::SCHEME_HTTP),
       &headers);
   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
   std::string header_value;
@@ -203,7 +200,9 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIOThread) {
   // Write headers with a valid data reduction ssl proxy when one is expected.
   net::HttpRequestHeaders ssl_headers;
   auth_handler.MaybeAddProxyTunnelRequestHandler(
-      net::HostPortPair::FromURL(GURL(params->DefaultSSLOrigin())),
+      net::ProxyServer::FromURI(
+        params->DefaultSSLOrigin(),
+        net::ProxyServer::SCHEME_HTTP).host_port_pair(),
       &ssl_headers);
   EXPECT_TRUE(ssl_headers.HasHeader(kChromeProxyHeader));
   std::string ssl_header_value;
@@ -216,9 +215,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIOThread) {
   // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
-      net::ProxyServer::FromURI(
-          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
-          net::ProxyServer::SCHEME_HTTP),
+      net::ProxyServer::FromURI(params->DefaultOrigin(),
+                                net::ProxyServer::SCHEME_HTTP),
       &headers2);
   EXPECT_TRUE(headers2.HasHeader(kChromeProxyHeader));
   std::string header_value2;
@@ -231,9 +229,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIOThread) {
   // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
-      net::ProxyServer::FromURI(
-          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
-          net::ProxyServer::SCHEME_HTTP),
+      net::ProxyServer::FromURI(params->DefaultOrigin(),
+                                net::ProxyServer::SCHEME_HTTP),
       &headers3);
   EXPECT_TRUE(headers3.HasHeader(kChromeProxyHeader));
   std::string header_value3;
@@ -304,7 +301,7 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationBogusVersion) {
   auth_handler.MaybeAddRequestHeader(
       NULL,
       net::ProxyServer::FromURI(
-          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
+          params->DefaultOrigin(),
           net::ProxyServer::SCHEME_HTTP),
       &headers);
   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));

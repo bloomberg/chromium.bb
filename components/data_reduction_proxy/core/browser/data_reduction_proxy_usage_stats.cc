@@ -254,11 +254,12 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
                         content_length);
 
     // If non-empty, |proxy_server.first| is the proxy that this request used.
-    if (!data_reduction_proxy_type_info.proxy_servers.first.is_empty()) {
+    const net::ProxyServer& first =
+        data_reduction_proxy_type_info.proxy_servers.first;
+    if (first.is_valid() && !first.host_port_pair().IsEmpty()) {
       DataReductionProxyTamperDetection::DetectAndReport(
           request.response_info().headers.get(),
-          data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure(),
-          content_length);
+          first.is_https() || first.is_quic(), content_length);
     }
     return;
   }
@@ -273,7 +274,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   // Now that the data reduction proxy is a best effort proxy, if the effective
   // proxy configuration resolves to anything other than direct:// for a URL,
   // the data reduction proxy will not be used.
-  DCHECK(data_reduction_proxy_type_info.proxy_servers.first.is_empty());
+  DCHECK(!data_reduction_proxy_type_info.proxy_servers.first.is_valid());
   if (!request.proxy_server().IsEmpty()) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::PROXY_OVERRIDDEN,

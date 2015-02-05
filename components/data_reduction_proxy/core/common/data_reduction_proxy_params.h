@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
+#include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -33,7 +34,7 @@ namespace data_reduction_proxy {
 struct DataReductionProxyTypeInfo {
   DataReductionProxyTypeInfo();
   ~DataReductionProxyTypeInfo();
-  std::pair<GURL, GURL> proxy_servers;
+  std::pair<net::ProxyServer, net::ProxyServer> proxy_servers;
   bool is_fallback;
   bool is_alternative;
   bool is_ssl;
@@ -58,7 +59,7 @@ class DataReductionProxyParams {
   static const unsigned int kPromoAllowed = (1 << 4);
   static const unsigned int kHoldback = (1 << 5);
 
-  typedef std::vector<GURL> DataReductionProxyList;
+  typedef std::vector<net::ProxyServer> DataReductionProxyList;
 
   // Returns true if this client is part of field trial to use an alternative
   // configuration for the data reduction proxy.
@@ -180,28 +181,28 @@ class DataReductionProxyParams {
                        base::TimeDelta* retry_delay) const;
 
   // Returns the data reduction proxy primary origin.
-  const GURL& origin() const {
+  const net::ProxyServer& origin() const {
     return origin_;
   }
 
   // Returns the data reduction proxy fallback origin.
-  const GURL& fallback_origin() const {
+  const net::ProxyServer& fallback_origin() const {
     return fallback_origin_;
   }
 
   // Returns the data reduction proxy ssl origin that is used with the
   // alternative proxy configuration.
-  const GURL& ssl_origin() const {
+  const net::ProxyServer& ssl_origin() const {
     return ssl_origin_;
   }
 
   // Returns the alternative data reduction proxy primary origin.
-  const GURL& alt_origin() const {
+  const net::ProxyServer& alt_origin() const {
     return alt_origin_;
   }
 
   // Returns the alternative data reduction proxy fallback origin.
-  const GURL& alt_fallback_origin() const {
+  const net::ProxyServer& alt_fallback_origin() const {
     return alt_fallback_origin_;
   }
 
@@ -291,8 +292,8 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultWarmupURL() const;
 
  protected:
-  GURL origin_;
-  GURL fallback_origin_;
+  net::ProxyServer origin_;
+  net::ProxyServer fallback_origin_;
 
  private:
   // Checks if the primary and fallback data reduction proxies are in the retry
@@ -301,15 +302,16 @@ class DataReductionProxyParams {
   // NULL). If the fallback proxy is not valid, returns true if primary proxy
   // was bypassed and returns its bypass delay.
   bool ArePrimaryAndFallbackBypassed(const net::ProxyRetryInfoMap& retry_map,
-                                     const GURL& primary,
-                                     const GURL& fallback,
+                                     const net::ProxyServer& primary,
+                                     const net::ProxyServer& fallback,
                                      base::TimeDelta* min_retry_delay) const;
+
 
   DataReductionProxyParams& operator=(const DataReductionProxyParams& params);
 
-  GURL ssl_origin_;
-  GURL alt_origin_;
-  GURL alt_fallback_origin_;
+  net::ProxyServer ssl_origin_;
+  net::ProxyServer alt_origin_;
+  net::ProxyServer alt_fallback_origin_;
   GURL probe_url_;
   GURL warmup_url_;
 

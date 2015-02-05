@@ -15,8 +15,6 @@ namespace net {
 class URLRequest;
 }
 
-class GURL;
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyEventStore;

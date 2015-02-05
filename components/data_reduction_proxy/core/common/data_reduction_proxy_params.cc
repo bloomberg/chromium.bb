@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -29,16 +30,16 @@ using base::FieldTrialList;
 namespace {
 
 const char kEnabled[] = "Enabled";
-const char kDefaultOrigin[] = "https://proxy.googlezip.net:443/";
-const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443/";
-const char kDevFallbackOrigin[] = "http://proxy-dev.googlezip.net:80/";
-const char kDefaultFallbackOrigin[] = "http://compress.googlezip.net:80/";
+const char kDefaultOrigin[] = "https://proxy.googlezip.net:443";
+const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443";
+const char kDevFallbackOrigin[] = "proxy-dev.googlezip.net:80";
+const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 // This is for a proxy that supports HTTP CONNECT to tunnel SSL traffic.
 // The proxy listens on port 443, but uses the HTTP protocol to set up
 // the tunnel, not HTTPS.
-const char kDefaultSslOrigin[] = "http://ssl.googlezip.net:443/";
-const char kDefaultAltOrigin[] = "http://ssl.googlezip.net:80/";
-const char kDefaultAltFallbackOrigin[] = "http://ssl.googlezip.net:80/";
+const char kDefaultSslOrigin[] = "ssl.googlezip.net:443";
+const char kDefaultAltOrigin[] = "ssl.googlezip.net:80";
+const char kDefaultAltFallbackOrigin[] = "ssl.googlezip.net:80";
 const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
@@ -189,7 +190,7 @@ bool DataReductionProxyParams::Init(bool allowed,
   // Verify that all necessary params are set.
   if (allowed) {
     if (!origin_.is_valid()) {
-      DVLOG(1) << "Invalid data reduction proxy origin: " << origin_.spec();
+      DVLOG(1) << "Invalid data reduction proxy origin: " << origin_.ToURI();
       return false;
     }
   }
@@ -197,7 +198,7 @@ bool DataReductionProxyParams::Init(bool allowed,
   if (allowed && fallback_allowed) {
     if (!fallback_origin_.is_valid()) {
       DVLOG(1) << "Invalid data reduction proxy fallback origin: "
-          << fallback_origin_.spec();
+          << fallback_origin_.ToURI();
       return false;
     }
   }
@@ -209,11 +210,11 @@ bool DataReductionProxyParams::Init(bool allowed,
       return false;
     }
     if (!alt_origin_.is_valid()) {
-      DVLOG(1) << "Invalid alternative origin:" << alt_origin_.spec();
+      DVLOG(1) << "Invalid alternative origin:" << alt_origin_.ToURI();
       return false;
     }
     if (!ssl_origin_.is_valid()) {
-      DVLOG(1) << "Invalid ssl origin: " << ssl_origin_.spec();
+      DVLOG(1) << "Invalid ssl origin: " << ssl_origin_.ToURI();
       return false;
     }
   }
@@ -221,7 +222,7 @@ bool DataReductionProxyParams::Init(bool allowed,
   if (alt_allowed && alt_fallback_allowed) {
     if (!alt_fallback_origin_.is_valid()) {
       DVLOG(1) << "Invalid alternative fallback origin:"
-          << alt_fallback_origin_.spec();
+          << alt_fallback_origin_.ToURI();
       return false;
     }
   }
@@ -308,11 +309,16 @@ void DataReductionProxyParams::InitWithoutChecks() {
   if (warmup_url.empty())
     warmup_url = GetDefaultWarmupURL();
 
-  origin_ = GURL(origin);
-  fallback_origin_ = GURL(fallback_origin);
-  ssl_origin_ = GURL(ssl_origin);
-  alt_origin_ = GURL(alt_origin);
-  alt_fallback_origin_ = GURL(alt_fallback_origin);
+  origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
+  fallback_origin_ =
+      net::ProxyServer::FromURI(fallback_origin, net::ProxyServer::SCHEME_HTTP);
+  ssl_origin_ =
+      net::ProxyServer::FromURI(ssl_origin, net::ProxyServer::SCHEME_HTTP);
+  alt_origin_ =
+      net::ProxyServer::FromURI(alt_origin, net::ProxyServer::SCHEME_HTTP);
+  alt_fallback_origin_ =
+      net::ProxyServer::FromURI(alt_fallback_origin,
+                                net::ProxyServer::SCHEME_HTTP);
   probe_url_ = GURL(probe_url);
   warmup_url_ = GURL(warmup_url);
 
@@ -328,8 +334,8 @@ bool DataReductionProxyParams::WasDataReductionProxyUsed(
 bool DataReductionProxyParams::IsDataReductionProxy(
     const net::HostPortPair& host_port_pair,
     DataReductionProxyTypeInfo* proxy_info) const {
-  if (allowed() &&
-      net::HostPortPair::FromURL(origin()).Equals(host_port_pair)) {
+  if (allowed() && origin().is_valid() &&
+      origin().host_port_pair().Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = origin();
       if (fallback_allowed())
@@ -338,17 +344,19 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     return true;
   }
 
-  if (fallback_allowed() &&
-      net::HostPortPair::FromURL(fallback_origin()).Equals(host_port_pair)) {
+  if (fallback_allowed() && fallback_origin().is_valid() &&
+      fallback_origin().host_port_pair().Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = fallback_origin();
-      proxy_info->proxy_servers.second = GURL();
+      proxy_info->proxy_servers.second =
+          net::ProxyServer::FromURI(std::string(),
+                                    net::ProxyServer::SCHEME_HTTP);
       proxy_info->is_fallback = true;
     }
     return true;
   }
-  if (alternative_allowed() &&
-      net::HostPortPair::FromURL(alt_origin()).Equals(host_port_pair)) {
+  if (alternative_allowed() && alt_origin().is_valid() &&
+      alt_origin().host_port_pair().Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = alt_origin();
       proxy_info->is_alternative = true;
@@ -357,21 +365,26 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     }
     return true;
   }
-  if (alternative_fallback_allowed() &&
-      net::HostPortPair::FromURL(alt_fallback_origin()).Equals(
+  if (alternative_fallback_allowed() && alt_fallback_origin().is_valid() &&
+      alt_fallback_origin().host_port_pair().Equals(
       host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = alt_fallback_origin();
-      proxy_info->proxy_servers.second = GURL();
+      proxy_info->proxy_servers.second =
+          net::ProxyServer::FromURI(std::string(),
+                                    net::ProxyServer::SCHEME_HTTP);
       proxy_info->is_fallback = true;
       proxy_info->is_alternative = true;
     }
     return true;
   }
-  if (net::HostPortPair::FromURL(ssl_origin()).Equals(host_port_pair)) {
+  if (ssl_origin().is_valid() &&
+      ssl_origin().host_port_pair().Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = ssl_origin();
-      proxy_info->proxy_servers.second = GURL();
+      proxy_info->proxy_servers.second =
+          net::ProxyServer::FromURI(std::string(),
+                                    net::ProxyServer::SCHEME_HTTP);
       proxy_info->is_ssl = true;
     }
     return true;
@@ -463,18 +476,17 @@ bool DataReductionProxyParams::AreProxiesBypassed(
 
   for (size_t i = 0; i < proxy_list->GetSize(); ++i) {
     proxy_list->GetString(i, &proxy);
-    host_port_pair = GURL(proxy).SchemeIs(url::kHttpsScheme) ?
-        net::HostPortPair::FromURL(GURL(proxy)) :
-        net::HostPortPair::FromString(proxy);
+    host_port_pair =  net::HostPortPair::FromString(std::string());
+    net::ProxyServer proxy_server =
+        net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP);
+    if (proxy_server.is_valid() && !proxy_server.is_direct())
+      host_port_pair = proxy_server.host_port_pair();
 
     if (IsDataReductionProxy(host_port_pair, NULL)) {
       if (!IsProxyBypassed(
-              retry_map,
-              net::ProxyServer(GURL(proxy).SchemeIs(url::kHttpsScheme) ?
-                                   net::ProxyServer::SCHEME_HTTPS :
-                                   net::ProxyServer::SCHEME_HTTP,
-                               host_port_pair),
-              &delay))
+          retry_map,
+          net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP),
+          &delay))
         return false;
       if (delay < min_delay)
         min_delay = delay;

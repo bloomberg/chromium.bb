@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +20,7 @@
 #include "net/base/capturing_net_log.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_server.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -83,7 +86,7 @@ class TestURLRequestContextWithDataReductionProxy
   TestURLRequestContextWithDataReductionProxy(DataReductionProxyParams* params,
                                               net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
-    std::string proxy = params->origin().spec();
+    std::string proxy = params->origin().ToURI();
     context_storage_.set_proxy_service(net::ProxyService::CreateFixed(proxy));
     set_network_delegate(delegate);
   }
@@ -187,9 +190,11 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         TestDataReductionProxyParams::HAS_EVERYTHING &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-    params->set_origin(proxy_.GetURL("/"));
-    std::string proxy_name =
-        net::HostPortPair::FromURL(GURL(params->origin())).ToString();
+    std::string spec;
+    base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
+    params->set_origin(net::ProxyServer::FromURI(
+        spec, net::ProxyServer::SCHEME_HTTP));
+    std::string proxy_name = params->origin().ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));

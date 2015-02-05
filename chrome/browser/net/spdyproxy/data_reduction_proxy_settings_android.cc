@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "jni/DataReductionProxySettings_jni.h"
+#include "net/proxy/proxy_server.h"
 
 
 using base::android::ConvertUTF8ToJavaString;
@@ -46,7 +47,7 @@ jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
 ScopedJavaLocalRef<jstring>
 DataReductionProxySettingsAndroid::GetDataReductionProxyOrigin(
     JNIEnv* env, jobject obj) {
-  return ConvertUTF8ToJavaString(env, Settings()->params()->origin().spec());
+  return ConvertUTF8ToJavaString(env, Settings()->params()->origin().ToURI());
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(

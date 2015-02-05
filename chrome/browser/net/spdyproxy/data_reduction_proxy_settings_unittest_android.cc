@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -23,7 +24,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
-const char kDataReductionProxyDev[] = "http://foo-dev.com:80";
+const char kDataReductionProxyDev[] = "foo-dev.com:80";
 
 using data_reduction_proxy::DataReductionProxySettings;
 
@@ -154,8 +155,8 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
       SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(GURL(expected_params_->DefaultOrigin()),
-            GURL(ConvertJavaStringToUTF8(str_ref)));
+  EXPECT_EQ(expected_params_->DefaultOrigin(),
+            ConvertJavaStringToUTF8(str_ref));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,
@@ -169,8 +170,8 @@ TEST_F(DataReductionProxySettingsAndroidTest,
       SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(GURL(kDataReductionProxyDev),
-            GURL(ConvertJavaStringToUTF8(str_ref)));
+  EXPECT_EQ(kDataReductionProxyDev,
+            ConvertJavaStringToUTF8(str_ref));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {

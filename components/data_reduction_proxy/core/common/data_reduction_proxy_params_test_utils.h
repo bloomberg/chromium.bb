@@ -7,6 +7,10 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
+namespace net {
+class ProxyServer;
+}
+
 namespace data_reduction_proxy {
 
 class TestDataReductionProxyParams : public DataReductionProxyParams {
@@ -46,8 +50,8 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   static std::string FlagAltFallbackOrigin();
   static std::string FlagProbeURL();
 
-  void set_origin(const GURL& origin);
-  void set_fallback_origin(const GURL& fallback_origin);
+  void set_origin(const net::ProxyServer& origin);
+  void set_fallback_origin(const net::ProxyServer& fallback_origin);
 
  protected:
   std::string GetDefaultDevOrigin() const override;

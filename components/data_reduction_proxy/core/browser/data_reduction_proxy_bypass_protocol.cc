@@ -24,18 +24,6 @@
 
 namespace {
 
-bool SetProxyServerFromGURL(const GURL& gurl,
-                            net::ProxyServer* proxy_server) {
-  DCHECK(proxy_server);
-  if (!gurl.SchemeIsHTTPOrHTTPS())
-    return false;
-  *proxy_server = net::ProxyServer(gurl.SchemeIs(url::kHttpScheme) ?
-                                       net::ProxyServer::SCHEME_HTTP :
-                                       net::ProxyServer::SCHEME_HTTPS,
-                                   net::HostPortPair::FromURL(gurl));
-  return true;
-}
-
 // Adds non-empty entries in |data_reduction_proxies| to the retry map
 // maintained by the proxy service of the request. Adds
 // |data_reduction_proxies.second| to the retry list only if |bypass_all| is
@@ -44,19 +32,21 @@ void MarkProxiesAsBadUntil(
     net::URLRequest* request,
     const base::TimeDelta& bypass_duration,
     bool bypass_all,
-    const std::pair<GURL, GURL>& data_reduction_proxies) {
-  DCHECK(!data_reduction_proxies.first.is_empty());
+    const std::pair<net::ProxyServer, net::ProxyServer>&
+      data_reduction_proxies) {
+  DCHECK(data_reduction_proxies.first.is_valid());
+  DCHECK(!data_reduction_proxies.first.host_port_pair().IsEmpty());
   // Synthesize a suitable |ProxyInfo| to add the proxies to the
   // |ProxyRetryInfoMap| of the proxy service.
   net::ProxyList proxy_list;
-  net::ProxyServer primary;
-  SetProxyServerFromGURL(data_reduction_proxies.first, &primary);
+  net::ProxyServer primary = data_reduction_proxies.first;
   if (primary.is_valid())
     proxy_list.AddProxyServer(primary);
   net::ProxyServer fallback;
   if (bypass_all) {
-    if (!data_reduction_proxies.second.is_empty())
-      SetProxyServerFromGURL(data_reduction_proxies.second, &fallback);
+    if (data_reduction_proxies.second.is_valid() &&
+        !data_reduction_proxies.second.host_port_pair().IsEmpty())
+      fallback = data_reduction_proxies.second;
     if (fallback.is_valid())
       proxy_list.AddProxyServer(fallback);
     proxy_list.AddProxyServer(net::ProxyServer::Direct());
@@ -112,13 +102,17 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   if (data_reduction_proxy_type_info.is_ssl)
     return false;
 
-  if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
+  const net::ProxyServer& first =
+      data_reduction_proxy_type_info.proxy_servers.first;
+  if (!first.is_valid() || first.host_port_pair().IsEmpty())
     return false;
 
   // At this point, the response is expected to have the data reduction proxy
   // via header, so detect and report cases where the via header is missing.
+  const net::ProxyServer& second =
+      data_reduction_proxy_type_info.proxy_servers.second;
   DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
-      !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+      second.is_valid() && !second.host_port_pair().IsEmpty(),
       response_headers);
 
   if (DataReductionProxyParams::
@@ -166,9 +160,8 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   DCHECK(request->context());
   DCHECK(request->context()->proxy_service());
-  net::ProxyServer proxy_server;
-  SetProxyServerFromGURL(
-      data_reduction_proxy_type_info.proxy_servers.first, &proxy_server);
+  net::ProxyServer proxy_server =
+      data_reduction_proxy_type_info.proxy_servers.first;
 
   // Only record UMA if the proxy isn't already on the retry list.
   if (!params_->IsProxyBypassed(
@@ -176,7 +169,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
           proxy_server,
           NULL)) {
     DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
-        !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+        second.is_valid() && !second.host_port_pair().IsEmpty(),
         data_reduction_proxy_info.bypass_all,
         proxy_server,
         bypass_type);

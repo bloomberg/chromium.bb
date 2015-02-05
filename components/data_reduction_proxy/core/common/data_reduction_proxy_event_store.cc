@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_log.h"
+#include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
 
 namespace {
@@ -58,18 +59,12 @@ int64 GetExpirationTicks(int bypass_seconds) {
 // The following method creates a string resembling the output of
 // net::ProxyServer::ToURI().
 std::string GetNormalizedProxyString(const std::string& proxy_origin) {
-  GURL proxy_url(proxy_origin);
-  if (proxy_url.is_valid()) {
-    net::HostPortPair proxy_host_port_pair =
-        net::HostPortPair::FromURL(proxy_url);
-    if (proxy_url.SchemeIs(url::kHttpScheme))
-      return proxy_host_port_pair.ToString();
-
-    return std::string(proxy_url.scheme()) + url::kStandardSchemeSeparator +
-        proxy_host_port_pair.ToString();
-  } else {
+  net::ProxyServer proxy_server = net::ProxyServer::FromURI(
+    proxy_origin, net::ProxyServer::SCHEME_HTTP);
+  if (proxy_server.is_valid())
+    return proxy_origin;
+  else
     return std::string();
-  }
 }
 
 // The following callbacks create a base::Value which contains information

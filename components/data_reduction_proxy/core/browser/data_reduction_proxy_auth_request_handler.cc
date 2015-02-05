@@ -20,7 +20,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
-#include "url/gurl.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "google_apis/google_api_keys.h"
@@ -241,9 +240,9 @@ void DataReductionProxyAuthRequestHandler::MaybeAddRequestHeaderImpl(
     return;
   if (data_reduction_proxy_params_ &&
       data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL) &&
-      net::HostPortPair::FromURL(
-          data_reduction_proxy_params_->ssl_origin()).Equals(
-              proxy_server) == expect_ssl) {
+      ((data_reduction_proxy_params_->ssl_origin().is_valid() &&
+          data_reduction_proxy_params_->ssl_origin().host_port_pair().Equals(
+              proxy_server)) == expect_ssl))    {
     AddAuthorizationHeader(request_headers);
   }
 }
