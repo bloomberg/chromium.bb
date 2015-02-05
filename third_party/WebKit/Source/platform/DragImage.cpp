@@ -49,6 +49,7 @@
 #include "platform/weborigin/KURL.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -95,6 +96,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
             if (!skBitmap.tryAllocN32Pixels(sizeRespectingOrientation.width(), sizeRespectingOrientation.height()))
                 return nullptr;
 
+            skBitmap.eraseColor(SK_ColorTRANSPARENT);
             SkCanvas canvas(skBitmap);
             canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
             canvas.drawBitmapRect(bitmap->bitmap(), 0, destRect);
