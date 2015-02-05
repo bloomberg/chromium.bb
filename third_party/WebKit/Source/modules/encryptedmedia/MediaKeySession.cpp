@@ -134,6 +134,18 @@ static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::Ke
     return "internal-error";
 }
 
+static ScriptPromise CreateRejectedPromiseNotCallable(ScriptState* scriptState)
+{
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
+}
+
+static ScriptPromise CreateRejectedPromiseAlreadyInitialized(ScriptState* scriptState)
+{
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidStateError, "The session is already initialized."));
+}
+
 // A class holding a pending action.
 class MediaKeySession::PendingAction : public GarbageCollectedFinalized<MediaKeySession::PendingAction> {
 public:
@@ -351,24 +363,35 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     m_session = adoptPtr(cdm->createSession());
     m_session->setClientInterface(this);
 
-    // MediaKeys::createSession(), step 2.
-    // 2.1 Let the sessionId attribute be the empty string.
+    // From https://w3c.github.io/encrypted-media/#createSession:
+    // MediaKeys::createSession(), step 3.
+    // 3.1 Let the sessionId attribute be the empty string.
     ASSERT(sessionId().isEmpty());
 
-    // 2.2 Let the expiration attribute be NaN.
+    // 3.2 Let the expiration attribute be NaN.
     ASSERT(std::isnan(m_expiration));
 
-    // 2.3 Let the closed attribute be a new promise.
+    // 3.3 Let the closed attribute be a new promise.
     ASSERT(!closed(scriptState).isUndefinedOrNull());
 
-    // 2.4 Let the session type be sessionType.
-    ASSERT(isValidSessionType(sessionType));
+    // 3.4 Let the keyStatuses attribute be empty.
+    ASSERT(m_keyStatusesMap->size() == 0);
 
-    // 2.5 Let uninitialized be true.
+    // 3.5 Let the session type be sessionType.
+    ASSERT(isValidSessionType(m_sessionType));
+
+    // 3.6 Let uninitialized be true.
     ASSERT(m_isUninitialized);
 
-    // 2.6 Let callable be false.
+    // 3.7 Let callable be false.
     ASSERT(!m_isCallable);
+
+    // 3.8 Let the use distinctive identifier value be this object's
+    // use distinctive identifier.
+    // FIXME: Implement this (http://crbug.com/448922).
+
+    // 3.9 Let the cdm implementation value be this object's cdm implementation.
+    // 3.10 Let the cdm instance value be this object's cdm instance.
 }
 
 MediaKeySession::~MediaKeySession()
@@ -402,16 +425,14 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
 {
     WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataType.ascii().data());
 
-    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-generaterequest:
-    // The generateRequest(initDataType, initData) method creates a new session
-    // for the specified initData. It must run the following steps:
+    // From https://w3c.github.io/encrypted-media/#generateRequest:
+    // Generates a request based on the initData. When this method is invoked,
+    // the user agent must run the following steps:
 
     // 1. If this object's uninitialized value is false, return a promise
     //    rejected with a new DOMException whose name is "InvalidStateError".
-    if (!m_isUninitialized) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidStateError, "The session is already initialized."));
-    }
+    if (!m_isUninitialized)
+        return CreateRejectedPromiseAlreadyInitialized(scriptState);
 
     // 2. Let this object's uninitialized be false.
     m_isUninitialized = false;
@@ -430,35 +451,33 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
             scriptState, DOMException::create(InvalidAccessError, "The initData parameter is empty."));
     }
 
-    // 5. Let media keys be the MediaKeys object that created this object.
-    //    (Use m_mediaKey, which was set in the constructor.)
-
-    // 6. If the content decryption module corresponding to media keys's
-    //    keySystem attribute does not support initDataType as an initialization
-    //    data type, return a promise rejected with a new DOMException whose
-    //    name is "NotSupportedError". String comparison is case-sensitive.
+    // 5. If the Key System implementation represented by this object's cdm
+    //    implementation value does not support initDataType as an
+    //    Initialization Data Type, return a promise rejected with a new
+    //    DOMException whose name is NotSupportedError. String comparison
+    //    is case-sensitive.
     if (!isKeySystemSupportedWithInitDataType(m_keySystem, initDataType)) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataType + "' is not supported by the key system."));
     }
 
-    // 7. Let init data be a copy of the contents of the initData parameter.
+    // 6. Let init data be a copy of the contents of the initData parameter.
     RefPtr<DOMArrayBuffer> initDataBuffer = DOMArrayBuffer::create(initData.data(), initData.byteLength());
 
-    // 8. Let session type be this object's session type.
+    // 7. Let session type be this object's session type.
     //    (Done in constructor.)
 
-    // 9. Let promise be a new promise.
+    // 8. Let promise be a new promise.
     NewSessionResultPromise* result = new NewSessionResultPromise(scriptState, this);
     ScriptPromise promise = result->promise();
 
-    // 10. Run the following steps asynchronously (documented in
-    //     actionTimerFired())
+    // 9. Run the following steps asynchronously (documented in
+    //    actionTimerFired())
     m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(result, initDataType, initDataBuffer.release()));
     ASSERT(!m_actionTimer.isActive());
     m_actionTimer.startOneShot(0, FROM_HERE);
 
-    // 11. Return promise.
+    // 10. Return promise.
     return promise;
 }
 
@@ -466,16 +485,14 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
 {
     WTF_LOG(Media, "MediaKeySession(%p)::load %s", this, sessionId.ascii().data());
 
-    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-load:
-    // The load(sessionId) method loads the data stored for the sessionId into
-    // the session represented by the object. It must run the following steps:
+    // From https://w3c.github.io/encrypted-media/#load:
+    // Loads the data stored for the specified session into this object. When
+    // this method is invoked, the user agent must run the following steps:
 
     // 1. If this object's uninitialized value is false, return a promise
     //    rejected with a new DOMException whose name is "InvalidStateError".
-    if (!m_isUninitialized) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidStateError, "The session is already initialized."));
-    }
+    if (!m_isUninitialized)
+        return CreateRejectedPromiseAlreadyInitialized(scriptState);
 
     // 2. Let this object's uninitialized be false.
     m_isUninitialized = false;
@@ -495,15 +512,14 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
             scriptState, DOMException::create(InvalidAccessError, "The session type is not persistent."));
     }
 
-    // 5. Let media keys be the MediaKeys object that created this object.
-    //    (Done in constructor.)
-    ASSERT(m_mediaKeys);
-
-    // 6. If the content decryption module corresponding to media keys's
-    //    keySystem attribute does not support loading previous sessions,
+    // 5. If the Key System implementation represented by this object's cdm
+    //    implementation value does not support loading previous sessions,
     //    return a promise rejected with a new DOMException whose name is
-    //    "NotSupportedError".
-    //    (Done by CDM.)
+    //    NotSupportedError.
+    // FIXME: Implement this (http://crbug.com/448922).
+
+    // 6. Let origin be the origin of this object's Document.
+    //    (Available as executionContext()->securityOrigin() anytime.)
 
     // 7. Let promise be a new promise.
     LoadSessionResultPromise* result = new LoadSessionResultPromise(scriptState, this);
@@ -524,32 +540,36 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPi
     WTF_LOG(Media, "MediaKeySession(%p)::update", this);
     ASSERT(!m_isClosed);
 
-    // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
-    // The update(response) method provides messages, including licenses, to the
-    // CDM. It must run the following steps:
-    //
-    // 1. If response is an empty array, return a promise rejected with a new
-    //    DOMException whose name is "InvalidAccessError" and that has the
-    //    message "The response parameter is empty."
+    // From https://w3c.github.io/encrypted-media/#update:
+    // Provides messages, including licenses, to the CDM. When this method is
+    // invoked, the user agent must run the following steps:
+
+    // 1. If this object's callable value is false, return a promise rejected
+    //    with a new DOMException whose name is InvalidStateError.
+    if (!m_isCallable)
+        return CreateRejectedPromiseNotCallable(scriptState);
+
+    // 2. If response is an empty array, return a promise rejected with a
+    //    new DOMException whose name is InvalidAccessError.
     if (!response.byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The response parameter is empty."));
     }
 
-    // 2. Let message be a copy of the contents of the response parameter.
-    RefPtr<DOMArrayBuffer> responseBuffer = DOMArrayBuffer::create(response.data(), response.byteLength());
+    // 3. Let response copy be a copy of the contents of the response parameter.
+    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response.data(), response.byteLength());
 
-    // 3. Let promise be a new promise.
+    // 4. Let promise be a new promise.
     SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
-    // 4. Run the following steps asynchronously (documented in
+    // 5. Run the following steps asynchronously (documented in
     //    actionTimerFired())
-    m_pendingActions.append(PendingAction::CreatePendingUpdate(result, responseBuffer.release()));
+    m_pendingActions.append(PendingAction::CreatePendingUpdate(result, responseCopy.release()));
     if (!m_actionTimer.isActive())
         m_actionTimer.startOneShot(0, FROM_HERE);
 
-    // 5. Return promise.
+    // 6. Return promise.
     return promise;
 }
 
@@ -557,19 +577,15 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::close", this);
 
-    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-close:
-    // The close() method allows an application to indicate that it no longer
-    // needs the session and the CDM should release any resources associated
-    // with this object and close it. The returned promise is resolved when the
-    // request has been processed, and the closed attribute promise is resolved
-    // when the session is closed. It must run the following steps:
-    //
+    // From https://w3c.github.io/encrypted-media/#close:
+    // Indicates that the application no longer needs the session and the CDM
+    // should release any resources associated with this object and close it.
+    // When this method is invoked, the user agent must run the following steps:
+
     // 1. If this object's callable value is false, return a promise rejected
     //    with a new DOMException whose name is "InvalidStateError".
-    if (!m_isCallable) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
-    }
+    if (!m_isCallable)
+        return CreateRejectedPromiseNotCallable(scriptState);
 
     // 2. If the Session Close algorithm has been run on this object,
     //    return a resolved promise.
@@ -594,16 +610,14 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::remove", this);
 
-    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-remove:
-    // The remove() method allows an application to remove stored session data
-    // associated with this object. It must run the following steps:
+    // From https://w3c.github.io/encrypted-media/#remove:
+    // Removes stored session data associated with this object. When this
+    // method is invoked, the user agent must run the following steps:
 
     // 1. If this object's callable value is false, return a promise rejected
     //    with a new DOMException whose name is "InvalidStateError".
-    if (!m_isCallable) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
-    }
+    if (!m_isCallable)
+        return CreateRejectedPromiseNotCallable(scriptState);
 
     // 2. If this object's session type is not "persistent-license" or
     //    "persistent-release-message", return a promise rejected with a
@@ -650,29 +664,19 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
         switch (action->type()) {
         case PendingAction::GenerateRequest:
+            // NOTE: Continue step 9 of MediaKeySession::generateRequest().
             WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: GenerateRequest", this);
 
-            // 10.1 Let request be null.
-            // 10.2 Let cdm be the CDM loaded during the initialization of
-            //      media keys.
-            // 10.3 Use the cdm to execute the following steps:
-            // 10.3.1 If the init data is not valid for initDataType, reject
-            //        promise with a new DOMException whose name is
-            //        "InvalidAccessError".
-            // 10.3.2 If the init data is not supported by the cdm, reject
-            //        promise with a new DOMException whose name is
-            //        "NotSupportedError".
-            // 10.3.3 Let request be a request (e.g. a license request)
-            //        generated based on the init data, which is interpreted
-            //        per initDataType, and session type.
+            // initializeNewSession() in Chromium will execute steps 9.1 to 9.7.
             m_session->initializeNewSession(action->initDataType(), static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), m_sessionType, action->result()->result());
 
-            // Remainder of steps executed in finishGenerateRequest(), called
-            // when |result| is resolved.
+            // Remaining steps (from 9.8) executed in finishGenerateRequest(),
+            // called when |result| is resolved.
             break;
 
         case PendingAction::Load:
             // NOTE: Continue step 8 of MediaKeySession::load().
+            WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Load", this);
 
             // 8.1 Let sanitized session ID be a validated and/or sanitized
             //     version of sessionId. The user agent should thoroughly
@@ -686,93 +690,56 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
                 return;
             }
 
-            // 8.3 Let expiration time be NaN.
+            // 8.3 If there is an unclosed session in the object's Document
+            //     whose sessionId attribute is sanitized session ID, reject
+            //     promise with a new DOMException whose name is
+            //     QuotaExceededError. In other words, do not create a session
+            //     if a non-closed session, regardless of type, already exists
+            //     for this sanitized session ID in this browsing context.
+            //     (Done in the CDM.)
+
+            // 8.4 Let expiration time be NaN.
             //     (Done in the constructor.)
             ASSERT(std::isnan(m_expiration));
 
-            // 8.4 Let message be null.
-            // 8.5 Let message type be null.
-            //     (Will be provided by the CDM if needed.)
-
-            // 8.6 Let origin be the origin of this object's Document.
-            //     (Obtained previously when CDM created.)
-
-            // 8.7 Let cdm be the CDM loaded during the initialization of media
-            //     keys.
-            // 8.8 Use the cdm to execute the following steps:
-            // 8.8.1 If there is no data stored for the sanitized session ID in
-            //       the origin, resolve promise with false.
-            // 8.8.2 Let session data be the data stored for the sanitized
-            //       session ID in the origin. This must not include data from
-            //       other origin(s) or that is not associated with an origin.
-            // 8.8.3 If there is an unclosed "persistent" session in any
-            //       Document representing the session data, reject promise
-            //       with a new DOMException whose name is "QuotaExceededError".
-            // 8.8.4 In other words, do not create a session if a non-closed
-            //       persistent session already exists for this sanitized
-            //       session ID in any browsing context.
-            // 8.8.5 Load the session data.
-            // 8.8.6 If the session data indicates an expiration time for the
-            //       session, let expiration time be the expiration time
-            //       in milliseconds since 01 January 1970 UTC.
-            // 8.8.6 If the CDM needs to send a message:
-            // 8.8.6.1 Let message be a message generated by the CDM based on
-            //         the session data.
-            // 8.8.6.2 Let message type be the appropriate MediaKeyMessageType
-            //         for the message.
-            // 8.9 If any of the preceding steps failed, reject promise with a
-            //     new DOMException whose name is the appropriate error name.
+            // load() in Chromium will execute steps 8.5 through 8.8.
             m_session->load(action->sessionId(), action->result()->result());
 
-            // Remainder of steps executed in finishLoad(), called
+            // Remaining steps (from 8.9) executed in finishLoad(), called
             // when |result| is resolved.
             break;
 
         case PendingAction::Update:
+            // NOTE: Continue step 5 of MediaKeySession::update().
             WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Update", this);
-            // NOTE: Continued from step 4 of MediaKeySession::update().
-            // Continue the update call by passing message to the cdm. Once
-            // completed, it will resolve/reject the promise.
+
+            // update() in Chromium will execute steps 5.1 through 5.8.
             m_session->update(static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), action->result()->result());
+
+            // Last step (5.9 Resolve promise) will be done when |result| is
+            // resolved.
             break;
 
         case PendingAction::Close:
+            // NOTE: Continue step 4 of MediaKeySession::close().
             WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Close", this);
-            // NOTE: Continued from step 4 of MediaKeySession::close().
-            // 4.1 Let cdm be the CDM loaded during the initialization of the
-            //     MediaKeys object that created this object.
-            //     (Already captured when creating m_session).
-            // 4.2 Use the cdm to execute the following steps:
-            // 4.2.1 Process the close request. Do not remove stored session
-            //       data.
-            // 4.2.3 If the previous step caused the session to be closed,
-            //       run the Session Close algorithm on this object.
-            // 4.3 Resolve promise.
+
+            // close() in Chromium will execute steps 4.1 through 4.2.
             m_session->close(action->result()->result());
+
+            // Last step (4.3 Resolve promise) will be done when |result| is
+            // resolved.
             break;
 
         case PendingAction::Remove:
+            // NOTE: Continue step 5 of MediaKeySession::remove().
             WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Remove", this);
-            // NOTE: Continued from step 5 of MediaKeySession::remove().
-            // 5.1 Let cdm be the CDM loaded during the initialization of the
-            //     MediaKeys object that created this object.
-            //     (Already captured when creating m_session).
-            // 5.2 Use the cdm to execute the following steps:
-            // 5.2.1 Process the remove request. This may involve exchanging
-            //       message(s) with the application. Unless this step fails,
-            //       the CDM must have cleared all stored session data
-            //       associated with this object, including the sessionId,
-            //       before proceeding to the next step. (A subsequent call
-            //       to load() with sessionId would fail because there is no
-            //       data stored for the sessionId.)
-            // 5.3 Run the following steps asynchronously once the above step
-            //     has completed:
-            // 5.3.1 If any of the preceding steps failed, reject promise
-            //       with a new DOMException whose name is the appropriate
-            //       error name.
-            // 5.3.2 Run the Session Close algorithm on this object.
-            // 5.3.3 Resolve promise.
+
+            // remove() in Chromium will execute steps 5.1 through 5.3.
             m_session->remove(action->result()->result());
+
+            // Last step (5.3.3 Resolve promise) will be done when |result| is
+            // resolved.
             break;
         }
     }
@@ -780,50 +747,57 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
 void MediaKeySession::finishGenerateRequest()
 {
-    // 10.4 Set the sessionId attribute to a unique Session ID string.
-    //      It may be obtained from cdm.
+    // 9.8 If any of the preceding steps failed, reject promise with a
+    //     new DOMException whose name is the appropriate error name.
+    //     (Done by CDM calling result.completeWithError() as appropriate.)
+
+    // 9.9 Set the sessionId attribute to session id.
     ASSERT(!sessionId().isEmpty());
 
-    // 10.5 If any of the preceding steps failed, reject promise with a new
-    //      DOMException whose name is the appropriate error name.
-    //      (Done by call to completeWithError()).
-
-    // 10.6 Add an entry for the value of the sessionId attribute to
-    //      media keys's list of active session IDs.
-    // FIXME: Is this required?
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26758
-
-    // 10.7 Run the Queue a "message" Event algorithm on the session,
-    //      providing request and null.
-    //      (Done by the CDM).
-
-    // 10.8 Let this object's callable be true.
+    // 9.10 Let this object's callable be true.
     m_isCallable = true;
+
+    // 9.11 Run the queue a "message" event algorithm on the session,
+    //      providing "license-request" and message.
+    //     (Done by the CDM.)
+
+    // 9.12 Resolve promise.
+    //      (Done by NewSessionResultPromise.)
 }
 
 void MediaKeySession::finishLoad()
 {
+    // 8.9 If any of the preceding steps failed, reject promise with a new
+    //     DOMException whose name is the appropriate error name.
+    //     (Done by CDM calling result.completeWithError() as appropriate.)
+
     // 8.10 Set the sessionId attribute to sanitized session ID.
     ASSERT(!sessionId().isEmpty());
 
     // 8.11 Let this object's callable be true.
     m_isCallable = true;
 
-    // 8.12 If the loaded session contains usable keys, run the Usable
-    //      Keys Changed algorithm on the session. The algorithm may
-    //      also be run later should additional processing be necessary
-    //      to determine with certainty whether one or more keys is
-    //      usable.
+    // 8.12 If the loaded session contains information about any keys (there
+    //      are known keys), run the update key statuses algorithm on the
+    //      session, providing each key's key ID along with the appropriate
+    //      MediaKeyStatus. Should additional processing be necessary to
+    //      determine with certainty the status of a key, use the non-"usable"
+    //      MediaKeyStatus value that corresponds to the reason for the
+    //      additional processing. Once the additional processing for one or
+    //      more keys has completed, run the update key statuses algorithm
+    //      again if any of the statuses has changed.
     //      (Done by the CDM.)
 
     // 8.13 Run the Update Expiration algorithm on the session,
     //      providing expiration time.
     //      (Done by the CDM.)
 
-    // 8.14 If message is not null, run the Queue a "message" Event
-    //      algorithm on the session, providing message type and
-    //      message.
+    // 8.14 If message is not null, run the queue a "message" event algorithm
+    //      on the session, providing message type and message.
     //      (Done by the CDM.)
+
+    // 8.15 Resolve promise with true.
+    //      (Done by LoadSessionResultPromise.)
 }
 
 // Queue a task to fire a simple event named keymessage at the new object.
@@ -833,6 +807,14 @@ void MediaKeySession::message(MessageType messageType, const unsigned char* mess
 
     // Verify that 'message' not fired before session initialization is complete.
     ASSERT(m_isCallable);
+
+    // From https://w3c.github.io/encrypted-media/#queue-message:
+    // The following steps are run:
+    // 1. Let the session be the specified MediaKeySession object.
+    // 2. Queue a task to fire a simple event named message at the session.
+    //    The event is of type MediaKeyMessageEvent and has:
+    //    -> messageType = the specified message type
+    //    -> message = the specified message
 
     MediaKeyMessageEventInit init;
     switch (messageType) {
@@ -866,35 +848,75 @@ void MediaKeySession::close()
 {
     WTF_LOG(Media, "MediaKeySession(%p)::close", this);
 
+    // From https://w3c.github.io/encrypted-media/#session-close:
+    // The following steps are run:
+    // 1. Let the session be the associated MediaKeySession object.
+    // 2. Let promise be the closed attribute of the session.
+    // 3. Resolve promise.
+    m_closedPromise->resolve(ToV8UndefinedGenerator());
+
     // Once closed, the session can no longer be the target of events from
     // the CDM so this object can be garbage collected.
     m_isClosed = true;
-
-    // Resolve the closed promise.
-    m_closedPromise->resolve(ToV8UndefinedGenerator());
 }
 
 void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 {
-    m_expiration = updatedExpiryTimeInMS;
+    WTF_LOG(Media, "MediaKeySession(%p)::expirationChanged %f", this, updatedExpiryTimeInMS);
+
+    // From https://w3c.github.io/encrypted-media/#update-expiration:
+    // The following steps are run:
+    // 1. Let the session be the associated MediaKeySession object.
+    // 2. Let expiration time be NaN.
+    double expirationTime = std::numeric_limits<double>::quiet_NaN();
+
+    // 3. If the new expiration time is not NaN, let expiration time be the
+    //    new expiration time in milliseconds since 01 January 1970 UTC.
+    //    (Note that Chromium actually passes 0 to indicate no expiry.)
+    // FIXME: Get Chromium to pass NaN.
+    if (!std::isnan(updatedExpiryTimeInMS) && updatedExpiryTimeInMS != 0.0)
+        expirationTime = updatedExpiryTimeInMS;
+
+    // 4. Set the session's expiration attribute to expiration time.
+    m_expiration = expirationTime;
 }
 
 void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>& keys, bool hasAdditionalUsableKey)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::keysStatusesChange with %zu keys and usable key: %d", this, keys.size(), hasAdditionalUsableKey);
 
+    // From https://w3c.github.io/encrypted-media/#update-key-statuses:
+    // The following steps are run:
+    // 1. Let the session be the associated MediaKeySession object.
+    // 2. Let the input statuses be the sequence of pairs key ID and
+    //    associated MediaKeyStatus pairs.
+    // 3. Let the statuses be session's keyStatuses attribute.
+
+    // 4. Run the following steps to replace the contents of statuses:
+    // 4.1 Empty statuses.
+    m_keyStatusesMap->clear();
+
+    // 4.2 For each pair in input statuses.
+    for (size_t i = 0; i < keys.size(); ++i) {
+        // 4.2.1 Let pair be the pair.
+        const auto& key = keys[i];
+        // 4.2.2 Insert an entry for pair's key ID into statuses with the
+        //       value of pair's MediaKeyStatus value.
+        m_keyStatusesMap->addEntry(key.id(), ConvertKeyStatusToString(key.status()));
+    }
+
+    // 5. Queue a task to fire a simple event named keystatuseschange
+    //    at the session.
     RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::keystatuseschange);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 
+    // 6. Queue a task to run the attempt to resume playback if necessary
+    //    algorithm on each of the media element(s) whose mediaKeys attribute
+    //    is the MediaKeys object that created the session. The user agent
+    //    may choose to skip this step if it knows resuming will fail.
     // FIXME: Attempt to resume playback if |hasAdditionalUsableKey| is true.
     // http://crbug.com/413413
-
-    m_keyStatusesMap->clear();
-    for (size_t i = 0; i < keys.size(); ++i) {
-        const auto& key = keys[i];
-        m_keyStatusesMap->addEntry(key.id(), ConvertKeyStatusToString(key.status()));
-    }
 }
 
 const AtomicString& MediaKeySession::interfaceName() const
