@@ -131,7 +131,7 @@ cr.define('extensions', function() {
         // the overlay. It is calculated by multiplying the pythagorean distance
         // between old and the new size (in px) with a constant speed of
         // 0.25 ms/px.
-        var loading = document.documentElement.classlist.contains('loading');
+        var loading = document.documentElement.classList.contains('loading');
         var animationTime = loading ? 0 :
             0.25 * Math.sqrt(Math.pow(newWidth - oldWidth, 2) +
                              Math.pow(newHeight - oldHeight, 2));
