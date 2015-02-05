@@ -53,23 +53,23 @@ const PrepopulatedEngine* engines_default[] =
 
 // United Arab Emirates
 const PrepopulatedEngine* engines_AE[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Albania
 const PrepopulatedEngine* engines_AL[] =
-    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, };
+    { &google, &yahoo, &bing, };
 
 // Argentina
 const PrepopulatedEngine* engines_AR[] =
-    { &google, &bing_es_AR, &yahoo_ar, };
+    { &google, &bing, &yahoo_ar, };
 
 // Austria
 const PrepopulatedEngine* engines_AT[] =
-    { &google, &bing_de_AT, &yahoo_at, };
+    { &google, &bing, &yahoo_at, };
 
 // Australia
 const PrepopulatedEngine* engines_AU[] =
-    { &google, &bing_en_AU, &yahoo_au, };
+    { &google, &bing, &yahoo_au, };
 
 // Bosnia and Herzegovina
 const PrepopulatedEngine* engines_BA[] =
@@ -77,7 +77,7 @@ const PrepopulatedEngine* engines_BA[] =
 
 // Belgium
 const PrepopulatedEngine* engines_BE[] =
-    { &google, &bing_nl_BE, &bing_fr_BE, &yahoo, &yahoo_fr, };
+    { &google, &bing, &yahoo, &yahoo_fr, };
 
 // Bulgaria
 const PrepopulatedEngine* engines_BG[] =
@@ -85,7 +85,7 @@ const PrepopulatedEngine* engines_BG[] =
 
 // Bahrain
 const PrepopulatedEngine* engines_BH[] =
-    { &google, &yahoo_maktoob, &bing_en_XA, &bing_ar_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Burundi
 const PrepopulatedEngine* engines_BI[] =
@@ -97,15 +97,15 @@ const PrepopulatedEngine* engines_BN[] =
 
 // Bolivia
 const PrepopulatedEngine* engines_BO[] =
-    { &google, &bing_es_XL, &yahoo, };
+    { &google, &bing, &yahoo, };
 
 // Brazil
 const PrepopulatedEngine* engines_BR[] =
-    { &google, &ask_br, &bing_pt_BR, &yahoo_br, };
+    { &google, &ask_br, &bing, &yahoo_br, };
 
 // Belarus
 const PrepopulatedEngine* engines_BY[] =
-    { &google, &yahoo_ru, &bing_ru_RU, };
+    { &google, &yahoo_ru, &bing, };
 
 // Belize
 const PrepopulatedEngine* engines_BZ[] =
@@ -113,15 +113,15 @@ const PrepopulatedEngine* engines_BZ[] =
 
 // Canada
 const PrepopulatedEngine* engines_CA[] =
-    { &google, &bing_en_CA, &bing_fr_CA, &ask, &yahoo_ca, &yahoo_qc, };
+    { &google, &bing, &ask, &yahoo_ca, &yahoo_qc, };
 
 // Switzerland
 const PrepopulatedEngine* engines_CH[] =
-    { &google, &bing_de_CH, &bing_fr_CH, &yahoo_ch, };
+    { &google, &bing, &yahoo_ch, };
 
 // Chile
 const PrepopulatedEngine* engines_CL[] =
-    { &google, &bing_es_CL, &yahoo_cl, };
+    { &google, &bing, &yahoo_cl, };
 
 // China
 const PrepopulatedEngine* engines_CN[] =
@@ -129,11 +129,11 @@ const PrepopulatedEngine* engines_CN[] =
 
 // Colombia
 const PrepopulatedEngine* engines_CO[] =
-    { &google, &bing_es_XL, &yahoo_co, };
+    { &google, &bing, &yahoo_co, };
 
 // Costa Rica
 const PrepopulatedEngine* engines_CR[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Czech Republic
 const PrepopulatedEngine* engines_CZ[] =
@@ -141,23 +141,23 @@ const PrepopulatedEngine* engines_CZ[] =
 
 // Germany
 const PrepopulatedEngine* engines_DE[] =
-    { &google, &bing_de_DE, &yahoo_de };
+    { &google, &bing, &yahoo_de };
 
 // Denmark
 const PrepopulatedEngine* engines_DK[] =
-    { &google, &bing_da_DK, &yahoo_dk, };
+    { &google, &bing, &yahoo_dk, };
 
 // Dominican Republic
 const PrepopulatedEngine* engines_DO[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Algeria
 const PrepopulatedEngine* engines_DZ[] =
-    { &google, &bing_ar_XA, &bing_en_XA, &yahoo_maktoob, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // Ecuador
 const PrepopulatedEngine* engines_EC[] =
-    { &google, &bing_es_XL, &yahoo, };
+    { &google, &bing, &yahoo, };
 
 // Estonia
 const PrepopulatedEngine* engines_EE[] =
@@ -165,27 +165,27 @@ const PrepopulatedEngine* engines_EE[] =
 
 // Egypt
 const PrepopulatedEngine* engines_EG[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Spain
 const PrepopulatedEngine* engines_ES[] =
-    { &google, &bing_es_ES, &yahoo_es, };
+    { &google, &bing, &yahoo_es, };
 
 // Faroe Islands
 const PrepopulatedEngine* engines_FO[] =
-    { &google, &bing_da_DK, &ask, };
+    { &google, &bing, &ask, };
 
 // Finland
 const PrepopulatedEngine* engines_FI[] =
-    { &google, &bing_fi_FI, &yahoo_fi, };
+    { &google, &bing, &yahoo_fi, };
 
 // France
 const PrepopulatedEngine* engines_FR[] =
-    { &google, &bing_fr_FR, &yahoo_fr, };
+    { &google, &bing, &yahoo_fr, };
 
 // United Kingdom
 const PrepopulatedEngine* engines_GB[] =
-    { &google, &bing_en_GB, &yahoo_uk, &ask_uk, };
+    { &google, &bing, &yahoo_uk, &ask_uk, };
 
 // Greece
 const PrepopulatedEngine* engines_GR[] =
@@ -193,15 +193,15 @@ const PrepopulatedEngine* engines_GR[] =
 
 // Guatemala
 const PrepopulatedEngine* engines_GT[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Hong Kong
 const PrepopulatedEngine* engines_HK[] =
-    { &google, &yahoo_hk, &baidu, &bing_zh_HK, };
+    { &google, &yahoo_hk, &baidu, &bing, };
 
 // Honduras
 const PrepopulatedEngine* engines_HN[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Croatia
 const PrepopulatedEngine* engines_HR[] =
@@ -217,7 +217,7 @@ const PrepopulatedEngine* engines_ID[] =
 
 // Ireland
 const PrepopulatedEngine* engines_IE[] =
-    { &google, &bing_en_IE, &yahoo_uk, };
+    { &google, &bing, &yahoo_uk, };
 
 // Israel
 const PrepopulatedEngine* engines_IL[] =
@@ -225,11 +225,11 @@ const PrepopulatedEngine* engines_IL[] =
 
 // India
 const PrepopulatedEngine* engines_IN[] =
-    { &google, &bing_en_IN, &yahoo_in, };
+    { &google, &bing, &yahoo_in, };
 
 // Iraq
 const PrepopulatedEngine* engines_IQ[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Iran
 const PrepopulatedEngine* engines_IR[] =
@@ -241,7 +241,7 @@ const PrepopulatedEngine* engines_IS[] =
 
 // Italy
 const PrepopulatedEngine* engines_IT[] =
-    { &google, &virgilio, &bing_it_IT, };
+    { &google, &virgilio, &bing, };
 
 // Jamaica
 const PrepopulatedEngine* engines_JM[] =
@@ -249,11 +249,11 @@ const PrepopulatedEngine* engines_JM[] =
 
 // Jordan
 const PrepopulatedEngine* engines_JO[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Japan
 const PrepopulatedEngine* engines_JP[] =
-    { &google, &yahoo_jp, &bing_ja_JP, };
+    { &google, &yahoo_jp, &bing, };
 
 // Kenya
 const PrepopulatedEngine* engines_KE[] =
@@ -261,7 +261,7 @@ const PrepopulatedEngine* engines_KE[] =
 
 // Kuwait
 const PrepopulatedEngine* engines_KW[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // South Korea
 const PrepopulatedEngine* engines_KR[] =
@@ -273,11 +273,11 @@ const PrepopulatedEngine* engines_KZ[] =
 
 // Lebanon
 const PrepopulatedEngine* engines_LB[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Liechtenstein
 const PrepopulatedEngine* engines_LI[] =
-    { &google, &bing_de_DE, &yahoo_de, };
+    { &google, &bing, &yahoo_de, };
 
 // Lithuania
 const PrepopulatedEngine* engines_LT[] =
@@ -285,7 +285,7 @@ const PrepopulatedEngine* engines_LT[] =
 
 // Luxembourg
 const PrepopulatedEngine* engines_LU[] =
-    { &google, &bing_fr_FR, &yahoo_fr, };
+    { &google, &bing, &yahoo_fr, };
 
 // Latvia
 const PrepopulatedEngine* engines_LV[] =
@@ -293,15 +293,15 @@ const PrepopulatedEngine* engines_LV[] =
 
 // Libya
 const PrepopulatedEngine* engines_LY[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Morocco
 const PrepopulatedEngine* engines_MA[] =
-    { &google, &bing_ar_XA, &bing_en_XA, &yahoo_maktoob, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // Monaco
 const PrepopulatedEngine* engines_MC[] =
-    { &google, &yahoo_fr, &bing_fr_FR, };
+    { &google, &yahoo_fr, &bing, };
 
 // Moldova
 const PrepopulatedEngine* engines_MD[] =
@@ -317,7 +317,7 @@ const PrepopulatedEngine* engines_MK[] =
 
 // Mexico
 const PrepopulatedEngine* engines_MX[] =
-    { &google, &bing_es_MX, &yahoo_mx, };
+    { &google, &bing, &yahoo_mx, };
 
 // Malaysia
 const PrepopulatedEngine* engines_MY[] =
@@ -325,7 +325,7 @@ const PrepopulatedEngine* engines_MY[] =
 
 // Nicaragua
 const PrepopulatedEngine* engines_NI[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Netherlands
 const PrepopulatedEngine* engines_NL[] =
@@ -333,27 +333,27 @@ const PrepopulatedEngine* engines_NL[] =
 
 // Norway
 const PrepopulatedEngine* engines_NO[] =
-    { &google, &bing_nb_NO, &kvasir, };
+    { &google, &bing, &kvasir, };
 
 // New Zealand
 const PrepopulatedEngine* engines_NZ[] =
-    { &google, &bing_en_NZ, &yahoo_nz, };
+    { &google, &bing, &yahoo_nz, };
 
 // Oman
 const PrepopulatedEngine* engines_OM[] =
-    { &google, &bing_ar_XA, &yahoo_maktoob, &bing_en_XA, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // Panama
 const PrepopulatedEngine* engines_PA[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Peru
 const PrepopulatedEngine* engines_PE[] =
-    { &google, &bing_es_XL, &yahoo_pe, };
+    { &google, &bing, &yahoo_pe, };
 
 // Philippines
 const PrepopulatedEngine* engines_PH[] =
-    { &google, &yahoo_ph, &bing_en_PH, };
+    { &google, &yahoo_ph, &bing, };
 
 // Pakistan
 const PrepopulatedEngine* engines_PK[] =
@@ -361,23 +361,23 @@ const PrepopulatedEngine* engines_PK[] =
 
 // Puerto Rico
 const PrepopulatedEngine* engines_PR[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Poland
 const PrepopulatedEngine* engines_PL[] =
-    { &google, &onet, &bing_pl_PL, };
+    { &google, &onet, &bing, };
 
 // Portugal
 const PrepopulatedEngine* engines_PT[] =
-    { &google, &bing_pt_PT, &yahoo, };
+    { &google, &bing, &yahoo, };
 
 // Paraguay
 const PrepopulatedEngine* engines_PY[] =
-    { &google, &bing_es_XL, &yahoo, };
+    { &google, &bing, &yahoo, };
 
 // Qatar
 const PrepopulatedEngine* engines_QA[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Romania
 const PrepopulatedEngine* engines_RO[] =
@@ -397,15 +397,15 @@ const PrepopulatedEngine* engines_RW[] =
 
 // Saudi Arabia
 const PrepopulatedEngine* engines_SA[] =
-    { &google, &yahoo_maktoob, &bing_ar_XA, &bing_en_XA, };
+    { &google, &yahoo_maktoob, &bing, };
 
 // Sweden
 const PrepopulatedEngine* engines_SE[] =
-    { &google, &bing_sv_SE, &yahoo_se, };
+    { &google, &bing, &yahoo_se, };
 
 // Singapore
 const PrepopulatedEngine* engines_SG[] =
-    { &google, &yahoo_sg, &bing_en_SG, };
+    { &google, &yahoo_sg, &bing, };
 
 // Slovenia
 const PrepopulatedEngine* engines_SI[] =
@@ -417,11 +417,11 @@ const PrepopulatedEngine* engines_SK[] =
 
 // El Salvador
 const PrepopulatedEngine* engines_SV[] =
-    { &google, &yahoo, &bing_es_XL, };
+    { &google, &yahoo, &bing, };
 
 // Syria
 const PrepopulatedEngine* engines_SY[] =
-    { &google, &bing_ar_XA, &bing_en_XA, &yahoo_maktoob, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // Thailand
 const PrepopulatedEngine* engines_TH[] =
@@ -429,11 +429,11 @@ const PrepopulatedEngine* engines_TH[] =
 
 // Tunisia
 const PrepopulatedEngine* engines_TN[] =
-    { &google, &bing_ar_XA, &bing_en_XA, &yahoo_maktoob, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // Turkey
 const PrepopulatedEngine* engines_TR[] =
-    { &google, &bing_tr_TR, &yahoo_tr, &yandex_tr, };
+    { &google, &bing, &yahoo_tr, &yandex_tr, };
 
 // Trinidad and Tobago
 const PrepopulatedEngine* engines_TT[] =
@@ -441,7 +441,7 @@ const PrepopulatedEngine* engines_TT[] =
 
 // Taiwan
 const PrepopulatedEngine* engines_TW[] =
-    { &google, &yahoo_tw, &bing_zh_TW, };
+    { &google, &yahoo_tw, &bing, };
 
 // Tanzania
 const PrepopulatedEngine* engines_TZ[] =
@@ -449,19 +449,19 @@ const PrepopulatedEngine* engines_TZ[] =
 
 // Ukraine
 const PrepopulatedEngine* engines_UA[] =
-    { &google, &yandex_ua, &bing_ru_RU, };
+    { &google, &yandex_ua, &bing, };
 
 // United States
 const PrepopulatedEngine* engines_US[] =
-    { &google, &bing_en_US, &yahoo, &aol, &ask, };
+    { &google, &bing, &yahoo, &aol, &ask, };
 
 // Uruguay
 const PrepopulatedEngine* engines_UY[] =
-    { &google, &bing_es_XL, &yahoo, };
+    { &google, &bing, &yahoo, };
 
 // Venezuela
 const PrepopulatedEngine* engines_VE[] =
-    { &google, &bing_es_XL, &yahoo_ve, };
+    { &google, &bing, &yahoo_ve, };
 
 // Vietnam
 const PrepopulatedEngine* engines_VN[] =
@@ -469,7 +469,7 @@ const PrepopulatedEngine* engines_VN[] =
 
 // Yemen
 const PrepopulatedEngine* engines_YE[] =
-    { &google, &bing_ar_XA, &bing_en_XA, &yahoo_maktoob, };
+    { &google, &bing, &yahoo_maktoob, };
 
 // South Africa
 const PrepopulatedEngine* engines_ZA[] =
@@ -483,24 +483,17 @@ const PrepopulatedEngine* engines_ZW[] =
 const PrepopulatedEngine* kAllEngines[] = {
   // Prepopulated engines:
   &aol,          &ask,          &ask_br,       &ask_uk,       &baidu,
-  &bing,         &bing_ar_XA,   &bing_da_DK,   &bing_de_AT,   &bing_de_CH,
-  &bing_de_DE,   &bing_en_AU,   &bing_en_CA,   &bing_en_GB,   &bing_en_IE,
-  &bing_en_IN,   &bing_en_NZ,   &bing_en_PH,   &bing_en_SG,   &bing_en_US,
-  &bing_en_XA,   &bing_es_AR,   &bing_es_CL,   &bing_es_ES,   &bing_es_MX,
-  &bing_es_XL,   &bing_fi_FI,   &bing_fr_BE,   &bing_fr_CA,   &bing_fr_CH,
-  &bing_fr_FR,   &bing_it_IT,   &bing_ja_JP,   &bing_lv_LV,   &bing_nb_NO,
-  &bing_nl_BE,   &bing_pl_PL,   &bing_pt_BR,   &bing_pt_PT,   &bing_ru_RU,
-  &bing_sv_SE,   &bing_tr_TR,   &bing_zh_HK,   &bing_zh_TW,   &daum,
-  &google,       &kvasir,       &mail_ru,      &najdi,        &naver,
-  &onet,         &seznam,       &sogou,        &vinden,       &virgilio,
-  &yahoo,        &yahoo_ar,     &yahoo_at,     &yahoo_au,     &yahoo_br,
-  &yahoo_ca,     &yahoo_ch,     &yahoo_cl,     &yahoo_co,     &yahoo_de,
-  &yahoo_dk,     &yahoo_es,     &yahoo_fi,     &yahoo_fr,     &yahoo_gr,
-  &yahoo_hk,     &yahoo_id,     &yahoo_in,     &yahoo_jp,     &yahoo_maktoob,
-  &yahoo_mx,     &yahoo_my,     &yahoo_nl,     &yahoo_nz,     &yahoo_pe,
-  &yahoo_ph,     &yahoo_qc,     &yahoo_ro,     &yahoo_ru,     &yahoo_se,
-  &yahoo_sg,     &yahoo_th,     &yahoo_tr,     &yahoo_tw,     &yahoo_uk,
-  &yahoo_ve,     &yahoo_vn,     &yandex_ru,    &yandex_tr,    &yandex_ua,
+  &bing,         &daum,         &google,       &kvasir,       &mail_ru,
+  &najdi,        &naver,        &onet,         &seznam,       &sogou,
+  &vinden,       &virgilio,     &yahoo,        &yahoo_ar,     &yahoo_at,
+  &yahoo_au,     &yahoo_br,     &yahoo_ca,     &yahoo_ch,     &yahoo_cl,
+  &yahoo_co,     &yahoo_de,     &yahoo_dk,     &yahoo_es,     &yahoo_fi,
+  &yahoo_fr,     &yahoo_gr,     &yahoo_hk,     &yahoo_id,     &yahoo_in,
+  &yahoo_jp,     &yahoo_maktoob,&yahoo_mx,     &yahoo_my,     &yahoo_nl,
+  &yahoo_nz,     &yahoo_pe,     &yahoo_ph,     &yahoo_qc,     &yahoo_ro,
+  &yahoo_ru,     &yahoo_se,     &yahoo_sg,     &yahoo_th,     &yahoo_tr,
+  &yahoo_tw,     &yahoo_uk,     &yahoo_ve,     &yahoo_vn,     &yandex_ru,
+  &yandex_tr,    &yandex_ua,
 
   // UMA-only engines:
   &atlas_cz,     &atlas_sk,     &avg,          &babylon,      &conduit,
