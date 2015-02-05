@@ -53,7 +53,7 @@ debug("Test that getting grid-template-columns and grid-template-rows set throug
 testGridAutoDefinitionsValues(document.getElementById("gridAutoFixedFixedWithChildren"), "30px", "50px");
 testGridDefinitionsValues(document.getElementById("gridAutoFixedFixedWithChildren"), "50px", "30px");
 testGridAutoDefinitionsValues(document.getElementById("gridAutoFixedFixedWithFixedFixedWithChildren"), "30px", "40px");
-testGridDefinitionsValues(document.getElementById("gridAutoFixedFixedWithFixedFixedWithChildren"), "20px", "15px", "20px 40px 40px", "15px 30px 30px");
+testGridDefinitionsValues(document.getElementById("gridAutoFixedFixedWithFixedFixedWithChildren"), "20px 40px 40px", "15px 30px 30px");
 
 debug("");
 debug("Test that grid-template-* definitions are not affected by grid-auto-* definitions");

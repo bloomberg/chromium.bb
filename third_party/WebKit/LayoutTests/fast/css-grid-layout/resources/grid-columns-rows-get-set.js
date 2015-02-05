@@ -19,8 +19,8 @@ testGridDefinitionsValues(document.getElementById("gridWithMaxContentWithChildre
 testGridDefinitionsValues(document.getElementById("gridWithFractionElement"), "800px", "600px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcElement"), "150px", "75px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcComplexElement"), "550px", "465px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxElement"), "minmax(10%, 15px)", "minmax(20px, 50%)", "80px", "300px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "minmax(10%, 415px)", "minmax(80px, 50%)", "415px", "300px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxElement"), "80px", "300px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "415px", "300px");
 
 debug("");
 debug("Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')");

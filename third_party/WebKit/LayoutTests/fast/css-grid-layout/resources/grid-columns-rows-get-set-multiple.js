@@ -2,23 +2,23 @@ description('Test that setting and getting grid-template-columns and grid-templa
 
 debug("Test getting |grid-template-columns| and |grid-template-rows| set through CSS");
 testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "7px 11px", "17px 2px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "53% 99%", "27% 52%", "424px 792px", "162px 312px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "53% 99%", "27% 52%", "7px 0px", "11px 0px");
-testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "auto auto", "auto auto", "0px 17px", "0px 3px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "424px 792px", "162px 312px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "7px 0px", "11px 0px");
+testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "0px 17px", "0px 3px");
 testGridDefinitionsValues(document.getElementById("gridWithEMElement"), "100px 120px", "150px 170px");
-testGridDefinitionsValues(document.getElementById("gridWithThreeItems"), "15px auto 100px", "120px 18px auto", "15px 0px 100px", "120px 18px 0px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentAndViewportPercent"), "50% 120px", "35% 168px", "400px 120px", "210px 168px");
+testGridDefinitionsValues(document.getElementById("gridWithThreeItems"), "15px 0px 100px", "120px 18px 0px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentAndViewportPercent"), "400px 120px", "210px 168px");
 testGridDefinitionsValues(document.getElementById("gridWithFitContentAndFitAvailable"), "none", "none");
-testGridDefinitionsValues(document.getElementById("gridWithMinMaxContent"), "min-content max-content", "max-content min-content", "0px 0px", "0px 0px");
-testGridDefinitionsValues(document.getElementById("gridWithMinMaxContentWithChildrenElement"), "min-content max-content", "max-content min-content", "7px 17px", "11px 3px");
-testGridDefinitionsValues(document.getElementById("gridWithMinMaxAndFixed"), "minmax(45px, 30%) 15px", "120px minmax(35%, 10px)", "240px 15px", "120px 210px");
-testGridDefinitionsValues(document.getElementById("gridWithMinMaxAndMinMaxContent"), "minmax(min-content, 30%) 15px", "120px minmax(35%, max-content)", "240px 15px", "120px 210px");
-testGridDefinitionsValues(document.getElementById("gridWithFractionFraction"), "1fr 2fr", "3fr 4fr", "320px 480px", "225px 375px");
-testGridDefinitionsValues(document.getElementById("gridWithFractionMinMax"), "minmax(min-content, 45px) 2fr", "3fr minmax(14px, max-content)", "45px 755px", "586px 14px");
+testGridDefinitionsValues(document.getElementById("gridWithMinMaxContent"), "0px 0px", "0px 0px");
+testGridDefinitionsValues(document.getElementById("gridWithMinMaxContentWithChildrenElement"), "7px 17px", "11px 3px");
+testGridDefinitionsValues(document.getElementById("gridWithMinMaxAndFixed"), "240px 15px", "120px 210px");
+testGridDefinitionsValues(document.getElementById("gridWithMinMaxAndMinMaxContent"), "240px 15px", "120px 210px");
+testGridDefinitionsValues(document.getElementById("gridWithFractionFraction"), "320px 480px", "225px 375px");
+testGridDefinitionsValues(document.getElementById("gridWithFractionMinMax"), "45px 755px", "586px 14px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcCalc"), "200px 100px", "150px 75px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcAndFixed"), "50% 80px", "88px 25%", "400px 80px", "88px 150px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcAndMinMax"), "190px minmax(min-content, 80px)", "minmax(25%, max-content) 53px", "190px 80px", "150px 53px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMax"), "minmax(103px, 400px) 120px", "150px minmax(5%, 175px)", "400px 120px", "150px 175px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcAndFixed"), "400px 80px", "88px 150px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcAndMinMax"), "190px 80px", "150px 53px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMax"), "400px 120px", "150px 175px");
 
 debug("");
 debug("Test the initial value");
