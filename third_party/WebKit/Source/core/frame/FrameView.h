@@ -551,6 +551,8 @@ public:
     // Returns the scrollable area for the frame.
     ScrollableArea* scrollableArea();
 
+    void lineLayoutTime(double ms);
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -824,6 +826,8 @@ private:
     bool m_shouldDrawPanScrollIcon;
 
     bool m_clipsRepaints;
+
+    double m_lineLayoutMs;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

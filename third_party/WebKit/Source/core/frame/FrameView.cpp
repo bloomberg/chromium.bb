@@ -830,8 +830,14 @@ void FrameView::performPreLayoutTasks()
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
+void FrameView::lineLayoutTime(double ms)
+{
+    m_lineLayoutMs += ms;
+}
+
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
+    m_lineLayoutMs = 0;
     TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
     double start = WTF::currentTimeMS();
 
@@ -859,6 +865,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
     int layoutMs = (WTF::currentTimeMS() - start);
     Platform::current()->histogramCustomCounts("Renderer.LayoutMs", layoutMs, 0, 1000 * 60, 50);
+    Platform::current()->histogramCustomCounts("Renderer.LineLayoutMs", m_lineLayoutMs, 0, 1000 * 60, 50);
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()

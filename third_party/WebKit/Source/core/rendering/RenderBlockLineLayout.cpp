@@ -767,7 +767,9 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         }
     }
 
+    double start = WTF::currentTimeMS();
     layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus);
+    frameView()->lineLayoutTime(WTF::currentTimeMS() - start);
     linkToEndLineIfNeeded(layoutState);
     markDirtyFloatsForPaintInvalidation(layoutState.floats());
 }
