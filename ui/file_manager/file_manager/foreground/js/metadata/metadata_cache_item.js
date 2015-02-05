@@ -62,8 +62,11 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, object) {
   for (var name in object) {
     if (!this.properties_[name])
       this.properties_[name] = new MetadataCacheItemProperty();
-    if (requestId < this.properties_[name].requestId)
+    if (requestId < this.properties_[name].requestId ||
+        this.properties_[name].state ===
+        MetadataCacheItemPropertyState.FULFILLED) {
       continue;
+    }
     changed = true;
     this.properties_[name].requestId = requestId;
     this.properties_[name].value = object[name];

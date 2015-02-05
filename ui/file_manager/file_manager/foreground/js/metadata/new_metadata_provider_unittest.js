@@ -34,6 +34,20 @@ TestEmptyMetadataProvider.prototype.getImpl = function(requests) {
   }));
 };
 
+function ManualTestMetadataProvider(cache) {
+  NewMetadataProvider.call(
+      this, cache, ['propertyA', 'propertyB', 'propertyC']);
+  this.callback = [];
+}
+
+ManualTestMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+
+ManualTestMetadataProvider.prototype.getImpl = function(requests) {
+  return new Promise(function(fulfill) {
+    this.callback.push(fulfill);
+  }.bind(this));
+};
+
 var entryA = {
   toURL: function() { return "filesystem://A"; }
 };
@@ -111,6 +125,28 @@ function testNewMetadataProviderRequestBeforeCompletingPreviousRequest(
         assertEquals(1, provider.requestCount);
         assertEquals('filesystem://A:property', results[0].property);
       }), callback);
+}
+
+function testNewMetadataProviderNotUpdateCachedResultAfterRequest(
+    callback) {
+  var cache = new MetadataProviderCache();
+  var provider = new ManualTestMetadataProvider(cache);
+  var promise = provider.get([entryA], ['propertyA']);
+  provider.callback[0]([{propertyA: 'valueA1'}]);
+  reportPromise(promise.then(function() {
+    // 'propertyA' is cached here.
+    var promise1 = provider.get([entryA], ['propertyA', 'propertyB']);
+    var promise2 = provider.get([entryA], ['propertyC']);
+    // Returns propertyC.
+    provider.callback[2]([{propertyA: 'valueA2', propertyC: 'valueC'}]);
+    provider.callback[1]([{propertyB: 'valueB'}]);
+    return Promise.all([promise1, promise2]);
+  }).then(function(results) {
+    // The result should be cached value at the time when get was called.
+    assertEquals('valueA1', results[0][0].propertyA);
+    assertEquals('valueB', results[0][0].propertyB);
+    assertEquals('valueC', results[1][0].propertyC);
+  }), callback);
 }
 
 function testNewMetadataProviderGetCache(callback) {
