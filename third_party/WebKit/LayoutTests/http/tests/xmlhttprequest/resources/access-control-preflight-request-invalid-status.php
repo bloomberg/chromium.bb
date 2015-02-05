@@ -10,6 +10,9 @@
         else if ($code == "501"){
             header("HTTP/1.1 501");
         }
+        else if ($code == "301"){
+            header("HTTP/1.1 301");
+        }
         header("Access-Control-Allow-Methods: GET");
         header("Access-Control-Max-Age: 1");
     } else {

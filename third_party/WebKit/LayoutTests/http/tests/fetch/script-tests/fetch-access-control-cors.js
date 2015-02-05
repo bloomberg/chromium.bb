@@ -112,9 +112,9 @@ var TEST_TARGETS = [
    [methodIsGET, hasCustomHeader]],
 
   // Test that CORS preflight with Status other than 2XX fails.
-  // FIXME: https://crbug.com/452394
-  // [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=301',
-  //  [fetchRejected]],
+  // https://crbug.com/452394
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=301',
+   [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=401',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=500',
@@ -216,9 +216,9 @@ var TEST_TARGETS = [
    [methodIsPOST, hasCustomHeader]],
 
   // Test that CORS preflight with Status other than 2XX fails.
-  // FIXME: https://crbug.com/452394
-  // [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=301',
-  //  [fetchRejected]],
+  // https://crbug.com/452394
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=301',
+   [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=401',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=500',
@@ -327,9 +327,9 @@ var TEST_TARGETS = [
    [methodIsPUT]],
 
   // Test that CORS preflight with Status other than 2XX fails.
-  // FIXME: https://crbug.com/452394
-  // [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PreflightTest=301',
-  //  [fetchRejected]],
+  // https://crbug.com/452394
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PreflightTest=301',
+   [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PreflightTest=401',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PreflightTest=500',
@@ -439,9 +439,9 @@ var TEST_TARGETS = [
    [methodIsXXX]],
 
   // Test that CORS preflight with Status other than 2XX fails.
-  // FIXME: https://crbug.com/452394
-  // [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PreflightTest=301',
-  //  [fetchRejected]],
+  // https://crbug.com/452394
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PreflightTest=301',
+   [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PreflightTest=401',
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PreflightTest=500',

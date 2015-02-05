@@ -177,7 +177,13 @@ bool passesAccessControlCheck(ExecutionContext* context, const ResourceResponse&
 
 bool passesPreflightStatusCheck(const ResourceResponse& response, String& errorDescription)
 {
-    if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 400) {
+    // CORS preflight with 3XX is considered network error in
+    // Fetch API Spec:
+    //   https://fetch.spec.whatwg.org/#cors-preflight-fetch
+    // CORS Spec:
+    //   http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
+    // https://crbug.com/452394
+    if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 300) {
         errorDescription = "Invalid HTTP status code " + String::number(response.httpStatusCode());
         return false;
     }
