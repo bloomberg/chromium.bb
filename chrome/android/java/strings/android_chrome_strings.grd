@@ -161,12 +161,6 @@
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_EXPIRATION_DATE" desc="Label for text input field containing a credit card expiration date. [CHAR-LIMIT=32]">
         Expiration date
       </message>
-      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_NAME_TEXTBOX" desc="Content description for text input field containing the name on a credit card.">
-        Name on card
-      </message>
-      <message name="IDS_ACCESSIBILITY_AUTOFILL_CC_NUMBER_TEXTBOX" desc="Content description for text input field containing a credit card number.">
-        Card number
-      </message>
 
       <!-- Autofill/Wallet integration preferences -->
       <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Title for Autofill Wallet settings, which controls import of Wallet cards.">

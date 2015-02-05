@@ -11,5 +11,5 @@
     <item android:state_enabled="false"
           android:alpha="@dimen/disabled_alpha_material_dark"
           android:color="@color/default_text_color" />
-    <item android:color="@color/default_text_color" />
+    <item android:color="@color/input_underline_color" />
 </selector>

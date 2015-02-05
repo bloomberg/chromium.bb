@@ -19,19 +19,29 @@
             style="@style/PreferenceScreenLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical" >
 
             <!-- Editable fields for the profile -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:focusable="true"
-                android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
-                android:text="@string/autofill_profile_editor_country" />
-            <Spinner
-                android:id="@+id/countries"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
+                android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
+                android:paddingBottom="5dp" >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
+                    android:text="@string/autofill_profile_editor_country"
+                    android:paddingBottom="8dp" />
+                <Spinner
+                    android:id="@+id/countries"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+                <View style="@style/PreferenceSpinnerUnderlineView" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/autofill_profile_widget_root"

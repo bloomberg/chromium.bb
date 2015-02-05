@@ -12,7 +12,11 @@
         <item name="android:colorButtonNormal">@color/btn_default_preferences</item>
         <item name="android:editTextBackground">@drawable/abc_edit_text_material</item>
         <item name="android:editTextStyle">@style/PreferenceEditTextStyle</item>
+        <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
+        <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
+        <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
+        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_padding</item>
     </style>
     <style name="PreferencesDialogTheme" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:colorAccent">@color/pref_accent_color</item>

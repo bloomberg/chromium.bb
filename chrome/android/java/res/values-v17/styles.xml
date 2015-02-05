@@ -11,7 +11,11 @@
         <item name="android:buttonStyle">@style/PreferenceButtonStyle</item>
         <item name="android:textAppearanceMedium">@style/PreferenceTextAppearanceMedium</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
+        <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
+        <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
+        <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
+        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_padding</item>
     </style>
     <style name="PreferenceButtonStyle" parent="@android:style/Widget.Holo.Light.Button">
         <!-- TODO(twellington): Delete btn_default_preferences.xml once the AppCompat theme supports
@@ -71,6 +75,15 @@
     <style name="PreferenceFloatLabelTextAppearance">
         <item name="android:textColor">@color/float_label</item>
         <item name="android:textSize">14sp</item>
+    </style>
+    <style name="PreferenceSpinnerItem">
+        <item name="android:textAppearance">@style/PreferenceTextAppearanceMedium</item>
+    </style>
+    <style name="PreferenceSpinnerUnderlineView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:background">@color/input_underline_color</item>
     </style>
 
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">

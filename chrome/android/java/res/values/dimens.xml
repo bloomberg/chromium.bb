@@ -98,6 +98,8 @@
     <dimen name="pref_button_vertical_padding">10dp</dimen>
 
     <dimen name="pref_homepage_layout_margin">10dp</dimen>
+    <dimen name="pref_autofill_field_horizontal_padding">3dp</dimen>
+    <dimen name="pref_autofill_field_top_padding">10dp</dimen>
 
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>

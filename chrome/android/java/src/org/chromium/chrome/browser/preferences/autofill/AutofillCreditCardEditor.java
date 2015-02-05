@@ -20,6 +20,7 @@ import android.widget.Spinner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.widget.FloatLabelLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,7 +34,9 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
     // May be the empty string if creating a new profile.
     private String mGUID;
 
+    private FloatLabelLayout mNameLabel;
     private EditText mNameText;
+    private FloatLabelLayout mNumberLabel;
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
@@ -52,10 +55,10 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
         super.onCreate(savedInstanceState);
 
         View v = inflater.inflate(R.layout.autofill_credit_card_editor, container, false);
-        mNameText = (EditText) v.findViewById(
-                R.id.autofill_credit_card_editor_name_edit);
-        mNumberText = (EditText) v.findViewById(
-                R.id.autofill_credit_card_editor_number_edit);
+        mNameLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_name_label);
+        mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
+        mNumberLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_number_label);
+        mNumberText = (EditText) v.findViewById(R.id.credit_card_number_edit);
 
         // Set text watcher to format credit card number
         mNumberText.addTextChangedListener(new CreditCardNumberFormattingTextWatcher());
@@ -122,12 +125,24 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
     private void addCardDataToEditFields() {
         CreditCard card = PersonalDataManager.getInstance().getCreditCard(mGUID);
         if (card == null) {
+            // FloatLabelLayout animates showing the field label when its EditText is focused;
+            // to avoid this animation, manually set the name label to be visible, its EditText
+            // hint to null and request focus on its EditText field.
+            mNameLabel.getLabel().setVisibility(View.VISIBLE);
+            mNameText.setHint(null);
             mNameText.requestFocus();
             return;
         }
 
-        mNameText.setText(card.getName());
-        mNumberText.setText(card.getNumber());
+        if (!TextUtils.isEmpty(card.getName())) {
+            mNameLabel.setText(card.getName());
+        }
+        if (!TextUtils.isEmpty(card.getNumber())) {
+            mNumberLabel.setText(card.getNumber());
+        }
+
+        // Make the name label focusable in touch mode so that mNameText doesn't get focused.
+        mNameLabel.getLabel().setFocusableInTouchMode(true);
 
         int monthAsInt = 1;
         if (!card.getMonth().isEmpty()) {
