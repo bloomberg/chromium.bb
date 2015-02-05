@@ -1204,6 +1204,7 @@ interface MediaKeyStatusMap
 interface MediaKeySystemAccess
     method constructor
     method createMediaKeys
+    method getConfiguration
 interface MediaKeys
     method constructor
     method createSession

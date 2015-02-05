@@ -53,38 +53,41 @@
                     exception: 'TypeError',
                     func: function() { return navigator.requestMediaKeySystemAccess(); }
                 },
-                // Invalid parameters.
                 {
-                    exception: 'InvalidAccessError',
-                    func: function() { return navigator.requestMediaKeySystemAccess(''); }
+                    exception: 'TypeError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey'); }
                 },
                 // Invalid key systems. Note that JavaScript converts all these
                 // values into strings by calling toString(), so they fail due
                 // to the key system not being supported, not due to the type.
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess(null); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(null, [{}]); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess(undefined); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(undefined, [{}]); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess(1); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(1, [{}]); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess(new Uint8Array(0)); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(new Uint8Array(0), [{}]); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('', [{}]); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess('unsupported'); }
+                    func: function() { return navigator.requestMediaKeySystemAccess('unsupported', [{}]); }
                 },
                 // Non-ASCII names.
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3\u263A.clearkey'); }
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3\u263A.clearkey', [{}]); }
                 },
                 // Empty sequence of MediaKeySystemConfiguration.
                 {
@@ -126,10 +129,11 @@
             async_test(function(test)
             {
                 assert_equals(typeof navigator.requestMediaKeySystemAccess, 'function');
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     assert_not_equals(access, null);
                     assert_equals(typeof access, 'object');
                     assert_equals(access.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof access.getConfiguration, 'function');
                     assert_equals(typeof access.createMediaKeys, 'function');
                     test.done();
                 }).catch(function(error) {
@@ -141,7 +145,7 @@
             {
                 var access;
 
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(result) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(result) {
                     access = result;
                     assert_equals(access.keySystem, 'org.w3.clearkey');
                     return access.createMediaKeys();
@@ -204,7 +208,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
@@ -334,7 +338,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var initData = stringToUint8Array('init data');
@@ -436,7 +440,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var initData = stringToUint8Array('init data');
@@ -527,7 +531,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     kCreateSessionTestCases.map(function(testCase) {
@@ -556,7 +560,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var sessionPromises = [];
@@ -623,7 +627,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
@@ -674,7 +678,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                   var promises = [];
@@ -710,7 +714,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
@@ -748,7 +752,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
@@ -809,7 +813,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
@@ -849,7 +853,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
@@ -913,7 +917,7 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = kSetServerCertificateExceptionsTestCases.map(function(testCase) {

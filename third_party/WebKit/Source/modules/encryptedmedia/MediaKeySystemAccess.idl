@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#mediakeysystemaccess-interface
+// http://w3c.github.io/encrypted-media/#mediakeysystemaccess-interface
 
 [
     RuntimeEnabled=EncryptedMedia,
@@ -10,5 +10,6 @@
     TypeChecking=Interface
 ] interface MediaKeySystemAccess {
     readonly attribute DOMString keySystem;
+    MediaKeySystemConfiguration getConfiguration();
     [CallWith=ScriptState] Promise<MediaKeys> createMediaKeys();
 };
