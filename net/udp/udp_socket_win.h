@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/object_watcher.h"
+#include "base/win/scoped_handle.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -23,7 +24,9 @@
 
 namespace net {
 
-class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class NET_EXPORT UDPSocketWin
+    : NON_EXPORTED_BASE(public base::NonThreadSafe),
+      NON_EXPORTED_BASE(public base::win::ObjectWatcher::Delegate) {
  public:
   UDPSocketWin(DatagramSocket::BindType bind_type,
                const RandIntCallback& rand_int_cb,
@@ -174,6 +177,10 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Resets the thread to be used for thread-safety checks.
   void DetachFromThread();
 
+  // This class by default uses overlapped IO. Call this method before Open()
+  // to switch to non-blocking IO.
+  void UseNonBlockingIO();
+
  private:
   enum SocketOptions {
     SOCKET_OPTION_MULTICAST_LOOP = 1 << 0
@@ -183,13 +190,20 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
 
   void DoReadCallback(int rv);
   void DoWriteCallback(int rv);
+
   void DidCompleteRead();
   void DidCompleteWrite();
 
+  // base::ObjectWatcher::Delegate implementation.
+  virtual void OnObjectSignaled(HANDLE object);
+  void OnReadSignaled();
+  void OnWriteSignaled();
+
+  void WatchForReadWrite();
+
   // Handles stats and logging. |result| is the number of bytes transferred, on
-  // success, or the net error code on failure. LogRead retrieves the address
-  // from |recv_addr_storage_|, while LogWrite takes it as an optional argument.
-  void LogRead(int result, const char* bytes) const;
+  // success, or the net error code on failure.
+  void LogRead(int result, const char* bytes, const IPEndPoint* address) const;
   void LogWrite(int result, const char* bytes, const IPEndPoint* address) const;
 
   // Same as SendTo(), except that address is passed by pointer
@@ -201,8 +215,22 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
                     const CompletionCallback& callback);
 
   int InternalConnect(const IPEndPoint& address);
-  int InternalRecvFrom(IOBuffer* buf, int buf_len, IPEndPoint* address);
-  int InternalSendTo(IOBuffer* buf, int buf_len, const IPEndPoint* address);
+
+  // Version for using overlapped IO.
+  int InternalRecvFromOverlapped(IOBuffer* buf,
+                                 int buf_len,
+                                 IPEndPoint* address);
+  int InternalSendToOverlapped(IOBuffer* buf,
+                               int buf_len,
+                               const IPEndPoint* address);
+
+  // Version for using non-blocking IO.
+  int InternalRecvFromNonBlocking(IOBuffer* buf,
+                                  int buf_len,
+                                  IPEndPoint* address);
+  int InternalSendToNonBlocking(IOBuffer* buf,
+                                int buf_len,
+                                const IPEndPoint* address);
 
   // Applies |socket_options_| to |socket_|. Should be called before
   // Bind().
@@ -210,10 +238,6 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   int DoBind(const IPEndPoint& address);
   // Binds to a random port on |address|.
   int RandomBind(const IPAddressNumber& address);
-
-  // Attempts to convert the data in |recv_addr_storage_| and |recv_addr_len_|
-  // to an IPEndPoint and writes it to |address|. Returns true on success.
-  bool ReceiveAddressToIPEndpoint(IPEndPoint* address) const;
 
   SOCKET socket_;
   int addr_family_;
@@ -246,6 +270,22 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // resources to the Windows async IO functions and we have to make sure that
   // they are not destroyed while the OS still references them.
   scoped_refptr<Core> core_;
+
+  // True if non-blocking IO is used.
+  bool use_non_blocking_io_;
+
+  // Watches |read_write_event_|.
+  base::win::ObjectWatcher read_write_watcher_;
+
+  // Events for read and write.
+  base::win::ScopedHandle read_write_event_;
+
+  // The buffers used in Read() and Write().
+  scoped_refptr<IOBuffer> read_iobuffer_;
+  scoped_refptr<IOBuffer> write_iobuffer_;
+
+  int read_iobuffer_len_;
+  int write_iobuffer_len_;
 
   IPEndPoint* recv_from_address_;
 

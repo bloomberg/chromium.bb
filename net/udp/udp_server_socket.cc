@@ -120,4 +120,10 @@ void UDPServerSocket::DetachFromThread() {
   socket_.DetachFromThread();
 }
 
+#if defined(OS_WIN)
+void UDPServerSocket::UseNonBlockingIO() {
+  socket_.UseNonBlockingIO();
+}
+#endif
+
 }  // namespace net

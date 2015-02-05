@@ -38,6 +38,12 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   int SetSendBufferSize(int32 size) override;
   const BoundNetLog& NetLog() const override;
 
+#if defined(OS_WIN)
+  // Switch to use non-blocking IO. Must be called right after construction and
+  // before other calls.
+  void UseNonBlockingIO();
+#endif
+
  private:
   UDPSocket socket_;
   DISALLOW_COPY_AND_ASSIGN(UDPClientSocket);

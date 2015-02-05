@@ -47,6 +47,12 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   int SetDiffServCodePoint(DiffServCodePoint dscp) override;
   void DetachFromThread() override;
 
+#if defined(OS_WIN)
+  // Switch to use non-blocking IO. Must be called right after construction and
+  // before other calls.
+  void UseNonBlockingIO();
+#endif
+
  private:
   UDPSocket socket_;
   bool allow_address_reuse_;
