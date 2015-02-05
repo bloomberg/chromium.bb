@@ -622,7 +622,7 @@ Address ThreadHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex)
 
     // 2. Check if we should trigger a GC.
     updateRemainingAllocationSize();
-    threadState()->scheduleGCOrForceConservativeGCIfNeeded();
+    threadState()->scheduleGCIfNeeded();
 
     // 3. Try to allocate from a free list.
     Address result = allocateFromFreeList(allocationSize, gcInfoIndex);
@@ -1110,7 +1110,7 @@ Address ThreadHeap::allocateLargeObject(size_t size, size_t gcInfoIndex)
 
     // 1. Check if we should trigger a GC.
     updateRemainingAllocationSize();
-    m_threadState->scheduleGCOrForceConservativeGCIfNeeded();
+    m_threadState->scheduleGCIfNeeded();
 
     // 2. Try to sweep large objects more than allocationSize bytes
     // before allocating a new large object.
@@ -2308,7 +2308,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // Check if we successfully parked the other threads.  If not we bail out of
     // the GC.
     if (!gcScope.allThreadsParked()) {
-        state->scheduleGC();
+        state->scheduleGCIfNeeded();
         return;
     }
 
@@ -2475,6 +2475,12 @@ void Heap::collectAllGarbage()
     // pointing to other heap allocated objects.
     for (int i = 0; i < 5; ++i)
         collectGarbage(ThreadState::NoHeapPointersOnStack);
+}
+
+double Heap::estimatedMarkingTime()
+{
+    // FIXME: Implement heuristics
+    return 0.0;
 }
 
 void ThreadHeap::prepareHeapForTermination()

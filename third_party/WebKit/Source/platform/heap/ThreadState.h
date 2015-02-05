@@ -213,14 +213,16 @@ public:
     // See setGCState() for possible state transitions.
     enum GCState {
         NoGCScheduled,
-        GCScheduled,
+        IdleGCScheduled,
+        PreciseGCScheduled,
         GCScheduledForTesting,
         StoppingOtherThreads,
         GCRunning,
         EagerSweepScheduled,
         LazySweepScheduled,
         Sweeping,
-        SweepingAndNextGCScheduled,
+        SweepingAndIdleGCScheduled,
+        SweepingAndPreciseGCScheduled,
     };
 
     // The NoAllocationScope class is used in debug mode to catch unwanted
@@ -320,14 +322,17 @@ public:
 
     void didV8GC();
 
-    void scheduleGC();
-    void scheduleGCOrForceConservativeGCIfNeeded();
+    void performIdleGC(double deadlineSeconds);
+
+    void scheduleIdleGC();
+    void schedulePreciseGC();
+    void scheduleGCIfNeeded();
     void setGCState(GCState);
     GCState gcState() const;
     bool isInGC() const { return gcState() == GCRunning; }
     bool isSweepingInProgress() const
     {
-        return gcState() == Sweeping || gcState() == SweepingAndNextGCScheduled;
+        return gcState() == Sweeping || gcState() == SweepingAndPreciseGCScheduled || gcState() == SweepingAndIdleGCScheduled;
     }
 
     void preGC();
@@ -573,6 +578,8 @@ public:
         m_traceDOMWrappers = traceDOMWrappers;
     }
 
+    double collectionRate() const { return m_collectionRate; }
+
 private:
     ThreadState();
     ~ThreadState();
@@ -588,14 +595,15 @@ private:
         m_safePointScopeMarker = nullptr;
     }
 
-    // shouldGC and shouldForceConservativeGC implement the heuristics
-    // that are used to determine when to collect garbage. If
-    // shouldForceConservativeGC returns true, we force the garbage
+    // shouldSchedule{Precise,Idle}GC and shouldForceConservativeGC
+    // implement the heuristics that are used to determine when to collect garbage.
+    // If shouldForceConservativeGC returns true, we force the garbage
     // collection immediately. Otherwise, if shouldGC returns true, we
     // record that we should garbage collect the next time we return
     // to the event loop. If both return false, we don't need to
     // collect garbage at this point.
-    bool shouldGC();
+    bool shouldScheduleIdleGC();
+    bool shouldSchedulePreciseGC();
     bool shouldForceConservativeGC();
     void runScheduledGC(StackState);
 
@@ -635,6 +643,7 @@ private:
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
+    bool m_hasPendingIdleTask;
     bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;

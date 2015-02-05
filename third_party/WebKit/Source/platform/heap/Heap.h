@@ -978,6 +978,7 @@ public:
     static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
+    static double estimatedMarkingTime();
 
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted

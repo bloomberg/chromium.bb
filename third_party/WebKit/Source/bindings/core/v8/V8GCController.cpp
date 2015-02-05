@@ -437,7 +437,7 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();
 
-        // Schedule a precise GC to avoid the following scenario:
+        // Schedule an Oilpan GC to avoid the following scenario:
         // (1) A DOM object X holds a v8::Persistent to a V8 object.
         //     Assume that X is small but the V8 object is huge.
         //     The v8::Persistent is released when X is destructed.
@@ -451,7 +451,11 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
         //     the DOM objects are not collected forever. (Note that
         //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
         // (6) V8 hits OOM.
-        ThreadState::current()->scheduleGC();
+#if ENABLE(OILPAN)
+        ThreadState::current()->scheduleIdleGC();
+#else
+        ThreadState::current()->schedulePreciseGC();
+#endif
     }
 }
 

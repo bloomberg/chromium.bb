@@ -33,10 +33,12 @@
 
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "platform/TraceLocation.h"
 #include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -277,6 +279,7 @@ ThreadState::ThreadState()
     , m_safePointScopeMarker(nullptr)
     , m_atSafePoint(false)
     , m_interruptors()
+    , m_hasPendingIdleTask(false)
     , m_didV8GCAfterLastGC(false)
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
@@ -672,12 +675,30 @@ Mutex& ThreadState::globalRootsMutex()
 
 // FIXME: We should improve the GC heuristics.
 // These heuristics affect performance significantly.
-bool ThreadState::shouldGC()
+bool ThreadState::shouldScheduleIdleGC()
 {
+#if ENABLE(OILPAN)
     // Trigger garbage collection on a 50% increase in size since the last GC,
     // but not for less than 512 KB.
     size_t newSize = Heap::allocatedObjectSize();
     return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
+#else
+    return false;
+#endif
+}
+
+// FIXME: We should improve the GC heuristics.
+// These heuristics affect performance significantly.
+bool ThreadState::shouldSchedulePreciseGC()
+{
+#if ENABLE(OILPAN)
+    return false;
+#else
+    // Trigger garbage collection on a 50% increase in size since the last GC,
+    // but not for less than 512 KB.
+    size_t newSize = Heap::allocatedObjectSize();
+    return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
+#endif
 }
 
 // FIXME: We should improve the GC heuristics.
@@ -704,7 +725,7 @@ bool ThreadState::shouldForceConservativeGC()
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
-void ThreadState::scheduleGCOrForceConservativeGCIfNeeded()
+void ThreadState::scheduleGCIfNeeded()
 {
     checkThread();
     // Allocation is allowed during sweeping, but those allocations should not
@@ -713,20 +734,58 @@ void ThreadState::scheduleGCOrForceConservativeGCIfNeeded()
         return;
     ASSERT(!sweepForbidden());
 
-    if (!shouldGC())
-        return;
     if (shouldForceConservativeGC())
         Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithoutSweep);
-    else
-        scheduleGC();
+    else if (shouldSchedulePreciseGC())
+        schedulePreciseGC();
+    else if (shouldScheduleIdleGC())
+        scheduleIdleGC();
 }
 
-void ThreadState::scheduleGC()
+void ThreadState::performIdleGC(double deadlineSeconds)
 {
-    if (isSweepingInProgress())
-        setGCState(SweepingAndNextGCScheduled);
-    else
-        setGCState(GCScheduled);
+    ASSERT(isMainThread());
+
+    m_hasPendingIdleTask = false;
+
+    if (gcState() != IdleGCScheduled)
+        return;
+
+    double idleTimeInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
+    if (idleTimeInSeconds <= Heap::estimatedMarkingTime()) {
+        scheduleIdleGC();
+        return;
+    }
+
+    // FIXME: Make this precise once idle task is guaranteed to be not in nested loop.
+    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep);
+}
+
+void ThreadState::scheduleIdleGC()
+{
+    if (!isMainThread())
+        return;
+
+    if (isSweepingInProgress()) {
+        setGCState(SweepingAndIdleGCScheduled);
+        return;
+    }
+
+    if (!m_hasPendingIdleTask) {
+        m_hasPendingIdleTask = true;
+        Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
+    }
+    setGCState(IdleGCScheduled);
+}
+
+void ThreadState::schedulePreciseGC()
+{
+    if (isSweepingInProgress()) {
+        setGCState(SweepingAndPreciseGCScheduled);
+        return;
+    }
+
+    setGCState(PreciseGCScheduled);
 }
 
 void ThreadState::setGCState(GCState gcState)
@@ -734,17 +793,18 @@ void ThreadState::setGCState(GCState gcState)
     switch (gcState) {
     case NoGCScheduled:
         checkThread();
-        RELEASE_ASSERT(m_gcState == Sweeping);
+        RELEASE_ASSERT(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
         break;
-    case GCScheduled:
+    case IdleGCScheduled:
+    case PreciseGCScheduled:
     case GCScheduledForTesting:
         checkThread();
-        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == GCScheduled || m_gcState == GCScheduledForTesting || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndNextGCScheduled);
+        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case StoppingOtherThreads:
         checkThread();
-        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == GCScheduled || m_gcState == GCScheduledForTesting || m_gcState == Sweeping || m_gcState == SweepingAndNextGCScheduled);
+        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case GCRunning:
@@ -760,9 +820,10 @@ void ThreadState::setGCState(GCState gcState)
         checkThread();
         RELEASE_ASSERT(m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
         break;
-    case SweepingAndNextGCScheduled:
+    case SweepingAndIdleGCScheduled:
+    case SweepingAndPreciseGCScheduled:
         checkThread();
-        RELEASE_ASSERT(m_gcState == Sweeping || m_gcState == SweepingAndNextGCScheduled || m_gcState == StoppingOtherThreads);
+        RELEASE_ASSERT(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled || m_gcState == StoppingOtherThreads);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -784,12 +845,21 @@ void ThreadState::didV8GC()
 void ThreadState::runScheduledGC(StackState stackState)
 {
     checkThread();
-    if (stackState == NoHeapPointersOnStack) {
-        if (gcState() == GCScheduledForTesting) {
-            Heap::collectAllGarbage();
-        } else if (gcState() == GCScheduled) {
-            Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep);
-        }
+    if (stackState != NoHeapPointersOnStack)
+        return;
+
+    switch (gcState()) {
+    case GCScheduledForTesting:
+        Heap::collectAllGarbage();
+        break;
+    case PreciseGCScheduled:
+        Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep);
+        break;
+    case IdleGCScheduled:
+        // Idle time GC will be scheduled by Blink Scheduler.
+        break;
+    default:
+        break;
     }
 }
 
@@ -843,7 +913,20 @@ void ThreadState::completeSweep()
         m_collectionRate = 1.0;
     }
 
-    setGCState(gcState() == Sweeping ? NoGCScheduled : GCScheduled);
+    switch (gcState()) {
+    case Sweeping:
+        setGCState(NoGCScheduled);
+        break;
+    case SweepingAndPreciseGCScheduled:
+        setGCState(PreciseGCScheduled);
+        break;
+    case SweepingAndIdleGCScheduled:
+        setGCState(NoGCScheduled);
+        scheduleIdleGC();
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 void ThreadState::prepareRegionTree()
