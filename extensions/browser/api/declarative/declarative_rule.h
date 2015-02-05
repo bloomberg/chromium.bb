@@ -23,6 +23,7 @@
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/common/api/events.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/host_id.h"
 
 namespace base {
 class Time;
@@ -152,6 +153,7 @@ class DeclarativeActionSet {
   // the extension API.
   static scoped_ptr<DeclarativeActionSet> Create(
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       const AnyVector& actions,
       std::string* error,
@@ -230,6 +232,7 @@ class DeclarativeRule {
   static scoped_ptr<DeclarativeRule> Create(
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       base::Time extension_installation_time,
       linked_ptr<JsonRule> rule,
@@ -366,6 +369,7 @@ template<typename ActionT>
 scoped_ptr<DeclarativeActionSet<ActionT> >
 DeclarativeActionSet<ActionT>::Create(
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     const AnyVector& actions,
     std::string* error,
@@ -378,7 +382,8 @@ DeclarativeActionSet<ActionT>::Create(
        i != actions.end(); ++i) {
     CHECK(i->get());
     scoped_refptr<const ActionT> action =
-        ActionT::Create(browser_context, extension, **i, error, bad_message);
+        ActionT::Create(
+            browser_context, host_id, extension, **i, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>();
     result.push_back(action);
@@ -455,6 +460,7 @@ scoped_ptr<DeclarativeRule<ConditionT, ActionT> >
 DeclarativeRule<ConditionT, ActionT>::Create(
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     base::Time extension_installation_time,
     linked_ptr<JsonRule> rule,
@@ -470,8 +476,8 @@ DeclarativeRule<ConditionT, ActionT>::Create(
 
   bool bad_message = false;
   scoped_ptr<ActionSet> actions =
-      ActionSet::Create(
-          browser_context, extension, rule->actions, error, &bad_message);
+      ActionSet::Create(browser_context, host_id, extension,
+                        rule->actions, error, &bad_message);
   if (bad_message) {
     // TODO(battre) Export concept of bad_message to caller, the extension
     // should be killed in case it is true.

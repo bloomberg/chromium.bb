@@ -88,6 +88,7 @@
         'common/cast/cast_cert_validator.h',
         'common/common_manifest_handlers.cc',
         'common/common_manifest_handlers.h',
+        'common/host_id.h',
         'common/csp_validator.cc',
         'common/csp_validator.h',
         'common/dom_action_types.h',

@@ -180,7 +180,8 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
     DCHECK(registered_rules.find(rule_id) == registered_rules.end());
 
     scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
-        url_matcher_.condition_factory(), browser_context(), extension,
+        url_matcher_.condition_factory(), browser_context(),
+        HostID(HostID::EXTENSIONS, extension->id()), extension,
         extension_installation_time, *rule,
         base::Bind(&Checker, base::Unretained(extension)), &error));
     if (!error.empty()) {
