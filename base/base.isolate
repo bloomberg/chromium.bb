@@ -94,5 +94,9 @@
         ],
       },
     }],
+    # Workaround for https://code.google.com/p/swarming/issues/detail?id=211
+    ['asan==0 or lsan==0 or msan==0 or tsan==0', {
+      'variables': {},
+    }],
   ],
 }
