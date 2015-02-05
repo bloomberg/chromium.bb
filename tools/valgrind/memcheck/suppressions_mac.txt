@@ -259,3 +259,13 @@
    fun:_ZN4base3mac30PathForFrameworkBundleResourceEPK10__CFString
    fun:_ZN3gin13IsolateHolder14LoadV8SnapshotEv
 }
+{
+   bug_455533
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:_ZNK3net15X509Certificate24CreateOSCertChainForCertEv
+   fun:_ZN3net17CertVerifyProcMac14VerifyInternalEPNS_15X509CertificateERKSsiPNS_6CRLSetERKSt6vectorI13scoped_refptrIS1_ESaIS9_EEPNS_16CertVerifyResultE
+   fun:_ZN3net14CertVerifyProc6VerifyEPNS_15X509CertificateERKSsiPNS_6CRLSetERKSt6vectorI13scoped_refptrIS1_ESaIS9_EEPNS_16CertVerifyResultE
+}
