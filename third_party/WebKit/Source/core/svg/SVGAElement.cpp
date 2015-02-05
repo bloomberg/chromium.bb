@@ -118,9 +118,7 @@ RenderObject* SVGAElement::createRenderer(RenderStyle*)
 void SVGAElement::defaultEventHandler(Event* event)
 {
     if (isLink()) {
-        Node* target = event->target() ? event->target()->toNode() : 0;
-        bool hasFocus = focused() || (target && target->focused());
-        if (hasFocus && isEnterKeyKeypressEvent(event)) {
+        if (focused() && isEnterKeyKeydownEvent(event)) {
             event->setDefaultHandled();
             dispatchSimulatedClick(event);
             return;
