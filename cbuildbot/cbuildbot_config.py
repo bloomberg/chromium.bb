@@ -1862,7 +1862,7 @@ incremental_beaglebone.add_config('beaglebone-incremental',
 
 _config.add_raw_config('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
-  build_type=constants.REFRESH_PACKAGES_TYPE,
+  builder_class_name='misc_builders.RefreshPackagesBuilder',
   description='Check upstream Gentoo for package updates',
 )
 

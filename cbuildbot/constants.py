@@ -417,9 +417,6 @@ BRANCH_UTIL_CONFIG = 'branch-util'
 CHROOT_BUILDER_TYPE = 'chroot'
 CHROOT_BUILDER_BOARD = 'amd64-host'
 
-# Build that refreshes the online Portage package status spreadsheet.
-REFRESH_PACKAGES_TYPE = 'refresh_packages'
-
 VALID_BUILD_TYPES = (
     PALADIN_TYPE,
     INCREMENTAL_TYPE,
@@ -430,7 +427,6 @@ VALID_BUILD_TYPES = (
     CHROME_PFQ_TYPE,
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
-    REFRESH_PACKAGES_TYPE,
     CREATE_BRANCH_TYPE,
     PAYLOADS_TYPE,
     PROJECT_SDK_TYPE,

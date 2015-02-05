@@ -22,7 +22,6 @@ from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import release_stages
-from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
@@ -179,7 +178,7 @@ class SimpleBuilder(generic_builders.Builder):
         lambda: self._RunHWTests(builder_run, board),
     ])
 
-  def _RunSetupBoard(self):
+  def RunSetupBoard(self):
     """Run the SetupBoard stage for all child configs and boards."""
     for builder_run in self._run.GetUngroupedBuilderRuns():
       for board in builder_run.config.boards:
@@ -201,12 +200,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(sdk_stages.SDKTestStage)
     self._RunStage(artifact_stages.UploadPrebuiltsStage,
                    constants.CHROOT_BUILDER_BOARD, version=version)
-
-  def _RunRefreshPackagesTypeBuild(self):
-    """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""
-    self._RunStage(build_stages.InitSDKStage)
-    self._RunSetupBoard()
-    self._RunStage(report_stages.RefreshPackageStatusStage)
 
   def _RunMasterPaladinOrChromePFQBuild(self):
     """Runs through the stages of the paladin or chrome PFQ master build."""
@@ -231,7 +224,7 @@ class SimpleBuilder(generic_builders.Builder):
     """Runs through the stages of a non-special-type build."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.UprevStage)
-    self._RunSetupBoard()
+    self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
 
@@ -299,8 +292,6 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(branch_stages.BranchUtilStage)
     elif self._run.config.build_type == constants.CHROOT_BUILDER_TYPE:
       self._RunChrootBuilderTypeBuild()
-    elif self._run.config.build_type == constants.REFRESH_PACKAGES_TYPE:
-      self._RunRefreshPackagesTypeBuild()
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or
            self._run.config.build_type == constants.CHROME_PFQ_TYPE) and
           self._run.config.master):

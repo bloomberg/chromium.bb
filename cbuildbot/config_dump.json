@@ -42500,7 +42500,7 @@
             "x86-generic",
             "arm-generic"
         ],
-        "build_type": "refresh_packages",
+        "builder_class_name": "misc_builders.RefreshPackagesBuilder",
         "description": "Check upstream Gentoo for package updates",
         "name": "refresh-packages"
     },
