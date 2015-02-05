@@ -690,7 +690,11 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
 
   ServiceWorkerProviderHost* provider_host =
       GetContext()->GetProviderHost(render_process_id_, provider_id);
-  DCHECK(provider_host);
+  if (!provider_host) {
+    BadMessageReceived();
+    return;
+  }
+
   provider_host->SetReadyToSendMessagesToWorker(thread_id);
 
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
