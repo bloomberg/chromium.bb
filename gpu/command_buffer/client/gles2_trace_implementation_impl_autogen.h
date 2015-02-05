@@ -500,6 +500,15 @@ void GLES2TraceImplementation::GetActiveUniform(GLuint program,
   gl_->GetActiveUniform(program, index, bufsize, length, size, type, name);
 }
 
+void GLES2TraceImplementation::GetActiveUniformBlockName(GLuint program,
+                                                         GLuint index,
+                                                         GLsizei bufsize,
+                                                         GLsizei* length,
+                                                         char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetActiveUniformBlockName");
+  gl_->GetActiveUniformBlockName(program, index, bufsize, length, name);
+}
+
 void GLES2TraceImplementation::GetAttachedShaders(GLuint program,
                                                   GLsizei maxcount,
                                                   GLsizei* count,
@@ -651,6 +660,12 @@ void GLES2TraceImplementation::GetTexParameteriv(GLenum target,
                                                  GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetTexParameteriv");
   gl_->GetTexParameteriv(target, pname, params);
+}
+
+GLuint GLES2TraceImplementation::GetUniformBlockIndex(GLuint program,
+                                                      const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformBlockIndex");
+  return gl_->GetUniformBlockIndex(program, name);
 }
 
 void GLES2TraceImplementation::GetUniformfv(GLuint program,
@@ -1645,6 +1660,14 @@ void GLES2TraceImplementation::GetProgramInfoCHROMIUM(GLuint program,
                                                       void* info) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetProgramInfoCHROMIUM");
   gl_->GetProgramInfoCHROMIUM(program, bufsize, size, info);
+}
+
+void GLES2TraceImplementation::GetUniformBlocksCHROMIUM(GLuint program,
+                                                        GLsizei bufsize,
+                                                        GLsizei* size,
+                                                        void* info) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformBlocksCHROMIUM");
+  gl_->GetUniformBlocksCHROMIUM(program, bufsize, size, info);
 }
 
 GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {

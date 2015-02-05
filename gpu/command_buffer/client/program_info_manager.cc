@@ -4,8 +4,6 @@
 
 #include "gpu/command_buffer/client/program_info_manager.h"
 
-#include "base/numerics/safe_math.h"
-
 namespace {
 
 template<typename T> static T LocalGetAs(
@@ -249,6 +247,8 @@ void ProgramInfoManager::Program::UpdateES3UniformBlocks(
   uniform_blocks_.clear();
   active_uniform_block_max_name_length_ = 0;
 
+  // |result| comes from GPU process. We consider it trusted data. Therefore,
+  // no need to check for overflows as the GPU side did the checks already.
   uint32_t header_size = sizeof(UniformBlocksHeader);
   DCHECK_GE(result.size(), header_size);
   const UniformBlocksHeader* header = LocalGetAs<const UniformBlocksHeader*>(
@@ -536,32 +536,43 @@ GLuint ProgramInfoManager::GetUniformBlockIndex(
       return info->GetUniformBlockIndex(name);
     }
   }
-  return false;
-  // TODO(zmo): return gl->GetUniformBlockIndexHelper(program, name);
+  return gl->GetUniformBlockIndexHelper(program, name);
 }
 
 bool ProgramInfoManager::GetActiveUniformBlockName(
     GLES2Implementation* gl, GLuint program, GLuint index,
     GLsizei buf_size, GLsizei* length, char* name) {
+  DCHECK_LE(0, buf_size);
+  if (!name) {
+    buf_size = 0;
+  }
   {
     base::AutoLock auto_lock(lock_);
     Program* info = GetProgramInfo(gl, program, kES3UniformBlocks);
     if (info) {
       const Program::UniformBlock* uniform_block = info->GetUniformBlock(index);
-      if (uniform_block && buf_size >= 1) {
-        GLsizei written_size = std::min(
-            buf_size, static_cast<GLsizei>(uniform_block->name.size()) + 1);
-        if (length) {
-          *length = written_size - 1;
+      if (uniform_block) {
+        if (buf_size == 0) {
+          if (length) {
+            *length = 0;
+          }
+        } else if (length || name) {
+          GLsizei max_size = std::min(
+              buf_size - 1, static_cast<GLsizei>(uniform_block->name.size()));
+          if (length) {
+            *length = max_size;
+          }
+          if (name) {
+            memcpy(name, uniform_block->name.data(), max_size);
+            name[max_size] = '\0';
+          }
         }
-        memcpy(name, uniform_block->name.c_str(), written_size);
         return true;
       }
     }
   }
-  return false;
-  // TODO(zmo): return gl->GetActiveUniformBlockNameHelper(
-  //                program, index, buf_size, length, name);
+  return gl->GetActiveUniformBlockNameHelper(
+      program, index, buf_size, length, name);
 }
 
 bool ProgramInfoManager::GetActiveUniformBlockiv(

@@ -1163,16 +1163,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLuint client_id, GLint location, const char* name);
 
   error::Error GetAttribLocationHelper(
-    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
-    const std::string& name_str);
+      GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+      const std::string& name_str);
 
   error::Error GetUniformLocationHelper(
-    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
-    const std::string& name_str);
+      GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+      const std::string& name_str);
 
   error::Error GetFragDataLocationHelper(
-    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
-    const std::string& name_str);
+      GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+      const std::string& name_str);
 
   // Wrapper for glShaderSource.
   void DoShaderSource(
@@ -8201,6 +8201,39 @@ error::Error GLES2DecoderImpl::HandleGetFragDataLocation(
       c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
 
+error::Error GLES2DecoderImpl::HandleGetUniformBlockIndex(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetUniformBlockIndex& c =
+      *static_cast<const gles2::cmds::GetUniformBlockIndex*>(cmd_data);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  GLuint* index = GetSharedMemoryAs<GLuint*>(
+      c.index_shm_id, c.index_shm_offset, sizeof(GLuint));
+  if (!index) {
+    return error::kOutOfBounds;
+  }
+  // Require the client to init this in case the context is lost and we are no
+  // longer executing commands.
+  if (*index != GL_INVALID_INDEX) {
+    return error::kGenericError;
+  }
+  Program* program = GetProgramInfoNotShader(
+      c.program, "glGetUniformBlockIndex");
+  if (!program) {
+    return error::kNoError;
+  }
+  *index = glGetUniformBlockIndex(program->service_id(), name_str.c_str());
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
                                                const void* cmd_data) {
   const gles2::cmds::GetString& c =
@@ -9697,6 +9730,59 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockName(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetActiveUniformBlockName& c =
+      *static_cast<const gles2::cmds::GetActiveUniformBlockName*>(cmd_data);
+  GLuint program_id = c.program;
+  GLuint index = c.index;
+  uint32 name_bucket_id = c.name_bucket_id;
+  typedef cmds::GetActiveUniformBlockName::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (*result != 0) {
+    return error::kInvalidArguments;
+  }
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetActiveUniformBlockName");
+  if (!program) {
+    return error::kNoError;
+  }
+  GLuint service_id = program->service_id();
+  GLint link_status = GL_FALSE;
+  glGetProgramiv(service_id, GL_LINK_STATUS, &link_status);
+  if (link_status != GL_TRUE) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+        "glGetActiveActiveUniformBlockName", "program not linked");
+    return error::kNoError;
+  }
+  GLint max_length = 0;
+  glGetProgramiv(
+      service_id, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_length);
+  // Increase one so &buffer[0] is always valid.
+  GLsizei buf_size = static_cast<GLsizei>(max_length) + 1;
+  std::vector<char> buffer(buf_size);
+  GLsizei length = 0;
+  glGetActiveUniformBlockName(
+      service_id, index, buf_size, &length, &buffer[0]);
+  if (length == 0) {
+    *result = 0;
+    return error::kNoError;
+  }
+  *result = 1;
+  Bucket* bucket = CreateBucket(name_bucket_id);
+  DCHECK_GT(buf_size, length);
+  DCHECK_EQ(0, buffer[length]);
+  bucket->SetFromString(&buffer[0]);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetActiveAttrib(uint32 immediate_data_size,
                                                      const void* cmd_data) {
   const gles2::cmds::GetActiveAttrib& c =
@@ -10028,6 +10114,25 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
     return error::kNoError;
   }
   program->GetProgramInfo(program_manager(), bucket);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetUniformBlocksCHROMIUM(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetUniformBlocksCHROMIUM& c =
+      *static_cast<const gles2::cmds::GetUniformBlocksCHROMIUM*>(cmd_data);
+  GLuint program_id = static_cast<GLuint>(c.program);
+  uint32 bucket_id = c.bucket_id;
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(sizeof(UniformBlocksHeader));  // in case we fail.
+  Program* program = NULL;
+  program = GetProgram(program_id);
+  if (!program || !program->IsValid()) {
+    return error::kNoError;
+  }
+  program->GetUniformBlocks(bucket);
   return error::kNoError;
 }
 

@@ -220,6 +220,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetActiveUniformHelper(
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
+  void GetUniformBlocksCHROMIUMHelper(
+      GLuint program, std::vector<int8>* result);
+  GLuint GetUniformBlockIndexHelper(GLuint program, const char* name);
+  bool GetActiveUniformBlockNameHelper(
+      GLuint program, GLuint index, GLsizei bufsize,
+      GLsizei* length, char* name);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

@@ -1095,6 +1095,24 @@ TEST_F(GLES2FormatTest, GetActiveUniform) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetActiveUniformBlockName) {
+  cmds::GetActiveUniformBlockName& cmd =
+      *GetBufferAs<cmds::GetActiveUniformBlockName>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetActiveUniformBlockName::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.result_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetAttachedShaders) {
   cmds::GetAttachedShaders& cmd = *GetBufferAs<cmds::GetAttachedShaders>();
   void* next_cmd =
@@ -1412,6 +1430,21 @@ TEST_F(GLES2FormatTest, GetTexParameteriv) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   EXPECT_EQ(static_cast<uint32_t>(13), cmd.params_shm_id);
   EXPECT_EQ(static_cast<uint32_t>(14), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetUniformBlockIndex) {
+  cmds::GetUniformBlockIndex& cmd = *GetBufferAs<cmds::GetUniformBlockIndex>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetUniformBlockIndex::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.index_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.index_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -3660,6 +3693,19 @@ TEST_F(GLES2FormatTest, GetProgramInfoCHROMIUM) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12));
   EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramInfoCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetUniformBlocksCHROMIUM) {
+  cmds::GetUniformBlocksCHROMIUM& cmd =
+      *GetBufferAs<cmds::GetUniformBlocksCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetUniformBlocksCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);

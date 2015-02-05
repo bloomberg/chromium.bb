@@ -2034,6 +2034,15 @@ _FUNCTION_INFO = {
       'uint32_t type',
     ],
   },
+  'GetActiveUniformBlockName': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, GLuint index, uint32_t name_bucket_id, '
+        'void* result',
+    'result': ['int32_t'],
+    'unsafe': True,
+  },
   'GetAttachedShaders': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],
@@ -2204,7 +2213,27 @@ _FUNCTION_INFO = {
     'get_len_enum': 'GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE',
     'unit_test': False,
     'extension': True,
-    },
+  },
+  'GetUniformBlockIndex': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, uint32_t name_bucket_id, GLuint* index',
+    'result': ['GLuint'],
+    'error_return': 'GL_INVALID_INDEX',
+    'unsafe': True,
+  },
+  'GetUniformBlocksCHROMIUM': {
+    'type': 'Custom',
+    'expectation': False,
+    'impl_func': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+    'cmd_args': 'GLidProgram program, uint32_t bucket_id',
+    'result': ['uint32_t'],
+    'unsafe': True,
+  },
   'GetUniformfv': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],

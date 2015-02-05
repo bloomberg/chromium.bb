@@ -702,6 +702,18 @@ void GetActiveUniform(GLuint program,
   }
 }
 
+void GetActiveUniformBlockName(GLuint program,
+                               GLuint index,
+                               uint32_t name_bucket_id,
+                               uint32_t result_shm_id,
+                               uint32_t result_shm_offset) {
+  gles2::cmds::GetActiveUniformBlockName* c =
+      GetCmdSpace<gles2::cmds::GetActiveUniformBlockName>();
+  if (c) {
+    c->Init(program, index, name_bucket_id, result_shm_id, result_shm_offset);
+  }
+}
+
 void GetAttachedShaders(GLuint program,
                         uint32_t result_shm_id,
                         uint32_t result_shm_offset,
@@ -918,6 +930,17 @@ void GetTexParameteriv(GLenum target,
       GetCmdSpace<gles2::cmds::GetTexParameteriv>();
   if (c) {
     c->Init(target, pname, params_shm_id, params_shm_offset);
+  }
+}
+
+void GetUniformBlockIndex(GLuint program,
+                          uint32_t name_bucket_id,
+                          uint32_t index_shm_id,
+                          uint32_t index_shm_offset) {
+  gles2::cmds::GetUniformBlockIndex* c =
+      GetCmdSpace<gles2::cmds::GetUniformBlockIndex>();
+  if (c) {
+    c->Init(program, name_bucket_id, index_shm_id, index_shm_offset);
   }
 }
 
@@ -2140,6 +2163,14 @@ void RequestExtensionCHROMIUM(uint32_t bucket_id) {
 void GetProgramInfoCHROMIUM(GLuint program, uint32_t bucket_id) {
   gles2::cmds::GetProgramInfoCHROMIUM* c =
       GetCmdSpace<gles2::cmds::GetProgramInfoCHROMIUM>();
+  if (c) {
+    c->Init(program, bucket_id);
+  }
+}
+
+void GetUniformBlocksCHROMIUM(GLuint program, uint32_t bucket_id) {
+  gles2::cmds::GetUniformBlocksCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::GetUniformBlocksCHROMIUM>();
   if (c) {
     c->Init(program, bucket_id);
   }

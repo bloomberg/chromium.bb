@@ -751,6 +751,7 @@ TEST_F(GLES2ImplementationTest, GenTransformFeedbacks) {
 }
 // TODO(zmo): Implement unit test for GetActiveAttrib
 // TODO(zmo): Implement unit test for GetActiveUniform
+// TODO(zmo): Implement unit test for GetActiveUniformBlockName
 // TODO(zmo): Implement unit test for GetAttachedShaders
 // TODO(zmo): Implement unit test for GetAttribLocation
 
@@ -983,6 +984,7 @@ TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
+// TODO(zmo): Implement unit test for GetUniformBlockIndex
 // TODO(zmo): Implement unit test for GetUniformfv
 // TODO(zmo): Implement unit test for GetUniformiv
 // TODO(zmo): Implement unit test for GetUniformLocation
