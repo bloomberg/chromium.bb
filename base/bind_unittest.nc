@@ -190,7 +190,7 @@ void WontCompile() {
   weak_ptr_with_non_void_return_type.Run();
 }
 
-#elif defined(NCTEST_DISALLOW_ASSIGN_DIFFERENT_TYPES)  // [r"fatal error: no viable conversion from 'Callback<typename internal::BindState<typename internal::FunctorTraits<void \(\*\)\(int\)>::RunnableType, typename internal::FunctorTraits<void \(\*\)\(int\)>::RunType, void \(\)>::UnboundRunType>' to 'Callback<void \(\)>'"]
+#elif defined(NCTEST_DISALLOW_ASSIGN_DIFFERENT_TYPES)  // [r"fatal error: no viable conversion from 'Callback<typename internal::BindState<typename internal::FunctorTraits<void \(\*\)\(int\)>::RunnableType, typename internal::FunctorTraits<void \(\*\)\(int\)>::RunType, internal::TypeList<> >::UnboundRunType>' to 'Callback<void \(\)>'"]
 
 // Bind result cannot be assigned to Callbacks with a mismatching type.
 void WontCompile() {
