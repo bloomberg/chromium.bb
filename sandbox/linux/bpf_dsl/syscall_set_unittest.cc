@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
+#include "sandbox/linux/bpf_dsl/syscall_set.h"
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ const SyscallSet kSyscallSets[] = {
     SyscallSet::InvalidOnly(),
 };
 
-SANDBOX_TEST(SyscallIterator, Monotonous) {
+SANDBOX_TEST(SyscallSet, Monotonous) {
   for (const SyscallSet& set : kSyscallSets) {
     uint32_t prev = 0;
     bool have_prev = false;
@@ -54,7 +54,7 @@ void AssertRange(uint32_t min, uint32_t max) {
   SANDBOX_ASSERT(prev == max);
 }
 
-SANDBOX_TEST(SyscallIterator, ValidSyscallRanges) {
+SANDBOX_TEST(SyscallSet, ValidSyscallRanges) {
   AssertRange(MIN_SYSCALL, MAX_PUBLIC_SYSCALL);
 #if defined(__arm__)
   AssertRange(MIN_PRIVATE_SYSCALL, MAX_PRIVATE_SYSCALL);
@@ -62,7 +62,7 @@ SANDBOX_TEST(SyscallIterator, ValidSyscallRanges) {
 #endif
 }
 
-SANDBOX_TEST(SyscallIterator, InvalidSyscalls) {
+SANDBOX_TEST(SyscallSet, InvalidSyscalls) {
   static const uint32_t kExpected[] = {
 #if defined(__mips__)
     0,
@@ -93,19 +93,19 @@ SANDBOX_TEST(SyscallIterator, InvalidSyscalls) {
   }
 }
 
-SANDBOX_TEST(SyscallIterator, ValidOnlyIsOnlyValid) {
+SANDBOX_TEST(SyscallSet, ValidOnlyIsOnlyValid) {
   for (uint32_t sysnum : SyscallSet::ValidOnly()) {
     SANDBOX_ASSERT(SyscallSet::IsValid(sysnum));
   }
 }
 
-SANDBOX_TEST(SyscallIterator, InvalidOnlyIsOnlyInvalid) {
+SANDBOX_TEST(SyscallSet, InvalidOnlyIsOnlyInvalid) {
   for (uint32_t sysnum : SyscallSet::InvalidOnly()) {
     SANDBOX_ASSERT(!SyscallSet::IsValid(sysnum));
   }
 }
 
-SANDBOX_TEST(SyscallIterator, AllIsValidOnlyPlusInvalidOnly) {
+SANDBOX_TEST(SyscallSet, AllIsValidOnlyPlusInvalidOnly) {
   std::vector<uint32_t> merged;
   const SyscallSet valid_only = SyscallSet::ValidOnly();
   const SyscallSet invalid_only = SyscallSet::InvalidOnly();

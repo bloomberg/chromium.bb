@@ -16,11 +16,11 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
+#include "sandbox/linux/bpf_dsl/syscall_set.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
-#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
 namespace sandbox {
 namespace bpf_dsl {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_ITERATOR_H__
-#define SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_ITERATOR_H__
+#ifndef SANDBOX_LINUX_BPF_DSL_SYSCALL_SET_H__
+#define SANDBOX_LINUX_BPF_DSL_SYSCALL_SET_H__
 
 #include <stdint.h>
 
@@ -13,8 +13,6 @@
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-
-// TODO(mdempsky): Rename this header to syscall_set.h.
 
 // Iterates over the entire system call range from 0..0xFFFFFFFFu. This
 // iterator is aware of how system calls look like and will skip quickly
@@ -102,4 +100,4 @@ SANDBOX_EXPORT bool operator!=(const SyscallSet::Iterator& lhs,
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_ITERATOR_H__
+#endif  // SANDBOX_LINUX_BPF_DSL_SYSCALL_SET_H__

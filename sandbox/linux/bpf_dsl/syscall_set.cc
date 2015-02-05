@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
+#include "sandbox/linux/bpf_dsl/syscall_set.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
