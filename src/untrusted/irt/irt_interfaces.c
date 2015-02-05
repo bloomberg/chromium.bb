@@ -124,6 +124,17 @@ static const struct nacl_irt_interface irt_interfaces[] = {
    */
   { NACL_IRT_CODE_DATA_ALLOC_v0_1, &nacl_irt_code_data_alloc,
     sizeof(nacl_irt_code_data_alloc), non_pnacl_filter },
+  /*
+   * TODO(mseaborn): Ideally this interface should be hidden in processes
+   * that aren't PNaCl sandboxed translator processes.  However, we haven't
+   * yet plumbed though a flag to indicate when a NaCl process is a PNaCl
+   * translator process.  The risk of an app accidentally depending on the
+   * presence of this interface is much lower than for other non-stable IRT
+   * interfaces, because this interface is not useful to apps.
+   */
+  { NACL_IRT_PRIVATE_PNACL_TRANSLATOR_LINK_v0_1,
+    &nacl_irt_private_pnacl_translator_link,
+    sizeof(nacl_irt_private_pnacl_translator_link), NULL },
 };
 
 size_t nacl_irt_query_core(const char *interface_ident,

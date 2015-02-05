@@ -40,6 +40,7 @@ static_library("irt_core_lib") {
     "irt_malloc.c",
     "irt_memory.c",
     "irt_mutex.c",
+    "irt_pnacl_translator.c",
     "irt_private_pthread.c",
     "irt_private_tls.c",
     "irt_query_list.c",
@@ -53,5 +54,7 @@ static_library("irt_core_lib") {
     "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/platform:platform",
+    "//native_client/src/shared/srpc:srpc",
+    "//native_client/src/untrusted/nacl:imc_syscalls",
   ]
 }

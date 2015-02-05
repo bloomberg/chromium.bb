@@ -44,6 +44,7 @@ irt_support_sources = [
     'irt_dev_list_mappings.c',
     'irt_random.c',
     'irt_core_resource.c',
+    'irt_pnacl_translator.c',
     ]
 
 # These are the objects and libraries that go into every IRT image.
@@ -69,7 +70,7 @@ irt_support_objs += [
 # cover IRT-internal code.
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
-irt_libs = ['platform', 'gio', 'm']
+irt_libs = ['srpc', 'imc_syscalls', 'platform', 'gio', 'm']
 
 irt_core_raw = blob_env.ComponentProgram(
     'irt_core_raw', irt_support_objs, EXTRA_LIBS=irt_libs)

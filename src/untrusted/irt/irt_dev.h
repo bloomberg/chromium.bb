@@ -118,6 +118,26 @@ struct nacl_irt_dev_getpid {
   int (*getpid)(int *pid);
 };
 
+/*
+ * This is an internal interface, for use by PNaCl's sandboxed linker for
+ * communicating with the browser.
+ *
+ * serve_link_request(func) waits for a request via IPC, and then calls
+ * func(), on the same thread.
+ *
+ * |nexe_fd| is a writable FD for the linker to write its output to.
+ * |obj_file_fds| is an array of readable FDs (of length
+ * |obj_file_fd_count|) of input object files.  func() returns zero on
+ * success or a non-zero value on error.
+ */
+#define NACL_IRT_PRIVATE_PNACL_TRANSLATOR_LINK_v0_1 \
+    "nacl-irt-private-pnacl-translator-link-0.1"
+struct nacl_irt_private_pnacl_translator_link {
+  void (*serve_link_request)(int (*func)(int nexe_fd,
+                                         const int *obj_file_fds,
+                                         int obj_file_fd_count));
+};
+
 #if defined(__cplusplus)
 }
 #endif

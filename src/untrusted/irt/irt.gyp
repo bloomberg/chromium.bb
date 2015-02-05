@@ -34,6 +34,7 @@
       'irt_exception_handling.c',
       'irt_dev_list_mappings.c',
       'irt_random.c',
+      'irt_pnacl_translator.c',
 # support_srcs
       # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
       # #includes of .c files.
@@ -59,6 +60,8 @@
       },
       'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
       'link_flags': [
+        '-lsrpc',
+        '-limc_syscalls',
         '-lplatform',
         '-lgio',
         '-lm',
@@ -66,7 +69,9 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
         '<(DEPTH)/native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
