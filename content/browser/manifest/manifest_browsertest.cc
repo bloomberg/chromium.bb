@@ -284,8 +284,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParsingErrorsManifest) {
 // If a page has a manifest and the page is navigated to a page without a
 // manifest, the page's manifest should be updated.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   {
-    GURL test_url = GetTestUrl("manifest", "dummy-manifest.html");
+    GURL test_url =
+        embedded_test_server()->GetURL("/manifest/dummy-manifest.html");
 
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     shell()->LoadURL(test_url);
@@ -297,7 +299,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
   }
 
   {
-    GURL test_url = GetTestUrl("manifest", "no-manifest.html");
+    GURL test_url =
+        embedded_test_server()->GetURL("/manifest/no-manifest.html");
 
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     shell()->LoadURL(test_url);
