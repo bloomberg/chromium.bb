@@ -2480,7 +2480,13 @@ class BisectPerformanceMetrics(object):
             metric,
             test_run_multiplier=BORDER_REVISIONS_EXTRA_RUNS)
         # Is extend the right thing to do here?
-        state.value['values'].extend(run_results[0]['values'])
+        if run_results[1] != BUILD_RESULT_FAIL:
+          state.value['values'].extend(run_results[0]['values'])
+        else:
+          warning_text = 'Re-test of revision %s failed with error message: %s'
+          warning_text %= (state.revision, run_results[0])
+          if warning_text not in self.warnings:
+            self.warnings.append(warning_text)
 
 
 def _IsPlatformSupported():
