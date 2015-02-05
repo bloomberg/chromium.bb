@@ -51,17 +51,23 @@ Output = function() {
   /** @type {!Array.<Object>} */
   this.locations_ = [];
   /** @type {function()} */
-  this.speechStartCallback_ = function() {};
+  this.speechStartCallback_;
   /** @type {function()} */
-  this.speechEndCallback_ = function() {};
+  this.speechEndCallback_;
   /** @type {function()} */
-  this.speechInterruptedCallback_ = function() {};
+  this.speechInterruptedCallback_;
 
   /**
    * Current global options.
    * @type {{speech: boolean, braille: boolean, location: boolean}}
    */
   this.formatOptions_ = {speech: true, braille: false, location: true};
+
+  /**
+   * Speech properties to apply to the entire output.
+   * @type {!Object.<string, *>}
+   */
+  this.speechProperties_ = {};
 };
 
 /**
@@ -81,7 +87,8 @@ Output.RULES = {
       braille: ''
     },
     alert: {
-      speak: '@aria_role_alert $name $earcon(ALERT_NONMODAL)'
+      speak: '!doNotInterrupt ' +
+          '@aria_role_alert $name $earcon(ALERT_NONMODAL) $descendants'
     },
     button: {
       speak: '$name $earcon(BUTTON, @tag_button)'
@@ -307,15 +314,26 @@ Output.prototype = {
 
     var onEvent = function(evt) {
       switch (evt.type) {
-        case 'start': this.speechStartCallback_(); break;
-        case 'end': this.speechEndCallback_(); break;
-        case 'interrupted': this.speechInterruptedCallback_(); break;
+        case 'start':
+          this.speechStartCallback_();
+          break;
+        case 'end':
+          this.speechEndCallback_();
+          break;
+        case 'interrupted':
+          this.speechInterruptedCallback_ && this.speechInterruptedCallback_();
+          break;
       }
     }.bind(this);
 
     if (buff.toString()) {
+      if (this.speechStartCallback_ ||
+          this.speechEndCallback_ ||
+          this.speechInterruptedCallback_)
+        this.speechProperties_['onEvent'] = onEvent;
+
       cvox.ChromeVox.tts.speak(
-          buff.toString(), cvox.QueueMode.FLUSH, {onEvent: onEvent});
+          buff.toString(), cvox.QueueMode.FLUSH, this.speechProperties_);
     }
 
     var actions = buff.getSpansInstanceOf(Output.Action);
@@ -431,11 +449,17 @@ Output.prototype = {
           this.addToSpannable_(buff, node.role, options);
         } else if (token == 'value') {
           var text = node.attributes.value;
-          var offset = buff.getLength();
-          if (node.attributes.textSelStart !== undefined) {
-            options.annotation = new Output.SelectionSpan(
-                node.attributes.textSelStart,
-                node.attributes.textSelEnd);
+          if (text) {
+            var offset = buff.getLength();
+            if (node.attributes.textSelStart !== undefined) {
+              options.annotation = new Output.SelectionSpan(
+                  node.attributes.textSelStart,
+                  node.attributes.textSelEnd);
+            }
+          } else if (node.role == chrome.automation.RoleType.staticText) {
+            // TODO(dtseng): Remove once Blink treats staticText values as
+            // names.
+            text = node.attributes.name;
           }
           this.addToSpannable_(buff, text, options);
         } else if (token == 'indexInParent') {
@@ -457,6 +481,22 @@ Output.prototype = {
             if (node)
               this.format_(node, formatString, buff);
           }
+        } else if (token == 'descendants') {
+          if (AutomationPredicate.leaf(node))
+            return;
+
+          // Construct a range to the leftmost and rightmost leaves.
+          var leftmost = AutomationUtil.findNodePre(
+              node, Dir.FORWARD, AutomationPredicate.leaf);
+          var rightmost = AutomationUtil.findNodePre(
+              node, Dir.BACKWARD, AutomationPredicate.leaf);
+          if (!leftmost || !rightmost)
+            return;
+
+          var subrange = new cursors.Range(
+              new cursors.Cursor(leftmost, 0),
+              new cursors.Cursor(rightmost, 0));
+          this.range_(subrange, null, 'navigate', buff);
         } else if (node.attributes[token]) {
           this.addToSpannable_(buff, node.attributes[token], options);
         } else if (node.state[token]) {
@@ -506,6 +546,8 @@ Output.prototype = {
         if (msg) {
           this.addToSpannable_(buff, msg, options);
         }
+      } else if (prefix == '!') {
+        this.speechProperties_[token] = true;
       }
     }.bind(this));
   },
