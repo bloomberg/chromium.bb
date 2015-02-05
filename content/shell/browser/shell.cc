@@ -86,7 +86,7 @@ Shell::Shell(WebContents* web_contents)
       headless_(false) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunLayoutTest))
+  if (command_line.HasSwitch(switches::kDumpRenderTree))
     headless_ = true;
   windows_.push_back(this);
 
@@ -127,7 +127,7 @@ Shell* Shell::CreateShell(WebContents* web_contents,
   shell->PlatformResizeSubViews();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest)) {
+          switches::kDumpRenderTree)) {
     web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
@@ -218,7 +218,7 @@ void Shell::AddNewContents(WebContents* source,
                            bool* was_blocked) {
   CreateShell(new_contents, AdjustWindowSize(initial_rect.size()));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+          switches::kDumpRenderTree))
     NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
@@ -317,7 +317,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
   PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
 #endif
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+          switches::kDumpRenderTree))
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
@@ -360,7 +360,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
   if (!dialog_manager_) {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    dialog_manager_.reset(command_line.HasSwitch(switches::kRunLayoutTest)
+    dialog_manager_.reset(command_line.HasSwitch(switches::kDumpRenderTree)
         ? new LayoutTestJavaScriptDialogManager
         : new ShellJavaScriptDialogManager);
   }
@@ -373,12 +373,12 @@ bool Shell::AddMessageToConsole(WebContents* source,
                                 int32 line_no,
                                 const base::string16& source_id) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRunLayoutTest);
+      switches::kDumpRenderTree);
 }
 
 void Shell::RendererUnresponsive(WebContents* source) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+          switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->RendererUnresponsive();
 }
@@ -393,7 +393,7 @@ void Shell::DeactivateContents(WebContents* contents) {
 
 void Shell::WorkerCrashed(WebContents* source) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+          switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->WorkerCrashed();
 }
