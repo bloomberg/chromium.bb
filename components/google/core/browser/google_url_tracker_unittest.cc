@@ -207,7 +207,7 @@ TEST_F(GoogleURLTrackerTest, DontFetchWhenNoOneRequestsCheck) {
   FinishSleep();
   // No one called RequestServerCheck() so nothing should have happened.
   EXPECT_FALSE(GetFetcher());
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
+  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_FALSE(listener_notified());
 }
@@ -219,13 +219,13 @@ TEST_F(GoogleURLTrackerTest, Update) {
   EXPECT_FALSE(listener_notified());
 
   FinishSleep();
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.uk");
+  EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, DontUpdateWhenUnchanged) {
-  GURL original_google_url("http://www.google.co.uk/");
+  GURL original_google_url("https://www.google.co.uk/");
   set_google_url(original_google_url);
 
   RequestServerCheck();
@@ -234,14 +234,14 @@ TEST_F(GoogleURLTrackerTest, DontUpdateWhenUnchanged) {
   EXPECT_FALSE(listener_notified());
 
   FinishSleep();
-  MockSearchDomainCheckResponse(original_google_url.spec());
+  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(original_google_url, google_url());
   // No one should be notified, because the new URL matches the old.
   EXPECT_FALSE(listener_notified());
 }
 
-TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
-  GURL original_google_url("http://www.google.co.uk/");
+TEST_F(GoogleURLTrackerTest, DontUpdateOnBadReplies) {
+  GURL original_google_url("https://www.google.co.uk/");
   set_google_url(original_google_url);
 
   RequestServerCheck();
@@ -249,33 +249,39 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
-  // Old-style domain string.
+  // Old-style URL string.
   FinishSleep();
-  MockSearchDomainCheckResponse(".google.co.in");
+  MockSearchDomainCheckResponse("https://www.google.com/");
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
-  // Bad subdomain.
+  // Not a Google domain.
+  FinishSleep();
+  MockSearchDomainCheckResponse(".google.evil.com");
+  EXPECT_EQ(original_google_url, google_url());
+  EXPECT_FALSE(listener_notified());
+
+  // Doesn't start with .google.
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://mail.google.com/");
+  MockSearchDomainCheckResponse(".mail.google.com");
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty path.
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.com/search");
+  MockSearchDomainCheckResponse(".google.com/search");
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty query.
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.com/?q=foo");
+  MockSearchDomainCheckResponse(".google.com/?q=foo");
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty ref.
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.com/#anchor");
+  MockSearchDomainCheckResponse(".google.com/#anchor");
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
@@ -289,14 +295,14 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
 TEST_F(GoogleURLTrackerTest, RefetchOnNetworkChange) {
   RequestServerCheck();
   FinishSleep();
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.uk");
+  EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
   clear_listener_notified();
 
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.co.in/");
-  EXPECT_EQ(GURL("http://www.google.co.in/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.in");
+  EXPECT_EQ(GURL("https://www.google.co.in/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
@@ -305,7 +311,7 @@ TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
   NotifyNetworkChanged();
   // No one called RequestServerCheck() so nothing should have happened.
   EXPECT_FALSE(GetFetcher());
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
+  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_FALSE(listener_notified());
 }
@@ -313,33 +319,33 @@ TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
 TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
   FinishSleep();
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.co.jp/");
+  MockSearchDomainCheckResponse(".google.co.jp");
 
   RequestServerCheck();
   // The first request for a check should trigger a fetch if it hasn't happened
   // already.
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.uk");
+  EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, DontFetchTwiceOnLateRequests) {
   FinishSleep();
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse("http://www.google.co.jp/");
+  MockSearchDomainCheckResponse(".google.co.jp");
 
   RequestServerCheck();
   // The first request for a check should trigger a fetch if it hasn't happened
   // already.
-  MockSearchDomainCheckResponse("http://www.google.co.uk/");
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.uk");
+  EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
   clear_listener_notified();
 
   RequestServerCheck();
   // The second request should be ignored.
   EXPECT_FALSE(GetFetcher());
-  MockSearchDomainCheckResponse("http://www.google.co.in/");
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
+  MockSearchDomainCheckResponse(".google.co.in");
+  EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_FALSE(listener_notified());
 }

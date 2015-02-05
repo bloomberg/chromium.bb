@@ -17,9 +17,9 @@
 
 
 const char GoogleURLTracker::kDefaultGoogleHomepage[] =
-    "http://www.google.com/";
+    "https://www.google.com/";
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
-    "https://www.google.com/searchdomaincheck?format=url&type=chrome";
+    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
 GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
                                    Mode mode)
@@ -81,16 +81,16 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  // See if the response data was valid.  It should be
-  // "<scheme>://[www.]google.<TLD>/".
+  // See if the response data was valid.  It should be ".google.<TLD>".
   std::string url_str;
   source->GetResponseAsString(&url_str);
   base::TrimWhitespace(url_str, base::TRIM_ALL, &url_str);
-  GURL url(url_str);
+  if (!StartsWithASCII(url_str, ".google.", false))
+    return;
+  GURL url("https://www" + url_str);
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
       url.has_ref() ||
-      !google_util::IsGoogleDomainUrl(url,
-                                      google_util::DISALLOW_SUBDOMAIN,
+      !google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
                                       google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
 
