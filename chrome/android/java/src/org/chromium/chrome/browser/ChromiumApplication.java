@@ -4,8 +4,14 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Build;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.preferences.LocationSettings;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.ProtectedContentPreferences;
+import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
+import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -23,13 +29,23 @@ public abstract class ChromiumApplication extends ContentApplication {
      * Opens a protected content settings page, if available.
      */
     @CalledByNative
-    protected void openProtectedContentSettings() {}
+    protected void openProtectedContentSettings() {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        PreferencesLauncher.launchSettingsPage(this,
+                ProtectedContentPreferences.class.getName());
+    }
 
     @CalledByNative
-    protected void showAutofillSettings() {}
+    protected void showAutofillSettings() {
+        PreferencesLauncher.launchSettingsPage(this,
+                AutofillPreferences.class.getName());
+    }
 
     @CalledByNative
-    protected void showPasswordSettings() {}
+    protected void showPasswordSettings() {
+        PreferencesLauncher.launchSettingsPage(this,
+                ManageSavedPasswordsPreferences.class.getName());
+    }
 
     /**
      * Returns an instance of LocationSettings to be installed as a singleton.
