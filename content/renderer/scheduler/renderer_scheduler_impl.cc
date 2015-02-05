@@ -64,38 +64,38 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 }
 
 void RendererSchedulerImpl::Shutdown() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   task_queue_manager_.reset();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererSchedulerImpl::DefaultTaskRunner() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   return default_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererSchedulerImpl::CompositorTaskRunner() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   return compositor_task_runner_;
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
 RendererSchedulerImpl::IdleTaskRunner() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   return idle_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererSchedulerImpl::LoadingTaskRunner() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   return loading_task_runner_;
 }
 
 void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::WillBeginFrame", "args", args.AsValue());
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return;
 
@@ -106,7 +106,7 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::DidCommitFrameToCompositor");
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return;
 
@@ -147,17 +147,8 @@ void RendererSchedulerImpl::UpdateForInputEvent() {
   last_input_time_ = Now();
 }
 
-bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (!task_queue_manager_)
-    return false;
-
-  MaybeUpdatePolicy();
-  return SchedulerPolicy() == COMPOSITOR_PRIORITY_POLICY;
-}
-
 bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return false;
 
@@ -166,25 +157,23 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
   // work outstanding. Note: even though the control queue is higher priority
   // we don't yield for it since these tasks are not user-provided work and they
   // are only intended to run before the next task, not interrupt the tasks.
-  // Note: This function could conceivably be implemented in terms of
-  // |IsHighPriorityWorkAnticipated|, but for clarity is not.
   return SchedulerPolicy() == COMPOSITOR_PRIORITY_POLICY &&
          !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
 }
 
 void RendererSchedulerImpl::CurrentIdleTaskDeadlineCallback(
     base::TimeTicks* deadline_out) const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   *deadline_out = estimated_next_frame_begin_;
 }
 
 RendererSchedulerImpl::Policy RendererSchedulerImpl::SchedulerPolicy() const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   return current_policy_;
 }
 
 void RendererSchedulerImpl::MaybeUpdatePolicy() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   if (policy_may_need_update_.IsSet()) {
     UpdatePolicy();
   }
@@ -197,7 +186,7 @@ void RendererSchedulerImpl::PostUpdatePolicyOnControlRunner(
 }
 
 void RendererSchedulerImpl::UpdatePolicy() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return;
 
@@ -254,7 +243,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
 void RendererSchedulerImpl::StartIdlePeriod() {
   TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler",
                            "RendererSchedulerIdlePeriod", this);
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   renderer_task_queue_selector_->EnableQueue(
       IDLE_TASK_QUEUE, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
   task_queue_manager_->PumpQueue(IDLE_TASK_QUEUE);
@@ -263,7 +252,7 @@ void RendererSchedulerImpl::StartIdlePeriod() {
 void RendererSchedulerImpl::EndIdlePeriod() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler",
                          "RendererSchedulerIdlePeriod", this);
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   end_idle_period_closure_.Cancel();
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
 }
@@ -331,7 +320,7 @@ const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  main_thread_checker_.CalledOnValidThread();
   incoming_signals_lock_.AssertAcquired();
 
   if (optional_now.is_null())

@@ -36,11 +36,6 @@ class RendererSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  static base::TimeDelta compositor_priority_after_touch_duration() {
-    return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kCompositorPriorityAfterTouchMillis);
-  }
-
   scoped_refptr<cc::TestNowSource> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
@@ -135,18 +130,6 @@ void PostingYieldingTestTask(
         blink::WebInputEvent::GestureFlingStart);
   }
   *should_yield_after = scheduler->ShouldYieldForHighPriorityWork();
-}
-
-void AnticipationTestTask(RendererSchedulerImpl* scheduler,
-                          bool simulate_input,
-                          bool* is_anticipated_before,
-                          bool* is_anticipated_after) {
-  *is_anticipated_before = scheduler->IsHighPriorityWorkAnticipated();
-  if (simulate_input) {
-    scheduler->DidReceiveInputEventOnCompositorThread(
-        blink::WebInputEvent::GestureFlingStart);
-  }
-  *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
 }
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultTask) {
@@ -514,45 +497,6 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicyEnds) {
   EXPECT_THAT(order,
               testing::ElementsAre(std::string("D1"), std::string("C1"),
                                    std::string("D2"), std::string("C2")));
-}
-
-TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
-  bool is_anticipated_before = false;
-  bool is_anticipated_after = false;
-
-  bool simulate_input = false;
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AnticipationTestTask, scheduler_.get(), simulate_input,
-                 &is_anticipated_before, &is_anticipated_after));
-  RunUntilIdle();
-  // In its default state, without input receipt, the scheduler should indicate
-  // that no high-priority is anticipated.
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_FALSE(is_anticipated_after);
-
-  simulate_input = true;
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AnticipationTestTask, scheduler_.get(), simulate_input,
-                 &is_anticipated_before, &is_anticipated_after));
-  RunUntilIdle();
-  // When input is received, the scheduler should indicate that high-priority
-  // work is anticipated.
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_TRUE(is_anticipated_after);
-
-  clock_->AdvanceNow(compositor_priority_after_touch_duration() * 2);
-  simulate_input = false;
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AnticipationTestTask, scheduler_.get(), simulate_input,
-                 &is_anticipated_before, &is_anticipated_after));
-  RunUntilIdle();
-  // Without additional input, the scheduler should indicate that high-priority
-  // work is no longer anticipated.
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_FALSE(is_anticipated_after);
 }
 
 TEST_F(RendererSchedulerImplTest, TestShouldYield) {

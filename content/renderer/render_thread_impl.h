@@ -101,7 +101,6 @@ class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
 class RendererScheduler;
-class ResourceDispatchThrottler;
 class ResourceSchedulingFilter;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
@@ -477,7 +476,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererScheduler> renderer_scheduler_;
   scoped_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
-  scoped_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   scoped_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.

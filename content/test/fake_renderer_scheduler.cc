@@ -45,10 +45,6 @@ void FakeRendererScheduler::DidReceiveInputEventOnCompositorThread(
 void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {
 }
 
-bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
-  return false;
-}
-
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

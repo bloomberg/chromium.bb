@@ -78,10 +78,6 @@ void NullRendererScheduler::DidReceiveInputEventOnCompositorThread(
 void NullRendererScheduler::DidAnimateForInputOnCompositorThread() {
 }
 
-bool NullRendererScheduler::IsHighPriorityWorkAnticipated() {
-  return false;
-}
-
 bool NullRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

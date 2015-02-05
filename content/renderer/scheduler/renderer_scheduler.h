@@ -53,16 +53,8 @@ class CONTENT_EXPORT RendererScheduler {
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;
 
-  // Returns true if the scheduler has reason to believe that high priority work
-  // may soon arrive on the main thread, e.g., if gesture events were observed
-  // recently.
-  // Must be called from the main thread.
-  virtual bool IsHighPriorityWorkAnticipated() = 0;
-
   // Returns true if there is high priority work pending on the main thread
-  // and the caller should yield to let the scheduler service that work. Note
-  // that this is a stricter condition than |IsHighPriorityWorkAnticipated|,
-  // restricted to the case where real work is pending.
+  // and the caller should yield to let the scheduler service that work.
   // Must be called from the main thread.
   virtual bool ShouldYieldForHighPriorityWork() = 0;
 
