@@ -5,6 +5,7 @@
 #include "net/http/http_server_properties_manager.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
@@ -643,6 +644,64 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   IPAddressNumber address;
   ASSERT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
   EXPECT_EQ("127.0.0.1", IPAddressToString(address));
+}
+
+TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
+  const HostPortPair server_www("www.google.com", 80);
+  const HostPortPair server_mail("mail.google.com", 80);
+
+  // Set alternate protocol.
+  http_server_props_manager_->SetAlternateProtocol(server_www, 443, NPN_SPDY_3,
+                                                   1.0);
+  http_server_props_manager_->SetAlternateProtocol(server_mail, 444,
+                                                   NPN_SPDY_3_1, 0.2);
+
+  // Set ServerNetworkStats.
+  ServerNetworkStats stats;
+  stats.srtt = base::TimeDelta::FromInternalValue(42);
+  http_server_props_manager_->SetServerNetworkStats(server_mail, stats);
+
+  // Set SupportsQuic.
+  IPAddressNumber actual_address;
+  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  http_server_props_manager_->SetSupportsQuic(true, actual_address);
+
+  // Update cache.
+  ExpectPrefsUpdate();
+  ExpectCacheUpdate();
+  http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify preferences.
+  const char expected_json[] = "{"
+    "\"servers\":{"
+      "\"mail.google.com:80\":{"
+        "\"alternate_protocol\":{"
+          "\"port\":444,\"probability\":0.2,\"protocol_str\":\"npn-spdy/3.1\""
+        "},"
+        "\"network_stats\":{"
+          "\"srtt\":42"
+        "}"
+      "},"
+      "\"www.google.com:80\":{"
+        "\"alternate_protocol\":{"
+          "\"port\":443,\"probability\":1.0,\"protocol_str\":\"npn-spdy/3\""
+        "}"
+      "}"
+    "},"
+    "\"supports_quic\":{"
+      "\"address\":\"127.0.0.1\",\"used_quic\":true"
+    "},"
+    "\"version\":3"
+  "}";
+
+  const base::Value* http_server_properties =
+      pref_service_.GetUserPref(kTestHttpServerProperties);
+  ASSERT_NE(nullptr, http_server_properties);
+  std::string preferences_json;
+  EXPECT_TRUE(
+      base::JSONWriter::Write(http_server_properties, &preferences_json));
+  EXPECT_EQ(expected_json, preferences_json);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
