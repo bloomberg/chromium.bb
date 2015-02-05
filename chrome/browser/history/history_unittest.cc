@@ -1000,7 +1000,8 @@ class HistoryTest : public testing::Test {
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new HistoryService);
-    if (!history_service_->Init(HistoryDatabaseParamsForPath(history_dir_))) {
+    if (!history_service_->Init(std::string(),
+                                HistoryDatabaseParamsForPath(history_dir_))) {
       history_service_.reset();
       ADD_FAILURE();
     }

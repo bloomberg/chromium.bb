@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -88,7 +89,7 @@ class HistoryService : public syncer::SyncableService,
 
   // Must call Init after construction. The |history::HistoryClient| object
   // must be valid for the whole lifetime of |HistoryService|.
-  explicit HistoryService(history::HistoryClient* client, Profile* profile);
+  HistoryService(history::HistoryClient* client, Profile* profile);
   // The empty constructor is provided only for testing.
   HistoryService();
 
@@ -96,9 +97,11 @@ class HistoryService : public syncer::SyncableService,
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
-  // the history files.
-  bool Init(const history::HistoryDatabaseParams& history_database_params) {
-    return Init(false, history_database_params);
+  // the history files. |languages| is a comma-separated list of languages to
+  // use when interpreting URLs, it must not be empty (except during testing).
+  bool Init(const std::string& languages,
+            const history::HistoryDatabaseParams& history_database_params) {
+    return Init(false, languages, history_database_params);
   }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
@@ -561,6 +564,7 @@ class HistoryService : public syncer::SyncableService,
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
   bool Init(bool no_db,
+            const std::string& languages,
             const history::HistoryDatabaseParams& history_database_params);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it

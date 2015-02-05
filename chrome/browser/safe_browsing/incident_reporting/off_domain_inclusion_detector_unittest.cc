@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -69,6 +70,7 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
   HistoryService* history_service = new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile);
   if (history_service->Init(
+          profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return history_service;
   }

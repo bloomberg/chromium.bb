@@ -57,6 +57,7 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
   HistoryService* history_service = new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile);
   if (history_service->Init(
+          profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return history_service;
   }

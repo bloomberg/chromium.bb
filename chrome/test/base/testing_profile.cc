@@ -568,7 +568,8 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           this, BuildHistoryService));
   if (!history_service->Init(
-          no_db, history::HistoryDatabaseParamsForPath(this->GetPath()))) {
+          no_db, GetPrefs()->GetString(prefs::kAcceptLanguages),
+          history::HistoryDatabaseParamsForPath(GetPath()))) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
     return false;
   }

@@ -75,10 +75,11 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   scoped_ptr<HistoryService> history_service(new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile));
   if (!history_service->Init(
+          profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return nullptr;
   }

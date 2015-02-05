@@ -25,7 +25,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -39,7 +38,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -228,16 +226,16 @@ HistoryService::HistoryService()
       weak_ptr_factory_(this) {
 }
 
-HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
+HistoryService::HistoryService(
+    history::HistoryClient* history_client, Profile* profile)
     : thread_(new base::Thread(kHistoryThreadName)),
-      history_client_(client),
+      history_client_(history_client),
       profile_(profile),
       visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
       backend_loaded_(false),
       no_db_(false),
       weak_ptr_factory_(this) {
-  DCHECK(profile_);
 }
 
 HistoryService::~HistoryService() {
@@ -967,6 +965,7 @@ void HistoryService::RebuildTable(
 
 bool HistoryService::Init(
     bool no_db,
+    const std::string& languages,
     const history::HistoryDatabaseParams& history_database_params) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -980,9 +979,9 @@ bool HistoryService::Init(
   history_dir_ = history_database_params.history_dir;
   no_db_ = no_db;
 
-  if (profile_) {
-    std::string languages =
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  if (!languages.empty()) {
+    // Do not create |in_memory_url_index_| when languages is empty (which
+    // should only happens during testing).
     in_memory_url_index_.reset(new history::InMemoryURLIndex(
         this, history_dir_, languages, history_client_));
     in_memory_url_index_->Init();
@@ -994,13 +993,6 @@ bool HistoryService::Init(
                                         base::ThreadTaskRunnerHandle::Get()),
       history_client_));
   history_backend_.swap(backend);
-
-  // There may not be a profile when unit testing.
-  std::string languages;
-  if (profile_) {
-    PrefService* prefs = profile_->GetPrefs();
-    languages = prefs->GetString(prefs::kAcceptLanguages);
-  }
 
   ScheduleTask(PRIORITY_UI,
                base::Bind(&HistoryBackend::Init, history_backend_.get(),

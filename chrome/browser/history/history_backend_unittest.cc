@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -3042,7 +3044,8 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   scoped_ptr<HistoryService> service(
       new HistoryService(&history_client, profile.get()));
   EXPECT_TRUE(
-      service->Init(TestHistoryDatabaseParamsForPath(profile->GetPath())));
+      service->Init(profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+                    TestHistoryDatabaseParamsForPath(profile->GetPath())));
 
   service->AddPage(
       url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),
