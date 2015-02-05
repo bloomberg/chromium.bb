@@ -129,7 +129,7 @@ static Image* getMediaSliderThumb()
     return mediaSliderThumb;
 }
 
-static void paintRoundedSliderBackground(const IntRect& rect, const RenderStyle* style, GraphicsContext* context)
+static void paintRoundedSliderBackground(const IntRect& rect, const RenderStyle&, GraphicsContext* context)
 {
     int borderRadius = rect.height() / 2;
     IntSize radii(borderRadius, borderRadius);
@@ -137,7 +137,7 @@ static void paintRoundedSliderBackground(const IntRect& rect, const RenderStyle*
     context->fillRoundedRect(rect, radii, radii, radii, radii, sliderBackgroundColor);
 }
 
-static void paintSliderRangeHighlight(const IntRect& rect, const RenderStyle* style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
+static void paintSliderRangeHighlight(const IntRect& rect, const RenderStyle& style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
 {
     // Calculate border radius; need to avoid being smaller than half the slider height
     // because of https://bugs.webkit.org/show_bug.cgi?id=30143.
@@ -199,7 +199,7 @@ static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, c
     if (!mediaElement)
         return false;
 
-    RenderStyle* style = object->style();
+    const RenderStyle& style = object->styleRef();
     GraphicsContext* context = paintInfo.context;
 
     paintRoundedSliderBackground(rect, style, context);
@@ -270,7 +270,7 @@ static bool paintMediaVolumeSlider(RenderObject* object, const PaintInfo& paintI
         return false;
 
     GraphicsContext* context = paintInfo.context;
-    RenderStyle* style = object->style();
+    const RenderStyle& style = object->styleRef();
 
     paintRoundedSliderBackground(rect, style, context);
 
@@ -287,7 +287,7 @@ static bool paintMediaVolumeSlider(RenderObject* object, const PaintInfo& paintI
     float fillWidth = 0;
     if (volume > 0) {
         float thumbCenter = mediaVolumeSliderThumbWidth / 2;
-        float zoomLevel = style->effectiveZoom();
+        float zoomLevel = style.effectiveZoom();
         float positionWidth = volume * (rect.width() - (zoomLevel * thumbCenter));
         fillWidth = positionWidth + (zoomLevel * thumbCenter / 2);
     }
@@ -415,7 +415,7 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
 const int mediaSliderThumbHeight = 24;
 const int mediaVolumeSliderThumbHeight = 24;
 
-void RenderMediaControls::adjustMediaSliderThumbSize(RenderStyle* style)
+void RenderMediaControls::adjustMediaSliderThumbSize(RenderStyle& style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb");
     static Image* mediaVolumeSliderThumb = platformResource("mediaplayerVolumeSliderThumb");
@@ -423,20 +423,20 @@ void RenderMediaControls::adjustMediaSliderThumbSize(RenderStyle* style)
     int height = 0;
 
     Image* thumbImage = 0;
-    if (style->appearance() == MediaSliderThumbPart) {
+    if (style.appearance() == MediaSliderThumbPart) {
         thumbImage = mediaSliderThumb;
         width = mediaSliderThumbWidth;
         height = mediaSliderThumbHeight;
-    } else if (style->appearance() == MediaVolumeSliderThumbPart) {
+    } else if (style.appearance() == MediaVolumeSliderThumbPart) {
         thumbImage = mediaVolumeSliderThumb;
         width = mediaVolumeSliderThumbWidth;
         height = mediaVolumeSliderThumbHeight;
     }
 
-    float zoomLevel = style->effectiveZoom();
+    float zoomLevel = style.effectiveZoom();
     if (thumbImage) {
-        style->setWidth(Length(static_cast<int>(width * zoomLevel), Fixed));
-        style->setHeight(Length(static_cast<int>(height * zoomLevel), Fixed));
+        style.setWidth(Length(static_cast<int>(width * zoomLevel), Fixed));
+        style.setHeight(Length(static_cast<int>(height * zoomLevel), Fixed));
     }
 }
 

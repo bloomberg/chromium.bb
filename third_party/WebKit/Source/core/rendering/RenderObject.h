@@ -799,7 +799,8 @@ public:
     // m_style can only be nullptr before the first style is set, thus most
     // callers will never see a nullptr style and should use styleRef().
     // FIXME: It would be better if style() returned a const reference.
-    const RenderStyle& styleRef() const { ASSERT(m_style); return *m_style; }
+    const RenderStyle& styleRef() const { return mutableStyleRef(); }
+    RenderStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
 
     /* The following methods are inlined in RenderObjectInlines.h */
     RenderStyle* firstLineStyle() const;

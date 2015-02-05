@@ -71,15 +71,15 @@ String LayoutThemeChromiumAndroid::extraDefaultStyleSheet()
 
 }
 
-void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle& style, Element*) const
 {
     if (LayoutTestSupport::isRunningLayoutTest()) {
         // Match Linux spin button style in layout tests.
         // FIXME: Consider removing the conditional if a future Android theme matches this.
         IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
-        style->setWidth(Length(size.width(), Fixed));
-        style->setMinWidth(Length(size.width(), Fixed));
+        style.setWidth(Length(size.width(), Fixed));
+        style.setMinWidth(Length(size.width(), Fixed));
     }
 }
 

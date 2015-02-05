@@ -218,7 +218,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     // Let the theme also have a crack at adjusting the style.
     if (style->hasAppearance())
-        LayoutTheme::theme().adjustStyle(style, e, cachedUAStyle);
+        LayoutTheme::theme().adjustStyle(*style, e, cachedUAStyle);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style->hasPseudoStyle(FIRST_LETTER) || style->transitions() || style->animations())

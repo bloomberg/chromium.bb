@@ -42,20 +42,20 @@ LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
 {
 }
 
-void LayoutSliderThumb::updateAppearance(RenderStyle* parentStyle)
+void LayoutSliderThumb::updateAppearance(const RenderStyle& parentStyle)
 {
-    if (parentStyle->appearance() == SliderVerticalPart)
+    if (parentStyle.appearance() == SliderVerticalPart)
         style()->setAppearance(SliderThumbVerticalPart);
-    else if (parentStyle->appearance() == SliderHorizontalPart)
+    else if (parentStyle.appearance() == SliderHorizontalPart)
         style()->setAppearance(SliderThumbHorizontalPart);
-    else if (parentStyle->appearance() == MediaSliderPart)
+    else if (parentStyle.appearance() == MediaSliderPart)
         style()->setAppearance(MediaSliderThumbPart);
-    else if (parentStyle->appearance() == MediaVolumeSliderPart)
+    else if (parentStyle.appearance() == MediaVolumeSliderPart)
         style()->setAppearance(MediaVolumeSliderThumbPart);
-    else if (parentStyle->appearance() == MediaFullScreenVolumeSliderPart)
+    else if (parentStyle.appearance() == MediaFullScreenVolumeSliderPart)
         style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
     if (style()->hasAppearance())
-        LayoutTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
+        LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef(), toElement(node()));
 }
 
 } // namespace blink

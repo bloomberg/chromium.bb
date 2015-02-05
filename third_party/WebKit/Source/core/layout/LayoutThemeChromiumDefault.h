@@ -39,7 +39,7 @@ public:
 
     virtual Color systemColor(CSSValueID) const override;
 
-    virtual bool supportsFocusRing(const RenderStyle*) const override;
+    virtual bool supportsFocusRing(const RenderStyle&) const override;
 
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;
@@ -54,16 +54,16 @@ public:
 
     virtual IntSize sliderTickSize() const override;
     virtual int sliderTickOffsetFromTrackCenter() const override;
-    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const override;
+    virtual void adjustSliderThumbSize(RenderStyle&, Element*) const override;
 
     static void setCaretBlinkInterval(double);
     virtual double caretBlinkIntervalInternal() const override;
 
     virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual void setCheckboxSize(RenderStyle*) const override;
+    virtual void setCheckboxSize(RenderStyle&) const override;
 
     virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual void setRadioSize(RenderStyle*) const override;
+    virtual void setRadioSize(RenderStyle&) const override;
 
     virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) override;
@@ -72,7 +72,7 @@ public:
     virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const override;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle&, Element*) const override;
     virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool popsMenuBySpaceKey() const override final { return true; }
@@ -88,7 +88,7 @@ public:
 protected:
     LayoutThemeChromiumDefault();
     virtual ~LayoutThemeChromiumDefault();
-    virtual bool shouldUseFallbackTheme(RenderStyle*) const override;
+    virtual bool shouldUseFallbackTheme(const RenderStyle&) const override;
 
 private:
     static double m_caretBlinkInterval;

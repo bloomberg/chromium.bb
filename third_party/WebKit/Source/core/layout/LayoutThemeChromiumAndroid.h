@@ -35,7 +35,7 @@ public:
     static PassRefPtr<LayoutTheme> create();
     virtual String extraDefaultStyleSheet() override;
 
-    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const override;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle&, Element*) const override;
 
     virtual bool delegatesMenuListRendering() const override { return true; }
 

@@ -40,7 +40,7 @@ class RenderObject;
 class RenderMediaControls {
 public:
     static bool paintMediaControlsPart(MediaControlElementType, RenderObject*, const PaintInfo&, const IntRect&);
-    static void adjustMediaSliderThumbSize(RenderStyle*);
+    static void adjustMediaSliderThumbSize(RenderStyle&);
     static String formatMediaControlsTime(float time);
     static String formatMediaControlsCurrentTime(float currentTime, float duration);
 };

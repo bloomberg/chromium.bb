@@ -100,29 +100,29 @@ void RenderMenuList::createInnerBlock()
 
 void RenderMenuList::adjustInnerStyle()
 {
-    RenderStyle* innerStyle = m_innerBlock->style();
-    innerStyle->setFlexGrow(1);
-    innerStyle->setFlexShrink(1);
+    RenderStyle& innerStyle = m_innerBlock->mutableStyleRef();
+    innerStyle.setFlexGrow(1);
+    innerStyle.setFlexShrink(1);
     // Use margin:auto instead of align-items:center to get safe centering, i.e.
     // when the content overflows, treat it the same as align-items: flex-start.
     // But we only do that for the cases where html.css would otherwise use center.
     if (style()->alignItems() == ItemPositionCenter) {
-        innerStyle->setMarginTop(Length());
-        innerStyle->setMarginBottom(Length());
-        innerStyle->setAlignSelf(ItemPositionFlexStart);
+        innerStyle.setMarginTop(Length());
+        innerStyle.setMarginBottom(Length());
+        innerStyle.setAlignSelf(ItemPositionFlexStart);
     }
 
-    innerStyle->setPaddingLeft(Length(LayoutTheme::theme().popupInternalPaddingLeft(style()), Fixed));
-    innerStyle->setPaddingRight(Length(LayoutTheme::theme().popupInternalPaddingRight(style()), Fixed));
-    innerStyle->setPaddingTop(Length(LayoutTheme::theme().popupInternalPaddingTop(style()), Fixed));
-    innerStyle->setPaddingBottom(Length(LayoutTheme::theme().popupInternalPaddingBottom(style()), Fixed));
+    innerStyle.setPaddingLeft(Length(LayoutTheme::theme().popupInternalPaddingLeft(styleRef()), Fixed));
+    innerStyle.setPaddingRight(Length(LayoutTheme::theme().popupInternalPaddingRight(styleRef()), Fixed));
+    innerStyle.setPaddingTop(Length(LayoutTheme::theme().popupInternalPaddingTop(styleRef()), Fixed));
+    innerStyle.setPaddingBottom(Length(LayoutTheme::theme().popupInternalPaddingBottom(styleRef()), Fixed));
 
     if (m_optionStyle) {
-        if ((m_optionStyle->direction() != innerStyle->direction() || m_optionStyle->unicodeBidi() != innerStyle->unicodeBidi()))
+        if ((m_optionStyle->direction() != innerStyle.direction() || m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
             m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-        innerStyle->setTextAlign(style()->isLeftToRightDirection() ? LEFT : RIGHT);
-        innerStyle->setDirection(m_optionStyle->direction());
-        innerStyle->setUnicodeBidi(m_optionStyle->unicodeBidi());
+        innerStyle.setTextAlign(style()->isLeftToRightDirection() ? LEFT : RIGHT);
+        innerStyle.setDirection(m_optionStyle->direction());
+        innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
     }
 }
 
@@ -323,7 +323,7 @@ LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
 
 void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(style())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
+    maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }

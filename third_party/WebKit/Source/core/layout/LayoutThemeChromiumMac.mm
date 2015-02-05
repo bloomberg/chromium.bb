@@ -469,11 +469,11 @@ Color LayoutThemeChromiumMac::systemColor(CSSValueID cssValueId) const
     return color;
 }
 
-bool LayoutThemeChromiumMac::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
+bool LayoutThemeChromiumMac::isControlStyled(const RenderStyle& style, const CachedUAStyle* uaStyle) const
 {
     ASSERT(uaStyle);
-    if (style->appearance() == TextFieldPart || style->appearance() == TextAreaPart)
-        return style->border() != uaStyle->border || style->boxShadow();
+    if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
+        return style.border() != uaStyle->border || style.boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.
     // Menu lists cannot draw properly when scaled. They can't really draw
@@ -481,10 +481,10 @@ bool LayoutThemeChromiumMac::isControlStyled(const RenderStyle* style, const Cac
     // style adjustment time so that will just have to stay broken.  We can
     // however detect that we're zooming. If zooming is in effect we treat it
     // like the control is styled.
-    if (style->appearance() == MenulistPart && style->effectiveZoom() != 1.0f)
+    if (style.appearance() == MenulistPart && style.effectiveZoom() != 1.0f)
         return true;
     // FIXME: NSSearchFieldCell doesn't work well when scaled.
-    if (style->appearance() == SearchFieldPart && style->effectiveZoom() != 1)
+    if (style.appearance() == SearchFieldPart && style.effectiveZoom() != 1)
         return true;
 
     return LayoutTheme::isControlStyled(style, uaStyle);
@@ -585,9 +585,9 @@ void LayoutThemeChromiumMac::updatePressedState(NSCell* cell, const RenderObject
         [cell setHighlighted:pressed];
 }
 
-NSControlSize LayoutThemeChromiumMac::controlSizeForFont(RenderStyle* style) const
+NSControlSize LayoutThemeChromiumMac::controlSizeForFont(const RenderStyle& style) const
 {
-    int fontSize = style->fontSize();
+    int fontSize = style.fontSize();
     if (fontSize >= 16)
         return NSRegularControlSize;
     if (fontSize >= 11)
@@ -598,9 +598,9 @@ NSControlSize LayoutThemeChromiumMac::controlSizeForFont(RenderStyle* style) con
 // We don't use controlSizeForFont() for search field decorations because it
 // needs to fit into the search field. The font size will already be modified by
 // setFontFromControlSize() called on the search field.
-static NSControlSize searchFieldControlSizeForFont(RenderStyle* style)
+static NSControlSize searchFieldControlSizeForFont(const RenderStyle& style)
 {
-    int fontSize = style->fontSize();
+    int fontSize = style.fontSize();
     if (fontSize >= 13)
         return NSRegularControlSize;
     if (fontSize >= 11)
@@ -625,36 +625,36 @@ void LayoutThemeChromiumMac::setControlSize(NSCell* cell, const IntSize* sizes, 
         [cell setControlSize:size];
 }
 
-IntSize LayoutThemeChromiumMac::sizeForFont(RenderStyle* style, const IntSize* sizes) const
+IntSize LayoutThemeChromiumMac::sizeForFont(const RenderStyle& style, const IntSize* sizes) const
 {
-    if (style->effectiveZoom() != 1.0f) {
+    if (style.effectiveZoom() != 1.0f) {
         IntSize result = sizes[controlSizeForFont(style)];
-        return IntSize(result.width() * style->effectiveZoom(), result.height() * style->effectiveZoom());
+        return IntSize(result.width() * style.effectiveZoom(), result.height() * style.effectiveZoom());
     }
     return sizes[controlSizeForFont(style)];
 }
 
-IntSize LayoutThemeChromiumMac::sizeForSystemFont(RenderStyle* style, const IntSize* sizes) const
+IntSize LayoutThemeChromiumMac::sizeForSystemFont(const RenderStyle& style, const IntSize* sizes) const
 {
-    if (style->effectiveZoom() != 1.0f) {
+    if (style.effectiveZoom() != 1.0f) {
         IntSize result = sizes[controlSizeForSystemFont(style)];
-        return IntSize(result.width() * style->effectiveZoom(), result.height() * style->effectiveZoom());
+        return IntSize(result.width() * style.effectiveZoom(), result.height() * style.effectiveZoom());
     }
     return sizes[controlSizeForSystemFont(style)];
 }
 
-void LayoutThemeChromiumMac::setSizeFromFont(RenderStyle* style, const IntSize* sizes) const
+void LayoutThemeChromiumMac::setSizeFromFont(RenderStyle& style, const IntSize* sizes) const
 {
     // FIXME: Check is flawed, since it doesn't take min-width/max-width into
     // account.
     IntSize size = sizeForFont(style, sizes);
-    if (style->width().isIntrinsicOrAuto() && size.width() > 0)
-        style->setWidth(Length(size.width(), Fixed));
-    if (style->height().isAuto() && size.height() > 0)
-        style->setHeight(Length(size.height(), Fixed));
+    if (style.width().isIntrinsicOrAuto() && size.width() > 0)
+        style.setWidth(Length(size.width(), Fixed));
+    if (style.height().isAuto() && size.height() > 0)
+        style.setHeight(Length(size.height(), Fixed));
 }
 
-void LayoutThemeChromiumMac::setFontFromControlSize(RenderStyle* style, NSControlSize controlSize) const
+void LayoutThemeChromiumMac::setFontFromControlSize(RenderStyle& style, NSControlSize controlSize) const
 {
     FontDescription fontDescription;
     fontDescription.setIsAbsoluteSize(true);
@@ -662,20 +662,20 @@ void LayoutThemeChromiumMac::setFontFromControlSize(RenderStyle* style, NSContro
 
     NSFont* font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSize]];
     fontDescription.firstFamily().setFamily([font webCoreFamilyName]);
-    fontDescription.setComputedSize([font pointSize] * style->effectiveZoom());
-    fontDescription.setSpecifiedSize([font pointSize] * style->effectiveZoom());
+    fontDescription.setComputedSize([font pointSize] * style.effectiveZoom());
+    fontDescription.setSpecifiedSize([font pointSize] * style.effectiveZoom());
 
     // Reset line height.
-    style->setLineHeight(RenderStyle::initialLineHeight());
+    style.setLineHeight(RenderStyle::initialLineHeight());
 
-    if (style->setFontDescription(fontDescription))
-        style->font().update(nullptr);
+    if (style.setFontDescription(fontDescription))
+        style.font().update(nullptr);
 }
 
-NSControlSize LayoutThemeChromiumMac::controlSizeForSystemFont(RenderStyle* style) const
+NSControlSize LayoutThemeChromiumMac::controlSizeForSystemFont(const RenderStyle& style) const
 {
-    float fontSize = style->fontSize();
-    float zoomLevel = style->effectiveZoom();
+    float fontSize = style.fontSize();
+    float zoomLevel = style.effectiveZoom();
     if (zoomLevel != 1)
         fontSize /= zoomLevel;
     if (fontSize >= [NSFont systemFontSizeForControlSize:NSRegularControlSize])
@@ -826,7 +826,7 @@ bool LayoutThemeChromiumMac::paintMenuList(RenderObject* o, const PaintInfo& pai
 
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = r;
-    if (r.width() >= minimumMenuListSize(o->style()))
+    if (r.width() >= minimumMenuListSize(o->styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, popupButtonMargins(), zoomLevel);
 
     LocalCurrentGraphicsContext localContext(paintInfo.context, ThemeMac::inflateRectForFocusRing(inflatedRect));
@@ -914,8 +914,8 @@ NSLevelIndicatorStyle LayoutThemeChromiumMac::levelIndicatorStyleFor(ControlPart
 
 NSLevelIndicatorCell* LayoutThemeChromiumMac::levelIndicatorFor(const RenderMeter* renderMeter) const
 {
-    RenderStyle* style = renderMeter->style();
-    ASSERT(style->appearance() != NoControlPart);
+    const RenderStyle& style = renderMeter->styleRef();
+    ASSERT(style.appearance() != NoControlPart);
 
     if (!m_levelIndicator)
         m_levelIndicator.adoptNS([[NSLevelIndicatorCell alloc] initWithLevelIndicatorStyle:NSContinuousCapacityLevelIndicatorStyle]);
@@ -945,8 +945,8 @@ NSLevelIndicatorCell* LayoutThemeChromiumMac::levelIndicatorFor(const RenderMete
         break;
     }
 
-    [cell setLevelIndicatorStyle:levelIndicatorStyleFor(style->appearance())];
-    [cell setBaseWritingDirection:style->isLeftToRightDirection() ? NSWritingDirectionLeftToRight : NSWritingDirectionRightToLeft];
+    [cell setLevelIndicatorStyle:levelIndicatorStyleFor(style.appearance())];
+    [cell setBaseWritingDirection:style.isLeftToRightDirection() ? NSWritingDirectionLeftToRight : NSWritingDirectionRightToLeft];
     [cell setMinValue:element->min()];
     [cell setMaxValue:element->max()];
     RetainPtr<NSNumber> valueObject = [NSNumber numberWithDouble:value];
@@ -972,7 +972,7 @@ const int* LayoutThemeChromiumMac::progressBarMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-int LayoutThemeChromiumMac::minimumProgressBarHeight(RenderStyle* style) const
+int LayoutThemeChromiumMac::minimumProgressBarHeight(const RenderStyle& style) const
 {
     return sizeForSystemFont(style, progressBarSizes()).height();
 }
@@ -993,14 +993,14 @@ bool LayoutThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
         return true;
 
     float zoomLevel = renderObject->style()->effectiveZoom();
-    int controlSize = controlSizeForFont(renderObject->style());
+    int controlSize = controlSizeForFont(renderObject->styleRef());
     IntSize size = progressBarSizes()[controlSize];
     size.setHeight(size.height() * zoomLevel);
     size.setWidth(rect.width());
 
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = rect;
-    if (rect.height() <= minimumProgressBarHeight(renderObject->style()))
+    if (rect.height() <= minimumProgressBarHeight(renderObject->styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, progressBarMargins(controlSize), zoomLevel);
 
     RenderProgress* renderProgress = toRenderProgress(renderObject);
@@ -1097,22 +1097,22 @@ static const IntSize* menuListButtonSizes()
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustMenuListStyle(RenderStyle* style, Element* e) const
+void LayoutThemeChromiumMac::adjustMenuListStyle(RenderStyle& style, Element* e) const
 {
     NSControlSize controlSize = controlSizeForFont(style);
 
-    style->resetBorder();
-    style->resetPadding();
+    style.resetBorder();
+    style.resetPadding();
 
     // Height is locked to auto.
-    style->setHeight(Length(Auto));
+    style.setHeight(Length(Auto));
 
     // White-space is locked to pre.
-    style->setWhiteSpace(PRE);
+    style.setWhiteSpace(PRE);
 
     // Set the foreground color to black or gray when we have the aqua look.
     // Cast to RGB32 is to work around a compiler bug.
-    style->setColor(e && !e->isDisabledFormControl() ? static_cast<RGBA32>(Color::black) : Color::darkGray);
+    style.setColor(e && !e->isDisabledFormControl() ? static_cast<RGBA32>(Color::black) : Color::darkGray);
 
     // Set the button's vertical size.
     setSizeFromFont(style, menuListButtonSizes());
@@ -1133,62 +1133,62 @@ const int autofillPopupHorizontalPadding = 4;
 // TexfieldPart appearance here. We want to change only Autofill padding.  In
 // the future, we have to separate Autofill popup window logic from WebKit to
 // Chromium.
-int LayoutThemeChromiumMac::popupInternalPaddingLeft(RenderStyle* style) const
+int LayoutThemeChromiumMac::popupInternalPaddingLeft(const RenderStyle& style) const
 {
-    if (style->appearance() == TextFieldPart)
+    if (style.appearance() == TextFieldPart)
         return autofillPopupHorizontalPadding;
 
-    if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style->effectiveZoom();
-    if (style->appearance() == MenulistButtonPart)
-        return styledPopupPaddingLeft * style->effectiveZoom();
+    if (style.appearance() == MenulistPart)
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style.effectiveZoom();
+    if (style.appearance() == MenulistButtonPart)
+        return styledPopupPaddingLeft * style.effectiveZoom();
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingRight(RenderStyle* style) const
+int LayoutThemeChromiumMac::popupInternalPaddingRight(const RenderStyle& style) const
 {
-    if (style->appearance() == TextFieldPart)
+    if (style.appearance() == TextFieldPart)
         return autofillPopupHorizontalPadding;
 
-    if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style->effectiveZoom();
-    if (style->appearance() == MenulistButtonPart) {
-        float fontScale = style->fontSize() / baseFontSize;
+    if (style.appearance() == MenulistPart)
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style.effectiveZoom();
+    if (style.appearance() == MenulistButtonPart) {
+        float fontScale = style.fontSize() / baseFontSize;
         float arrowWidth = baseArrowWidth * fontScale;
-        return static_cast<int>(ceilf(arrowWidth + (arrowPaddingLeft + arrowPaddingRight + paddingBeforeSeparator) * style->effectiveZoom()));
+        return static_cast<int>(ceilf(arrowWidth + (arrowPaddingLeft + arrowPaddingRight + paddingBeforeSeparator) * style.effectiveZoom()));
     }
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingTop(RenderStyle* style) const
+int LayoutThemeChromiumMac::popupInternalPaddingTop(const RenderStyle& style) const
 {
-    if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::TopMargin] * style->effectiveZoom();
-    if (style->appearance() == MenulistButtonPart)
-        return styledPopupPaddingTop * style->effectiveZoom();
+    if (style.appearance() == MenulistPart)
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::TopMargin] * style.effectiveZoom();
+    if (style.appearance() == MenulistButtonPart)
+        return styledPopupPaddingTop * style.effectiveZoom();
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingBottom(RenderStyle* style) const
+int LayoutThemeChromiumMac::popupInternalPaddingBottom(const RenderStyle& style) const
 {
-    if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::BottomMargin] * style->effectiveZoom();
-    if (style->appearance() == MenulistButtonPart)
-        return styledPopupPaddingBottom * style->effectiveZoom();
+    if (style.appearance() == MenulistPart)
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::BottomMargin] * style.effectiveZoom();
+    if (style.appearance() == MenulistButtonPart)
+        return styledPopupPaddingBottom * style.effectiveZoom();
     return 0;
 }
 
-void LayoutThemeChromiumMac::adjustMenuListButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustMenuListButtonStyle(RenderStyle& style, Element*) const
 {
-    float fontScale = style->fontSize() / baseFontSize;
+    float fontScale = style.fontSize() / baseFontSize;
 
-    style->resetPadding();
-    style->setBorderRadius(IntSize(int(baseBorderRadius + fontScale - 1), int(baseBorderRadius + fontScale - 1))); // FIXME: Round up?
+    style.resetPadding();
+    style.setBorderRadius(IntSize(int(baseBorderRadius + fontScale - 1), int(baseBorderRadius + fontScale - 1))); // FIXME: Round up?
 
     const int minHeight = 15;
-    style->setMinHeight(Length(minHeight, Fixed));
+    style.setMinHeight(Length(minHeight, Fixed));
 
-    style->setLineHeight(RenderStyle::initialLineHeight());
+    style.setLineHeight(RenderStyle::initialLineHeight());
 }
 
 void LayoutThemeChromiumMac::setPopupButtonCellState(const RenderObject* o, const IntRect& r)
@@ -1214,7 +1214,7 @@ const IntSize* LayoutThemeChromiumMac::menuListSizes() const
     return sizes;
 }
 
-int LayoutThemeChromiumMac::minimumMenuListSize(RenderStyle* style) const
+int LayoutThemeChromiumMac::minimumMenuListSize(const RenderStyle& style) const
 {
     return sizeForSystemFont(style, menuListSizes()).width();
 }
@@ -1383,7 +1383,7 @@ bool LayoutThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& 
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(o, r);
-    [search setControlSize:searchFieldControlSizeForFont(o->style())];
+    [search setControlSize:searchFieldControlSizeForFont(o->styleRef())];
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
@@ -1433,10 +1433,10 @@ static const int* searchFieldHorizontalPaddings()
     return sizes;
 }
 
-void LayoutThemeChromiumMac::setSearchFieldSize(RenderStyle* style) const
+void LayoutThemeChromiumMac::setSearchFieldSize(RenderStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
-    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+    if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
         return;
 
     // Use the font size to determine the intrinsic width of the control.
@@ -1444,37 +1444,37 @@ void LayoutThemeChromiumMac::setSearchFieldSize(RenderStyle* style) const
 }
 
 const int searchFieldBorderWidth = 2;
-void LayoutThemeChromiumMac::adjustSearchFieldStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustSearchFieldStyle(RenderStyle& style, Element*) const
 {
     // Override border.
-    style->resetBorder();
-    const short borderWidth = searchFieldBorderWidth * style->effectiveZoom();
-    style->setBorderLeftWidth(borderWidth);
-    style->setBorderLeftStyle(INSET);
-    style->setBorderRightWidth(borderWidth);
-    style->setBorderRightStyle(INSET);
-    style->setBorderBottomWidth(borderWidth);
-    style->setBorderBottomStyle(INSET);
-    style->setBorderTopWidth(borderWidth);
-    style->setBorderTopStyle(INSET);
+    style.resetBorder();
+    const short borderWidth = searchFieldBorderWidth * style.effectiveZoom();
+    style.setBorderLeftWidth(borderWidth);
+    style.setBorderLeftStyle(INSET);
+    style.setBorderRightWidth(borderWidth);
+    style.setBorderRightStyle(INSET);
+    style.setBorderBottomWidth(borderWidth);
+    style.setBorderBottomStyle(INSET);
+    style.setBorderTopWidth(borderWidth);
+    style.setBorderTopStyle(INSET);
 
     // Override height.
-    style->setHeight(Length(Auto));
+    style.setHeight(Length(Auto));
     setSearchFieldSize(style);
 
     NSControlSize controlSize = controlSizeForFont(style);
 
     // Override padding size to match AppKit text positioning.
-    const int verticalPadding = 1 * style->effectiveZoom();
-    const int horizontalPadding = searchFieldHorizontalPaddings()[controlSize] * style->effectiveZoom();
-    style->setPaddingLeft(Length(horizontalPadding, Fixed));
-    style->setPaddingRight(Length(horizontalPadding, Fixed));
-    style->setPaddingTop(Length(verticalPadding, Fixed));
-    style->setPaddingBottom(Length(verticalPadding, Fixed));
+    const int verticalPadding = 1 * style.effectiveZoom();
+    const int horizontalPadding = searchFieldHorizontalPaddings()[controlSize] * style.effectiveZoom();
+    style.setPaddingLeft(Length(horizontalPadding, Fixed));
+    style.setPaddingRight(Length(horizontalPadding, Fixed));
+    style.setPaddingTop(Length(verticalPadding, Fixed));
+    style.setPaddingBottom(Length(verticalPadding, Fixed));
 
     setFontFromControlSize(style, controlSize);
 
-    style->setBoxShadow(nullptr);
+    style.setBoxShadow(nullptr);
 }
 
 bool LayoutThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
@@ -1540,12 +1540,12 @@ const IntSize* LayoutThemeChromiumMac::cancelButtonSizes() const
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldCancelButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustSearchFieldCancelButtonStyle(RenderStyle& style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, cancelButtonSizes());
-    style->setWidth(Length(size.width(), Fixed));
-    style->setHeight(Length(size.height(), Fixed));
-    style->setBoxShadow(nullptr);
+    style.setWidth(Length(size.width(), Fixed));
+    style.setHeight(Length(size.height(), Fixed));
+    style.setBoxShadow(nullptr);
 }
 
 const IntSize* LayoutThemeChromiumMac::resultsButtonSizes() const
@@ -1554,14 +1554,14 @@ const IntSize* LayoutThemeChromiumMac::resultsButtonSizes() const
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldDecorationStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustSearchFieldDecorationStyle(RenderStyle& style, Element*) const
 {
     NSControlSize controlSize = controlSizeForSystemFont(style);
     IntSize searchFieldSize = searchFieldSizes()[controlSize];
     int width = searchFieldSize.height() / 2 - searchFieldBorderWidth - searchFieldHorizontalPaddings()[controlSize];
-    style->setWidth(Length(width, Fixed));
-    style->setHeight(Length(0, Fixed));
-    style->setBoxShadow(nullptr);
+    style.setWidth(Length(width, Fixed));
+    style.setHeight(Length(0, Fixed));
+    style.setBoxShadow(nullptr);
 }
 
 bool LayoutThemeChromiumMac::paintSearchFieldDecoration(RenderObject*, const PaintInfo&, const IntRect&)
@@ -1569,12 +1569,12 @@ bool LayoutThemeChromiumMac::paintSearchFieldDecoration(RenderObject*, const Pai
     return false;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(RenderStyle& style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, resultsButtonSizes());
-    style->setWidth(Length(size.width(), Fixed));
-    style->setHeight(Length(size.height(), Fixed));
-    style->setBoxShadow(nullptr);
+    style.setWidth(Length(size.width(), Fixed));
+    style.setHeight(Length(size.height(), Fixed));
+    style.setBoxShadow(nullptr);
 }
 
 bool LayoutThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
@@ -1603,7 +1603,7 @@ bool LayoutThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(input->renderer(), r);
-    [search setControlSize:searchFieldControlSizeForFont(o->style())];
+    [search setControlSize:searchFieldControlSizeForFont(o->styleRef())];
     if ([search searchMenuTemplate] != nil)
         [search setSearchMenuTemplate:nil];
 
@@ -1624,12 +1624,12 @@ int LayoutThemeChromiumMac::sliderTickOffsetFromTrackCenter() const
     return -9;
 }
 
-void LayoutThemeChromiumMac::adjustSliderThumbSize(RenderStyle* style, Element*) const
+void LayoutThemeChromiumMac::adjustSliderThumbSize(RenderStyle& style, Element*) const
 {
-    float zoomLevel = style->effectiveZoom();
-    if (style->appearance() == SliderThumbHorizontalPart || style->appearance() == SliderThumbVerticalPart) {
-        style->setWidth(Length(static_cast<int>(sliderThumbWidth * zoomLevel), Fixed));
-        style->setHeight(Length(static_cast<int>(sliderThumbHeight * zoomLevel), Fixed));
+    float zoomLevel = style.effectiveZoom();
+    if (style.appearance() == SliderThumbHorizontalPart || style.appearance() == SliderThumbVerticalPart) {
+        style.setWidth(Length(static_cast<int>(sliderThumbWidth * zoomLevel), Fixed));
+        style.setHeight(Length(static_cast<int>(sliderThumbHeight * zoomLevel), Fixed));
     }
 
     adjustMediaSliderThumbSize(style);
@@ -1763,7 +1763,7 @@ bool LayoutThemeChromiumMac::shouldShowPlaceholderWhenFocused() const
     return true;
 }
 
-void LayoutThemeChromiumMac::adjustMediaSliderThumbSize(RenderStyle* style) const
+void LayoutThemeChromiumMac::adjustMediaSliderThumbSize(RenderStyle& style) const
 {
     RenderMediaControls::adjustMediaSliderThumbSize(style);
 }
@@ -1842,11 +1842,11 @@ bool LayoutThemeChromiumMac::paintMediaToggleClosedCaptionsButton(RenderObject* 
     return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::shouldUseFallbackTheme(RenderStyle* style) const
+bool LayoutThemeChromiumMac::shouldUseFallbackTheme(const RenderStyle& style) const
 {
-    ControlPart part = style->appearance();
+    ControlPart part = style.appearance();
     if (part == CheckboxPart || part == RadioPart)
-        return style->effectiveZoom() != 1;
+        return style.effectiveZoom() != 1;
     return false;
 }
 

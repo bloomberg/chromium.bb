@@ -87,28 +87,28 @@ LayoutTheme::LayoutTheme()
 {
 }
 
-void LayoutTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle* uaStyle)
+void LayoutTheme::adjustStyle(RenderStyle& style, Element* e, const CachedUAStyle* uaStyle)
 {
     // Force inline and table display styles to be inline-block (except for table- which is block)
-    ControlPart part = style->appearance();
-    if (style->display() == INLINE || style->display() == INLINE_TABLE || style->display() == TABLE_ROW_GROUP
-        || style->display() == TABLE_HEADER_GROUP || style->display() == TABLE_FOOTER_GROUP
-        || style->display() == TABLE_ROW || style->display() == TABLE_COLUMN_GROUP || style->display() == TABLE_COLUMN
-        || style->display() == TABLE_CELL || style->display() == TABLE_CAPTION)
-        style->setDisplay(INLINE_BLOCK);
-    else if (style->display() == LIST_ITEM || style->display() == TABLE)
-        style->setDisplay(BLOCK);
+    ControlPart part = style.appearance();
+    if (style.display() == INLINE || style.display() == INLINE_TABLE || style.display() == TABLE_ROW_GROUP
+        || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_FOOTER_GROUP
+        || style.display() == TABLE_ROW || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN
+        || style.display() == TABLE_CELL || style.display() == TABLE_CAPTION)
+        style.setDisplay(INLINE_BLOCK);
+    else if (style.display() == LIST_ITEM || style.display() == TABLE)
+        style.setDisplay(BLOCK);
 
     if (uaStyle && isControlStyled(style, uaStyle)) {
         if (part == MenulistPart) {
-            style->setAppearance(MenulistButtonPart);
+            style.setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
         } else {
-            style->setAppearance(NoControlPart);
+            style.setAppearance(NoControlPart);
         }
     }
 
-    if (!style->hasAppearance())
+    if (!style.hasAppearance())
         return;
 
     if (shouldUseFallbackTheme(style)) {
@@ -125,69 +125,69 @@ void LayoutTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
     case SquareButtonPart:
     case ButtonPart: {
         // Border
-        LengthBox borderBox(style->borderTopWidth(), style->borderRightWidth(), style->borderBottomWidth(), style->borderLeftWidth());
-        borderBox = m_platformTheme->controlBorder(part, style->font().fontDescription(), borderBox, style->effectiveZoom());
-        if (borderBox.top().value() != static_cast<int>(style->borderTopWidth())) {
+        LengthBox borderBox(style.borderTopWidth(), style.borderRightWidth(), style.borderBottomWidth(), style.borderLeftWidth());
+        borderBox = m_platformTheme->controlBorder(part, style.font().fontDescription(), borderBox, style.effectiveZoom());
+        if (borderBox.top().value() != static_cast<int>(style.borderTopWidth())) {
             if (borderBox.top().value())
-                style->setBorderTopWidth(borderBox.top().value());
+                style.setBorderTopWidth(borderBox.top().value());
             else
-                style->resetBorderTop();
+                style.resetBorderTop();
         }
-        if (borderBox.right().value() != static_cast<int>(style->borderRightWidth())) {
+        if (borderBox.right().value() != static_cast<int>(style.borderRightWidth())) {
             if (borderBox.right().value())
-                style->setBorderRightWidth(borderBox.right().value());
+                style.setBorderRightWidth(borderBox.right().value());
             else
-                style->resetBorderRight();
+                style.resetBorderRight();
         }
-        if (borderBox.bottom().value() != static_cast<int>(style->borderBottomWidth())) {
-            style->setBorderBottomWidth(borderBox.bottom().value());
+        if (borderBox.bottom().value() != static_cast<int>(style.borderBottomWidth())) {
+            style.setBorderBottomWidth(borderBox.bottom().value());
             if (borderBox.bottom().value())
-                style->setBorderBottomWidth(borderBox.bottom().value());
+                style.setBorderBottomWidth(borderBox.bottom().value());
             else
-                style->resetBorderBottom();
+                style.resetBorderBottom();
         }
-        if (borderBox.left().value() != static_cast<int>(style->borderLeftWidth())) {
-            style->setBorderLeftWidth(borderBox.left().value());
+        if (borderBox.left().value() != static_cast<int>(style.borderLeftWidth())) {
+            style.setBorderLeftWidth(borderBox.left().value());
             if (borderBox.left().value())
-                style->setBorderLeftWidth(borderBox.left().value());
+                style.setBorderLeftWidth(borderBox.left().value());
             else
-                style->resetBorderLeft();
+                style.resetBorderLeft();
         }
 
         // Padding
-        LengthBox paddingBox = m_platformTheme->controlPadding(part, style->font().fontDescription(), style->paddingBox(), style->effectiveZoom());
-        if (paddingBox != style->paddingBox())
-            style->setPaddingBox(paddingBox);
+        LengthBox paddingBox = m_platformTheme->controlPadding(part, style.font().fontDescription(), style.paddingBox(), style.effectiveZoom());
+        if (paddingBox != style.paddingBox())
+            style.setPaddingBox(paddingBox);
 
         // Whitespace
         if (m_platformTheme->controlRequiresPreWhiteSpace(part))
-            style->setWhiteSpace(PRE);
+            style.setWhiteSpace(PRE);
 
         // Width / Height
         // The width and height here are affected by the zoom.
         // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
-        LengthSize controlSize = m_platformTheme->controlSize(part, style->font().fontDescription(), LengthSize(style->width(), style->height()), style->effectiveZoom());
-        if (controlSize.width() != style->width())
-            style->setWidth(controlSize.width());
-        if (controlSize.height() != style->height())
-            style->setHeight(controlSize.height());
+        LengthSize controlSize = m_platformTheme->controlSize(part, style.font().fontDescription(), LengthSize(style.width(), style.height()), style.effectiveZoom());
+        if (controlSize.width() != style.width())
+            style.setWidth(controlSize.width());
+        if (controlSize.height() != style.height())
+            style.setHeight(controlSize.height());
 
         // Min-Width / Min-Height
-        LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style->font().fontDescription(), style->effectiveZoom());
-        if (minControlSize.width() != style->minWidth())
-            style->setMinWidth(minControlSize.width());
-        if (minControlSize.height() != style->minHeight())
-            style->setMinHeight(minControlSize.height());
+        LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style.font().fontDescription(), style.effectiveZoom());
+        if (minControlSize.width() != style.minWidth())
+            style.setMinWidth(minControlSize.width());
+        if (minControlSize.height() != style.minHeight())
+            style.setMinHeight(minControlSize.height());
 
         // Font
-        FontDescription controlFont = m_platformTheme->controlFont(part, style->font().fontDescription(), style->effectiveZoom());
-        if (controlFont != style->font().fontDescription()) {
+        FontDescription controlFont = m_platformTheme->controlFont(part, style.font().fontDescription(), style.effectiveZoom());
+        if (controlFont != style.font().fontDescription()) {
             // Reset our line-height
-            style->setLineHeight(RenderStyle::initialLineHeight());
+            style.setLineHeight(RenderStyle::initialLineHeight());
 
             // Now update our font.
-            if (style->setFontDescription(controlFont))
-                style->font().update(nullptr);
+            if (style.setFontDescription(controlFont))
+                style.font().update(nullptr);
         }
     }
     default:
@@ -196,7 +196,7 @@ void LayoutTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
 #endif
 
     // Call the appropriate style adjustment method based off the appearance value.
-    switch (style->appearance()) {
+    switch (style.appearance()) {
 #if !USE(NEW_THEME)
     case CheckboxPart:
         return adjustCheckboxStyle(style, e);
@@ -231,9 +231,9 @@ void LayoutTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
 
 bool LayoutTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    ControlPart part = o->style()->appearance();
+    ControlPart part = o->styleRef().appearance();
 
-    if (shouldUseFallbackTheme(o->style()))
+    if (shouldUseFallbackTheme(o->styleRef()))
         return paintUsingFallbackTheme(o, paintInfo, r);
 
 #if USE(NEW_THEME)
@@ -244,7 +244,7 @@ bool LayoutTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     case SquareButtonPart:
     case ButtonPart:
     case InnerSpinButtonPart:
-        m_platformTheme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->style()->effectiveZoom(), o->view()->frameView());
+        m_platformTheme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->styleRef().effectiveZoom(), o->view()->frameView());
         return false;
     default:
         break;
@@ -545,26 +545,26 @@ bool LayoutTheme::isControlContainer(ControlPart appearance) const
     return appearance != CheckboxPart && appearance != RadioPart;
 }
 
-static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAStyle& uaStyle)
+static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAStyle* uaStyle)
 {
     // Code below excludes the background-repeat from comparison by resetting it
-    FillLayer backgroundCopy = uaStyle.backgroundLayers;
+    FillLayer backgroundCopy = uaStyle->backgroundLayers;
     FillLayer backgroundLayersCopy = style.backgroundLayers();
     backgroundCopy.setRepeatX(NoRepeatFill);
     backgroundCopy.setRepeatY(NoRepeatFill);
     backgroundLayersCopy.setRepeatX(NoRepeatFill);
     backgroundLayersCopy.setRepeatY(NoRepeatFill);
     // Test the style to see if the UA border and background match.
-    return style.border() != uaStyle.border
+    return style.border() != uaStyle->border
         || backgroundLayersCopy != backgroundCopy
-        || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle.backgroundColor;
+        || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle->backgroundColor;
 }
 
-bool LayoutTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
+bool LayoutTheme::isControlStyled(const RenderStyle& style, const CachedUAStyle* uaStyle) const
 {
     ASSERT(uaStyle);
 
-    switch (style->appearance()) {
+    switch (style.appearance()) {
     case PushButtonPart:
     case SquareButtonPart:
     case ButtonPart:
@@ -574,17 +574,17 @@ bool LayoutTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle*
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-        return isBackgroundOrBorderStyled(*style, *uaStyle);
+        return isBackgroundOrBorderStyled(style, uaStyle);
 
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
-        return isBackgroundOrBorderStyled(*style, *uaStyle) || style->boxShadow();
+        return isBackgroundOrBorderStyled(style, uaStyle) || style.boxShadow();
 
     case SliderHorizontalPart:
     case SliderVerticalPart:
-        return style->boxShadow();
+        return style.boxShadow();
 
     default:
         return false;
@@ -600,12 +600,12 @@ void LayoutTheme::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
 
 bool LayoutTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
 {
-    if (supportsFocusRing(renderer->style()))
+    if (supportsFocusRing(renderer->styleRef()))
         return false;
     Node* node = renderer->node();
     if (!node)
         return true;
-    if (!renderer->style()->hasAppearance() && !node->isLink())
+    if (!renderer->styleRef().hasAppearance() && !node->isLink())
         return true;
     // We can't use LayoutTheme::isFocused because outline:auto might be
     // specified to non-:focus rulesets.
@@ -614,15 +614,15 @@ bool LayoutTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
     return true;
 }
 
-bool LayoutTheme::supportsFocusRing(const RenderStyle* style) const
+bool LayoutTheme::supportsFocusRing(const RenderStyle& style) const
 {
-    return (style->hasAppearance() && style->appearance() != TextFieldPart && style->appearance() != TextAreaPart && style->appearance() != MenulistButtonPart && style->appearance() != ListboxPart);
+    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart);
 }
 
 bool LayoutTheme::stateChanged(RenderObject* o, ControlState state) const
 {
     // Default implementation assumes the controls don't respond to changes in :hover state
-    if (state == HoverControlState && !supportsHover(o->style()))
+    if (state == HoverControlState && !supportsHover(o->styleRef()))
         return false;
 
     // Assume pressed state is only responded to if the control is enabled.
@@ -756,7 +756,7 @@ bool LayoutTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
 
 #if !USE(NEW_THEME)
 
-void LayoutTheme::adjustCheckboxStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustCheckboxStyle(RenderStyle& style, Element*) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -764,14 +764,14 @@ void LayoutTheme::adjustCheckboxStyle(RenderStyle* style, Element*) const
     setCheckboxSize(style);
 
     // padding - not honored by WinIE, needs to be removed.
-    style->resetPadding();
+    style.resetPadding();
 
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
-    style->resetBorder();
+    style.resetBorder();
 }
 
-void LayoutTheme::adjustRadioStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustRadioStyle(RenderStyle& style, Element*) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -779,23 +779,23 @@ void LayoutTheme::adjustRadioStyle(RenderStyle* style, Element*) const
     setRadioSize(style);
 
     // padding - not honored by WinIE, needs to be removed.
-    style->resetPadding();
+    style.resetPadding();
 
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
-    style->resetBorder();
+    style.resetBorder();
 }
 
-void LayoutTheme::adjustButtonStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustButtonStyle(RenderStyle& style, Element*) const
 {
 }
 
-void LayoutTheme::adjustInnerSpinButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustInnerSpinButtonStyle(RenderStyle&, Element*) const
 {
 }
 #endif
 
-void LayoutTheme::adjustMenuListStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustMenuListStyle(RenderStyle&, Element*) const
 {
 }
 
@@ -839,9 +839,9 @@ void LayoutTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     IntSize thumbSize;
     RenderObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->renderer();
     if (thumbRenderer) {
-        RenderStyle* thumbStyle = thumbRenderer->style();
-        int thumbWidth = thumbStyle->width().intValue();
-        int thumbHeight = thumbStyle->height().intValue();
+        const RenderStyle& thumbStyle = thumbRenderer->styleRef();
+        int thumbWidth = thumbStyle.width().intValue();
+        int thumbHeight = thumbStyle.height().intValue();
         thumbSize.setWidth(isHorizontal ? thumbWidth : thumbHeight);
         thumbSize.setHeight(isHorizontal ? thumbHeight : thumbWidth);
     }
@@ -907,32 +907,32 @@ bool LayoutTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
     return inputElement->isSteppable() && inputElement->type() != InputTypeNames::range;
 }
 
-void LayoutTheme::adjustMenuListButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustMenuListButtonStyle(RenderStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSliderThumbStyle(RenderStyle* style, Element* element) const
+void LayoutTheme::adjustSliderThumbStyle(RenderStyle& style, Element* element) const
 {
     adjustSliderThumbSize(style, element);
 }
 
-void LayoutTheme::adjustSliderThumbSize(RenderStyle*, Element*) const
+void LayoutTheme::adjustSliderThumbSize(RenderStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldStyle(RenderStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldCancelButtonStyle(RenderStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldDecorationStyle(RenderStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle&, Element*) const
 {
 }
 
@@ -1139,14 +1139,14 @@ bool LayoutTheme::supportsCalendarPicker(const AtomicString& type) const
 }
 #endif
 
-bool LayoutTheme::shouldUseFallbackTheme(RenderStyle*) const
+bool LayoutTheme::shouldUseFallbackTheme(const RenderStyle&) const
 {
     return false;
 }
 
-void LayoutTheme::adjustStyleUsingFallbackTheme(RenderStyle* style, Element* e)
+void LayoutTheme::adjustStyleUsingFallbackTheme(RenderStyle& style, Element* e)
 {
-    ControlPart part = style->appearance();
+    ControlPart part = style.appearance();
     switch (part) {
     case CheckboxPart:
         return adjustCheckboxStyleUsingFallbackTheme(style, e);
@@ -1172,12 +1172,12 @@ bool LayoutTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, c
 }
 
 // static
-void LayoutTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
+void LayoutTheme::setSizeIfAuto(RenderStyle& style, const IntSize& size)
 {
-    if (style->width().isIntrinsicOrAuto())
-        style->setWidth(Length(size.width(), Fixed));
-    if (style->height().isAuto())
-        style->setHeight(Length(size.height(), Fixed));
+    if (style.width().isIntrinsicOrAuto())
+        style.setWidth(Length(size.width(), Fixed));
+    if (style.height().isAuto())
+        style.setHeight(Length(size.height(), Fixed));
 }
 
 bool LayoutTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
@@ -1202,24 +1202,24 @@ bool LayoutTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintIn
     return false;
 }
 
-void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Element*) const
+void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle& style, Element*) const
 {
     // If the width and height are both specified, then we have nothing to do.
-    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+    if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
         return;
 
     IntSize size = Platform::current()->fallbackThemeEngine()->getSize(WebFallbackThemeEngine::PartCheckbox);
-    float zoomLevel = style->effectiveZoom();
+    float zoomLevel = style.effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
 
     // padding - not honored by WinIE, needs to be removed.
-    style->resetPadding();
+    style.resetPadding();
 
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
-    style->resetBorder();
+    style.resetBorder();
 }
 
 bool LayoutTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
@@ -1244,24 +1244,24 @@ bool LayoutTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo&
     return false;
 }
 
-void LayoutTheme::adjustRadioStyleUsingFallbackTheme(RenderStyle* style, Element*) const
+void LayoutTheme::adjustRadioStyleUsingFallbackTheme(RenderStyle& style, Element*) const
 {
     // If the width and height are both specified, then we have nothing to do.
-    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+    if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
         return;
 
     IntSize size = Platform::current()->fallbackThemeEngine()->getSize(WebFallbackThemeEngine::PartRadio);
-    float zoomLevel = style->effectiveZoom();
+    float zoomLevel = style.effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
 
     // padding - not honored by WinIE, needs to be removed.
-    style->resetPadding();
+    style.resetPadding();
 
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
-    style->resetBorder();
+    style.resetBorder();
 }
 
 } // namespace blink

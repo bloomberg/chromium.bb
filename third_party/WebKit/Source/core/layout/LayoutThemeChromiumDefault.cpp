@@ -84,13 +84,13 @@ LayoutThemeChromiumDefault::~LayoutThemeChromiumDefault()
 {
 }
 
-bool LayoutThemeChromiumDefault::supportsFocusRing(const RenderStyle* style) const
+bool LayoutThemeChromiumDefault::supportsFocusRing(const RenderStyle& style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.
-        return style->appearance() == ButtonPart
-            || style->appearance() == PushButtonPart
-            || style->appearance() == SquareButtonPart;
+        return style.appearance() == ButtonPart
+            || style.appearance() == PushButtonPart
+            || style.appearance() == SquareButtonPart;
     }
 
     return LayoutThemeChromiumSkia::supportsFocusRing(style);
@@ -183,18 +183,18 @@ int LayoutThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
     return -16;
 }
 
-void LayoutThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
+void LayoutThemeChromiumDefault::adjustSliderThumbSize(RenderStyle& style, Element* element) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartSliderThumb);
 
     // FIXME: Mock theme doesn't handle zoomed sliders.
-    float zoomLevel = useMockTheme() ? 1 : style->effectiveZoom();
-    if (style->appearance() == SliderThumbHorizontalPart) {
-        style->setWidth(Length(size.width() * zoomLevel, Fixed));
-        style->setHeight(Length(size.height() * zoomLevel, Fixed));
-    } else if (style->appearance() == SliderThumbVerticalPart) {
-        style->setWidth(Length(size.height() * zoomLevel, Fixed));
-        style->setHeight(Length(size.width() * zoomLevel, Fixed));
+    float zoomLevel = useMockTheme() ? 1 : style.effectiveZoom();
+    if (style.appearance() == SliderThumbHorizontalPart) {
+        style.setWidth(Length(size.width() * zoomLevel, Fixed));
+        style.setHeight(Length(size.height() * zoomLevel, Fixed));
+    } else if (style.appearance() == SliderThumbVerticalPart) {
+        style.setWidth(Length(size.height() * zoomLevel, Fixed));
+        style.setHeight(Length(size.width() * zoomLevel, Fixed));
     } else {
         LayoutThemeChromiumSkia::adjustSliderThumbSize(style, element);
     }
@@ -245,14 +245,14 @@ bool LayoutThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo&
     return false;
 }
 
-void LayoutThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
+void LayoutThemeChromiumDefault::setCheckboxSize(RenderStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
-    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+    if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
         return;
 
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartCheckbox);
-    float zoomLevel = style->effectiveZoom();
+    float zoomLevel = style.effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
@@ -268,14 +268,14 @@ bool LayoutThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i,
     return false;
 }
 
-void LayoutThemeChromiumDefault::setRadioSize(RenderStyle* style) const
+void LayoutThemeChromiumDefault::setRadioSize(RenderStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
-    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+    if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
         return;
 
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartRadio);
-    float zoomLevel = style->effectiveZoom();
+    float zoomLevel = style.effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
@@ -445,12 +445,12 @@ bool LayoutThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
     return false;
 }
 
-void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle& style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
-    style->setWidth(Length(size.width(), Fixed));
-    style->setMinWidth(Length(size.width(), Fixed));
+    style.setWidth(Length(size.width(), Fixed));
+    style.setMinWidth(Length(size.width(), Fixed));
 }
 
 bool LayoutThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
@@ -490,13 +490,13 @@ bool LayoutThemeChromiumDefault::shouldOpenPickerWithF4Key() const
     return true;
 }
 
-bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) const
+bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(const RenderStyle& style) const
 {
     if (useMockTheme()) {
         // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
-        ControlPart part = style->appearance();
+        ControlPart part = style.appearance();
         if (part == CheckboxPart || part == RadioPart)
-            return style->effectiveZoom() != 1;
+            return style.effectiveZoom() != 1;
     }
     return LayoutTheme::shouldUseFallbackTheme(style);
 }
