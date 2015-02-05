@@ -632,15 +632,27 @@ void VTVideoDecodeAccelerator::Output(
     CVImageBufferRef image_buffer) {
   if (status) {
     NOTIFY_STATUS("Decoding", status);
-  } else if (CFGetTypeID(image_buffer) != CVPixelBufferGetTypeID()) {
+    return;
+  }
+
+  // The type of |image_buffer| is CVImageBuffer, but we only handle
+  // CVPixelBuffers. This should be guaranteed as we set
+  // kCVPixelBufferOpenGLCompatibilityKey in |image_config|.
+  //
+  // Sometimes, for unknown reasons (http://crbug.com/453050), |image_buffer| is
+  // NULL, which causes CFGetTypeID() to crash. While the rest of the code would
+  // smoothly handle NULL as a dropped frame, we choose to fail permanantly here
+  // until the issue is better understood.
+  if (!image_buffer || CFGetTypeID(image_buffer) != CVPixelBufferGetTypeID()) {
     DLOG(ERROR) << "Decoded frame is not a CVPixelBuffer";
     NotifyError(PLATFORM_FAILURE);
-  } else {
-    Frame* frame = reinterpret_cast<Frame*>(source_frame_refcon);
-    frame->image.reset(image_buffer, base::scoped_policy::RETAIN);
-    gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
+    return;
   }
+
+  Frame* frame = reinterpret_cast<Frame*>(source_frame_refcon);
+  frame->image.reset(image_buffer, base::scoped_policy::RETAIN);
+  gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
 }
 
 void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
@@ -715,7 +727,10 @@ void VTVideoDecodeAccelerator::ProcessWorkQueues() {
   switch (state_) {
     case STATE_DECODING:
       // TODO(sandersd): Batch where possible.
-      while (ProcessReorderQueue() || ProcessTaskQueue());
+      while (state_ == STATE_DECODING) {
+        if (!ProcessReorderQueue() && !ProcessTaskQueue())
+          break;
+      }
       return;
 
     case STATE_ERROR:
