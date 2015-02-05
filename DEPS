@@ -715,7 +715,7 @@ hooks = [
     'action': ['python',
                'src/build/get_syzygy_binaries.py',
                '--output-dir=src/third_party/syzygy/binaries',
-               '--revision=f0332d538f3eb84c2a55a3d0506a4a0b58d1c09e',
+               '--revision=79621b5523205997ae9f689efb7f299973c87a8c',
                '--overwrite',
     ],
   },
