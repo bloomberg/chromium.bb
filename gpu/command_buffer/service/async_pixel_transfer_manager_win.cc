@@ -18,7 +18,7 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
     case gfx::kGLImplementationOSMesaGL:
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationEGLGLES2:
-      return new AsyncPixelTransferManagerIdle;
+      return new AsyncPixelTransferManagerIdle(true);
     case gfx::kGLImplementationMockGL:
       return new AsyncPixelTransferManagerStub;
     default:

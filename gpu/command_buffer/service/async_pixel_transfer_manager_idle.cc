@@ -183,9 +183,8 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
   base::TimeTicks begin_time(base::TimeTicks::Now());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
 
-  // If it's a full texture update, use glTexImage2D as it's faster.
-  // TODO(epenner): Make this configurable (http://crbug.com/259924)
-  if (tex_params.xoffset == 0 &&
+  if (shared_state_->use_teximage2d_over_texsubimage2d &&
+      tex_params.xoffset == 0 &&
       tex_params.yoffset == 0 &&
       tex_params.target == define_params_.target &&
       tex_params.level  == define_params_.level &&
@@ -234,8 +233,11 @@ AsyncPixelTransferManagerIdle::Task::Task(
 
 AsyncPixelTransferManagerIdle::Task::~Task() {}
 
-AsyncPixelTransferManagerIdle::SharedState::SharedState()
-    : texture_upload_count(0) {}
+AsyncPixelTransferManagerIdle::SharedState::SharedState(
+    bool use_teximage2d_over_texsubimage2d)
+    : use_teximage2d_over_texsubimage2d(use_teximage2d_over_texsubimage2d),
+      texture_upload_count(0) {
+}
 
 AsyncPixelTransferManagerIdle::SharedState::~SharedState() {}
 
@@ -250,8 +252,9 @@ void AsyncPixelTransferManagerIdle::SharedState::ProcessNotificationTasks() {
   }
 }
 
-AsyncPixelTransferManagerIdle::AsyncPixelTransferManagerIdle()
-  : shared_state_() {
+AsyncPixelTransferManagerIdle::AsyncPixelTransferManagerIdle(
+    bool use_teximage2d_over_texsubimage2d)
+    : shared_state_(use_teximage2d_over_texsubimage2d) {
 }
 
 AsyncPixelTransferManagerIdle::~AsyncPixelTransferManagerIdle() {}
