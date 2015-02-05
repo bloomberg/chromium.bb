@@ -394,9 +394,6 @@ PALADIN_TYPE = 'paladin'
 # A builder that kicks off Pre-CQ builders that bless the purest CLs.
 PRE_CQ_LAUNCHER_TYPE = 'priest'
 
-# A builder that cuts and prunes branches.
-CREATE_BRANCH_TYPE = 'gardener'
-
 # Chrome PFQ type.  Incremental build type that builds and validates new
 # versions of Chrome.  Only valid if set with CHROME_REV.  See
 # VALID_CHROME_REVISIONS for more information.
@@ -432,7 +429,6 @@ VALID_BUILD_TYPES = (
     CHROME_PFQ_TYPE,
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
-    CREATE_BRANCH_TYPE,
     PAYLOADS_TYPE,
     PROJECT_SDK_TYPE,
 )

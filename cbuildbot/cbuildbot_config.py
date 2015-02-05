@@ -2133,7 +2133,9 @@ internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
   # Disable postsync_reexec to continue running the 'master' branch chromite
   # for all stages, rather than the chromite in the branch buildroot.
   postsync_reexec=False,
-  build_type=constants.CREATE_BRANCH_TYPE,
+  # Need to reset the paladin build_type we inherited.
+  build_type=None,
+  builder_class_name='release_builders.CreateBranchBuilder',
   description='Used for creating/deleting branches (TPMs only)',
 )
 

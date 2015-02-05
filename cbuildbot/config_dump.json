@@ -6925,7 +6925,8 @@
     },
     "branch-util": {
         "boards": [],
-        "build_type": "gardener",
+        "build_type": null,
+        "builder_class_name": "release_builders.CreateBranchBuilder",
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Used for creating/deleting branches (TPMs only)",

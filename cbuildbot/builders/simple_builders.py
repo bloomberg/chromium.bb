@@ -16,7 +16,6 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import artifact_stages
-from chromite.cbuildbot.stages import branch_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
@@ -290,8 +289,6 @@ class SimpleBuilder(generic_builders.Builder):
     # TODO(sosa): Split these out into classes.
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
       self._RunStage(sync_stages.PreCQLauncherStage)
-    elif self._run.config.build_type == constants.CREATE_BRANCH_TYPE:
-      self._RunStage(branch_stages.BranchUtilStage)
     elif self._run.config.build_type == constants.CHROOT_BUILDER_TYPE:
       self._RunChrootBuilderTypeBuild()
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or

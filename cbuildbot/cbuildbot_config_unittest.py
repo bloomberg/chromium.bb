@@ -316,9 +316,11 @@ class CBuildBotTest(cros_test_lib.TestCase):
   def testBuildType(self):
     """Verifies that all configs use valid build types."""
     for build_name, config in cbuildbot_config.config.iteritems():
-      self.assertTrue(
-          config['build_type'] in constants.VALID_BUILD_TYPES,
-          'Config %s: has unexpected build_type value.' % build_name)
+      # For builders that have explicit classes, this check doesn't make sense.
+      if config['builder_class_name']:
+        continue
+      self.assertIn(config['build_type'], constants.VALID_BUILD_TYPES,
+                    'Config %s: has unexpected build_type value.' % build_name)
 
   def testGCCGitHash(self):
     """Verifies that gcc_githash is not set without setting latest_toolchain."""
