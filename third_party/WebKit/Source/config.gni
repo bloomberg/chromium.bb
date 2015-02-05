@@ -46,6 +46,14 @@ use_webaudio_ffmpeg = !is_mac && !is_android
 # TODO(brettw) do we need this or can we assume its always on?
 use_concatenated_impulse_responses = true
 
+# public_feature_defines_list --------------------------------------------------
+
+public_feature_defines_list = []
+
+if (enable_oilpan) {
+  public_feature_defines_list += [ "ENABLE_OILPAN=1" ]
+}
+
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = [
@@ -84,9 +92,6 @@ if (use_openmax_dl_fft) {
 
 if (use_default_render_theme) {
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-}
-if (enable_oilpan) {
-  feature_defines_list += [ "ENABLE_OILPAN=1" ]
 }
 if (blink_asserts_always_on) {
   feature_defines_list += [ "ENABLE_ASSERT=1" ]

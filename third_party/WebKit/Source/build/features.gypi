@@ -36,7 +36,11 @@
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
+      '<@(public_feature_defines)'
     ],
+    'public_feature_defines': [
+    ],
+
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
@@ -76,7 +80,7 @@
         ],
       }],
       ['enable_oilpan==1', {
-        'feature_defines': [
+        'public_feature_defines': [
           'ENABLE_OILPAN=1',
         ],
       }],

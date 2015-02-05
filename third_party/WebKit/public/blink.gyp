@@ -63,6 +63,11 @@
             'export_dependent_settings': [
                 '../Source/platform/blink_platform.gyp:blink_common',
             ],
+            'direct_dependent_settings': {
+                'defines': [
+                  '<@(public_feature_defines)',
+                ],
+            },
         },
         {
             # GN version: //third_party/WebKit/public:test_support

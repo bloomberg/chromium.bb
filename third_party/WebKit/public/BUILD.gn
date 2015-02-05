@@ -16,6 +16,9 @@ group("blink") {
     "//third_party/WebKit/Source/web",
     "//third_party/WebKit/Source/platform",
   ]
+  public_configs = [
+    "//third_party/WebKit/Source:public_features",
+  ]
 }
 
 # This target provides a minimal set of Blink APIs such as WebString to use in
@@ -27,6 +30,9 @@ group("blink") {
 group("blink_minimal") {
   deps = [
     "//third_party/WebKit/Source/platform:blink_common",
+  ]
+  public_configs = [
+    "//third_party/WebKit/Source:public_features",
   ]
 }
 
@@ -57,6 +63,9 @@ group("all_blink") {
       "//third_party/WebKit/Source/platform:platform_unittests",
     ]
   }
+  public_configs = [
+    "//third_party/WebKit/Source:public_features",
+  ]
 }
 
 config("blink_headers_config") {
@@ -97,6 +106,7 @@ if (is_android) {
 source_set("blink_headers") {
   public_configs = [
     ":blink_headers_config",
+    "//third_party/WebKit/Source:public_features",
     # Blink exposes icu headers in the public API.
     "//third_party/icu:icu_config",
     # Blink exposes NPAPI headers in the public API.

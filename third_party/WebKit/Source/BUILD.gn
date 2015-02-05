@@ -9,10 +9,14 @@ if (is_clang) {
 
 visibility = [ "//third_party/WebKit/*" ]
 
+config("public_features") {
+  defines = public_feature_defines_list
+}
+
 # features ---------------------------------------------------------------------
 
 config("features") {
-  defines = feature_defines_list
+  defines = feature_defines_list + public_feature_defines_list
 }
 
 # inside_blink -----------------------------------------------------------------

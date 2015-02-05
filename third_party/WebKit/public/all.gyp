@@ -42,6 +42,11 @@
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
             ],
+            'direct_dependent_settings': {
+                'defines': [
+                    '<@(public_feature_defines)',
+                ],
+            },
             'conditions': [
                 ['OS=="android" and android_webview_build==0', {
                     'dependencies': [
