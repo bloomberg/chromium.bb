@@ -465,4 +465,40 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 
+AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
+    : is_for_credit_card_(is_for_credit_card),
+      is_server_data_available_(false),
+      is_local_data_available_(false),
+      has_logged_interacted_(false) {};
+
+void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm() {
+  if (!has_logged_interacted_) {
+    has_logged_interacted_ = true;
+    Log(AutofillMetrics::FORM_EVENT_INTERACTED_ONCE);
+  }
+}
+
+void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
+  DCHECK_LT(event, NUM_FORM_EVENTS);
+  std::string name("Autofill.FormEvents.");
+  if (is_for_credit_card_)
+    name += "CreditCard";
+  else
+    name += "Address";
+  LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+
+  // Logging again in a different histogram for segmentation purposes.
+  // TODO(waltercacau): Re-evaluate if we still need such fine grained
+  // segmentation. http://crbug.com/454018
+  if (!is_server_data_available_ && !is_local_data_available_)
+    name += ".WithNoData";
+  else if (is_server_data_available_ && !is_local_data_available_)
+    name += ".WithOnlyServerData";
+  else if (!is_server_data_available_ && is_local_data_available_)
+    name += ".WithOnlyLocalData";
+  else
+    name += ".WithBothServerAndLocalData";
+  LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+}
+
 }  // namespace autofill

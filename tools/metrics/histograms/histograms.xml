@@ -1803,6 +1803,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.FormEvents.Address" enum="AutofillFormEvent">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Autofill form events for address forms. These are recorded when the user
+    interacts with a form requesting an address.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormEvents.CreditCard" enum="AutofillFormEvent">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Autofill form events for credit card forms. These are recorded when the user
+    interacts with a form requesting a credit card.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -43266,6 +43282,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="17" label="fp05cc03e1"/>
 </enum>
 
+<enum name="AutofillFormEvent" type="int">
+  <int value="1" label="Interacted once"/>
+</enum>
+
 <enum name="AutofillMacAddressBook" type="int">
   <int value="0" label="Showed popup entry"/>
   <int value="1" label="Selected popup entry"/>
@@ -59532,6 +59552,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="AsyncSlowStart_on" label="Async Slow Start on"/>
   <affected-histogram name="Net.Transaction_Connected_New"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillDataAvailability">
+  <suffix name="WithNoData" label="no autofill data"/>
+  <suffix name="WithOnlyServerData" label="only server autofill data"/>
+  <suffix name="WithOnlyLocalData" label="only local autofill data"/>
+  <suffix name="WithBothServerAndLocalData"
+      label="both server and local autofill data"/>
+  <affected-histogram name="Autofill.FormEvents.Address"/>
+  <affected-histogram name="Autofill.FormEvents.CreditCard"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillServerExperiments">

@@ -243,6 +243,18 @@ class AutofillMetrics {
     NUM_USER_HAPPINESS_METRICS,
   };
 
+  // Form Events for autofill.
+  // These events are triggered separetly for address and credit card forms.
+  enum FormEvent {
+    // User interacted with a field of this kind of form. Logged only once per
+    // page load.
+    FORM_EVENT_INTERACTED_ONCE = 0,
+    // TODO(waltercacau): Remove the 2 here once we add more events.
+    //   This circumvents an assertion that gets triggered when you have
+    //   only one bucket.
+    NUM_FORM_EVENTS = 2,
+  };
+
   // For measuring the network request time of various Wallet API calls. See
   // WalletClient::RequestType.
   enum WalletApiCallMetric {
@@ -414,6 +426,35 @@ class AutofillMetrics {
   // Log the number of Autofill suggestions presented to the user when filling a
   // form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
+
+  // Utility to autofill form events in the relevant histograms depending on
+  // the presence of server and/or local data.
+  class FormEventLogger {
+   public:
+    FormEventLogger(bool is_for_credit_card);
+
+    // Should be called when the user interacted with an autofillable form.
+    void OnDidInteractWithAutofillableForm();
+
+    // Sets if server data is available or not. If not called assumed false.
+    inline void set_is_server_data_available(bool is_server_data_available) {
+      is_server_data_available_ = is_server_data_available;
+    }
+
+    // Sets if server data is available or not. If not called assumed false.
+    inline void set_is_local_data_available(bool is_local_data_available) {
+      is_local_data_available_ = is_local_data_available;
+    }
+
+   private:
+    // Logs a form event.
+    void Log(FormEvent event) const;
+
+    bool is_for_credit_card_;
+    bool is_server_data_available_;
+    bool is_local_data_available_;
+    bool has_logged_interacted_;
+  };
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);

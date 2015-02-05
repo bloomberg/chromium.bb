@@ -1203,21 +1203,26 @@ void PersonalDataManager::EnabledPrefChanged() {
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
     bool record_metrics) const {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!pref_service_->GetBoolean(prefs::kAutofillUseMacAddressBook))
-    return web_profiles();
+  bool use_auxiliary_profiles =
+      pref_service_->GetBoolean(prefs::kAutofillUseMacAddressBook);
 #else
-  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
-    return web_profiles();
+  bool use_auxiliary_profiles =
+      pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   profiles_.clear();
 
   // Populates |auxiliary_profiles_|.
-  LoadAuxiliaryProfiles(record_metrics);
+  if (use_auxiliary_profiles)
+    LoadAuxiliaryProfiles(record_metrics);
 
-  profiles_.insert(profiles_.end(), web_profiles_.begin(), web_profiles_.end());
-  profiles_.insert(
-      profiles_.end(), auxiliary_profiles_.begin(), auxiliary_profiles_.end());
+  profiles_.insert(profiles_.end(), web_profiles().begin(),
+                   web_profiles().end());
+  if (use_auxiliary_profiles) {
+    profiles_.insert(
+        profiles_.end(), auxiliary_profiles_.begin(),
+        auxiliary_profiles_.end());
+  }
   profiles_.insert(
       profiles_.end(), server_profiles_.begin(), server_profiles_.end());
   return profiles_;

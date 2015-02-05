@@ -150,6 +150,10 @@ AutofillManager::AutofillManager(
       personal_data_(client->GetPersonalDataManager()),
       autocomplete_history_manager_(
           new AutocompleteHistoryManager(driver, client)),
+      address_form_event_logger_(
+          new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */)),
+      credit_card_form_event_logger_(
+          new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */)),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -461,13 +465,28 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                               field,
                               bounding_box,
                               display_warning);
+
+  // Need to refresh models before using the form_event_loggers.
+  bool is_autofill_possible = RefreshDataModels();
+
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
-  if (RefreshDataModels() &&
-      driver_->RendererIsAvailable() &&
+  bool got_autofillable_form =
       GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
-      // Don't send suggestions for forms that aren't auto-fillable.
-      form_structure->IsAutofillable()) {
+      // Don't send suggestions or track forms that aren't auto-fillable.
+      form_structure->IsAutofillable();
+
+  // Logging interactions of forms that are autofillable.
+  if (got_autofillable_form) {
+    if (autofill_field->Type().group() == CREDIT_CARD)
+      credit_card_form_event_logger_->OnDidInteractWithAutofillableForm();
+    else
+      address_form_event_logger_->OnDidInteractWithAutofillableForm();
+  }
+
+  if (is_autofill_possible &&
+      driver_->RendererIsAvailable() &&
+      got_autofillable_form) {
     AutofillType type = autofill_field->Type();
     bool is_filling_credit_card = (type.group() == CREDIT_CARD);
     if (is_filling_credit_card) {
@@ -476,7 +495,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       suggestions =
           GetProfileSuggestions(*form_structure, field, *autofill_field);
     }
-
     if (!suggestions.empty()) {
       // Don't provide Autofill suggestions when Autofill is disabled, and don't
       // provide credit card suggestions for non-HTTPS pages. However, provide a
@@ -831,6 +849,10 @@ bool AutofillManager::UploadPasswordForm(
 
 void AutofillManager::Reset() {
   form_structures_.clear();
+  address_form_event_logger_.reset(
+      new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */));
+  credit_card_form_event_logger_.reset(
+      new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */));
   has_logged_autofill_enabled_ = false;
   has_logged_address_suggestions_count_ = false;
   did_show_suggestions_ = false;
@@ -856,6 +878,10 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       personal_data_(personal_data),
       autocomplete_history_manager_(
           new AutocompleteHistoryManager(driver, client)),
+      address_form_event_logger_(
+          new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */)),
+      credit_card_form_event_logger_(
+          new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */)),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -870,15 +896,48 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
   DCHECK(client_);
 }
 
-bool AutofillManager::RefreshDataModels() const {
+bool AutofillManager::RefreshDataModels() {
   if (!IsAutofillEnabled())
     return false;
 
   // No autofill data to return if the profiles are empty.
-  if (personal_data_->GetProfiles().empty() &&
-      personal_data_->GetCreditCards().empty()) {
-    return false;
+  const std::vector<AutofillProfile*>& profiles =
+      personal_data_->GetProfiles();
+  const std::vector<CreditCard*>& credit_cards =
+      personal_data_->GetCreditCards();
+
+  // Updating the FormEventLoggers for addresses and credit cards.
+  {
+    bool is_server_data_available = false;
+    bool is_local_data_available = false;
+    for (CreditCard* credit_card : credit_cards) {
+      if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+        is_local_data_available = true;
+      else
+        is_server_data_available = true;
+    }
+    credit_card_form_event_logger_->set_is_server_data_available(
+        is_server_data_available);
+    credit_card_form_event_logger_->set_is_local_data_available(
+        is_local_data_available);
   }
+  {
+    bool is_server_data_available = false;
+    bool is_local_data_available = false;
+    for (AutofillProfile* profile : profiles) {
+      if (profile->record_type() == AutofillProfile::LOCAL_PROFILE)
+        is_local_data_available = true;
+      else
+        is_server_data_available = true;
+    }
+    address_form_event_logger_->set_is_server_data_available(
+        is_server_data_available);
+    address_form_event_logger_->set_is_local_data_available(
+        is_local_data_available);
+  }
+
+  if (profiles.empty() && credit_cards.empty())
+    return false;
 
   return true;
 }

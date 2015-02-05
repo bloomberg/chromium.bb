@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -239,7 +240,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnDidGetRealPan(const std::string& real_pan) override;
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
-  bool RefreshDataModels() const;
+  bool RefreshDataModels();
 
   // Unpacks |unique_id| and fills |form_group| and |variant| with the
   // appropriate data source and variant index. Sets |is_credit_card| to true
@@ -342,6 +343,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Handles single-field autocomplete form data.
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
+
+  // Utilities for logging form events.
+  scoped_ptr<AutofillMetrics::FormEventLogger> address_form_event_logger_;
+  scoped_ptr<AutofillMetrics::FormEventLogger> credit_card_form_event_logger_;
 
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_;
