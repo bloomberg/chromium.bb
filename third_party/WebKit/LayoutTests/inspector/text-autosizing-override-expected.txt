@@ -5,26 +5,12 @@ Text was not autosized. PASS
 Running: checkNotAutosizedWithPageAgent
 Text was not autosized. PASS
 
-Running: checkAutosizedWithoutPageAgent
-Text was autosized. PASS
-
-Running: checkAutosizedWithPageAgent
-Text was autosized. PASS
-
-Running: checkAutosizedWithDeviceMetrics
-Text was autosized. PASS
-
-Running: checkNotAutosizedWithDeviceMetrics
+Running: checkNotAutosizedWithZeroDeviceMetrics
 Text was not autosized. PASS
 
-Running: checkAutosizedWithoutDeviceMetrics
+Running: checkAutosizedWhenDeviceMetrics
 Text was autosized. PASS
 
-Running: checkNotAutosizedWithoutDeviceMetrics
+Running: checkCleanupOverrides
 Text was not autosized. PASS
-
-Running: checkAutosizedWhenDeviceMetricsOverrideSettings
-Text was autosized. PASS
-
-Running: cleanup
 

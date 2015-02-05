@@ -287,7 +287,6 @@ void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionState& ex
 {
     InternalSettingsGuardForSettings();
     settings()->setTextAutosizingEnabled(enabled);
-    m_page->inspectorController().setTextAutosizingEnabled(enabled);
 }
 
 void InternalSettings::setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState& exceptionState)

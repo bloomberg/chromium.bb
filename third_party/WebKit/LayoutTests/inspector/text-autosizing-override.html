@@ -7,100 +7,61 @@
   body { width: 800px; margin: 0; overflow-y: hidden; }
 </style>
 <script>
-  if (window.internals)
+if (window.internals)	
     window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
 
-  function getAutosizing() {
-    return JSON.stringify({
-      textHeight: document.getElementById('measure').offsetHeight
-    });
-  }
+function getAutosizing()
+{
+    return JSON.stringify({ textHeight: document.getElementById('measure').offsetHeight });
+}
 
-  function forceAutosizing(enabled) {
-    window.internals.settings.setTextAutosizingEnabled(enabled);
-  }
-
-  function test() {
-    function assertAutosizingResult(expected, callback) {
-      function resultCallback(jsonResult) {
-        var result = JSON.parse(jsonResult.value);
-        var actual = result.textHeight > 200;
-        InspectorTest.addResult('Text ' + (actual ? 'was' : 'was not') + ' autosized. ' + (expected == actual ? 'PASS' : 'FAIL'));
-        if (callback)
-          callback();
-      }
-      InspectorTest.evaluateInPage("getAutosizing()", resultCallback);
+function test()
+{
+    function assertAutosizingResult(expected, callback)
+    {
+        function resultCallback(jsonResult) {
+            var result = JSON.parse(jsonResult.value);
+            var actual = result.textHeight > 200;
+            InspectorTest.addResult('Text ' + (actual ? 'was' : 'was not') + ' autosized. ' + (expected == actual ? 'PASS' : 'FAIL'));
+            if (callback)
+                callback();
+        }
+        InspectorTest.evaluateInPage("getAutosizing()", resultCallback);
     }
 
     InspectorTest.runTestSuite([
-      function checkNotAutosizedWithoutPageAgent(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          assertAutosizingResult(false, next);
-        });
-      },
-
-      function checkNotAutosizedWithPageAgent(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          InspectorTest.PageAgent.enable();
-          assertAutosizingResult(false, next);
-        });
-      },
-
-      function checkAutosizedWithoutPageAgent(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(true)", function() {
-          InspectorTest.PageAgent.disable();
-          assertAutosizingResult(true, next);
-        });
-      },
-
-      function checkAutosizedWithPageAgent(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(true)", function() {
-          InspectorTest.PageAgent.enable();
-          assertAutosizingResult(true, next);
-        });
-      },
-
-      function checkAutosizedWithDeviceMetrics(next) {
-        InspectorTest.PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: true}, function() {
-          assertAutosizingResult(true, next);
-        });
-      },
-
-      function checkNotAutosizedWithDeviceMetrics(next) {
-        InspectorTest.PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: true}, function() {
-          assertAutosizingResult(false, next);
-        });
-      },
-
-      function checkAutosizedWithoutDeviceMetrics(next) {
-        InspectorTest.PageAgent.clearDeviceMetricsOverride(function() {
-          assertAutosizingResult(true, next);
-        });
-      },
-
-      function checkNotAutosizedWithoutDeviceMetrics(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          InspectorTest.PageAgent.clearDeviceMetricsOverride(function() {
+        function checkNotAutosizedWithoutPageAgent(next)
+        {
+            InspectorTest.PageAgent.disable();
             assertAutosizingResult(false, next);
-          });
-        });
-      },
+        },
 
-      function checkAutosizedWhenDeviceMetricsOverrideSettings(next) {
-        InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          InspectorTest.PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: true}, function() {
+        function checkNotAutosizedWithPageAgent(next)
+        {
+            InspectorTest.PageAgent.enable();
+            assertAutosizingResult(false, next);
+        },
+
+        function checkNotAutosizedWithZeroDeviceMetrics(next)
+        {
+            InspectorTest.PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: true});
+            assertAutosizingResult(false, next);
+        },
+
+        function checkAutosizedWhenDeviceMetrics(next)
+        {
+            InspectorTest.PageAgent.invoke_setDeviceMetricsOverride({width: 320, height: 480, deviceScaleFactor: 0, mobile: true, fitWindow: true});
             assertAutosizingResult(true, next);
-          });
-        });
-      },
+        },
 
-      function cleanup(next) {
-        InspectorTest.PageAgent.clearDeviceMetricsOverride(function() {
-          InspectorTest.evaluateInPage("var el = document.getElementById('measure'); el.parentNode.removeChild(el);", next);
-        });
-      }
+        function checkCleanupOverrides(next)
+        {
+            InspectorTest.PageAgent.clearDeviceMetricsOverride();
+            assertAutosizingResult(false);
+            InspectorTest.evaluateInPage("document.getElementById('measure').remove();", next);
+        }
     ]);
-  }
+}
 </script>
 </head>
 <body onload="runTest()">
