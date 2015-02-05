@@ -270,6 +270,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether the RFH is waiting for an unload ACK from the renderer.
   bool IsWaitingForUnloadACK() const;
 
+  // Whether sudden termination is allowed for this frame. This is true if there
+  // are no BeforeUnload handlers or no Unload handlers registered for the
+  // frame, or it was overriden by the browser to be always true.
+  bool SuddenTerminationAllowed() const;
+
+  // Called by the browser to override (or not) the sudden termination status of
+  // the frame. When overriden, sudden termination is always allowed, even if
+  // it would otherwise be prevented.
+  void set_override_sudden_termination_status(bool enabled) {
+    override_sudden_termination_status_ = enabled;
+  }
+
   // Called when either the SwapOut request has been acknowledged or has timed
   // out.
   void OnSwappedOut();
@@ -496,6 +508,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
   void OnToggleFullscreen(bool enter_fullscreen);
+  void OnBeforeUnloadHandlersPresent(bool present);
+  void OnUnloadHandlersPresent(bool present);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -620,6 +634,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
+
+  // Used to track whether sudden termination is allowed for this frame.
+  // has_beforeunload_handlers_ and has_unload_handlers_ are also used to avoid
+  // asking the renderer process to run BeforeUnload or Unload during
+  // navigation. The browser can set override_sudden_termination_status_ to
+  // true, in which case sudden termination will be allowed. This is used when a
+  // renderer executing BeforeUnload or Unload is unresponsive. All other values
+  // are modified based on IPCs received from the renderer.
+  bool has_beforeunload_handlers_;
+  bool has_unload_handlers_;
+  bool override_sudden_termination_status_;
 
   // Set to true when there is a pending FrameMsg_ShouldClose message.  This
   // ensures we don't spam the renderer with multiple beforeunload requests.

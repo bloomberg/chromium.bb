@@ -847,6 +847,14 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_FlushVisualStateResponse, uint64 /* id */)
 // See the comment in chrome/browser/ui/browser.h for more details.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ToggleFullscreen, bool /* enter_fullscreen */)
 
+// Messages to signal the presence or absence of BeforeUnload or Unload handlers
+// for a frame. |present| is true if there is at least one of the handlers for
+// the frame.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_BeforeUnloadHandlersPresent,
+                    bool /* present */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UnloadHandlersPresent,
+                    bool /* present */)
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 
 // Message to show/hide a popup menu using native controls.

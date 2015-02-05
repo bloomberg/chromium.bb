@@ -215,7 +215,7 @@ class CONTENT_EXPORT WebContentsImpl
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   RenderProcessHost* GetRenderProcessHost() const override;
-  RenderFrameHost* GetMainFrame() override;
+  RenderFrameHostImpl* GetMainFrame() override;
   RenderFrameHost* GetFocusedFrame() override;
   void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) override;

@@ -8,6 +8,7 @@
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -3028,5 +3029,51 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
 }
 #endif
+
+// Test that sudden termination status is properly tracked for a frame.
+TEST_F(WebContentsImplTest, SuddenTerminationForFrame) {
+  const GURL url("http://www.chromium.org");
+  contents()->NavigateAndCommit(url);
+
+  TestRenderFrameHost* frame = contents()->GetMainFrame();
+  EXPECT_TRUE(frame->SuddenTerminationAllowed());
+
+  // Register a BeforeUnload handler.
+  frame->SendBeforeUnloadHandlersPresent(true);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+
+  // Unregister the BeforeUnload handler.
+  frame->SendBeforeUnloadHandlersPresent(false);
+  EXPECT_TRUE(frame->SuddenTerminationAllowed());
+
+  // Register an Unload handler.
+  frame->SendUnloadHandlersPresent(true);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+
+  // Unregister the Unload handler.
+  frame->SendUnloadHandlersPresent(false);
+  EXPECT_TRUE(frame->SuddenTerminationAllowed());
+
+  // Register a BeforeUnload handler and an Unload handler.
+  frame->SendBeforeUnloadHandlersPresent(true);
+  frame->SendUnloadHandlersPresent(true);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+
+  // Override the sudden termination status.
+  frame->set_override_sudden_termination_status(true);
+  EXPECT_TRUE(frame->SuddenTerminationAllowed());
+  frame->set_override_sudden_termination_status(false);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+
+  // Sudden termination should not be allowed unless there are no BeforeUnload
+  // handlers and no Unload handlers in the RenderFrame.
+  frame->SendBeforeUnloadHandlersPresent(false);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+  frame->SendBeforeUnloadHandlersPresent(true);
+  frame->SendUnloadHandlersPresent(false);
+  EXPECT_FALSE(frame->SuddenTerminationAllowed());
+  frame->SendBeforeUnloadHandlersPresent(false);
+  EXPECT_TRUE(frame->SuddenTerminationAllowed());
+}
 
 }  // namespace content

@@ -241,4 +241,12 @@ void TestRenderFrameHost::PrepareForCommit(const GURL& url) {
   url_loader->CallOnResponseStarted(response, MakeEmptyStream());
 }
 
+void TestRenderFrameHost::SendBeforeUnloadHandlersPresent(bool present) {
+  OnBeforeUnloadHandlersPresent(present);
+}
+
+void TestRenderFrameHost::SendUnloadHandlersPresent(bool present) {
+  OnUnloadHandlersPresent(present);
+}
+
 }  // namespace content

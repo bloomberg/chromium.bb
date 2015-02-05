@@ -202,6 +202,30 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
 }
 
+// Enable sudden termination for the current RenderFrameHost of
+// |frame_tree_node| if the ID of its SiteInstance is |site_instance_id|.  Used
+// with FrameTree::ForEach.
+bool EnableSuddenTermination(int32 site_instance_id,
+                             FrameTreeNode* frame_tree_node) {
+  if (frame_tree_node->current_frame_host()->GetSiteInstance()->GetId()
+      == site_instance_id) {
+    frame_tree_node->current_frame_host()
+        ->set_override_sudden_termination_status(true);
+  }
+  return true;
+}
+
+// Returns false and sets |sudden_termination_allowed| to false if sudden
+// termination is not allowed for the current RenderFrameHost of
+// |frame_tree_node|. Used with FrameTree::ForEach.
+bool SuddenTerminationAllowed(bool* sudden_termination_allowed,
+                              FrameTreeNode* frame_tree_node) {
+  if (frame_tree_node->current_frame_host()->SuddenTerminationAllowed())
+    return true;
+  *sudden_termination_allowed = false;
+  return false;
+}
+
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -641,7 +665,7 @@ RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
   return host ? host->GetProcess() : NULL;
 }
 
-RenderFrameHost* WebContentsImpl::GetMainFrame() {
+RenderFrameHostImpl* WebContentsImpl::GetMainFrame() {
   return frame_tree_.root()->current_frame_host();
 }
 
@@ -782,7 +806,7 @@ bool WebContentsImpl::IsFullAccessibilityModeForTesting() const {
 void WebContentsImpl::SetParentNativeViewAccessible(
 gfx::NativeViewAccessible accessible_parent) {
   accessible_parent_ = accessible_parent;
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  RenderFrameHostImpl* rfh = GetMainFrame();
   if (rfh)
     rfh->SetParentNativeViewAccessible(accessible_parent);
 }
@@ -1111,16 +1135,17 @@ void WebContentsImpl::WasUnOccluded() {
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {
+  bool sudden_termination_allowed = true;
+  frame_tree_.ForEach(base::Bind(
+        &SuddenTerminationAllowed, &sudden_termination_allowed));
   // TODO(creis): Should we fire even for interstitial pages?
   return WillNotifyDisconnection() &&
       !ShowingInterstitialPage() &&
-      !static_cast<RenderViewHostImpl*>(
-          GetRenderViewHost())->SuddenTerminationAllowed();
+      !sudden_termination_allowed;
 }
 
 void WebContentsImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
-  static_cast<RenderFrameHostImpl*>(GetMainFrame())->DispatchBeforeUnload(
-      for_cross_site_transition);
+  GetMainFrame()->DispatchBeforeUnload(for_cross_site_transition);
 }
 
 void WebContentsImpl::Stop() {
@@ -1354,7 +1379,7 @@ void WebContentsImpl::RenderWidgetGotFocus(
 void WebContentsImpl::RenderWidgetWasResized(
     RenderWidgetHostImpl* render_widget_host,
     bool width_changed) {
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  RenderFrameHostImpl* rfh = GetMainFrame();
   if (!rfh || render_widget_host != rfh->GetRenderWidgetHost())
     return;
 
@@ -1811,7 +1836,7 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
   // Resume blocked requests for both the RenderViewHost and RenderFrameHost.
   // TODO(brettw): It seems bogus to reach into here and initialize the host.
   static_cast<RenderViewHostImpl*>(new_contents->GetRenderViewHost())->Init();
-  static_cast<RenderFrameHostImpl*>(new_contents->GetMainFrame())->Init();
+  new_contents->GetMainFrame()->Init();
 
   return new_contents;
 }
@@ -1928,13 +1953,13 @@ void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
 
 BrowserAccessibilityManager*
     WebContentsImpl::GetRootBrowserAccessibilityManager() {
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  RenderFrameHostImpl* rfh = GetMainFrame();
   return rfh ? rfh->browser_accessibility_manager() : NULL;
 }
 
 BrowserAccessibilityManager*
     WebContentsImpl::GetOrCreateRootBrowserAccessibilityManager() {
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  RenderFrameHostImpl* rfh = GetMainFrame();
   return rfh ? rfh->GetOrCreateBrowserAccessibilityManager() : NULL;
 }
 
@@ -4095,7 +4120,8 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* render_view_host) {
       rfhi->IsWaitingForUnloadACK()) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.
-    rvhi->set_sudden_termination_allowed(true);
+    frame_tree_.ForEach(base::Bind(
+          &EnableSuddenTermination, rvhi->GetSiteInstance()->GetId()));
 
     if (!GetRenderManager()->ShouldCloseTabOnUnresponsiveRenderer())
       return;

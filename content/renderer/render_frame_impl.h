@@ -521,6 +521,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didChangeManifest(blink::WebLocalFrame*);
   virtual bool enterFullscreen();
   virtual bool exitFullscreen();
+  void suddenTerminationDisablerChanged(
+      bool present,
+      blink::WebFrameClient::SuddenTerminationDisablerType type) override;
 
   // WebMediaPlayerDelegate implementation:
   void DidPlay(blink::WebMediaPlayer* player) override;

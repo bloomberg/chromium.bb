@@ -185,9 +185,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void AddPendingView() = 0;
   virtual void RemovePendingView() = 0;
 
-  // Sets a flag indicating that the process can be abnormally terminated.
-  virtual void SetSuddenTerminationAllowed(bool allowed) = 0;
-  // Returns true if the process can be abnormally terminated.
+  // Returns true if the process can be immediately terminated.
   virtual bool SuddenTerminationAllowed() const = 0;
 
   // Returns how long the child has been idle. The definition of idle

@@ -125,6 +125,19 @@ void DismissVirtualKeyboardTask() {
 }
 #endif
 
+// Enable sudden termination for the current RenderFrameHost of
+// |frame_tree_node| if the ID of its SiteInstance is |site_instance_id|.  Used
+// with FrameTree::ForEach.
+bool EnableSuddenTermination(int32 site_instance_id,
+                             FrameTreeNode* frame_tree_node) {
+  if (frame_tree_node->current_frame_host()->GetSiteInstance()->GetId()
+      == site_instance_id) {
+    frame_tree_node->current_frame_host()
+        ->set_override_sudden_termination_status(true);
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -183,7 +196,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_close_ack_(false),
-      sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       virtual_keyboard_requested_(false),
       is_focused_element_editable_(false),
@@ -555,7 +567,10 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   StopHangMonitorTimeout();
   is_waiting_for_close_ack_ = false;
 
-  sudden_termination_allowed_ = true;
+  // Enable sudden termination for all RenderFrameHosts in the FrameTree.
+  FrameTree* frame_tree = static_cast<RenderFrameHostImpl*>(GetMainFrame())
+      ->frame_tree_node()->frame_tree();
+  frame_tree->ForEach(base::Bind(&EnableSuddenTermination, instance_->GetId()));
   delegate_->Close(this);
 }
 
@@ -844,11 +859,6 @@ void RenderViewHostImpl::LoadStateChanged(
     uint64 upload_position,
     uint64 upload_size) {
   delegate_->LoadStateChanged(url, load_state, upload_position, upload_size);
-}
-
-bool RenderViewHostImpl::SuddenTerminationAllowed() const {
-  return sudden_termination_allowed_ ||
-      GetProcess()->SuddenTerminationAllowed();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
