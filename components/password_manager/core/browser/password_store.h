@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -20,23 +19,8 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "sync/api/syncable_service.h"
 
-class Task;
-
 namespace autofill {
 struct PasswordForm;
-}
-
-namespace password_manager {
-class PasswordStore;
-}  // namespace password_manager
-
-namespace passwords_helper {
-void AddLogin(password_manager::PasswordStore* store,
-              const autofill::PasswordForm& form);
-void RemoveLogin(password_manager::PasswordStore* store,
-                 const autofill::PasswordForm& form);
-void UpdateLogin(password_manager::PasswordStore* store,
-                 const autofill::PasswordForm& form);
 }
 
 namespace syncer {
@@ -45,7 +29,6 @@ class SyncableService;
 
 namespace password_manager {
 
-class PasswordManagerClient;
 class PasswordStoreConsumer;
 class PasswordSyncableService;
 
@@ -188,7 +171,6 @@ class PasswordStore : protected PasswordStoreSync,
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
-  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, IgnoreOldWwwGoogleLogins);
 
   typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
 
