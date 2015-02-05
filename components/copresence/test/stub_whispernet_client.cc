@@ -4,26 +4,18 @@
 
 #include "components/copresence/test/stub_whispernet_client.h"
 
-#include "components/copresence/test/audio_test_support.h"
-#include "media/base/audio_bus.h"
-
 namespace copresence {
 
-StubWhispernetClient::StubWhispernetClient(bool complete_initialization)
-    : complete_initialization_(complete_initialization) {
-  tokens_.push_back(AudioToken("abcdef", true));
-  tokens_.push_back(AudioToken("123456", false));
-  samples_ = CreateRandomAudioRefCounted(0x123, 1, 0x321);
+StubWhispernetClient::StubWhispernetClient(
+    scoped_refptr<media::AudioBusRefCounted> samples,
+    const std::vector<AudioToken>& tokens)
+    : samples_(samples),
+      tokens_(tokens) {
 }
 
-StubWhispernetClient::~StubWhispernetClient() {
-}
+StubWhispernetClient::~StubWhispernetClient() {}
 
-void StubWhispernetClient::Initialize(const SuccessCallback& init_callback) {
-  // TODO(ckehoe): Consider updating tests to use this.
-  if (complete_initialization_)
-    init_callback.Run(true);
-}
+void StubWhispernetClient::Initialize(const SuccessCallback& init_callback) {}
 
 void StubWhispernetClient::EncodeToken(const std::string& token,
                                        AudioType type) {

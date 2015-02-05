@@ -10,16 +10,22 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/copresence/public/whispernet_client.h"
+#include "components/copresence/tokens.h"
+#include "media/base/audio_bus.h"
 
 namespace copresence {
 
 // A simple WhispernetClient for testing.
 class StubWhispernetClient final : public WhispernetClient {
  public:
-  // Constructor. The client can optionally be configured to respond
-  // as if Initialize() has completed. By default it does not.
-  explicit StubWhispernetClient(bool complete_initialization = false);
+  // Constructor. |samples| and |tokens|, if specified,
+  // will be returned for any encoding and decoding requests.
+  StubWhispernetClient(
+      scoped_refptr<media::AudioBusRefCounted> samples =
+          scoped_refptr<media::AudioBusRefCounted>(),
+      const std::vector<AudioToken>& tokens = std::vector<AudioToken>());
 
   ~StubWhispernetClient() override;
 
@@ -43,11 +49,10 @@ class StubWhispernetClient final : public WhispernetClient {
   SuccessCallback GetInitializedCallback() override;
 
  private:
-  bool complete_initialization_;
   TokensCallback tokens_cb_;
   SamplesCallback samples_cb_;
-  std::vector<AudioToken> tokens_;
   scoped_refptr<media::AudioBusRefCounted> samples_;
+  std::vector<AudioToken> tokens_;
 
   DISALLOW_COPY_AND_ASSIGN(StubWhispernetClient);
 };

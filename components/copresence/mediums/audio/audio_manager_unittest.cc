@@ -4,11 +4,14 @@
 
 #include "components/copresence/mediums/audio/audio_manager.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/copresence/mediums/audio/audio_manager_impl.h"
 #include "components/copresence/mediums/audio/audio_player.h"
 #include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/copresence/test/audio_test_support.h"
 #include "components/copresence/test/stub_whispernet_client.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,12 +66,17 @@ class AudioRecorderStub final : public AudioRecorder {
 class AudioManagerTest : public testing::Test {
  public:
   AudioManagerTest()
-      : whispernet_client_(new StubWhispernetClient),
-        audio_manager_(new AudioManagerImpl()),
+      : audio_manager_(new AudioManagerImpl()),
         audible_player_(new AudioPlayerStub),
         inaudible_player_(new AudioPlayerStub),
         recorder_(new AudioRecorderStub),
         last_received_decode_type_(AUDIO_TYPE_UNKNOWN) {
+    std::vector<AudioToken> tokens;
+    tokens.push_back(AudioToken("abcdef", true));
+    tokens.push_back(AudioToken("123456", false));
+    whispernet_client_.reset(new StubWhispernetClient(
+        CreateRandomAudioRefCounted(0x123, 1, 0x321), tokens));
+
     audio_manager_->set_player_for_testing(AUDIBLE, audible_player_);
     audio_manager_->set_player_for_testing(INAUDIBLE, inaudible_player_);
     audio_manager_->set_recorder_for_testing(recorder_);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_
-#define COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_
+#ifndef COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_
+#define COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_
 
 #include <cstddef>
 
@@ -20,15 +20,10 @@ namespace copresence {
 // Populate random samples given a random seed into the samples array.
 void PopulateSamples(int random_seed, size_t size, float* samples);
 
-// Create an audio bus populated with random samples.
-scoped_ptr<media::AudioBus> CreateRandomAudio(int random_seed,
-                                              int channels,
-                                              int samples);
-
 // Create an ref counted audio bus populated with random samples.
 scoped_refptr<media::AudioBusRefCounted>
     CreateRandomAudioRefCounted(int random_seed, int channels, int samples);
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_
+#endif  // COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_

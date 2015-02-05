@@ -12,17 +12,14 @@ namespace copresence {
 
 void PopulateSamples(int random_seed, size_t size, float* samples) {
   srand(random_seed);
+#if defined(OS_WIN)
   for (size_t i = 0; i < size; ++i)
     samples[i] = (2.0 * rand() / RAND_MAX) - 1;
-}
-
-scoped_ptr<media::AudioBus> CreateRandomAudio(int random_seed,
-                                              int channels,
-                                              int samples) {
-  scoped_ptr<media::AudioBus> bus = media::AudioBus::Create(channels, samples);
-  for (int ch = 0; ch < channels; ++ch)
-    PopulateSamples(random_seed, samples, bus->channel(ch));
-  return bus.Pass();
+#else
+  unsigned int rand_state;
+  for (size_t i = 0; i < size; ++i)
+    samples[i] = (2.0 * rand_r(&rand_state) / RAND_MAX) - 1;
+#endif
 }
 
 scoped_refptr<media::AudioBusRefCounted>
