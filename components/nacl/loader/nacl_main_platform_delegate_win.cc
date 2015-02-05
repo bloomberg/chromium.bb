@@ -26,6 +26,13 @@ void NaClMainPlatformDelegate::EnableSandbox() {
   // Warm up language subsystems before the sandbox is turned on.
   ::GetUserDefaultLangID();
   ::GetUserDefaultLCID();
+
+#if defined(ADDRESS_SANITIZER)
+    // Bind and leak dbghelp.dll before the token is lowered, otherwise
+    // AddressSanitizer will crash when trying to symbolize a report.
+    CHECK(LoadLibraryA("dbghelp.dll"));
+#endif
+
   // Turn the sandbox on.
   target_services->LowerToken();
 }

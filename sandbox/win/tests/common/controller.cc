@@ -325,6 +325,13 @@ int DispatchCall(int argc, wchar_t **argv) {
     else if (EVERY_STATE == state)
       command(argc - 4, argv + 4);
 
+#if defined(ADDRESS_SANITIZER)
+    // Bind and leak dbghelp.dll before the token is lowered, otherwise
+    // AddressSanitizer will crash when trying to symbolize a report.
+    if (!LoadLibraryA("dbghelp.dll"))
+      return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+#endif
+
     target->LowerToken();
   } else if (0 != _wcsicmp(argv[1], L"-child-no-sandbox")) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;

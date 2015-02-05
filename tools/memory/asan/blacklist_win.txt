@@ -22,7 +22,6 @@ fun:*TargetNtMapViewOfSection@44
 fun:*AutoProtectMemory*sandbox*
 fun:*EatResolverThunk*sandbox*
 fun:*InterceptionAgent*sandbox*
-fun:*PolicyBase*sandbox*
 fun:*ResolverThunk*sandbox*
 fun:*Target*SandboxFactory*sandbox*
 src:*pe_image.h

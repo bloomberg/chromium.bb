@@ -339,6 +339,19 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
     return false;
 #endif  // NDEBUG
 
+  // Add the policy for read-only PDB file access for AddressSanitizer.
+#if defined(ADDRESS_SANITIZER)
+  base::FilePath exe;
+  if (!PathService::Get(base::FILE_EXE, &exe))
+    return false;
+  base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                           sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                           pdb_path.value().c_str());
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+#endif
+
   AddGenericDllEvictionPolicy(policy);
   return true;
 }
