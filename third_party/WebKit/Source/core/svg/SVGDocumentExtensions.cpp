@@ -97,10 +97,6 @@ void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime
     copyToVector(m_timeContainers, timeContainers);
     for (const auto& container : timeContainers)
         container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
-#if ENABLE(OILPAN)
-    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
-    timeContainers.clear();
-#endif
 }
 
 void SVGDocumentExtensions::startAnimations()
@@ -116,10 +112,6 @@ void SVGDocumentExtensions::startAnimations()
         if (!timeContainer->isStarted())
             timeContainer->begin();
     }
-#if ENABLE(OILPAN)
-    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
-    timeContainers.clear();
-#endif
 }
 
 void SVGDocumentExtensions::pauseAnimations()
@@ -141,10 +133,6 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
         if (outerSVG->document().wellFormed() || !outerSVG->document().isSVGDocument())
             outerSVG->sendSVGLoadEventIfPossible();
     }
-#if ENABLE(OILPAN)
-    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
-    timeContainers.clear();
-#endif
 }
 
 static void reportMessage(Document* document, MessageLevel level, const String& message)
