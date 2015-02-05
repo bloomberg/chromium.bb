@@ -44,6 +44,8 @@ if [ ! -d binutils-$VERSION ]; then
   (
     cd binutils-$VERSION
     patch -p1 < ../ehframe-race.patch
+    patch -p1 < ../unlock-thin.patch
+    patch -p1 < ../plugin-dso-fix.patch
   )
 fi
 
@@ -105,6 +107,10 @@ for ARCH in i386 amd64; do
 
   # Copy them out of the chroot
   cp -a "$BUILDDIR/output/$ARCHNAME" "$OUTPUTDIR"
+
+  # Copy plugin header out of the chroot
+  mkdir "$OUTPUTDIR/$ARCHNAME/include"
+  cp "$BUILDDIR/binutils-$VERSION/include/plugin-api.h" "$OUTPUTDIR/$ARCHNAME/include/"
 
   # Clean up chroot
   sudo rm -rf "$BUILDDIR"
