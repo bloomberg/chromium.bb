@@ -318,7 +318,7 @@
       # Only used on Windows.
       'win_z7%' : 0,
 
-      # Set to 1 to enable dcheck in release.
+      # Set to 1 to enable dcheck in Release build.
       'dcheck_always_on%': 0,
 
       # Set to 1 to make a build that disables unshipped tracing events.

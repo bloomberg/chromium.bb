@@ -19,6 +19,9 @@ declare_args() {
   # TODO(sebmarchand): Update this comment once this flag guarantee that
   #     there's no build metadata in the build artifacts.
   dont_embed_build_metadata = false
+
+  # Set to true to enable dcheck in Release builds.
+  dcheck_always_on = false
 }
 
 # TODO(brettw) Most of these should be removed. Instead of global feature
@@ -73,6 +76,9 @@ config("feature_flags") {
   }
   if (dont_embed_build_metadata) {
     defines += [ "DONT_EMBED_BUILD_METADATA" ]
+  }
+  if (dcheck_always_on) {
+    defines += [ "DCHECK_ALWAYS_ON=1" ]
   }
   if (use_udev) {
     # TODO(brettw) should probably be "=1".
