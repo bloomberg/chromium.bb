@@ -378,6 +378,8 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLint kMaxVertexUniformVectors = 128;
   static const GLint kNumCompressedTextureFormats = 0;
   static const GLint kNumShaderBinaryFormats = 0;
+  static const GLuint kMaxTransformFeedbackSeparateAttribs = 4;
+  static const GLuint kMaxUniformBufferBindings = 36;
   static const GLuint kStartId = 1024;
   static const GLuint kBuffersStartId =
       GLES2Implementation::kClientSideArrayId + 2 * kNumTestContexts;
@@ -439,6 +441,9 @@ class GLES2ImplementationTest : public testing::Test {
       capabilities.num_compressed_texture_formats =
           kNumCompressedTextureFormats;
       capabilities.num_shader_binary_formats = kNumShaderBinaryFormats;
+      capabilities.max_transform_feedback_separate_attribs =
+          kMaxTransformFeedbackSeparateAttribs;
+      capabilities.max_uniform_buffer_bindings = kMaxUniformBufferBindings;
       capabilities.bind_generates_resource_chromium =
           bind_generates_resource_service ? 1 : 0;
       EXPECT_CALL(*gpu_control_, GetCapabilities())

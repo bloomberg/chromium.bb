@@ -1508,6 +1508,10 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'id_mapping': [ 'Buffer' ],
     'gen_func': 'GenBuffersARB',
+    'valid_args': {
+      '3': '4',
+      '4': '4'
+    },
     'unsafe': True,
   },
   'BindFramebuffer': {
