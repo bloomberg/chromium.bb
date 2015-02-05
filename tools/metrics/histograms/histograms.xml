@@ -39966,6 +39966,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="V8.CodeCacheSizeRatio" units="percent">
+  <owner>yangguo@chromium.org</owner>
+  <summary>Cache size to source size ratio when caching compiled code.</summary>
+</histogram>
+
 <histogram name="V8.CodeCreation">
   <obsolete>
     This histogram is no longer present in V8.
