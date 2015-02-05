@@ -19,7 +19,6 @@
 
 namespace chromeos {
 class ChromeUserManagerImpl;
-class FakeLoginUtils;
 class FakeChromeUserManager;
 class MockUserManager;
 class SupervisedUserManagerImpl;
@@ -173,7 +172,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   friend class FakeUserManager;
   friend class chromeos::FakeChromeUserManager;
   friend class chromeos::MockUserManager;
-  friend class chromeos::FakeLoginUtils;
   friend class chromeos::UserAddingScreenTest;
 
   // Do not allow anyone else to create new User instances.

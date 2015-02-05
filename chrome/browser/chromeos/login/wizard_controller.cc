@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -44,6 +43,7 @@
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -647,8 +647,8 @@ void WizardController::OnUserImageSelected() {
   // Launch browser and delete login host controller.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginUtils::DoBrowserLaunch,
-                 base::Unretained(LoginUtils::Get()),
+      base::Bind(&UserSessionManager::DoBrowserLaunch,
+                 base::Unretained(UserSessionManager::GetInstance()),
                  ProfileManager::GetActiveUserProfile(), host_));
   host_ = NULL;
 }

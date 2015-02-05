@@ -6,8 +6,8 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -85,9 +85,9 @@ void AppLaunchSigninScreen::CompleteLogin(const UserContext& user_context) {
 
 void AppLaunchSigninScreen::Login(const UserContext& user_context,
                                   const SigninSpecifics& specifics) {
-  // Note: LoginUtils::CreateAuthenticator doesn't necessarily create
+  // Note: CreateAuthenticator doesn't necessarily create
   // a new Authenticator object, and could reuse an existing one.
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::AuthenticateToUnlock,

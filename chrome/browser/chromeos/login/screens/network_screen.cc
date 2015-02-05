@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/network_view.h"
@@ -61,7 +60,10 @@ NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
     view_->Bind(*this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
+  InitializeTimezoneObserver();
+}
 
+void NetworkScreen::InitializeTimezoneObserver() {
   timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       kSystemTimezone, base::Bind(&NetworkScreen::OnSystemTimezoneChanged,
                                   base::Unretained(this)));
@@ -96,11 +98,15 @@ void NetworkScreen::Show() {
     SetApplicationLocale(startup_manifest->initial_locale_default());
   }
 
+  if (!timezone_subscription_)
+    InitializeTimezoneObserver();
+
   if (view_)
     view_->Show();
 }
 
 void NetworkScreen::Hide() {
+  timezone_subscription_.reset();
   if (view_)
     view_->Hide();
 }

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
-#include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
 namespace content {
@@ -63,8 +62,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // that it is true.
   void JSExpect(const std::string& expression);
 
-  MockLoginUtils& login_utils() { return *mock_login_utils_; }
-
   content::WebContents* web_contents() { return web_contents_; }
 
   test::JSChecker& js_checker() { return js_checker_; }
@@ -76,7 +73,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
     web_contents_ = web_contents;
   }
 
-  MockLoginUtils* mock_login_utils_;
   bool should_launch_browser_;
   content::WebContents* web_contents_;
   test::JSChecker js_checker_;

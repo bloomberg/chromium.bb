@@ -81,17 +81,29 @@ UserImageManager* FakeChromeUserManager::GetUserImageManager(
 
 void FakeChromeUserManager::SetUserFlow(const std::string& email,
                                         UserFlow* flow) {
+  ResetUserFlow(email);
+  specific_flows_[email] = flow;
 }
 
 UserFlow* FakeChromeUserManager::GetCurrentUserFlow() const {
-  return nullptr;
+  if (!IsUserLoggedIn())
+    return GetDefaultUserFlow();
+  return GetUserFlow(GetLoggedInUser()->email());
 }
 
 UserFlow* FakeChromeUserManager::GetUserFlow(const std::string& email) const {
-  return nullptr;
+  FlowMap::const_iterator it = specific_flows_.find(email);
+  if (it != specific_flows_.end())
+    return it->second;
+  return GetDefaultUserFlow();
 }
 
 void FakeChromeUserManager::ResetUserFlow(const std::string& email) {
+  FlowMap::iterator it = specific_flows_.find(email);
+  if (it != specific_flows_.end()) {
+    delete it->second;
+    specific_flows_.erase(it);
+  }
 }
 
 void FakeChromeUserManager::SwitchActiveUser(const std::string& email) {
@@ -148,6 +160,12 @@ user_manager::UserList FakeChromeUserManager::GetUsersAllowedForMultiProfile()
   }
 
   return result;
+}
+
+UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
+  if (!default_flow_.get())
+    default_flow_.reset(new DefaultUserFlow());
+  return default_flow_.get();
 }
 
 }  // namespace chromeos

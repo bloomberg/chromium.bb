@@ -26,11 +26,11 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -224,7 +224,7 @@ void ExistingUserController::UpdateLoginDisplay(
         (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
         user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
     bool meets_whitelist_requirements =
-        LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
+        CrosSettings::IsWhitelisted((*it)->email(), NULL) ||
         !(*it)->HasGaiaAccount();
 
     // Public session accounts are always shown on login screen.
@@ -302,7 +302,7 @@ void ExistingUserController::Observe(
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
-  LoginUtils::Get()->DelegateDeleted(this);
+  UserSessionManager::GetInstance()->DelegateDeleted(this);
 
   if (current_controller_ == this) {
     current_controller_ = NULL;
@@ -690,11 +690,14 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 
-  // Will call OnProfilePrepared() in the end.
-  LoginUtils::Get()->PrepareProfile(user_context,
-                                    has_auth_cookies,
-                                    false,          // Start session for user.
-                                    this);
+  UserSessionManager::StartSessionType start_session_type =
+      UserAddingScreen::Get()->IsRunning()
+          ? UserSessionManager::SECONDARY_USER_SESSION
+          : UserSessionManager::PRIMARY_USER_SESSION;
+  UserSessionManager::GetInstance()->StartSession(
+      user_context, start_session_type, has_auth_cookies,
+      false,  // Start session for user.
+      this);
 
   // Update user's displayed email.
   if (!display_email_.empty()) {

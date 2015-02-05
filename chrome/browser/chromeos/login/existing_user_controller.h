@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -51,7 +51,7 @@ class NetworkStateHelper;
 class ExistingUserController : public LoginDisplay::Delegate,
                                public content::NotificationObserver,
                                public LoginPerformer::Delegate,
-                               public LoginUtils::Delegate {
+                               public UserSessionManagerDelegate {
  public:
   // All UI initialization is deferred till Init() call.
   explicit ExistingUserController(LoginDisplayHost* host);
@@ -146,7 +146,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void PolicyLoadFailed() override;
   void OnOnlineChecked(const std::string& username, bool success) override;
 
-  // LoginUtils::Delegate implementation:
+  // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
   // Called when device settings change.

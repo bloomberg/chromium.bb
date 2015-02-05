@@ -8,7 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_login_flow.h"
@@ -85,7 +85,7 @@ void ChromeLoginPerformer::DidRunTrustedCheck(const base::Closure& callback) {
 
 bool ChromeLoginPerformer::IsUserWhitelisted(const std::string& user_id,
                                              bool* wildcard_match) {
-  return LoginUtils::IsWhitelisted(user_id, wildcard_match);
+  return CrosSettings::IsWhitelisted(user_id, wildcard_match);
 }
 
 void ChromeLoginPerformer::RunOnlineWhitelistCheck(
@@ -111,7 +111,7 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
 }
 
 scoped_refptr<Authenticator> ChromeLoginPerformer::CreateAuthenticator() {
-  return LoginUtils::Get()->CreateAuthenticator(this);
+  return UserSessionManager::GetInstance()->CreateAuthenticator(this);
 }
 
 bool ChromeLoginPerformer::AreSupervisedUsersAllowed() {

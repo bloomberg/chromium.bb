@@ -123,8 +123,11 @@ class ProfileHelper
       const std::string& user_id);
 
  private:
+  // TODO(nkostylev): Create a test API class that will be the only one allowed
+  // to access private test methods.
   friend class CryptohomeAuthenticatorTest;
   friend class DeviceSettingsTestBase;
+  friend class ExistingUserControllerTest;
   friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
   friend class FakeChromeUserManager;
   friend class KioskTest;

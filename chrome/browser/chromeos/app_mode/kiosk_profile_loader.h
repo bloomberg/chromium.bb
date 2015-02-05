@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/login_performer.h"
 
 class Profile;
@@ -22,7 +22,7 @@ namespace chromeos {
 // attempts to login for the app's generated user id. If the login is
 // successful, it prepares app profile then calls the delegate.
 class KioskProfileLoader : public LoginPerformer::Delegate,
-                           public LoginUtils::Delegate {
+                           public UserSessionManagerDelegate {
  public:
   class Delegate {
    public:
@@ -55,7 +55,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void PolicyLoadFailed() override;
   void OnOnlineChecked(const std::string& email, bool success) override;
 
-  // LoginUtils::Delegate implementation:
+  // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
   std::string user_id_;

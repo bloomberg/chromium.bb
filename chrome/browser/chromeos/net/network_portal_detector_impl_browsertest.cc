@@ -19,6 +19,7 @@
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
+#include "net/base/net_errors.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"

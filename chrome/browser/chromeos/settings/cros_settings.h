@@ -35,6 +35,11 @@ class CrosSettings : public base::NonThreadSafe {
   static void Shutdown();
   static CrosSettings* Get();
 
+  // Checks if the given username is whitelisted and allowed to sign-in to
+  // this device. |wildcard_match| may be NULL. If it's present, it'll be set to
+  // true if the whitelist check was satisfied via a wildcard.
+  static bool IsWhitelisted(const std::string& username, bool* wildcard_match);
+
   // Creates a device settings service instance. This is meant for unit tests,
   // production code uses the singleton returned by Get() above.
   explicit CrosSettings(DeviceSettingsService* device_settings_service);

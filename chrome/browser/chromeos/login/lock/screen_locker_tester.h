@@ -29,8 +29,8 @@ class ScreenLockerTester {
   // Returns true if the screen is locked.
   virtual bool IsLocked();
 
-  // Injects MockAuthenticator that uses the credentials in |user_context|.
-  virtual void InjectMockAuthenticator(const UserContext& user_context);
+  // Injects StubAuthenticator that uses the credentials in |user_context|.
+  virtual void InjectStubUserContext(const UserContext& user_context);
 
   // Sets the password text.
   virtual void SetPassword(const std::string& password) = 0;

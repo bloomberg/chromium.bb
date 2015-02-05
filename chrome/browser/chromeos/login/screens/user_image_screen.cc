@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/user_image_view.h"
@@ -300,6 +299,10 @@ void UserImageScreen::Show() {
 void UserImageScreen::Hide() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   notification_registrar_.RemoveAll();
+  policy_registrar_.reset();
+  sync_timer_.reset();
+  if (UserImageSyncObserver* sync_observer = GetSyncObserver())
+    sync_observer->RemoveObserver(this);
   if (view_)
     view_->Hide();
 }

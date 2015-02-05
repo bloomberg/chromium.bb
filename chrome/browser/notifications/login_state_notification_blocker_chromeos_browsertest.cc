@@ -87,7 +87,6 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
       message_center::NotifierId::APPLICATION, "test-notifier");
 
   // Logged in as a normal user.
-  EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
@@ -122,7 +121,6 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
       ash::system_notifier::kNotifierDisplay);
 
   // Logged in as a normal user.
-  EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));

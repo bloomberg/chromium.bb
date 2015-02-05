@@ -4,6 +4,7 @@
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"

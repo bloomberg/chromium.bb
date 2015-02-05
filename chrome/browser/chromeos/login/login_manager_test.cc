@@ -8,6 +8,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chromeos/chromeos_switches.h"
@@ -44,11 +46,6 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
   MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture();
-  mock_login_utils_ = new testing::NiceMock<MockLoginUtils>();
-  mock_login_utils_->DelegateToFake();
-  mock_login_utils_->GetFakeLoginUtils()->set_should_launch_browser(
-      should_launch_browser_);
-  LoginUtils::Set(mock_login_utils_);
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
@@ -57,6 +54,10 @@ void LoginManagerTest::SetUpOnMainThread() {
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   InitializeWebContents();
+  test::UserSessionManagerTestApi session_manager_test_api(
+      UserSessionManager::GetInstance());
+  session_manager_test_api.SetShouldLaunchBrowserInTests(
+      should_launch_browser_);
 }
 
 void LoginManagerTest::RegisterUser(const std::string& user_id) {
@@ -65,7 +66,9 @@ void LoginManagerTest::RegisterUser(const std::string& user_id) {
 }
 
 void LoginManagerTest::SetExpectedCredentials(const UserContext& user_context) {
-  login_utils().GetFakeLoginUtils()->SetExpectedCredentials(user_context);
+  test::UserSessionManagerTestApi session_manager_test_api(
+      UserSessionManager::GetInstance());
+  session_manager_test_api.InjectStubUserContext(user_context);
 }
 
 bool LoginManagerTest::TryToLogin(const UserContext& user_context) {

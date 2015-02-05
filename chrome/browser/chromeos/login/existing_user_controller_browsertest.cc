@@ -11,19 +11,19 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -34,12 +34,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/mock_authenticator.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/user_names.h"
@@ -75,7 +72,6 @@ namespace chromeos {
 namespace {
 
 const char kUsername[] = "test_user@gmail.com";
-const char kNewUsername[] = "test_new_user@gmail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
 
@@ -83,14 +79,6 @@ const char kPublicSessionAccountId[] = "public_session_user@localhost";
 const int kAutoLoginNoDelay = 0;
 const int kAutoLoginShortDelay = 1;
 const int kAutoLoginLongDelay = 10000;
-
-ACTION_P(CreateAuthenticator, user_context) {
-  return new MockAuthenticator(arg0, user_context);
-}
-
-void DeleteUserFlow(UserFlow* user_flow) {
-  delete user_flow;
-}
 
 // Wait for cros settings to become permanently untrusted and run |callback|.
 void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
@@ -116,8 +104,7 @@ void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
 
 class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
  protected:
-  ExistingUserControllerTest()
-      : mock_login_display_(NULL), mock_user_manager_(NULL) {}
+  ExistingUserControllerTest() : mock_login_display_(NULL) {}
 
   ExistingUserController* existing_user_controller() {
     return ExistingUserController::current_controller();
@@ -131,11 +118,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     SetUpSessionManager();
 
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    mock_login_utils_ = new MockLoginUtils();
-    LoginUtils::Set(mock_login_utils_);
-    EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_))
-        .Times(1);
 
     mock_login_display_host_.reset(new MockLoginDisplayHost());
     mock_login_display_ = new MockLoginDisplay();
@@ -160,53 +142,14 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
-  }
-
-  virtual void SetUpUserManager() {
-    // Replace the UserManager singleton with a mock.
-    mock_user_manager_ = new MockUserManager;
-    user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(mock_user_manager_));
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kUsername))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kNewUsername))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsPublicAccount())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsSessionStarted())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, Shutdown())
-        .Times(1);
-    EXPECT_CALL(*mock_user_manager_, FindUser(_))
-        .Times(AnyNumber())
-        .WillRepeatedly(ReturnNull());
+    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
   void SetUpOnMainThread() override {
-    testing_profile_.reset(new TestingProfile());
-    SetUpUserManager();
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
     ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
     existing_user_controller_->Init(user_manager::UserList());
-    profile_prepared_cb_ =
-        base::Bind(&ExistingUserController::OnProfilePrepared,
-                   base::Unretained(existing_user_controller()),
-                   testing_profile_.get(),
-                   false);
   }
 
   void TearDownOnMainThread() override {
@@ -217,8 +160,14 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     // be deleted on the UI thread.
     existing_user_controller_.reset();
     DevicePolicyCrosBrowserTest::InProcessBrowserTest::TearDownOnMainThread();
-    testing_profile_.reset(NULL);
-    user_manager_enabler_.reset();
+
+    // Test case may be configured with the real user manager but empty user
+    // list initially. So network OOBE screen is initialized.
+    // Need to reset it manually so that we don't end up with CrosSettings
+    // observer that wasn't removed.
+    WizardController* controller = WizardController::default_controller();
+    if (controller && controller->current_screen())
+      controller->current_screen()->Hide();
   }
 
   void ExpectLoginFailure() {
@@ -231,6 +180,12 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
         .Times(1);
+  }
+
+  void RegisterUser(const std::string& user_id) {
+    ListPrefUpdate users_pref(g_browser_process->local_state(),
+                              "LoggedInUsers");
+    users_pref->AppendIfNotPresent(new base::StringValue(user_id));
   }
 
   // ExistingUserController private member accessors.
@@ -257,22 +212,16 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   MockLoginDisplay* mock_login_display_;
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
-  // Owned by LoginUtilsWrapper.
-  MockLoginUtils* mock_login_utils_;
-
-  MockUserManager* mock_user_manager_;  // Not owned.
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
-
-  scoped_ptr<TestingProfile> testing_profile_;
-
   // Mock URLFetcher.
   MockURLFetcherFactory<SuccessFetcher> factory_;
-
-  base::Callback<void(void)> profile_prepared_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, PRE_ExistingUserLogin) {
+  RegisterUser(kUsername);
+}
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
@@ -280,22 +229,21 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   UserContext user_context(kUsername);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
-  EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
-      .Times(1)
-      .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
-  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
-                                  &base::Callback<void(void)>::Run));
+  test::UserSessionManagerTestApi session_manager_test_api(
+      UserSessionManager::GetInstance());
+  session_manager_test_api.InjectStubUserContext(user_context);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kTermsOfServiceScreenName))
       .Times(0);
-  EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
+
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
   existing_user_controller()->Login(user_context, SigninSpecifics());
+
+  profile_prepared_observer.Wait();
   content::RunAllPendingInMessageLoop();
 }
 
@@ -361,9 +309,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   SupervisedUserCreationScreen supervised_user_creation_screen(
       &mock_base_screen_delegate, &supervised_user_creation_screen_handler);
 
-  EXPECT_CALL(*mock_user_manager_, SetUserFlow(kUsername, _))
-      .Times(1)
-      .WillOnce(WithArg<1>(Invoke(DeleteUserFlow)));
   supervised_user_creation_screen.AuthenticateManager(kUsername, kPassword);
 }
 
@@ -454,23 +399,27 @@ class ExistingUserControllerPublicSessionTest
       .Times(AnyNumber());
   }
 
-  void SetUpUserManager() override {}
+  void TearDownOnMainThread() override {
+    ExistingUserControllerTest::TearDownOnMainThread();
+
+    // Test case may be configured with the real user manager but empty user
+    // list initially. So network OOBE screen is initialized.
+    // Need to reset it manually so that we don't end up with CrosSettings
+    // observer that wasn't removed.
+    WizardController* controller = WizardController::default_controller();
+    if (controller && controller->current_screen())
+      controller->current_screen()->Hide();
+  }
 
   void ExpectSuccessfulLogin(const UserContext& user_context) {
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
-        .Times(1)
-        .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
-    EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _))
-        .Times(1)
-        .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
-                                    &base::Callback<void(void)>::Run));
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
-        .Times(1);
+    test::UserSessionManagerTestApi session_manager_test_api(
+        UserSessionManager::GetInstance());
+    session_manager_test_api.InjectStubUserContext(user_context);
     EXPECT_CALL(*mock_login_display_host_,
                 StartWizard(WizardController::kTermsOfServiceScreenName))
         .Times(0);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(AnyNumber());
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(AnyNumber());
   }
 
   void SetAutoLoginPolicy(const std::string& username, int delay) {
@@ -583,6 +532,11 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
+
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginShortDelay);
   ASSERT_TRUE(auto_login_timer());
   // Don't assert that timer is running: with the short delay sometimes
@@ -596,6 +550,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
               base::TimeDelta::FromMilliseconds(kAutoLoginShortDelay + 1),
               runner.QuitClosure());
   runner.Run();
+
+  profile_prepared_observer.Wait();
 
   // Wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
@@ -613,11 +569,17 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
   EXPECT_TRUE(auto_login_timer());
 
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+
   // Log in and check that it stopped the timer.
   existing_user_controller()->Login(user_context, SigninSpecifics());
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
+
+  profile_prepared_observer.Wait();
 
   // Wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
@@ -633,9 +595,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
       .Times(2);
   UserContext user_context(kUsername);
   user_context.SetKey(Key(kPassword));
-  EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
-      .Times(1)
-      .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
+  test::UserSessionManagerTestApi session_manager_test_api(
+      UserSessionManager::GetInstance());
+  session_manager_test_api.InjectStubUserContext(user_context);
 
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
@@ -671,10 +633,16 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
   EXPECT_TRUE(auto_login_timer());
 
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+
   // Check that login completes and stops the timer.
   existing_user_controller()->CompleteLogin(user_context);
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
+
+  profile_prepared_observer.Wait();
 
   // Wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
@@ -695,6 +663,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
   EXPECT_TRUE(auto_login_timer());
 
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+
   // Login and check that it stopped the timer.
   existing_user_controller()->Login(
       UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
@@ -704,6 +676,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
+
+  profile_prepared_observer.Wait();
 
   // Wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();

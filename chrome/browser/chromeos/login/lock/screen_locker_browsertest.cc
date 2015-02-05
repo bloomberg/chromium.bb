@@ -21,7 +21,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/mock_authenticator.h"
+#include "chromeos/login/auth/stub_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/user_names.h"
 #include "content/public/browser/notification_service.h"
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
 
   UserContext user_context(chromeos::login::kStubUser);
   user_context.SetKey(Key("pass"));
-  tester->InjectMockAuthenticator(user_context);
+  tester->InjectStubUserContext(user_context);
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("fail");
   content::RunAllPendingInMessageLoop();
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   }
   UserContext user_context(chromeos::login::kStubUser);
   user_context.SetKey(Key("pass"));
-  tester->InjectMockAuthenticator(user_context);
+  tester->InjectStubUserContext(user_context);
   tester->EnterPassword("pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());

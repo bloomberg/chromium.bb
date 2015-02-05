@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -157,7 +156,7 @@ void ScreenLocker::Init() {
   saved_ime_state_ = imm->GetActiveIMEState();
   imm->SetState(saved_ime_state_->Clone());
 
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
   delegate_.reset(new WebUIScreenLocker(this));
   delegate_->LockScreen();

@@ -96,6 +96,9 @@ class NetworkScreen : public NetworkModel,
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
 
+  // Subscribe to timezone changes.
+  void InitializeTimezoneObserver();
+
   // Subscribes NetworkScreen to the network change notification,
   // forces refresh of current network state.
   void Refresh();

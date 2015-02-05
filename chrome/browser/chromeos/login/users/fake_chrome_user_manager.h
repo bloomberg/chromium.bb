@@ -69,10 +69,22 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   }
 
  private:
+  // Lazily creates default user flow.
+  UserFlow* GetDefaultUserFlow() const;
+
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   std::string owner_email_;
 
   MultiProfileUserController* multi_profile_user_controller_;
+
+  typedef std::map<std::string, UserFlow*> FlowMap;
+
+  // Lazy-initialized default flow.
+  mutable scoped_ptr<UserFlow> default_flow_;
+
+  // Specific flows by user e-mail.
+  // Keys should be canonicalized before access.
+  FlowMap specific_flows_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeChromeUserManager);
 };

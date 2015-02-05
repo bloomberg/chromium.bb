@@ -475,8 +475,6 @@
         'browser/chromeos/login/lock/screen_locker_delegate.h',
         'browser/chromeos/login/lock/webui_screen_locker.cc',
         'browser/chromeos/login/lock/webui_screen_locker.h',
-        'browser/chromeos/login/login_utils.cc',
-        'browser/chromeos/login/login_utils.h',
         'browser/chromeos/login/login_wizard.h',
         'browser/chromeos/login/profile_auth_data.cc',
         'browser/chromeos/login/profile_auth_data.h',
@@ -1088,6 +1086,7 @@
         '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
+        '../chromeos/chromeos.gyp:chromeos_test_support',
         '../chromeos/chromeos.gyp:cryptohome_proto',
         # browser_chromeos #includes signed_secret.pb.h directly.
         '../chromeos/chromeos.gyp:cryptohome_signkey_proto',

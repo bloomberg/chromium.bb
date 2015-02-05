@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
-#define CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
+#ifndef CHROMEOS_LOGIN_AUTH_STUB_AUTHENTICATOR_H_
+#define CHROMEOS_LOGIN_AUTH_STUB_AUTHENTICATOR_H_
 
 #include <string>
 
@@ -11,7 +11,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 class BrowserContext;
@@ -21,9 +20,9 @@ namespace chromeos {
 
 class AuthStatusConsumer;
 
-class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
+class CHROMEOS_EXPORT StubAuthenticator : public Authenticator {
  public:
-  MockAuthenticator(AuthStatusConsumer* consumer,
+  StubAuthenticator(AuthStatusConsumer* consumer,
                     const UserContext& expected_user_context);
 
   // Authenticator:
@@ -45,15 +44,15 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
   virtual void SetExpectedCredentials(const UserContext& user_context);
 
  protected:
-  ~MockAuthenticator() override;
+  ~StubAuthenticator() override;
 
  private:
   UserContext expected_user_context_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockAuthenticator);
+  DISALLOW_COPY_AND_ASSIGN(StubAuthenticator);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
+#endif  // CHROMEOS_LOGIN_AUTH_STUB_AUTHENTICATOR_H_

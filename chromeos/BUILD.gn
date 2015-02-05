@@ -84,8 +84,6 @@ static_library("test_support") {
     "login/auth/mock_auth_attempt_state_resolver.h",
     "login/auth/mock_auth_status_consumer.cc",
     "login/auth/mock_auth_status_consumer.h",
-    "login/auth/mock_authenticator.cc",
-    "login/auth/mock_authenticator.h",
     "login/auth/mock_url_fetchers.cc",
     "login/auth/mock_url_fetchers.h",
     "network/fake_network_device_handler.cc",

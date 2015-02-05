@@ -14,12 +14,13 @@
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
-#include "chromeos/login/auth/mock_authenticator.h"
+#include "chromeos/login/auth/stub_authenticator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -199,11 +200,11 @@ bool ScreenLockerTester::IsLocked() {
       ScreenLocker::screen_locker_->locked_;
 }
 
-void ScreenLockerTester::InjectMockAuthenticator(
+void ScreenLockerTester::InjectStubUserContext(
     const UserContext& user_context) {
   DCHECK(ScreenLocker::screen_locker_);
   ScreenLocker::screen_locker_->SetAuthenticator(
-      new MockAuthenticator(ScreenLocker::screen_locker_, user_context));
+      new StubAuthenticator(ScreenLocker::screen_locker_, user_context));
   ScreenLocker::screen_locker_->extended_authenticator_ =
       new FakeExtendedAuthenticator(ScreenLocker::screen_locker_, user_context);
 }

@@ -368,7 +368,6 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
       user_manager::UserManager::Get()->GetUsers().at(user_index);
   ASSERT_EQ(base::UTF8ToUTF16(expected_display_name), user->display_name());
 
-  // Currently FakeLoginUtils do not support first-run use cases.
   // Clean first run flag before logging in.
   static_cast<SupervisedUserManagerImpl*>(
       ChromeUserManager::Get()->GetSupervisedUserManager())

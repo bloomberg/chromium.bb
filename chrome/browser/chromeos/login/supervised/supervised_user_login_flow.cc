@@ -11,7 +11,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
@@ -252,7 +252,7 @@ void SupervisedUserLoginFlow::OnPasswordUpdated(
 }
 
 void SupervisedUserLoginFlow::Finish() {
-  LoginUtils::Get()->DoBrowserLaunch(profile_, host());
+  UserSessionManager::GetInstance()->DoBrowserLaunch(profile_, host());
   profile_ = NULL;
   UnregisterFlowSoon();
 }

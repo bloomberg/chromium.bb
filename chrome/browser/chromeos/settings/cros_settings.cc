@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -43,6 +44,24 @@ void CrosSettings::Shutdown() {
 CrosSettings* CrosSettings::Get() {
   CHECK(g_cros_settings);
   return g_cros_settings;
+}
+
+// static
+bool CrosSettings::IsWhitelisted(const std::string& username,
+                                 bool* wildcard_match) {
+  // Skip whitelist check for tests.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kOobeSkipPostLogin)) {
+    return true;
+  }
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  bool allow_new_user = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  if (allow_new_user)
+    return true;
+  return cros_settings->FindEmailInList(kAccountsPrefUsers, username,
+                                        wildcard_match);
 }
 
 CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {

@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -54,14 +53,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   void SetUp() override {
     mock_login_display_host_.reset(new MockLoginDisplayHost);
     mock_login_display_ = new MockLoginDisplay();
-    mock_login_utils_ = new MockLoginUtils();
-    LoginUtils::Set(mock_login_utils_);
 
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
         .Times(1)
         .WillOnce(Return(mock_login_display_));
-
-    EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_)).Times(AnyNumber());
 
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
     EXPECT_CALL(*mock_user_manager_, FindUser(_))
@@ -141,9 +136,6 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   const std::string auto_login_user_id_;
 
  private:
-  // Owned by LoginUtilsWrapper.
-  MockLoginUtils* mock_login_utils_;
-
   // |mock_login_display_| is owned by the ExistingUserController, which calls
   // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
   MockLoginDisplay* mock_login_display_;
