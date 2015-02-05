@@ -131,25 +131,28 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
     if (isColumnHeaderCell())
         return ColumnHeaderRole;
 
-    // Check the previous cell and the next cell
+    // Check the previous cell and the next cell on the same row.
     LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
     AccessibilityRole headerRole = CellRole;
 
-    // if header is preceded by header cells then it's a column header,
-    // if it is preceded by cells then it's a row header.
+    // if header is preceded by header cells on the same row, then it is a
+    // column header. If it is preceded by other cells then it's a row header.
     if (LayoutTableCell* cell = layoutCell->previousCell()) {
         Node* siblingNode = cell->node();
         headerRole = decideRoleFromSibling(siblingNode);
         if (headerRole != CellRole)
             return headerRole;
     }
-    // if header is followed by header cells then it's a column header,
-    // if it is followed by cells then it's a row header.
+    // if header is followed by header cells on the same row, then it is a
+    // column header. If it is followed by other cells then it's a row header.
     if (LayoutTableCell* cell = layoutCell->nextCell()) {
         Node* siblingNode = cell->node();
         headerRole = decideRoleFromSibling(siblingNode);
+        if (headerRole != CellRole)
+            return headerRole;
     }
-    return headerRole;
+    // If there are no other cells on that row, then it is a column header.
+    return ColumnHeaderRole;
 }
 
 AccessibilityRole AXTableCell::determineAccessibilityRole()
