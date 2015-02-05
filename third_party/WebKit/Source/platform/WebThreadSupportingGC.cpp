@@ -5,10 +5,15 @@
 #include "config.h"
 #include "platform/WebThreadSupportingGC.h"
 
+#include "wtf/Threading.h"
+
 namespace blink {
 
 PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name)
 {
+#if ENABLE(ASSERT)
+    WTF::willCreateThread();
+#endif
     return adoptPtr(new WebThreadSupportingGC(name));
 }
 

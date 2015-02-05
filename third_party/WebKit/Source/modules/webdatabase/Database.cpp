@@ -148,7 +148,7 @@ static GuidVersionMap& guidToVersionMap()
 {
     // Ensure the the mutex is locked.
     ASSERT(guidMutex().locked());
-    DEFINE_STATIC_LOCAL(GuidVersionMap, map, ());
+    DEFINE_STATIC_LOCAL_NOASSERT(GuidVersionMap, map, ());
     return map;
 }
 
@@ -174,7 +174,7 @@ static GuidDatabaseMap& guidToDatabaseMap()
 {
     // Ensure the the mutex is locked.
     ASSERT(guidMutex().locked());
-    DEFINE_STATIC_LOCAL(GuidDatabaseMap, map, ());
+    DEFINE_STATIC_LOCAL_NOASSERT(GuidDatabaseMap, map, ());
     return map;
 }
 
@@ -186,7 +186,7 @@ static DatabaseGuid guidForOriginAndName(const String& origin, const String& nam
     String stringID = origin + "/" + name;
 
     typedef HashMap<String, int> IDGuidMap;
-    DEFINE_STATIC_LOCAL(IDGuidMap, stringIdentifierToGUIDMap, ());
+    DEFINE_STATIC_LOCAL_NOASSERT(IDGuidMap, stringIdentifierToGUIDMap, ());
     DatabaseGuid guid = stringIdentifierToGUIDMap.get(stringID);
     if (!guid) {
         static int currentNewGUID = 1;

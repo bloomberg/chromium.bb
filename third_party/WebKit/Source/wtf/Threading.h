@@ -76,6 +76,12 @@ WTF_EXPORT ThreadIdentifier currentThread();
 WTF_EXPORT void lockAtomicallyInitializedStaticMutex();
 WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
 
+#if ENABLE(ASSERT)
+WTF_EXPORT bool isAtomicallyInitializedStaticMutexLockHeld();
+WTF_EXPORT bool isBeforeThreadCreated();
+WTF_EXPORT void willCreateThread();
+#endif
+
 } // namespace WTF
 
 using WTF::ThreadIdentifier;

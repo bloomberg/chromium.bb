@@ -246,6 +246,25 @@ void ThreadCondition::broadcast()
     ASSERT_UNUSED(result, !result);
 }
 
+#if ENABLE(ASSERT)
+static bool s_threadCreated = false;
+
+bool isAtomicallyInitializedStaticMutexLockHeld()
+{
+    return atomicallyInitializedStaticMutex && atomicallyInitializedStaticMutex->locked();
+}
+
+bool isBeforeThreadCreated()
+{
+    return !s_threadCreated;
+}
+
+void willCreateThread()
+{
+    s_threadCreated = true;
+}
+#endif
+
 } // namespace WTF
 
 #endif // USE(PTHREADS)

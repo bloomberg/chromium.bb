@@ -30,12 +30,54 @@
 #include "wtf/CPU.h"
 #include "wtf/CheckedArithmetic.h"
 
+#if ENABLE(ASSERT)
+#include "wtf/Noncopyable.h"
+#include "wtf/Threading.h"
+
+class WTF_EXPORT StaticLocalVerifier {
+    WTF_MAKE_NONCOPYABLE(StaticLocalVerifier);
+public:
+    StaticLocalVerifier()
+        : m_safelyInitialized(WTF::isBeforeThreadCreated())
+        , m_thread(WTF::currentThread())
+    {
+    }
+
+    bool isNotRacy()
+    {
+        // Make sure that this 1) is safely initialized, 2) keeps being called
+        // on the same thread, or 3) is called within
+        // AtomicallyInitializedStatic (i.e. with a lock held).
+        return m_safelyInitialized || m_thread == WTF::currentThread() || WTF::isAtomicallyInitializedStaticMutexLockHeld();
+    }
+
+private:
+    bool m_safelyInitialized;
+    ThreadIdentifier m_thread;
+};
+#endif
+
 // Use this to declare and define a static local variable (static T;) so that
 //  it is leaked so that its destructors are not called at exit.
 #ifndef DEFINE_STATIC_LOCAL
+
+#if ENABLE(ASSERT)
+#define DEFINE_STATIC_LOCAL(type, name, arguments)        \
+    static StaticLocalVerifier name##StaticLocalVerifier; \
+    ASSERT(name##StaticLocalVerifier.isNotRacy()); \
+    static type& name = *new type arguments
+#else
 #define DEFINE_STATIC_LOCAL(type, name, arguments) \
     static type& name = *new type arguments
 #endif
+
+// Does the same as DEFINE_STATIC_LOCAL but without assertions.
+// Use this when you are absolutely sure that it is safe but above
+// assertions fail (e.g. called on multiple thread with a local lock).
+#define DEFINE_STATIC_LOCAL_NOASSERT(type, name, arguments) \
+    static type& name = *new type arguments
+#endif
+
 
 // Use this to declare and define a static local pointer to a ref-counted object so that
 // it is leaked so that the object's destructors are not called at exit.

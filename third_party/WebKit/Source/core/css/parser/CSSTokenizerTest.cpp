@@ -101,27 +101,27 @@ static CSSParserToken percentage(NumericValueType type, double value)
     return token;
 }
 
-DEFINE_STATIC_LOCAL(CSSParserToken, whitespace, (WhitespaceToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, colon, (ColonToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, semicolon, (SemicolonToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, comma, (CommaToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, includeMatch, (IncludeMatchToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, dashMatch, (DashMatchToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, prefixMatch, (PrefixMatchToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, suffixMatch, (SuffixMatchToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, substringMatch, (SubstringMatchToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, column, (ColumnToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, cdo, (CDOToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, cdc, (CDCToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, leftParenthesis, (LeftParenthesisToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, rightParenthesis, (RightParenthesisToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, leftBracket, (LeftBracketToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, rightBracket, (RightBracketToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, leftBrace, (LeftBraceToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, rightBrace, (RightBraceToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, badString, (BadStringToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, badUrl, (BadUrlToken));
-DEFINE_STATIC_LOCAL(CSSParserToken, comment, (CommentToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, whitespace, (WhitespaceToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, colon, (ColonToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, semicolon, (SemicolonToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, comma, (CommaToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, includeMatch, (IncludeMatchToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, dashMatch, (DashMatchToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, prefixMatch, (PrefixMatchToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, suffixMatch, (SuffixMatchToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, substringMatch, (SubstringMatchToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, column, (ColumnToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, cdo, (CDOToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, cdc, (CDCToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftParenthesis, (LeftParenthesisToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightParenthesis, (RightParenthesisToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftBracket, (LeftBracketToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightBracket, (RightBracketToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftBrace, (LeftBraceToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightBrace, (RightBraceToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badString, (BadStringToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badUrl, (BadUrlToken));
+DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, comment, (CommentToken));
 
 String fromUChar32(UChar32 c)
 {

@@ -77,4 +77,3 @@ bool isMainThread()
 }
 
 } // namespace WTF
-
