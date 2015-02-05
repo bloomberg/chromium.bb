@@ -185,10 +185,9 @@ def run_executable(cmd, env):
   if asan or lsan or msan or tsan:
     extra_env.update(get_sanitizer_env(cmd, asan, lsan, msan, tsan))
 
-  if lsan or tsan or (asan and sys.platform == 'win32'):
-      # ASan is not yet sandbox-friendly on Windows (http://crbug.com/382867).
-      # LSan and TSan are not sandbox-friendly.
-      cmd.append('--no-sandbox')
+  if lsan or tsan:
+    # LSan and TSan are not sandbox-friendly.
+    cmd.append('--no-sandbox')
 
   cmd = trim_cmd(cmd)
 
