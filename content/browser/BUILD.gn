@@ -350,6 +350,7 @@ source_set("browser") {
   }
 
   if (is_chromeos) {
+    sources -= [ "device_sensors/data_fetcher_shared_memory_default.cc" ]
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",
