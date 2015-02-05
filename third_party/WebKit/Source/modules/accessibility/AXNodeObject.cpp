@@ -43,6 +43,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/rendering/RenderObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -1296,6 +1297,17 @@ static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
     return true;
 }
 
+// Returns true if |r1| and |r2| are both non-null and are contained within the
+// same RenderBox.
+static bool isSameRenderBox(RenderObject* r1, RenderObject* r2)
+{
+    if (!r1 || !r2)
+        return false;
+    RenderBox* b1 = r1->enclosingBox();
+    RenderBox* b2 = r2->enclosingBox();
+    return b1 && b2 && b1 == b2;
+}
+
 String AXNodeObject::textUnderElement() const
 {
     Node* node = this->node();
@@ -1303,6 +1315,7 @@ String AXNodeObject::textUnderElement() const
         return toText(node)->wholeText();
 
     StringBuilder builder;
+    AXObject* previous = nullptr;
     for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
         if (!shouldUseAccessibilityObjectInnerText(child))
             continue;
@@ -1316,7 +1329,18 @@ String AXNodeObject::textUnderElement() const
             }
         }
 
+        // If we're going between two renderers that are in separate RenderBoxes, add
+        // whitespace if it wasn't there already. Intuitively if you have
+        // <span>Hello</span><span>World</span>, those are part of the same RenderBox
+        // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
+        // strings are in separate boxes so we should return "Hello World".
+        if (previous && builder.length() && !isHTMLSpace(builder[builder.length() - 1])) {
+            if (!isSameRenderBox(child->renderer(), previous->renderer()))
+                builder.append(' ');
+        }
+
         builder.append(child->textUnderElement());
+        previous = child;
     }
 
     return builder.toString();
