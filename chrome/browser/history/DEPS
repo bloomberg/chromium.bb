@@ -6,54 +6,36 @@ include_rules = [
   # Please send reviews to sdefresne@chromium.org when adding dependencies to
   # this list.
   "-chrome/browser",
-  "-components/search_engines",
-  "+chrome/browser/chrome_notification_types.h",
-  "+chrome/browser/common",
-  "+chrome/browser/favicon",
+  "-components",
+
   "+chrome/browser/history",
-  "+chrome/browser/network_time",
-  "+chrome/tools/profiles",  # For history unit tests.
-  "+components/visitedlink/browser",
+  "+components/history",
+  "+components/favicon_base",
+  "+components/keyed_service/core",
+  "+components/signin/core/browser",
 
   # TODO(sdefresne): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/autocomplete/history_url_provider.h",
-  "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/bookmarks/chrome_bookmark_client.h",
-  "!chrome/browser/bookmarks/chrome_bookmark_client_factory.h",
-  "!chrome/browser/browser_process.h",
-  "!chrome/browser/chromeos/login/existing_user_controller.h",
-  "!chrome/browser/content_settings/cookie_settings.h",
-  "!chrome/browser/diagnostics/sqlite_diagnostics.h",
-  "!chrome/browser/omnibox/omnibox_field_trial.h",
-  "!chrome/browser/prefs/scoped_user_pref_update.h",
+  "!chrome/browser/chrome_notification_types.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
   "!chrome/browser/prerender/prerender_manager_factory.h",
   "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_manager.h",
-  "!chrome/browser/signin/oauth2_token_service.h",
-  "!chrome/browser/signin/profile_oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
-  "!chrome/browser/signin/signin_manager.h",
   "!chrome/browser/signin/signin_manager_factory.h",
-  "!chrome/browser/signin/token_service_factory.h",
-  "!chrome/browser/sync/profile_sync_service.h",
-  "!chrome/browser/sync/profile_sync_service_factory.h",
-  "!chrome/browser/sync/profile_sync_service_mock.h",
   "!chrome/browser/ui/browser.h",
   "!chrome/browser/ui/browser_finder.h",
-  "!chrome/browser/ui/profile_error_dialog.h",
-  "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
-  "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
-  "!components/bookmarks/browser/bookmark_model.h",
   "!components/bookmarks/browser/bookmark_utils.h",
-  "!components/omnibox/autocomplete_match.h",
-  "!components/omnibox/autocomplete_result.h",
+  "!components/dom_distiller/core/url_constants.h",
+  "!components/omnibox/omnibox_field_trial.h",
   "!components/omnibox/url_prefix.h",
+  "!components/visitedlink/browser/visitedlink_delegate.h",
+  "!components/visitedlink/browser/visitedlink_master.h",
 ]
 
 specific_include_rules = {
@@ -61,12 +43,30 @@ specific_include_rules = {
   '.*_(api|browser|)test\.cc': [
     "+chrome/browser",
   ],
+  # chrome_.* and .*_factory won't be componentized as they belong to the
+  # embedder, so they can depend on other feature in chrome/.  Same thing
+  # for android specific code.
+  '(chrome_.*|.*_factory)\.(cc|h)': [
+    "+chrome/browser/bookmarks/bookmark_model_factory.h",
+    "+chrome/browser/bookmarks/chrome_bookmark_client.h",
+    "+chrome/browser/bookmarks/chrome_bookmark_client_factory.h",
+    "+chrome/browser/content_settings/cookie_settings.h",
+    "+chrome/browser/sync/profile_sync_service.h",
+    "+chrome/browser/sync/profile_sync_service_factory.h",
+    "+chrome/browser/ui/profile_error_dialog.h",
+    "+components/bookmarks/browser",
+    "+components/keyed_service/content",
+  ],
   # TODO(sdefresne): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
+    "!chrome/browser/autocomplete/scored_history_match_builder.h",
+    "!chrome/browser/bookmarks/bookmark_model_factory.h",
+    "!chrome/browser/sync/profile_sync_service.h",
+    "!chrome/browser/sync/profile_sync_service_factory.h",
+    "!chrome/browser/sync/profile_sync_service_mock.h",
     "!components/bookmarks/test/bookmark_test_helpers.h",
-    "!components/bookmarks/test/test_bookmark_client.h",
   ]
 }
