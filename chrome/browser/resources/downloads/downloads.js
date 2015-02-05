@@ -156,7 +156,7 @@ DownloadFocusRow.prototype = {
 
   /**
    * Determines if element should be focusable.
-   * @param {!Element} element
+   * @param {Element} element
    * @return {boolean}
    * @private
    */

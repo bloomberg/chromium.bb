@@ -43,6 +43,7 @@ cr.define('cr.ui', function() {
    * Row delegate to overwrite the behavior of a mouse click to deselect any row
    * that wasn't clicked.
    * @param {cr.ui.FocusGrid} focusGrid
+   * @constructor
    * @implements {cr.ui.FocusRow.Delegate}
    */
   FocusGrid.RowDelegate = function(focusGrid) {
@@ -61,8 +62,9 @@ cr.define('cr.ui', function() {
         return false;
 
       // Only the clicked row should be active.
+      var target = assertInstanceof(e.target, Node);
       this.focusGrid_.rows.forEach(function(row) {
-        row.makeRowActive(row.contains(e.target));
+        row.makeRowActive(row.contains(target));
       });
 
       e.preventDefault();
@@ -80,7 +82,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @param {EventTarget} target A target item to find in this grid.
+     * @param {Node} target A target item to find in this grid.
      * @return {number} The row index. -1 if not found.
      */
     getRowIndexForTarget: function(target) {
@@ -97,7 +99,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     onKeydown_: function(e) {
-      var rowIndex = this.getRowIndexForTarget(e.target);
+      var target = assertInstanceof(e.target, Node);
+      var rowIndex = this.getRowIndexForTarget(target);
       if (rowIndex == -1)
         return;
 
@@ -122,7 +125,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Keep track of the last column that the user manually focused.
-     * @param {Event} The focusin event.
+     * @param {Event} e The focusin event.
      * @private
      */
     onFocusin_: function(e) {
@@ -131,8 +134,9 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      if (this.getRowIndexForTarget(e.target) != -1)
-        this.lastFocused = e.target;
+      var target = assertInstanceof(e.target, Node);
+      if (this.getRowIndexForTarget(target) != -1)
+        this.lastFocused = target;
     },
 
     /**

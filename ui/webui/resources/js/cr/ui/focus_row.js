@@ -29,6 +29,7 @@ cr.define('cr.ui', function() {
    * any focus change deactivates the row.
    *
    * @constructor
+   * @extends {HTMLDivElement}
    */
   function FocusRow() {}
 
@@ -59,7 +60,8 @@ cr.define('cr.ui', function() {
     /**
      * Should be called in the constructor to decorate |this|.
      * @param {Node} boundary Focus events are ignored outside of this node.
-     * @param {FocusRow.Delegate=} opt_delegate A delegate to handle key events.
+     * @param {cr.ui.FocusRow.Delegate=} opt_delegate A delegate to handle key
+     *     events.
      */
     decorate: function(boundary, opt_delegate) {
       /** @private {!Node} */
@@ -90,7 +92,7 @@ cr.define('cr.ui', function() {
      *     which previously held focus.
      * @return {!Element} The element that best matches sampleElement.
      */
-    getEquivalentElement: assertNotReached,
+    getEquivalentElement: function(sampleElement) { assertNotReached(); },
 
     /**
      * Add an element to this FocusRow. No-op if |element| is not provided.
@@ -148,8 +150,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onFocusin_: function(e) {
-      if (this.boundary_.contains(assertInstanceof(e.target, Node)))
-        this.onFocusChange_(e.target);
+      var target = assertInstanceof(e.target, Element);
+      if (this.boundary_.contains(target))
+        this.onFocusChange_(target);
     },
 
     /**
@@ -158,13 +161,14 @@ cr.define('cr.ui', function() {
      * @private
      */
     onKeydown_: function(e) {
-      if (!this.contains(e.target))
+      var element = assertInstanceof(e.target, Element);
+      if (!this.contains(element))
         return;
 
       if (this.delegate && this.delegate.onKeydown(this, e))
         return;
 
-      var elementIndex = this.focusableElements.indexOf(e.target);
+      var elementIndex = this.focusableElements.indexOf(element);
       var index = -1;
 
       if (e.keyIdentifier == 'Left')
@@ -194,7 +198,7 @@ cr.define('cr.ui', function() {
       // Only accept the left mouse click.
       if (!e.button) {
         // Focus this row if the target is one of the elements in this row.
-        this.onFocusChange_(e.target);
+        this.onFocusChange_(assertInstanceof(e.target, Element));
       }
     },
   };
