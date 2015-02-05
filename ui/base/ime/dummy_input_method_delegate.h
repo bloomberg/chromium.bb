@@ -12,7 +12,7 @@
 namespace ui {
 namespace internal {
 
-class UI_BASE_EXPORT DummyInputMethodDelegate : public InputMethodDelegate {
+class UI_BASE_IME_EXPORT DummyInputMethodDelegate : public InputMethodDelegate {
  public:
   DummyInputMethodDelegate();
   ~DummyInputMethodDelegate() override;

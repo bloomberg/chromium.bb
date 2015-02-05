@@ -14,7 +14,7 @@ namespace ui {
 // A ui::InputMethod implementation for Aura on Linux platforms. The
 // implementation details are separated to ui::LinuxInputMethodContext
 // interface.
-class UI_BASE_EXPORT InputMethodAuraLinux
+class UI_BASE_IME_EXPORT InputMethodAuraLinux
     : public InputMethodBase,
       public LinuxInputMethodContextDelegate {
  public:

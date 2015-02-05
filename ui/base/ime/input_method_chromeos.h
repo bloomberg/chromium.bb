@@ -20,7 +20,7 @@
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
-class UI_BASE_EXPORT InputMethodChromeOS
+class UI_BASE_IME_EXPORT InputMethodChromeOS
     : public InputMethodBase,
       public chromeos::IMEInputContextHandlerInterface {
  public:

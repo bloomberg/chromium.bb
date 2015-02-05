@@ -26,6 +26,7 @@
         '../resources/ui_resources.gyp:ui_resources',
         '../resources/ui_resources.gyp:ui_test_pak',
         '../strings/ui_strings.gyp:ui_strings',
+        'ime/ui_base_ime.gyp:ui_base_ime',
         'ui_base.gyp:ui_base',
         'ui_base.gyp:ui_base_test_support',
       ],

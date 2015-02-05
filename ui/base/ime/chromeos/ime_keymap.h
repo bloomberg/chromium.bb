@@ -7,16 +7,17 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 
 // Translates the DOM4 key code string to ui::KeyboardCode.
-UI_BASE_EXPORT KeyboardCode DomKeycodeToKeyboardCode(const std::string& code);
+UI_BASE_IME_EXPORT KeyboardCode
+DomKeycodeToKeyboardCode(const std::string& code);
 
 // Translates the ui::KeyboardCode to DOM4 key code string.
-UI_BASE_EXPORT std::string KeyboardCodeToDomKeycode(KeyboardCode code);
+UI_BASE_IME_EXPORT std::string KeyboardCodeToDomKeycode(KeyboardCode code);
 
 }  // namespace ui
 

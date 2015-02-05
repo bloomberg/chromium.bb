@@ -11,7 +11,7 @@ namespace ui {
 
 // A minimal implementation of ui::InputMethod, which supports only the direct
 // input without any compositions or conversions.
-class UI_BASE_EXPORT InputMethodMinimal : public InputMethodBase {
+class UI_BASE_IME_EXPORT InputMethodMinimal : public InputMethodBase {
  public:
   explicit InputMethodMinimal(internal::InputMethodDelegate* delegate);
   ~InputMethodMinimal() override;

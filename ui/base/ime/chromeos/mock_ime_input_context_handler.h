@@ -7,11 +7,11 @@
 
 #include "ui/base/ime/chromeos/composition_text.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {
 
-class UI_BASE_EXPORT MockIMEInputContextHandler
+class UI_BASE_IME_EXPORT MockIMEInputContextHandler
     : public IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {

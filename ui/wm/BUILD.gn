@@ -79,6 +79,7 @@ component("wm") {
     "//skia",
     "//ui/aura",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/events",
     "//ui/events/devices",
@@ -108,6 +109,7 @@ static_library("test_support") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/events",
     "//ui/events:events_base",
   ]

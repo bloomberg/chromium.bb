@@ -23,6 +23,7 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../resources/ui_resources.gyp:ui_resources',
+        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
       ],
       'defines': [
@@ -129,6 +130,7 @@
         '../../testing/gtest.gyp:gtest',
         '../aura/aura.gyp:aura',
         '../aura/aura.gyp:aura_test_support',
+        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',

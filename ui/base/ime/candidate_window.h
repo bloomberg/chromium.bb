@@ -10,19 +10,19 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/infolist_entry.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
 // CandidateWindow represents the structure of candidates generated from IME.
-class UI_BASE_EXPORT CandidateWindow {
+class UI_BASE_IME_EXPORT CandidateWindow {
  public:
   enum Orientation {
     HORIZONTAL = 0,
     VERTICAL = 1,
   };
 
-  struct UI_BASE_EXPORT CandidateWindowProperty {
+  struct UI_BASE_IME_EXPORT CandidateWindowProperty {
     CandidateWindowProperty();
     virtual ~CandidateWindowProperty();
     int page_size;
@@ -38,7 +38,7 @@ class UI_BASE_EXPORT CandidateWindow {
   };
 
   // Represents a candidate entry.
-  struct UI_BASE_EXPORT Entry {
+  struct UI_BASE_IME_EXPORT Entry {
     Entry();
     virtual ~Entry();
     base::string16 value;

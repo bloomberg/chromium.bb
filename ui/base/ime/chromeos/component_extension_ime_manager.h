@@ -12,14 +12,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 class Profile;
 
 namespace chromeos {
 
 // Represents an engine in component extension IME.
-struct UI_BASE_EXPORT ComponentExtensionEngine {
+struct UI_BASE_IME_EXPORT ComponentExtensionEngine {
   ComponentExtensionEngine();
   ~ComponentExtensionEngine();
   std::string engine_id;  // The engine id.
@@ -33,7 +33,7 @@ struct UI_BASE_EXPORT ComponentExtensionEngine {
 };
 
 // Represents a component extension IME.
-struct UI_BASE_EXPORT ComponentExtensionIME {
+struct UI_BASE_IME_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
   std::string id;  // extension id.
@@ -45,7 +45,7 @@ struct UI_BASE_EXPORT ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class UI_BASE_EXPORT ComponentExtensionIMEManagerDelegate {
+class UI_BASE_IME_EXPORT ComponentExtensionIMEManagerDelegate {
  public:
   ComponentExtensionIMEManagerDelegate();
   virtual ~ComponentExtensionIMEManagerDelegate();
@@ -67,7 +67,7 @@ class UI_BASE_EXPORT ComponentExtensionIMEManagerDelegate {
 };
 
 // This class manages component extension input method.
-class UI_BASE_EXPORT ComponentExtensionIMEManager {
+class UI_BASE_IME_EXPORT ComponentExtensionIMEManager {
  public:
   ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();

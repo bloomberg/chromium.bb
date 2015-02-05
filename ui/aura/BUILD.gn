@@ -99,6 +99,7 @@ component("aura") {
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/events",
     "//ui/events/platform",
