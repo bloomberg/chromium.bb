@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 
 class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
@@ -19,10 +20,10 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
   // retains ownership of the string. |json_string| must not be null.
   explicit JSONStringValueSerializer(std::string* json_string);
 
-  // This version allows initialization with a const string reference for
-  // deserialization only. Retains a reference to |json_string|, so the string
-  // argument must outlive the JSONStringValueSerializer.
-  explicit JSONStringValueSerializer(const std::string& json_string);
+  // This version allows initialization with a StringPiece for deserialization
+  // only. Retains a reference to the contents of |json_string|, so the data
+  // must outlive the JSONStringValueSerializer.
+  explicit JSONStringValueSerializer(const base::StringPiece& json_string);
 
   ~JSONStringValueSerializer() override;
 
@@ -55,8 +56,12 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
  private:
   bool SerializeInternal(const base::Value& root, bool omit_binary_values);
 
-  std::string* json_string_;  // Not null.
-  bool initialized_with_const_string_;
+  // String for writing. Owned by the caller of the constructor. Will be null if
+  // the serializer was initialized with a const string.
+  std::string* json_string_;
+  // String for reading. Data is owned by the caller of the constructor. If
+  // |json_string_| is non-null, this is a view onto |json_string_|.
+  base::StringPiece json_string_readonly_;
   bool pretty_print_;  // If true, serialization will span multiple lines.
   // If true, deserialization will allow trailing commas.
   bool allow_trailing_comma_;

@@ -12,16 +12,15 @@ using base::Value;
 
 JSONStringValueSerializer::JSONStringValueSerializer(std::string* json_string)
     : json_string_(json_string),
-      initialized_with_const_string_(false),
+      json_string_readonly_(*json_string),
       pretty_print_(false),
       allow_trailing_comma_(false) {
-  DCHECK(json_string);
 }
 
 JSONStringValueSerializer::JSONStringValueSerializer(
-    const std::string& json_string)
-    : json_string_(&const_cast<std::string&>(json_string)),
-      initialized_with_const_string_(true),
+    const base::StringPiece& json_string)
+    : json_string_(nullptr),
+      json_string_readonly_(json_string),
       pretty_print_(false),
       allow_trailing_comma_(false) {
 }
@@ -39,7 +38,7 @@ bool JSONStringValueSerializer::SerializeAndOmitBinaryValues(
 
 bool JSONStringValueSerializer::SerializeInternal(const Value& root,
                                                   bool omit_binary_values) {
-  if (initialized_with_const_string_)
+  if (!json_string_)
     return false;
 
   int options = 0;
@@ -53,7 +52,7 @@ bool JSONStringValueSerializer::SerializeInternal(const Value& root,
 
 Value* JSONStringValueSerializer::Deserialize(int* error_code,
                                               std::string* error_str) {
-  return base::JSONReader::ReadAndReturnError(*json_string_,
+  return base::JSONReader::ReadAndReturnError(json_string_readonly_,
       allow_trailing_comma_ ? base::JSON_ALLOW_TRAILING_COMMAS :
           base::JSON_PARSE_RFC,
       error_code, error_str);
