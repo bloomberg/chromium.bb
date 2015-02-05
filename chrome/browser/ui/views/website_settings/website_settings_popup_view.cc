@@ -160,7 +160,7 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
 ////////////////////////////////////////////////////////////////////////////////
 
 PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
-    : name_(NULL), status_(NULL) {
+    : name_(nullptr), status_(nullptr) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
@@ -301,20 +301,20 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       web_contents_(web_contents),
       browser_(browser),
-      header_(NULL),
-      tabbed_pane_(NULL),
-      site_data_content_(NULL),
-      cookie_dialog_link_(NULL),
-      permissions_content_(NULL),
-      connection_tab_(NULL),
-      identity_info_content_(NULL),
-      certificate_dialog_link_(NULL),
-      signed_certificate_timestamps_link_(NULL),
-      reset_decisions_button_(NULL),
+      header_(nullptr),
+      tabbed_pane_(nullptr),
+      site_data_content_(nullptr),
+      cookie_dialog_link_(nullptr),
+      permissions_content_(nullptr),
+      connection_tab_(nullptr),
+      identity_info_content_(nullptr),
+      certificate_dialog_link_(nullptr),
+      signed_certificate_timestamps_link_(nullptr),
+      reset_decisions_button_(nullptr),
       cert_id_(0),
-      help_center_link_(NULL),
-      connection_info_content_(NULL),
-      page_info_content_(NULL),
+      help_center_link_(nullptr),
+      connection_info_content_(nullptr),
+      page_info_content_(nullptr),
       weak_factory_(this) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
@@ -396,7 +396,7 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
     new CollectedCookiesViews(web_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent = GetAnchorView() ?
-        GetAnchorView()->GetWidget()->GetNativeWindow() : NULL;
+        GetAnchorView()->GetWidget()->GetNativeWindow() : nullptr;
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
     ShowCertificateViewerByID(web_contents_, parent, cert_id_);
@@ -440,7 +440,7 @@ void WebsiteSettingsPopupView::TabSelectedAt(int index) {
 }
 
 gfx::Size WebsiteSettingsPopupView::GetPreferredSize() const {
-  if (header_ == NULL && tabbed_pane_ == NULL)
+  if (header_ == nullptr && tabbed_pane_ == nullptr)
     return views::View::GetPreferredSize();
 
   int height = 0;
@@ -619,9 +619,9 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
       base::string16(),  // The connection section has no headline.
       base::UTF8ToUTF16(identity_info.connection_status_description),
-      NULL,
-      NULL,
-      NULL);
+      nullptr,
+      nullptr,
+      nullptr);
 
   connection_tab_->InvalidateLayout();
   Layout();
@@ -635,9 +635,9 @@ void WebsiteSettingsPopupView::SetFirstVisit(
       WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
       first_visit,
-      NULL,
-      NULL,
-      NULL);
+      nullptr,
+      nullptr,
+      nullptr);
   connection_tab_->InvalidateLayout();
   Layout();
   SizeToContents();
@@ -668,7 +668,7 @@ views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
       CreateSection(l10n_util::GetStringUTF16(
                         IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS),
                     permissions_content_,
-                    NULL);
+                    nullptr);
   pane->AddChildView(permissions_section);
   return pane;
 }
