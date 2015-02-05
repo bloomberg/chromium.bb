@@ -8,31 +8,39 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
 
 namespace content {
+class ResourceRequestBody;
 
 // A struct to hold the parameters needed to start a navigation request in
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed
 // to the IO thread by a NavigationRequest object.
 struct CONTENT_EXPORT NavigationRequestInfo {
-  explicit NavigationRequestInfo(
-      const FrameHostMsg_BeginNavigation_Params& params);
+  NavigationRequestInfo(const CommonNavigationParams& common_params,
+                        const BeginNavigationParams& params,
+                        const GURL& first_party_for_cookies,
+                        bool is_main_frame,
+                        bool parent_is_main_frame,
+                        scoped_refptr<ResourceRequestBody> request_body);
+  ~NavigationRequestInfo();
 
-  const FrameHostMsg_BeginNavigation_Params navigation_params;
-
-  // ---------------------------------------------------------------------------
-  // The following parameters should be filled in by RenderFrameHostManager
-  // before the navigation request is sent to the ResourceDispatcherHost.
+  const CommonNavigationParams common_params;
+  const BeginNavigationParams begin_params;
 
   // Usually the URL of the document in the top-level window, which may be
   // checked by the third-party cookie blocking policy.
-  GURL first_party_for_cookies;
-  bool is_main_frame;
-  bool parent_is_main_frame;
+  const GURL first_party_for_cookies;
+
+  const bool is_main_frame;
+  const bool parent_is_main_frame;
+
+  scoped_refptr<ResourceRequestBody> request_body;
 };
 
 }  // namespace content

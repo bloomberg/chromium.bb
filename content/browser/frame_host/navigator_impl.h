@@ -70,9 +70,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                           const GlobalRequestID& transferred_global_request_id,
                           bool should_replace_current_entry,
                           bool user_gesture) override;
+  void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node, bool proceed) override;
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
-                         const FrameHostMsg_BeginNavigation_Params& params,
-                         const CommonNavigationParams& common_params) override;
+                         const CommonNavigationParams& common_params,
+                         const BeginNavigationParams& begin_params,
+                         scoped_refptr<ResourceRequestBody> body) override;
   void CommitNavigation(FrameTreeNode* frame_tree_node,
                         ResourceResponse* response,
                         scoped_ptr<StreamHandle> body) override;
@@ -109,13 +111,17 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
     RenderFrameHostImpl* render_frame_host,
     const GURL& url);
 
-  // PlzNavigate: sends a RequestNavigation IPC to the renderer to ask it to
-  // navigate. If no live renderer is present, then the navigation request will
-  // be sent directly to the ResourceDispatcherHost.
-  bool RequestNavigation(FrameTreeNode* frame_tree_node,
+  // PlzNavigate: if needed, sends a BeforeUnload IPC to the renderer to ask it
+  // to execute the beforeUnload event. Otherwise, the navigation request will
+  // be started.
+  void RequestNavigation(FrameTreeNode* frame_tree_node,
                          const NavigationEntryImpl& entry,
                          NavigationController::ReloadType reload_type,
                          base::TimeTicks navigation_start);
+
+  // PlzNavigate: sends the NavigationRequest for |frame_tree_node| to the
+  // network stack so that it can start.
+  void BeginNavigation(FrameTreeNode* frame_tree_node);
 
   void RecordNavigationMetrics(
       const LoadCommittedDetails& details,

@@ -63,8 +63,10 @@ class RenderViewHostImpl;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
+class ResourceRequestBody;
 class StreamHandle;
 class TimeoutMonitor;
+struct BeginNavigationParams;
 struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct ContextMenuParams;
@@ -327,10 +329,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost.
   void CancelSuspendedNavigations();
 
-  // Runs the beforeunload handler for this frame. |for_cross_site_transition|
-  // indicates whether this call is for the current frame during a cross-process
+  // Runs the beforeunload handler for this frame. |for_navigation| indicates
+  // whether this call is for the current frame during a cross-process
   // navigation. False means we're closing the entire tab.
-  void DispatchBeforeUnload(bool for_cross_site_transition);
+  // PlzNavigate: this call happens on all browser-initiated navigations.
+  void DispatchBeforeUnload(bool for_navigation);
 
   // Set the frame's opener to null in the renderer process in response to an
   // action in another renderer process.
@@ -482,8 +485,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
-  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params,
-                         const CommonNavigationParams& common_params);
+  void OnBeginNavigation(const CommonNavigationParams& common_params,
+                         const BeginNavigationParams& begin_params,
+                         scoped_refptr<ResourceRequestBody> body);
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,
       int reset_token);
@@ -629,8 +633,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // IsWaitingForUnloadACK is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderFrameHost in
-  // the case of a cross-site transition ( = true).
-  bool unload_ack_is_for_cross_site_transition_;
+  // the case of a navigation ( = true). Currently only cross-site navigations
+  // require a beforeUnload/unload ACK.
+  // PlzNavigate: all navigations require a beforeUnload ACK.
+  bool unload_ack_is_for_navigation_;
 
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the

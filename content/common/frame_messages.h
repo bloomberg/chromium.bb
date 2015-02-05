@@ -214,10 +214,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(report_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(is_post)
-  IPC_STRUCT_TRAITS_MEMBER(extra_headers)
-  IPC_STRUCT_TRAITS_MEMBER(browser_initiated_post_data)
+IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(method)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(load_flags)
+  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
@@ -251,8 +252,17 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
 
   // These structs contain parameters shared by other navigation IPCs.
   IPC_STRUCT_MEMBER(content::CommonNavigationParams, common_params)
-  IPC_STRUCT_MEMBER(content::RequestNavigationParams, request_params)
   IPC_STRUCT_MEMBER(content::CommitNavigationParams, commit_params)
+
+  // Whether the navigation is a POST request (as opposed to a GET).
+  IPC_STRUCT_MEMBER(bool, is_post)
+
+  // Extra headers (separated by \n) to send during the request.
+  IPC_STRUCT_MEMBER(std::string, extra_headers)
+
+  // If is_post is true, holds the post_data information from browser. Empty
+  // otherwise.
+  IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
 
   // The page_id for this navigation, or -1 if it is a new navigation.  Back,
   // Forward, and Reload navigations should have a valid page_id.  If the load
@@ -317,28 +327,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
   IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
   IPC_STRUCT_MEMBER(bool, user_gesture)
-IPC_STRUCT_END()
-
-// PlzNavigate
-IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
-  // TODO(clamy): See if it is possible to define a common struct between this
-  // IPC and ResourceMsg_Request_Params.
-
-  // The request method: GET, POST, etc.
-  IPC_STRUCT_MEMBER(std::string, method)
-
-  // Additional HTTP request headers.
-  IPC_STRUCT_MEMBER(std::string, headers)
-
-  // net::URLRequest load flags (net::LOAD_NORMAL) by default).
-  IPC_STRUCT_MEMBER(int, load_flags)
-
-  // Optional resource request body (may be null).
-  IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,
-                    request_body)
-
-  // True if the request was user initiated.
-  IPC_STRUCT_MEMBER(bool, has_user_gesture)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -547,12 +535,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 
 #endif
-
-// PlzNavigate
-// Tells the renderer that a navigation has been requested.
-IPC_MESSAGE_ROUTED2(FrameMsg_RequestNavigation,
-                    content::CommonNavigationParams, /* common_params */
-                    content::RequestNavigationParams /* request_params */)
 
 // PlzNavigate
 // Tells the renderer that a navigation is ready to commit.  The renderer should
@@ -848,9 +830,10 @@ IPC_MESSAGE_CONTROL1(FrameHostMsg_AddNavigationTransitionData,
 
 // PlzNavigate
 // Tells the browser to perform a navigation.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,
-                    FrameHostMsg_BeginNavigation_Params,
-                    content::CommonNavigationParams)
+IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,
+                    content::CommonNavigationParams,
+                    content::BeginNavigationParams,
+                    scoped_refptr<content::ResourceRequestBody>)
 
 // Sent once a paint happens after the first non empty layout. In other words
 // after the frame has painted something.

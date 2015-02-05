@@ -68,24 +68,27 @@ struct CONTENT_EXPORT CommonNavigationParams {
   FrameMsg_UILoadMetricsReportType::Value report_type;
 };
 
-// Used by FrameMsg_Navigate.
-// PlzNavigate: sent to the renderer when requesting a navigation.
-struct CONTENT_EXPORT RequestNavigationParams {
-  RequestNavigationParams();
-  RequestNavigationParams(bool is_post,
-                          const std::string& extra_headers,
-                          const base::RefCountedMemory* post_data);
-  ~RequestNavigationParams();
+// PlzNavigate: parameters needed to start a navigation on the IO thread.
+struct CONTENT_EXPORT BeginNavigationParams {
+  // TODO(clamy): See if it is possible to reuse this in
+  // ResourceMsg_Request_Params.
+  BeginNavigationParams();
+  BeginNavigationParams(std::string method,
+                        std::string headers,
+                        int load_flags,
+                        bool has_user_gesture);
 
-  // Whether the navigation is a POST request (as opposed to a GET).
-  bool is_post;
+  // The request method: GET, POST, etc.
+  std::string method;
 
-  // Extra headers (separated by \n) to send during the request.
-  std::string extra_headers;
+  // Additional HTTP request headers.
+  std::string headers;
 
-  // If is_post is true, holds the post_data information from browser. Empty
-  // otherwise.
-  std::vector<unsigned char> browser_initiated_post_data;
+  // net::URLRequest load flags (net::LOAD_NORMAL) by default).
+  int load_flags;
+
+  // True if the request was user initiated.
+  bool has_user_gesture;
 };
 
 // Used by FrameMsg_Navigate.

@@ -385,7 +385,6 @@ bool IsNonLocalTopLevelNavigation(const GURL& url,
 
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
     scoped_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled) {
   WebURLRequest request(common_params.url);
@@ -399,32 +398,6 @@ WebURLRequest CreateURLRequestForNavigation(
         WebString::fromUTF8(common_params.referrer.url.spec()));
     if (!web_referrer.isEmpty())
       request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
-  }
-
-  if (!request_params.extra_headers.empty()) {
-    for (net::HttpUtil::HeadersIterator i(request_params.extra_headers.begin(),
-                                          request_params.extra_headers.end(),
-                                          "\n");
-         i.GetNext();) {
-      request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
-                                 WebString::fromUTF8(i.values()));
-    }
-  }
-
-  if (request_params.is_post) {
-    request.setHTTPMethod(WebString::fromUTF8("POST"));
-
-    // Set post data.
-    WebHTTPBody http_body;
-    http_body.initialize();
-    const char* data = NULL;
-    if (request_params.browser_initiated_post_data.size()) {
-      data = reinterpret_cast<const char*>(
-          &request_params.browser_initiated_post_data.front());
-    }
-    http_body.appendData(
-        WebData(data, request_params.browser_initiated_post_data.size()));
-    request.setHTTPBody(http_body);
   }
 
   RequestExtraData* extra_data = new RequestExtraData();
@@ -466,18 +439,6 @@ void UpdateFrameNavigationTiming(WebFrame* frame,
     // TODO(clamy): We need to provide additional timing values for the
     // Navigation Timing API to work with browser-side navigations.
   }
-}
-
-// PlzNavigate
-FrameHostMsg_BeginNavigation_Params MakeBeginNavigationParams(
-    blink::WebURLRequest* request) {
-  FrameHostMsg_BeginNavigation_Params params;
-  params.method = request->httpMethod().latin1();
-  params.headers = GetWebURLRequestHeaders(*request);
-  params.load_flags = GetLoadFlagsForWebURLRequest(*request);
-  params.request_body = GetRequestBodyForWebURLRequest(*request);
-  params.has_user_gesture = request->hasUserGesture();
-  return params;
 }
 
 // PlzNavigate
@@ -1049,7 +1010,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_RequestNavigation, OnRequestNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
@@ -1152,9 +1112,34 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     // Navigate to the given URL.
     WebURLRequest request =
         CreateURLRequestForNavigation(params.common_params,
-                                      params.request_params,
                                       scoped_ptr<StreamOverrideParameters>(),
                                       frame->isViewSourceModeEnabled());
+
+    if (!params.extra_headers.empty()) {
+      for (net::HttpUtil::HeadersIterator i(params.extra_headers.begin(),
+                                            params.extra_headers.end(),
+                                            "\n");
+           i.GetNext();) {
+        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                   WebString::fromUTF8(i.values()));
+      }
+    }
+
+    if (params.is_post) {
+      request.setHTTPMethod(WebString::fromUTF8("POST"));
+
+      // Set post data.
+      WebHTTPBody http_body;
+      http_body.initialize();
+      const char* data = NULL;
+      if (params.browser_initiated_post_data.size()) {
+        data = reinterpret_cast<const char*>(
+            &params.browser_initiated_post_data.front());
+      }
+      http_body.appendData(
+          WebData(data, params.browser_initiated_post_data.size()));
+      request.setHTTPBody(http_body);
+    }
 
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(params.page_id, -1);
@@ -3894,20 +3879,6 @@ void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
 }
 
 // PlzNavigate
-void RenderFrameImpl::OnRequestNavigation(
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
-  WebURLRequest request =
-      CreateURLRequestForNavigation(common_params,
-                                    request_params,
-                                    scoped_ptr<StreamOverrideParameters>(),
-                                    frame_->isViewSourceModeEnabled());
-  BeginNavigation(&request);
-}
-
-// PlzNavigate
 void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
@@ -3939,7 +3910,6 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->response = response;
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params,
-                                    RequestNavigationParams(),
                                     stream_override.Pass(),
                                     frame_->isViewSourceModeEnabled());
 
@@ -4413,9 +4383,13 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
   // browser.
   // TODO(clamy): Data urls should not be sent back to the browser either.
   Send(new FrameHostMsg_DidStartLoading(routing_id_, true));
-  Send(new FrameHostMsg_BeginNavigation(routing_id_,
-                                        MakeBeginNavigationParams(request),
-                                        MakeCommonNavigationParams(request)));
+  Send(new FrameHostMsg_BeginNavigation(
+        routing_id_, MakeCommonNavigationParams(request),
+        BeginNavigationParams(request->httpMethod().latin1(),
+                              GetWebURLRequestHeaders(*request),
+                              GetLoadFlagsForWebURLRequest(*request),
+                              request->hasUserGesture()),
+        GetRequestBodyForWebURLRequest(*request)));
 }
 
 GURL RenderFrameImpl::GetLoadingUrl() const {

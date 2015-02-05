@@ -19,6 +19,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -37,8 +38,6 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
 
 namespace content {
 
@@ -70,65 +69,6 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   return FrameMsg_Navigate_Type::NORMAL;
 }
 
-// PlzNavigate
-// Returns the net load flags to use based on the navigation type.
-// TODO(clamy): unify the code with what is happening on the renderer side.
-int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
-  int load_flags = net::LOAD_NORMAL;
-  switch (navigation_type) {
-    case FrameMsg_Navigate_Type::RELOAD:
-    case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
-      load_flags |= net::LOAD_VALIDATE_CACHE;
-      break;
-    case FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE:
-      load_flags |= net::LOAD_BYPASS_CACHE;
-      break;
-    case FrameMsg_Navigate_Type::RESTORE:
-      load_flags |= net::LOAD_PREFERRING_CACHE;
-      break;
-    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      break;
-    case FrameMsg_Navigate_Type::NORMAL:
-    default:
-      break;
-  }
-  return load_flags;
-}
-
-// PlzNavigate
-// Generates a default FrameHostMsg_BeginNavigation_Params to be used when there
-// is no live renderer.
-FrameHostMsg_BeginNavigation_Params MakeDefaultBeginNavigation(
-    const RequestNavigationParams& request_params,
-    FrameMsg_Navigate_Type::Value navigation_type) {
-  FrameHostMsg_BeginNavigation_Params begin_navigation_params;
-  begin_navigation_params.method = request_params.is_post ? "POST" : "GET";
-  begin_navigation_params.load_flags =
-      LoadFlagFromNavigationType(navigation_type);
-
-  // Copy existing headers and add necessary headers that may not be present
-  // in the RequestNavigationParams.
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request_params.extra_headers);
-  headers.SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
-                             GetContentClient()->GetUserAgent());
-  headers.SetHeaderIfMissing("Accept", "*/*");
-  begin_navigation_params.headers = headers.ToString();
-
-  // Fill POST data from the browser in the request body.
-  if (request_params.is_post) {
-    begin_navigation_params.request_body = new ResourceRequestBody();
-    begin_navigation_params.request_body->AppendBytes(
-        reinterpret_cast<const char *>(
-            &request_params.browser_initiated_post_data.front()),
-        request_params.browser_initiated_post_data.size());
-  }
-
-  begin_navigation_params.has_user_gesture = false;
-  return begin_navigation_params;
-}
-
 RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess))
@@ -155,12 +95,17 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
       entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
       GetNavigationType(controller->GetBrowserContext(), entry, reload_type),
       !entry.IsViewSourceMode(), ui_timestamp, report_type);
-  params->request_params = RequestNavigationParams(
-      entry.GetHasPostData(),
-      entry.extra_headers(),
-      entry.GetBrowserInitiatedPostData());
   params->commit_params = CommitNavigationParams(
       entry.GetPageState(), entry.GetIsOverridingUserAgent(), navigation_start);
+  params->is_post = entry.GetHasPostData();
+  params->extra_headers = entry.extra_headers();
+  if (entry.GetBrowserInitiatedPostData()) {
+    params->browser_initiated_post_data.assign(
+        entry.GetBrowserInitiatedPostData()->front(),
+        entry.GetBrowserInitiatedPostData()->front() +
+            entry.GetBrowserInitiatedPostData()->size());
+  }
+
   if (!entry.GetBaseURLForDataURL().is_empty()) {
     params->base_url_for_data_url = entry.GetBaseURLForDataURL();
     params->history_url_for_data_url = entry.GetVirtualURL();
@@ -403,10 +348,11 @@ bool NavigatorImpl::NavigateToEntry(
           switches::kEnableBrowserSideNavigation)) {
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, entry.GetURL(), entry.restore_type()));
-    return RequestNavigation(render_frame_host->frame_tree_node(),
-                             entry,
-                             reload_type,
-                             navigation_start);
+    RequestNavigation(render_frame_host->frame_tree_node(),
+                      entry,
+                      reload_type,
+                      navigation_start);
+    return true;
   }
 
   RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
@@ -728,10 +674,8 @@ void NavigatorImpl::RequestTransferURL(
 }
 
 // PlzNavigate
-void NavigatorImpl::OnBeginNavigation(
-    FrameTreeNode* frame_tree_node,
-    const FrameHostMsg_BeginNavigation_Params& params,
-    const CommonNavigationParams& common_params) {
+void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
+                                      bool proceed) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
@@ -739,46 +683,44 @@ void NavigatorImpl::OnBeginNavigation(
   NavigationRequest* navigation_request =
       navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
 
-  if (!navigation_request) {
-    // This is a renderer initiated navigation, so generate a new
-    // NavigationRequest and store it in the map.
-    // TODO(clamy): Check if some PageState should be provided here.
-    // TODO(clamy): See how we should handle override of the user agent when the
-    // navigation may start in a renderer and commit in another one.
-    // TODO(clamy): See if the navigation start time should be measured in the
-    // renderer and sent to the browser instead of being measured here.
-    scoped_ptr<NavigationRequest> scoped_request(new NavigationRequest(
-        frame_tree_node, common_params,
-        CommitNavigationParams(PageState(), false, base::TimeTicks::Now()),
-        nullptr));
-    navigation_request = scoped_request.get();
-    navigation_request_map_.set(
-        frame_tree_node->frame_tree_node_id(), scoped_request.Pass());
+  // The NavigationRequest may have been canceled while the renderer was
+  // executing the BeforeUnload event.
+  if (!navigation_request)
+    return;
 
-    if (frame_tree_node->IsMainFrame())
-      navigation_data_.reset();
-  }
-  DCHECK(navigation_request);
+  DCHECK_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
+            navigation_request->state());
 
-  // Update the referrer with the one received from the renderer.
-  navigation_request->common_params().referrer = common_params.referrer;
+  if (proceed)
+    BeginNavigation(frame_tree_node);
+  else
+    CancelNavigation(frame_tree_node);
+}
 
-  scoped_ptr<NavigationRequestInfo> info(new NavigationRequestInfo(params));
+// PlzNavigate
+void NavigatorImpl::OnBeginNavigation(
+    FrameTreeNode* frame_tree_node,
+    const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
+    scoped_refptr<ResourceRequestBody> body) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  DCHECK(frame_tree_node);
 
-  info->first_party_for_cookies =
-      frame_tree_node->IsMainFrame()
-          ? navigation_request->common_params().url
-          : frame_tree_node->frame_tree()->root()->current_url();
-  info->is_main_frame = frame_tree_node->IsMainFrame();
-  info->parent_is_main_frame = !frame_tree_node->parent() ?
-      false : frame_tree_node->parent()->IsMainFrame();
+  // This is a renderer-initiated navigation, so generate a new
+  // NavigationRequest and store it in the map.
+  // TODO(clamy): Renderer-initiated navigations should not always cancel the
+  // current one.
+  scoped_ptr<NavigationRequest> navigation_request =
+      NavigationRequest::CreateRendererInitiated(
+          frame_tree_node, common_params, begin_params, body);
+  navigation_request_map_.set(
+      frame_tree_node->frame_tree_node_id(), navigation_request.Pass());
 
-  // First start the request on the IO thread.
-  navigation_request->BeginNavigation(info.Pass(), params.request_body);
+  if (frame_tree_node->IsMainFrame())
+    navigation_data_.reset();
 
-  // Then notify the RenderFrameHostManager so it can speculatively create a
-  // RenderFrameHost (and potentially a new renderer process) in parallel.
-  frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
+  BeginNavigation(frame_tree_node);
 }
 
 // PlzNavigate
@@ -881,7 +823,7 @@ void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
 }
 
 // PlzNavigate
-bool NavigatorImpl::RequestNavigation(
+void NavigatorImpl::RequestNavigation(
     FrameTreeNode* frame_tree_node,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
@@ -892,33 +834,39 @@ bool NavigatorImpl::RequestNavigation(
   int64 frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-  scoped_ptr<NavigationRequest> navigation_request = NavigationRequest::Create(
-      frame_tree_node, entry, navigation_type, navigation_start);
-  RequestNavigationParams request_params(entry.GetHasPostData(),
-                                         entry.extra_headers(),
-                                         entry.GetBrowserInitiatedPostData());
+  scoped_ptr<NavigationRequest> navigation_request =
+      NavigationRequest::CreateBrowserInitiated(
+          frame_tree_node, entry, navigation_type, navigation_start);
   // TODO(clamy): Check if navigations are blocked and if so store the
   // parameters.
 
   // If there is an ongoing request, replace it.
   navigation_request_map_.set(frame_tree_node_id, navigation_request.Pass());
 
-  if (frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
-    NavigationRequest* request_to_send =
-        navigation_request_map_.get(frame_tree_node_id);
-    frame_tree_node->current_frame_host()->Send(new FrameMsg_RequestNavigation(
-        frame_tree_node->current_frame_host()->GetRoutingID(),
-        request_to_send->common_params(), request_params));
-    request_to_send->SetWaitingForRendererResponse();
-    return true;
-  }
+  // Have the current renderer execute its beforeUnload event if needed. If it
+  // is not needed (eg. the renderer is not live), BeginNavigation should get
+  // called.
+  NavigationRequest* request_to_send =
+      navigation_request_map_.get(frame_tree_node_id);
+  request_to_send->SetWaitingForRendererResponse();
+  frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
+}
 
-  // The navigation request is sent directly to the IO thread.
-  OnBeginNavigation(
-      frame_tree_node,
-      MakeDefaultBeginNavigation(request_params, navigation_type),
-      navigation_request_map_.get(frame_tree_node_id)->common_params());
-  return true;
+void NavigatorImpl::BeginNavigation(FrameTreeNode* frame_tree_node) {
+  NavigationRequest* navigation_request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+
+  // A browser-initiated navigation could have been cancelled while it was
+  // waiting for the BeforeUnload event to execute.
+  if (!navigation_request)
+    return;
+
+  // First start the request on the IO thread.
+  navigation_request->BeginNavigation();
+
+  // Then notify the RenderFrameHostManager so it can speculatively create a
+  // RenderFrameHost (and potentially a new renderer process) in parallel.
+  frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
 }
 
 void NavigatorImpl::RecordNavigationMetrics(

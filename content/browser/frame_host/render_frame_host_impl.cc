@@ -144,7 +144,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       render_frame_created_(false),
       navigations_suspended_(false),
       is_waiting_for_beforeunload_ack_(false),
-      unload_ack_is_for_cross_site_transition_(false),
+      unload_ack_is_for_navigation_(false),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
       no_create_browser_accessibility_manager_for_testing_(false),
@@ -742,7 +742,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // old page will soon be stopped.  Instead, treat this as a beforeunload ack
   // to allow the pending navigation to continue.
   if (is_waiting_for_beforeunload_ack_ &&
-      unload_ack_is_for_cross_site_transition_ &&
+      unload_ack_is_for_navigation_ &&
       ui::PageTransitionIsMainFrame(validated_params.transition)) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
@@ -984,9 +984,17 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   render_view_host_->StopHangMonitorTimeout();
   send_before_unload_start_time_ = base::TimeTicks();
 
-  frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-      unload_ack_is_for_cross_site_transition_, proceed,
-      before_unload_end_time);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation)) {
+    // TODO(clamy): see if before_unload_end_time should be transmitted to the
+    // Navigator.
+    frame_tree_node_->navigator()->OnBeforeUnloadACK(
+        frame_tree_node_, proceed);
+  } else {
+    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+        unload_ack_is_for_navigation_, proceed,
+        before_unload_end_time);
+  }
 
   // If canceled, notify the delegate to cancel its pending navigation entry.
   if (!proceed)
@@ -1145,12 +1153,13 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 }
 
 void RenderFrameHostImpl::OnBeginNavigation(
-    const FrameHostMsg_BeginNavigation_Params& params,
-    const CommonNavigationParams& common_params) {
+    const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
+    scoped_refptr<ResourceRequestBody> body) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   frame_tree_node()->navigator()->OnBeginNavigation(
-      frame_tree_node(), params, common_params);
+      frame_tree_node(), common_params, begin_params, body);
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
@@ -1479,13 +1488,19 @@ void RenderFrameHostImpl::Stop() {
   Send(new FrameMsg_Stop(routing_id_));
 }
 
-void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
+void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
   // the handler ran and allowed the navigation to proceed.
   if (GetParent() || !IsRenderFrameLive()) {
     // We don't have a live renderer, so just skip running beforeunload.
-    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-        for_cross_site_transition, true, base::TimeTicks::Now());
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation)) {
+      frame_tree_node_->navigator()->OnBeforeUnloadACK(
+          frame_tree_node_, true);
+    } else {
+      frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+          for_navigation, true, base::TimeTicks::Now());
+    }
     return;
   }
   TRACE_EVENT_ASYNC_BEGIN0(
@@ -1501,13 +1516,13 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
     // (if there was a cross-site "close" request pending when the user clicked
     // the close button). We want to keep the "for cross site" flag only if
     // both the old and the new ones are also for cross site.
-    unload_ack_is_for_cross_site_transition_ =
-        unload_ack_is_for_cross_site_transition_ && for_cross_site_transition;
+    unload_ack_is_for_navigation_ =
+        unload_ack_is_for_navigation_ && for_navigation;
   } else {
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
     is_waiting_for_beforeunload_ack_ = true;
-    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
+    unload_ack_is_for_navigation_ = for_navigation;
     // Increment the in-flight event count, to ensure that input events won't
     // cancel the timeout timer.
     render_view_host_->increment_in_flight_event_count();

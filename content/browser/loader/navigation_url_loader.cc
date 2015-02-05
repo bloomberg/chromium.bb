@@ -15,18 +15,14 @@ static NavigationURLLoaderFactory* g_factory = nullptr;
 scoped_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     BrowserContext* browser_context,
     int64 frame_tree_node_id,
-    const CommonNavigationParams& common_params,
     scoped_ptr<NavigationRequestInfo> request_info,
-    ResourceRequestBody* request_body,
     NavigationURLLoaderDelegate* delegate) {
   if (g_factory) {
     return g_factory->CreateLoader(browser_context, frame_tree_node_id,
-                                   common_params, request_info.Pass(),
-                                   request_body, delegate);
+                                   request_info.Pass(), delegate);
   }
   return scoped_ptr<NavigationURLLoader>(new NavigationURLLoaderImpl(
-      browser_context, frame_tree_node_id, common_params, request_info.Pass(),
-      request_body, delegate));
+      browser_context, frame_tree_node_id, request_info.Pass(), delegate));
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

@@ -4,15 +4,23 @@
 
 #include "content/browser/frame_host/navigation_request_info.h"
 
-#include "content/common/resource_request_body.h"
-
 namespace content {
 
 NavigationRequestInfo::NavigationRequestInfo(
-    const FrameHostMsg_BeginNavigation_Params& params)
-    : navigation_params(params),
-      is_main_frame(true),
-      parent_is_main_frame(false) {
+    const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
+    const GURL& first_party_for_cookies,
+    bool is_main_frame,
+    bool parent_is_main_frame,
+    scoped_refptr<ResourceRequestBody> request_body)
+    : common_params(common_params),
+      begin_params(begin_params),
+      first_party_for_cookies(first_party_for_cookies),
+      is_main_frame(is_main_frame),
+      parent_is_main_frame(parent_is_main_frame),
+      request_body(request_body) {
 }
+
+NavigationRequestInfo::~NavigationRequestInfo() {}
 
 }  // namespace content

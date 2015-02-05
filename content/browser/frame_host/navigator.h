@@ -28,7 +28,9 @@ class NavigationEntryImpl;
 class NavigationRequest;
 class NavigatorDelegate;
 class RenderFrameHostImpl;
+class ResourceRequestBody;
 class StreamHandle;
+struct BeginNavigationParams;
 struct CommonNavigationParams;
 struct ResourceResponse;
 
@@ -116,15 +118,22 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       bool should_replace_current_entry,
       bool user_gesture) {}
 
-  // PlzNavigate: Used to start a navigation. OnBeginNavigation is called
-  // directly by RequestNavigation when there is no live renderer. Otherwise, it
-  // is called following a BeginNavigation IPC from the renderer (which in
-  // browser-initiated navigation also happens after RequestNavigation has been
-  // called).
+  // PlzNavigate
+  // Called after receiving a BeforeUnloadACK IPC from the renderer. If
+  // |frame_tree_node| has a NavigationRequest waiting for the renderer
+  // response, then the request is either started or canceled, depending on the
+  // value of |proceed|.
+  virtual void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
+                                 bool proceed) {}
+
+  // PlzNavigate
+  // Used to start a new renderer-initiated navigation, following a
+  // BeginNavigation IPC from the renderer.
   virtual void OnBeginNavigation(
       FrameTreeNode* frame_tree_node,
-      const FrameHostMsg_BeginNavigation_Params& params,
-      const CommonNavigationParams& common_params) {}
+      const CommonNavigationParams& common_params,
+      const BeginNavigationParams& begin_params,
+      scoped_refptr<ResourceRequestBody> body);
 
   // PlzNavigate
   // Signal |render_frame_host| that a navigation is ready to commit (the

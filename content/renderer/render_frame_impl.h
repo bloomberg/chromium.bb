@@ -633,9 +633,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCopyToFindPboard();
 #endif
 
-  // PlzNavigate
-  void OnRequestNavigation(const CommonNavigationParams& common_params,
-                           const RequestNavigationParams& request_params);
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,

@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/browser_side_navigation_test_utils.h"
@@ -187,15 +188,14 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 }
 
 void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
-  FrameHostMsg_BeginNavigation_Params begin_params;
+  BeginNavigationParams begin_params(
+      "GET", std::string(), net::LOAD_NORMAL, false);
   CommonNavigationParams common_params;
-  begin_params.method = "GET";
-  begin_params.load_flags = net::LOAD_NORMAL;
-  begin_params.has_user_gesture = false;
   common_params.url = url;
   common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
   common_params.transition = ui::PAGE_TRANSITION_LINK;
-  OnBeginNavigation(begin_params, common_params);
+  OnBeginNavigation(common_params, begin_params,
+                    scoped_refptr<ResourceRequestBody>());
 }
 
 void TestRenderFrameHost::DidDisownOpener() {
@@ -226,7 +226,7 @@ void TestRenderFrameHost::PrepareForCommit(const GURL& url) {
   // We may not have simulated the renderer response to the navigation request.
   // Do that now.
   if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
-    SendBeginNavigationWithURL(url);
+    SendBeforeUnloadACK(true);
 
   // We have already simulated the IO thread commit. Only the
   // DidCommitProvisionalLoad from the renderer is missing.

@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/streams/stream.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
@@ -148,7 +149,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
       GetLoaderForNavigationRequest(subframe_request);
   ASSERT_TRUE(subframe_request);
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);
-  EXPECT_EQ(kUrl2, subframe_loader->common_params().url);
+  EXPECT_EQ(kUrl2, subframe_loader->request_info()->common_params.url);
   // First party for cookies url should be that of the main frame.
   EXPECT_EQ(kUrl1, subframe_loader->request_info()->first_party_for_cookies);
   EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
@@ -174,7 +175,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
       GetLoaderForNavigationRequest(main_request);
   ASSERT_TRUE(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
-  EXPECT_EQ(kUrl3, main_loader->common_params().url);
+  EXPECT_EQ(kUrl3, main_loader->request_info()->common_params.url);
   EXPECT_EQ(kUrl3, main_loader->request_info()->first_party_for_cookies);
   EXPECT_TRUE(main_loader->request_info()->is_main_frame);
   EXPECT_FALSE(main_loader->request_info()->parent_is_main_frame);
@@ -453,13 +454,13 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   SendRequestNavigationWithParameters(
       node, kUrl, Referrer(), ui::PAGE_TRANSITION_LINK,
       NavigationController::RELOAD);
-  main_test_rfh()->SendBeginNavigationWithURL(kUrl);
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request =
       GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(main_request != NULL);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
             main_request->common_params().navigation_type);
+  main_test_rfh()->PrepareForCommit(kUrl);
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   main_test_rfh()->SendNavigate(0, kUrl);
@@ -469,12 +470,12 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   SendRequestNavigationWithParameters(
       node, kUrl, Referrer(), ui::PAGE_TRANSITION_LINK,
       NavigationController::RELOAD_IGNORING_CACHE);
-  main_test_rfh()->SendBeginNavigationWithURL(kUrl);
   // A NavigationRequest should have been generated.
   main_request = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(main_request != NULL);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE,
             main_request->common_params().navigation_type);
+  main_test_rfh()->PrepareForCommit(kUrl);
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 

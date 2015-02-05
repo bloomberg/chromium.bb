@@ -24,6 +24,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
@@ -176,18 +177,16 @@ class NavigationURLLoaderTest : public testing::Test {
   scoped_ptr<NavigationURLLoader> MakeTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
-    FrameHostMsg_BeginNavigation_Params begin_params;
+    BeginNavigationParams begin_params(
+        "GET", std::string(), net::LOAD_NORMAL, false);
     CommonNavigationParams common_params;
-    begin_params.method = "GET";
     common_params.url = url;
     scoped_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(begin_params));
-    request_info->first_party_for_cookies = url;
-    request_info->is_main_frame = true;
+        new NavigationRequestInfo(common_params, begin_params, url, true, false,
+                                  scoped_refptr<ResourceRequestBody>()));
 
     return NavigationURLLoader::Create(
-        browser_context_.get(), 0,
-        common_params, request_info.Pass(), nullptr, delegate);
+        browser_context_.get(), 0, request_info.Pass(), delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

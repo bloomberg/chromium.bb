@@ -38,9 +38,7 @@ NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {
 void NavigationURLLoaderImplCore::Start(
     ResourceContext* resource_context,
     int64 frame_tree_node_id,
-    const CommonNavigationParams& common_params,
-    scoped_ptr<NavigationRequestInfo> request_info,
-    ResourceRequestBody* request_body) {
+    scoped_ptr<NavigationRequestInfo> request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
@@ -50,8 +48,7 @@ void NavigationURLLoaderImplCore::Start(
 
   ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
       resource_context, frame_tree_node_id,
-      common_params, *request_info, request_body,
-      this);
+      *request_info, this);
 }
 
 void NavigationURLLoaderImplCore::FollowRedirect() {

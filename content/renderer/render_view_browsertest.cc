@@ -364,7 +364,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
   nav_params.page_id = -1;
-  nav_params.request_params.is_post = true;
+  nav_params.is_post = true;
   nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
 
@@ -373,7 +373,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
       "post \0\ndata");
   const unsigned int length = 11;
   const std::vector<unsigned char> post_data(raw_data, raw_data + length);
-  nav_params.request_params.browser_initiated_post_data = post_data;
+  nav_params.browser_initiated_post_data = post_data;
 
   frame()->OnNavigate(nav_params);
   ProcessPendingMessages();
@@ -2248,7 +2248,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
       FrameMsg_Navigate_Type::NORMAL;
   early_nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
   early_nav_params.page_id = -1;
-  early_nav_params.request_params.is_post = true;
+  early_nav_params.is_post = true;
   early_nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
 
@@ -2269,7 +2269,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
       FrameMsg_Navigate_Type::NORMAL;
   late_nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
   late_nav_params.page_id = -1;
-  late_nav_params.request_params.is_post = true;
+  late_nav_params.is_post = true;
   late_nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
 

@@ -263,9 +263,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // loader to attach to the leaf resource handler.
   void BeginNavigationRequest(ResourceContext* resource_context,
                               int64 frame_tree_node_id,
-                              const CommonNavigationParams& common_params,
                               const NavigationRequestInfo& info,
-                              scoped_refptr<ResourceRequestBody> request_body,
                               NavigationURLLoaderImplCore* loader);
 
  private:

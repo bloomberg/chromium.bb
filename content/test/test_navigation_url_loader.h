@@ -28,14 +28,12 @@ class TestNavigationURLLoader
     : public NavigationURLLoader,
       public base::SupportsWeakPtr<TestNavigationURLLoader> {
  public:
-  TestNavigationURLLoader(const CommonNavigationParams& common_params,
-                          scoped_ptr<NavigationRequestInfo> request_info,
+  TestNavigationURLLoader(scoped_ptr<NavigationRequestInfo> request_info,
                           NavigationURLLoaderDelegate* delegate);
 
   // NavigationURLLoader implementation.
   void FollowRedirect() override;
 
-  const CommonNavigationParams& common_params() const { return common_params_; }
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
 
   void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
@@ -48,7 +46,6 @@ class TestNavigationURLLoader
  private:
   ~TestNavigationURLLoader() override;
 
-  CommonNavigationParams common_params_;
   scoped_ptr<NavigationRequestInfo> request_info_;
   NavigationURLLoaderDelegate* delegate_;
   int redirect_count_;

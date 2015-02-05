@@ -34,21 +34,20 @@ CommonNavigationParams::CommonNavigationParams(
 CommonNavigationParams::~CommonNavigationParams() {
 }
 
-RequestNavigationParams::RequestNavigationParams() : is_post(false) {}
-
-RequestNavigationParams::RequestNavigationParams(
-    bool is_post,
-    const std::string& extra_headers,
-    const base::RefCountedMemory* post_data)
-    : is_post(is_post),
-      extra_headers(extra_headers) {
-  if (post_data) {
-    browser_initiated_post_data.assign(
-        post_data->front(), post_data->front() + post_data->size());
-  }
+BeginNavigationParams::BeginNavigationParams()
+    : load_flags(0),
+      has_user_gesture(false) {
 }
 
-RequestNavigationParams::~RequestNavigationParams() {}
+BeginNavigationParams::BeginNavigationParams(std::string method,
+                                             std::string headers,
+                                             int load_flags,
+                                             bool has_user_gesture)
+    : method(method),
+      headers(headers),
+      load_flags(load_flags),
+      has_user_gesture(has_user_gesture) {
+}
 
 CommitNavigationParams::CommitNavigationParams()
     : is_overriding_user_agent(false) {

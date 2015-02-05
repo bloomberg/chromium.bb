@@ -2306,7 +2306,7 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     navigation_state->set_transferred_request_request_id(
         params.transferred_request_request_id);
     navigation_state->set_allow_download(params.common_params.allow_download);
-    navigation_state->set_extra_headers(params.request_params.extra_headers);
+    navigation_state->set_extra_headers(params.extra_headers);
   } else {
     navigation_state = NavigationState::CreateContentInitiated();
   }

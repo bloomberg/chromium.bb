@@ -10,11 +10,9 @@
 namespace content {
 
 TestNavigationURLLoader::TestNavigationURLLoader(
-    const CommonNavigationParams& common_params,
     scoped_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate)
-    : common_params_(common_params),
-      request_info_(request_info.Pass()),
+    : request_info_(request_info.Pass()),
       delegate_(delegate),
       redirect_count_(0) {
 }

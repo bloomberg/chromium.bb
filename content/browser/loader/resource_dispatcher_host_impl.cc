@@ -1848,9 +1848,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
     int64 frame_tree_node_id,
-    const CommonNavigationParams& params,
     const NavigationRequestInfo& info,
-    scoped_refptr<ResourceRequestBody> request_body,
     NavigationURLLoaderImplCore* loader) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
@@ -1865,8 +1863,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // needs to be checked relative to the child that /requested/ the
       // navigation. It's where file upload checks, etc., come in.
       (delegate_ && !delegate_->ShouldBeginRequest(
-          info.navigation_params.method,
-          params.url,
+          info.begin_params.method,
+          info.common_params.url,
           resource_type,
           resource_context))) {
     loader->NotifyRequestFailed(net::ERR_ABORTED);
@@ -1876,14 +1874,15 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // Save the URL on the stack to help catch URLRequests which outlive their
   // URLRequestContexts. See https://crbug.com/90971
   char url_buf[128];
-  base::strlcpy(url_buf, params.url.spec().c_str(), arraysize(url_buf));
+  base::strlcpy(
+      url_buf, info.common_params.url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   const net::URLRequestContext* request_context =
       resource_context->GetRequestContext();
 
-  int load_flags = info.navigation_params.load_flags;
+  int load_flags = info.begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (info.is_main_frame) {
     load_flags |= net::LOAD_MAIN_FRAME;
@@ -1905,10 +1904,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // prerender. There may not be a renderer process yet, so we need to use the
   // ResourceContext or something.
   scoped_ptr<net::URLRequest> new_request;
-  new_request = request_context->CreateRequest(params.url, net::HIGHEST,
-                                               nullptr, nullptr);
+  new_request = request_context->CreateRequest(
+      info.common_params.url, net::HIGHEST, nullptr, nullptr);
 
-  new_request->set_method(info.navigation_params.method);
+  new_request->set_method(info.begin_params.method);
   new_request->set_first_party_for_cookies(
       info.first_party_for_cookies);
   if (info.is_main_frame) {
@@ -1916,26 +1915,26 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
-  SetReferrerForRequest(new_request.get(), params.referrer);
+  SetReferrerForRequest(new_request.get(), info.common_params.referrer);
 
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(info.navigation_params.headers);
+  headers.AddHeadersFromString(info.begin_params.headers);
   new_request->SetExtraRequestHeaders(headers);
 
   new_request->SetLoadFlags(load_flags);
 
   // Resolve elements from request_body and prepare upload data.
-  if (info.navigation_params.request_body.get()) {
+  if (info.request_body.get()) {
     storage::BlobStorageContext* blob_context = GetBlobStorageContext(
         GetChromeBlobStorageContextForResourceContext(resource_context));
     AttachRequestBodyBlobDataHandles(
-        info.navigation_params.request_body.get(),
+        info.request_body.get(),
         blob_context);
     // TODO(davidben): The FileSystemContext is null here. In the case where
     // another renderer requested this navigation, this should be the same
     // FileSystemContext passed into ShouldServiceRequest.
     new_request->set_upload(UploadDataStreamBuilder::Build(
-        info.navigation_params.request_body.get(),
+        info.request_body.get(),
         blob_context,
         nullptr,  // file_system_context
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
@@ -1960,18 +1959,18 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
           info.parent_is_main_frame,
           -1,  // request_data.parent_render_frame_id,
           resource_type,
-          params.transition,
+          info.common_params.transition,
           // should_replace_current_entry. This was only maintained at layer for
           // request transfers and isn't needed for browser-side navigations.
           false,
           false,  // is download
           false,  // is stream
-          params.allow_download,
-          info.navigation_params.has_user_gesture,
+          info.common_params.allow_download,
+          info.begin_params.has_user_gesture,
           true,   // enable_load_timing
           false,  // enable_upload_progress
           false,  // do_not_prompt_for_login
-          params.referrer.policy,
+          info.common_params.referrer.policy,
           // TODO(davidben): This is only used for prerenders. Replace
           // is_showing with something for that. Or maybe it just comes from the
           // same mechanism as the cookie one.
