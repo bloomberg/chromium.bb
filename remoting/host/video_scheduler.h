@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -28,6 +27,7 @@ class DesktopCapturer;
 
 namespace remoting {
 
+class CaptureScheduler;
 class CursorShapeInfo;
 
 namespace protocol {
@@ -72,7 +72,8 @@ class VideoStub;
 // of the capture, encode and network processes.  However, it also needs to
 // rate-limit captures to avoid overloading the host system, either by consuming
 // too much CPU, or hogging the host's graphics subsystem.
-
+//
+// TODO(sergeyu): Rename this class to VideoFramePipe.
 class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
                        public webrtc::DesktopCapturer::Callback,
                        public webrtc::MouseCursorMonitor::Callback {
@@ -93,15 +94,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_ptr<VideoEncoder> encoder,
       protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
-
-  // webrtc::DesktopCapturer::Callback implementation.
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
-
-  // webrtc::MouseCursorMonitor::Callback implementation.
-  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
-  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
-                             const webrtc::DesktopVector& position) override;
 
   // Starts scheduling frame captures.
   void Start();
@@ -129,25 +121,39 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Capturer thread ----------------------------------------------------------
 
+  // TODO(sergeyu): Move all methods that run on the capture thread to a
+  // separate class and make VideoScheduler not ref-counted.
+
+  // webrtc::DesktopCapturer::Callback implementation.
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+
+  // webrtc::MouseCursorMonitor::Callback implementation.
+  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
+  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
+                             const webrtc::DesktopVector& position) override;
+
   // Starts the capturer on the capture thread.
   void StartOnCaptureThread();
 
   // Stops scheduling frame captures on the capture thread.
   void StopOnCaptureThread();
 
-  // Schedules the next call to CaptureNextFrame.
-  void ScheduleNextCapture();
-
-  // Starts the next frame capture, unless there are already too many pending.
-  void CaptureNextFrame();
-
-  // Called when a frame capture has been encoded & sent to the client.
-  void FrameCaptureCompleted();
+  // Captures next frame on the capture thread.
+  void CaptureNextFrameOnCaptureThread();
 
   // Network thread -----------------------------------------------------------
 
-  // Send |packet| to the client, unless we are in the process of stopping.
-  void SendVideoPacket(scoped_ptr<VideoPacket> packet);
+  // Captures a new frame. Called by CaptureScheduler.
+  void CaptureNextFrame();
+
+  // Encodes and sends |frame|.
+  void EncodeAndSendFrame(scoped_ptr<webrtc::DesktopFrame> frame);
+
+  // Sends encoded frame
+  void SendEncodedFrame(int64 latest_event_timestamp,
+                        base::TimeTicks timestamp,
+                        scoped_ptr<VideoPacket> packet);
 
   // Callback passed to |video_stub_| for the last packet in each frame, to
   // rate-limit frame captures to network throughput.
@@ -161,16 +167,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Send updated cursor shape to client.
   void SendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
-
-  // Encoder thread -----------------------------------------------------------
-
-  // Encode a frame, passing generated VideoPackets to SendVideoPacket().
-  void EncodeFrame(scoped_ptr<webrtc::DesktopFrame> frame,
-                   int64 latest_event_timestamp,
-                   base::TimeTicks timestamp);
-
-  void EncodedDataAvailableCallback(int64 latest_event_timestamp,
-                                    scoped_ptr<VideoPacket> packet);
 
   // Task runners used by this class.
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
@@ -191,32 +187,14 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   protocol::CursorShapeStub* cursor_stub_;
   protocol::VideoStub* video_stub_;
 
-  // Timer used to schedule CaptureNextFrame().
-  scoped_ptr<base::OneShotTimer<VideoScheduler> > capture_timer_;
-
   // Timer used to ensure that we send empty keep-alive frames to the client
   // even when the video stream is paused or encoder is busy.
   scoped_ptr<base::DelayTimer<VideoScheduler> > keep_alive_timer_;
 
-  // The number of frames being processed, i.e. frames that we are currently
-  // capturing, encoding or sending. The value is capped at 2 to minimize
-  // latency.
-  int pending_frames_;
-
-  // Set when the capturer is capturing a frame.
-  bool capture_pending_;
-
-  // True if the previous scheduled capture was skipped.
-  bool did_skip_frame_;
-
-  // True if capture of video frames is paused.
-  bool is_paused_;
-
   // Number updated by the caller to trace performance.
   int64 latest_event_timestamp_;
 
-  // An object to schedule capturing.
-  CaptureScheduler scheduler_;
+  scoped_ptr<CaptureScheduler> capture_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoScheduler);
 };

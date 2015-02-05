@@ -464,12 +464,14 @@ void ClientSession::ResetVideoPipeline() {
       &mouse_clamping_filter_);
 
   // Apply video-control parameters to the new scheduler.
-  video_scheduler_->Pause(pause_video_);
   video_scheduler_->SetLosslessEncode(lossless_video_encode_);
   video_scheduler_->SetLosslessColor(lossless_video_color_);
 
   // Start capturing the screen.
   video_scheduler_->Start();
+
+  // Pause capturing if necessary.
+  video_scheduler_->Pause(pause_video_);
 }
 
 void ClientSession::SetGnubbyAuthHandlerForTesting(

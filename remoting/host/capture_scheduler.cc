@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 
 namespace {
@@ -24,46 +25,125 @@ const int64 kDefaultMinimumIntervalMs = 33;
 // available while 1 means using 100% of all CPUs available.
 const double kRecordingCpuConsumption = 0.5;
 
+// Maximum number of frames that can be processed simultaneously.
+static const int kMaxPendingFrames = 2;
+
 }  // namespace
 
 namespace remoting {
 
 // We assume that the number of available cores is constant.
-CaptureScheduler::CaptureScheduler()
-    : minimum_interval_(
+CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
+    : capture_closure_(capture_closure),
+      tick_clock_(new base::DefaultTickClock()),
+      capture_timer_(new base::Timer(false, false)),
+      minimum_interval_(
           base::TimeDelta::FromMilliseconds(kDefaultMinimumIntervalMs)),
       num_of_processors_(base::SysInfo::NumberOfProcessors()),
       capture_time_(kStatisticsWindow),
-      encode_time_(kStatisticsWindow) {
+      encode_time_(kStatisticsWindow),
+      pending_frames_(0),
+      capture_pending_(false),
+      is_paused_(false) {
   DCHECK(num_of_processors_);
 }
 
 CaptureScheduler::~CaptureScheduler() {
 }
 
-base::TimeDelta CaptureScheduler::NextCaptureDelay() {
+void CaptureScheduler::Start() {
+  DCHECK(CalledOnValidThread());
+
+  ScheduleNextCapture();
+}
+
+void CaptureScheduler::Pause(bool pause) {
+  DCHECK(CalledOnValidThread());
+
+  if (is_paused_ != pause) {
+    is_paused_ = pause;
+
+    if (is_paused_) {
+      capture_timer_->Stop();
+    } else {
+      ScheduleNextCapture();
+    }
+  }
+}
+
+void CaptureScheduler::OnCaptureCompleted() {
+  DCHECK(CalledOnValidThread());
+
+  capture_pending_ = false;
+  capture_time_.Record(
+      (tick_clock_->NowTicks() - last_capture_started_time_).InMilliseconds());
+
+  ScheduleNextCapture();
+}
+
+void CaptureScheduler::OnFrameSent() {
+  DCHECK(CalledOnValidThread());
+
+  // Decrement the pending capture count.
+  pending_frames_--;
+  DCHECK_GE(pending_frames_, 0);
+
+  ScheduleNextCapture();
+}
+
+void CaptureScheduler::OnFrameEncoded(base::TimeDelta encode_time) {
+  DCHECK(CalledOnValidThread());
+
+  encode_time_.Record(encode_time.InMilliseconds());
+  ScheduleNextCapture();
+}
+
+void CaptureScheduler::SetTickClockForTest(
+    scoped_ptr<base::TickClock> tick_clock) {
+  tick_clock_ = tick_clock.Pass();
+}
+void CaptureScheduler::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+  capture_timer_ = timer.Pass();
+}
+void CaptureScheduler::SetNumOfProcessorsForTest(int num_of_processors) {
+  num_of_processors_ = num_of_processors;
+}
+
+void CaptureScheduler::ScheduleNextCapture() {
+  DCHECK(CalledOnValidThread());
+
+  if (is_paused_ || pending_frames_ >= kMaxPendingFrames || capture_pending_)
+    return;
+
   // Delay by an amount chosen such that if capture and encode times
   // continue to follow the averages, then we'll consume the target
   // fraction of CPU across all cores.
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
-      (capture_time_.Average() + encode_time_.Average()) /
-      (kRecordingCpuConsumption * num_of_processors_));
+  base::TimeDelta delay =
+      std::max(minimum_interval_,
+               base::TimeDelta::FromMilliseconds(
+                   (capture_time_.Average() + encode_time_.Average()) /
+                   (kRecordingCpuConsumption * num_of_processors_)));
 
-  if (delay < minimum_interval_)
-    return minimum_interval_;
-  return delay;
+  // Account for the time that has passed since the last capture.
+  delay = std::max(base::TimeDelta(), delay - (tick_clock_->NowTicks() -
+                                               last_capture_started_time_));
+
+  capture_timer_->Start(
+      FROM_HERE, delay,
+      base::Bind(&CaptureScheduler::CaptureNextFrame, base::Unretained(this)));
 }
 
-void CaptureScheduler::RecordCaptureTime(base::TimeDelta capture_time) {
-  capture_time_.Record(capture_time.InMilliseconds());
-}
+void CaptureScheduler::CaptureNextFrame() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!is_paused_);
+  DCHECK(!capture_pending_);
 
-void CaptureScheduler::RecordEncodeTime(base::TimeDelta encode_time) {
-  encode_time_.Record(encode_time.InMilliseconds());
-}
+  pending_frames_++;
+  DCHECK_LE(pending_frames_, kMaxPendingFrames);
 
-void CaptureScheduler::SetNumOfProcessorsForTest(int num_of_processors) {
-  num_of_processors_ = num_of_processors;
+  capture_pending_ = true;
+  last_capture_started_time_ = tick_clock_->NowTicks();
+  capture_closure_.Run();
 }
 
 }  // namespace remoting

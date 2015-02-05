@@ -9,37 +9,83 @@
 #ifndef REMOTING_HOST_CAPTURE_SCHEDULER_H_
 #define REMOTING_HOST_CAPTURE_SCHEDULER_H_
 
+#include "base/callback.h"
+#include "base/threading/non_thread_safe.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "remoting/base/running_average.h"
 
 namespace remoting {
 
-class CaptureScheduler {
+// CaptureScheduler is used by the VideoScheduler to schedule frame capturer,
+// taking into account capture delay, encoder delay, network bandwidth, etc.
+class CaptureScheduler : public base::NonThreadSafe {
  public:
-  CaptureScheduler();
+  // |capture_closure| is called every time a new frame needs to be captured.
+  explicit CaptureScheduler(const base::Closure& capture_closure);
   ~CaptureScheduler();
 
-  // Returns the time to wait after initiating a capture before triggering
-  // the next.
-  base::TimeDelta NextCaptureDelay();
+  // Starts the scheduler.
+  void Start();
 
-  // Records time spent on capturing and encoding.
-  void RecordCaptureTime(base::TimeDelta capture_time);
-  void RecordEncodeTime(base::TimeDelta encode_time);
+  // Pauses or unpauses the stream.
+  void Pause(bool pause);
+
+  // Notifies the scheduler that a capture has been completed.
+  void OnCaptureCompleted();
+
+  // Notifies the scheduler that a frame has been encoded.
+  void OnFrameEncoded(base::TimeDelta encode_time);
+
+  // Notifies the scheduler that a frame has been sent.
+  void OnFrameSent();
 
   // Sets minimum interval between frames.
   void set_minimum_interval(base::TimeDelta minimum_interval) {
     minimum_interval_ = minimum_interval;
   }
 
-  // Overrides the number of processors for testing.
+  // Helper functions for tests.
+  void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
+  void SetTimerForTest(scoped_ptr<base::Timer> timer);
   void SetNumOfProcessorsForTest(int num_of_processors);
 
  private:
+  // Schedules |capture_timer_| to call CaptureNextFrame() at appropriate time.
+  // Doesn't do anything if next frame cannot be captured yet (e.g. because
+  // there are too many frames being processed).
+  void ScheduleNextCapture();
+
+  // Called by |capture_timer_|. Calls |capture_closure_| to start capturing a
+  // new frame.
+  void CaptureNextFrame();
+
+  base::Closure capture_closure_;
+
+  scoped_ptr<base::TickClock> tick_clock_;
+
+  // Timer used to schedule CaptureNextFrame().
+  scoped_ptr<base::Timer> capture_timer_;
+
+  // Minimum interval between frames that determines maximum possible framerate.
   base::TimeDelta minimum_interval_;
+
   int num_of_processors_;
+
   RunningAverage capture_time_;
   RunningAverage encode_time_;
+
+  // Total number of pending frames that are being captured, encoded or sent.
+  int pending_frames_;
+
+  // Set to true when capture is pending.
+  bool capture_pending_;
+
+  // Time at which the last capture started. Used to schedule |capture_timer_|.
+  base::TimeTicks last_capture_started_time_;
+
+  bool is_paused_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureScheduler);
 };
