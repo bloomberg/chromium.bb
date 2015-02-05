@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/views/search_result_container_view.h"
+#include "ui/views/view.h"
 
 namespace app_list {
 
@@ -20,7 +20,7 @@ class SearchResultTileItemView;
 class TileItemView;
 
 // The start page for the experimental app list.
-class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
+class APP_LIST_EXPORT StartPageView : public views::View {
  public:
   StartPageView(AppListMainView* app_list_main_view,
                 AppListViewDelegate* view_delegate);
@@ -30,9 +30,7 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
 
   void UpdateForTesting();
 
-  const std::vector<SearchResultTileItemView*>& tile_views() const {
-    return search_result_tile_views_;
-  }
+  const std::vector<SearchResultTileItemView*>& tile_views() const;
   TileItemView* all_apps_button() const;
 
   // Called when the start page view is displayed.
@@ -46,9 +44,6 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
-  // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom) override;
-
   // Returns search box bounds to use when the start page is active.
   gfx::Rect GetSearchBoxBounds() const;
 
@@ -56,12 +51,9 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
   void UpdateCustomPageClickzoneVisibility();
 
  private:
-  // Overridden from SearchResultContainerView:
-  int Update() override;
-  void UpdateSelectedIndex(int old_selected, int new_selected) override;
+  class StartPageTilesContainer;
 
   void InitInstantContainer();
-  void InitTilesContainer();
 
   TileItemView* GetTileItemView(size_t index);
 
@@ -72,10 +64,7 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
 
   views::View* search_box_spacer_view_;  // Owned by views hierarchy.
   views::View* instant_container_;  // Owned by views hierarchy.
-  views::View* tiles_container_;    // Owned by views hierarchy.
-
-  std::vector<SearchResultTileItemView*> search_result_tile_views_;
-  AllAppsTileItemView* all_apps_button_;
+  StartPageTilesContainer* tiles_container_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
 };
