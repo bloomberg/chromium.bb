@@ -323,6 +323,17 @@ TEST(ProcessMetricsTest, ParseProcStatCPU) {
       "3221224832 3221224344 3086339742 0 0 0 0 0 0 0 17 0 0 0";
 
   EXPECT_EQ(0, base::ParseProcStatCPU(kSelfStat));
+
+  // Some weird long-running process with a weird name that I created for the
+  // purposes of this test.
+  const char kWeirdNameStat[] = "26115 (Hello) You ()))  ) R 24614 26115 24614"
+      " 34839 26115 4218880 227 0 0 0 "
+      "5186 11 0 0 "
+      "20 0 1 0 36933953 4296704 90 18446744073709551615 4194304 4196116 "
+      "140735857761568 140735857761160 4195644 0 0 0 0 0 0 0 17 14 0 0 0 0 0 "
+      "6295056 6295616 16519168 140735857770710 140735857770737 "
+      "140735857770737 140735857774557 0";
+  EXPECT_EQ(5186 + 11, base::ParseProcStatCPU(kWeirdNameStat));
 }
 #endif // defined(OS_LINUX) || defined(OS_ANDROID)
 

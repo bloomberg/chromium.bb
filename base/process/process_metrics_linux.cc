@@ -399,17 +399,36 @@ size_t GetSystemCommitCharge() {
   return meminfo.total - meminfo.free - meminfo.buffers - meminfo.cached;
 }
 
-// Exposed for testing.
 int ParseProcStatCPU(const std::string& input) {
-  std::vector<std::string> proc_stats;
-  if (!internal::ParseProcStats(input, &proc_stats))
+  // |input| may be empty if the process disappeared somehow.
+  // e.g. http://crbug.com/145811.
+  if (input.empty())
     return -1;
 
-  if (proc_stats.size() <= internal::VM_STIME)
+  size_t start = input.find_last_of(')');
+  if (start == input.npos)
     return -1;
-  int utime = GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME);
-  int stime = GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
-  return utime + stime;
+
+  // Number of spaces remaining until reaching utime's index starting after the
+  // last ')'.
+  int num_spaces_remaining = internal::VM_UTIME - 1;
+
+  size_t i = start;
+  while ((i = input.find(' ', i + 1)) != input.npos) {
+    // Validate the assumption that there aren't any contiguous spaces
+    // in |input| before utime.
+    DCHECK_NE(input[i - 1], ' ');
+    if (--num_spaces_remaining == 0) {
+      int utime = 0;
+      int stime = 0;
+      if (sscanf(&input.data()[i], "%d %d", &utime, &stime) != 2)
+        return -1;
+
+      return utime + stime;
+    }
+  }
+
+  return -1;
 }
 
 const char kProcSelfExe[] = "/proc/self/exe";
