@@ -16,12 +16,12 @@ from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
-from chromite.scripts import cbuildbot
 
 
 class PassStage(generic_stages.BuilderStage):
@@ -212,7 +212,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
   def _TestParallelStages(self, stage_objs):
-    builder = cbuildbot.SimpleBuilder(self._run)
+    builder = simple_builders.SimpleBuilder(self._run)
     error = None
     # pylint: disable=protected-access
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):

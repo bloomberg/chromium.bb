@@ -30,7 +30,7 @@ def GetBuilderClass(name):
 
   Examples:
     If you want to create a new SimpleBuilder, you'd do:
-    cls = builders.GetBuilderClass('Simple')
+    cls = builders.GetBuilderClass('simple_builders.SimpleBuilder')
     builder = cls(...)
 
   Args:

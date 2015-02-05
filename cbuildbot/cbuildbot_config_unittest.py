@@ -11,8 +11,10 @@ import os
 import re
 import cPickle
 
+from chromite.cbuildbot import builders
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
+from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -628,6 +630,19 @@ class CBuildBotTest(cros_test_lib.TestCase):
         self.assertTrue(re.match(r'[^@]+@[^@]+\.[^@]+', recipient) or
                         recipient in constants.SHERIFF_TYPE_TO_URL.keys(),
                         msg % (build_name, recipient))
+
+  def testCheckBuilderClass(self):
+    """Verify builder_class_name is a valid value."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      builder_class_name = config['builder_class_name']
+      if builder_class_name is None:
+        continue
+
+      cls = builders.GetBuilderClass(builder_class_name)
+      self.assertTrue(issubclass(cls, generic_builders.Builder),
+                      msg=('config %s has a broken builder_class_name' %
+                           build_name))
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
