@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="../resources/common.js"></script>
+<script src="../resources/picker-common.js"></script>
+</head>
+<body>
+<select id="menu">
+  <option>foo</option>
+  <option selected>bar</option>
+  <option hidden>baz</option>
+  <optgroup label="qux">
+      <option>garply</option>
+  </optgroup>
+</select>
+<script>
+var menuElement = document.getElementById('menu');
+var picker = null;
+function openPickerErrorCallback() {
+    testFailed('picker didn\'t open')
+    finishJSTest();
+}
+openPicker(menu, test1, openPickerErrorCallback);
+
+function test1() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '1');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('downArrow');
+    shouldBeEqualToString('picker._selectElement.value', '4');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('downArrow');
+    shouldBeEqualToString('picker._selectElement.value', '4');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('upArrow');
+    shouldBeEqualToString('picker._selectElement.value', '1');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('upArrow');
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('upArrow');
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    eventSender.keyDown('\n');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'foo');
+
+    waitUntilClosing(function() {
+        openPicker(menu, test2, openPickerErrorCallback);
+    });
+}
+
+function test2() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '0');
+
+    eventSender.keyDown('downArrow');
+    shouldBeEqualToString('picker._selectElement.value', '1');
+    shouldBeEqualToString('menuElement.value', 'foo');
+
+    // Escape should close the popup and select that keyboard selected item.
+    eventSender.keyDown('escape');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    waitUntilClosing(function() {
+        openPicker(menu, test3, openPickerErrorCallback);
+    });
+}
+
+function test3() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '1');
+
+    eventSender.keyDown('g');
+    shouldBeEqualToString('picker._selectElement.value', '4');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    // Escape should close the popup and select that keyboard selected item.
+    eventSender.keyDown('escape');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'garply');
+
+    waitUntilClosing(function() {
+        openPicker(menu, test4, openPickerErrorCallback);
+    });
+}
+
+function test4() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '4');
+
+    hoverOverElement(picker._selectElement.children[0]);
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'garply');
+
+    // Escape should close the popup. Simply hovering over an item should not select it.
+    eventSender.keyDown('escape');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'garply');
+
+    waitUntilClosing(function() {
+        openPicker(menu, test5, openPickerErrorCallback);
+    });
+}
+
+function test5() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '4');
+
+    hoverOverElement(picker._selectElement.children[0]);
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'garply');
+
+    eventSender.keyDown('leftArrow');
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'garply');
+
+    // But if you press any key, the highlighted item should be selected.
+    eventSender.keyDown('escape');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'foo');
+
+    finishJSTest();
+}
+</script>
+</body>
+</html>

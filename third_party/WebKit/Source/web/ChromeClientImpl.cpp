@@ -91,6 +91,7 @@
 #include "web/ExternalDateTimeChooser.h"
 #include "web/ExternalPopupMenu.h"
 #include "web/PopupMenuChromium.h"
+#include "web/PopupMenuImpl.h"
 #include "web/WebFileChooserCompletionImpl.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -747,6 +748,9 @@ PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& 
 {
     if (WebViewImpl::useExternalPopupMenus())
         return adoptRefWillBeNoop(new ExternalPopupMenu(frame, client, *m_webView));
+
+    if (RuntimeEnabledFeatures::htmlPopupMenuEnabled() && RuntimeEnabledFeatures::pagePopupEnabled())
+        return PopupMenuImpl::create(this, client);
 
     return adoptRefWillBeNoop(new PopupMenuChromium(frame, client));
 }

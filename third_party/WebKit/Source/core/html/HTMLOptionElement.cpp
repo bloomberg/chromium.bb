@@ -168,6 +168,13 @@ int HTMLOptionElement::index() const
     return 0;
 }
 
+int HTMLOptionElement::listIndex() const
+{
+    if (HTMLSelectElement* selectElement = ownerSelectElement())
+        return selectElement->listIndexForOption(*this);
+    return -1;
+}
+
 void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == valueAttr) {

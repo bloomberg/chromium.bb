@@ -31,6 +31,8 @@
 #ifndef PagePopup_h
 #define PagePopup_h
 
+#include "wtf/Forward.h"
+
 namespace blink {
 
 class AXObject;
@@ -40,6 +42,7 @@ class AXObject;
 class PagePopup {
 public:
     virtual AXObject* rootAXObject() = 0;
+    virtual void postMessage(const String& message) = 0;
 
 protected:
     virtual ~PagePopup() { }

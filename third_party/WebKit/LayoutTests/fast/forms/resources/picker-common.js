@@ -19,24 +19,54 @@ function sendKey(input, keyName, ctrlKey, altKey) {
     input.dispatchEvent(event);
 }
 
-function openPicker(input, callback) {
-    window.moveTo();
-    input.offsetTop; // Force to lay out
-    if (input.type === "color") {
-        input.focus();
-        eventSender.keyDown(" ");
-    } else {
-        sendKey(input, "Down", false, true);
+function rootWindow() {
+    var currentWindow = window;
+    while (currentWindow !== currentWindow.parent) {
+        currentWindow = currentWindow.parent;
+    }
+    return currentWindow;
+}
+
+function openPicker(element, callback, errorCallback) {
+    rootWindow().moveTo();
+    element.offsetTop; // Force to lay out
+    if (element.tagName === "SELECT") {
+        sendKey(element, "Down", false, true);
+    } else if (element.tagName === "INPUT") {
+        if (element.type === "color") {
+            element.focus();
+            eventSender.keyDown(" ");
+        } else {
+            sendKey(element, "Down", false, true);
+        }
     }
     popupWindow = window.internals.pagePopupWindow;
-    if (typeof callback === "function") {
-        popupOpenCallback = (function(callback) {
-            // We need to move the window to the top left of available space
-            // because the window will move back to (0, 0) when the
-            // ShellViewMsg_SetTestConfiguration IPC arrives.
-            window.moveTo();
-            callback();
-        }).bind(this, callback);
-        popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
-    }
+    if (typeof callback === "function" && popupWindow)
+        setPopupOpenCallback(callback);
+    else if (typeof errorCallback === "function" && !popupWindow)
+        errorCallback();
+}
+
+function clickToOpenPicker(x, y, callback, errorCallback) {
+    rootWindow().moveTo();
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    popupWindow = window.internals.pagePopupWindow;
+    if (typeof callback === "function" && popupWindow)
+        setPopupOpenCallback(callback);
+    else if (typeof errorCallback === "function" && !popupWindow)
+        errorCallback();
+}
+
+function setPopupOpenCallback(callback) {
+    console.assert(popupWindow);
+    popupOpenCallback = (function(callback) {
+        // We need to move the window to the top left of available space
+        // because the window will move back to (0, 0) when the
+        // ShellViewMsg_SetTestConfiguration IPC arrives.
+        rootWindow().moveTo();
+        callback();
+    }).bind(this, callback);
+    popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
 }

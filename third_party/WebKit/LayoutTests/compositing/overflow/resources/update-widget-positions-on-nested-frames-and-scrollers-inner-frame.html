@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="../../../fast/forms/resources/picker-common.js"></script>
   <style>
     select {
       display: block;
@@ -11,7 +12,7 @@
     // We need to 'click' the select element by sending an actual event
     // through internals, since the regular javascript click() method
     // won't trigger the right events for this test.
-    function clickSelect() {
+    function clickSelect(callback) {
       if (!window.eventSender)
         return;
 
@@ -19,18 +20,18 @@
       // FIXME: it would be really nice to use getBoundingClientRect() and not
       // hard-code pixel coordinates here, but since it's in an iframe, the
       // coordinates are translated anyway.
-      eventSender.mouseMoveTo(50, 120);
-      eventSender.mouseDown();
-      eventSender.mouseUp();
+      clickToOpenPicker(50, 120, callback, function () {
+          setTimeout(callback, 0);
+      });
     }
 
     // We'll get a message from the outer frame when it's done scrolling,
     // so we know it's time to click on a select element.
     window.onmessage = function() {
-      clickSelect();
-
-      if (window.testRunner)
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+      clickSelect(function () {
+        if (window.testRunner)
+          window.testRunner.notifyDone();
+      });
     };
 
     // This function just saves us from hard-coding 30 select elements
