@@ -10866,7 +10866,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="InputMethod.Commit.Type" enum="IMECommitType">
   <owner>shuchen@chromium.org</owner>
-  <summary>The suggestion accuracy type which user chooses to commit.</summary>
+  <summary>
+    The suggestion accuracy type which the user chooses to commit.
+  </summary>
 </histogram>
 
 <histogram name="InputMethod.CommitLength">
@@ -10885,6 +10887,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="InputMethod.ImeSwitch" enum="IMESwitchType">
   <owner>shuchen@chromium.org</owner>
   <summary>The trigger type of input method switches by user.</summary>
+</histogram>
+
+<histogram name="InputMethod.PkCommit.Index">
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    The suggestion index (1-based) of the suggestion list item which user
+    chooses to commit for physical keyboard autocorrect.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.PkCommit.Type" enum="IMECommitType">
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    The suggestion accuracy type which the user chooses to commit for physical
+    keyboard autocorrect.
+  </summary>
 </histogram>
 
 <histogram name="InputMethod.VirtualKeyboard.BackspaceCount">
