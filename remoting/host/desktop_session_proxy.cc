@@ -114,7 +114,6 @@ DesktopSessionProxy::DesktopSessionProxy(
       video_capture_task_runner_(video_capture_task_runner),
       client_session_control_(client_session_control),
       desktop_session_connector_(desktop_session_connector),
-      desktop_process_(base::kNullProcessHandle),
       pending_capture_frame_requests_(0),
       is_desktop_session_connected_(false),
       virtual_terminal_(virtual_terminal) {
@@ -218,31 +217,29 @@ void DesktopSessionProxy::OnChannelError() {
 }
 
 bool DesktopSessionProxy::AttachToDesktop(
-    base::ProcessHandle desktop_process,
+    base::Process desktop_process,
     IPC::PlatformFileForTransit desktop_pipe) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
-  DCHECK_EQ(desktop_process_, base::kNullProcessHandle);
+  DCHECK(!desktop_process_.IsValid());
 
   // Ignore the attach notification if the client session has been disconnected
   // already.
-  if (!client_session_control_.get()) {
-    base::CloseProcessHandle(desktop_process);
+  if (!client_session_control_.get())
     return false;
-  }
 
-  desktop_process_ = desktop_process;
+  desktop_process_ = desktop_process.Pass();
 
 #if defined(OS_WIN)
   // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
   // to be duplicated from the desktop process.
   HANDLE temp_handle;
-  if (!DuplicateHandle(desktop_process_, desktop_pipe, GetCurrentProcess(),
-                       &temp_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+  if (!DuplicateHandle(desktop_process_.Handle(), desktop_pipe,
+                       GetCurrentProcess(), &temp_handle, 0,
+                       FALSE, DUPLICATE_SAME_ACCESS)) {
     PLOG(ERROR) << "Failed to duplicate the desktop-to-network pipe handle";
 
-    desktop_process_ = base::kNullProcessHandle;
-    base::CloseProcessHandle(desktop_process);
+    desktop_process_.Close();
     return false;
   }
   base::win::ScopedHandle pipe(temp_handle);
@@ -280,10 +277,8 @@ void DesktopSessionProxy::DetachFromDesktop() {
 
   desktop_channel_.reset();
 
-  if (desktop_process_ != base::kNullProcessHandle) {
-    base::CloseProcessHandle(desktop_process_);
-    desktop_process_ = base::kNullProcessHandle;
-  }
+  if (desktop_process_.IsValid())
+    desktop_process_.Close();
 
   shared_buffers_.clear();
 
@@ -432,11 +427,6 @@ DesktopSessionProxy::~DesktopSessionProxy() {
 
   if (desktop_session_connector_.get() && is_desktop_session_connected_)
     desktop_session_connector_->DisconnectTerminal(this);
-
-  if (desktop_process_ != base::kNullProcessHandle) {
-    base::CloseProcessHandle(desktop_process_);
-    desktop_process_ = base::kNullProcessHandle;
-  }
 }
 
 scoped_refptr<DesktopSessionProxy::IpcSharedBufferCore>
@@ -476,7 +466,7 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, handle, desktop_process_, size);
+      new IpcSharedBufferCore(id, handle, desktop_process_.Handle(), size);
 
   if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {

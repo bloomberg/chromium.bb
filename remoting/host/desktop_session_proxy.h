@@ -92,7 +92,7 @@ class DesktopSessionProxy
   void OnChannelError() override;
 
   // Connects to the desktop session agent.
-  bool AttachToDesktop(base::ProcessHandle desktop_process,
+  bool AttachToDesktop(base::Process desktop_process,
                        IPC::PlatformFileForTransit desktop_pipe);
 
   // Closes the connection to the desktop session agent and cleans up
@@ -209,7 +209,7 @@ class DesktopSessionProxy
   scoped_ptr<IPC::ChannelProxy> desktop_channel_;
 
   // Handle of the desktop process.
-  base::ProcessHandle desktop_process_;
+  base::Process desktop_process_;
 
   int pending_capture_frame_requests_;
 

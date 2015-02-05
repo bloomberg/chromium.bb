@@ -14,7 +14,6 @@
 namespace base {
 
 Process::Process(ProcessHandle handle) : process_(handle) {
-  CHECK_NE(handle, GetCurrentProcessHandle());
 }
 
 Process::Process(RValue other)
@@ -32,9 +31,7 @@ Process& Process::operator=(RValue other) {
 
 // static
 Process Process::Current() {
-  Process process;
-  process.process_ = GetCurrentProcessHandle();
-  return process.Pass();
+  return Process(GetCurrentProcessHandle());
 }
 
 // static

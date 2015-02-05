@@ -181,22 +181,22 @@ void IpcDesktopEnvironmentFactory::SetScreenResolution(
 
 void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
     int terminal_id,
-    base::ProcessHandle desktop_process,
+    base::ProcessHandle desktop_process_handle,
     IPC::PlatformFileForTransit desktop_pipe) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(FROM_HERE, base::Bind(
         &IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
-        base::Unretained(this), terminal_id, desktop_process, desktop_pipe));
+        base::Unretained(this), terminal_id, desktop_process_handle,
+        desktop_pipe));
     return;
   }
 
+  base::Process desktop_process(desktop_process_handle);
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     i->second->DetachFromDesktop();
-    i->second->AttachToDesktop(desktop_process, desktop_pipe);
+    i->second->AttachToDesktop(desktop_process.Pass(), desktop_pipe);
   } else {
-    base::CloseProcessHandle(desktop_process);
-
 #if defined(OS_POSIX)
     DCHECK(desktop_pipe.auto_close);
     base::File pipe_closer(IPC::PlatformFileForTransitToFile(desktop_pipe));

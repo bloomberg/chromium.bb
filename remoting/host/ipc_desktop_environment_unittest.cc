@@ -421,9 +421,16 @@ void IpcDesktopEnvironmentTest::OnDisconnectCallback() {
 void IpcDesktopEnvironmentTest::OnDesktopAttached(
     IPC::PlatformFileForTransit desktop_pipe) {
 
+  base::ProcessHandle process_handle = base::GetCurrentProcessHandle();
+#if defined(OS_WIN)
+  ASSERT_NE(FALSE, ::DuplicateHandle(GetCurrentProcess(), process_handle,
+                                     GetCurrentProcess(), &process_handle,
+                                     0, FALSE, DUPLICATE_SAME_ACCESS));
+#endif
+
   // Instruct DesktopSessionProxy to connect to the network-to-desktop pipe.
   desktop_environment_factory_->OnDesktopSessionAgentAttached(
-      terminal_id_, base::GetCurrentProcessHandle(), desktop_pipe);
+      terminal_id_, process_handle, desktop_pipe);
 }
 
 // Runs until the desktop is attached and exits immediately after that.

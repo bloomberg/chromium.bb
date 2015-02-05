@@ -77,24 +77,12 @@ class ExitCodeWatcherTest : public testing::Test {
 
   static const int kExitCode = 0xCAFEBABE;
 
-  ExitCodeWatcherTest() :
-      cmd_line_(base::CommandLine::NO_PROGRAM),
-      process_(base::kNullProcessHandle) {
-  }
+  ExitCodeWatcherTest() : cmd_line_(base::CommandLine::NO_PROGRAM) {}
 
   virtual void SetUp() override {
     Super::SetUp();
 
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
-  }
-
-  virtual void TearDown() override {
-    if (process_ != base::kNullProcessHandle) {
-      base::CloseProcessHandle(process_);
-      process_ = base::kNullProcessHandle;
-    }
-
-    Super::TearDown();
   }
 
   base::Process OpenSelfWithAccess(uint32 access) {
@@ -121,7 +109,6 @@ class ExitCodeWatcherTest : public testing::Test {
 
  protected:
   base::CommandLine cmd_line_;
-  base::ProcessHandle process_;
   registry_util::RegistryOverrideManager override_manager_;
 };
 
