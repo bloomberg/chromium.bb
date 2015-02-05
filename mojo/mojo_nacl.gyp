@@ -5,11 +5,9 @@
 {
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
-      'variables': {
-        'monacl_codegen_dir': '<(SHARED_INTERMEDIATE_DIR)/<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))/monacl',
-      },
       'includes': [
         '../components/nacl/nacl_defines.gypi',
+        '../mojo/mojo_nacl.gypi',
       ],
       'targets': [
         {
