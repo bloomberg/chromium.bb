@@ -14,43 +14,46 @@
  */
 function MockThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     opt_loadTargets, opt_priority) {
-  this.testImageDataUrl_ = null;
+  this.entry_ = entry;
 }
 
 /**
- * @type {string} Data url of an image.
+ * Data url of test image.
+ * @private {string}
  */
-MockThumbnailLoader.testImageDataUrl_ = null;
+MockThumbnailLoader.testImageDataUrl = null;
 
 /**
- * Set data url of an image which is returned for testing.
- *
- * @param {string} dataUrl Data url of an image.
+ * Width of test image.
+ * @private {number}
  */
-MockThumbnailLoader.setTestImageDataUrl = function(dataUrl) {
-  MockThumbnailLoader.testImageDataUrl_ = dataUrl;
-};
+MockThumbnailLoader.testImageWidth = 0;
 
 /**
- * Load an image. (This mock implementation does not attach an image to the
- * box).
- *
- * @param {Element} box Box.
- * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization.
- * @param {function(Image, Object)=} opt_onSuccess Success callback.
- * @param {function()=} opt_onError Error callback.
- * @param {function()=} opt_onGeneric Callback which is called when generic
- *     image is used.
+ * Height of test image.
+ * @private {number}
  */
-MockThumbnailLoader.prototype.load = function(
-    box, fillMode, opt_optimizationMode, opt_onSuccess, opt_onError,
-    opt_onGeneric) {
-  if (opt_onSuccess && MockThumbnailLoader.testImageDataUrl_) {
-    var image = new Image();
-    image.onload = function() {
-      opt_onSuccess(image, null);
-    };
-    image.src = MockThumbnailLoader.testImageDataUrl_;
-  }
+MockThumbnailLoader.testImageHeight = 0;
+
+/**
+ * Error urls.
+ * @private {Array<string>}
+ */
+MockThumbnailLoader.errorUrls = [];
+
+/**
+ * Loads thumbnail as data url.
+ *
+ * @return {!Promise<{data:string, width:number, height:number}>} A promise
+ *     which is resolved with data url.
+ */
+MockThumbnailLoader.prototype.loadAsDataUrl = function() {
+  if (MockThumbnailLoader.errorUrls.indexOf(this.entry_.toURL()) !== -1)
+    throw new Error('Failed to load thumbnail.');
+
+  return Promise.resolve({
+    data: MockThumbnailLoader.testImageDataUrl,
+    width: MockThumbnailLoader.testImageWidth,
+    height: MockThumbnailLoader.testImageHeight
+  });
 };

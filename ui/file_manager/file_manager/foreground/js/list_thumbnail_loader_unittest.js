@@ -58,7 +58,10 @@ function setUp() {
   ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 2;
   ListThumbnailLoader.NUM_OF_PREFETCH = 1;
   ListThumbnailLoader.CACHE_SIZE = 5;
-  MockThumbnailLoader.setTestImageDataUrl(generateSampleImageDataUrl(document));
+  MockThumbnailLoader.errorUrls = [];
+  MockThumbnailLoader.testImageDataUrl = generateSampleImageDataUrl(document);
+  MockThumbnailLoader.testImageWidth = 160;
+  MockThumbnailLoader.testImageHeight = 160;
 
   getOneCallbacks = {};
   var metadataCache = {
@@ -219,5 +222,23 @@ function testCache(callback) {
     return waitUntil(function() {
       return areEntriesInCache([entry3, entry2, entry1, entry6, entry5]);
     });
+  }), callback);
+}
+
+/**
+ * Test case for thumbnail fetch error. In this test case, thumbnail fetch for
+ * entry 2 is failed.
+ */
+function testErrorHandling(callback) {
+  MockThumbnailLoader.errorUrls = [entry2.toURL()];
+
+  listThumbnailLoader.setHighPriorityRange(0, 2);
+  fileListModel.push(entry1, entry2, entry3, entry4);
+
+  resolveGetOneCallback(entry2.toURL());
+
+  // Assert that new task is enqueued for entry3.
+  reportPromise(waitUntil(function() {
+    return !!getOneCallbacks[entry3.toURL()];
   }), callback);
 }

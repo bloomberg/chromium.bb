@@ -17,7 +17,7 @@
  * * Done: Implement cache size limitation.
  * * Done: Modest queueing for low priority thumbnail fetches.
  * * Handle other event types of FileListModel, e.g. sort.
- * * Change ThumbnailLoader to directly return dataUrl.
+ * * Done: Change ThumbnailLoader to directly return dataUrl.
  * * Handle file types for which generic images are used.
  *
  * @param {!FileListModel} dataModel A file list model.
@@ -65,10 +65,8 @@ function ListThumbnailLoader(
   this.active_ = {};
 
   /**
-   * @type {LRUCache<!Object>}
+   * @type {LRUCache<!ListThumbnailLoader.ThumbnailData>}
    * @private
-   *
-   * TODO(yawano): After ThumbnailData class is created, type this with it.
    */
   this.cache_ = new LRUCache(ListThumbnailLoader.CACHE_SIZE);
 
@@ -192,12 +190,16 @@ ListThumbnailLoader.prototype.enqueue_ = function(entry) {
       entry, this.metadataCache_, this.document_,
       this.thumbnailLoaderConstructor_);
 
-  this.active_[entry.toURL()] = task;
+  var url = entry.toURL();
+  this.active_[url] = task;
 
   task.fetch().then(function(thumbnail) {
-    delete this.active_[thumbnail.fileUrl];
-    this.cache_.put(thumbnail.fileUrl, thumbnail);
+    delete this.active_[url];
+    this.cache_.put(url, thumbnail);
     this.dispatchThumbnailLoaded_(thumbnail);
+    this.continue_();
+  }.bind(this), function() {
+    delete this.active_[url];
     this.continue_();
   }.bind(this));
 }
@@ -216,6 +218,37 @@ ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(thumbnail) {
   event.height = thumbnail.height;
   this.dispatchEvent(event);
 };
+
+/**
+ * A class to represent thumbnail data.
+ * @param {string} fileUrl File url of an original image.
+ * @param {string} dataUrl Data url of thumbnail.
+ * @param {number} width Width of thumbnail.
+ * @param {number} height Height of thumbnail.
+ * @constructor
+ * @struct
+ */
+ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
+  /**
+   * @const {string}
+   */
+  this.fileUrl = fileUrl;
+
+  /**
+   * @const {string}
+   */
+  this.dataUrl = dataUrl;
+
+  /**
+   * @const {number}
+   */
+  this.width = width;
+
+  /**
+   * @const {number}
+   */
+  this.height = height;
+}
 
 /**
  * A task to load thumbnail.
@@ -238,43 +271,20 @@ ListThumbnailLoader.Task = function(
 
 /**
  * Fetches thumbnail.
- * TODO(yawano): Add error handling.
  *
- * @return {!Promise} A promise which is resolved when thumbnail is fetched.
+ * @return {!Promise<!ListThumbnailLoader.ThumbnailData>} A promise which is
+ *     resolved when thumbnail is fetched.
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   return new Promise(function(resolve, reject) {
-    this.metadataCache_.getOne(this.entry_,
-        'thumbnail|filesystem|external|media',
-        function(metadata) {
-          // TODO(yawano): Change ThumbnailLoader to directly return data url of
-          // an image.
-          var box = this.document_.createElement('div');
-
-          var thumbnailLoader = new this.thumbnailLoaderConstructor_(
-              this.entry_,
-              ThumbnailLoader.LoaderType.IMAGE,
-              metadata);
-          thumbnailLoader.load(box,
-              ThumbnailLoader.FillMode.FIT,
-              ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
-              function(image, transform) {
-                // TODO(yawano): Transform an image if necessary.
-                var canvas = this.document_.createElement('canvas');
-                canvas.width = image.width;
-                canvas.height = image.height;
-
-                var context = canvas.getContext('2d');
-                context.drawImage(image, 0, 0);
-
-                // TODO(yawano): Create ThumbnailData class.
-                resolve({
-                  fileUrl: this.entry_.toURL(),
-                  dataUrl: canvas.toDataURL('image/jpeg', 0.5),
-                  width: image.width,
-                  height: image.height
-                });
-              }.bind(this));
-        }.bind(this));
+    this.metadataCache_.getOne(
+        this.entry_, 'thumbnail|filesystem|external|media', resolve);
+  }.bind(this)).then(function(metadata) {
+    return new this.thumbnailLoaderConstructor_(
+        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadata)
+        .loadAsDataUrl();
+  }.bind(this)).then(function(result) {
+    return new ListThumbnailLoader.ThumbnailData(
+        this.entry_.toURL(), result.data, result.width, result.height);
   }.bind(this));
 }
