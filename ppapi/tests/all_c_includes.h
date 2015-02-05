@@ -117,7 +117,6 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
-#include "ppapi/c/private/ppb_image_capture_config_private.h"
 #include "ppapi/c/private/ppb_image_capture_private.h"
 #include "ppapi/c/private/ppb_input_event_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"

@@ -57,7 +57,6 @@
 #include "ppapi/cpp/private/find_private.h"
 #include "ppapi/cpp/private/flash_font_file.h"
 #include "ppapi/cpp/private/flash_fullscreen.h"
-#include "ppapi/cpp/private/image_capture_config_private.h"
 #include "ppapi/cpp/private/image_capture_private.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/instance_private.h"
