@@ -229,7 +229,7 @@ IPCChannelPerfTestBase::GetDefaultTestParams() {
   list.push_back(PingPongTestParams(144, 50000));
   list.push_back(PingPongTestParams(1728, 50000));
   list.push_back(PingPongTestParams(20736, 12000));
-  list.push_back(PingPongTestParams(248832, 100));
+  list.push_back(PingPongTestParams(248832, 1000));
   return list;
 }
 
