@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.preference.Preference;
 import android.view.View;
@@ -57,6 +59,18 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         mCategoryFilter = categoryFilter;
         mFilter = new WebsiteSettingsCategoryFilter();
         setWidgetLayoutResource(R.layout.website_features);
+
+        // To make sure the layout stays stable throughout, we assign a
+        // transparent drawable of the same size as the favicon. This is so that
+        // we can fetch the favicon in the background and not have to worry
+        // about the title appearing to jump (http://crbug.com/453626) when the
+        // favicon becomes available.
+        ColorDrawable drawable = new ColorDrawable(Color.TRANSPARENT);
+        int size = Math.round(FAVICON_SIZE_DP
+                * getContext().getResources().getDisplayMetrics().density);
+        drawable.setBounds(0, 0, size, size);
+        setIcon(drawable);
+
         refresh();
     }
 
