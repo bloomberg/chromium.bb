@@ -1591,6 +1591,12 @@
           # Use a 64-bit linker to avoid running out of address space. The
           # buildbots should have a 64-bit kernel and a 64-bit libc installed.
           ['host_arch=="ia32" and target_arch=="ia32"', {
+            # TODO(thestig) This is a horrible way to force the desired
+            # configuration. Our gyp variable scoping is likely wrong and
+            # needs to be cleaned up. The GN configuration should be changed
+            # to match.
+            'binutils_version%': 224,
+            'linux_use_bundled_binutils%': '1',
             'linux_use_bundled_gold%': '1',
             'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
           }],
