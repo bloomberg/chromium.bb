@@ -147,7 +147,7 @@ interface InspectorInstrumentation {
     void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willCallFunction([Keep] ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+    InspectorInstrumentationCookie willCallFunction([Keep] ExecutionContext*, const DevToolsFunctionInfo&);
 
     [Debugger, Timeline, Inline=FastReturn]
     void didCallFunction(const InspectorInstrumentationCookie&);

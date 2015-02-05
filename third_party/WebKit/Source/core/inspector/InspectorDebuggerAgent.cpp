@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
@@ -1178,14 +1179,14 @@ void InspectorDebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingLi
     m_asyncCallTrackingListeners.remove(index);
 }
 
-void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, int scriptId, const String&, int)
+void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, const DevToolsFunctionInfo& info)
 {
     changeJavaScriptRecursionLevel(+1);
     // Fast return.
     if (m_scheduledDebuggerStep != StepInto)
         return;
     // Skip unknown scripts (e.g. InjectedScript).
-    if (!m_scripts.contains(String::number(scriptId)))
+    if (!m_scripts.contains(String::number(info.scriptId())))
         return;
     schedulePauseOnNextStatementIfSteppingInto();
 }

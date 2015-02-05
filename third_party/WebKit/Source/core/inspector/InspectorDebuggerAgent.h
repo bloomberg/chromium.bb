@@ -51,6 +51,7 @@ namespace blink {
 class AsyncCallChain;
 class AsyncCallStack;
 class ConsoleMessage;
+class DevToolsFunctionInfo;
 class InjectedScript;
 class InjectedScriptManager;
 class JavaScriptCallFrame;
@@ -148,7 +149,7 @@ public:
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
-    void willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+    void willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
     void didCallFunction();
     void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
     void didEvaluateScript();

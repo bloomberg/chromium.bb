@@ -946,7 +946,36 @@ private:
     RefPtr<ScriptState> m_scriptState;
 };
 
-void GetDevToolsFunctionInfo(v8::Handle<v8::Function>, v8::Isolate*, int& scriptId, String& resourceName, int& lineNumber);
+class DevToolsFunctionInfo final {
+public:
+    explicit DevToolsFunctionInfo(v8::Handle<v8::Function>& function)
+        : m_scriptId(0)
+        , m_lineNumber(1)
+        , m_function(function)
+    {
+        ASSERT(!m_function.IsEmpty());
+    }
+
+    DevToolsFunctionInfo(int scriptId, const String& resourceName, int lineNumber)
+        : m_scriptId(scriptId)
+        , m_lineNumber(lineNumber)
+        , m_resourceName(resourceName)
+    {
+    }
+
+    int scriptId() const;
+    int lineNumber() const;
+    String resourceName() const;
+
+private:
+    void ensureInitialized() const;
+
+    mutable int m_scriptId;
+    mutable int m_lineNumber;
+    mutable String m_resourceName;
+    mutable v8::Handle<v8::Function> m_function;
+};
+
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Handle<v8::Function>);
 
 class V8RethrowTryCatchScope final {

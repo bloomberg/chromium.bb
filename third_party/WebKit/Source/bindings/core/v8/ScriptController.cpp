@@ -152,17 +152,8 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(isolate, context, function));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentationCookie cookie;
-    if (InspectorInstrumentation::hasFrontends()) {
-        int scriptId = 0;
-        String resourceName;
-        int lineNumber = 1;
-        GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
-        cookie = InspectorInstrumentation::willCallFunction(context, scriptId, resourceName, lineNumber);
-    }
-
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(context, DevToolsFunctionInfo(function));
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);
-
     InspectorInstrumentation::didCallFunction(cookie);
     return result;
 }

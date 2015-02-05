@@ -1010,30 +1010,50 @@ v8::Isolate* V8TestingScope::isolate() const
     return m_scriptState->isolate();
 }
 
-void GetDevToolsFunctionInfo(v8::Handle<v8::Function> function, v8::Isolate* isolate, int& scriptId, String& resourceName, int& lineNumber)
+void DevToolsFunctionInfo::ensureInitialized() const
 {
-    v8::Handle<v8::Function> originalFunction = getBoundFunction(function);
-    scriptId = originalFunction->ScriptId();
+    if (m_function.IsEmpty())
+        return;
+
+    v8::Handle<v8::Function> originalFunction = getBoundFunction(m_function);
+    m_scriptId = originalFunction->ScriptId();
     v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
     if (!origin.ResourceName().IsEmpty()) {
         V8StringResource<> stringResource(origin.ResourceName());
         stringResource.prepare();
-        resourceName = stringResource;
-        lineNumber = originalFunction->GetScriptLineNumber() + 1;
+        m_resourceName = stringResource;
+        m_lineNumber = originalFunction->GetScriptLineNumber() + 1;
     }
-    if (resourceName.isEmpty()) {
-        resourceName = "undefined";
-        lineNumber = 1;
+    if (m_resourceName.isEmpty()) {
+        m_resourceName = "undefined";
+        m_lineNumber = 1;
     }
+
+    m_function.Clear();
+}
+
+int DevToolsFunctionInfo::scriptId() const
+{
+    ensureInitialized();
+    return m_scriptId;
+}
+
+int DevToolsFunctionInfo::lineNumber() const
+{
+    ensureInitialized();
+    return m_lineNumber;
+}
+
+String DevToolsFunctionInfo::resourceName() const
+{
+    ensureInitialized();
+    return m_resourceName;
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Handle<v8::Function> function)
 {
-    int scriptId = 0;
-    String resourceName;
-    int lineNumber = 1;
-    GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
-    return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
+    DevToolsFunctionInfo info(function);
+    return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());
 }
 
 } // namespace blink

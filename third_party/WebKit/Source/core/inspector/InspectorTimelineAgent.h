@@ -55,6 +55,7 @@ struct TimelineRecordEntry;
 struct TimelineThreadState;
 
 class LocalDOMWindow;
+class DevToolsFunctionInfo;
 class Document;
 class DocumentLoader;
 class Event;
@@ -133,7 +134,7 @@ public:
     void didCommitLoad();
 
     // Methods called from WebCore.
-    bool willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+    bool willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
     void didCallFunction();
 
     bool willDispatchEvent(Document* document, const Event& event, LocalDOMWindow* window, Node* node, const EventPath& eventPath);

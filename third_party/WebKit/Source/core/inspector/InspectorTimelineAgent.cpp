@@ -484,9 +484,9 @@ void InspectorTimelineAgent::didCancelFrame()
     m_pendingFrameRecord.clear();
 }
 
-bool InspectorTimelineAgent::willCallFunction(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
+bool InspectorTimelineAgent::willCallFunction(ExecutionContext* context, const DevToolsFunctionInfo& info)
 {
-    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptId, scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frameForExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(info.scriptId(), info.resourceName(), info.lineNumber()), TimelineRecordType::FunctionCall, true, frameForExecutionContext(context));
     return true;
 }
 
