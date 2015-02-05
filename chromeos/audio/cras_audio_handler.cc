@@ -39,6 +39,14 @@ bool IsInNodeList(uint64 node_id, const CrasAudioHandler::NodeIdList& id_list) {
   return std::find(id_list.begin(), id_list.end(), node_id) != id_list.end();
 }
 
+bool IsNodeInTheList(uint64 node_id, const AudioNodeList& node_list) {
+  for (size_t i = 0; i < node_list.size(); ++i) {
+    if (node_id == node_list[i].id)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 CrasAudioHandler::AudioObserver::AudioObserver() {
@@ -728,7 +736,8 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device, bool notify) {
 }
 
 bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
-                                       bool is_input) {
+                                       bool is_input,
+                                       AudioNodeList* new_discovered) {
   size_t num_old_devices = 0;
   size_t num_new_devices = 0;
   for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
@@ -737,34 +746,41 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
       ++num_old_devices;
   }
 
+  bool new_or_changed_device = false;
+  new_discovered->clear();
   for (AudioNodeList::const_iterator it = new_nodes.begin();
        it != new_nodes.end(); ++it) {
     if (is_input == it->is_input) {
       ++num_new_devices;
       // Look to see if the new device not in the old device list.
       AudioDevice device(*it);
-      if (FoundNewOrChangedDevice(device))
-        return true;
+      DeviceStatus status = CheckDeviceStatus(device);
+      if (status == NEW_DEVICE)
+        new_discovered->push_back(*it);
+      if (status == NEW_DEVICE || status == CHANGED_DEVICE) {
+        new_or_changed_device = true;
+      }
     }
   }
-  return num_old_devices != num_new_devices;
+  return new_or_changed_device || (num_old_devices != num_new_devices);
 }
 
-bool CrasAudioHandler::FoundNewOrChangedDevice(const AudioDevice& device) {
+CrasAudioHandler::DeviceStatus CrasAudioHandler::CheckDeviceStatus(
+    const AudioDevice& device) {
   const AudioDevice* device_found = GetDeviceFromId(device.id);
   if (!device_found)
-    return true;
+    return NEW_DEVICE;
 
   if (!IsSameAudioDevice(device, *device_found)) {
     LOG(WARNING) << "Different Audio devices with same id:"
         << " new device: " << device.ToString()
         << " old device: " << device_found->ToString();
-    return true;
+    return CHANGED_DEVICE;
   } else if (device.active != device_found->active) {
-    return true;
+    return CHANGED_DEVICE;
   }
 
-  return false;
+  return OLD_DEVICE;
 }
 
 void CrasAudioHandler::NotifyActiveNodeChanged(bool is_input) {
@@ -786,8 +802,12 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       ++old_output_device_size;
   }
 
-  bool output_devices_changed = HasDeviceChange(nodes, false);
-  bool input_devices_changed = HasDeviceChange(nodes, true);
+  AudioNodeList hotplug_output_nodes;
+  AudioNodeList hotplug_input_nodes;
+  bool output_devices_changed =
+      HasDeviceChange(nodes, false, &hotplug_output_nodes);
+  bool input_devices_changed =
+      HasDeviceChange(nodes, true, &hotplug_input_nodes);
   audio_devices_.clear();
   has_alternative_input_ = false;
   has_alternative_output_ = false;
@@ -823,6 +843,13 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     }
   }
 
+  // If the previous active device is removed from the new node list,
+  // reset active_output_node_id_.
+  if (!GetDeviceFromId(active_output_node_id_))
+    active_output_node_id_ = 0;
+  if (!GetDeviceFromId(active_input_node_id_))
+    active_input_node_id_ = 0;
+
   // If audio nodes change is caused by unplugging some non-active audio
   // devices, the previously set active audio device will stay active.
   // Otherwise, switch to a new active audio device according to their priority.
@@ -836,7 +863,14 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       active_input_node_id_ = 0;
       NotifyActiveNodeChanged(true);
     } else {
-      SwitchToDevice(input_devices_pq_.top(), true);
+      // If user has hot plugged a new node, we should change to the active
+      // device to the new node if it has the highest priority; otherwise,
+      // we should keep the existing active node chosen by user.
+      // For all other cases, we will choose the node with highest priority.
+      if (!active_input_node_id_ || hotplug_input_nodes.empty() ||
+          IsNodeInTheList(input_devices_pq_.top().id, hotplug_input_nodes)) {
+        SwitchToDevice(input_devices_pq_.top(), true);
+      }
     }
   }
   if (output_devices_changed &&
@@ -849,7 +883,11 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       active_output_node_id_ = 0;
       NotifyActiveNodeChanged(false);
     } else {
-      SwitchToDevice(output_devices_pq_.top(), true);
+      // ditto input node case.
+      if (!active_output_node_id_ || hotplug_output_nodes.empty() ||
+          IsNodeInTheList(output_devices_pq_.top().id, hotplug_output_nodes)) {
+        SwitchToDevice(output_devices_pq_.top(), true);
+      }
     }
   }
 }

@@ -2377,4 +2377,55 @@ TEST_F(CrasAudioHandlerTest, NoMoreAudioInputDevices) {
   EXPECT_EQ(1, test_observer_->active_input_node_changed_count());
 }
 
+// Test the case in which an HDMI output is plugged in with other higher
+// priority
+// output devices already plugged and user has manually selected an active
+// output.
+// The hotplug of hdmi output should not change user's selection of active
+// device.
+// crbug.com/447826.
+TEST_F(CrasAudioHandlerTest, HotPlugHDMINotChangeActiveOutput) {
+  AudioNodeList audio_nodes;
+  AudioNode internal_speaker(kInternalSpeaker);
+  audio_nodes.push_back(internal_speaker);
+  AudioNode usb_headset(kUSBHeadphone1);
+  usb_headset.plugged_time = 80000000;
+  audio_nodes.push_back(usb_headset);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the USB headset is selected as active output by default.
+  EXPECT_EQ(usb_headset.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Manually set the active output to internal speaker.
+  AudioDevice internal_output(kInternalSpeaker);
+  cras_audio_handler_->SwitchToDevice(internal_output, true);
+
+  // Verify the active output is switched to internal speaker.
+  EXPECT_EQ(internal_speaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_LT(kInternalSpeaker.plugged_time, usb_headset.plugged_time);
+  const AudioDevice* usb_device = GetDeviceFromId(usb_headset.id);
+  EXPECT_FALSE(usb_device->active);
+
+  // Plug in HDMI output.
+  audio_nodes.clear();
+  internal_speaker.active = true;
+  audio_nodes.push_back(internal_speaker);
+  usb_headset.active = false;
+  audio_nodes.push_back(usb_headset);
+  AudioNode hdmi(kHDMIOutput);
+  hdmi.plugged_time = 90000000;
+  audio_nodes.push_back(hdmi);
+  ChangeAudioNodes(audio_nodes);
+
+  // The active output should not change.
+  EXPECT_EQ(kInternalSpeaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+}
+
 }  // namespace chromeos

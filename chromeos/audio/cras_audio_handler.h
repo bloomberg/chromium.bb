@@ -269,7 +269,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Returns true if there is any device change for for input or output,
   // specified by |is_input|.
-  bool HasDeviceChange(const AudioNodeList& new_nodes, bool is_input);
+  // The new discovered nodes are returned in |new_discovered|.
+  bool HasDeviceChange(const AudioNodeList& new_nodes,
+                       bool is_input,
+                       AudioNodeList* new_discovered);
 
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
@@ -290,9 +293,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Removes |node_id| from additional active nodes.
   void RemoveActiveNodeInternal(uint64 node_id, bool notify);
 
-  // Returns true if |device| is not found in audio_devices_, or it is found
-  // but changed its |active| property.
-  bool FoundNewOrChangedDevice(const AudioDevice& device);
+  enum DeviceStatus {
+    OLD_DEVICE,
+    NEW_DEVICE,
+    CHANGED_DEVICE,
+  };
+
+  // Checks if |device| is a newly discovered, changed, or existing device for
+  // the nodes sent from NodesChanged signal.
+  DeviceStatus CheckDeviceStatus(const AudioDevice& device);
 
   void NotifyActiveNodeChanged(bool is_input);
 
