@@ -450,6 +450,24 @@ struct GenerateTraits<std::map<A, B> > {
   }
 };
 
+template <class A, class B, class C, class D>
+struct GenerateTraits<std::map<A, B, C, D>> {
+  static bool Generate(std::map<A, B, C, D>* p, Generator* generator) {
+    static int g_depth = 0;
+    size_t count = ++g_depth > 3 ? 0 : RandElementCount();
+    std::pair<A, B> place_holder;
+    for (size_t i = 0; i < count; ++i) {
+      if (!GenerateParam(&place_holder, generator)) {
+        --g_depth;
+        return false;
+      }
+      p->insert(place_holder);
+    }
+    --g_depth;
+    return true;
+  }
+};
+
 template <class A, class B>
 struct GenerateTraits<std::pair<A, B> > {
   static bool Generate(std::pair<A, B>* p, Generator* generator) {
@@ -504,9 +522,9 @@ struct GenerateTraits<base::File::Info> {
       return false;
     if (!GenerateParam(&last_modified, generator))
       return false;
-    if (GenerateParam(&last_accessed, generator))
+    if (!GenerateParam(&last_accessed, generator))
       return false;
-    if (GenerateParam(&creation_time, generator))
+    if (!GenerateParam(&creation_time, generator))
       return false;
     p->last_modified = base::Time::FromDoubleT(last_modified);
     p->last_accessed = base::Time::FromDoubleT(last_accessed);
@@ -941,12 +959,120 @@ struct GenerateTraits<content::IndexedDBKeyPath> {
 };
 
 template <>
+struct GenerateTraits<content::NPIdentifier_Param> {
+  static bool Generate(content::NPIdentifier_Param* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = content::NPIdentifier_Param();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::NPVariant_Param> {
+  static bool Generate(content::NPVariant_Param* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = content::NPVariant_Param();
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<content::PageState> {
-  static bool Generate(content::PageState *p, Generator* generator) {
+  static bool Generate(content::PageState* p, Generator* generator) {
     std::string junk;
     if (!GenerateParam(&junk, generator))
       return false;
     *p = content::PageState::CreateFromEncodedData(junk);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::SyntheticGesturePacket> {
+  static bool Generate(content::SyntheticGesturePacket* p,
+                       Generator* generator) {
+    scoped_ptr<content::SyntheticGestureParams> gesture_params;
+    switch (RandInRange(3)) {
+      case content::SyntheticGestureParams::GestureType::
+          SMOOTH_SCROLL_GESTURE: {
+        content::SyntheticSmoothScrollGestureParams* params =
+            new content::SyntheticSmoothScrollGestureParams();
+        if (!GenerateParam(&params->anchor, generator))
+          return false;
+        if (!GenerateParam(&params->distances, generator))
+          return false;
+        if (!GenerateParam(&params->prevent_fling, generator))
+          return false;
+        if (!GenerateParam(&params->speed_in_pixels_s, generator))
+          return false;
+        gesture_params.reset(params);
+        break;
+      }
+      case content::SyntheticGestureParams::GestureType::PINCH_GESTURE: {
+        content::SyntheticPinchGestureParams* params =
+            new content::SyntheticPinchGestureParams();
+        if (!GenerateParam(&params->scale_factor, generator))
+          return false;
+        if (!GenerateParam(&params->anchor, generator))
+          return false;
+        if (!GenerateParam(&params->relative_pointer_speed_in_pixels_s,
+                           generator))
+          return false;
+        gesture_params.reset(params);
+        break;
+      }
+      case content::SyntheticGestureParams::GestureType::TAP_GESTURE: {
+        content::SyntheticTapGestureParams* params =
+            new content::SyntheticTapGestureParams();
+        if (!GenerateParam(&params->position, generator))
+          return false;
+        if (!GenerateParam(&params->duration_ms, generator))
+          return false;
+        gesture_params.reset(params);
+        break;
+      }
+    }
+    p->set_gesture_params(gesture_params.Pass());
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<content::WebCursor> {
+  static bool Generate(content::WebCursor* p, Generator* generator) {
+    blink::WebCursorInfo::Type type;
+    if (!GenerateParam(&type, generator))
+      return false;
+    content::WebCursor::CursorInfo info(type);
+
+    // Omitting |externalHandle| since it is not serialized.
+    if (!GenerateParam(&info.hotspot, generator))
+      return false;
+    if (!GenerateParam(&info.image_scale_factor, generator))
+      return false;
+    if (!GenerateParam(&info.custom_image, generator))
+      return false;
+    *p = content::WebCursor(info);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ContentSettingsPattern> {
+  static bool Generate(ContentSettingsPattern* p, Generator* generator) {
+    // TODO(mbarbella): This can crash if a pattern is generated from a random
+    // string. We could carefully generate a pattern or fix pattern generation.
+    *p = ContentSettingsPattern();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ExtensionMsg_PermissionSetStruct> {
+  static bool Generate(ExtensionMsg_PermissionSetStruct* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ExtensionMsg_PermissionSetStruct();
     return true;
   }
 };
@@ -958,187 +1084,6 @@ struct GenerateTraits<extensions::URLPatternSet> {
     if (!GenerateParam(&patterns, generator))
       return false;
     *p = extensions::URLPatternSet(patterns);
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<gpu::Mailbox> {
-  static bool Generate(gpu::Mailbox *p, Generator* generator) {
-    generator->GenerateBytes(p->name, sizeof(p->name));
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<gpu::MailboxHolder> {
-  static bool Generate(gpu::MailboxHolder *p, Generator* generator) {
-    gpu::Mailbox mailbox;
-    uint32_t texture_target;
-    uint32_t sync_point;
-    if (!GenerateParam(&mailbox, generator))
-      return false;
-    if (!GenerateParam(&texture_target, generator))
-      return false;
-    if (!GenerateParam(&sync_point, generator))
-      return false;
-    *p = gpu::MailboxHolder(mailbox, texture_target, sync_point);
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<gpu::ValueState> {
-  static bool Generate(gpu::ValueState* p, Generator* generator) {
-    gpu::ValueState state;
-    if (!GenerateParamArray(&state.float_value[0], 4, generator))
-      return false;
-    if (!GenerateParamArray(&state.int_value[0], 4, generator))
-      return false;
-    *p = state;
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<GURL> {
-  static bool Generate(GURL *p, Generator* generator) {
-    const char url_chars[] = "Ahtp0:/.?+\\%&#";
-    size_t count = RandInRange(100);
-    std::string random_url;
-    for (size_t i = 0; i < count; ++i)
-      random_url += url_chars[RandInRange(sizeof(url_chars) - 1)];
-    int selector = RandInRange(10);
-    if (selector == 0)
-      random_url = std::string("http://") + random_url;
-    else if (selector == 1)
-      random_url = std::string("file://") + random_url;
-    else if (selector == 2)
-      random_url = std::string("javascript:") + random_url;
-    else if (selector == 2)
-      random_url = std::string("data:") + random_url;
-    *p = GURL(random_url);
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<media::AudioParameters> {
-  static bool Generate(media::AudioParameters *p, Generator* generator) {
-    int format;
-    int channel_layout;
-    int sample_rate;
-    int bits_per_sample;
-    int frames_per_buffer;
-    int channels;
-    int effects;
-    if (!GenerateParam(&format, generator))
-      return false;
-    if (!GenerateParam(&channel_layout, generator))
-      return false;
-    if (!GenerateParam(&sample_rate, generator))
-      return false;
-    if (!GenerateParam(&bits_per_sample, generator))
-      return false;
-    if (!GenerateParam(&frames_per_buffer, generator))
-      return false;
-    if (!GenerateParam(&channels, generator))
-      return false;
-    if (!GenerateParam(&effects, generator))
-      return false;
-    media::AudioParameters params(
-        static_cast<media::AudioParameters::Format>(format),
-        static_cast<media::ChannelLayout>(channel_layout),
-        channels,
-        sample_rate,
-        bits_per_sample,
-        frames_per_buffer,
-        effects);
-    *p = params;
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<media::VideoCaptureFormat> {
-  static bool Generate(media::VideoCaptureFormat *p, Generator* generator) {
-    int frame_size_width;
-    int frame_size_height;
-    int pixel_format;
-    if (!GenerateParam(&frame_size_height, generator))
-      return false;
-    if (!GenerateParam(&frame_size_width, generator))
-      return false;
-    if (!GenerateParam(&pixel_format, generator))
-      return false;
-    if (!GenerateParam(&p->frame_rate, generator))
-      return false;
-    p->frame_size.SetSize(frame_size_width, frame_size_height);
-    p->pixel_format = static_cast<media::VideoPixelFormat>(pixel_format);
-    return true;
-  }
-};
-
-
-template <>
-struct GenerateTraits<net::LoadTimingInfo> {
-  static bool Generate(net::LoadTimingInfo *p, Generator* generator) {
-    return
-        GenerateParam(&p->socket_log_id, generator) &&
-        GenerateParam(&p->socket_reused, generator) &&
-        GenerateParam(&p->request_start_time, generator) &&
-        GenerateParam(&p->request_start, generator) &&
-        GenerateParam(&p->proxy_resolve_start, generator) &&
-        GenerateParam(&p->proxy_resolve_end, generator) &&
-        GenerateParam(&p->connect_timing.dns_start, generator) &&
-        GenerateParam(&p->connect_timing.dns_end, generator) &&
-        GenerateParam(&p->connect_timing.connect_start, generator) &&
-        GenerateParam(&p->connect_timing.connect_end, generator) &&
-        GenerateParam(&p->connect_timing.ssl_start, generator) &&
-        GenerateParam(&p->connect_timing.ssl_end, generator) &&
-        GenerateParam(&p->send_start, generator) &&
-        GenerateParam(&p->send_end, generator) &&
-        GenerateParam(&p->receive_headers_end, generator);
-  }
-};
-
-template <>
-struct GenerateTraits<net::HostPortPair> {
-  static bool Generate(net::HostPortPair *p, Generator* generator) {
-    std::string host;
-    uint16 port;
-    if (!GenerateParam(&host, generator))
-      return false;
-    if (!GenerateParam(&port, generator))
-      return false;
-    p->set_host(host);
-    p->set_port(port);
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<net::IPEndPoint> {
-  static bool Generate(net::IPEndPoint *p, Generator* generator) {
-    net::IPAddressNumber address;
-    int port;
-    if (!GenerateParam(&address, generator))
-      return false;
-    if (!GenerateParam(&port, generator))
-      return false;
-    net::IPEndPoint ip_endpoint(address, port);
-    *p = ip_endpoint;
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<network_hints::LookupRequest> {
-  static bool Generate(network_hints::LookupRequest* p, Generator* generator) {
-    network_hints::LookupRequest request;
-    if (!GenerateParam(&request.hostname_list, generator))
-      return false;
-    *p = request;
     return true;
   }
 };
@@ -1286,6 +1231,66 @@ struct GenerateTraits<gfx::Vector2dF> {
 };
 
 template <>
+struct GenerateTraits<gpu::Mailbox> {
+  static bool Generate(gpu::Mailbox* p, Generator* generator) {
+    generator->GenerateBytes(p->name, sizeof(p->name));
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gpu::MailboxHolder> {
+  static bool Generate(gpu::MailboxHolder* p, Generator* generator) {
+    gpu::Mailbox mailbox;
+    uint32_t texture_target;
+    uint32_t sync_point;
+    if (!GenerateParam(&mailbox, generator))
+      return false;
+    if (!GenerateParam(&texture_target, generator))
+      return false;
+    if (!GenerateParam(&sync_point, generator))
+      return false;
+    *p = gpu::MailboxHolder(mailbox, texture_target, sync_point);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gpu::ValueState> {
+  static bool Generate(gpu::ValueState* p, Generator* generator) {
+    gpu::ValueState state;
+    if (!GenerateParamArray(&state.float_value[0], 4, generator))
+      return false;
+    if (!GenerateParamArray(&state.int_value[0], 4, generator))
+      return false;
+    *p = state;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<GURL> {
+  static bool Generate(GURL* p, Generator* generator) {
+    const char url_chars[] = "Ahtp0:/.?+\\%&#";
+    size_t count = RandInRange(100);
+    std::string random_url;
+    for (size_t i = 0; i < count; ++i)
+      random_url += url_chars[RandInRange(sizeof(url_chars) - 1)];
+    int selector = RandInRange(10);
+    if (selector == 0)
+      random_url = std::string("http://") + random_url;
+    else if (selector == 1)
+      random_url = std::string("file://") + random_url;
+    else if (selector == 2)
+      random_url = std::string("javascript:") + random_url;
+    else if (selector == 2)
+      random_url = std::string("data:") + random_url;
+    *p = GURL(random_url);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<IPC::Message> {
   static bool Generate(IPC::Message *p, Generator* generator) {
     if (g_function_vector.empty())
@@ -1325,6 +1330,121 @@ struct GenerateTraits<IPC::ChannelHandle> {
   }
 };
 
+template <>
+struct GenerateTraits<media::AudioParameters> {
+  static bool Generate(media::AudioParameters* p, Generator* generator) {
+    int format;
+    int channel_layout;
+    int sample_rate;
+    int bits_per_sample;
+    int frames_per_buffer;
+    int channels;
+    int effects;
+    if (!GenerateParam(&format, generator))
+      return false;
+    if (!GenerateParam(&channel_layout, generator))
+      return false;
+    if (!GenerateParam(&sample_rate, generator))
+      return false;
+    if (!GenerateParam(&bits_per_sample, generator))
+      return false;
+    if (!GenerateParam(&frames_per_buffer, generator))
+      return false;
+    if (!GenerateParam(&channels, generator))
+      return false;
+    if (!GenerateParam(&effects, generator))
+      return false;
+    media::AudioParameters params(
+        static_cast<media::AudioParameters::Format>(format),
+        static_cast<media::ChannelLayout>(channel_layout), channels,
+        sample_rate, bits_per_sample, frames_per_buffer, effects);
+    *p = params;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<media::VideoCaptureFormat> {
+  static bool Generate(media::VideoCaptureFormat* p, Generator* generator) {
+    int frame_size_width;
+    int frame_size_height;
+    int pixel_format;
+    if (!GenerateParam(&frame_size_height, generator))
+      return false;
+    if (!GenerateParam(&frame_size_width, generator))
+      return false;
+    if (!GenerateParam(&pixel_format, generator))
+      return false;
+    if (!GenerateParam(&p->frame_rate, generator))
+      return false;
+    p->frame_size.SetSize(frame_size_width, frame_size_height);
+    p->pixel_format = static_cast<media::VideoPixelFormat>(pixel_format);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<net::LoadTimingInfo> {
+  static bool Generate(net::LoadTimingInfo* p, Generator* generator) {
+    return GenerateParam(&p->socket_log_id, generator) &&
+           GenerateParam(&p->socket_reused, generator) &&
+           GenerateParam(&p->request_start_time, generator) &&
+           GenerateParam(&p->request_start, generator) &&
+           GenerateParam(&p->proxy_resolve_start, generator) &&
+           GenerateParam(&p->proxy_resolve_end, generator) &&
+           GenerateParam(&p->connect_timing.dns_start, generator) &&
+           GenerateParam(&p->connect_timing.dns_end, generator) &&
+           GenerateParam(&p->connect_timing.connect_start, generator) &&
+           GenerateParam(&p->connect_timing.connect_end, generator) &&
+           GenerateParam(&p->connect_timing.ssl_start, generator) &&
+           GenerateParam(&p->connect_timing.ssl_end, generator) &&
+           GenerateParam(&p->send_start, generator) &&
+           GenerateParam(&p->send_end, generator) &&
+           GenerateParam(&p->receive_headers_end, generator);
+  }
+};
+
+template <>
+struct GenerateTraits<net::HostPortPair> {
+  static bool Generate(net::HostPortPair* p, Generator* generator) {
+    std::string host;
+    uint16 port;
+    if (!GenerateParam(&host, generator))
+      return false;
+    if (!GenerateParam(&port, generator))
+      return false;
+    p->set_host(host);
+    p->set_port(port);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<net::IPEndPoint> {
+  static bool Generate(net::IPEndPoint* p, Generator* generator) {
+    net::IPAddressNumber address;
+    int port;
+    if (!GenerateParam(&address, generator))
+      return false;
+    if (!GenerateParam(&port, generator))
+      return false;
+    net::IPEndPoint ip_endpoint(address, port);
+    *p = ip_endpoint;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<network_hints::LookupRequest> {
+  static bool Generate(network_hints::LookupRequest* p, Generator* generator) {
+    network_hints::LookupRequest request;
+    if (!GenerateParam(&request.hostname_list, generator))
+      return false;
+    *p = request;
+    return true;
+  }
+};
+
 // PP_ traits.
 template <>
 struct GenerateTraits<PP_Bool> {
@@ -1338,10 +1458,38 @@ struct GenerateTraits<PP_Bool> {
 };
 
 template <>
+struct GenerateTraits<PP_KeyInformation> {
+  static bool Generate(PP_KeyInformation* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = PP_KeyInformation();
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<PP_NetAddress_Private> {
   static bool Generate(PP_NetAddress_Private *p, Generator* generator) {
     p->size = RandInRange(sizeof(p->data) + 1);
     generator->GenerateBytes(&p->data, p->size);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::PPB_X509Certificate_Fields> {
+  static bool Generate(ppapi::PPB_X509Certificate_Fields* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
+  static bool Generate(ppapi::proxy::PPBFlash_DrawGlyphs_Params* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ppapi::proxy::PPBFlash_DrawGlyphs_Params();
     return true;
   }
 };
@@ -1381,6 +1529,45 @@ struct GenerateTraits<ppapi::proxy::ResourceMessageReplyParams> {
       return false;
     *p = ppapi::proxy::ResourceMessageReplyParams(resource, sequence);
     p->set_result(result);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::SerializedHandle> {
+  static bool Generate(ppapi::proxy::SerializedHandle* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ppapi::proxy::SerializedHandle();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::SerializedFontDescription> {
+  static bool Generate(ppapi::proxy::SerializedFontDescription* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ppapi::proxy::SerializedFontDescription();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::SerializedTrueTypeFontDesc> {
+  static bool Generate(ppapi::proxy::SerializedTrueTypeFontDesc* p,
+                       Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ppapi::proxy::SerializedTrueTypeFontDesc();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::SerializedVar> {
+  static bool Generate(ppapi::proxy::SerializedVar* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    *p = ppapi::proxy::SerializedVar();
     return true;
   }
 };
@@ -1466,12 +1653,81 @@ struct GenerateTraits<remoting::ScreenResolution> {
   }
 };
 
-// FIXME: Actually generate something.
 template <>
 struct GenerateTraits<SkBitmap> {
   static bool Generate(SkBitmap* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
     *p = SkBitmap();
     return true;
+  }
+};
+
+template <>
+struct GenerateTraits<storage::DataElement> {
+  static bool Generate(storage::DataElement* p, Generator* generator) {
+    switch (RandInRange(4)) {
+      case storage::DataElement::Type::TYPE_BYTES: {
+        if (RandEvent(2)) {
+          p->SetToEmptyBytes();
+        } else {
+          // TODO(mbarbella): Occasionally send more data here.
+          char data[256];
+          int data_len = RandInRange(sizeof(data));
+          generator->GenerateBytes(&data[0], data_len);
+          p->SetToBytes(&data[0], data_len);
+        }
+        return true;
+      }
+      case storage::DataElement::Type::TYPE_FILE: {
+        base::FilePath path;
+        uint64 offset;
+        uint64 length;
+        base::Time modification_time;
+        if (!GenerateParam(&path, generator))
+          return false;
+        if (!GenerateParam(&offset, generator))
+          return false;
+        if (!GenerateParam(&length, generator))
+          return false;
+        if (!GenerateParam(&modification_time, generator))
+          return false;
+        p->SetToFilePathRange(path, offset, length, modification_time);
+        return true;
+      }
+      case storage::DataElement::Type::TYPE_BLOB: {
+        std::string uuid;
+        uint64 offset;
+        uint64 length;
+        if (!GenerateParam(&uuid, generator))
+          return false;
+        if (!GenerateParam(&offset, generator))
+          return false;
+        if (!GenerateParam(&length, generator))
+          return false;
+        p->SetToBlobRange(uuid, offset, length);
+        return true;
+      }
+      case storage::DataElement::Type::TYPE_FILE_FILESYSTEM: {
+        GURL url;
+        uint64 offset;
+        uint64 length;
+        base::Time modification_time;
+        if (!GenerateParam(&url, generator))
+          return false;
+        if (!GenerateParam(&offset, generator))
+          return false;
+        if (!GenerateParam(&length, generator))
+          return false;
+        if (!GenerateParam(&modification_time, generator))
+          return false;
+        p->SetToFileSystemUrlRange(url, offset, length, modification_time);
+        return true;
+      }
+      default: {
+        NOTREACHED();
+        return false;
+      }
+    }
   }
 };
 
@@ -1514,6 +1770,29 @@ struct GenerateTraits<url::Origin> {
     if (!GenerateParam(&origin, generator))
         return false;
     *p = url::Origin(origin);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<URLPattern> {
+  static bool Generate(URLPattern* p, Generator* generator) {
+    int valid_schemes;
+    std::string host;
+    std::string port;
+    std::string path;
+    if (!GenerateParam(&valid_schemes, generator))
+      return false;
+    if (!GenerateParam(&host, generator))
+      return false;
+    if (!GenerateParam(&port, generator))
+      return false;
+    if (!GenerateParam(&path, generator))
+      return false;
+    *p = URLPattern(valid_schemes);
+    p->SetHost(host);
+    p->SetPort(port);
+    p->SetPath(path);
     return true;
   }
 };
@@ -1562,6 +1841,20 @@ struct GenerateTraits<webrtc::DesktopRect> {
     if (!GenerateParam(&bottom, generator))
       return false;
     *p = webrtc::DesktopRect::MakeLTRB(left, top, right, bottom);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<webrtc::MouseCursor> {
+  static bool Generate(webrtc::MouseCursor* p, Generator* generator) {
+    webrtc::DesktopVector hotspot;
+    if (!GenerateParam(&hotspot, generator))
+      return false;
+    // Using a small size here to avoid OOM or overflow on image allocation.
+    webrtc::DesktopSize size(RandInRange(100), RandInRange(100));
+    p->set_image(new webrtc::BasicDesktopFrame(size));
+    p->set_hotspot(hotspot);
     return true;
   }
 };
