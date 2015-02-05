@@ -39,8 +39,14 @@ using base::UserMetricsAction;
 
 namespace {
 
+// Distance between permission icon and permission label.
+const CGFloat kHorizontalIconPadding = 8.0f;
+
+// Distance between two permission labels.
+const CGFloat kVerticalPermissionPadding = 2.0f;
+
 const CGFloat kHorizontalPadding = 13.0f;
-const CGFloat kVerticalPadding = 13.0f;
+const CGFloat kVerticalPadding = 15.0f;
 const CGFloat kBetweenButtonsPadding = 10.0f;
 const CGFloat kButtonRightEdgePadding = 17.0f;
 const CGFloat kTitlePaddingX = 50.0f;
@@ -285,12 +291,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     permissionMenus.reset([[NSMutableArray alloc] init]);
 
   CGFloat maxPermissionLineWidth = 0;
+  CGFloat verticalPadding = 0.0f;
   for (auto it = requests.begin(); it != requests.end(); it++) {
     base::scoped_nsobject<NSView> permissionView(
         [[self labelForRequest:(*it)] retain]);
     NSPoint origin = [permissionView frame].origin;
     origin.x += kHorizontalPadding;
-    origin.y += yOffset;
+    origin.y += yOffset + verticalPadding;
     [permissionView setFrameOrigin:origin];
     [contentView addSubview:permissionView];
 
@@ -310,6 +317,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     maxPermissionLineWidth = std::max(
         maxPermissionLineWidth, NSMaxX([permissionView frame]));
     yOffset += NSHeight([permissionView frame]);
+
+    // Add extra padding for all but first permission.
+    verticalPadding = kVerticalPermissionPadding;
   }
 
   base::scoped_nsobject<NSView> titleView(
@@ -432,7 +442,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [permissionLabel setStringValue:base::SysUTF16ToNSString(label)];
   [permissionLabel sizeToFit];
   [permissionLabel setFrameOrigin:
-      NSMakePoint(NSWidth([permissionIcon frame]), 0)];
+      NSMakePoint(NSWidth([permissionIcon frame]) + kHorizontalIconPadding, 0)];
   [permissionView addSubview:permissionLabel];
 
   // Match the horizontal centers of the two subviews.  Note that the label's
