@@ -123,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(OpenedByDOMTest, DISABLED_CrossProcessPopup) {
 
   GURL url2 = test_server()->GetURL("files/site_isolation/blank.html?2");
   GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-  replace_host.SetHostStr(foo_com);
+  replace_host.SetHostStr("foo.com");
   url2 = url2.ReplaceComponents(replace_host);
 
   GURL url3 = test_server()->GetURL("files/site_isolation/blank.html?3");

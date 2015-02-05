@@ -293,8 +293,7 @@ class WebViewInteractiveTest
                  const std::string& guest_url_spec) {
     ASSERT_TRUE(StartEmbeddedTestServer());
     GURL::Replacements replace_host;
-    std::string host_str("localhost");  // Must stay in scope with replace_host.
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("localhost");
 
     GURL guest_url = embedded_test_server()->GetURL(guest_url_spec);
     guest_url = guest_url.ReplaceComponents(replace_host);

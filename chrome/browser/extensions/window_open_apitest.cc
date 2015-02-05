@@ -204,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
   // to below must be within that domain, so that they fall within the app's
   // web extent.
   GURL::Replacements replace_host;
-  std::string a_dot_com = "a.com";
-  replace_host.SetHostStr(a_dot_com);
+  replace_host.SetHostStr("a.com");
 
   const std::string popup_app_contents_path(
     "files/extensions/api_test/window_open/popup_blocking/hosted_app/");

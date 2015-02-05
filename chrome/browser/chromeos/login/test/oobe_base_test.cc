@@ -93,9 +93,8 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   // webstore in chrome_resource_dispatcher_host_delegate.cc.
   const GURL& server_url = embedded_test_server()->base_url();
 
-  std::string gaia_host("gaia");
   GURL::Replacements replace_gaia_host;
-  replace_gaia_host.SetHostStr(gaia_host);
+  replace_gaia_host.SetHostStr("gaia");
   GURL gaia_url = server_url.ReplaceComponents(replace_gaia_host);
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());

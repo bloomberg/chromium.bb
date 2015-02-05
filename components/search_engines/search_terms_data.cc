@@ -26,11 +26,7 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   GURL::Replacements repl;
 
   // Replace any existing path with "/complete/".
-  // SetPathStr() requires its argument to stay in scope as long as |repl| is,
-  // so "/complete/" can't be passed to SetPathStr() directly, it needs to be in
-  // a variable.
-  const std::string suggest_path("/complete/");
-  repl.SetPathStr(suggest_path);
+  repl.SetPathStr("/complete/");
 
   // Clear the query and ref.
   repl.ClearQuery();

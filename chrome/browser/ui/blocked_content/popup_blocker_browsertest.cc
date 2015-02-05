@@ -368,8 +368,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   // Whitelist iframe URL instead.
   GURL::Replacements replace_host;
-  std::string host_str("www.a.com");  // Must stay in scope with replace_host
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("www.a.com");
   GURL frame_url(embedded_test_server()
                      ->GetURL("/popup_blocker/popup-frames-iframe.html")
                      .ReplaceComponents(replace_host));

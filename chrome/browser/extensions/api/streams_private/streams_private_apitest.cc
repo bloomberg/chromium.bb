@@ -316,10 +316,10 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
   ResultCatcher catcher;
 
   // Navigate to a URL on a different hostname.
-  std::string initial_host = "www.example.com";
-  host_resolver()->AddRule(initial_host, "127.0.0.1");
+  static const char kInitialHost[] = "www.example.com";
+  host_resolver()->AddRule(kInitialHost, "127.0.0.1");
   GURL::Replacements replacements;
-  replacements.SetHostStr(initial_host);
+  replacements.SetHostStr(kInitialHost);
   GURL initial_url =
       test_server_->GetURL("/index.html").ReplaceComponents(replacements);
   ui_test_utils::NavigateToURL(browser(), initial_url);

@@ -266,9 +266,8 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
       net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
-  std::string host_str("host.net");  // Must outlive replace_host.
   GURL::Replacements replace_host;
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("host.net");
   GURL test_url = https_server.GetURL("/files/title1.html");
   ui_test_utils::NavigateToURL(browser(),
                                test_url.ReplaceComponents(replace_host));

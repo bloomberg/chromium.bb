@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -45,21 +46,16 @@ const size_t kDefaultCacheSize = 1000;
 GURL GetNormalizedURL(const GURL& url) {
   GURL::Replacements replacements;
   // Set scheme to http.
-  const std::string scheme(url::kHttpScheme);
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr(url::kHttpScheme);
   // Strip leading "www." (if any).
   const std::string www("www.");
-  std::string new_host;
-  if (StartsWithASCII(url.host(), www, true)) {
-    new_host = url.host().substr(www.size());
-    replacements.SetHostStr(new_host);
-  }
+  const std::string host(url.host());
+  if (StartsWithASCII(host, www, true))
+    replacements.SetHostStr(base::StringPiece(host).substr(www.size()));
   // Strip trailing slash (if any).
-  std::string new_path;
-  if (EndsWith(url.path(), "/", true)) {
-    new_path = url.path().substr(0, url.path().size() - 1);
-    replacements.SetPathStr(new_path);
-  }
+  const std::string path(url.path());
+  if (EndsWith(path, "/", true))
+    replacements.SetPathStr(base::StringPiece(path).substr(0, path.size() - 1));
   return url.ReplaceComponents(replacements);
 }
 

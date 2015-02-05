@@ -129,9 +129,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
 
   // Visit a page that tries to establish WebSocket connection. The title
   // of the page will be 'PASS' on success.
-  std::string scheme("http");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("http");
   ui_test_utils::NavigateToURL(browser(),
                                ws_server.GetURL("proxied_request_check.html")
                                    .ReplaceComponents(replacements));

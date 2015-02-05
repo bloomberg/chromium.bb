@@ -338,9 +338,8 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HttpsProxyUsed)) {
   // The test server doesn't have an unauthenticated proxy mode. WebSockets
   // cannot provide auth information that isn't already cached, so it's
   // necessary to preflight an HTTP request to authenticate against the proxy.
-  std::string scheme("http");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("http");
   // It doesn't matter what the URL is, as long as it is an HTTP navigation.
   GURL http_page =
       ws_server.GetURL("connect_check.html").ReplaceComponents(replacements);

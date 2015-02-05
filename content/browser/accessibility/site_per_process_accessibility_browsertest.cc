@@ -77,13 +77,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
   GURL http_url(test_server()->GetURL("files/title1.html"));
   NavigateFrameToURL(child, http_url);
 
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
   // Load cross-site page into iframe.
+  GURL::Replacements replace_host;
   GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
+  replace_host.SetHostStr("foo.com");
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 

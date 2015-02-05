@@ -251,11 +251,6 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  // These must all stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string a_com("A.com");
-  std::string b_com("B.com");
-
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = test_server()->GetURL("files/site_isolation/blank.html?1");
   NavigateToURL(shell(), url1);
@@ -269,8 +264,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   // cross-site, so the renderer will send it to the browser via OpenURL to give
   // to a new process. It will then be transferred into yet another process due
   // to the call above.
+  GURL::Replacements replace_host;
   GURL url2 = test_server()->GetURL("files/site_isolation/blank.html?2");
-  replace_host.SetHostStr(a_com);
+  replace_host.SetHostStr("A.com");
   url2 = url2.ReplaceComponents(replace_host);
   // Used to make sure the request for url2 succeeds, and there was only one of
   // them.
@@ -289,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   // replacement). This will still perform a double process-swap as above, via
   // OpenURL and then transfer.
   GURL url3 = test_server()->GetURL("files/site_isolation/blank.html?3");
-  replace_host.SetHostStr(b_com);
+  replace_host.SetHostStr("B.com");
   url3 = url3.ReplaceComponents(replace_host);
   // Used to make sure the request for url3 succeeds, and there was only one of
   // them.
@@ -361,11 +357,6 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  // These must all stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string a_com("A.com");
-  std::string b_com("B.com");
-
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = test_server()->GetURL("files/site_isolation/blank.html?1");
   NavigateToURL(shell(), url1);
@@ -375,12 +366,13 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   // and second in response to the server redirect to B.com. The second swap is
   // also renderer-initiated via OpenURL because decidePolicyForNavigation is
   // currently applied on redirects.
+  GURL::Replacements replace_host;
   GURL url2b = test_server()->GetURL("files/site_isolation/blank.html?2");
-  replace_host.SetHostStr(b_com);
+  replace_host.SetHostStr("B.com");
   url2b = url2b.ReplaceComponents(replace_host);
   GURL url2a = test_server()->GetURL(
       "server-redirect?" + net::EscapeQueryParamValue(url2b.spec(), false));
-  replace_host.SetHostStr(a_com);
+  replace_host.SetHostStr("A.com");
   url2a = url2a.ReplaceComponents(replace_host);
   NavigateToURLContentInitiated(shell(), url2a, true, true);
 
@@ -392,11 +384,11 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // Now repeat without replacement.
   GURL url3b = test_server()->GetURL("files/site_isolation/blank.html?3");
-  replace_host.SetHostStr(b_com);
+  replace_host.SetHostStr("B.com");
   url3b = url3b.ReplaceComponents(replace_host);
   GURL url3a = test_server()->GetURL(
       "server-redirect?" + net::EscapeQueryParamValue(url3b.spec(), false));
-  replace_host.SetHostStr(a_com);
+  replace_host.SetHostStr("A.com");
   url3a = url3a.ReplaceComponents(replace_host);
   NavigateToURLContentInitiated(shell(), url3a, false, true);
 
@@ -417,11 +409,6 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  // These must all stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string a_com("A.com");
-  std::string b_com("B.com");
-
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = test_server()->GetURL("files/site_isolation/blank.html?1");
   NavigateToURL(shell(), url1);
@@ -437,8 +424,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
   // cross-site, so the renderer will send it to the browser via OpenURL to give
   // to a new process. It will then be transferred into yet another process due
   // to the call above.
+  GURL::Replacements replace_host;
   GURL url2 = test_server()->GetURL("files/site_isolation/blank.html?2");
-  replace_host.SetHostStr(a_com);
+  replace_host.SetHostStr("A.com");
   url2 = url2.ReplaceComponents(replace_host);
   // Used to make sure the second request is cancelled, and there is only one
   // request for url2.

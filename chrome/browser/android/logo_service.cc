@@ -31,11 +31,8 @@ const int kDecodeLogoTimeoutSeconds = 30;
 GURL GetGoogleDoodleURL(Profile* profile) {
   GURL google_base_url(UIThreadSearchTermsData(profile).GoogleBaseURLValue());
   const char kGoogleDoodleURLPath[] = "async/newtab_mobile";
-  // The string passed to SetPathStr() must stay alive until after
-  // ReplaceComponents(), so declare it on the stack here instead of inline.
-  std::string path(kGoogleDoodleURLPath);
   GURL::Replacements replacements;
-  replacements.SetPathStr(path);
+  replacements.SetPathStr(kGoogleDoodleURLPath);
   return google_base_url.ReplaceComponents(replacements);
 }
 

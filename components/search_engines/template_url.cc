@@ -28,6 +28,7 @@
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -1359,7 +1360,7 @@ bool TemplateURL::ReplaceSearchTermsInURL(
   std::string new_params(old_params, 0, search_terms_position.begin);
   new_params += base::UTF16ToUTF8(search_terms_args.search_terms);
   new_params += old_params.substr(search_terms_position.end());
-  url::StdStringReplacements<std::string> replacements;
+  GURL::Replacements replacements;
   if (search_term_component == url::Parsed::REF)
     replacements.SetRefStr(new_params);
   else

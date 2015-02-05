@@ -45,8 +45,7 @@ bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
   GURL base_url = embedded_test_server()->GetURL(
       "/extensions/api_test/clipboard/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
 
   std::string launch_page_path =

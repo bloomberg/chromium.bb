@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -411,8 +412,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   static const size_t prefix_len = arraysize(prefix) - 1;
   std::string host = stripped_destination_url.host();
   if (host.compare(0, prefix_len, prefix) == 0) {
-    host = host.substr(prefix_len);
-    replacements.SetHostStr(host);
+    replacements.SetHostStr(base::StringPiece(host).substr(prefix_len));
     needs_replacement = true;
   }
 

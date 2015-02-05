@@ -402,7 +402,7 @@ class RenderFrameCreatedObserver : public WebContentsObserver {
 // to the WebContentObservers. See http://crbug.com/347339.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        RenderFrameCreatedCorrectProcessForObservers) {
-  std::string foo_com("foo.com");
+  static const char kFooCom[] = "foo.com";
   GURL::Replacements replace_host;
   net::HostPortPair foo_host_port;
   GURL cross_site_url;
@@ -413,12 +413,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(test_server()->Start());
 
   foo_host_port = test_server()->host_port_pair();
-  foo_host_port.set_host(foo_com);
+  foo_host_port.set_host(kFooCom);
 
   GURL initial_url(test_server()->GetURL("/title1.html"));
 
   cross_site_url = test_server()->GetURL("/title2.html");
-  replace_host.SetHostStr(foo_com);
+  replace_host.SetHostStr(kFooCom);
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
 
   // Navigate to the initial URL and capture the RenderFrameHost for later

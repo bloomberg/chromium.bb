@@ -10,6 +10,7 @@
 #include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -240,9 +241,8 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
     return scoped_ptr<net::test_server::HttpResponse>();
 
   // Replace the host of the URL with the one passed in the URL.
-  std::string host = params.substr(0, slash);
   GURL::Replacements replace_host;
-  replace_host.SetHostStr(host);
+  replace_host.SetHostStr(base::StringPiece(params).substr(0, slash));
   GURL redirect_server = server_base_url.ReplaceComponents(replace_host);
 
   // Append the real part of the path to the new URL.

@@ -355,8 +355,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       content::WebContents** persistent_partition_contents2,
       content::WebContents** persistent_partition_contents3) {
     GURL::Replacements replace_host;
-    std::string host_str("localhost");  // Must stay in scope with replace_host.
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("localhost");
 
     navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
 
@@ -624,8 +623,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* LoadGuest(const std::string& guest_path,
                                   const std::string& app_path) {
     GURL::Replacements replace_host;
-    std::string host_str("localhost");  // Must stay in scope with replace_host.
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("localhost");
 
     GURL guest_url = embedded_test_server()->GetURL(guest_path);
     guest_url = guest_url.ReplaceComponents(replace_host);
@@ -1205,8 +1203,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   ASSERT_TRUE(embedder_web_contents);
 
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
 
   std::string guest_path(
       "/extensions/platform_apps/web_view/shim/empty_guest.html");
@@ -1396,8 +1393,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_CookieIsolation) {
       "document.cookie = 'guest2=true; path=/; expires=' + expire + ';';");
 
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
 
   GURL set_cookie_url = embedded_test_server()->GetURL(
       "/extensions/platform_apps/isolation/set_cookie.html");

@@ -103,8 +103,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
   // Navigate to a different page.
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   GURL another_url = embedded_test_server()->GetURL("/simple_page.html");
   another_url = another_url.ReplaceComponents(replace_host);
   NavigateToURL(CreateBrowser(), another_url);

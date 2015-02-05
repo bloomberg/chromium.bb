@@ -24,11 +24,10 @@ namespace {
 
 GURL UpgradeUrlToHttps(const GURL& original_url, int port) {
   GURL::Replacements replacements;
-  // new_sheme and new_port need to be in scope here because GURL::Replacements
-  // references the memory contained by them directly.
-  const std::string new_scheme = "https";
+  // new_port needs to be in scope here because GURL::Replacements references
+  // the memory contained by it directly.
   const std::string new_port = base::IntToString(port);
-  replacements.SetSchemeStr(new_scheme);
+  replacements.SetSchemeStr("https");
   replacements.SetPortStr(new_port);
   return original_url.ReplaceComponents(replacements);
 }

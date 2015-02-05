@@ -2195,7 +2195,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   DisableJavascriptCalls();
 
   // The loader page should look like Google.
-  const std::string kGoogleDotCom("www.google.com");
+  static const char kGoogleDotCom[] = "www.google.com";
   SetLoaderHostOverride(kGoogleDotCom);
   set_loader_path("files/prerender/prerender_loader_with_replace_state.html");
 

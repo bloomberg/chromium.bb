@@ -559,11 +559,8 @@ void StartPageService::UnloadContents() {
 }
 
 void StartPageService::FetchDoodleJson() {
-  // SetPathStr() requires its argument to stay in scope as long as
-  // |replacements| is, so a std::string is needed, instead of a char*.
-  std::string path = kDoodleJsonPath;
   GURL::Replacements replacements;
-  replacements.SetPathStr(path);
+  replacements.SetPathStr(kDoodleJsonPath);
 
   GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
   GURL doodle_url = google_base_url.ReplaceComponents(replacements);

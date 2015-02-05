@@ -134,8 +134,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // Replace the host with 'www.example.com' so it matches the web store
     // app's extent.
     GURL::Replacements replace_host;
-    std::string host_str("www.example.com");
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("www.example.com");
 
     return url.ReplaceComponents(replace_host);
   }

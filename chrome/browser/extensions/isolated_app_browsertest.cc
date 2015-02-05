@@ -140,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
 
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("app1/main.html"));
 
@@ -212,8 +211,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("app1/main.html"));
@@ -305,8 +303,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("app1/main.html"));
@@ -388,8 +385,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
   GURL root_url = embedded_test_server()->GetURL("/");
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   root_url = root_url.ReplaceComponents(replace_host);
   base_url = base_url.ReplaceComponents(replace_host);
 
@@ -460,8 +456,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
 
   // Create three tabs in the isolated app in different ways.
@@ -519,8 +514,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   base_url = base_url.ReplaceComponents(replace_host);
 
   // Enter some state into sessionStorage three times on the same origin, but

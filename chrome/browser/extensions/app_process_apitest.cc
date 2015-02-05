@@ -49,8 +49,7 @@ class AppApiTest : public ExtensionApiTest {
   // as in the test apps manifests.
   GURL GetTestBaseURL(const std::string& test_directory) {
     GURL::Replacements replace_host;
-    std::string host_str("localhost");  // must stay in scope with replace_host
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("localhost");
     GURL base_url = embedded_test_server()->GetURL(
         "/extensions/api_test/" + test_directory + "/");
     return base_url.ReplaceComponents(replace_host);

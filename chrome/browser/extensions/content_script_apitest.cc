@@ -338,8 +338,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
 
   // We disallow all injection on the webstore.
   GURL::Replacements replacements;
-  std::string host(kWebstoreDomain);
-  replacements.SetHostStr(host);
+  replacements.SetHostStr(kWebstoreDomain);
   url = embedded_test_server()->GetURL("/extensions/test_file_with_body.html")
             .ReplaceComponents(replacements);
   EXPECT_TRUE(CheckStyleInjection(browser(), url, false));

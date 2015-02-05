@@ -104,9 +104,8 @@ int FakeCWS::GetUpdateCheckCountAndReset() {
 }
 
 void FakeCWS::SetupWebStoreURL(const GURL& test_server_url) {
-  std::string webstore_host(kWebstoreDomain);
   GURL::Replacements replace_webstore_host;
-  replace_webstore_host.SetHostStr(webstore_host);
+  replace_webstore_host.SetHostStr(kWebstoreDomain);
   web_store_url_ = test_server_url.ReplaceComponents(replace_webstore_host);
 }
 

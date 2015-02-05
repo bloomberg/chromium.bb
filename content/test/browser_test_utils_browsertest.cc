@@ -70,9 +70,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteRedirectorBrowserTest,
   // hostname supplied in the URL and rewrite the URL. Build the
   // expected URL to ensure navigation was properly redirected.
   GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
   GURL expected_url(embedded_test_server()->GetURL("/title2.html"));
-  replace_host.SetHostStr(foo_com);
+  replace_host.SetHostStr("foo.com");
   expected_url = expected_url.ReplaceComponents(replace_host);
 
   EXPECT_EQ(expected_url, observer.navigation_url());

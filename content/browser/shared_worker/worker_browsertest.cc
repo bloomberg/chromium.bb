@@ -118,9 +118,8 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
   ASSERT_TRUE(ws_server.Start());
 
   // Generate test URL.
-  std::string scheme("http");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("http");
   GURL url = ws_server.GetURL(
       "websocket_shared_worker.html").ReplaceComponents(replacements);
 

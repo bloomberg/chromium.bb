@@ -63,8 +63,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   // changed when we follow a redirect.
   ASSERT_EQ("127.0.0.1", redirected_url.host());
   GURL::Replacements replacements;
-  std::string new_host("www.example.com");
-  replacements.SetHostStr(new_host);
+  replacements.SetHostStr("www.example.com");
   redirected_url = redirected_url.ReplaceComponents(replacements);
 
   std::string cookie =

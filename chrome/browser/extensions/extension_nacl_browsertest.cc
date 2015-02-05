@@ -206,8 +206,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, HostedApp) {
 
   GURL url = test_server()->GetURL("files/extensions/native_client/test.html");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   replace_host.ClearPort();
   url = url.ReplaceComponents(replace_host);
 

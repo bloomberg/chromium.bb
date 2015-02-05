@@ -411,8 +411,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   GURL set_cookie_url = embedded_test_server()->GetURL(
       "/extensions/platform_apps/isolation/set_cookie.html");
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), set_cookie_url);

@@ -132,11 +132,9 @@ std::string GetGoogleCountryCode(GURL google_homepage_url) {
 GURL GetGoogleSearchURL(GURL google_homepage_url) {
   // To transform the homepage URL into the corresponding search URL, add the
   // "search" and the "q=" query string.
-  std::string search_path = "search";
-  std::string query_string = "q=";
   GURL::Replacements replacements;
-  replacements.SetPathStr(search_path);
-  replacements.SetQueryStr(query_string);
+  replacements.SetPathStr("search");
+  replacements.SetQueryStr("q=");
   return google_homepage_url.ReplaceComponents(replacements);
 }
 

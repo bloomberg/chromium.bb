@@ -48,13 +48,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
           "files/extensions/api_test/extension_resource_request_policy/"
           "index.html"));
 
-  std::string host_a("a.com");
   GURL::Replacements make_host_a_com;
-  make_host_a_com.SetHostStr(host_a);
+  make_host_a_com.SetHostStr("a.com");
 
-  std::string host_b("b.com");
   GURL::Replacements make_host_b_com;
-  make_host_b_com.SetHostStr(host_b);
+  make_host_b_com.SetHostStr("b.com");
 
   // A web host that has permission.
   ui_test_utils::NavigateToURL(

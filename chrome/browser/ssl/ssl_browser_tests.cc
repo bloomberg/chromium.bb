@@ -508,8 +508,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   // cross-site navigation so we can test http://crbug.com/5800 is gone.
   ASSERT_EQ("127.0.0.1", cross_site_url.host());
   GURL::Replacements replacements;
-  std::string new_host("localhost");
-  replacements.SetHostStr(new_host);
+  replacements.SetHostStr("localhost");
   cross_site_url = cross_site_url.ReplaceComponents(replacements);
 
   // Now go to a bad HTTPS page.
@@ -714,9 +713,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Visit bad HTTPS page.
-  std::string scheme("https");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("https");
   ui_test_utils::NavigateToURL(
       browser(),
       wss_server_expired_.GetURL(
@@ -787,9 +785,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
                              options,
                              net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(wss_server.Start());
-  std::string scheme("https");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("https");
   GURL url = wss_server.GetURL("connect_check.html").ReplaceComponents(
       replacements);
 
@@ -1764,9 +1761,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Visit bad HTTPS page.
-  std::string scheme("https");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("https");
   ui_test_utils::NavigateToURL(
       browser(),
       wss_server_expired_.GetURL(

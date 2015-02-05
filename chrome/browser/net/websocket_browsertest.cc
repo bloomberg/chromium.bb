@@ -38,18 +38,16 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
  protected:
   void NavigateToHTTP(const std::string& path) {
     // Visit a HTTP page for testing.
-    std::string scheme("http");
     GURL::Replacements replacements;
-    replacements.SetSchemeStr(scheme);
+    replacements.SetSchemeStr("http");
     ui_test_utils::NavigateToURL(
         browser(), ws_server_.GetURL(path).ReplaceComponents(replacements));
   }
 
   void NavigateToHTTPS(const std::string& path) {
     // Visit a HTTPS page for testing.
-    std::string scheme("https");
     GURL::Replacements replacements;
-    replacements.SetSchemeStr(scheme);
+    replacements.SetSchemeStr("https");
     ui_test_utils::NavigateToURL(
         browser(), wss_server_.GetURL(path).ReplaceComponents(replacements));
   }
@@ -204,9 +202,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketBasicAuthInHTTPURL) {
   ASSERT_TRUE(ws_server_.Start());
 
   // Open connect_check.html via HTTP with credentials in the URL.
-  std::string scheme("http");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("http");
   ui_test_utils::NavigateToURL(
       browser(),
       ws_server_.GetURLWithUserAndPassword("connect_check.html", "test", "test")
@@ -221,9 +218,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketBasicAuthInHTTPSURL) {
   ASSERT_TRUE(wss_server_.Start());
 
   // Open connect_check.html via HTTPS with credentials in the URL.
-  std::string scheme("https");
   GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("https");
   ui_test_utils::NavigateToURL(
       browser(),
       wss_server_.GetURLWithUserAndPassword(

@@ -48,8 +48,7 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
     // Replace the host with 'www.cloudprintapp.com' so it matches the cloud
     // print app's extent.
     GURL::Replacements replace_host;
-    std::string host_str("www.cloudprintapp.com");
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr("www.cloudprintapp.com");
     return url.ReplaceComponents(replace_host);
   }
 };

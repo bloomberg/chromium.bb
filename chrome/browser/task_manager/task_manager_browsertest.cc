@@ -606,8 +606,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // must stay in scope with replace_host
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   GURL base_url = embedded_test_server()->GetURL(
       "/extensions/api_test/app_process/");
   base_url = base_url.ReplaceComponents(replace_host);
@@ -671,8 +670,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // must stay in scope with replace_host
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   GURL base_url =
       embedded_test_server()->GetURL("/extensions/api_test/app_process/");
   base_url = base_url.ReplaceComponents(replace_host);
@@ -707,8 +705,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // must stay in scope with replace_host
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
   GURL base_url =
       embedded_test_server()->GetURL("/extensions/api_test/app_process/");
   base_url = base_url.ReplaceComponents(replace_host);

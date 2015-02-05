@@ -2687,8 +2687,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Status511) {
 // in.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
   GURL::Replacements replacements;
-  std::string scheme = "http";
-  replacements.SetSchemeStr(scheme);
+  replacements.SetSchemeStr("http");
   GURL http_timeout_url = GURL(kMockHttpsUrl).ReplaceComponents(replacements);
 
   URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);

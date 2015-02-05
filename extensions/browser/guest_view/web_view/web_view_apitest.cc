@@ -636,8 +636,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
   LaunchApp("web_view/apitest");
 
   GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
+  replace_host.SetHostStr("localhost");
 
   // Run the test and wait until the guest WebContents is available and has
   // finished loading.

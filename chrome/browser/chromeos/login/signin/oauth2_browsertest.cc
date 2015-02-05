@@ -621,15 +621,13 @@ class MergeSessionTest : public OAuth2Test {
 
     // Get fake URL for fake google.com.
     const GURL& server_url = embedded_test_server()->base_url();
-    std::string google_host("www.google.com");
     GURL::Replacements replace_google_host;
-    replace_google_host.SetHostStr(google_host);
+    replace_google_host.SetHostStr("www.google.com");
     GURL google_url = server_url.ReplaceComponents(replace_google_host);
     fake_google_page_url_ = google_url.Resolve(kHelloPagePath);
 
-    std::string non_google_host("www.somethingelse.org");
     GURL::Replacements replace_non_google_host;
-    replace_non_google_host.SetHostStr(non_google_host);
+    replace_non_google_host.SetHostStr("www.somethingelse.org");
     GURL non_google_url = server_url.ReplaceComponents(replace_non_google_host);
     non_google_page_url_ = non_google_url.Resolve(kRandomPagePath);
 }

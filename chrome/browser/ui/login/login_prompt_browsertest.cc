@@ -661,9 +661,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
     // Change the host from 127.0.0.1 to www.a.com so that when the
     // page tries to load from b, it will be cross-origin.
-    std::string new_host("www.a.com");
     GURL::Replacements replacements;
-    replacements.SetHostStr(new_host);
+    replacements.SetHostStr("www.a.com");
     test_page = test_page.ReplaceComponents(replacements);
 
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
@@ -683,9 +682,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
     // Change the host from 127.0.0.1 to www.b.com so that when the
     // page tries to load from b, it will be same-origin.
-    std::string new_host("www.b.com");
     GURL::Replacements replacements;
-    replacements.SetHostStr(new_host);
+    replacements.SetHostStr("www.b.com");
     test_page = test_page.ReplaceComponents(replacements);
 
     WindowedAuthNeededObserver auth_needed_waiter(controller);
@@ -731,9 +729,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
     // Change the host from 127.0.0.1 to www.a.com so that when the
     // page tries to load from b, it will be cross-origin.
-    std::string new_host("www.a.com");
+    static const char kNewHost[] = "www.a.com";
     GURL::Replacements replacements;
-    replacements.SetHostStr(new_host);
+    replacements.SetHostStr(kNewHost);
     test_page = test_page.ReplaceComponents(replacements);
 
     WindowedAuthNeededObserver auth_needed_waiter(controller);
@@ -751,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
       // When a cross origin iframe displays a login prompt, the blank
       // interstitial shouldn't be displayed and the omnibox should show the
       // main frame's url, not the iframe's.
-      EXPECT_EQ(new_host, contents->GetVisibleURL().host());
+      EXPECT_EQ(kNewHost, contents->GetVisibleURL().host());
 
       handler->CancelAuth();
       auth_cancelled_waiter.Wait();
