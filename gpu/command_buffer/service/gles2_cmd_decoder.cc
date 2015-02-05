@@ -7097,6 +7097,10 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
         vertex_translator_.get() : fragment_translator_.get();
   }
 
+  shader->RequestCompile();
+
+  // TODO(dyen): Currently we compile immediately when glCompileShader is
+  // requested. Eventually this should be deffered to the linker stage.
   shader->DoCompile(
      translator,
      feature_info_->feature_flags().angle_translated_shader_source ?

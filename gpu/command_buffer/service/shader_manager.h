@@ -29,8 +29,20 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     kGL,  // GL or GLES
   };
 
+  enum ShaderState {
+    kShaderStateWaiting,
+    kShaderStateCompileRequested,
+    kShaderStateCompiled, // Signifies compile happened, not valid compile.
+  };
+
+  void RequestCompile();
+
   void DoCompile(ShaderTranslatorInterface* translator,
                  TranslatedShaderSourceType type);
+
+  ShaderState shader_state() const {
+    return shader_state_;
+  }
 
   GLuint service_id() const {
     return service_id_;
@@ -52,8 +64,8 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     return translated_source_;
   }
 
-  const std::string& signature_source() const {
-    return signature_source_;
+  const std::string& last_compiled_source() const {
+    return last_compiled_source_;
   }
 
   const sh::Attribute* GetAttribInfo(const std::string& name) const;
@@ -73,7 +85,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   bool valid() const {
-    return valid_;
+    return shader_state_ == kShaderStateCompiled && valid_;
   }
 
   bool IsDeleted() const {
@@ -131,8 +143,12 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   int use_count_;
 
+  // The current state of the shader.
+  ShaderState shader_state_;
+
   // The shader this Shader is tracking.
   GLuint service_id_;
+
   // Type of shader - GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
   GLenum shader_type_;
 
@@ -143,7 +159,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   std::string source_;
 
   // The source the last compile used.
-  std::string signature_source_;
+  std::string last_compiled_source_;
 
   // The translated shader source.
   std::string translated_source_;

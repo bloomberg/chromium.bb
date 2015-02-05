@@ -26,6 +26,7 @@ std::string GetTopVariableName(const std::string& fullname) {
 
 Shader::Shader(GLuint service_id, GLenum shader_type)
       : use_count_(0),
+        shader_state_(kShaderStateWaiting),
         service_id_(service_id),
         shader_type_(shader_type),
         valid_(false) {
@@ -34,13 +35,28 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
 Shader::~Shader() {
 }
 
+void Shader::RequestCompile() {
+  shader_state_ = kShaderStateCompileRequested;
+  last_compiled_source_ = source_;
+}
+
 void Shader::DoCompile(ShaderTranslatorInterface* translator,
                        TranslatedShaderSourceType type) {
+  // We require that RequestCompile() must be called before DoCompile(),
+  // so we can return early if the shader state is not what we expect.
+  if (shader_state_ != kShaderStateCompileRequested) {
+    return;
+  }
+
+  // Signify the shader has been compiled, whether or not it is valid
+  // is dependent on the |valid_| member variable.
+  shader_state_ = kShaderStateCompiled;
+
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
-  const char* source_for_driver = source_.c_str();
+  const char* source_for_driver = last_compiled_source_.c_str();
   if (translator) {
-    valid_ = translator->Translate(source_,
+    valid_ = translator->Translate(last_compiled_source_,
                                    &log_info_,
                                    &translated_source_,
                                    &attrib_map_,
@@ -50,7 +66,6 @@ void Shader::DoCompile(ShaderTranslatorInterface* translator,
     if (!valid_) {
       return;
     }
-    signature_source_ = source_;
     source_for_driver = translated_source_.c_str();
   }
 
@@ -89,7 +104,7 @@ void Shader::DoCompile(ShaderTranslatorInterface* translator,
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"
-        << "\n--original-shader--\n" << source_
+        << "\n--original-shader--\n" << last_compiled_source_
         << "\n--translated-shader--\n" << source_for_driver
         << "\n--info-log--\n" << log_info_;
   }

@@ -790,6 +790,7 @@ void TestHelper::SetShaderStates(
         .WillOnce(SetArgumentPointee<2>(GL_TRUE))
         .RetiresOnSaturation();
   }
+  shader->RequestCompile();
   shader->DoCompile(&translator, Shader::kGL);
 }
 

@@ -562,12 +562,12 @@ bool Program::Link(ShaderManager* manager,
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
-    DCHECK(!attached_shaders_[0]->signature_source().empty() &&
-           !attached_shaders_[1]->signature_source().empty());
+    DCHECK(!attached_shaders_[0]->last_compiled_source().empty() &&
+           !attached_shaders_[1]->last_compiled_source().empty());
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
-        attached_shaders_[0]->signature_source(),
+        attached_shaders_[0]->last_compiled_source(),
         vertex_translator,
-        attached_shaders_[1]->signature_source(),
+        attached_shaders_[1]->last_compiled_source(),
         fragment_translator,
         &bind_attrib_location_map_);
 

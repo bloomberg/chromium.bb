@@ -196,9 +196,9 @@ TEST_F(MemoryProgramCacheTest, CacheSave) {
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
   EXPECT_EQ(1, shader_cache_count());
@@ -221,9 +221,9 @@ TEST_F(MemoryProgramCacheTest, LoadProgram) {
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
   EXPECT_EQ(1, shader_cache_count());
@@ -232,9 +232,9 @@ TEST_F(MemoryProgramCacheTest, LoadProgram) {
 
   cache_->LoadProgram(shader_cache_shader());
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
 }
@@ -396,7 +396,7 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
-  const std::string vertex_orig_source = vertex_shader_->signature_source();
+  const std::string vertex_orig_source = vertex_shader_->last_compiled_source();
   vertex_shader_->set_source("different!");
   TestHelper::SetShaderStates(gl_.get(), vertex_shader_, true);
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
@@ -488,7 +488,7 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
   const GLuint kEvictingBinaryLength = kCacheSizeBytes - kBinaryLength + 1;
 
   // save old source and modify for new program
-  const std::string& old_source = fragment_shader_->signature_source();
+  const std::string& old_source = fragment_shader_->last_compiled_source();
   fragment_shader_->set_source("al sdfkjdk");
   TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true);
 
@@ -512,15 +512,15 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN, cache_->GetLinkedProgramStatus(
       old_source,
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
 }
@@ -543,9 +543,9 @@ TEST_F(MemoryProgramCacheTest, SaveCorrectProgram) {
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
 }
@@ -567,9 +567,9 @@ TEST_F(MemoryProgramCacheTest, LoadCorrectProgram) {
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->signature_source(),
+      vertex_shader_->last_compiled_source(),
       NULL,
-      fragment_shader_->signature_source(),
+      fragment_shader_->last_compiled_source(),
       NULL,
       NULL));
 
