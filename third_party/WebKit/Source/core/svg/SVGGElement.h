@@ -33,7 +33,7 @@ public:
 protected:
     explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
 private:
     virtual bool rendererIsNeeded(const RenderStyle&) override;

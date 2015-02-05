@@ -123,7 +123,7 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
         filterEffect->setHasHeight(true);
 }
 
-RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderStyle*)
+RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceFilterPrimitive(this);
 }

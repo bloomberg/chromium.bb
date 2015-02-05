@@ -234,7 +234,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 
-bool RenderSVGRoot::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderSVGRoot::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }

@@ -45,7 +45,7 @@ class RenderSVGModelObject : public RenderObject {
 public:
     explicit RenderSVGModelObject(SVGElement*);
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 

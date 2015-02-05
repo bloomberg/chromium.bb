@@ -90,7 +90,7 @@ bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
     return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
-RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLAppletElement::createRenderer(const RenderStyle& style)
 {
     if (!canEmbedJava() || hasAuthorShadowRoot())
         return RenderObject::createObject(this, style);

@@ -121,7 +121,7 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-RenderObject* ImageInputType::createRenderer(RenderStyle* style) const
+RenderObject* ImageInputType::createRenderer(const RenderStyle& style) const
 {
     if (m_useFallbackContent)
         return new RenderBlockFlow(&element());

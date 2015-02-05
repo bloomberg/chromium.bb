@@ -268,7 +268,7 @@ public:
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool canHaveGeneratedChildren() const;
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const { return true; }
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const { return true; }
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0);
     virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild = 0) { return addChild(newChild, beforeChild); }
     virtual void removeChild(RenderObject*);
@@ -321,7 +321,7 @@ public:
     void showRenderTreeAndMark(const RenderObject* markedObject1 = 0, const char* markedLabel1 = 0, const RenderObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
 #endif
 
-    static RenderObject* createObject(Element*, RenderStyle*);
+    static RenderObject* createObject(Element*, const RenderStyle&);
     static unsigned instanceCount() { return s_instanceCount; }
 
     // RenderObjects are allocated out of the rendering partition.

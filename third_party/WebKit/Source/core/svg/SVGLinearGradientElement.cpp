@@ -90,7 +90,7 @@ void SVGLinearGradientElement::svgAttributeChanged(const QualifiedName& attrName
         renderer->invalidateCacheAndMarkForLayout();
 }
 
-RenderObject* SVGLinearGradientElement::createRenderer(RenderStyle*)
+RenderObject* SVGLinearGradientElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceLinearGradient(this);
 }

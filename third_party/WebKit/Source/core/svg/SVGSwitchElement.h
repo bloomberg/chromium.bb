@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGSwitchElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
 };
 

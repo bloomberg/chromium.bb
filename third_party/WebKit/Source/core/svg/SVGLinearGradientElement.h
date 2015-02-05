@@ -51,7 +51,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
     virtual bool selfHasRelativeLengths() const override;
 

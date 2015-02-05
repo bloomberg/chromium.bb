@@ -76,7 +76,7 @@ public:
     virtual ~RenderSVGResourceFilter();
     virtual void destroy() override;
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilter"; }
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceFilter || RenderSVGResourceContainer::isOfType(type); }

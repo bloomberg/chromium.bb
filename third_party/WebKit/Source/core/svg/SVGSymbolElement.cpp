@@ -52,7 +52,7 @@ void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
         invalidateInstances();
 }
 
-RenderObject* SVGSymbolElement::createRenderer(RenderStyle*)
+RenderObject* SVGSymbolElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGHiddenContainer(this);
 }

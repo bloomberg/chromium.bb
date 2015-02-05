@@ -553,7 +553,7 @@ int RenderFrameSet::hitTestSplit(const GridAxis& axis, int position) const
     return noSplit;
 }
 
-bool RenderFrameSet::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderFrameSet::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isFrame() || child->isFrameSet();
 }

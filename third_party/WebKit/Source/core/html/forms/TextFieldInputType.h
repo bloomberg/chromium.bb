@@ -81,7 +81,7 @@ private:
     virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
     virtual void forwardEvent(Event*) override final;
     virtual bool shouldSubmitImplicitly(Event*) override final;
-    virtual RenderObject* createRenderer(RenderStyle*) const override;
+    virtual RenderObject* createRenderer(const RenderStyle&) const override;
     virtual String sanitizeValue(const String&) const override;
     virtual bool shouldRespectListAttribute() override;
     virtual void listAttributeTargetChanged() override;

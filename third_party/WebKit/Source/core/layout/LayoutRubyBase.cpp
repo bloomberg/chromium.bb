@@ -53,7 +53,7 @@ LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document)
     return layoutObject;
 }
 
-bool LayoutRubyBase::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyBase::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isInline();
 }

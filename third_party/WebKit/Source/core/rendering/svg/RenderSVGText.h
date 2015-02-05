@@ -37,7 +37,7 @@ public:
     explicit RenderSVGText(SVGTextElement*);
     virtual ~RenderSVGText();
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }

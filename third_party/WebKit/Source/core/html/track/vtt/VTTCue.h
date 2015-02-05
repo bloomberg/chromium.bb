@@ -65,7 +65,7 @@ public:
 private:
     VTTCueBox(Document&, VTTCue*);
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
     RawPtrWillBeMember<VTTCue> m_cue;
 };

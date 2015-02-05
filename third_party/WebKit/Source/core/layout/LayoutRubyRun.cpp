@@ -88,7 +88,7 @@ LayoutRubyBase* LayoutRubyRun::rubyBaseSafe()
     return base;
 }
 
-bool LayoutRubyRun::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyRun::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isRubyText() || child->isInline();
 }

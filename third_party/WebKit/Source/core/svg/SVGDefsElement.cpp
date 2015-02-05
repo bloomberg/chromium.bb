@@ -34,7 +34,7 @@ inline SVGDefsElement::SVGDefsElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGDefsElement)
 
-RenderObject* SVGDefsElement::createRenderer(RenderStyle*)
+RenderObject* SVGDefsElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGHiddenContainer(this);
 }

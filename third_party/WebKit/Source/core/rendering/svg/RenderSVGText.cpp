@@ -67,7 +67,7 @@ RenderSVGText::~RenderSVGText()
     ASSERT(m_layoutAttributes.isEmpty());
 }
 
-bool RenderSVGText::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderSVGText::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isSVGInline() || (child->isText() && SVGRenderSupport::isRenderableTextNode(child));
 }

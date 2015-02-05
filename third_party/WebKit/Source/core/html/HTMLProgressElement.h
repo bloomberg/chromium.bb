@@ -56,7 +56,7 @@ private:
     virtual bool shouldAppearIndeterminate() const override;
     virtual bool supportLabels() const override { return true; }
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
     RenderProgress* renderProgress() const;
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;

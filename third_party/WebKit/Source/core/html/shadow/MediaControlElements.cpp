@@ -617,7 +617,7 @@ PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> MediaControlTextTr
     return element.release();
 }
 
-RenderObject* MediaControlTextTrackContainerElement::createRenderer(RenderStyle*)
+RenderObject* MediaControlTextTrackContainerElement::createRenderer(const RenderStyle&)
 {
     return new RenderTextTrackContainerElement(this);
 }

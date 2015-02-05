@@ -128,7 +128,7 @@ RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject*
 
     RenderFullScreen* fullscreenRenderer = RenderFullScreen::createAnonymous(document);
     fullscreenRenderer->updateStyle();
-    if (parent && !parent->isChildAllowed(fullscreenRenderer, fullscreenRenderer->style())) {
+    if (parent && !parent->isChildAllowed(fullscreenRenderer, fullscreenRenderer->styleRef())) {
         fullscreenRenderer->destroy();
         return 0;
     }

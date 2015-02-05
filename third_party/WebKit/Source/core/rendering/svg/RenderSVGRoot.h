@@ -85,7 +85,7 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
     virtual void removeChild(RenderObject*) override;
 

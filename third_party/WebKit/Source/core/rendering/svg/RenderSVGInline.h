@@ -33,7 +33,7 @@ public:
     virtual LayerType layerTypeRequired() const override final { return NoLayer; }
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGInline || RenderInline::isOfType(type); }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
     // Chapter 10.4 of the SVG Specification say that we should use the
     // object bounding box of the parent text element.

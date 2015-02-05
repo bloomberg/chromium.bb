@@ -44,7 +44,7 @@ LayoutRubyText::~LayoutRubyText()
 {
 }
 
-bool LayoutRubyText::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyText::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isInline();
 }

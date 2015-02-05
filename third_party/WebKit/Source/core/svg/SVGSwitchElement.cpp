@@ -36,7 +36,7 @@ inline SVGSwitchElement::SVGSwitchElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGSwitchElement)
 
-RenderObject* SVGSwitchElement::createRenderer(RenderStyle*)
+RenderObject* SVGSwitchElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGTransformableContainer(this);
 }

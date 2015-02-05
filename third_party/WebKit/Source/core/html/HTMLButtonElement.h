@@ -46,7 +46,7 @@ private:
 
     virtual const AtomicString& formControlType() const override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
     // HTMLFormControlElement always creates one, but buttons don't need it.
     virtual bool alwaysCreateUserAgentShadowRoot() const override { return false; }

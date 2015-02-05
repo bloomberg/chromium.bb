@@ -150,20 +150,20 @@ void RenderObject::operator delete(void* ptr)
     partitionFree(ptr);
 }
 
-RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
+RenderObject* RenderObject::createObject(Element* element, const RenderStyle& style)
 {
     ASSERT(isAllowedToModifyRenderTreeStructure(element->document()));
 
     // Minimal support for content properties replacing an entire element.
     // Works only if we have exactly one piece of content and it's a URL.
     // Otherwise acts as if we didn't support this feature.
-    const ContentData* contentData = style->contentData();
+    const ContentData* contentData = style.contentData();
     if (contentData && !contentData->next() && contentData->isImage() && !element->isPseudoElement()) {
         RenderImage* image = new RenderImage(element);
         // RenderImageResourceStyleImage requires a style being present on the image but we don't want to
         // trigger a style change now as the node is not fully attached. Moving this code to style change
         // doesn't make sense as it should be run once at renderer creation.
-        image->setStyleInternal(style);
+        image->setStyleInternal(const_cast<RenderStyle*>(&style));
         if (const StyleImage* styleImage = toImageContentData(contentData)->image()) {
             image->setImageResource(RenderImageResourceStyleImage::create(const_cast<StyleImage*>(styleImage)));
             image->setIsGeneratedContent();
@@ -173,7 +173,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return image;
     }
 
-    switch (style->display()) {
+    switch (style.display()) {
     case NONE:
         return 0;
     case INLINE:

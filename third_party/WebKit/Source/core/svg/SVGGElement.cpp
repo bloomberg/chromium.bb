@@ -34,13 +34,13 @@ inline SVGGElement::SVGGElement(Document& document, ConstructionType constructio
 
 DEFINE_NODE_FACTORY(SVGGElement)
 
-RenderObject* SVGGElement::createRenderer(RenderStyle* style)
+RenderObject* SVGGElement::createRenderer(const RenderStyle& style)
 {
     // SVG 1.1 testsuite explicitely uses constructs like <g display="none"><linearGradient>
     // We still have to create renderers for the <g> & <linearGradient> element, though the
     // subtree may be hidden - we only want the resource renderers to exist so they can be
     // referenced from somewhere else.
-    if (style->display() == NONE)
+    if (style.display() == NONE)
         return new RenderSVGHiddenContainer(this);
 
     return new RenderSVGTransformableContainer(this);

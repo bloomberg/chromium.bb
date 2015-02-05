@@ -117,13 +117,13 @@ void RenderTreeBuilderForElement::createRenderer()
 {
     RenderStyle& style = this->style();
 
-    RenderObject* newRenderer = m_node->createRenderer(&style);
+    RenderObject* newRenderer = m_node->createRenderer(style);
     if (!newRenderer)
         return;
 
     RenderObject* parentRenderer = this->parentRenderer();
 
-    if (!parentRenderer->isChildAllowed(newRenderer, &style)) {
+    if (!parentRenderer->isChildAllowed(newRenderer, style)) {
         newRenderer->destroy();
         return;
     }
@@ -154,7 +154,7 @@ void RenderTreeBuilderForText::createRenderer()
     ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
 
     RenderText* newRenderer = m_node->createTextRenderer(style);
-    if (!parentRenderer->isChildAllowed(newRenderer, style)) {
+    if (!parentRenderer->isChildAllowed(newRenderer, *style)) {
         newRenderer->destroy();
         return;
     }

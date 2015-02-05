@@ -38,7 +38,7 @@ public:
 
 protected:
     explicit TextControlInnerContainer(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 };
 
 class EditingViewPortElement final : public HTMLDivElement {
@@ -61,7 +61,7 @@ public:
 
 private:
     explicit TextControlInnerEditorElement(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
     virtual bool supportsFocus() const override { return false; }
 };

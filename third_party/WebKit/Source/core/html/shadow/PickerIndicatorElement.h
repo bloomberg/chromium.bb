@@ -73,7 +73,7 @@ public:
 
 private:
     PickerIndicatorElement(Document&, PickerIndicatorOwner&);
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
     virtual void defaultEventHandler(Event*) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
     virtual bool isPickerIndicatorElement() const override;

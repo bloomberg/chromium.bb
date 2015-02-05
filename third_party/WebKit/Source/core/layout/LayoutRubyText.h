@@ -44,7 +44,7 @@ public:
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyText || RenderBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
 private:
     virtual bool avoidsFloats() const override;

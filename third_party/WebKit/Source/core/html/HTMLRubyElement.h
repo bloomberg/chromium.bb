@@ -18,7 +18,7 @@ public:
 private:
     explicit HTMLRubyElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 };
 
 } // namespace

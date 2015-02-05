@@ -57,7 +57,7 @@ void RenderSVGResourceFilter::destroy()
     RenderSVGResourceContainer::destroy();
 }
 
-bool RenderSVGResourceFilter::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderSVGResourceFilter::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isSVGResourceFilterPrimitive();
 }

@@ -55,9 +55,9 @@ PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& docu
     return meter.release();
 }
 
-RenderObject* HTMLMeterElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLMeterElement::createRenderer(const RenderStyle& style)
 {
-    if (hasAuthorShadowRoot() || !LayoutTheme::theme().supportsMeter(style->appearance()))
+    if (hasAuthorShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
         return RenderObject::createObject(this, style);
 
     return new RenderMeter(this);

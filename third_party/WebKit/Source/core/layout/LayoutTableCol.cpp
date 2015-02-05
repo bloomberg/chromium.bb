@@ -96,10 +96,10 @@ void LayoutTableCol::willBeRemovedFromTree()
     table()->removeColumn(this);
 }
 
-bool LayoutTableCol::isChildAllowed(RenderObject* child, RenderStyle* style) const
+bool LayoutTableCol::isChildAllowed(RenderObject* child, const RenderStyle& style) const
 {
     // We cannot use isTableColumn here as style() may return 0.
-    return child->isLayoutTableCol() && style->display() == TABLE_COLUMN;
+    return child->isLayoutTableCol() && style.display() == TABLE_COLUMN;
 }
 
 bool LayoutTableCol::canHaveChildren() const

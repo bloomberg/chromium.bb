@@ -19,9 +19,9 @@ inline HTMLRTElement::HTMLRTElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLRTElement)
 
-RenderObject* HTMLRTElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLRTElement::createRenderer(const RenderStyle& style)
 {
-    if (style->display() == BLOCK)
+    if (style.display() == BLOCK)
         return new LayoutRubyText(this);
     return RenderObject::createObject(this, style);
 }

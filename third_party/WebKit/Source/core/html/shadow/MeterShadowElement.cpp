@@ -79,7 +79,7 @@ bool MeterInnerElement::rendererIsNeeded(const RenderStyle& style)
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
-RenderObject* MeterInnerElement::createRenderer(RenderStyle*)
+RenderObject* MeterInnerElement::createRenderer(const RenderStyle&)
 {
     return new RenderMeter(this);
 }

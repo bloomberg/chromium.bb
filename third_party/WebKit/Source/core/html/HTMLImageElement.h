@@ -121,7 +121,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual RenderObject* createRenderer(const RenderStyle&) override;
 
     virtual bool canStartSelection() const override { return false; }
 

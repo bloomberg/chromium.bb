@@ -412,7 +412,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     updateRelativeLengthsInformation();
 }
 
-RenderObject* SVGUseElement::createRenderer(RenderStyle*)
+RenderObject* SVGUseElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGTransformableContainer(this);
 }

@@ -137,7 +137,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLElement::parseAttribute(name, value);
 }
 
-RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLCanvasElement::createRenderer(const RenderStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))

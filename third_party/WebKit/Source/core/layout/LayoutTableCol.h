@@ -90,7 +90,7 @@ private:
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
     virtual bool canHaveChildren() const override;
     virtual LayerType layerTypeRequired() const override { return NoLayer; }
 

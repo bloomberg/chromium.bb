@@ -19,11 +19,11 @@ inline HTMLRubyElement::HTMLRubyElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLRubyElement)
 
-RenderObject* HTMLRubyElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLRubyElement::createRenderer(const RenderStyle& style)
 {
-    if (style->display() == INLINE)
+    if (style.display() == INLINE)
         return new LayoutRubyAsInline(this);
-    if (style->display() == BLOCK)
+    if (style.display() == BLOCK)
         return new LayoutRubyAsBlock(this);
     return RenderObject::createObject(this, style);
 }

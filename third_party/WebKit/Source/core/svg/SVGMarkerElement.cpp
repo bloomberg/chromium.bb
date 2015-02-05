@@ -149,7 +149,7 @@ void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> 
     svgAttributeChanged(SVGNames::orientAttr);
 }
 
-RenderObject* SVGMarkerElement::createRenderer(RenderStyle*)
+RenderObject* SVGMarkerElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceMarker(this);
 }

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) const
+bool RenderSVGInline::isChildAllowed(RenderObject* child, const RenderStyle& style) const
 {
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);

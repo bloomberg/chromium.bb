@@ -127,7 +127,7 @@ void PseudoElement::attach(const AttachContext& context)
 
     for (const ContentData* content = style->contentData(); content; content = content->next()) {
         RenderObject* child = content->createRenderer(document(), style);
-        if (renderer->isChildAllowed(child, style)) {
+        if (renderer->isChildAllowed(child, *style)) {
             renderer->addChild(child);
             if (child->isQuote())
                 toRenderQuote(child)->attachQuote();

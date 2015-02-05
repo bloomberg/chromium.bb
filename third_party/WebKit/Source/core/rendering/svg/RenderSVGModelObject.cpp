@@ -46,7 +46,7 @@ RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
 {
 }
 
-bool RenderSVGModelObject::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderSVGModelObject::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }

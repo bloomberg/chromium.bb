@@ -267,7 +267,7 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
 }
 
-RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)
+RenderObject* SVGGraphicsElement::createRenderer(const RenderStyle&)
 {
     // By default, any subclass is expected to do path-based drawing
     return new RenderSVGPath(this);

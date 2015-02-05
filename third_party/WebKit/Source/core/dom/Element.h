@@ -310,7 +310,7 @@ public:
 
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(const RenderStyle&);
     virtual bool rendererIsNeeded(const RenderStyle&);
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
     void pseudoStateChanged(CSSSelector::PseudoType);

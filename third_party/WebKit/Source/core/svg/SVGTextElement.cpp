@@ -32,7 +32,7 @@ inline SVGTextElement::SVGTextElement(Document& doc)
 
 DEFINE_NODE_FACTORY(SVGTextElement)
 
-RenderObject* SVGTextElement::createRenderer(RenderStyle*)
+RenderObject* SVGTextElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGText(this);
 }

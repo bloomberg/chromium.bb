@@ -332,9 +332,9 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
     return ImageCandidate();
 }
 
-RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
+RenderObject* HTMLImageElement::createRenderer(const RenderStyle& style)
 {
-    if (style->hasContent())
+    if (style.hasContent())
         return RenderObject::createObject(this, style);
 
     if (m_useFallbackContent)

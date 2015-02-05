@@ -71,7 +71,7 @@ void RenderMedia::layout()
     clearNeedsLayout();
 }
 
-bool RenderMedia::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool RenderMedia::isChildAllowed(RenderObject* child, const RenderStyle&) const
 {
     // The only allowed child is the media controls. The user agent stylesheet
     // (mediaControls.css) has ::-webkit-media-controls { display: flex; }. If

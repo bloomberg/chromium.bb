@@ -68,7 +68,7 @@ protected:
 private:
     virtual bool isFilterEffect() const override final { return true; }
 
-    virtual RenderObject* createRenderer(RenderStyle*) override final;
+    virtual RenderObject* createRenderer(const RenderStyle&) override final;
     virtual bool rendererIsNeeded(const RenderStyle&) override final;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;

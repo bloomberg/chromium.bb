@@ -63,7 +63,7 @@ inline ProgressInnerElement::ProgressInnerElement(Document& document)
 
 DEFINE_NODE_FACTORY(ProgressInnerElement)
 
-RenderObject* ProgressInnerElement::createRenderer(RenderStyle*)
+RenderObject* ProgressInnerElement::createRenderer(const RenderStyle&)
 {
     return new RenderProgress(this);
 }

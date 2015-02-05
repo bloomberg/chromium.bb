@@ -72,7 +72,7 @@ void SVGClipPathElement::childrenChanged(const ChildrenChange& change)
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-RenderObject* SVGClipPathElement::createRenderer(RenderStyle*)
+RenderObject* SVGClipPathElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceClipper(this);
 }

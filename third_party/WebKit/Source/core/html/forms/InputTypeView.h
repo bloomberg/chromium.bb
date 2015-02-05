@@ -98,7 +98,7 @@ public:
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;
     virtual void blur();
-    virtual RenderObject* createRenderer(RenderStyle*) const;
+    virtual RenderObject* createRenderer(const RenderStyle&) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void startResourceLoading();
     virtual void closePopupView();

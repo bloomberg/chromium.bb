@@ -78,7 +78,7 @@ void RenderMenuList::destroy()
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
-bool RenderMenuList::isChildAllowed(RenderObject* object, RenderStyle*) const
+bool RenderMenuList::isChildAllowed(RenderObject* object, const RenderStyle&) const
 {
     return object->isAnonymous() && !object->isRenderFullScreen();
 }

@@ -122,7 +122,7 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 }
 
-RenderObject* SVGForeignObjectElement::createRenderer(RenderStyle*)
+RenderObject* SVGForeignObjectElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGForeignObject(this);
 }

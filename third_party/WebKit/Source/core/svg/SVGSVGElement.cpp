@@ -517,7 +517,7 @@ bool SVGSVGElement::rendererIsNeeded(const RenderStyle& style)
     return Element::rendererIsNeeded(style);
 }
 
-RenderObject* SVGSVGElement::createRenderer(RenderStyle*)
+RenderObject* SVGSVGElement::createRenderer(const RenderStyle&)
 {
     if (isOutermostSVGSVGElement())
         return new RenderSVGRoot(this);

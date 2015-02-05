@@ -112,7 +112,7 @@ bool HTMLIFrameElement::rendererIsNeeded(const RenderStyle& style)
     return isURLAllowed() && HTMLElement::rendererIsNeeded(style);
 }
 
-RenderObject* HTMLIFrameElement::createRenderer(RenderStyle*)
+RenderObject* HTMLIFrameElement::createRenderer(const RenderStyle&)
 {
     return new RenderIFrame(this);
 }

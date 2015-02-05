@@ -591,7 +591,7 @@ bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
     return shouldShowControls() && HTMLElement::rendererIsNeeded(style);
 }
 
-RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
+RenderObject* HTMLMediaElement::createRenderer(const RenderStyle&)
 {
     return new RenderMedia(this);
 }

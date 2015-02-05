@@ -38,7 +38,7 @@ public:
     {
     }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override { return false; }
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override { return false; }
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 

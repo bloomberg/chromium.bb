@@ -32,7 +32,7 @@ public:
     Path layoutPath() const;
     float startOffset() const;
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGTextPath || RenderSVGInline::isOfType(type); }
 

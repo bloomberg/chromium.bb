@@ -385,7 +385,7 @@ bool HTMLSelectElement::canSelectAll() const
     return !usesMenuList();
 }
 
-RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
+RenderObject* HTMLSelectElement::createRenderer(const RenderStyle&)
 {
     if (usesMenuList())
         return new RenderMenuList(this);
