@@ -478,6 +478,7 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_EQ(view_size.ToString(), view_->GetPreferredSize().ToString());
 
     // Check tiles hide and show on deletion and addition.
+    EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
     model->results()->Add(new TestStartPageSearchResult());
     start_page_view->UpdateForTesting();
     EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));

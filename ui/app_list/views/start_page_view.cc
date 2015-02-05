@@ -68,7 +68,8 @@ class SearchBoxSpacerView : public views::View {
 class StartPageView::StartPageTilesContainer
     : public SearchResultContainerView {
  public:
-  explicit StartPageTilesContainer(AllAppsTileItemView* all_apps_button);
+  StartPageTilesContainer(ContentsView* contents_view,
+                          AllAppsTileItemView* all_apps_button);
   ~StartPageTilesContainer() override;
 
   TileItemView* GetTileItemView(size_t index);
@@ -85,6 +86,8 @@ class StartPageView::StartPageTilesContainer
   void OnContainerSelected(bool from_bottom) override;
 
  private:
+  ContentsView* contents_view_;
+
   std::vector<SearchResultTileItemView*> search_result_tile_views_;
   AllAppsTileItemView* all_apps_button_;
 
@@ -92,8 +95,9 @@ class StartPageView::StartPageTilesContainer
 };
 
 StartPageView::StartPageTilesContainer::StartPageTilesContainer(
+    ContentsView* contents_view,
     AllAppsTileItemView* all_apps_button)
-    : all_apps_button_(all_apps_button) {
+    : contents_view_(contents_view), all_apps_button_(all_apps_button) {
   views::BoxLayout* tiles_layout_manager =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing);
   tiles_layout_manager->set_main_axis_alignment(
@@ -129,16 +133,26 @@ TileItemView* StartPageView::StartPageTilesContainer::GetTileItemView(
 }
 
 int StartPageView::StartPageTilesContainer::Update() {
+  // Ignore updates and disable buttons when transitioning to a different
+  // state.
+  if (contents_view_->GetActiveState() != AppListModel::STATE_START) {
+    for (auto* view : search_result_tile_views_)
+      view->SetEnabled(false);
+
+    return num_results();
+  }
+
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_RECOMMENDATION, kNumStartPageTiles);
 
   // Update the tile item results.
   for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {
-    SearchResult* item = nullptr;
+    SearchResult* item = NULL;
     if (i < display_results.size())
       item = display_results[i];
     search_result_tile_views_[i]->SetSearchResult(item);
+    search_result_tile_views_[i]->SetEnabled(true);
   }
 
   Layout();
@@ -170,9 +184,11 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
       search_box_spacer_view_(new SearchBoxSpacerView(
           app_list_main_view->search_box_view()->GetPreferredSize())),
       instant_container_(new views::View),
-      tiles_container_(new StartPageTilesContainer(new AllAppsTileItemView(
-          app_list_main_view_->contents_view(),
-          view_delegate_->GetModel()->top_level_item_list()))) {
+      tiles_container_(new StartPageTilesContainer(
+          app_list_main_view->contents_view(),
+          new AllAppsTileItemView(
+              app_list_main_view_->contents_view(),
+              view_delegate_->GetModel()->top_level_item_list()))) {
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
   AddChildView(instant_container_);
