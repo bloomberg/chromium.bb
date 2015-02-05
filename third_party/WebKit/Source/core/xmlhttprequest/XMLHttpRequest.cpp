@@ -160,7 +160,7 @@ public:
         enqueueToStreamFromHandle();
     }
 
-    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >* stream)
+    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>* stream)
     {
         m_stream = stream;
         stream->didSourceStart();
@@ -1593,7 +1593,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         ASSERT(!m_responseStream);
         ASSERT(!m_responseStreamSource);
         m_responseStreamSource = new ReadableStreamSource(this, handle);
-        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(executionContext(), m_responseStreamSource);
+        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(executionContext(), m_responseStreamSource);
         m_responseStreamSource->startStream(m_responseStream);
 
         // This protection seems needed to keep |this| alive after changeState
@@ -1693,7 +1693,7 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
         if (!m_responseStream) {
             ASSERT(!m_responseStreamSource);
             m_responseStreamSource = new ReadableStreamSource(this, nullptr);
-            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(executionContext(), m_responseStreamSource);
+            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(executionContext(), m_responseStreamSource);
             m_responseStreamSource->startStream(m_responseStream);
         }
         m_responseStreamSource->didReceiveData(data, len);
@@ -1773,7 +1773,7 @@ bool XMLHttpRequest::hasPendingActivity() const
     // DocumentParserClient callbacks may be called.
     if (m_loader || m_responseDocumentParser)
         return true;
-    if (m_responseStream && (m_responseStream->state() == ReadableStream::Readable || m_responseStream->state() == ReadableStream::Waiting))
+    if (m_responseStream && m_responseStream->hasPendingActivity())
         return true;
     return false;
 }

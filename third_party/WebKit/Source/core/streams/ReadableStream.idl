@@ -20,6 +20,7 @@ enum ReadableStreamState {
     [ImplementedAs=stateString] readonly attribute ReadableStreamState state;
 
     [CallWith=ScriptState] Promise cancel(any reason);
+    [RaisesException] ExclusiveStreamReader getReader();
 
     [CallWith=ScriptState] readonly attribute Promise closed;
 };

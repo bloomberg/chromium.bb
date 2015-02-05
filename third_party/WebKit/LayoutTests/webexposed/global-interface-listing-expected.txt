@@ -648,6 +648,11 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface ExclusiveStreamReader
+    method cancel
+    method constructor
+    method read
+    method releaseLock
 interface FederatedCredential
     method constructor
 interface File
@@ -1524,6 +1529,7 @@ interface RangeError
 interface ReadableStream
     method cancel
     method constructor
+    method getReader
     method read
 interface ReferenceError
     attribute name

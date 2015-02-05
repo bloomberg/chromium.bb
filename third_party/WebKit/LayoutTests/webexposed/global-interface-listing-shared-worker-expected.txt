@@ -167,6 +167,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute OPEN
 [Worker]     method close
 [Worker]     method constructor
+[Worker] interface ExclusiveStreamReader
+[Worker]     method cancel
+[Worker]     method constructor
+[Worker]     method read
+[Worker]     method releaseLock
 [Worker] interface File
 [Worker]     method constructor
 [Worker] interface FileError
@@ -412,6 +417,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface ReadableStream
 [Worker]     method cancel
 [Worker]     method constructor
+[Worker]     method getReader
 [Worker]     method read
 [Worker] interface ReferenceError
 [Worker]     attribute name
