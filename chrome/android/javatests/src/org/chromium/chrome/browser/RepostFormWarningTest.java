@@ -38,8 +38,12 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
     }
 
     /** Verifies that the form resubmission warning is not displayed upon first POST navigation. */
+    /*
     @MediumTest
     @Feature({"Navigation"})
+    crbug.com/454834
+    */
+    @DisabledTest
     public void testFormFirstNavigation() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
