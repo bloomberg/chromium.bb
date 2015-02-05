@@ -21,6 +21,8 @@ crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
+crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure ]
+
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
