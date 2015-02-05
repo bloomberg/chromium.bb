@@ -74,16 +74,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
       callback_factory_(this) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
-#if defined(OS_CHROMEOS)
-  bool use_thread = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUIDisableThreadedCompositing);
-#else
-  bool use_thread = false;
-#endif
-  if (use_thread) {
-    compositor_thread_.reset(new base::Thread("Browser Compositor"));
-    compositor_thread_->Start();
-  }
+
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
 }
@@ -249,7 +240,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (!context_provider.get()) {
     if (compositor_thread_.get()) {
       LOG(FATAL) << "Failed to create UI context, but can't use software"
-                 " compositing with browser threaded compositing. Aborting.";
+                    " compositing with browser threaded compositing. Aborting.";
     }
 
     scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
