@@ -220,11 +220,18 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
 
 
 def main():
-  if len(sys.argv) != 4:
-    logging.error('Usage: cyglog_to_orderfile.py <merged_cyglog> '
-                  '<library> <output_filename>')
+  parser = optparse.OptionParser(usage=
+      'usage: %prog [options] <merged_cyglog> <library> <output_filename>')
+  parser.add_option('--target-arch', action='store', dest='arch',
+                    default='arm',
+                    choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
+                    help='The target architecture for libchrome.so')
+  options, argv = parser.parse_args(sys.argv)
+  if len(argv) != 4:
+    parser.print_help()
     return 1
-  (log_filename, lib_filename, output_filename) = sys.argv[1:]
+  (log_filename, lib_filename, output_filename) = argv[1:]
+  symbol_extractor.SetArchitecture(options.arch)
 
   obj_dir = os.path.abspath(os.path.join(
       os.path.dirname(lib_filename), '../obj'))

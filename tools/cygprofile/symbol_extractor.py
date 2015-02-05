@@ -18,13 +18,12 @@ sys.path.insert(
 import symbol
 
 
-# TODO(lizeb): Change symbol.ARCH to the proper value when "arm" is no longer
-# the only possible value.
-_OBJDUMP_BINARY = symbol.ToolPath('objdump')
-
-
 SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size',
                                                    'section'))
+
+def SetArchitecture(arch):
+  """Set the architecture for binaries to be symbolized."""
+  symbol.ARCH = arch
 
 
 def _FromObjdumpLine(line):
@@ -81,7 +80,7 @@ def SymbolInfosFromBinary(binary_filename):
   Returns:
     A list of SymbolInfo from the binary.
   """
-  command = (_OBJDUMP_BINARY, '-t', '-w', binary_filename)
+  command = (symbol.ToolPath('objdump'), '-t', '-w', binary_filename)
   p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE)
   try:
     result = _SymbolInfosFromStream(p.stdout)

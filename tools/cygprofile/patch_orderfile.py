@@ -26,6 +26,7 @@ The general pipeline is:
 
 import collections
 import logging
+import optparse
 import sys
 
 import symbol_extractor
@@ -204,11 +205,19 @@ def _PrintSymbolsWithPrefixes(symbol_names, output_file):
 
 
 def main(argv):
+  parser = optparse.OptionParser(usage=
+      'usage: %prog [options] <unpatched_orderfile> <library>')
+  parser.add_option('--target-arch', action='store', dest='arch',
+                    default='arm',
+                    choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
+                    help='The target architecture for the library.')
+  options, argv = parser.parse_args(argv)
   if len(argv) != 3:
-    print 'Usage: %s <unpatched_orderfile> <libchrome.so>' % argv[0]
+    parser.print_help()
     return 1
   orderfile_filename = argv[1]
   binary_filename = argv[2]
+  symbol_extractor.SetArchitecture(options.arch)
   (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
       binary_filename)
   profiled_symbols = GetSymbolsFromOrderfile(orderfile_filename)
