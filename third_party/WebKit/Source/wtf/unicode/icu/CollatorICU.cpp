@@ -37,14 +37,10 @@
 #include <string.h>
 #include <unicode/ucol.h>
 
-#if OS(MACOSX)
-#include "wtf/RetainPtr.h"
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 namespace WTF {
 
 static UCollator* cachedCollator;
+static char cachedEquivalentLocale[Collator::ulocFullnameCapacity];
 static Mutex& cachedCollatorMutex()
 {
     AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
@@ -56,22 +52,12 @@ Collator::Collator(const char* locale)
     , m_locale(locale ? strdup(locale) : 0)
     , m_lowerFirst(false)
 {
+    setEquivalentLocale(m_locale, m_equivalentLocale);
 }
 
 PassOwnPtr<Collator> Collator::userDefault()
 {
-#if OS(MACOSX) && USE(CF)
-    // Mac OS X doesn't set UNIX locale to match user-selected one, so ICU default doesn't work.
-    RetainPtr<CFLocaleRef> currentLocale(AdoptCF, CFLocaleCopyCurrent());
-    CFStringRef collationOrder = (CFStringRef)CFLocaleGetValue(currentLocale.get(), kCFLocaleCollatorIdentifier);
-    char buf[256];
-    if (!collationOrder)
-        return adoptPtr(new Collator(""));
-    CFStringGetCString(collationOrder, buf, sizeof(buf), kCFStringEncodingASCII);
-    return adoptPtr(new Collator(buf));
-#else
     return adoptPtr(new Collator(0));
-#endif
 }
 
 Collator::~Collator()
@@ -101,18 +87,14 @@ void Collator::createCollator() const
     {
         Locker<Mutex> lock(cachedCollatorMutex());
         if (cachedCollator) {
-            const char* cachedCollatorLocale = ucol_getLocaleByType(cachedCollator, ULOC_REQUESTED_LOCALE, &status);
-            ASSERT(U_SUCCESS(status));
-            ASSERT(cachedCollatorLocale);
-
             UColAttributeValue cachedCollatorLowerFirst = ucol_getAttribute(cachedCollator, UCOL_CASE_FIRST, &status);
             ASSERT(U_SUCCESS(status));
 
-            // FIXME: default locale is never matched, because ucol_getLocaleByType returns the actual one used, not 0.
-            if (m_locale && 0 == strcmp(cachedCollatorLocale, m_locale)
+            if (0 == strcmp(cachedEquivalentLocale, m_equivalentLocale)
                 && ((UCOL_LOWER_FIRST == cachedCollatorLowerFirst && m_lowerFirst) || (UCOL_UPPER_FIRST == cachedCollatorLowerFirst && !m_lowerFirst))) {
                 m_collator = cachedCollator;
                 cachedCollator = 0;
+                cachedEquivalentLocale[0] = 0;
                 return;
             }
         }
@@ -139,8 +121,19 @@ void Collator::releaseCollator()
         if (cachedCollator)
             ucol_close(cachedCollator);
         cachedCollator = m_collator;
+        strncpy(cachedEquivalentLocale, m_equivalentLocale, ulocFullnameCapacity);
         m_collator  = 0;
     }
+    m_collator = 0;
+}
+
+void Collator::setEquivalentLocale(const char* locale, char* equivalentLocale)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    UBool isAvailable;
+    ucol_getFunctionalEquivalent(equivalentLocale, ulocFullnameCapacity, "collation", locale, &isAvailable, &status);
+    if (U_FAILURE(status))
+        strcpy(equivalentLocale, "root");
 }
 
 } // namespace WTF
