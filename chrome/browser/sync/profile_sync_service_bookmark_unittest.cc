@@ -100,6 +100,8 @@ class FakeServerChange {
     node.SetTitle(title);
 
     sync_pb::BookmarkSpecifics specifics(node.GetBookmarkSpecifics());
+    const base::Time creation_time(base::Time::Now());
+    specifics.set_creation_time_us(creation_time.ToInternalValue());
     if (!is_folder)
       specifics.set_url(url);
     if (meta_info_map)
@@ -258,14 +260,19 @@ class FakeServerChange {
   void SetNodeMetaInfo(const BookmarkNode::MetaInfoMap& meta_info_map,
                        sync_pb::BookmarkSpecifics* specifics) {
     specifics->clear_meta_info();
-    for (BookmarkNode::MetaInfoMap::const_iterator it =
-        meta_info_map.begin(); it != meta_info_map.end(); ++it) {
+    // Deliberatly set MetaInfoMap entries in opposite order (compared
+    // to the implementation in BookmarkChangeProcessor) to ensure that
+    // (a) the implementation isn't sensitive to the order and
+    // (b) the original meta info isn't blindly overwritten by
+    //     BookmarkChangeProcessor unless there is a real change.
+    BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.end();
+    while (it != meta_info_map.begin()) {
+      --it;
       sync_pb::MetaInfo* meta_info = specifics->add_meta_info();
       meta_info->set_key(it->first);
       meta_info->set_value(it->second);
     }
   }
-
 
   // The transaction on which everything happens.
   syncer::WriteTransaction *trans_;
@@ -2021,6 +2028,58 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateMetaInfoFromModel) {
   model_->DeleteNodeMetaInfo(node, "other");
   model_->SetNodeMetaInfo(node, "newkey", "newkeyvalue");
   ExpectModelMatch();
+}
+
+// Tests that node's specifics doesn't get unnecessarily overwritten (causing
+// a subsequent commit) when BookmarkChangeProcessor handles a notification
+// (such as BookmarkMetaInfoChanged) without an actual data change.
+TEST_F(ProfileSyncServiceBookmarkTestWithData, MetaInfoPreservedOnNonChange) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  WriteTestDataToBookmarkModel();
+  StartSync();
+
+  std::string orig_specifics;
+  int64 sync_id;
+  const BookmarkNode* bookmark;
+
+  // Create bookmark folder node containing meta info.
+  {
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    FakeServerChange adds(&trans);
+
+    int64 folder_id = adds.AddFolder("folder title", bookmark_bar_id(), 0);
+
+    BookmarkNode::MetaInfoMap node_meta_info;
+    node_meta_info["one"] = "1";
+    node_meta_info["two"] = "2";
+    node_meta_info["three"] = "3";
+
+    sync_id = adds.AddURLWithMetaInfo("node title", "http://www.foo.com/",
+                                      &node_meta_info, folder_id, 0);
+
+    // Verify that the node propagates to the bookmark model
+    adds.ApplyPendingChanges(change_processor_.get());
+
+    bookmark = model_->bookmark_bar_node()->GetChild(0)->GetChild(0);
+    EXPECT_EQ(node_meta_info, *bookmark->GetMetaInfoMap());
+
+    syncer::ReadNode sync_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, sync_node.InitByIdLookup(sync_id));
+    orig_specifics = sync_node.GetBookmarkSpecifics().SerializeAsString();
+  }
+
+  // Force change processor to update the sync node.
+  change_processor_->BookmarkMetaInfoChanged(model_, bookmark);
+
+  // Read bookmark specifics again and verify that there is no change.
+  {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    syncer::ReadNode sync_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, sync_node.InitByIdLookup(sync_id));
+    std::string new_specifics =
+        sync_node.GetBookmarkSpecifics().SerializeAsString();
+    ASSERT_EQ(orig_specifics, new_specifics);
+  }
 }
 
 void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
