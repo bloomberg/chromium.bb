@@ -693,16 +693,13 @@
                 'proximity_auth/wire_message_unittest.cc',
               ],
               'dependencies': [
-                # Dependencies for copresence.
-                'components.gyp:copresence',
-                'components.gyp:copresence_test_support',
-
-                # Dependencies of proxmity_auth
-                'components.gyp:proximity_auth',
-                'components.gyp:cryptauth',
                 '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
                 '../google_apis/google_apis.gyp:google_apis_test_support',
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+                'components.gyp:copresence',
+                'components.gyp:copresence_test_support',
+                'components.gyp:cryptauth',
+                'components.gyp:proximity_auth',
               ],
             }],
             ['chromeos==1', {
@@ -719,12 +716,10 @@
                 'storage_monitor/storage_monitor_linux_unittest.cc',
               ],
               'dependencies': [
-                # Dependencies of wifi_sync
-                'components.gyp:wifi_sync',
-
+                '../chromeos/chromeos.gyp:chromeos_test_support',
                 'components.gyp:pairing',
                 'components.gyp:user_manager_test_support',
-                '../chromeos/chromeos.gyp:chromeos_test_support',
+                'components.gyp:wifi_sync',
               ],
             }],
             ['OS=="linux"', {
@@ -938,11 +933,6 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
-            'components.gyp:autofill_content_browser',
-            'components.gyp:autofill_content_renderer',
-            'components.gyp:password_manager_content_renderer',
-            'components.gyp:pref_registry_test_support',
-            'components_resources.gyp:components_resources',
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_gpu',
             '../content/content.gyp:content_plugin',
@@ -954,10 +944,13 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
-
-            # Dependencies of dom_distiller
+            'components.gyp:autofill_content_browser',
+            'components.gyp:autofill_content_renderer',
             'components.gyp:dom_distiller_content',
             'components.gyp:dom_distiller_core',
+            'components.gyp:password_manager_content_renderer',
+            'components.gyp:pref_registry_test_support',
+            'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
           ],
           'include_dirs': [
