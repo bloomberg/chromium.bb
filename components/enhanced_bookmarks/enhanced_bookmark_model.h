@@ -187,9 +187,6 @@ class EnhancedBookmarkModel : public KeyedService,
   // Clears out any duplicate remote ids detected by AddToIdMap calls.
   void ResetDuplicateRemoteIds();
 
-  // Sets the NEEDS_OFFLINE_PROCESSING flag on the given node.
-  void SetNeedsOfflineProcessing(const bookmarks::BookmarkNode* node);
-
   // Helper method for setting a meta info field on a node. Also updates the
   // version field.
   void SetMetaInfo(const bookmarks::BookmarkNode* node,
@@ -209,11 +206,6 @@ class EnhancedBookmarkModel : public KeyedService,
 
   IdToNodeMap id_map_;
   NodeToIdMap nodes_to_reset_;
-
-  // Pending SetNeedsOfflineProcessing calls are stored here, as they may need
-  // to be cancelled if the node is removed.
-  std::map<const bookmarks::BookmarkNode*, linked_ptr<base::CancelableClosure>>
-      set_needs_offline_processing_tasks_;
 
   // Caches the remote id of a node before its meta info changes.
   std::string prev_remote_id_;
