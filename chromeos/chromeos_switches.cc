@@ -116,7 +116,7 @@ const char kEnableEmbeddedSignin[] = "enable-embedded-signin";
 const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
 
 // If this switch is set, the input view keyboard will be in materia design.
-const char kEnableNewQPInputView[] = "enable-new-qp-input-view";
+const char kEnableNewMDInputView[] = "enable-new-md-input-view";
 
 // If this switch is set, the options for suggestions as typing on physical
 // keyboard will be disabled.

@@ -39,9 +39,9 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
   output->SetBoolean("isVoiceInputEnabled",
                      !base::CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kDisableVoiceInput));
-  output->SetBoolean("isNewQPInputViewEnabled",
+  output->SetBoolean("isNewMDInputViewEnabled",
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         chromeos::switches::kEnableNewQPInputView));
+                         chromeos::switches::kEnableNewMDInputView));
   return RespondNow(OneArgument(output));
 #endif
 }

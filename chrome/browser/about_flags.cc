@@ -1268,11 +1268,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewKoreanIme)
   },
   {
-    "enable-new-qp-input-view",
-    IDS_FLAGS_ENABLE_NEW_QP_INPUT_VIEW_NAME,
-    IDS_FLAGS_ENABLE_NEW_QP_INPUT_VIEW_DESCRIPTION,
+    "enable-new-md-input-view",
+    IDS_FLAGS_ENABLE_NEW_MD_INPUT_VIEW_NAME,
+    IDS_FLAGS_ENABLE_NEW_MD_INPUT_VIEW_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewQPInputView)
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewMDInputView)
   },
   {
     "disable-physical-keyboard-autocorrect",
