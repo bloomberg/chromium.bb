@@ -101,6 +101,10 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
+crbug.com/453586 fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
+crbug.com/453586 fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
+crbug.com/453586 fast/repaint/fixed-under-composited-absolute-scrolled.html [ NeedsRebaseline ]
+
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filteredImage.svg [ ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feSpecularLight-premultiplied.svg [ ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filter-clip.svg [ ImageOnlyFailure ]

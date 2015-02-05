@@ -692,8 +692,6 @@ protected:
     virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
 private:
-    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
-
     void updateShapeOutsideInfoAfterStyleChange(const RenderStyle&, const RenderStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const RenderStyle*);
 

@@ -3961,7 +3961,7 @@ void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paint
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = size();
 
-    // If border box size didn't change, RenderObject's incrementallyInvalidatePaint() is good.
+    // If border box size didn't change, RenderBox's incrementallyInvalidatePaint() is good.
     if (oldBorderBoxSize == newBorderBoxSize)
         return;
 
@@ -3985,7 +3985,7 @@ void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paint
             positionFromPaintInvalidationBacking.y(),
             deltaWidth + borderWidth,
             std::max(oldBorderBoxSize.height(), newBorderBoxSize.height()));
-        invalidatePaintRectClippedByOldAndNewBounds(paintInvalidationContainer, rightDeltaRect, oldBounds, newBounds);
+        invalidatePaintUsingContainer(&paintInvalidationContainer, rightDeltaRect, PaintInvalidationIncremental);
     }
 
     // Invalidate the bottom delta part and the bottom border of the old or new box which has smaller height.
@@ -3999,26 +3999,8 @@ void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paint
             positionFromPaintInvalidationBacking.y() + smallerHeight - borderHeight,
             std::max(oldBorderBoxSize.width(), newBorderBoxSize.width()),
             deltaHeight + borderHeight);
-        invalidatePaintRectClippedByOldAndNewBounds(paintInvalidationContainer, bottomDeltaRect, oldBounds, newBounds);
+        invalidatePaintUsingContainer(&paintInvalidationContainer, bottomDeltaRect, PaintInvalidationIncremental);
     }
-}
-
-void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& rect, const LayoutRect& oldBounds, const LayoutRect& newBounds)
-{
-    if (rect.isEmpty())
-        return;
-    LayoutRect rectClippedByOldBounds = intersection(rect, oldBounds);
-    LayoutRect rectClippedByNewBounds = intersection(rect, newBounds);
-    // Invalidate only once if the clipped rects equal.
-    if (rectClippedByOldBounds == rectClippedByNewBounds) {
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
-        return;
-    }
-    // Invalidate the bigger one if one contains another. Otherwise invalidate both.
-    if (!rectClippedByNewBounds.contains(rectClippedByOldBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
-    if (!rectClippedByOldBounds.contains(rectClippedByNewBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
 }
 
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
