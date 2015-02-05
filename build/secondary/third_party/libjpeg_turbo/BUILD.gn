@@ -84,7 +84,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
     } else if (is_mac) {
       defines += [ "MACHO" ]
       include_dirs = [ "mac" ]
-    } else if (is_linux) {
+    } else if (is_linux || is_android) {
       defines += [ "ELF" ]
       include_dirs = [ "linux" ]
     }
