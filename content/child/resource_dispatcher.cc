@@ -576,9 +576,37 @@ void ResourceDispatcher::OnRequestComplete(
 
   base::TimeTicks renderer_completion_time = ToRendererCompletionTime(
       *request_info, request_complete_data.completion_time);
+
+  // If we have a threaded data provider, this message needs to bounce off the
+  // background thread before it's returned to this thread and handled,
+  // to make sure it's processed after all incoming data.
+  if (request_info->threaded_data_provider) {
+    request_info->threaded_data_provider->OnRequestCompleteForegroundThread(
+        weak_factory_.GetWeakPtr(), request_complete_data,
+        renderer_completion_time);
+    return;
+  }
+
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
+  peer->OnCompletedRequest(request_complete_data.error_code,
+                           request_complete_data.was_ignored_by_handler,
+                           request_complete_data.exists_in_cache,
+                           request_complete_data.security_info,
+                           renderer_completion_time,
+                           request_complete_data.encoded_data_length);
+}
+
+void ResourceDispatcher::CompletedRequestAfterBackgroundThreadFlush(
+    int request_id,
+    const ResourceMsg_RequestCompleteData& request_complete_data,
+    const base::TimeTicks& renderer_completion_time) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info)
+    return;
+
+  RequestPeer* peer = request_info->peer;
   peer->OnCompletedRequest(request_complete_data.error_code,
                            request_complete_data.was_ignored_by_handler,
                            request_complete_data.exists_in_cache,

@@ -157,13 +157,13 @@ ThreadedDataProvider::~ThreadedDataProvider() {
   delete threaded_data_receiver_;
 }
 
-void DestructOnMainThread(ThreadedDataProvider* data_provider) {
+void ThreadedDataProvider::DestructOnMainThread() {
   DCHECK(ChildThreadImpl::current());
 
   // The ThreadedDataProvider must be destructed on the main thread to
   // be threadsafe when removing the message filter and releasing the shared
   // memory buffer.
-  delete data_provider;
+  delete this;
 }
 
 void ThreadedDataProvider::Stop() {
@@ -203,7 +203,35 @@ void ThreadedDataProvider::StopOnBackgroundThread() {
   // use this instance on the background thread.
   background_thread_weak_factory_.reset(NULL);
   main_thread_task_runner_->PostTask(FROM_HERE,
-                                     base::Bind(&DestructOnMainThread, this));
+      base::Bind(&ThreadedDataProvider::DestructOnMainThread,
+                 base::Unretained(this)));
+}
+
+void ThreadedDataProvider::OnRequestCompleteForegroundThread(
+      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+      const ResourceMsg_RequestCompleteData& request_complete_data,
+      const base::TimeTicks& renderer_completion_time) {
+  DCHECK(ChildThreadImpl::current());
+
+  background_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&ThreadedDataProvider::OnRequestCompleteBackgroundThread,
+                 base::Unretained(this), resource_dispatcher,
+                 request_complete_data, renderer_completion_time));
+}
+
+void ThreadedDataProvider::OnRequestCompleteBackgroundThread(
+      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+      const ResourceMsg_RequestCompleteData& request_complete_data,
+      const base::TimeTicks& renderer_completion_time) {
+  DCHECK(background_thread_.isCurrentThread());
+
+  main_thread_task_runner_->PostTask(FROM_HERE,
+      base::Bind(
+          &ResourceDispatcher::CompletedRequestAfterBackgroundThreadFlush,
+          resource_dispatcher,
+          request_id_,
+          request_complete_data,
+          renderer_completion_time));
 }
 
 void ThreadedDataProvider::OnResourceMessageFilterAddedMainThread() {
@@ -229,7 +257,7 @@ void ThreadedDataProvider::OnResourceMessageFilterAddedBackgroundThread() {
   if (!queued_data_.empty()) {
     std::vector<QueuedSharedMemoryData>::iterator iter = queued_data_.begin();
     for (; iter != queued_data_.end(); ++iter) {
-      ForwardAndACKData(iter->data, iter->length);
+      ForwardAndACKData(iter->data, iter->length, iter->encoded_length);
     }
 
     queued_data_.clear();
@@ -247,7 +275,7 @@ void ThreadedDataProvider::OnReceivedDataOnBackgroundThread(
   CHECK(data_ptr + data_offset);
 
   if (resource_filter_active_) {
-    ForwardAndACKData(data_ptr + data_offset, data_length);
+    ForwardAndACKData(data_ptr + data_offset, data_length, encoded_data_length);
   } else {
     // There's a brief interval between the point where we know the filter
     // has been installed on the I/O thread, and when we know for sure there's
@@ -258,6 +286,7 @@ void ThreadedDataProvider::OnReceivedDataOnBackgroundThread(
     QueuedSharedMemoryData queued_data;
     queued_data.data = data_ptr + data_offset;
     queued_data.length = data_length;
+    queued_data.encoded_length = encoded_data_length;
     queued_data_.push_back(queued_data);
   }
 }
@@ -269,11 +298,12 @@ void ThreadedDataProvider::OnReceivedDataOnForegroundThread(
   background_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&ThreadedDataProvider::ForwardAndACKData,
                  base::Unretained(this),
-                 data, data_length));
+                 data, data_length, encoded_data_length));
 }
 
 void ThreadedDataProvider::ForwardAndACKData(const char* data,
-                                             int data_length) {
+                                             int data_length,
+                                             int encoded_data_length) {
   DCHECK(background_thread_.isCurrentThread());
 
   // TODO(oysteine): SiteIsolationPolicy needs to be be checked
@@ -281,7 +311,34 @@ void ThreadedDataProvider::ForwardAndACKData(const char* data,
   // (or earlier on the I/O thread), otherwise once SiteIsolationPolicy does
   // actual blocking as opposed to just UMA logging this will bypass it.
   threaded_data_receiver_->acceptData(data, data_length);
+
+  scoped_ptr<std::vector<char>> data_copy;
+  if (threaded_data_receiver_->needsMainthreadDataCopy()) {
+    data_copy.reset(new std::vector<char>(data, data + data_length));
+  }
+
+  main_thread_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&ThreadedDataProvider::DataNotifyForegroundThread,
+          base::Unretained(this),
+          base::Passed(&data_copy),
+          data_length,
+          encoded_data_length));
+
   ipc_channel_->Send(new ResourceHostMsg_DataReceived_ACK(request_id_));
+}
+
+void ThreadedDataProvider::DataNotifyForegroundThread(
+    scoped_ptr<std::vector<char> > data_copy,
+    int data_length,
+    int encoded_data_length) {
+  if (data_copy) {
+    DCHECK(threaded_data_receiver_->needsMainthreadDataCopy());
+    DCHECK_EQ((size_t)data_length, data_copy->size());
+  }
+
+  threaded_data_receiver_->acceptMainthreadDataNotification(
+      (data_copy && !data_copy->empty()) ? &data_copy->front() : NULL,
+      data_length, encoded_data_length);
 }
 
 }  // namespace content
