@@ -87,6 +87,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // happened in the background. When they forget to do so, display a default
   // notification on their behalf.
   void RequireUserVisibleUX(const PushMessagingApplicationId& application_id);
+  void DidGetNotificationsShown(
+      const PushMessagingApplicationId& application_id,
+      bool notification_shown,
+      bool notification_needed,
+      const std::string& data,
+      bool success,
+      bool not_found);
 
   void RegisterEnd(
       const content::PushMessagingService::RegisterCallback& callback,

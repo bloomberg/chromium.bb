@@ -4,6 +4,7 @@
 
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 
+#include <bitset>
 #include <vector>
 
 #include "base/bind.h"
@@ -29,6 +30,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -250,78 +253,136 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
   // is supported.
   int notification_count = notification_service->GetNotificationUIManager()->
       GetAllIdsByProfileAndSourceOrigin(profile_, application_id.origin).size();
-  if (notification_count > 0)
-    return;
+  // TODO(johnme): Hiding an existing notification should also count as a useful
+  // user-visible action done in response to a push message - but make sure that
+  // sending two messages in rapid succession which show then hide a
+  // notification doesn't count.
+  bool notification_shown = notification_count > 0;
 
-  // Sites with a currently visible tab don't need to show notifications.
+  bool notification_needed = true;
+  if (!notification_shown) {
+    // Sites with a currently visible tab don't need to show notifications.
 #if defined(OS_ANDROID)
-  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
-    Profile* profile = (*it)->GetProfile();
-    content::WebContents* active_web_contents =
-        (*it)->GetActiveWebContents();
+    for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
+      Profile* profile = (*it)->GetProfile();
+      content::WebContents* active_web_contents =
+          (*it)->GetActiveWebContents();
 #else
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Profile* profile = it->profile();
-    content::WebContents* active_web_contents =
-        it->tab_strip_model()->GetActiveWebContents();
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      Profile* profile = it->profile();
+      content::WebContents* active_web_contents =
+          it->tab_strip_model()->GetActiveWebContents();
 #endif
-    if (!active_web_contents)
-      continue;
+      if (!active_web_contents)
+        continue;
 
-    // Don't leak information from other profiles.
-    if (profile != profile_)
-      continue;
+      // Don't leak information from other profiles.
+      if (profile != profile_)
+        continue;
 
-    // Ignore minimized windows etc.
-    switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-     case blink::WebPageVisibilityStateHidden:
-     case blink::WebPageVisibilityStatePrerender:
-      continue;
-     case blink::WebPageVisibilityStateVisible:
-      break;
-    }
+      // Ignore minimized windows etc.
+      switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
+       case blink::WebPageVisibilityStateHidden:
+       case blink::WebPageVisibilityStatePrerender:
+        continue;
+       case blink::WebPageVisibilityStateVisible:
+        break;
+      }
 
-    // Use the visible URL since that's the one the user is aware of (and it
-    // doesn't matter whether the page loaded successfully).
-    const GURL& active_url = active_web_contents->GetVisibleURL();
+      // Use the visible URL since that's the one the user is aware of (and it
+      // doesn't matter whether the page loaded successfully).
+      const GURL& active_url = active_web_contents->GetVisibleURL();
 
-    // Allow https://foo.example.com Service Worker to not show notification if
-    // an https://bar.example.com tab is visible (and hence might conceivably
-    // be showing UI in response to the push message); but http:// doesn't count
-    // as the Service Worker can't talk to it, even with navigator.connect.
-    if (application_id.origin.scheme() != active_url.scheme())
-      continue;
-    if (net::registry_controlled_domains::SameDomainOrHost(
-        application_id.origin, active_url,
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      return;
+      // Allow https://foo.example.com Service Worker to not show notification
+      // if an https://bar.example.com tab is visible (and hence might
+      // conceivably be showing UI in response to the push message); but http://
+      // doesn't count as the Service Worker can't talk to it, even with
+      // navigator.connect.
+      if (application_id.origin.scheme() != active_url.scheme())
+        continue;
+      if (net::registry_controlled_domains::SameDomainOrHost(
+          application_id.origin, active_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+        notification_needed = false;
+        break;
+      }
     }
   }
 
-  // If we haven't returned yet, the site failed to show a notification, so we
-  // will show a generic notification. See https://crbug.com/437277
-  // TODO(johnme): The generic notification should probably automatically close
-  // itself when the next push message arrives?
-  content::PlatformNotificationData notification_data;
-  // TODO(johnme): Switch to FormatOriginForDisplay from crbug.com/402698
-  notification_data.title = l10n_util::GetStringFUTF16(
-      IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_TITLE,
-      base::UTF8ToUTF16(application_id.origin.host()));
-  notification_data.direction =
-      content::PlatformNotificationData::NotificationDirectionLeftToRight;
-  notification_data.body =
-      l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
-  notification_data.tag =
-      base::ASCIIToUTF16(kPushMessagingForcedNotificationTag);
-  notification_data.icon = GURL();  // TODO(johnme): Better icon?
-  notification_service->DisplayPersistentNotification(
-      profile_,
-      application_id.service_worker_registration_id,
-      application_id.origin,
-      SkBitmap() /* icon */,
-      notification_data,
-      content::ChildProcessHost::kInvalidUniqueID /* render_process_id */);
-#endif
+  // Don't track push messages that didn't show a notification but were exempt
+  // from needing to do so.
+  if (notification_shown || notification_needed) {
+    content::ServiceWorkerContext* service_worker_context =
+        content::BrowserContext::GetStoragePartitionForSite(
+            profile_, application_id.origin)->GetServiceWorkerContext();
+
+    PushMessagingService::GetNotificationsShownByLastFewPushes(
+        service_worker_context, application_id.service_worker_registration_id,
+        base::Bind(&PushMessagingServiceImpl::DidGetNotificationsShown,
+                   weak_factory_.GetWeakPtr(),
+                   application_id, notification_shown, notification_needed));
+  }
+#endif  // defined(ENABLE_NOTIFICATIONS)
+}
+
+static void IgnoreResult(bool unused) {
+}
+
+void PushMessagingServiceImpl::DidGetNotificationsShown(
+    const PushMessagingApplicationId& application_id,
+    bool notification_shown, bool notification_needed,
+    const std::string& data, bool success, bool not_found) {
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile_, application_id.origin)->GetServiceWorkerContext();
+
+  // We remember whether the last (up to) 10 pushes showed notifications.
+  const size_t MISSED_NOTIFICATIONS_LENGTH = 10;
+  // data is a string like "0001000", where '0' means shown, and '1' means
+  // needed but not shown. We manipulate it in bitset form.
+  std::bitset<MISSED_NOTIFICATIONS_LENGTH> missed_notifications(data);
+
+  bool needed_but_not_shown = notification_needed && !notification_shown;
+
+  // New entries go at the end, and old ones are shifted off the beginning once
+  // the history length is exceeded.
+  missed_notifications <<= 1;
+  missed_notifications[0] = needed_but_not_shown;
+  std::string updated_data(missed_notifications.
+      to_string<char, std::string::traits_type, std::string::allocator_type>());
+  PushMessagingService::SetNotificationsShownByLastFewPushes(
+      service_worker_context, application_id.service_worker_registration_id,
+      application_id.origin, updated_data,
+      base::Bind(&IgnoreResult));  // This is a heuristic; ignore failure.
+
+  if (needed_but_not_shown && missed_notifications.count() >= 2) {
+    // The site failed to show a notification when one was needed, and they have
+    // already failed once in the previous 10 push messages, so we will show a
+    // generic notification. See https://crbug.com/437277.
+    // TODO(johnme): The generic notification should probably automatically
+    // close itself when the next push message arrives?
+    content::PlatformNotificationData notification_data;
+    // TODO(johnme): Switch to FormatOriginForDisplay from crbug.com/402698
+    notification_data.title = l10n_util::GetStringFUTF16(
+        IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_TITLE,
+        base::UTF8ToUTF16(application_id.origin.host()));
+    notification_data.direction =
+        content::PlatformNotificationData::NotificationDirectionLeftToRight;
+    notification_data.body =
+        l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
+    notification_data.tag =
+        base::ASCIIToUTF16(kPushMessagingForcedNotificationTag);
+    notification_data.icon = GURL();  // TODO(johnme): Better icon?
+    PlatformNotificationServiceImpl* notification_service =
+        PlatformNotificationServiceImpl::GetInstance();
+    notification_service->DisplayPersistentNotification(
+        profile_,
+        application_id.service_worker_registration_id,
+        application_id.origin,
+        SkBitmap() /* icon */,
+        notification_data,
+        content::ChildProcessHost::kInvalidUniqueID /* render_process_id */);
+  }
 }
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {

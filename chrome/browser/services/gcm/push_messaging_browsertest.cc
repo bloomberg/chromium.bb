@@ -499,39 +499,34 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // If the site is visible in an active tab, we should not force a notification
-  // to be shown.
+  // to be shown. Try it twice, since we allow one mistake per 10 push events.
   GCMClient::IncomingMessage message;
-  message.data["data"] = "testdata";
-  push_service()->OnMessage(app_id.ToString(), message);
-  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
-  EXPECT_EQ("testdata", script_result);
-  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+  for (int n = 0; n < 2; n++) {
+    message.data["data"] = "testdata";
+    push_service()->OnMessage(app_id.ToString(), message);
+    ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+    EXPECT_EQ("testdata", script_result);
+    EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+  }
 
   // Open a blank foreground tab so site is no longer visible.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
-  // If the Service Worker push event handler shows a notification, we should
-  // not show a forced one.
-  message.data["data"] = "shownotification";
-  push_service()->OnMessage(app_id.ToString(), message);
-  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
-  EXPECT_EQ("shownotification", script_result);
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
-            notification_manager()->GetNotificationAt(0).replace_id());
-
-  notification_manager()->CancelAll();
-  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
-
-  // However if the Service Worker push event handler does not show a
-  // notification, we should show a forced one.
+  // If the Service Worker push event handler does not show a notification, we
+  // should show a forced one, but only on the 2nd occurrence since we allow one
+  // mistake per 10 push events.
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+  message.data["data"] = "testdata";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("testdata", script_result);
+  EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
   EXPECT_EQ(base::ASCIIToUTF16(kPushMessagingForcedNotificationTag),
             notification_manager()->GetNotificationAt(0).replace_id());
 
@@ -541,7 +536,31 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->OnMessage(app_id.ToString(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
-  ASSERT_EQ(2u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(2u, notification_manager()->GetNotificationCount());
+
+  notification_manager()->CancelAll();
+  EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // However if the Service Worker push event handler shows a notification, we
+  // should not show a forced one.
+  message.data["data"] = "shownotification";
+  for (int n = 0; n < 9; n++) {
+    push_service()->OnMessage(app_id.ToString(), message);
+    ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+    EXPECT_EQ("shownotification", script_result);
+    EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
+    EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
+              notification_manager()->GetNotificationAt(0).replace_id());
+    notification_manager()->CancelAll();
+  }
+
+  // Now that 10 push messages in a row have shown notifications, we should
+  // allow the next one to mistakenly not show a notification.
+  message.data["data"] = "testdata";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("testdata", script_result);
+  EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
 }
 #endif
 

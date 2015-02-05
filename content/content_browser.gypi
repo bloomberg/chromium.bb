@@ -182,6 +182,7 @@
       'public/browser/presentation_service_delegate.h',
       'public/browser/profiler_controller.h',
       'public/browser/profiler_subscriber.h',
+      'public/browser/push_messaging_service.cc',
       'public/browser/push_messaging_service.h',
       'public/browser/quota_permission_context.h',
       'public/browser/readback_types.h',

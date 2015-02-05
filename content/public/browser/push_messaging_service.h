@@ -15,14 +15,37 @@
 
 namespace content {
 
+class ServiceWorkerContext;
+
 // A push service-agnostic interface that the Push API uses for talking to
 // push messaging services like GCM. Must only be used on the UI thread.
 class CONTENT_EXPORT PushMessagingService {
  public:
+  using GetNotificationsShownCallback =
+      base::Callback<void(const std::string& notifications_shown,
+                          bool success, bool not_found)>;
+
+  using ResultCallback = base::Callback<void(bool success)>;
+
   using RegisterCallback =
       base::Callback<void(const std::string& /* registration_id */,
                           PushRegistrationStatus /* status */)>;
   using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
+
+  // Provide a storage mechanism to read/write an opaque
+  // "notifications_shown_by_last_few_pushes" string associated with a Service
+  // Worker registration. Stored data is deleted when the associated
+  // registration is deleted.
+  static void GetNotificationsShownByLastFewPushes(
+      ServiceWorkerContext* service_worker_context,
+      int64 service_worker_registration_id,
+      const GetNotificationsShownCallback& callback);
+  static void SetNotificationsShownByLastFewPushes(
+      ServiceWorkerContext* service_worker_context,
+      int64 service_worker_registration_id,
+      const GURL& origin,
+      const std::string& notifications_shown,
+      const ResultCallback& callback);
 
   virtual ~PushMessagingService() {}
 
