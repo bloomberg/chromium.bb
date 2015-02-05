@@ -65,25 +65,24 @@ const RoleEntry roles[] = {
     { "banner", BannerRole },
     { "button", ButtonRole },
     { "checkbox", CheckBoxRole },
-    { "complementary", ComplementaryRole },
-    { "contentinfo", ContentInfoRole },
-    { "dialog", DialogRole },
-    { "directory", DirectoryRole },
-    { "grid", GridRole },
-    { "gridcell", CellRole },
     { "columnheader", ColumnHeaderRole },
     { "combobox", ComboBoxRole },
+    { "complementary", ComplementaryRole },
+    { "contentinfo", ContentInfoRole },
     { "definition", DefinitionRole },
+    { "dialog", DialogRole },
+    { "directory", DirectoryRole },
     { "document", DocumentRole },
-    { "rowheader", RowHeaderRole },
     { "form", FormRole },
+    { "grid", GridRole },
+    { "gridcell", CellRole },
     { "group", GroupRole },
     { "heading", HeadingRole },
     { "img", ImageRole },
     { "link", LinkRole },
     { "list", ListRole },
-    { "listitem", ListItemRole },
     { "listbox", ListBoxRole },
+    { "listitem", ListItemRole },
     { "log", LogRole },
     { "main", MainRole },
     { "marquee", MarqueeRole },
@@ -93,9 +92,9 @@ const RoleEntry roles[] = {
     { "menuitem", MenuItemRole },
     { "menuitemcheckbox", MenuItemCheckBoxRole },
     { "menuitemradio", MenuItemRadioRole },
-    { "note", NoteRole },
     { "navigation", NavigationRole },
     { "none", NoneRole },
+    { "note", NoteRole },
     { "option", ListBoxOptionRole },
     { "presentation", PresentationalRole },
     { "progressbar", ProgressIndicatorRole },
@@ -103,6 +102,7 @@ const RoleEntry roles[] = {
     { "radiogroup", RadioGroupRole },
     { "region", RegionRole },
     { "row", RowRole },
+    { "rowheader", RowHeaderRole },
     { "scrollbar", ScrollBarRole },
     { "search", SearchRole },
     { "separator", SplitterRole },
@@ -122,6 +122,17 @@ const RoleEntry roles[] = {
     { "treeitem", TreeItemRole }
 };
 
+// Roles which we need to map in the other direction
+const RoleEntry reverseRoles[] = {
+    { "button", ToggleButtonRole },
+    { "combobox", PopUpButtonRole },
+    { "contentinfo", FooterRole },
+    { "menuitem", MenuButtonRole },
+    { "menuitem", MenuListOptionRole },
+    { "progressbar", MeterRole },
+    { "textbox", TextFieldRole }
+};
+
 static ARIARoleMap* createARIARoleMap()
 {
     ARIARoleMap* roleMap = new ARIARoleMap;
@@ -139,6 +150,9 @@ static Vector<AtomicString>* createRoleNameVector()
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(roles); ++i)
         (*roleNameVector)[roles[i].webcoreRole] = AtomicString(roles[i].ariaRole);
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(reverseRoles); ++i)
+        (*roleNameVector)[reverseRoles[i].webcoreRole] = AtomicString(reverseRoles[i].ariaRole);
 
     return roleNameVector;
 }
@@ -575,7 +589,6 @@ AXObject* AXObject::parentObjectUnignored() const
     return parent;
 }
 
-
 void AXObject::updateChildrenIfNecessary()
 {
     if (!hasChildren())
@@ -920,7 +933,7 @@ int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
         VisiblePosition prevVisiblePos = previousLinePosition(currentVisiblePos, 0, HasEditableAXRole);
         currentVisiblePos = prevVisiblePos;
         ++lineCount;
-    }  while (currentVisiblePos.isNotNull() && !(inSameLine(currentVisiblePos, savedVisiblePos)));
+    } while (currentVisiblePos.isNotNull() && !(inSameLine(currentVisiblePos, savedVisiblePos)));
 
     return lineCount;
 }
@@ -928,7 +941,7 @@ int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
 bool AXObject::isARIAControl(AccessibilityRole ariaRole)
 {
     return isARIAInput(ariaRole) || ariaRole == TextAreaRole || ariaRole == ButtonRole
-    || ariaRole == ComboBoxRole || ariaRole == SliderRole;
+        || ariaRole == ComboBoxRole || ariaRole == SliderRole;
 }
 
 bool AXObject::isARIAInput(AccessibilityRole ariaRole)

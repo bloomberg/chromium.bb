@@ -56,57 +56,57 @@ enum AccessibilityRole {
     UnknownRole = 0,
     AlertDialogRole,
     AlertRole,
-    AnnotationRole,
+    AnnotationRole, // No mapping to ARIA role
     ApplicationRole,
     ArticleRole,
     BannerRole,
-    BlockquoteRole,
-    BusyIndicatorRole,
+    BlockquoteRole, // No mapping to ARIA role
+    BusyIndicatorRole, // No mapping to ARIA role
     ButtonRole,
-    CanvasRole,
-    CaptionRole,
+    CanvasRole, // No mapping to ARIA role
+    CaptionRole, // No mapping to ARIA role
     CellRole,
     CheckBoxRole,
-    ColorWellRole,
+    ColorWellRole, // No mapping to ARIA role
     ColumnHeaderRole,
-    ColumnRole,
+    ColumnRole, // No mapping to ARIA role
     ComboBoxRole,
     ComplementaryRole,
     ContentInfoRole,
-    DateRole,
-    DateTimeRole,
+    DateRole, // No mapping to ARIA role
+    DateTimeRole, // No mapping to ARIA role
     DefinitionRole,
-    DescriptionListDetailRole,
-    DescriptionListRole,
-    DescriptionListTermRole,
-    DetailsRole,
+    DescriptionListDetailRole, // No mapping to ARIA role
+    DescriptionListRole, // No mapping to ARIA role
+    DescriptionListTermRole, // No mapping to ARIA role
+    DetailsRole, // No mapping to ARIA role
     DialogRole,
     DirectoryRole,
-    DisclosureTriangleRole,
-    DivRole,
+    DisclosureTriangleRole, // No mapping to ARIA role
+    DivRole, // No mapping to ARIA role
     DocumentRole,
-    EmbeddedObjectRole,
-    FigcaptionRole,
-    FigureRole,
+    EmbeddedObjectRole, // No mapping to ARIA role
+    FigcaptionRole, // No mapping to ARIA role
+    FigureRole, // No mapping to ARIA role
     FooterRole,
     FormRole,
     GridRole,
     GroupRole,
     HeadingRole,
-    IframePresentationalRole,
-    IframeRole,
-    IgnoredRole,
-    ImageMapLinkRole,
-    ImageMapRole,
+    IframePresentationalRole, // No mapping to ARIA role
+    IframeRole, // No mapping to ARIA role
+    IgnoredRole, // No mapping to ARIA role
+    ImageMapLinkRole, // No mapping to ARIA role
+    ImageMapRole, // No mapping to ARIA role
     ImageRole,
-    InlineTextBoxRole,
+    InlineTextBoxRole, // No mapping to ARIA role
     LabelRole,
-    LegendRole,
+    LegendRole, // No mapping to ARIA role
     LinkRole,
     ListBoxOptionRole,
     ListBoxRole,
     ListItemRole,
-    ListMarkerRole,
+    ListMarkerRole, // No mapping to ARIA role
     ListRole,
     LogRole,
     MainRole,
@@ -122,43 +122,43 @@ enum AccessibilityRole {
     MenuRole,
     MeterRole,
     NavigationRole,
-    NoneRole,
+    NoneRole, // No mapping to ARIA role
     NoteRole,
-    OutlineRole,
-    ParagraphRole,
+    OutlineRole, // No mapping to ARIA role
+    ParagraphRole, // No mapping to ARIA role
     PopUpButtonRole,
-    PreRole,
+    PreRole, // No mapping to ARIA role
     PresentationalRole,
     ProgressIndicatorRole,
     RadioButtonRole,
     RadioGroupRole,
     RegionRole,
-    RootWebAreaRole,
+    RootWebAreaRole, // No mapping to ARIA role
     RowHeaderRole,
     RowRole,
-    RubyRole,
-    RulerRole,
-    SVGRootRole,
-    ScrollAreaRole,
+    RubyRole, // No mapping to ARIA role
+    RulerRole, // No mapping to ARIA role
+    SVGRootRole, // No mapping to ARIA role
+    ScrollAreaRole, // No mapping to ARIA role
     ScrollBarRole,
-    SeamlessWebAreaRole,
+    SeamlessWebAreaRole, // No mapping to ARIA role
     SearchRole,
     SliderRole,
-    SliderThumbRole,
-    SpinButtonPartRole,
+    SliderThumbRole, // No mapping to ARIA role
+    SpinButtonPartRole, // No mapping to ARIA role
     SpinButtonRole,
     SplitterRole,
-    StaticTextRole,
+    StaticTextRole, // No mapping to ARIA role
     StatusRole,
-    TabGroupRole,
+    TabGroupRole, // No mapping to ARIA role
     TabListRole,
     TabPanelRole,
     TabRole,
-    TableHeaderContainerRole,
+    TableHeaderContainerRole, // No mapping to ARIA role
     TableRole,
     TextAreaRole,
     TextFieldRole,
-    TimeRole,
+    TimeRole, // No mapping to ARIA role
     TimerRole,
     ToggleButtonRole,
     ToolbarRole,
@@ -166,9 +166,9 @@ enum AccessibilityRole {
     TreeItemRole,
     TreeRole,
     UserInterfaceTooltipRole,
-    WebAreaRole,
-    LineBreakRole,
-    WindowRole,
+    WebAreaRole, // No mapping to ARIA role
+    LineBreakRole, // No mapping to ARIA role
+    WindowRole, // No mapping to ARIA role
     NumRoles
 };
 

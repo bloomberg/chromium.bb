@@ -19,11 +19,15 @@
       <header data-role="banner">This is a banner</header>
 
       <div role="button">This is a button</div>
+      <div role="button" aria-pressed="true">This is a togglebutton</div>
       <input type="button" value="This is a button" data-role="button">
       <button data-role="button">This is a button</button>
 
       <div role="complementary">This is a complementary</div>
       <aside data-role="complementary">This is a complementary</aside>
+
+      <div role="contentinfo">This is a contentinfo</div>
+      <footer data-role="contentinfo">This is a contentinfo</footer>
 
       <fieldset data-role="group">
         <div role="checkbox" aria-label="This is a checkbox"></div>
@@ -55,6 +59,10 @@
         <option value="suggestion1" label="suggestion1">
         <option value="suggestion2" label="suggestion2">
       </datalist>
+      <select data-role="combobox" size="1">
+        <option value="1">First option</option>
+        <option value="2">Second</option>
+      </select>
 
       <div role="definition">This is a definition</div>
 
@@ -90,10 +98,6 @@
       <ol data-role="list"><li data-role="listitem">This is a list item</li></ol>
 
       <div role="listbox">This is a listbox</div>
-      <select data-role="listbox" size="1" data-knownFailure>
-        <option value="1">First option</option>
-        <option value="2">Second</option>
-      </select>
 
       <div role="log">This is a log</div>
 
@@ -133,6 +137,7 @@
 
       <div role="progressbar">This is a progressbar</div>
       <progress data-role="progressbar" max="100">10</progress>
+      <meter data-role="progressbar" max="100"></meter>
 
       <div role="radio">This is a radiobutton</div>
       <input type="radio" data-role="radio">
@@ -167,12 +172,12 @@
       <button role="text">This is static text</button>
 
       <div role="textbox" data-knownFailure>This is a textbox</div>
-      <input type="email" data-role="textbox" data-knownFailure>
-      <input type="password" data-role="textbox" data-knownFailure>
-      <input type="search" data-role="textbox" data-knownFailure>
-      <input type="tel" data-role="textbox" data-knownFailure>
-      <input type="text" data-role="textbox" data-knownFailure>
-      <input type="url" data-role="textbox" data-knownFailure>
+      <input type="email" data-role="textbox">
+      <input type="password" data-role="textbox">
+      <input type="search" data-role="textbox">
+      <input type="tel" data-role="textbox">
+      <input type="text" data-role="textbox">
+      <input type="url" data-role="textbox">
 
       <div role="timer">This is a timer</div>
 
