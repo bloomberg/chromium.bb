@@ -574,22 +574,180 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
   ExpectContains(*scroll_info, scroll_layer->id(), scroll_delta);
 }
 
-TEST_F(LayerTreeHostImplTest, WheelEventHandlers) {
+TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
   LayerImpl* root = host_impl_->active_tree()->root_layer();
 
+  // With registered event handlers, wheel scrolls don't necessarily
+  // have to go to the main thread.
   root->SetHaveWheelEventHandlers(true);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  host_impl_->ScrollEnd();
 
-  // With registered event handlers, wheel scrolls have to go to the main
-  // thread.
+  // But typically the scroll-blocks-on mode will require them to.
+  root->SetScrollBlocksOn(ScrollBlocksOnWheelEvent | ScrollBlocksOnStartTouch);
   EXPECT_EQ(InputHandler::ScrollOnMainThread,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
 
   // But gesture scrolls can still be handled.
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+
+  // And if the handlers go away, wheel scrolls can again be processed
+  // on impl (despite the scroll-blocks-on mode).
+  root->SetHaveWheelEventHandlers(false);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  host_impl_->ScrollEnd();
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
+  LayerImpl* scroll = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+
+  LayerImpl* child = 0;
+  {
+    scoped_ptr<LayerImpl> child_layer =
+        LayerImpl::Create(host_impl_->active_tree(), 6);
+    child = child_layer.get();
+    child_layer->SetDrawsContent(true);
+    child_layer->SetPosition(gfx::PointF(0, 20));
+    child_layer->SetBounds(gfx::Size(50, 50));
+    child_layer->SetContentBounds(gfx::Size(50, 50));
+    scroll->AddChild(child_layer.Pass());
+  }
+
+  // Touch handler regions determine whether touch events block scroll.
+  root->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
+  EXPECT_FALSE(host_impl_->DoTouchEventsBlockScrollAt(gfx::Point(10, 10)));
+  root->SetScrollBlocksOn(ScrollBlocksOnStartTouch | ScrollBlocksOnWheelEvent);
+  EXPECT_TRUE(host_impl_->DoTouchEventsBlockScrollAt(gfx::Point(10, 10)));
+
+  // But they don't influence the actual handling of the scroll gestures.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+
+  // It's the union of scroll-blocks-on mode bits across all layers in the
+  // scroll paret chain that matters.
+  EXPECT_TRUE(host_impl_->DoTouchEventsBlockScrollAt(gfx::Point(10, 30)));
+  root->SetScrollBlocksOn(ScrollBlocksOnNone);
+  EXPECT_FALSE(host_impl_->DoTouchEventsBlockScrollAt(gfx::Point(10, 30)));
+  child->SetScrollBlocksOn(ScrollBlocksOnStartTouch);
+  EXPECT_TRUE(host_impl_->DoTouchEventsBlockScrollAt(gfx::Point(10, 30)));
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollBlocksOnScrollEventHandlers) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+
+  // With registered scroll handlers, scrolls don't generally have to go
+  // to the main thread.
+  root->SetHaveScrollEventHandlers(true);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  host_impl_->ScrollEnd();
+
+  // Even the default scroll blocks on mode doesn't require this.
+  root->SetScrollBlocksOn(ScrollBlocksOnWheelEvent | ScrollBlocksOnStartTouch);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+
+  // But the page can opt in to blocking on scroll event handlers.
+  root->SetScrollBlocksOn(ScrollBlocksOnScrollEvent);
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+
+  // Gesture and Wheel scrolls behave identically in this regard.
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+
+  // And if the handlers go away, scrolls can again be processed on impl
+  // (despite the scroll-blocks-on mode).
+  root->SetHaveScrollEventHandlers(false);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollBlocksOnLayerTopology) {
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  // Create a normal scrollable root layer
+  LayerImpl* root_scroll = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* root_child = root_scroll->children()[0];
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  DrawFrame();
+
+  // Create two child scrollable layers
+  LayerImpl* child1 = 0;
+  {
+    scoped_ptr<LayerImpl> scrollable_child_clip_1 =
+        LayerImpl::Create(host_impl_->active_tree(), 6);
+    scoped_ptr<LayerImpl> scrollable_child_1 = CreateScrollableLayer(
+        7, gfx::Size(10, 10), scrollable_child_clip_1.get());
+    child1 = scrollable_child_1.get();
+    scrollable_child_1->SetPosition(gfx::Point(5, 5));
+    scrollable_child_1->SetHaveWheelEventHandlers(true);
+    scrollable_child_1->SetHaveScrollEventHandlers(true);
+    scrollable_child_clip_1->AddChild(scrollable_child_1.Pass());
+    root_child->AddChild(scrollable_child_clip_1.Pass());
+  }
+
+  LayerImpl* child2 = 0;
+  {
+    scoped_ptr<LayerImpl> scrollable_child_clip_2 =
+        LayerImpl::Create(host_impl_->active_tree(), 8);
+    scoped_ptr<LayerImpl> scrollable_child_2 = CreateScrollableLayer(
+        9, gfx::Size(10, 10), scrollable_child_clip_2.get());
+    child2 = scrollable_child_2.get();
+    scrollable_child_2->SetPosition(gfx::Point(5, 20));
+    scrollable_child_2->SetHaveWheelEventHandlers(true);
+    scrollable_child_2->SetHaveScrollEventHandlers(true);
+    scrollable_child_clip_2->AddChild(scrollable_child_2.Pass());
+    root_child->AddChild(scrollable_child_clip_2.Pass());
+  }
+
+  // Scroll-blocks-on on a layer affects scrolls that hit that layer.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(10, 10), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+  child1->SetScrollBlocksOn(ScrollBlocksOnScrollEvent);
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(10, 10), InputHandler::Gesture));
+
+  // But not those that hit only other layers.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+
+  // It's the union of bits set across the scroll ancestor chain that matters.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Wheel));
+  host_impl_->ScrollEnd();
+  root->SetScrollBlocksOn(ScrollBlocksOnWheelEvent);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Gesture));
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Wheel));
+  child2->SetScrollBlocksOn(ScrollBlocksOnScrollEvent);
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Wheel));
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(10, 25), InputHandler::Gesture));
 }
 
 TEST_F(LayerTreeHostImplTest, FlingOnlyWhenScrollingTouchscreen) {

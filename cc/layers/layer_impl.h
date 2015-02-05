@@ -27,6 +27,7 @@
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/layers/scroll_blocks_on.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
@@ -479,6 +480,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return touch_event_handler_region_;
   }
 
+  void SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
+    scroll_blocks_on_ = scroll_blocks_on;
+  }
+  ScrollBlocksOn scroll_blocks_on() const { return scroll_blocks_on_; }
   void SetDrawCheckerboardForMissingTiles(bool checkerboard) {
     draw_checkerboard_for_missing_tiles_ = checkerboard;
   }
@@ -488,7 +493,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   InputHandler::ScrollStatus TryScroll(
       const gfx::PointF& screen_space_point,
-      InputHandler::ScrollInputType type) const;
+      InputHandler::ScrollInputType type,
+      ScrollBlocksOn effective_block_mode) const;
 
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }
@@ -662,6 +668,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
+
+  static_assert(ScrollBlocksOnMax < (1 << 3), "ScrollBlocksOn too big");
+  ScrollBlocksOn scroll_blocks_on_ : 3;
+
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
   bool stacking_order_changed_ : 1;

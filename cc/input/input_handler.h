@@ -143,7 +143,10 @@ class CC_EXPORT InputHandler {
                                            ScrollInputType type) = 0;
 
   virtual bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) = 0;
-  virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_point) = 0;
+
+  // Whether the page should be given the opportunity to suppress scrolling by
+  // consuming touch events that started at |viewport_point|.
+  virtual bool DoTouchEventsBlockScrollAt(const gfx::Point& viewport_point) = 0;
 
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
   // LatencyInfoSwapPromiseMonitor. During the life time of the

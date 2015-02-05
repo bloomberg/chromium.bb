@@ -383,6 +383,28 @@ WebVector<WebRect> WebLayerImpl::touchEventHandlerRegion() const {
   return result;
 }
 
+static_assert(static_cast<ScrollBlocksOn>(blink::WebScrollBlocksOnNone) ==
+                  ScrollBlocksOnNone,
+              "ScrollBlocksOn and WebScrollBlocksOn enums must match");
+static_assert(static_cast<ScrollBlocksOn>(blink::WebScrollBlocksOnStartTouch) ==
+                  ScrollBlocksOnStartTouch,
+              "ScrollBlocksOn and WebScrollBlocksOn enums must match");
+static_assert(static_cast<ScrollBlocksOn>(blink::WebScrollBlocksOnWheelEvent) ==
+                  ScrollBlocksOnWheelEvent,
+              "ScrollBlocksOn and WebScrollBlocksOn enums must match");
+static_assert(
+    static_cast<ScrollBlocksOn>(blink::WebScrollBlocksOnScrollEvent) ==
+        ScrollBlocksOnScrollEvent,
+    "ScrollBlocksOn and WebScrollBlocksOn enums must match");
+
+void WebLayerImpl::setScrollBlocksOn(blink::WebScrollBlocksOn blocks) {
+  layer_->SetScrollBlocksOn(static_cast<ScrollBlocksOn>(blocks));
+}
+
+blink::WebScrollBlocksOn WebLayerImpl::scrollBlocksOn() const {
+  return static_cast<blink::WebScrollBlocksOn>(layer_->scroll_blocks_on());
+}
+
 void WebLayerImpl::setIsContainerForFixedPositionLayers(bool enable) {
   layer_->SetIsContainerForFixedPositionLayers(enable);
 }

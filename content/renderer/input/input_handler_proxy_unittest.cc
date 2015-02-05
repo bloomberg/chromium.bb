@@ -117,7 +117,7 @@ class MockInputHandler : public cc::InputHandler {
                     cc::InputHandler::ScrollInputType type));
 
   MOCK_METHOD1(HaveWheelEventHandlersAt, bool(const gfx::Point& point));
-  MOCK_METHOD1(HaveTouchEventHandlersAt, bool(const gfx::Point& point));
+  MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
 
   virtual void SetRootLayerScrollOffsetDelegate(
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
@@ -1501,11 +1501,11 @@ TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_,
-              HaveTouchEventHandlersAt(
+              DoTouchEventsBlockScrollAt(
                   testing::Property(&gfx::Point::x, testing::Gt(0))))
       .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
-              HaveTouchEventHandlersAt(
+              DoTouchEventsBlockScrollAt(
                   testing::Property(&gfx::Point::x, testing::Lt(0))))
       .WillOnce(testing::Return(false));
 
@@ -1526,11 +1526,11 @@ TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_,
-              HaveTouchEventHandlersAt(
+              DoTouchEventsBlockScrollAt(
                   testing::Property(&gfx::Point::x, testing::Eq(0))))
       .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
-              HaveTouchEventHandlersAt(
+              DoTouchEventsBlockScrollAt(
                   testing::Property(&gfx::Point::x, testing::Gt(0))))
       .WillOnce(testing::Return(true));
   // Since the second touch point hits a touch-region, there should be no

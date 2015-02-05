@@ -558,9 +558,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   for (size_t i = 0; i < touch_event.touchesLength; ++i) {
     if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
       continue;
-    if (input_handler_->HaveTouchEventHandlersAt(
+    if (input_handler_->DoTouchEventsBlockScrollAt(
             gfx::Point(touch_event.touches[i].position.x,
                        touch_event.touches[i].position.y))) {
+      // TODO(rbyers): We should consider still sending the touch events to
+      // main asynchronously (crbug.com/455539).
       return DID_NOT_HANDLE;
     }
   }

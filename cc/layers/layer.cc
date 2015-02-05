@@ -71,6 +71,7 @@ Layer::Layer()
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
+      scroll_blocks_on_(ScrollBlocksOnNone),
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -758,6 +759,14 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
   SetNeedsCommit();
 }
 
+void Layer::SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (scroll_blocks_on_ == scroll_blocks_on)
+    return;
+  scroll_blocks_on_ = scroll_blocks_on;
+  SetNeedsCommit();
+}
+
 void Layer::SetDrawCheckerboardForMissingTiles(bool checkerboard) {
   DCHECK(IsPropertyChangeAllowed());
   if (draw_checkerboard_for_missing_tiles_ == checkerboard)
@@ -911,6 +920,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
+  layer->SetScrollBlocksOn(scroll_blocks_on_);
   layer->SetContentsOpaque(contents_opaque_);
   if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
     layer->SetOpacity(opacity_);
