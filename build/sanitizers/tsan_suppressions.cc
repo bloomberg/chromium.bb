@@ -316,6 +316,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/448203
 "race:blink::RemoteFrame::detach\n"
 
+// https://crbug.com/455638
+"deadlock:dbus::Bus::ShutdownAndBlock\n"
+
 // https://crbug.com/455665
 "race:mojo::common::*::tick_clock\n"
 
