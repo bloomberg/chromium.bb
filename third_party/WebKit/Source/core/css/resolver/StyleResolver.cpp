@@ -521,7 +521,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
     documentStyle->setDisplay(BLOCK);
     documentStyle->setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
 
-    document.setupFontBuilder(documentStyle.get());
+    document.setupFontBuilder(*documentStyle);
 
     return documentStyle.release();
 }
@@ -529,7 +529,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
 void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* element)
 {
     StyleAdjuster adjuster(document().inQuirksMode());
-    adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element, state.cachedUAStyle());
+    adjuster.adjustRenderStyle(state.mutableStyleRef(), *state.parentStyle(), element, state.cachedUAStyle());
 }
 
 // Start loading resources referenced by this style.
@@ -714,7 +714,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
 PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue& value)
 {
     StyleBuilder::applyProperty(property, state, &value);
-    state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.style());
+    state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.mutableStyleRef());
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
@@ -917,7 +917,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
     RefPtr<RenderStyle> style = RenderStyle::create();
     FontBuilder fontBuilder(document());
     fontBuilder.setInitial(style->effectiveZoom());
-    fontBuilder.createFont(document().styleEngine()->fontSelector(), style.get());
+    fontBuilder.createFont(document().styleEngine()->fontSelector(), *style);
     return style.release();
 }
 
@@ -933,7 +933,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 
 void StyleResolver::updateFont(StyleResolverState& state)
 {
-    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.style());
+    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.mutableStyleRef());
     state.setConversionFontSizes(CSSToLengthConversionData::FontSizes(state.style(), state.rootElementStyle()));
     state.setConversionZoom(state.style()->effectiveZoom());
 }

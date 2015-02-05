@@ -1623,7 +1623,7 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
         root->recalcDistribution();
 }
 
-void Document::setupFontBuilder(RenderStyle* documentStyle)
+void Document::setupFontBuilder(RenderStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);
     RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
@@ -1707,7 +1707,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         newStyle->setOverflowY(overflowY);
         newStyle->setScrollBlocksOn(scrollBlocksOn);
         renderView()->setStyle(newStyle);
-        setupFontBuilder(newStyle.get());
+        setupFontBuilder(*newStyle);
     }
 
     if (body) {

@@ -225,15 +225,15 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     return FontSize::getComputedSizeFromSpecifiedSize(&m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
-static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
+static void getFontAndGlyphOrientation(const RenderStyle& style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
 {
-    if (style->isHorizontalWritingMode()) {
+    if (style.isHorizontalWritingMode()) {
         fontOrientation = Horizontal;
         glyphOrientation = NonCJKGlyphOrientationVerticalRight;
         return;
     }
 
-    switch (style->textOrientation()) {
+    switch (style.textOrientation()) {
     case TextOrientationVerticalRight:
         fontOrientation = Vertical;
         glyphOrientation = NonCJKGlyphOrientationVerticalRight;
@@ -243,7 +243,7 @@ static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation
         glyphOrientation = NonCJKGlyphOrientationUpright;
         return;
     case TextOrientationSideways:
-        if (style->writingMode() == LeftToRightWritingMode) {
+        if (style.writingMode() == LeftToRightWritingMode) {
             // FIXME: This should map to sideways-left, which is not supported yet.
             fontOrientation = Vertical;
             glyphOrientation = NonCJKGlyphOrientationVerticalRight;
@@ -264,7 +264,7 @@ static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation
     }
 }
 
-void FontBuilder::updateOrientation(FontDescription& description, RenderStyle* style)
+void FontBuilder::updateOrientation(FontDescription& description, const RenderStyle& style)
 {
     FontOrientation fontOrientation;
     NonCJKGlyphOrientation glyphOrientation;
@@ -307,7 +307,7 @@ void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescript
     newDescription.setSpecifiedSize(size);
 }
 
-void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, RenderStyle* style)
+void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const RenderStyle& style)
 {
     float specifiedSize = fontDescription.specifiedSize();
 
@@ -316,24 +316,24 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, RenderSt
 
     fontDescription.setSpecifiedSize(specifiedSize);
 
-    checkForGenericFamilyChange(style->fontDescription(), fontDescription);
+    checkForGenericFamilyChange(style.fontDescription(), fontDescription);
 }
 
-void FontBuilder::updateComputedSize(FontDescription& fontDescription, RenderStyle* style)
+void FontBuilder::updateComputedSize(FontDescription& fontDescription, const RenderStyle& style)
 {
-    float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style->effectiveZoom(), fontDescription.specifiedSize());
-    float multiplier = style->textAutosizingMultiplier();
+    float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
+    float multiplier = style.textAutosizingMultiplier();
     if (multiplier > 1)
         computedSize = TextAutosizer::computeAutosizedFontSize(computedSize, multiplier);
     fontDescription.setComputedSize(computedSize);
 }
 
-void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle* style)
+void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle& style)
 {
     if (!m_flags)
         return;
 
-    FontDescription description = style->fontDescription();
+    FontDescription description = style.fontDescription();
 
     if (isSet(PropertySetFlag::Family)) {
         description.setGenericFamily(m_fontDescription.genericFamily());
@@ -372,16 +372,16 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     updateSpecifiedSize(description, style);
     updateComputedSize(description, style);
 
-    style->setFontDescription(description);
-    style->font().update(fontSelector);
+    style.setFontDescription(description);
+    style.font().update(fontSelector);
     m_flags = 0;
 }
 
-void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle* documentStyle)
+void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
-    fontDescription.setLocale(documentStyle->locale());
-    fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
+    fontDescription.setLocale(documentStyle.locale());
+    fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle.locale()));
 
     setFamilyDescription(fontDescription, FontBuilder::initialFamilyDescription());
     setSize(fontDescription, FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false));
@@ -393,8 +393,8 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
     getFontAndGlyphOrientation(documentStyle, fontOrientation, glyphOrientation);
     fontDescription.setOrientation(fontOrientation);
     fontDescription.setNonCJKGlyphOrientation(glyphOrientation);
-    documentStyle->setFontDescription(fontDescription);
-    documentStyle->font().update(fontSelector);
+    documentStyle.setFontDescription(fontDescription);
+    documentStyle.font().update(fontSelector);
 }
 
 }

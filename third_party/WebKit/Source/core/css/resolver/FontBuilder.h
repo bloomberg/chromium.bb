@@ -65,9 +65,9 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
+    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle&);
 
-    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
+    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle&);
 
     bool fontDirty() const { return m_flags; }
 
@@ -88,11 +88,11 @@ private:
 
     void setFamilyDescription(FontDescription&, const FontDescription::FamilyDescription&);
     void setSize(FontDescription&, const FontDescription::Size&);
-    void updateOrientation(FontDescription&, RenderStyle*);
+    void updateOrientation(FontDescription&, const RenderStyle&);
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
     void checkForGenericFamilyChange(const FontDescription&, FontDescription&);
-    void updateSpecifiedSize(FontDescription&, RenderStyle*);
-    void updateComputedSize(FontDescription&, RenderStyle*);
+    void updateSpecifiedSize(FontDescription&, const RenderStyle&);
+    void updateComputedSize(FontDescription&, const RenderStyle&);
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 

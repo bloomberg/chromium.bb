@@ -41,13 +41,13 @@ public:
         : m_useQuirksModeStyles(useQuirksModeStyles)
     { }
 
-    void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*, const CachedUAStyle*);
+    void adjustRenderStyle(RenderStyle& styleToAdjust, const RenderStyle& parentStyle, Element*, const CachedUAStyle*);
 
 private:
-    void adjustStyleForFirstLetter(RenderStyle*);
-    void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
-    void adjustStyleForHTMLElement(RenderStyle* styleToAdjust, RenderStyle* parentStyle, HTMLElement&);
-    void adjustOverflow(RenderStyle* styleToAdjust);
+    void adjustStyleForFirstLetter(RenderStyle&);
+    void adjustStyleForDisplay(RenderStyle& styleToAdjust, const RenderStyle& parentStyle);
+    void adjustStyleForHTMLElement(RenderStyle& styleToAdjust, const RenderStyle& parentStyle, HTMLElement&);
+    void adjustOverflow(RenderStyle& styleToAdjust);
     void adjustStyleForAlignment(RenderStyle& styleToAdjust, const RenderStyle& parentStyle);
 
     bool m_useQuirksModeStyles;

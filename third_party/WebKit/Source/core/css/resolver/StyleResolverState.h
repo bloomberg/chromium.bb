@@ -71,6 +71,9 @@ public:
     RenderStyle* style() { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
 
+    RenderStyle& mutableStyleRef() const { return *m_style; }
+    const RenderStyle& styleRef() const { return mutableStyleRef(); }
+
     const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
 
     void setConversionFontSizes(const CSSToLengthConversionData::FontSizes& fontSizes) { m_cssToLengthConversionData.setFontSizes(fontSizes); }

@@ -465,7 +465,7 @@ public:
     // Special support for editing
     PassRefPtrWillBeRawPtr<Text> createEditingTextNode(const String&);
 
-    void setupFontBuilder(RenderStyle* documentStyle);
+    void setupFontBuilder(RenderStyle& documentStyle);
 
     bool needsRenderTreeUpdate() const;
     void updateRenderTreeIfNeeded() { updateRenderTree(NoChange); }
