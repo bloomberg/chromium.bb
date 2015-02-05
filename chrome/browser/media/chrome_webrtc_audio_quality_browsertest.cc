@@ -54,6 +54,10 @@ static const char kWebRtcAudioTestHtmlPage[] =
 
 // Test we can set up a WebRTC call and play audio through it.
 //
+// WARNING: this test may mess with both output and input levels on your system
+//          and may cause audio to start blasting at full volume into your
+//          headphones.
+//
 // If you're not a googler and want to run this test, you need to provide a
 // pesq binary for your platform (and sox.exe on windows). Read more on how
 // resources are managed in chrome/test/data/webrtc/resources/README.
@@ -106,7 +110,7 @@ static const char kWebRtcAudioTestHtmlPage[] =
 // 5. Launch chrome and try playing a video with sound. You should see
 //    in the volume meter for the mix device. Configure the mix device to have
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
-//    and set that level to 50 / 100. Otherwise you will get distortion in
+//    and set that level to 50 / 100. Otherwise you might get distortion in
 //    the recording.
 class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
@@ -249,7 +253,7 @@ class AudioRecorder {
   base::Process recording_application_;
 };
 
-bool ForceMicrophoneVolumeTo100Percent() {
+bool ForceMicrophoneLevelTo100Percent() {
 #if defined(OS_WIN)
   // Note: the force binary isn't in tools since it's one of our own.
   base::CommandLine command_line(test::GetReferenceFilesDir().Append(
@@ -487,6 +491,7 @@ void SplitFileOnSilenceIntoDir(const base::FilePath& to_split,
   // First trim beginning and end since they are tricky for the splitter.
   base::FilePath trimmed_audio = CreateTemporaryWaveFile();
 
+  // TODO(phoglund): find smarter way to do this and get rid of RemoveSilence.
   ASSERT_TRUE(RemoveSilence(to_split, trimmed_audio));
   DVLOG(0) << "Trimmed silence: " << trimmed_audio.value() << std::endl;
 
@@ -543,24 +548,14 @@ void AnalyzeSegmentsAndPrintResult(
 void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
                                 const base::FilePath& recording,
                                 const std::string& perf_modifier) {
-  base::FilePath trimmed_reference = CreateTemporaryWaveFile();
-  base::FilePath trimmed_recording = CreateTemporaryWaveFile();
-
-  ASSERT_TRUE(RemoveSilence(reference_file, trimmed_reference));
-  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
-
   std::string raw_mos;
   std::string mos_lqo;
-  ASSERT_TRUE(RunPesq(trimmed_reference, trimmed_recording, 16000,
-                      &raw_mos, &mos_lqo));
+  ASSERT_TRUE(RunPesq(reference_file, recording, 16000, &raw_mos, &mos_lqo));
 
   perf_test::PrintResult(
       "audio_pesq", perf_modifier, "raw_mos", raw_mos, "score", true);
   perf_test::PrintResult(
       "audio_pesq", perf_modifier, "mos_lqo", mos_lqo, "score", true);
-
-  EXPECT_TRUE(base::DeleteFile(trimmed_reference, false));
-  EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
 }
 
 }  // namespace
@@ -574,8 +569,7 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
 // audio device is up following the getUserMedia call in the left tab. The time
 // it takes to negotiate a call isn't deterministic, but two seconds should be
 // plenty of time. Similarly, the recording time should be enough to catch the
-// whole reference file. If you then silence-trim the reference file and actual
-// file, you should end up with two time-synchronized files.
+// whole reference file.
 void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::FilePath& reference_file,
     const base::FilePath& recording,
@@ -583,7 +577,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::TimeDelta recording_time) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
+  ASSERT_TRUE(ForceMicrophoneLevelTo100Percent());
 
   ConfigureFakeDeviceToPlayFile(reference_file);
 
@@ -631,7 +625,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
       reference_file, recording, kAudioOnlyCallConstraints,
       base::TimeDelta::FromSeconds(25)));
-  ComputeAndPrintPesqResults(reference_file, recording, "_getusermedia");
+  ASSERT_NO_FATAL_FAILURE(ComputeAndPrintPesqResults(
+      reference_file, recording, "_getusermedia"));
 
   EXPECT_TRUE(base::DeleteFile(recording, false));
 }
@@ -646,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
+  ASSERT_TRUE(ForceMicrophoneLevelTo100Percent());
 
   content::WebContents* left_tab =
       OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
@@ -676,7 +671,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   // through WebAudio earlier).
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(kReferenceFile);
-  ComputeAndPrintPesqResults(reference_file, recording, "_webaudio");
+  ASSERT_NO_FATAL_FAILURE(ComputeAndPrintPesqResults(
+      reference_file, recording, "_webaudio"));
+  EXPECT_TRUE(base::DeleteFile(recording, false));
 }
 
 /**
