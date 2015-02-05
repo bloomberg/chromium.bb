@@ -8,6 +8,8 @@
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerLocation.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
@@ -91,6 +93,33 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState)
 
     WebServiceWorkerClientsClaimCallbacks* callbacks = new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver);
     ServiceWorkerGlobalScopeClient::from(executionContext)->claim(callbacks);
+    return promise;
+}
+
+ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const String& url)
+{
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    ExecutionContext* context = scriptState->executionContext();
+
+    KURL parsedUrl = KURL(toWorkerGlobalScope(context)->location()->url(), url);
+    if (!parsedUrl.isValid()) {
+        resolver->reject(DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
+        return promise;
+    }
+
+    if (!context->securityOrigin()->canRequest(parsedUrl)) {
+        resolver->reject(DOMException::create(SecurityError, "'" + parsedUrl.elidedString() + "' is not same-origin with the Worker."));
+        return promise;
+    }
+
+    if (!context->isWindowInteractionAllowed()) {
+        resolver->reject(DOMException::create(InvalidAccessError, "Not allowed to open a window."));
+        return promise;
+    }
+    context->consumeWindowInteraction();
+
+    ServiceWorkerGlobalScopeClient::from(context)->openWindow(parsedUrl, new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
     return promise;
 }
 

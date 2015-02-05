@@ -53,6 +53,11 @@ void ServiceWorkerGlobalScopeClientImpl::getClients(WebServiceWorkerClientsCallb
     m_client.getClients(callbacks);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::openWindow(const WebURL& url, WebServiceWorkerClientCallbacks* callbacks)
+{
+    m_client.openWindow(url, callbacks);
+}
+
 WebURL ServiceWorkerGlobalScopeClientImpl::scope() const
 {
     return m_client.scope();

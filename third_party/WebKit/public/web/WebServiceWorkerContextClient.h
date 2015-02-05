@@ -154,6 +154,12 @@ public:
     // passed to the WebServiceWorkerClientsCallbacks implementation.
     virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after calling either onSuccess or onError.
+    // WebServiceWorkerClientInfo and WebServiceWorkerError ownerships are
+    // passed to the WebServiceWorkerClientsCallbacks implementation.
+    virtual void openWindow(const WebURL& url, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
     virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }

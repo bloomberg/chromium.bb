@@ -11,5 +11,6 @@
     ImplementedAs=ServiceWorkerClients,
 ] interface Clients {
     [CallWith=ScriptState] Promise<sequence<Client>?> getAll(optional ClientQueryOptions options);
+    [RuntimeEnabled=ServiceWorkerClientAttributes, CallWith=ScriptState] Promise<WindowClient?> openWindow(USVString url);
     [CallWith=ScriptState] Promise claim();
 };
