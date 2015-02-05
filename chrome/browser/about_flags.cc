@@ -1717,6 +1717,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableOutOfProcessPdf)
   },
   {
+    "enable-pdf-material-ui",
+    IDS_FLAGS_PDF_MATERIAL_UI_NAME,
+    IDS_FLAGS_PDF_MATERIAL_UI_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePdfMaterialUI,
+                              switches::kDisablePdfMaterialUI)
+  },
+  {
     "disable-cast-streaming-hw-encoding",
     IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_NAME,
     IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_DESCRIPTION,
