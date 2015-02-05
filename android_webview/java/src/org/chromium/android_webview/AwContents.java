@@ -181,6 +181,15 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
+    /**
+     * Callback used when flushing the visual state, see {@link #flushVisualState}.
+     */
+    @VisibleForTesting
+    public abstract static class VisualStateFlushCallback {
+        public abstract void onComplete();
+        public abstract void onFailure();
+    }
+
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
@@ -2030,6 +2039,21 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyed()) nativeSetJsOnlineProperty(mNativeAwContents, networkUp);
     }
 
+    /**
+     * Flush the visual state.
+     *
+     * Flushing the visual state means queuing a callback in Blink that will be invoked when the
+     * contents of the DOM tree at the moment that the callback was enqueued (or later) are drawn
+     * into the screen. In other words, the following events need to happen before the callback is
+     * invoked:
+     * 1. The DOM tree is committed becoming the pending tree - see ThreadProxy::BeginMainFrame
+     * 2. The pending tree is activated becoming the active tree
+     * 3. A frame swap happens that draws the active tree into the screen
+     */
+    public void flushVisualState(VisualStateFlushCallback callback) {
+        nativeFlushVisualState(mNativeAwContents, callback);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -2131,6 +2155,28 @@ public class AwContents implements SmartClipProvider {
         // the callback helper, to avoid doubling back into the renderer compositor in the middle
         // of the notification it is sending up to here.
         mContentsClient.getCallbackHelper().postOnNewPicture(mPictureListenerContentProvider);
+    }
+
+    /**
+     * Invokes the given {@link VisualStateFlushCallback}.
+     *
+     * @param result true if the flush request was successful and false otherwise
+     */
+    @CalledByNative
+    public void flushVisualStateCallback(
+            final VisualStateFlushCallback callback, final boolean result) {
+        // Posting avoids invoking the callback inside invoking_composite_
+        // (see synchronous_compositor_impl.cc and crbug/452530).
+        mContainerView.getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (result) {
+                    callback.onComplete();
+                } else {
+                    callback.onFailure();
+                }
+            }
+        });
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
@@ -2689,6 +2735,8 @@ public class AwContents implements SmartClipProvider {
     private native long nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
+    private native void nativeFlushVisualState(
+            long nativeAwContents, VisualStateFlushCallback callback);
     private native void nativeClearView(long nativeAwContents);
     private native void nativeSetExtraHeadersForUrl(long nativeAwContents,
             String url, String extraHeaders);

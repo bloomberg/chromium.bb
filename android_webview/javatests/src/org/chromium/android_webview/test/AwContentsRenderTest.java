@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -43,17 +43,11 @@ public class AwContentsRenderTest extends AwTestBase {
         });
     }
 
-    Bitmap grabViewToBitmap() {
-        final Bitmap result = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
-        mAwContents.onDraw(new android.graphics.Canvas(result));
-        return result;
-    }
-
     int sampleBackgroundColorOnUiThread() throws Exception {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return grabViewToBitmap().getPixel(0, 0);
+                return GraphicsTestUtils.drawAwContents(mAwContents, 10, 10).getPixel(0, 0);
             }
         });
     }

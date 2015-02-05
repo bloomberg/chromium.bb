@@ -1034,6 +1034,27 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
   browser_view_renderer_.EnableOnNewPicture(enabled);
 }
 
+namespace {
+void FlushVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
+                              ScopedJavaGlobalRef<jobject>* callback,
+                              bool result) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref.get(env);
+  if (obj.is_null())
+     return;
+  Java_AwContents_flushVisualStateCallback(
+      env, obj.obj(), callback->obj(), result);
+}
+}  // namespace
+
+void AwContents::FlushVisualState(JNIEnv* env, jobject obj, jobject callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
+  j_callback->Reset(env, callback);
+  web_contents_->GetMainFrame()->FlushVisualState(base::Bind(
+      &FlushVisualStateCallback, java_ref_, base::Owned(j_callback)));
+}
+
 void AwContents::ClearView(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_view_renderer_.ClearView();

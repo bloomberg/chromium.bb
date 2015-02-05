@@ -198,6 +198,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.
   swapout_event_monitor_timeout_.reset();
 
+  for (const auto& iter: flush_visual_state_callbacks_) {
+    iter.second.Run(false);
+  }
+
   if (render_widget_host_)
     render_widget_host_->Cleanup();
 }
@@ -347,6 +351,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_JavaScriptExecuteResponse,
                         OnJavaScriptExecuteResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FlushVisualStateResponse,
+                        OnFlushVisualStateResponse)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptMessage,
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
@@ -1057,6 +1063,16 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
   }
 }
 
+void RenderFrameHostImpl::OnFlushVisualStateResponse(uint64 id) {
+  auto it = flush_visual_state_callbacks_.find(id);
+  if (it != flush_visual_state_callbacks_.end()) {
+    it->second.Run(true);
+    flush_visual_state_callbacks_.erase(it);
+  } else {
+    NOTREACHED() << "Received script response for unknown request";
+  }
+}
+
 void RenderFrameHostImpl::OnRunJavaScriptMessage(
     const base::string16& message,
     const base::string16& default_prompt,
@@ -1691,6 +1707,14 @@ void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
     if (manager)
       manager->ActivateFindInPageResult(request_id);
   }
+}
+
+void RenderFrameHostImpl::FlushVisualState(
+    const FlushVisualStateResultCallback& callback) {
+  static uint64 next_id = 1;
+  uint64 key = next_id++;
+  Send(new FrameMsg_FlushVisualStateRequest(routing_id_, key));
+  flush_visual_state_callbacks_.insert(std::make_pair(key, callback));
 }
 
 #if defined(OS_WIN)

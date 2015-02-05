@@ -1030,6 +1030,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnJavaScriptExecuteRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestForTests,
                         OnJavaScriptExecuteRequestForTests)
+    IPC_MESSAGE_HANDLER(FrameMsg_FlushVisualStateRequest,
+                        OnFlushVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(FrameMsg_SetupTransitionView, OnSetupTransitionView)
@@ -1496,6 +1498,12 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
     }
     Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
   }
+}
+
+void RenderFrameImpl::OnFlushVisualStateRequest(uint64 id) {
+  GetRenderWidget()->QueueMessage(
+      new FrameHostMsg_FlushVisualStateResponse(routing_id_, id),
+      MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
 }
 
 void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {

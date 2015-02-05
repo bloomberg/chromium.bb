@@ -138,6 +138,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
+  void FlushVisualState(
+      const FlushVisualStateResultCallback& callback) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -461,6 +463,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
   void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
+  void OnFlushVisualStateResponse(uint64 id);
   void OnRunJavaScriptMessage(const base::string16& message,
                               const base::string16& default_prompt,
                               const GURL& frame_url,
@@ -577,6 +580,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The mapping of pending JavaScript calls created by
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
+  std::map<uint64, FlushVisualStateResultCallback>
+      flush_visual_state_callbacks_;
 
   // RenderFrameHosts that need management of the rendering and input events
   // for their frame subtrees require RenderWidgetHosts. This typically

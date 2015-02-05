@@ -5,17 +5,16 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContentsClient.ShouldInterceptRequestParams;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -252,11 +251,9 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                Bitmap bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                canvas.translate(-(float) mTestContainerView.getWidth() / 2,
+                Bitmap bitmap = GraphicsTestUtils.drawAwContents(mAwContents, 2, 2,
+                        -(float) mTestContainerView.getWidth() / 2,
                         -(float) mTestContainerView.getHeight() / 2);
-                mAwContents.onDraw(canvas);
                 return bitmap.getPixel(0, 0) == Color.BLUE;
             }
         });

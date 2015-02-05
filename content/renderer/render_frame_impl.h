@@ -607,6 +607,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnJavaScriptExecuteRequestForTests(const base::string16& javascript,
                                           int id,
                                           bool notify_result);
+  void OnFlushVisualStateRequest(uint64 key);
   void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetCompositionFromExistingText(
       int start, int end,
