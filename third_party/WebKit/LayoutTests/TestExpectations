@@ -1117,6 +1117,7 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/image-ins
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
 
 crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
+crbug.com/453794 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 
 # virtual/slimmingpaint/fast/multicol runs with region based columns, and therefore needs to
 # duplicate all expectations that virtual/regionbasedmulticol/fast/multicol has:
