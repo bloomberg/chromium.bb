@@ -36,7 +36,7 @@ VideoEncoder::VideoEncoder(const VideoEncoder& other) : Resource(other) {
 }
 
 int32_t VideoEncoder::GetSupportedProfiles(const CompletionCallbackWithOutput<
-    std::vector<PP_VideoProfileDescription>>& cc) {
+    std::vector<PP_VideoProfileDescription> >& cc) {
   if (has_interface<PPB_VideoEncoder_0_1>()) {
     return get_interface<PPB_VideoEncoder_0_1>()->GetSupportedProfiles(
         pp_resource(), cc.output(), cc.pp_completion_callback());

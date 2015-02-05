@@ -67,7 +67,7 @@ class VideoEncoder : public Resource {
   /// @return If >= 0, the number of supported profiles returned, otherwise an
   /// error code from <code>pp_errors.h</code>.
   int32_t GetSupportedProfiles(const CompletionCallbackWithOutput<
-      std::vector<PP_VideoProfileDescription>>& cc);
+      std::vector<PP_VideoProfileDescription> >& cc);
 
   /// Initializes a video encoder resource. This should be called after
   /// GetSupportedProfiles() and before any functions below.
