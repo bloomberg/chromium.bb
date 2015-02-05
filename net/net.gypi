@@ -607,7 +607,6 @@
       'http/disk_cache_based_quic_server_info.h',
       'http/failing_http_transaction_factory.cc',
       'http/failing_http_transaction_factory.h',
-      'http/http_atom_list.h',
       'http/http_auth.cc',
       'http/http_auth.h',
       'http/http_auth_cache.cc',

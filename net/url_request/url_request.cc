@@ -227,12 +227,6 @@ bool URLRequest::has_upload() const {
   return upload_data_stream_.get() != NULL;
 }
 
-void URLRequest::SetExtraRequestHeaderById(int id, const string& value,
-                                           bool overwrite) {
-  DCHECK(!is_pending_ || is_redirecting_);
-  NOTREACHED() << "implement me!";
-}
-
 void URLRequest::SetExtraRequestHeaderByName(const string& name,
                                              const string& value,
                                              bool overwrite) {
@@ -378,26 +372,12 @@ UploadProgress URLRequest::GetUploadProgress() const {
   return job_->GetUploadProgress();
 }
 
-void URLRequest::GetResponseHeaderById(int id, string* value) {
-  DCHECK(job_.get());
-  NOTREACHED() << "implement me!";
-}
-
 void URLRequest::GetResponseHeaderByName(const string& name, string* value) {
   DCHECK(value);
   if (response_info_.headers.get()) {
     response_info_.headers->GetNormalizedHeader(name, value);
   } else {
     value->clear();
-  }
-}
-
-void URLRequest::GetAllResponseHeaders(string* headers) {
-  DCHECK(headers);
-  if (response_info_.headers.get()) {
-    response_info_.headers->GetNormalizedHeaders(headers);
-  } else {
-    headers->clear();
   }
 }
 
