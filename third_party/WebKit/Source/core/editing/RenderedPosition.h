@@ -32,7 +32,7 @@
 #define RenderedPosition_h
 
 #include "core/editing/TextAffinity.h"
-#include "core/rendering/InlineBox.h"
+#include "core/layout/line/InlineBox.h"
 
 namespace blink {
 

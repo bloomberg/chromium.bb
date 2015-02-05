@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/RenderedDocumentMarker.h"
@@ -179,12 +179,12 @@ TextRun SVGInlineTextBox::constructTextRun(const RenderStyle& style, const SVGTe
     RELEASE_ASSERT(!text->needsLayout());
 
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
-                , 0 // length, will be set below if non-zero.
-                , 0 // xPos, only relevant with allowTabs=true
-                , 0 // padding, only relevant for justified text, not relevant for SVG
-                , TextRun::AllowTrailingExpansion
-                , direction()
-                , dirOverride() || style.rtlOrdering() == VisualOrder /* directionalOverride */);
+        , 0 // length, will be set below if non-zero.
+        , 0 // xPos, only relevant with allowTabs=true
+        , 0 // padding, only relevant for justified text, not relevant for SVG
+        , TextRun::AllowTrailingExpansion
+        , direction()
+        , dirOverride() || style.rtlOrdering() == VisualOrder /* directionalOverride */);
 
     if (fragment.length) {
         if (text->is8Bit())
@@ -218,9 +218,9 @@ bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(const SVGText
     else
         startPosition -= offset;
 
-    if (endPosition > offset + length)
+    if (endPosition > offset + length) {
         endPosition = length;
-    else {
+    } else {
         ASSERT(endPosition >= offset);
         endPosition -= offset;
     }
@@ -284,7 +284,7 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
                 renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
                 if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
                     return true;
-             }
+            }
         }
     }
     return false;

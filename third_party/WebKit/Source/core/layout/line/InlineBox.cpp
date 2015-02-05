@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/InlineBox.h"
+#include "core/layout/line/InlineBox.h"
 
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"

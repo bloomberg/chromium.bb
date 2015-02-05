@@ -69,7 +69,7 @@
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderText.h"

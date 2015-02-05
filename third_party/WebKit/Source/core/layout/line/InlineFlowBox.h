@@ -22,7 +22,7 @@
 #define InlineFlowBox_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/InlineBox.h"
+#include "core/layout/line/InlineBox.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderOverflow.h"
 #include "core/rendering/style/ShadowData.h"

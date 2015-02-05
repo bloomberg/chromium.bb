@@ -42,7 +42,7 @@
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/html/HTMLBRElement.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/RuntimeEnabledFeatures.h"

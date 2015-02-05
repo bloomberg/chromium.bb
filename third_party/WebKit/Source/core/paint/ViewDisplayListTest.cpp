@@ -5,10 +5,10 @@
 #include "config.h"
 
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"

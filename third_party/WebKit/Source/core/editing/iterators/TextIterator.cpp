@@ -45,7 +45,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"

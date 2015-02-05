@@ -7,7 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/frame/Settings.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"

@@ -10,6 +10,7 @@
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -17,7 +18,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 

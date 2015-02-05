@@ -52,8 +52,7 @@ public:
     {
     }
 
-    InlineBox(RenderObject& obj, FloatPointWillBeLayoutPoint topLeft, FloatWillBeLayoutUnit logicalWidth, bool firstLine, bool constructed,
-              bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
+    InlineBox(RenderObject& obj, FloatPointWillBeLayoutPoint topLeft, FloatWillBeLayoutUnit logicalWidth, bool firstLine, bool constructed, bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
         : m_next(next)
         , m_prev(prev)
         , m_parent(parent)
@@ -372,7 +371,7 @@ public:
         void setNextOnLineExists(bool nextOnLineExists) const { m_nextOnLineExists = nextOnLineExists; }
 
     private:
-        signed m_expansion : 12; // for justified text
+        unsigned m_expansion : 12; // for justified text
 
     public:
         signed expansion() const { return m_expansion; }

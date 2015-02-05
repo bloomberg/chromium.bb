@@ -23,7 +23,7 @@
 #define SVGInlineTextBox_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 
 namespace blink {

@@ -33,7 +33,7 @@
 
 #include "core/dom/Range.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"

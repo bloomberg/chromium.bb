@@ -21,9 +21,9 @@
 
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/svg/SVGElement.h"

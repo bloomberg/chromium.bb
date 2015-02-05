@@ -21,8 +21,8 @@
 
 #include "core/rendering/svg/SVGTextChunkBuilder.h"
 
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
 
 namespace blink {

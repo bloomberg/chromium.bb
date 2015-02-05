@@ -21,10 +21,10 @@
 #include "core/rendering/svg/SVGTextQuery.h"
 
 #include "core/layout/line/InlineFlowBox.h"
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"

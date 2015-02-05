@@ -31,8 +31,9 @@
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/line/InlineTextBox.h"
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/rendering/InlineTextBox.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -46,7 +47,6 @@
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/RadialGradientAttributes.h"

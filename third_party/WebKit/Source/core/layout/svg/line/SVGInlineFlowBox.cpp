@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 
 namespace blink {
 

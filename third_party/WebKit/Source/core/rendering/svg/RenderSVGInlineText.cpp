@@ -29,8 +29,8 @@
 #include "core/css/FontSize.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {

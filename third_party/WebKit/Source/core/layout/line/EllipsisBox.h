@@ -21,7 +21,7 @@
 #define EllipsisBox_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/InlineBox.h"
+#include "core/layout/line/InlineBox.h"
 
 namespace blink {
 

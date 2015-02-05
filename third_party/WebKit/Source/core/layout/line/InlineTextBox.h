@@ -24,7 +24,7 @@
 #define InlineTextBox_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/InlineBox.h"
+#include "core/layout/line/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
@@ -159,8 +159,9 @@ private:
     int m_start;
     unsigned short m_len;
 
-    unsigned short m_truncation; // Where to truncate when text overflow is applied.  We use special constants to
-                      // denote no truncation (the whole run paints) and full truncation (nothing paints at all).
+    // Where to truncate when text overflow is applied.  We use special constants to denote
+    // no truncation (the whole run paints) and full truncation (nothing paints at all).
+    unsigned short m_truncation;
 
 private:
     TextRun::ExpansionBehavior expansionBehavior() const

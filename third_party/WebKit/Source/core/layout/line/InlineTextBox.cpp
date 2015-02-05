@@ -21,14 +21,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/InlineTextBox.h"
+#include "core/layout/line/InlineTextBox.h"
 
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
+#include "core/layout/line/EllipsisBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/rendering/AbstractInlineTextBox.h"
-#include "core/rendering/EllipsisBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderBlock.h"
@@ -148,8 +148,8 @@ RenderObject::SelectionState InlineTextBox::selectionState() const
             state = RenderObject::SelectionStart;
         else if (end)
             state = RenderObject::SelectionEnd;
-        else if ((state == RenderObject::SelectionEnd || startPos < m_start) &&
-                 (state == RenderObject::SelectionStart || endPos > lastSelectable))
+        else if ((state == RenderObject::SelectionEnd || startPos < m_start)
+            && (state == RenderObject::SelectionStart || endPos > lastSelectable))
             state = RenderObject::SelectionInside;
         else if (state == RenderObject::SelectionBoth)
             state = RenderObject::SelectionNone;
@@ -167,8 +167,9 @@ RenderObject::SelectionState InlineTextBox::selectionState() const
             // truncation.
             ellipsis->setSelectionState(end >= m_truncation && start <= m_truncation ?
                 RenderObject::SelectionInside : RenderObject::SelectionNone);
-        } else
+        } else {
             ellipsis->setSelectionState(RenderObject::SelectionNone);
+        }
     }
 
     return state;
@@ -299,8 +300,7 @@ FloatWillBeLayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, FloatWillB
         truncatedWidth += widthOfVisibleText + ellipsisWidth;
         if (flowIsLTR)
             return logicalLeft() + widthOfVisibleText;
-        else
-            return logicalRight() - widthOfVisibleText - ellipsisWidth;
+        return logicalRight() - widthOfVisibleText - ellipsisWidth;
     }
     truncatedWidth += logicalWidth();
     return -1;

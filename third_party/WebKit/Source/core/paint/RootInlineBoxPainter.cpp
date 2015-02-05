@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/RootInlineBoxPainter.h"
 
+#include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/rendering/EllipsisBox.h"
 #include "core/rendering/PaintInfo.h"
 
 namespace blink {
