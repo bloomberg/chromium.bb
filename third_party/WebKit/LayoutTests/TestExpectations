@@ -18,7 +18,6 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-ifra
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
 crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-position.html [ Failure ]
-crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
 
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 

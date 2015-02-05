@@ -28,6 +28,7 @@ crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
 crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
+crbug.com/24182 virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
 crbug.com/24182 http/tests/accessibility/slow-document-load.html [ Slow ]
 crbug.com/24182 http/tests/cache/subresource-expiration-1.html [ Slow ]
 crbug.com/24182 http/tests/cache/subresource-expiration-2.html [ Slow ]
