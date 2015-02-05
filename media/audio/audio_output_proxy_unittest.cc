@@ -674,4 +674,57 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenEventuallyFails) {
   EXPECT_TRUE(stream2.start_called());
 }
 
+// Simulate failures to open both the low latency and the fallback high latency
+// stream and ensure AudioOutputResampler falls back to a fake stream.  Ensure
+// that after the close delay elapses, opening another stream succeeds with a
+// non-fake stream.
+TEST_F(AudioOutputResamplerTest, FallbackRecovery) {
+  MockAudioOutputStream fake_stream(&manager_, params_);
+
+  // Trigger the fallback mechanism until a fake output stream is created.
+#if defined(OS_WIN)
+  static const int kFallbackCount = 2;
+#else
+  static const int kFallbackCount = 1;
+#endif
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _))
+      .Times(kFallbackCount)
+      .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
+  EXPECT_CALL(manager(),
+              MakeAudioOutputStream(
+                  AllOf(testing::Property(&AudioParameters::format,
+                                          AudioParameters::AUDIO_FAKE),
+                        testing::Property(&AudioParameters::sample_rate,
+                                          params_.sample_rate()),
+                        testing::Property(&AudioParameters::frames_per_buffer,
+                                          params_.frames_per_buffer())),
+                  _)).WillOnce(Return(&fake_stream));
+  EXPECT_CALL(fake_stream, Open()).WillOnce(Return(true));
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
+  EXPECT_TRUE(proxy->Open());
+  CloseAndWaitForCloseTimer(proxy, &fake_stream);
+
+  // Once all proxies have been closed, AudioOutputResampler will start the
+  // reinitialization timer and execute it after the close delay elapses.
+  base::RunLoop run_loop;
+  message_loop_.PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(2 * kTestCloseDelayMs));
+  run_loop.Run();
+
+  // Verify a non-fake stream can be created.
+  MockAudioOutputStream real_stream(&manager_, params_);
+  EXPECT_CALL(manager(),
+              MakeAudioOutputStream(
+                  testing::Property(&AudioParameters::format,
+                                    testing::Ne(AudioParameters::AUDIO_FAKE)),
+                  _)).WillOnce(Return(&real_stream));
+
+  // Stream1 should be able to successfully open and start.
+  EXPECT_CALL(real_stream, Open()).WillOnce(Return(true));
+  proxy = new AudioOutputProxy(resampler_.get());
+  EXPECT_TRUE(proxy->Open());
+  CloseAndWaitForCloseTimer(proxy, &real_stream);
+}
+
 }  // namespace media

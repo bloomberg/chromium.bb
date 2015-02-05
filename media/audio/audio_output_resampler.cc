@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
@@ -153,7 +154,13 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
     : AudioOutputDispatcher(audio_manager, input_params, output_device_id),
       close_delay_(close_delay),
       output_params_(output_params),
-      streams_opened_(false) {
+      original_output_params_(output_params),
+      streams_opened_(false),
+      reinitialize_timer_(FROM_HERE,
+                          close_delay_,
+                          base::Bind(&AudioOutputResampler::Reinitialize,
+                                     base::Unretained(this)),
+                          false) {
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());
   DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
@@ -166,6 +173,24 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
 
 AudioOutputResampler::~AudioOutputResampler() {
   DCHECK(callbacks_.empty());
+}
+
+void AudioOutputResampler::Reinitialize() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(streams_opened_);
+
+  // We can only reinitialize the dispatcher if it has no active proxies. Check
+  // if one has been created since the reinitialization timer was started.
+  if (dispatcher_->HasOutputProxies())
+    return;
+
+  // Log a trace event so we can get feedback in the field when this happens.
+  TRACE_EVENT0("audio", "AudioOutputResampler::Reinitialize");
+
+  dispatcher_->Shutdown();
+  output_params_ = original_output_params_;
+  streams_opened_ = false;
+  Initialize();
 }
 
 void AudioOutputResampler::Initialize() {
@@ -281,6 +306,14 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
   if (it != callbacks_.end()) {
     delete it->second;
     callbacks_.erase(it);
+  }
+
+  // Start the reinitialization timer if there are no active proxies and we're
+  // not using the originally requested output parameters.  This allows us to
+  // recover from transient output creation errors.
+  if (!dispatcher_->HasOutputProxies() && callbacks_.empty() &&
+      !output_params_.Equals(original_output_params_)) {
+    reinitialize_timer_.Reset();
   }
 }
 

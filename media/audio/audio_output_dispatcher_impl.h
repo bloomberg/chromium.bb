@@ -60,6 +60,9 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
 
   void Shutdown() override;
 
+  // Returns true if there are any open AudioOutputProxy objects.
+  bool HasOutputProxies() const;
+
  private:
   friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
   ~AudioOutputDispatcherImpl() override;

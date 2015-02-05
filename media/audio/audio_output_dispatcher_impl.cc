@@ -130,6 +130,10 @@ void AudioOutputDispatcherImpl::Shutdown() {
   DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
 }
 
+bool AudioOutputDispatcherImpl::HasOutputProxies() const {
+  return idle_proxies_ || !proxy_to_physical_map_.empty();
+}
+
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
