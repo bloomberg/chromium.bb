@@ -146,6 +146,7 @@
     },
     {
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
+      'files': [],
       'conditions': [
         ['disable_nacl!=1', {
           'conditions': [
