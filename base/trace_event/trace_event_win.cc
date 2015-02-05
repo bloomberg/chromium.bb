@@ -9,7 +9,7 @@
 #include <initguid.h>  // NOLINT
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 using base::win::EtwEventType;
 using base::win::EtwMofEvent;
@@ -120,5 +120,5 @@ void TraceEventETWProvider::Resurrect() {
   StaticMemorySingletonTraits<TraceEventETWProvider>::Resurrect();
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

@@ -6,7 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 TEST(TraceEventArgumentTest, FlatDictionary) {
   scoped_refptr<TracedValue> value = new TracedValue();
@@ -49,5 +49,5 @@ TEST(TraceEventArgumentTest, Hierarchy) {
       json);
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

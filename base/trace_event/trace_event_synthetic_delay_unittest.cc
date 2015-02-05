@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 namespace {
 
 const int kTargetDurationMs = 100;
@@ -150,5 +150,5 @@ TEST_F(TraceEventSyntheticDelayTest, BeginParallel) {
   EXPECT_LT((Now() - start_time).InMilliseconds(), kShortDurationMs);
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

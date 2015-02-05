@@ -20,7 +20,7 @@
 #include <initguid.h>  // NOLINT - must be last include.
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 namespace {
 
@@ -315,5 +315,5 @@ TEST_F(TraceEventWinTest, Macros) {
   PlayLog();
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

@@ -16,13 +16,13 @@
 #include "base/trace_event/trace_event.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 namespace {
 
 /////////////////////////////////////////////////////////////////////////////
 // Holds profiled system stats until the tracing system needs to serialize it.
-class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
+class SystemStatsHolder : public base::debug::ConvertableToTraceFormat {
  public:
   SystemStatsHolder() { }
 
@@ -30,7 +30,7 @@ class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
   // Uses the previous stats to compute rates if this is not the first profile.
   void GetSystemProfilingStats();
 
-  // base::trace_event::ConvertableToTraceFormat overrides:
+  // base::debug::ConvertableToTraceFormat overrides:
   void AppendAsTraceFormat(std::string* out) const override {
     AppendSystemProfileAsTraceFormat(system_stats_, out);
   }
@@ -129,5 +129,5 @@ void AppendSystemProfileAsTraceFormat(const SystemMetrics& system_metrics,
   *output += tmp;
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

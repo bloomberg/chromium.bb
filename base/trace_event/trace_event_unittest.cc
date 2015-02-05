@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 namespace {
 
@@ -3079,5 +3079,6 @@ TEST(TraceOptionsTest, TraceOptionsToString) {
   }
 }
 
-}  // namespace trace_event
+
+}  // namespace debug
 }  // namespace base

@@ -16,7 +16,7 @@
 #endif
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 // Tests for the trace event memory tracking system. Exists as a class so it
 // can be a friend of TraceMemoryController.
@@ -236,5 +236,5 @@ TEST_F(TraceMemoryTest, StringFromHexAddress) {
   EXPECT_STREQ(kHello, StringFromHexAddress(hex_address.str()));
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base

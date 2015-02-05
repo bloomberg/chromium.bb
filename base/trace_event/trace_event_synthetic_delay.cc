@@ -10,7 +10,7 @@ const int kMaxSyntheticDelays = 32;
 }  // namespace
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 TraceEventSyntheticDelayClock::TraceEventSyntheticDelayClock() {}
 TraceEventSyntheticDelayClock::~TraceEventSyntheticDelayClock() {}
@@ -200,7 +200,7 @@ void ResetTraceEventSyntheticDelays() {
   TraceEventSyntheticDelayRegistry::GetInstance()->ResetAllDelays();
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base
 
 namespace trace_event_internal {
@@ -215,16 +215,15 @@ ScopedSyntheticDelay::~ScopedSyntheticDelay() {
   delay_impl_->EndParallel(end_time_);
 }
 
-base::trace_event::TraceEventSyntheticDelay* GetOrCreateDelay(
+base::debug::TraceEventSyntheticDelay* GetOrCreateDelay(
     const char* name,
     base::subtle::AtomicWord* impl_ptr) {
-  base::trace_event::TraceEventSyntheticDelay* delay_impl =
-      reinterpret_cast<base::trace_event::TraceEventSyntheticDelay*>(
+  base::debug::TraceEventSyntheticDelay* delay_impl =
+      reinterpret_cast<base::debug::TraceEventSyntheticDelay*>(
           base::subtle::Acquire_Load(impl_ptr));
   if (!delay_impl) {
-    delay_impl =
-        base::trace_event::TraceEventSyntheticDelayRegistry::GetInstance()
-            ->GetOrCreateDelay(name);
+    delay_impl = base::debug::TraceEventSyntheticDelayRegistry::GetInstance()
+                     ->GetOrCreateDelay(name);
     base::subtle::Release_Store(
         impl_ptr, reinterpret_cast<base::subtle::AtomicWord>(delay_impl));
   }

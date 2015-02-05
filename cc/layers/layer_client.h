@@ -11,16 +11,10 @@
 #include "cc/base/cc_export.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 class ConvertableToTraceFormat;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
 }
-}  // namespace base
 
 namespace cc {
 

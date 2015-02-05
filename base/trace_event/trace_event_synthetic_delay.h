@@ -65,7 +65,7 @@ template <typename Type>
 struct DefaultSingletonTraits;
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 // Time source for computing delay durations. Used for testing.
 class TRACE_EVENT_API_CLASS_EXPORT TraceEventSyntheticDelayClock {
@@ -138,7 +138,7 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEventSyntheticDelay {
 // Set the target durations of all registered synthetic delay points to zero.
 TRACE_EVENT_API_CLASS_EXPORT void ResetTraceEventSyntheticDelays();
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base
 
 namespace trace_event_internal {
@@ -151,14 +151,14 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedSyntheticDelay {
   ~ScopedSyntheticDelay();
 
  private:
-  base::trace_event::TraceEventSyntheticDelay* delay_impl_;
+  base::debug::TraceEventSyntheticDelay* delay_impl_;
   base::TimeTicks end_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSyntheticDelay);
 };
 
 // Helper for registering delays. Do not use directly.
-TRACE_EVENT_API_CLASS_EXPORT base::trace_event::TraceEventSyntheticDelay*
+TRACE_EVENT_API_CLASS_EXPORT base::debug::TraceEventSyntheticDelay*
     GetOrCreateDelay(const char* name, base::subtle::AtomicWord* impl_ptr);
 
 }  // namespace trace_event_internal

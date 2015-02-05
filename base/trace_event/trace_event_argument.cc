@@ -8,7 +8,7 @@
 #include "base/values.h"
 
 namespace base {
-namespace trace_event {
+namespace debug {
 
 TracedValue::TracedValue() : root_(new DictionaryValue()) {
   stack_.push_back(root_.get());
@@ -113,5 +113,5 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
   DCHECK_EQ(1u, stack_.size()) << tmp;
 }
 
-}  // namespace trace_event
+}  // namespace debug
 }  // namespace base
