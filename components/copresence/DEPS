@@ -6,5 +6,6 @@ include_rules = [
   "+google_apis",
   "+media",
   "+net",
+  "+third_party/webrtc/common_audio",
   "+url",
 ]

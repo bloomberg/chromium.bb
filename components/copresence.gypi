@@ -13,6 +13,7 @@
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
         '../net/net.gyp:net',
+        '../third_party/webrtc/common_audio/common_audio.gyp:common_audio',
         'copresence_proto',
       ],
       'include_dirs': [

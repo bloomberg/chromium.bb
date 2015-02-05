@@ -9,6 +9,9 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char kCopresenceDumpTokensToDir[];
+extern const char kCopresenceEnableAudibleBroadcast[];
+extern const char kCopresenceEnableInaudibleBroadcast[];
 extern const char kCopresenceServer[];
 extern const char kCopresenceTracingToken[];
 

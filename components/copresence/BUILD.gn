@@ -53,5 +53,6 @@ static_library("copresence") {
     "//content",
     "//media",
     "//net",
+    "//third_party/webrtc/common_audio",
   ]
 }

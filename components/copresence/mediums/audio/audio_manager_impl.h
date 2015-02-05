@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -19,6 +20,10 @@
 
 namespace base {
 class Time;
+}
+
+namespace media {
+class AudioBus;
 }
 
 namespace copresence {
@@ -76,6 +81,10 @@ class AudioManagerImpl final : public AudioManager {
 
   void DecodeSamplesConnector(const std::string& samples);
 
+  void DumpToken(AudioType audio_type,
+                 const std::string& token,
+                 const media::AudioBus* samples);
+
   WhispernetClient* whispernet_client_;
 
   // Callbacks to send tokens back to the CopresenceManager.
@@ -91,6 +100,7 @@ class AudioManagerImpl final : public AudioManager {
   static_assert(INAUDIBLE == 1, "AudioType::INAUDIBLE should be 1.");
 
   // Indexed using enum AudioType.
+  bool player_enabled_[2];
   bool should_be_playing_[2];
   bool should_be_recording_[2];
 
@@ -102,6 +112,7 @@ class AudioManagerImpl final : public AudioManager {
 
   // Indexed using enum AudioType.
   std::string playing_token_[2];
+  size_t token_length_[2];
   base::Time started_playing_[2];
   base::Time heard_own_token_[2];
 
@@ -110,7 +121,7 @@ class AudioManagerImpl final : public AudioManager {
   // Indexed using enum AudioType.
   ScopedVector<SamplesMap> samples_cache_;
 
-  size_t token_length_[2];
+  base::FilePath dump_tokens_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerImpl);
 };

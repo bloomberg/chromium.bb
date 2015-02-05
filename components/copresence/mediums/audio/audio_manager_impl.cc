@@ -5,14 +5,19 @@
 #include "components/copresence/mediums/audio/audio_manager_impl.h"
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "components/copresence/copresence_switches.h"
 #include "components/copresence/mediums/audio/audio_player_impl.h"
 #include "components/copresence/mediums/audio/audio_recorder_impl.h"
 #include "components/copresence/public/copresence_constants.h"
@@ -21,27 +26,59 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
+#include "third_party/webrtc/common_audio/wav_file.h"
 
 namespace copresence {
 
 namespace {
 
+const int kSampleExpiryTimeMs = 60 * 60 * 1000;  // 60 minutes.
+const int kMaxSamples = 10000;
+const int kTokenTimeoutMs = 2000;
+const int kMonoChannelCount = 1;
+
 // UrlSafe is defined as:
 // '/' represented by a '_' and '+' represented by a '-'
-// TODO(rkc): Move this processing to the whispernet wrapper.
+// TODO(ckehoe): Move this to a central place.
 std::string FromUrlSafe(std::string token) {
   base::ReplaceChars(token, "-", "+", &token);
   base::ReplaceChars(token, "_", "/", &token);
   return token;
 }
+std::string ToUrlSafe(std::string token) {
+  base::ReplaceChars(token, "+", "-", &token);
+  base::ReplaceChars(token, "/", "_", &token);
+  return token;
+}
 
-const int kSampleExpiryTimeMs = 60 * 60 * 1000;  // 60 minutes.
-const int kMaxSamples = 10000;
-const int kTokenTimeoutMs = 2000;
+// TODO(ckehoe): Move this to a central place.
+std::string AudioTypeToString(AudioType audio_type) {
+  if (audio_type == AUDIBLE)
+    return "audible";
+  if (audio_type == INAUDIBLE)
+    return "inaudible";
+
+  NOTREACHED() << "Got unexpected token type " << audio_type;
+  return std::string();
+}
+
+bool ReadBooleanFlag(const std::string& flag, bool default_value) {
+  const std::string flag_value = base::StringToLowerASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(flag));
+  if (flag_value == "true" || flag_value == "1")
+    return true;
+  if (flag_value == "false" || flag_value == "0")
+    return false;
+  LOG_IF(ERROR, !flag_value.empty())
+      << "Unrecognized value \"" << flag_value << " for flag "
+      << flag << ". Defaulting to " << default_value;
+  return default_value;
+}
 
 }  // namespace
 
-// Public methods.
+
+// Public functions.
 
 AudioManagerImpl::AudioManagerImpl()
     : whispernet_client_(nullptr), recorder_(nullptr) {
@@ -51,6 +88,10 @@ AudioManagerImpl::AudioManagerImpl()
   should_be_recording_[AUDIBLE] = false;
   should_be_recording_[INAUDIBLE] = false;
 
+  player_enabled_[AUDIBLE] = ReadBooleanFlag(
+      switches::kCopresenceEnableAudibleBroadcast, true);
+  player_enabled_[INAUDIBLE] = ReadBooleanFlag(
+      switches::kCopresenceEnableInaudibleBroadcast, true);
   player_[AUDIBLE] = nullptr;
   player_[INAUDIBLE] = nullptr;
   token_length_[0] = 0;
@@ -88,6 +129,9 @@ void AudioManagerImpl::Initialize(WhispernetClient* whispernet_client,
   if (!recorder_)
     recorder_ = new AudioRecorderImpl();
   recorder_->Initialize(decode_cancelable_cb_.callback());
+
+  dump_tokens_dir_ = base::FilePath(base::CommandLine::ForCurrentProcess()
+      ->GetSwitchValueNative(switches::kCopresenceDumpTokensToDir));
 }
 
 AudioManagerImpl::~AudioManagerImpl() {
@@ -113,10 +157,16 @@ void AudioManagerImpl::StartPlaying(AudioType type) {
   // will call this code again (if we're still supposed to be playing).
   if (samples_cache_[type]->HasKey(playing_token_[type])) {
     DCHECK(!playing_token_[type].empty());
-    started_playing_[type] = base::Time::Now();
-    player_[type]->Play(samples_cache_[type]->GetValue(playing_token_[type]));
-    // If we're playing, we always record to hear what we are playing.
-    recorder_->Record();
+    if (player_enabled_[type]) {
+      started_playing_[type] = base::Time::Now();
+      player_[type]->Play(samples_cache_[type]->GetValue(playing_token_[type]));
+
+      // If we're playing, we always record to hear what we are playing.
+      recorder_->Record();
+    } else {
+      DVLOG(3) << "Skipping playback for disabled " << AudioTypeToString(type)
+               << " player.";
+    }
   }
 }
 
@@ -173,13 +223,15 @@ void AudioManagerImpl::SetTokenLength(AudioType type, size_t token_length) {
   token_length_[type] = token_length;
 }
 
-// Private methods.
+
+// Private functions.
 
 void AudioManagerImpl::OnTokenEncoded(
     AudioType type,
     const std::string& token,
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
   samples_cache_[type]->Add(token, samples);
+  DumpToken(type, token, samples.get());
   UpdateToken(type, token);
 }
 
@@ -222,11 +274,8 @@ void AudioManagerImpl::RestartPlaying(AudioType type) {
   // in the cache.
   DCHECK(samples_cache_[type]->HasKey(playing_token_[type]));
 
-  started_playing_[type] = base::Time::Now();
   player_[type]->Stop();
-  player_[type]->Play(samples_cache_[type]->GetValue(playing_token_[type]));
-  // If we're playing, we always record to hear what we are playing.
-  recorder_->Record();
+  StartPlaying(type);
 }
 
 void AudioManagerImpl::DecodeSamplesConnector(const std::string& samples) {
@@ -248,6 +297,39 @@ void AudioManagerImpl::DecodeSamplesConnector(const std::string& samples) {
   } else if (decode_inaudible) {
     whispernet_client_->DecodeSamples(INAUDIBLE, samples, token_length_);
   }
+}
+
+void AudioManagerImpl::DumpToken(AudioType audio_type,
+                                 const std::string& token,
+                                 const media::AudioBus* samples) {
+  if (dump_tokens_dir_.empty())
+    return;
+
+  // Convert the samples to 16-bit integers.
+  std::vector<int16_t> int_samples;
+  int_samples.reserve(samples->frames());
+  for (int i = 0; i < samples->frames(); i++) {
+    int_samples.push_back(round(
+        samples->channel(0)[i] * std::numeric_limits<int16_t>::max()));
+  }
+  DCHECK_EQ(static_cast<int>(int_samples.size()), samples->frames());
+  DCHECK_EQ(kMonoChannelCount, samples->channels());
+
+  const std::string filename = base::StringPrintf("%s %s.wav",
+      AudioTypeToString(audio_type).c_str(), ToUrlSafe(token).c_str());
+  DVLOG(3) << "Dumping token " << filename;
+
+  std::string file_str;
+#if defined(OS_WIN)
+  base::FilePath file_path = dump_tokens_dir_.Append(
+      base::SysNativeMBToWide(filename));
+  file_str = base::SysWideToNativeMB(file_path.value());
+#else
+  file_str = dump_tokens_dir_.Append(filename).value();
+#endif
+
+  webrtc::WavWriter writer(file_str, kDefaultSampleRate, kMonoChannelCount);
+  writer.WriteSamples(int_samples.data(), int_samples.size());
 }
 
 }  // namespace copresence
