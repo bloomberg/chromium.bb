@@ -1897,4 +1897,4 @@ UNINITIALIZED READ
 name=bug_455417
 *!std::char_traits<>::compare
 ...
-*!*::`anonymous namespace'::*URLRequest*::TestBody
+*!*::*URLRequest*::TestBody
