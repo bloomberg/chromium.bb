@@ -106,8 +106,9 @@ class BrowserWindowCocoa :
                                 Profile* profile) override;
   void ShowUpdateChromeDialog() override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
-  void ShowBookmarkAppBubble(const WebApplicationInfo& web_app_info,
-                             const std::string& extension_id) override;
+  void ShowBookmarkAppBubble(
+      const WebApplicationInfo& web_app_info,
+      const ShowBookmarkAppBubbleCallback& callback) override;
   void ShowTranslateBubble(content::WebContents* contents,
                            translate::TranslateStep step,
                            translate::TranslateErrors::Type error_type,

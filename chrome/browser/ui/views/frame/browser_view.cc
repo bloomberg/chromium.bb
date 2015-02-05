@@ -1234,11 +1234,8 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 
 void BrowserView::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
-    const std::string& extension_id) {
-  BookmarkAppBubbleView::ShowBubble(GetToolbarView(),
-                                    browser_->profile(),
-                                    web_app_info,
-                                    extension_id);
+    const ShowBookmarkAppBubbleCallback& callback) {
+  BookmarkAppBubbleView::ShowBubble(GetToolbarView(), web_app_info, callback);
 }
 
 void BrowserView::ShowTranslateBubble(

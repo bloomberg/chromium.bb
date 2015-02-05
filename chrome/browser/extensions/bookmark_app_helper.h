@@ -19,6 +19,7 @@
 
 class ExtensionService;
 class FaviconDownloader;
+class Profile;
 class SkBitmap;
 
 namespace content {
@@ -39,8 +40,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // This helper class will create a bookmark app out of |web_app_info| and
   // install it to |service|. Icons will be downloaded from the URLs in
   // |web_app_info.icons| using |contents| if |contents| is not NULL.
-  // All existing icons from WebApplicationInfo will also be used.
-  BookmarkAppHelper(ExtensionService* service,
+  // All existing icons from WebApplicationInfo will also be used. The user
+  // will then be prompted to edit the creation information via a bubble and
+  // will have a chance to cancel the operation.
+  BookmarkAppHelper(Profile* profile,
                     WebApplicationInfo web_app_info,
                     content::WebContents* contents);
   ~BookmarkAppHelper() override;
@@ -80,10 +83,22 @@ class BookmarkAppHelper : public content::NotificationObserver {
   void OnIconsDownloaded(bool success,
                          const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
 
+  // Called after the bubble has been shown, and the user has either accepted or
+  // the dialog was dismissed.
+  void OnBubbleCompleted(bool user_accepted,
+                         const WebApplicationInfo& web_app_info);
+
+  // Called when the installation of the app is complete to perform the final
+  // installation steps.
+  void FinishInstallation(const Extension* extension);
+
   // Overridden from content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // The profile that the bookmark app is being added to.
+  Profile* profile_;
 
   // The web contents that the bookmark app is being created for.
   content::WebContents* contents_;

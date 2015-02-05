@@ -53,6 +53,10 @@ struct WebApplicationInfo {
 
   // The color to use if an icon needs to be generated for the web app.
   SkColor generated_icon_color;
+
+  // Whether the app should be opened in a window. If false, the app will be
+  // opened in a tab.
+  bool open_as_window;
 };
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

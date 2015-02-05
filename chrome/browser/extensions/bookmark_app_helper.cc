@@ -6,18 +6,30 @@
 
 #include <cctype>
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/favicon_downloader.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -37,6 +49,16 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
+
+#if defined(OS_MACOSX)
+#include "base/command_line.h"
+#include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif
 
 namespace {
 
@@ -218,12 +240,19 @@ void BookmarkAppHelper::GenerateIcon(std::map<int, SkBitmap>* bitmaps,
   icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size]);
 }
 
-BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
+BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
                                      WebApplicationInfo web_app_info,
                                      content::WebContents* contents)
-    : contents_(contents),
+    : profile_(profile),
+      contents_(contents),
       web_app_info_(web_app_info),
-      crx_installer_(extensions::CrxInstaller::CreateSilent(service)) {
+      crx_installer_(extensions::CrxInstaller::CreateSilent(
+          ExtensionSystem::Get(profile)->extension_service())) {
+  web_app_info_.open_as_window =
+      profile_->GetPrefs()->GetInteger(
+          extensions::pref_names::kBookmarkAppCreationLaunchType) ==
+      extensions::LAUNCH_TYPE_WINDOW;
+
   registrar_.Add(this,
                  extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::Source<CrxInstaller>(crx_installer_.get()));
@@ -279,7 +308,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   // app creation.
   if (!success) {
     favicon_downloader_.reset();
-    callback_.Run(NULL, web_app_info_);
+    callback_.Run(nullptr, web_app_info_);
     return;
   }
 
@@ -335,10 +364,93 @@ void BookmarkAppHelper::OnIconsDownloaded(
                 web_app_info_.generated_icon_color, &generated_icons);
 
   ReplaceWebAppIcons(generated_icons, &web_app_info_);
-
-  // Install the app.
-  crx_installer_->InstallWebApp(web_app_info_);
   favicon_downloader_.reset();
+
+  if (!contents_) {
+    // The web contents can be null in tests.
+    OnBubbleCompleted(true, web_app_info_);
+    return;
+  }
+
+  Browser* browser = chrome::FindBrowserWithWebContents(contents_);
+  if (!browser) {
+    // The browser can be null in tests.
+    OnBubbleCompleted(true, web_app_info_);
+    return;
+  }
+  browser->window()->ShowBookmarkAppBubble(
+      web_app_info_, base::Bind(&BookmarkAppHelper::OnBubbleCompleted,
+                                base::Unretained(this)));
+}
+
+void BookmarkAppHelper::OnBubbleCompleted(
+    bool user_accepted,
+    const WebApplicationInfo& web_app_info) {
+  if (user_accepted) {
+    web_app_info_ = web_app_info;
+    crx_installer_->InstallWebApp(web_app_info_);
+  } else {
+    callback_.Run(nullptr, web_app_info_);
+  }
+}
+
+void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
+  // Set the default 'open as' preference for use next time the dialog is
+  // shown.
+  extensions::LaunchType launch_type = web_app_info_.open_as_window
+                                           ? extensions::LAUNCH_TYPE_WINDOW
+                                           : extensions::LAUNCH_TYPE_REGULAR;
+  profile_->GetPrefs()->SetInteger(
+      extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
+
+  // Set the launcher type for the app.
+  extensions::SetLaunchType(profile_, extension->id(), launch_type);
+
+  if (!contents_) {
+    // The web contents can be null in tests.
+    callback_.Run(extension, web_app_info_);
+    return;
+  }
+
+  Browser* browser = chrome::FindBrowserWithWebContents(contents_);
+  if (!browser) {
+    // The browser can be null in tests.
+    callback_.Run(extension, web_app_info_);
+    return;
+  }
+
+  // Pin the app to the shelf on Ash.
+  chrome::HostDesktopType desktop = browser->host_desktop_type();
+#if defined(USE_ASH)
+  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
+    ChromeLauncherController::instance()->PinAppWithID(extension->id());
+#endif
+
+  // Show the newly installed app in the app launcher, in finder (on Mac) or
+  // chrome://apps.
+  Profile* current_profile = profile_->GetOriginalProfile();
+  if (IsAppLauncherEnabled()) {
+    AppListService::Get(desktop)
+        ->ShowForAppInstall(current_profile, extension->id(), false);
+#if defined(OS_MACOSX)
+  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableHostedAppShimCreation)) {
+    web_app::RevealAppShimInFinderForApp(profile_, extension);
+#endif
+  } else {
+    chrome::NavigateParams params(current_profile,
+                                  GURL(chrome::kChromeUIAppsURL),
+                                  ui::PAGE_TRANSITION_LINK);
+    params.disposition = SINGLETON_TAB;
+    chrome::Navigate(&params);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+        content::Source<content::WebContents>(params.target_contents),
+        content::Details<const std::string>(&extension->id()));
+  }
+
+  callback_.Run(extension, web_app_info_);
 }
 
 void BookmarkAppHelper::Observe(int type,
@@ -351,11 +463,11 @@ void BookmarkAppHelper::Observe(int type,
       DCHECK(extension);
       DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension),
                 web_app_info_.app_url);
-      callback_.Run(extension, web_app_info_);
+      FinishInstallation(extension);
       break;
     }
     case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR:
-      callback_.Run(NULL, web_app_info_);
+      callback_.Run(nullptr, web_app_info_);
       break;
     default:
       NOTREACHED();

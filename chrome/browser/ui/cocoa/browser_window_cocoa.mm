@@ -14,17 +14,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -52,7 +47,6 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -64,7 +58,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/geometry/rect.h"
@@ -503,9 +496,7 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
 
 void BrowserWindowCocoa::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
-    const std::string& extension_id) {
-  Profile* profile = browser_->profile();
-
+    const ShowBookmarkAppBubbleCallback& callback) {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_TITLE)];
   [alert setAlertStyle:NSInformationalAlertStyle];
@@ -522,10 +513,7 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   [open_as_window_checkbox setButtonType:NSSwitchButton];
   [open_as_window_checkbox
       setTitle:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW)];
-  [open_as_window_checkbox setState:
-      profile->GetPrefs()->GetInteger(
-          extensions::pref_names::kBookmarkAppCreationLaunchType) ==
-      extensions::LAUNCH_TYPE_WINDOW];
+  [open_as_window_checkbox setState:web_app_info.open_as_window];
   [open_as_window_checkbox sizeToFit];
 
   base::scoped_nsobject<NSTextField> app_title([[NSTextField alloc]
@@ -557,59 +545,18 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
     }
   }
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   if ([alert runModal] == NSAlertFirstButtonReturn) {
-    // Save launch type preferences for later when creating another hosted app.
-    extensions::LaunchType launch_type =
-        [open_as_window_checkbox state] == NSOnState
-            ? extensions::LAUNCH_TYPE_WINDOW
-            : extensions::LAUNCH_TYPE_REGULAR;
-    profile->GetPrefs()->SetInteger(
-        extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
-    extensions::SetLaunchType(profile, extension_id, launch_type);
+    WebApplicationInfo updated_info = web_app_info;
+    updated_info.open_as_window = [open_as_window_checkbox state] == NSOnState;
 
-    // Update name of app.
     NSString* new_title = [app_title stringValue];
-    if (![original_title isEqualToString:new_title]) {
-      WebApplicationInfo new_web_app_info(web_app_info);
-      new_web_app_info.title = base::SysNSStringToUTF16(new_title);
-      extensions::CreateOrUpdateBookmarkApp(service, &new_web_app_info);
-    }
+    updated_info.title = base::SysNSStringToUTF16(new_title);
 
-    // If we're not creating app shims, no need to reveal it in Finder.
-    // Otherwise reveal the app in the app launcher. If not installed,
-    // then open the chrome://apps page.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableHostedAppShimCreation)) {
-      extensions::ExtensionRegistry* registry =
-          extensions::ExtensionRegistry::Get(profile);
-      const extensions::Extension* app = registry->GetExtensionById(
-          extension_id, extensions::ExtensionRegistry::ENABLED);
-
-      web_app::RevealAppShimInFinderForApp(profile, app);
-    } else {
-      if (IsAppLauncherEnabled()) {
-        AppListService::Get(chrome::GetHostDesktopTypeForNativeWindow(
-                                browser_->window()->GetNativeWindow()))
-            ->ShowForAppInstall(profile, extension_id, false);
-      } else {
-        chrome::NavigateParams params(profile, GURL(chrome::kChromeUIAppsURL),
-                                      ui::PAGE_TRANSITION_LINK);
-        params.disposition = SINGLETON_TAB;
-        chrome::Navigate(&params);
-
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-            content::Source<content::WebContents>(params.target_contents),
-            content::Details<const std::string>(&extension_id));
-      }
-    }
-  } else {
-    service->UninstallExtension(extension_id,
-                                extensions::UNINSTALL_REASON_INSTALL_CANCELED,
-                                base::Bind(&base::DoNothing), NULL);
+    callback.Run(true, updated_info);
+    return;
   }
+
+  callback.Run(false, web_app_info);
 }
 
 void BrowserWindowCocoa::ShowTranslateBubble(
