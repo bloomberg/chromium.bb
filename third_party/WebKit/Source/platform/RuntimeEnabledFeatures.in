@@ -73,7 +73,7 @@ KeyboardEventCode status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
 LocalStorage status=stable
-FractionalScrollOffsets status=experimental
+FractionalScrollOffsets status=stable
 GlobalFetch status=experimental
 Media status=stable
 MediaCapture
