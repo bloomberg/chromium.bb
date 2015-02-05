@@ -1959,6 +1959,8 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
   if (!container_)
     return;
+  if (throttler_ && throttler_->IsHiddenForPlaceholder())
+    return;
 
   gpu::Mailbox mailbox;
   uint32 sync_point = 0;
@@ -2043,6 +2045,14 @@ void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
 
 void PepperPluginInstanceImpl::OnThrottleStateChange() {
   SendDidChangeView();
+}
+
+void PepperPluginInstanceImpl::OnHiddenForPlaceholder(bool hidden) {
+  if (hidden) {
+    container_->setWebLayer(nullptr);
+  } else {
+    UpdateLayer(true /* device_changed */);
+  }
 }
 
 void PepperPluginInstanceImpl::AddLatencyInfo(

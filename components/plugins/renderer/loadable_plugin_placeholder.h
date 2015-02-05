@@ -13,7 +13,9 @@
 namespace plugins {
 // Placeholders can be used if a plug-in is missing or not available
 // (blocked or disabled).
-class LoadablePluginPlaceholder : public PluginPlaceholder {
+class LoadablePluginPlaceholder
+    : public PluginPlaceholder,
+      public content::PluginInstanceThrottler::Observer {
  public:
   void set_blocked_for_background_tab(bool blocked_for_background_tab) {
     is_blocked_for_background_tab_ = blocked_for_background_tab;
@@ -33,6 +35,10 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 #endif
 
   void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
+
+  // When we load the plugin, use this already-created plugin, not a new one.
+  void SetPremadePlugin(blink::WebPlugin* plugin,
+                        content::PluginInstanceThrottler* throttler);
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
@@ -73,10 +79,13 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
  private:
   // WebViewPlugin::Delegate methods:
-  void ShowContextMenu(const blink::WebMouseEvent&) override;
+  void PluginDestroyed() override;
 
   // RenderFrameObserver methods:
   void WasShown() override;
+
+  // content::PluginInstanceThrottler::Observer methods:
+  void OnThrottleStateChange() override;
 
   // Javascript callbacks:
 
@@ -109,6 +118,10 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
   // This is independent of deferred plugin load due to a Power Saver poster.
   content::PluginPowerSaverMode power_saver_mode_;
+
+  // When we load, uses this premade plugin instead of creating a new one.
+  blink::WebPlugin* premade_plugin_;
+  content::PluginInstanceThrottler* premade_throttler_;
 
   bool allow_loading_;
 

@@ -59,7 +59,9 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
     bool power_saver_enabled)
     : state_(power_saver_enabled ? POWER_SAVER_ENABLED_AWAITING_KEYFRAME
                                  : POWER_SAVER_DISABLED),
+      is_hidden_for_placeholder_(false),
       consecutive_interesting_frames_(0),
+      keyframe_extraction_timed_out_(false),
       weak_factory_(this) {
   // To collect UMAs, register peripheral content even if power saver disabled.
   if (frame) {
@@ -71,13 +73,15 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
 
   if (power_saver_enabled) {
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PluginInstanceThrottlerImpl::EngageThrottle,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::Bind(&PluginInstanceThrottlerImpl::TimeoutKeyframeExtraction,
+                   weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kThrottleTimeout));
   }
 }
 
 PluginInstanceThrottlerImpl::~PluginInstanceThrottlerImpl() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottlerDestroyed());
   if (state_ != PLUGIN_INSTANCE_MARKED_ESSENTIAL)
     RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_NEVER);
 }
@@ -94,6 +98,10 @@ bool PluginInstanceThrottlerImpl::IsThrottled() const {
   return state_ == POWER_SAVER_ENABLED_PLUGIN_THROTTLED;
 }
 
+bool PluginInstanceThrottlerImpl::IsHiddenForPlaceholder() const {
+  return is_hidden_for_placeholder_;
+}
+
 void PluginInstanceThrottlerImpl::MarkPluginEssential(
     PowerSaverUnthrottleMethod method) {
   if (state_ == PLUGIN_INSTANCE_MARKED_ESSENTIAL)
@@ -107,6 +115,11 @@ void PluginInstanceThrottlerImpl::MarkPluginEssential(
     FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
 }
 
+void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
+  is_hidden_for_placeholder_ = hidden;
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnHiddenForPlaceholder(hidden));
+}
+
 void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
   DCHECK(needs_representative_keyframe());
   if (!bitmap)
@@ -118,8 +131,11 @@ void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
   else
     consecutive_interesting_frames_ = 0;
 
-  if (consecutive_interesting_frames_ >= kMinimumConsecutiveInterestingFrames)
+  if (keyframe_extraction_timed_out_ ||
+      consecutive_interesting_frames_ >= kMinimumConsecutiveInterestingFrames) {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnKeyframeExtracted(bitmap));
     EngageThrottle();
+  }
 }
 
 bool PluginInstanceThrottlerImpl::ConsumeInputEvent(
@@ -148,6 +164,10 @@ void PluginInstanceThrottlerImpl::EngageThrottle() {
 
   state_ = POWER_SAVER_ENABLED_PLUGIN_THROTTLED;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
+}
+
+void PluginInstanceThrottlerImpl::TimeoutKeyframeExtraction() {
+  keyframe_extraction_timed_out_ = true;
 }
 
 }  // namespace content

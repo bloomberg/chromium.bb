@@ -35,11 +35,11 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   blink::WebLocalFrame* GetFrame();
   const blink::WebPluginParams& GetPluginParams() const;
 
- private:
   // WebViewPlugin::Delegate methods:
   void ShowContextMenu(const blink::WebMouseEvent&) override;
   void PluginDestroyed() override;
 
+ private:
   // RenderFrameObserver methods:
   void OnDestruct() override;
 

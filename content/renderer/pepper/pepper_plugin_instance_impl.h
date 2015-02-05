@@ -543,6 +543,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // PluginInstanceThrottler::Observer
   void OnThrottleStateChange() override;
+  void OnHiddenForPlaceholder(bool hidden) override;
 
   void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 

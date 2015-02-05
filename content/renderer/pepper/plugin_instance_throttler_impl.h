@@ -34,7 +34,9 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool IsThrottled() const override;
+  bool IsHiddenForPlaceholder() const override;
   void MarkPluginEssential(PowerSaverUnthrottleMethod method) override;
+  void SetHiddenForPlaceholder(bool hidden) override;
 
   bool needs_representative_keyframe() const {
     return state_ == POWER_SAVER_ENABLED_AWAITING_KEYFRAME;
@@ -70,10 +72,17 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
 
   void EngageThrottle();
 
+  void TimeoutKeyframeExtraction();
+
   State state_;
+
+  bool is_hidden_for_placeholder_;
 
   // Number of consecutive interesting frames we've encountered.
   int consecutive_interesting_frames_;
+
+  // If true, take the next frame as the keyframe regardless of interestingness.
+  bool keyframe_extraction_timed_out_;
 
   ObserverList<Observer> observer_list_;
 

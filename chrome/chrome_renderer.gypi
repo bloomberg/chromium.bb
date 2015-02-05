@@ -188,6 +188,8 @@
       'renderer/pepper/pepper_shared_memory_message_filter.h',
       'renderer/pepper/pepper_uma_host.cc',
       'renderer/pepper/pepper_uma_host.h',
+      'renderer/plugins/plugin_preroller.cc',
+      'renderer/plugins/plugin_preroller.h',
     ],
     # For safe_browsing==1 or safe_browsing==2.
     'chrome_renderer_basic_safe_browsing_sources': [

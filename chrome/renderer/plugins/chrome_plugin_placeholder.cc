@@ -148,7 +148,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     content::RenderFrame* render_frame,
     WebLocalFrame* frame,
     const WebPluginParams& params,
-    const content::WebPluginInfo& plugin,
+    const content::WebPluginInfo& info,
     const std::string& identifier,
     const base::string16& name,
     int template_id,
@@ -177,7 +177,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   if (poster_url.is_valid())
     blocked_plugin->BlockForPowerSaverPoster();
 #endif
-  blocked_plugin->SetPluginInfo(plugin);
+  blocked_plugin->SetPluginInfo(info);
   blocked_plugin->SetIdentifier(identifier);
   return blocked_plugin;
 }

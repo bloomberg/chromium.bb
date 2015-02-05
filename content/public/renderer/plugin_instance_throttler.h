@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 
 class GURL;
+class SkBitmap;
 
 namespace content {
 
@@ -61,7 +62,15 @@ class CONTENT_EXPORT PluginInstanceThrottler {
 
   class Observer {
    public:
-    virtual void OnThrottleStateChange() = 0;
+    // Guaranteed to be called before the throttle is engaged.
+    virtual void OnKeyframeExtracted(const SkBitmap* bitmap) {}
+
+    virtual void OnThrottleStateChange() {}
+
+    // Called when the plugin should be hidden due to a placeholder.
+    virtual void OnHiddenForPlaceholder(bool hidden) {}
+
+    virtual void OnThrottlerDestroyed() {}
   };
 
   // Returns a nullptr if no throttler needed based on |power_saver_mode|.
@@ -78,9 +87,13 @@ class CONTENT_EXPORT PluginInstanceThrottler {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   virtual bool IsThrottled() const = 0;
+  virtual bool IsHiddenForPlaceholder() const = 0;
 
   // Marks the plugin as essential. Unthrottles the plugin if already throttled.
   virtual void MarkPluginEssential(PowerSaverUnthrottleMethod method) = 0;
+
+  // Called by the placeholder when the plugin should temporarily be hidden.
+  virtual void SetHiddenForPlaceholder(bool hidden) = 0;
 
  protected:
   PluginInstanceThrottler() {}

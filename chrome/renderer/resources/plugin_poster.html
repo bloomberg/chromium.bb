@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no">
+<script>
+function notifyDidFinishLoading() {
+  if (plugin.didFinishLoading)
+    plugin.didFinishLoading();
+}
+</script>
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
 #outer {
@@ -10,21 +16,25 @@
 }
 
 #plugin_icon {
-  opacity: 0.0;
+  opacity: 0.2;
 }
 
 #outer:hover #plugin_icon {
-  opacity: 0.4;
+  opacity: 1.0;
+}
+
+#inner {
+  margin-top: -23px;
 }
 </style>
 </head>
 
-<body i18n-values=".style.background-image:background">
-<div i18n-values="title:name" id="outer" onclick="plugin.load()">
-<p id="debug"> </p>
-<div id="inner">
-<div><img id="plugin_icon" src="plugin_blocked.png" /></div>
-</div>
-</div>
+<body i18n-values=".style.background-image:background" onload="notifyDidFinishLoading();">
+  <div i18n-values="title:name" id="outer" onclick="plugin.load()">
+    <div id="inner">
+      <div><img id="plugin_icon" src="play.png" /></div>
+      <p id="debug"> </p>
+    </div>
+  </div>
 </body>
 </html>
