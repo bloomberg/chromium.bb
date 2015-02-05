@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
@@ -136,6 +137,22 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
   DLOG_IF(WARNING, init_data_type_as_ascii.find('/') != std::string::npos)
       << "init_data_type '" << init_data_type_as_ascii
       << "' may be a MIME type";
+
+  // Step 5 from https://w3c.github.io/encrypted-media/#generateRequest.
+  // 5. If the Key System implementation represented by this object's cdm
+  //    implementation value does not support initDataType as an Initialization
+  //    Data Type, return a promise rejected with a new DOMException whose name
+  //    is NotSupportedError. String comparison is case-sensitive.
+  if (!IsSupportedKeySystemWithInitDataType(adapter_->GetKeySystem(),
+                                            init_data_type_as_ascii)) {
+    std::string message = "The initialization data type " +
+                          init_data_type_as_ascii +
+                          " is not supported by the key system.";
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
+        blink::WebString::fromUTF8(message));
+    return;
+  }
 
   MediaKeys::SessionType session_type_enum;
   if (session_type == kPersistentLicenseSessionType) {

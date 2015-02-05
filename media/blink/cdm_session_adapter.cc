@@ -29,6 +29,7 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
                                    const std::string& key_system,
                                    const GURL& security_origin) {
+  key_system_ = key_system;
   key_system_uma_prefix_ =
       kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
 
@@ -108,6 +109,10 @@ void CdmSessionAdapter::RemoveSession(const std::string& session_id,
 
 CdmContext* CdmSessionAdapter::GetCdmContext() {
   return media_keys_->GetCdmContext();
+}
+
+const std::string& CdmSessionAdapter::GetKeySystem() const {
+  return key_system_;
 }
 
 const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {

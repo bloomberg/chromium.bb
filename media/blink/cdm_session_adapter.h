@@ -89,6 +89,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   CdmContext* GetCdmContext();
 
+  // Returns the key system name.
+  const std::string& GetKeySystem() const;
+
   // Returns a prefix to use for UMAs.
   const std::string& GetKeySystemUMAPrefix() const;
 
@@ -124,6 +127,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   SessionMap sessions_;
 
+  std::string key_system_;
   std::string key_system_uma_prefix_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
