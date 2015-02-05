@@ -102,9 +102,9 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     const std::string& fingerprint,
-    ComponentInstaller* installer,
-    scoped_refptr<OutOfProcessPatcher> oop_patcher,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    const scoped_refptr<ComponentInstaller>& installer,
+    const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),

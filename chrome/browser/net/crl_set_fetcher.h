@@ -25,8 +25,7 @@ namespace component_updater {
 class ComponentUpdateService;
 }
 
-class CRLSetFetcher : public update_client::ComponentInstaller,
-                      public base::RefCountedThreadSafe<CRLSetFetcher> {
+class CRLSetFetcher : public update_client::ComponentInstaller {
  public:
   CRLSetFetcher();
 

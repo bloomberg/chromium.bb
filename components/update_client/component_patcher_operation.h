@@ -37,9 +37,9 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
   void Run(const base::DictionaryValue* command_args,
            const base::FilePath& input_dir,
            const base::FilePath& unpack_dir,
-           ComponentInstaller* installer,
+           const scoped_refptr<ComponentInstaller>& installer,
            const ComponentUnpacker::Callback& callback,
-           scoped_refptr<base::SequencedTaskRunner> task_runner);
+           const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
  protected:
   virtual ~DeltaUpdateOp();
@@ -60,7 +60,7 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
   virtual ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) = 0;
+      const scoped_refptr<ComponentInstaller>& installer) = 0;
 
   // Subclasses must override DoRun to actually perform the patching operation.
   // They must call the provided callback when they have completed their
@@ -92,7 +92,7 @@ class DeltaUpdateOpCopy : public DeltaUpdateOp {
   ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) override;
+      const scoped_refptr<ComponentInstaller>& installer) override;
 
   void DoRun(const ComponentUnpacker::Callback& callback) override;
 
@@ -116,7 +116,7 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) override;
+      const scoped_refptr<ComponentInstaller>& installer) override;
 
   void DoRun(const ComponentUnpacker::Callback& callback) override;
 
@@ -129,12 +129,13 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
 class OutOfProcessPatcher
     : public base::RefCountedThreadSafe<OutOfProcessPatcher> {
  public:
-  virtual void Patch(const std::string& operation,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::FilePath& input_abs_path,
-                     const base::FilePath& patch_abs_path,
-                     const base::FilePath& output_abs_path,
-                     base::Callback<void(int result)> callback) = 0;
+  virtual void Patch(
+      const std::string& operation,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const base::FilePath& input_abs_path,
+      const base::FilePath& patch_abs_path,
+      const base::FilePath& output_abs_path,
+      base::Callback<void(int result)> callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<OutOfProcessPatcher>;
@@ -159,7 +160,7 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
   ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) override;
+      const scoped_refptr<ComponentInstaller>& installer) override;
 
   void DoRun(const ComponentUnpacker::Callback& callback) override;
 
@@ -177,7 +178,7 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
 
 DeltaUpdateOp* CreateDeltaUpdateOp(
     const std::string& operation,
-    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
+    const scoped_refptr<OutOfProcessPatcher>& out_of_process_patcher);
 
 }  // namespace update_client
 

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/update_client/component_patcher_operation.h"
+#include "components/update_client/update_client.h"
 
 namespace update_client {
 
@@ -42,7 +43,7 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
 ComponentPatcher::ComponentPatcher(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
-    ComponentInstaller* installer,
+    scoped_refptr<ComponentInstaller> installer,
     scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : input_dir_(input_dir),

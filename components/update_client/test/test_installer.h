@@ -31,11 +31,17 @@ class TestInstaller : public ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
-  int error() const;
+  int error() const {
+    return error_;
+  }
 
-  int install_count() const;
+  int install_count() const {
+    return install_count_;
+  }
 
  protected:
+  ~TestInstaller() override;
+
   int error_;
   int install_count_;
 };
@@ -46,12 +52,12 @@ class ReadOnlyTestInstaller : public TestInstaller {
  public:
   explicit ReadOnlyTestInstaller(const base::FilePath& installed_path);
 
-  ~ReadOnlyTestInstaller() override;
-
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
  private:
+  ~ReadOnlyTestInstaller() override;
+
   base::FilePath install_directory_;
 };
 
@@ -61,8 +67,6 @@ class VersionedTestInstaller : public TestInstaller {
  public:
   VersionedTestInstaller();
 
-  ~VersionedTestInstaller() override;
-
   bool Install(const base::DictionaryValue& manifest,
                const base::FilePath& unpack_path) override;
 
@@ -70,6 +74,8 @@ class VersionedTestInstaller : public TestInstaller {
                         base::FilePath* installed_file) override;
 
  private:
+  ~VersionedTestInstaller() override;
+
   base::FilePath install_directory_;
   Version current_version_;
 };

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/version.h"
 
 namespace base {
@@ -21,7 +22,8 @@ namespace update_client {
 // Component specific installers must derive from this class and implement
 // OnUpdateError() and Install(). A valid instance of this class must be
 // given to ComponentUpdateService::RegisterComponent().
-class ComponentInstaller {
+class ComponentInstaller
+    : public base::RefCountedThreadSafe<ComponentInstaller> {
  public:
   // Called by the component updater on the main thread when there was a
   // problem unpacking or verifying the component. |error| is a non-zero
@@ -43,6 +45,9 @@ class ComponentInstaller {
   virtual bool GetInstalledFile(const std::string& file,
                                 base::FilePath* installed_file) = 0;
 
+ protected:
+  friend class base::RefCountedThreadSafe<ComponentInstaller>;
+
   virtual ~ComponentInstaller() {}
 };
 
@@ -57,7 +62,7 @@ class ComponentInstaller {
 // the issue 340448 is resolved.
 struct CrxComponent {
   std::vector<uint8_t> pk_hash;
-  ComponentInstaller* installer;
+  scoped_refptr<ComponentInstaller> installer;
   Version version;
   std::string fingerprint;
   std::string name;

@@ -95,12 +95,13 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
   // location of the CRX.
-  ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
-                    const base::FilePath& path,
-                    const std::string& fingerprint,
-                    ComponentInstaller* installer,
-                    scoped_refptr<OutOfProcessPatcher> oop_patcher,
-                    scoped_refptr<base::SequencedTaskRunner> task_runner);
+  ComponentUnpacker(
+      const std::vector<uint8_t>& pk_hash,
+      const base::FilePath& path,
+      const std::string& fingerprint,
+      const scoped_refptr<ComponentInstaller>& installer,
+      const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Begins the actual unpacking of the files. May invoke a patcher if the
   // package is a differential update. Calls |callback| with the result.
@@ -147,7 +148,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   bool is_delta_;
   std::string fingerprint_;
   scoped_refptr<ComponentPatcher> patcher_;
-  ComponentInstaller* installer_;
+  scoped_refptr<ComponentInstaller> installer_;
   Callback callback_;
   scoped_refptr<OutOfProcessPatcher> oop_patcher_;
   Error error_;

@@ -55,8 +55,7 @@ void DefaultComponentInstaller::Register(ComponentUpdateService* cus) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::StartRegistration,
-                 base::Unretained(this),
-                 cus));
+                 this, cus));
 }
 
 void DefaultComponentInstaller::OnUpdateError(int error) {
@@ -103,11 +102,8 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
       current_manifest_->DeepCopy());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ComponentInstallerTraits::ComponentReady,
-                 base::Unretained(installer_traits_.get()),
-                 current_version_,
-                 GetInstallDirectory(),
-                 base::Passed(&manifest_copy)));
+      base::Bind(&DefaultComponentInstaller::ComponentReady,
+                 this, base::Passed(&manifest_copy)));
   return true;
 }
 
@@ -197,8 +193,7 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::FinishRegistration,
-                 base::Unretained(this),
-                 cus));
+                 this, cus));
 }
 
 base::FilePath DefaultComponentInstaller::GetInstallDirectory() {
@@ -230,8 +225,13 @@ void DefaultComponentInstaller::FinishRegistration(
 
   scoped_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
+  ComponentReady(manifest_copy.Pass());
+}
+
+void DefaultComponentInstaller::ComponentReady(
+    scoped_ptr<base::DictionaryValue> manifest) {
   installer_traits_->ComponentReady(
-      current_version_, GetInstallDirectory(), manifest_copy.Pass());
+      current_version_, GetInstallDirectory(), manifest.Pass());
 }
 
 }  // namespace component_updater

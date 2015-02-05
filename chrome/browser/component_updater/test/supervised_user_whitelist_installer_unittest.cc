@@ -58,10 +58,7 @@ class MockComponentUpdateService : public ComponentUpdateService {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : task_runner_(task_runner) {}
 
-  ~MockComponentUpdateService() override {
-    if (component_)
-      delete component_->installer;
-  }
+  ~MockComponentUpdateService() override {}
 
   MockOnDemandUpdater& on_demand_updater() { return on_demand_updater_; }
 

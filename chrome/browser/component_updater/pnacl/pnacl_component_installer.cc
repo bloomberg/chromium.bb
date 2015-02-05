@@ -92,7 +92,7 @@ void OverrideDirPnaclComponent(const base::FilePath& base_path) {
   PathService::Override(chrome::DIR_PNACL_COMPONENT, GetPlatformDir(base_path));
 }
 
-bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
+bool GetLatestPnaclDirectory(const scoped_refptr<PnaclComponentInstaller>& pci,
                              base::FilePath* latest_dir,
                              Version* latest_version,
                              std::vector<base::FilePath>* older_dirs) {
@@ -293,9 +293,10 @@ CrxComponent PnaclComponentInstaller::GetCrxComponent() {
 
 namespace {
 
-void FinishPnaclUpdateRegistration(const Version& current_version,
-                                   const std::string& current_fingerprint,
-                                   PnaclComponentInstaller* pci) {
+void FinishPnaclUpdateRegistration(
+    const Version& current_version,
+    const std::string& current_fingerprint,
+    const scoped_refptr<PnaclComponentInstaller>& pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pci->set_current_version(current_version);
   CheckVersionCompatiblity(current_version);
@@ -312,7 +313,8 @@ void FinishPnaclUpdateRegistration(const Version& current_version,
 
 // Check if there is an existing version on disk first to know when
 // a hosted version is actually newer.
-void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
+void StartPnaclUpdateRegistration(
+    const scoped_refptr<PnaclComponentInstaller>& pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = pci->GetPnaclBaseDirectory();
   if (!base::PathExists(path)) {
@@ -365,9 +367,9 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
 void PnaclComponentInstaller::RegisterPnaclComponent(
     ComponentUpdateService* cus) {
   cus_ = cus;
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&StartPnaclUpdateRegistration, this));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&StartPnaclUpdateRegistration, make_scoped_refptr(this)));
 }
 
 }  // namespace component_updater

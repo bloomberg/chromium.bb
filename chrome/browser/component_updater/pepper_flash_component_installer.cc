@@ -335,8 +335,7 @@ class PepperFlashComponentInstaller : public update_client::ComponentInstaller {
  public:
   explicit PepperFlashComponentInstaller(const Version& version);
 
-  ~PepperFlashComponentInstaller() override {}
-
+  // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
   bool Install(const base::DictionaryValue& manifest,
@@ -346,6 +345,8 @@ class PepperFlashComponentInstaller : public update_client::ComponentInstaller {
                         base::FilePath* installed_file) override;
 
  private:
+  ~PepperFlashComponentInstaller() override {}
+
   Version current_version_;
 };
 

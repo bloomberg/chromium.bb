@@ -878,7 +878,7 @@ BrowserProcessImpl::component_updater() {
 }
 
 CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
-  if (!crl_set_fetcher_.get())
+  if (!crl_set_fetcher_)
     crl_set_fetcher_ = new CRLSetFetcher();
   return crl_set_fetcher_.get();
 }
@@ -886,13 +886,13 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
 component_updater::PnaclComponentInstaller*
 BrowserProcessImpl::pnacl_component_installer() {
 #if !defined(DISABLE_NACL)
-  if (!pnacl_component_installer_.get()) {
-    pnacl_component_installer_.reset(
-        new component_updater::PnaclComponentInstaller());
+  if (!pnacl_component_installer_) {
+    pnacl_component_installer_ =
+        new component_updater::PnaclComponentInstaller();
   }
   return pnacl_component_installer_.get();
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 

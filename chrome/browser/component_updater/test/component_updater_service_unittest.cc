@@ -116,16 +116,23 @@ ComponentUpdateService::Status ComponentUpdaterTest::RegisterComponent(
     CrxComponent* com,
     TestComponents component,
     const Version& version,
-    TestInstaller* installer) {
-  if (component == kTestComponent_abag) {
-    com->name = "test_abag";
-    com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-  } else if (component == kTestComponent_jebg) {
-    com->name = "test_jebg";
-    com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-  } else {
-    com->name = "test_ihfo";
-    com->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+    const scoped_refptr<TestInstaller>& installer) {
+  switch (component) {
+    case kTestComponent_abag: {
+      com->name = "test_abag";
+      com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+      break;
+    }
+    case kTestComponent_jebg: {
+      com->name = "test_jebg";
+      com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      break;
+    }
+    case kTestComponent_ihfo: {
+      com->name = "test_ihfo";
+      com->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      break;
+    }
   }
   com->version = version;
   com->installer = installer;
@@ -190,20 +197,20 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
   component_updater()->AddObserver(&observer);
   EXPECT_EQ(
       ComponentUpdateService::kOk,
-      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), &installer));
+      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), installer));
 
   // We loop twice, but there are no updates so we expect two sleep messages.
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(0, installer->install_count());
 
   // Expect to see the two update check requests and no other requests,
   // including pings.
@@ -248,8 +255,8 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(0, installer->install_count());
 
   EXPECT_EQ(2, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -335,21 +342,21 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   component_updater()->AddObserver(&observer);
 
-  TestInstaller installer1;
+  scoped_refptr<TestInstaller> installer1(new TestInstaller);
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
-  TestInstaller installer2;
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), installer1);
+  scoped_refptr<TestInstaller> installer2(new TestInstaller);
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), installer2);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
+  EXPECT_EQ(0, installer1->error());
+  EXPECT_EQ(1, installer1->install_count());
+  EXPECT_EQ(0, installer2->error());
+  EXPECT_EQ(0, installer2->install_count());
 
   // Expect three request in total: two update checks and one ping.
   EXPECT_EQ(3, post_interceptor_->GetHitCount())
@@ -440,9 +447,9 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
       GURL(expected_crx_url),
       test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), &installer);
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), installer);
 
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
@@ -457,8 +464,8 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   // Expect no download to occur.
   EXPECT_EQ(0, get_interceptor_->GetHitCount());
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(0, installer->install_count());
 
   component_updater()->Stop();
 }
@@ -530,12 +537,12 @@ TEST_F(ComponentUpdaterTest, MAYBE_OnDemandUpdate) {
 
   component_updater()->AddObserver(&observer);
 
-  TestInstaller installer1;
+  scoped_refptr<TestInstaller> installer1(new TestInstaller);
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
-  TestInstaller installer2;
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), installer1);
+  scoped_refptr<TestInstaller> installer2(new TestInstaller);
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), installer2);
 
   // No update normally.
   test_configurator()->SetLoopCount(1);
@@ -563,10 +570,10 @@ TEST_F(ComponentUpdaterTest, MAYBE_OnDemandUpdate) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com2.installer)->install_count());
+  EXPECT_EQ(0, installer1->error());
+  EXPECT_EQ(0, installer1->install_count());
+  EXPECT_EQ(0, installer2->error());
+  EXPECT_EQ(1, installer2->install_count());
 
   EXPECT_EQ(2, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -742,12 +749,12 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 
   component_updater()->AddObserver(&observer);
 
-  TestInstaller installer1;
+  scoped_refptr<TestInstaller> installer1(new TestInstaller);
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
-  TestInstaller installer2;
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), installer1);
+  scoped_refptr<TestInstaller> installer2(new TestInstaller);
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), installer2);
 
   // Loop twice to issue two checks: (1) with original 0.9 version, update to
   // 1.0, and do the second check (2) with the updated 1.0 version.
@@ -755,10 +762,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
+  EXPECT_EQ(0, installer1->error());
+  EXPECT_EQ(1, installer1->install_count());
+  EXPECT_EQ(0, installer2->error());
+  EXPECT_EQ(0, installer2->install_count());
 
   EXPECT_EQ(3, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -810,10 +817,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  TestInstaller installer3;
+  scoped_refptr<TestInstaller> installer3(new TestInstaller);
   EXPECT_EQ(ComponentUpdateService::kReplaced,
-            RegisterComponent(
-                &com1, kTestComponent_jebg, Version("2.2"), &installer3));
+            RegisterComponent(&com1, kTestComponent_jebg, Version("2.2"),
+                              installer3));
 
   // Loop once just to notice the check happening with the re-register version.
   test_configurator()->SetLoopCount(1);
@@ -821,10 +828,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   RunThreads();
 
   // We created a new installer, so the counts go back to 0.
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
+  EXPECT_EQ(0, installer3->error());
+  EXPECT_EQ(0, installer3->install_count());
+  EXPECT_EQ(0, installer2->error());
+  EXPECT_EQ(0, installer2->install_count());
 
   // One update check and no additional pings are expected.
   EXPECT_EQ(1, post_interceptor_->GetHitCount())
@@ -873,16 +880,16 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
            "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"));
 
-  VersionedTestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new VersionedTestInstaller);
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), installer);
 
   test_configurator()->SetLoopCount(3);
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(2, installer->install_count());
 
   EXPECT_EQ(5, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -962,17 +969,17 @@ TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
       GURL("http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"));
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_ihfo, Version("1.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("1.0"), installer);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
   RunThreads();
 
   // A failed differential update does not count as a failed install.
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(1, installer->install_count());
 
   EXPECT_EQ(3, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -1013,14 +1020,17 @@ TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
 // Verify that a failed installation causes an install failure ping.
 TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   // This test installer reports installation failure.
-  class : public TestInstaller {
+  class FailingTestInstaller : public TestInstaller {
     bool Install(const base::DictionaryValue& manifest,
                  const base::FilePath& unpack_path) override {
       ++install_count_;
       base::DeleteFile(unpack_path, true);
       return false;
     }
-  } installer;
+   private:
+    ~FailingTestInstaller() override {}
+  };
+  scoped_refptr<FailingTestInstaller> installer(new FailingTestInstaller);
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
@@ -1036,7 +1046,7 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   // Loop twice to issue two checks: (1) with original 0.9 version
   // and (2), which should retry with 0.9.
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), &installer);
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), installer);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
@@ -1087,8 +1097,8 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(2, installer->install_count());
 
   EXPECT_EQ(1, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -1136,17 +1146,17 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
       GURL("http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"));
 
-  VersionedTestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new VersionedTestInstaller);
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), installer);
 
   test_configurator()->SetLoopCount(3);
   component_updater()->Start();
   RunThreads();
   component_updater()->Stop();
 
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(2, installer->install_count());
 
   EXPECT_EQ(5, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
@@ -1249,12 +1259,12 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
   component_updater()->AddObserver(&observer);
   EXPECT_EQ(
       ComponentUpdateService::kOk,
-      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), &installer));
+      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), installer));
   // The following two calls ensure that we don't do an update check via the
   // timer, so the only update check should be the on-demand one.
   test_configurator()->SetInitialDelay(1000000);
@@ -1275,8 +1285,8 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
   RunThreads();
 
   EXPECT_EQ(1, post_interceptor_->GetHitCount());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+  EXPECT_EQ(0, installer->error());
+  EXPECT_EQ(0, installer->install_count());
 
   component_updater()->Stop();
 }
@@ -1349,12 +1359,12 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
   component_updater()->AddObserver(&observer);
-  EXPECT_EQ(
-      ComponentUpdateService::kOk,
-      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), &installer));
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            RegisterComponent(&com, kTestComponent_abag, Version("1.1"),
+                              installer));
   // The following two calls ensure that we don't do an update check via the
   // timer, so the only update check should be the on-demand one.
   test_configurator()->SetInitialDelay(1000000);
@@ -1381,8 +1391,8 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
     RunThreads();
 
     EXPECT_EQ(1, post_interceptor_->GetHitCount());
-    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+    EXPECT_EQ(0, installer->error());
+    EXPECT_EQ(0, installer->install_count());
 
     component_updater()->Stop();
   }
@@ -1407,8 +1417,8 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
     RunThreads();
 
     EXPECT_EQ(1, post_interceptor_->GetHitCount());
-    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+    EXPECT_EQ(0, installer->error());
+    EXPECT_EQ(0, installer->install_count());
 
     component_updater()->Stop();
   }
@@ -1466,11 +1476,11 @@ TEST_F(ComponentUpdaterTest, Observer) {
   component_updater()->AddObserver(&observer1);
   component_updater()->AddObserver(&observer2);
 
-  TestInstaller installer;
+  scoped_refptr<TestInstaller> installer(new TestInstaller);
   CrxComponent com;
   EXPECT_EQ(
       ComponentUpdateService::kOk,
-      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), &installer));
+      RegisterComponent(&com, kTestComponent_abag, Version("1.1"), installer));
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   RunThreads();

@@ -69,7 +69,7 @@ ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
   EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
-  installer_.reset(new ReadOnlyTestInstaller(installed_dir_.path()));
+  installer_ = new ReadOnlyTestInstaller(installed_dir_.path());
   task_runner_ = base::MessageLoop::current()->task_runner();
 }
 

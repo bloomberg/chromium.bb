@@ -100,8 +100,7 @@ class SwiftShaderComponentInstaller : public update_client::ComponentInstaller {
  public:
   explicit SwiftShaderComponentInstaller(const Version& version);
 
-  ~SwiftShaderComponentInstaller() override {}
-
+  // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
   bool Install(const base::DictionaryValue& manifest,
@@ -111,6 +110,8 @@ class SwiftShaderComponentInstaller : public update_client::ComponentInstaller {
                         base::FilePath* installed_file) override;
 
  private:
+  ~SwiftShaderComponentInstaller() override {}
+
   Version current_version_;
 };
 

@@ -139,10 +139,9 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
   scoped_ptr<ComponentInstallerTraits> traits(
       new SupervisedUserWhitelistComponentInstallerTraits(crx_id, name,
                                                           callback));
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(traits.Pass());
+  scoped_refptr<DefaultComponentInstaller> installer(
+      new DefaultComponentInstaller(traits.Pass()));
 
-  // Takes ownership of |installer|.
   installer->Register(cus_);
 
   if (newly_added)

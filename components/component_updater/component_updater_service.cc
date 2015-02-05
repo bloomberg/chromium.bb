@@ -108,7 +108,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
   // Context for a crx download url request.
   struct CRXContext {
-    ComponentInstaller* installer;
+    scoped_refptr<ComponentInstaller> installer;
     std::vector<uint8_t> pk_hash;
     std::string id;
     std::string fingerprint;

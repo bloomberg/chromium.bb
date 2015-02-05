@@ -30,7 +30,7 @@ class ComponentPatcherOperationTest : public testing::Test {
   base::ScopedTempDir input_dir_;
   base::ScopedTempDir installed_dir_;
   base::ScopedTempDir unpack_dir_;
-  scoped_ptr<ReadOnlyTestInstaller> installer_;
+  scoped_refptr<ReadOnlyTestInstaller> installer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:

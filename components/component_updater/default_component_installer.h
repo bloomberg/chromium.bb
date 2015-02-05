@@ -99,15 +99,16 @@ class DefaultComponentInstaller : public update_client::ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
+ private:
   ~DefaultComponentInstaller() override;
 
- private:
   base::FilePath GetInstallDirectory();
   bool InstallHelper(const base::DictionaryValue& manifest,
                      const base::FilePath& unpack_path,
                      const base::FilePath& install_path);
   void StartRegistration(ComponentUpdateService* cus);
   void FinishRegistration(ComponentUpdateService* cus);
+  void ComponentReady(scoped_ptr<base::DictionaryValue> manifest);
 
   base::Version current_version_;
   std::string current_fingerprint_;

@@ -277,7 +277,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 
 #if !defined(DISABLE_NACL)
-  scoped_ptr<component_updater::PnaclComponentInstaller>
+  scoped_refptr<component_updater::PnaclComponentInstaller>
       pnacl_component_installer_;
 #endif
 

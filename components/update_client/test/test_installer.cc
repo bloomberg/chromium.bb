@@ -30,12 +30,7 @@ bool TestInstaller::GetInstalledFile(const std::string& file,
   return false;
 }
 
-int TestInstaller::error() const {
-  return error_;
-}
-
-int TestInstaller::install_count() const {
-  return install_count_;
+TestInstaller::~TestInstaller() {
 }
 
 ReadOnlyTestInstaller::ReadOnlyTestInstaller(const base::FilePath& install_dir)

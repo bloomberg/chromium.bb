@@ -60,7 +60,7 @@ class ComponentUpdaterTest : public testing::Test {
       update_client::CrxComponent* com,
       TestComponents component,
       const Version& version,
-      update_client::TestInstaller* installer);
+      const scoped_refptr<update_client::TestInstaller>& installer);
 
  protected:
   void RunThreads();

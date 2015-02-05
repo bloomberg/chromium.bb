@@ -41,8 +41,7 @@ class PnaclComponentInstaller : public update_client::ComponentInstaller {
  public:
   PnaclComponentInstaller();
 
-  ~PnaclComponentInstaller() override;
-
+  // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
   bool Install(const base::DictionaryValue& manifest,
@@ -74,9 +73,12 @@ class PnaclComponentInstaller : public update_client::ComponentInstaller {
   ComponentUpdateService* cus() const { return cus_; }
 
  private:
+  ~PnaclComponentInstaller() override;
+
   base::Version current_version_;
   std::string current_fingerprint_;
   ComponentUpdateService* cus_;
+
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstaller);
 };
 

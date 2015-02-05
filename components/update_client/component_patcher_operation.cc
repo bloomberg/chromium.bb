@@ -43,7 +43,7 @@ const char kPatch[] = "patch";
 
 DeltaUpdateOp* CreateDeltaUpdateOp(
     const std::string& operation,
-    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher) {
+    const scoped_refptr<OutOfProcessPatcher>& out_of_process_patcher) {
   if (operation == "copy") {
     return new DeltaUpdateOpCopy();
   } else if (operation == "create") {
@@ -60,12 +60,13 @@ DeltaUpdateOp::DeltaUpdateOp() {
 DeltaUpdateOp::~DeltaUpdateOp() {
 }
 
-void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
-                        const base::FilePath& input_dir,
-                        const base::FilePath& unpack_dir,
-                        ComponentInstaller* installer,
-                        const ComponentUnpacker::Callback& callback,
-                        scoped_refptr<base::SequencedTaskRunner> task_runner) {
+void DeltaUpdateOp::Run(
+    const base::DictionaryValue* command_args,
+    const base::FilePath& input_dir,
+    const base::FilePath& unpack_dir,
+    const scoped_refptr<ComponentInstaller>& installer,
+    const ComponentUnpacker::Callback& callback,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   callback_ = callback;
   task_runner_ = task_runner;
   std::string output_rel_path;
@@ -140,7 +141,7 @@ DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {
 ComponentUnpacker::Error DeltaUpdateOpCopy::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    ComponentInstaller* installer) {
+    const scoped_refptr<ComponentInstaller>& installer) {
   std::string input_rel_path;
   if (!command_args->GetString(kInput, &input_rel_path))
     return ComponentUnpacker::kDeltaBadCommands;
@@ -167,7 +168,7 @@ DeltaUpdateOpCreate::~DeltaUpdateOpCreate() {
 ComponentUnpacker::Error DeltaUpdateOpCreate::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    ComponentInstaller* installer) {
+    const scoped_refptr<ComponentInstaller>& installer) {
   std::string patch_rel_path;
   if (!command_args->GetString(kPatch, &patch_rel_path))
     return ComponentUnpacker::kDeltaBadCommands;
@@ -198,7 +199,7 @@ DeltaUpdateOpPatch::~DeltaUpdateOpPatch() {
 ComponentUnpacker::Error DeltaUpdateOpPatch::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    ComponentInstaller* installer) {
+    const scoped_refptr<ComponentInstaller>& installer) {
   std::string patch_rel_path;
   std::string input_rel_path;
   if (!command_args->GetString(kPatch, &patch_rel_path) ||

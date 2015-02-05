@@ -176,8 +176,8 @@ void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
 class RecoveryComponentInstaller : public update_client::ComponentInstaller {
  public:
   RecoveryComponentInstaller(const Version& version, PrefService* prefs);
-  ~RecoveryComponentInstaller() override {}
 
+  // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
   bool Install(const base::DictionaryValue& manifest,
@@ -187,6 +187,8 @@ class RecoveryComponentInstaller : public update_client::ComponentInstaller {
                         base::FilePath* installed_file) override;
 
  private:
+  ~RecoveryComponentInstaller() override {}
+
   bool RunInstallCommand(const base::CommandLine& cmdline,
                          const base::FilePath& installer_folder) const;
 
