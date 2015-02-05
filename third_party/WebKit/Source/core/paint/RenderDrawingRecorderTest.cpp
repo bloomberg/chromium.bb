@@ -16,9 +16,9 @@
 namespace blink {
 namespace {
 
-class DrawingRecorderTest : public RenderingTest {
+class RenderDrawingRecorderTest : public RenderingTest {
 public:
-    DrawingRecorderTest() : m_renderView(nullptr) { }
+    RenderDrawingRecorderTest() : m_renderView(nullptr) { }
 
 protected:
     RenderView* renderView() { return m_renderView; }
@@ -54,7 +54,7 @@ void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 }
 
 
-TEST_F(DrawingRecorderTest, DrawingRecorderTest_Nothing)
+TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Nothing)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
@@ -65,7 +65,7 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Nothing)
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
 }
 
-TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
+TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Rect)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
@@ -75,7 +75,7 @@ TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 }
 
-TEST_F(DrawingRecorderTest, DrawingRecorderTest_Cached)
+TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Cached)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
