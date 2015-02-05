@@ -242,15 +242,18 @@ void AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceConnected(
     return;
   }
 
-  if (invalidation_service != device_invalidation_service_.get()) {
-    // If an invalidation service other than the device-global one connected,
-    // destroy the device-global service.
-    invalidation_service_ = nullptr;
+  // Make the invalidation service that just connected available to consumers.
+  invalidation_service_ = nullptr;
+  SetInvalidationService(invalidation_service);
+
+  if (invalidation_service_ &&
+      device_invalidation_service_ &&
+      invalidation_service_ != device_invalidation_service_.get()) {
+    // If a different invalidation service is being made available to consumers
+    // now, destroy the device-global one.
     DestroyDeviceInvalidationService();
   }
 
-  // Make the invalidation service that just connected available to consumers.
-  SetInvalidationService(invalidation_service);
 }
 
 void
