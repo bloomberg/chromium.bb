@@ -20,7 +20,7 @@ using content::BrowserThread;
 namespace feedback {
 namespace {
 
-const char kTraceFilename[] = "tracing.zip\n";
+const char kTraceFilename[] = "tracing.zip";
 const char kPerformanceCategoryTag[] = "Performance";
 
 const base::FilePath::CharType kHistogramsFilename[] =
