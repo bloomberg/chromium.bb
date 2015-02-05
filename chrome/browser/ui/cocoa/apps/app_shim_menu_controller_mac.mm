@@ -140,6 +140,14 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
               resourceId:(int)resourceId
                   action:(SEL)action
            keyEquivalent:(NSString*)keyEquivalent;
+// Retain the source item given |menuTag| and |sourceItemTag|. Copy
+// the menu item given |menuTag| and |targetItemTag|.
+// This is useful when we want a doppelganger with a different source item.
+// For example, if there are conflicting key equivalents.
+- (id)initWithMenuTag:(NSInteger)menuTag
+        sourceItemTag:(NSInteger)sourceItemTag
+        targetItemTag:(NSInteger)targetItemTag
+        keyEquivalent:(NSString*)keyEquivalent;
 // Set the title using |resourceId_| and unset the source item's key equivalent.
 - (void)enableForApp:(const extensions::Extension*)app;
 // Restore the source item's key equivalent.
@@ -169,6 +177,20 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     [menuItem_ setTarget:controller];
     [menuItem_ setTag:itemTag];
     resourceId_ = resourceId;
+  }
+  return self;
+}
+
+- (id)initWithMenuTag:(NSInteger)menuTag
+        sourceItemTag:(NSInteger)sourceItemTag
+        targetItemTag:(NSInteger)targetItemTag
+        keyEquivalent:(NSString*)keyEquivalent {
+  if ((self = [super init])) {
+    menuItem_.reset([GetItemByTag(menuTag, targetItemTag) copy]);
+    sourceItem_.reset([GetItemByTag(menuTag, sourceItemTag) retain]);
+    DCHECK(menuItem_);
+    DCHECK(sourceItem_);
+    sourceKeyEquivalent_.reset([[sourceItem_ keyEquivalent] copy]);
   }
   return self;
 }
@@ -260,6 +282,13 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
               resourceId:0
                   action:nil
            keyEquivalent:@"n"]);
+  // Since the "Close Window" menu item will have the same shortcut as "Close
+  // Tab" on the Chrome menu, we need to create a doppelganger.
+  closeWindowDoppelganger_.reset([[DoppelgangerMenuItem alloc]
+                initWithMenuTag:IDC_FILE_MENU
+                  sourceItemTag:IDC_CLOSE_TAB
+                  targetItemTag:IDC_CLOSE_WINDOW
+                  keyEquivalent:@"w"]);
   // For apps, the "Window" part of "New Window" is dropped to match the default
   // menu set given to Cocoa Apps.
   [[newDoppelganger_ menuItem] setTitle:l10n_util::GetNSString(IDS_NEW_MAC)];
@@ -298,15 +327,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   [[fileMenuItem_ submenu] addItem:[newDoppelganger_ menuItem]];
   [[fileMenuItem_ submenu] addItem:[openDoppelganger_ menuItem]];
   [[fileMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
-  AddDuplicateItem(fileMenuItem_, IDC_FILE_MENU, IDC_CLOSE_WINDOW);
-  // Set the expected key equivalent explicitly here because
-  // -[AppControllerMac adjustCloseWindowMenuItemKeyEquivalent:] sets it to
-  // "W" (Cmd+Shift+w) when a tabbed window has focus; it will change it back
-  // to Cmd+w when a non-tabbed window has focus.
-  NSMenuItem* closeWindowMenuItem =
-      [[fileMenuItem_ submenu] itemWithTag:IDC_CLOSE_WINDOW];
-  [closeWindowMenuItem setKeyEquivalent:@"w"];
-  [closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+  [[fileMenuItem_ submenu] addItem:[closeWindowDoppelganger_ menuItem]];
 
   // Edit menu. We copy the menu because the last two items, "Start Dictation"
   // and "Special Characters" are added by OSX, so we can't copy them
@@ -407,6 +428,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   [quitDoppelganger_ enableForApp:app];
   [newDoppelganger_ enableForApp:app];
   [openDoppelganger_ enableForApp:app];
+  [closeWindowDoppelganger_ enableForApp:app];
 
   [appMenuItem_ setTitle:appId];
   [[appMenuItem_ submenu] setTitle:title];
@@ -453,6 +475,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   [quitDoppelganger_ disable];
   [newDoppelganger_ disable];
   [openDoppelganger_ disable];
+  [closeWindowDoppelganger_ disable];
 }
 
 - (void)quitCurrentPlatformApp {
