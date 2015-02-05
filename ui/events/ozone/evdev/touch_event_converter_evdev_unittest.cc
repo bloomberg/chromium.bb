@@ -120,6 +120,8 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
       << "SetNonBlocking for pipe fd[0] failed, errno: " << errno;
   read_pipe_ = fds[0];
   write_pipe_ = fds[1];
+
+  events_.resize(MAX_FINGERS);
 }
 
 void MockTouchEventConverterEvdev::ConfigureReadMock(struct input_event* queue,

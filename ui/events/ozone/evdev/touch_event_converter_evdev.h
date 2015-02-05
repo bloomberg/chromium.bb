@@ -24,9 +24,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  enum {
-    MAX_FINGERS = 11
-  };
+  enum { MAX_FINGERS = 20 };
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
                            int id,
@@ -47,6 +45,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   struct InProgressEvents {
     InProgressEvents();
 
+    bool altered_;
     float x_;
     float y_;
     int id_;  // Device reported "unique" touch point id; -1 means not active
@@ -96,14 +95,10 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   gfx::Size native_size_;
 
   // Touch point currently being updated from the /dev/input/event* stream.
-  int current_slot_;
-
-  // Bit field tracking which in-progress touch points have been modified
-  // without a syn event.
-  std::bitset<MAX_FINGERS> altered_slots_;
+  size_t current_slot_;
 
   // In-progress touch points.
-  InProgressEvents events_[MAX_FINGERS];
+  std::vector<InProgressEvents> events_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
