@@ -336,4 +336,24 @@ promise_test(function(t) {
         })
   }, 'Scope including consecutive slashes');
 
+promise_test(function(t) {
+    var script = 'filesystem:' + normalizeURL('resources/empty-worker.js');
+    var scope = 'resources/scope/filesystem-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering a script which has same-origin filesystem: URL should ' +
+            'fail with SecurityError.');
+  }, 'Script URL is same-origin filesystem: URL');
+
+promise_test(function(t) {
+    var script = 'resources/empty-worker.js';
+    var scope = 'filesystem:' + normalizeURL('resources/scope/filesystem-scope-url');
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering with the scope that has same-origin filesystem: URL ' +
+            'should fail with SecurityError.');
+  }, 'Scope URL is same-origin filesystem: URL');
+
 </script>

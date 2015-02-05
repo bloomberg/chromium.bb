@@ -142,6 +142,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scriptURL ('" + scriptOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
+    if (!scriptURL.protocolIsInHTTPFamily()) {
+        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the script ('" + scriptURL.string() + "') is not supported."));
+        return promise;
+    }
 
     KURL patternURL;
     if (options.scope().isNull())
@@ -153,6 +157,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     if (!documentOrigin->canRequest(patternURL)) {
         RefPtr<SecurityOrigin> patternOrigin = SecurityOrigin::create(patternURL);
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scope ('" + patternOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
+        return promise;
+    }
+    if (!patternURL.protocolIsInHTTPFamily()) {
+        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the scope ('" + patternURL.string() + "') is not supported."));
         return promise;
     }
 
