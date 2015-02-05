@@ -26,6 +26,7 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
 
@@ -184,6 +185,19 @@ bool MimeHandlerViewGuest::HandleContextMenu(
   if (delegate_)
     return delegate_->HandleContextMenu(web_contents(), params);
 
+  return false;
+}
+
+bool MimeHandlerViewGuest::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  if (event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd) {
+    // If we're an embedded plugin we drop pinch-gestures to avoid zooming the
+    // guest.
+    return !is_full_page_plugin();
+  }
   return false;
 }
 

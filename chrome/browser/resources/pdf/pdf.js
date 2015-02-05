@@ -108,9 +108,6 @@ function PDFViewer(streamDetails) {
   this.plugin_.type = 'application/x-google-chrome-pdf';
   this.plugin_.addEventListener('message', this.handlePluginMessage_.bind(this),
                                 false);
-  this.plugin_.style.height =
-        (window.innerHeight - this.toolbarHeight_) + 'px';
-  this.plugin_.style.width = window.innerWidth + 'px';
 
   if (this.isMaterial_)
     this.plugin_.setAttribute('is-material', '');
@@ -580,16 +577,6 @@ PDFViewer.prototype = {
    * A callback that's called after the viewport changes.
    */
   viewportChanged_: function() {
-    var hasScrollbars = this.viewport_.documentHasScrollbars();
-    var scrollbarWidth = this.viewport_.scrollbarWidth;
-    var verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
-    var horizontalScrollbarWidth =
-        hasScrollbars.horizontal ? scrollbarWidth : 0;
-    this.plugin_.style.width =
-        (window.innerWidth - verticalScrollbarWidth) + 'px';
-    this.plugin_.style.height = (window.innerHeight -
-        horizontalScrollbarWidth - this.toolbarHeight_) + 'px';
-
     if (!this.documentDimensions_)
       return;
 
@@ -604,6 +591,11 @@ PDFViewer.prototype = {
     }
 
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
+    var hasScrollbars = this.viewport_.documentHasScrollbars();
+    var scrollbarWidth = this.viewport_.scrollbarWidth;
+    var verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
+    var horizontalScrollbarWidth =
+        hasScrollbars.horizontal ? scrollbarWidth : 0;
     var toolbarRight = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
     var toolbarBottom = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
     toolbarRight -= verticalScrollbarWidth;

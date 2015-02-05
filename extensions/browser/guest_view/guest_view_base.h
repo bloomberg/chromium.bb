@@ -318,7 +318,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       const content::FileChooserParams& params) override;
   bool ShouldFocusPageAfterCrash() final;
   bool PreHandleGestureEvent(content::WebContents* source,
-                             const blink::WebGestureEvent& event) final;
+                             const blink::WebGestureEvent& event) override;
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) final;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
