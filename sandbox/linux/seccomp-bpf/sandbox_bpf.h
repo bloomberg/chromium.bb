@@ -10,7 +10,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {

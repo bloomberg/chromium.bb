@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 
+#include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
-#include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
 namespace sandbox {

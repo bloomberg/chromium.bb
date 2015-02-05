@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
-#define SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
+#ifndef SANDBOX_LINUX_BPF_DSL_CODEGEN_H__
+#define SANDBOX_LINUX_BPF_DSL_CODEGEN_H__
 
 #include <stddef.h>
 #include <stdint.h>
@@ -120,4 +120,4 @@ class SANDBOX_EXPORT CodeGen {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
+#endif  // SANDBOX_LINUX_BPF_DSL_CODEGEN_H__

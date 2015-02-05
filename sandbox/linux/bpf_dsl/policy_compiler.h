@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
-#include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/sandbox_export.h"
 
