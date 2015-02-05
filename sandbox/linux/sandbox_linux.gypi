@@ -315,6 +315,8 @@
         'suid/common/suid_unsafe_environment_variables.h',
         'suid/client/setuid_sandbox_client.cc',
         'suid/client/setuid_sandbox_client.h',
+        'suid/client/setuid_sandbox_host.cc',
+        'suid/client/setuid_sandbox_host.h',
       ],
       'defines': [
         'SANDBOX_IMPLEMENTATION',

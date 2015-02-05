@@ -119,7 +119,7 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
-#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -148,20 +148,20 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
   base::FilePath sandbox_binary;
 
-  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
-      sandbox::SetuidSandboxClient::Create());
+  scoped_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
+      sandbox::SetuidSandboxHost::Create());
 
   const bool want_setuid_sandbox =
       !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
       !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox) &&
-      !setuid_sandbox_client->IsDisabledViaEnvironment();
+      !setuid_sandbox_host->IsDisabledViaEnvironment();
 
   static const char no_suid_error[] =
       "Running without the SUID sandbox! See "
       "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
       "for more information on developing with the sandbox on.";
   if (want_setuid_sandbox) {
-    sandbox_binary = setuid_sandbox_client->GetSandboxBinaryPath();
+    sandbox_binary = setuid_sandbox_host->GetSandboxBinaryPath();
     if (sandbox_binary.empty()) {
       // This needs to be fatal. Talk to security@chromium.org if you feel
       // otherwise.

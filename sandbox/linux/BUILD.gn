@@ -94,7 +94,10 @@ test("sandbox_linux_unittests") {
   }
 
   if (compile_suid_client) {
-    sources += [ "suid/client/setuid_sandbox_client_unittest.cc" ]
+    sources += [
+      "suid/client/setuid_sandbox_client_unittest.cc",
+      "suid/client/setuid_sandbox_host_unittest.cc",
+    ]
   }
   if (use_seccomp_bpf) {
     sources += [
@@ -306,6 +309,8 @@ if (compile_suid_client) {
       "suid/common/suid_unsafe_environment_variables.h",
       "suid/client/setuid_sandbox_client.cc",
       "suid/client/setuid_sandbox_client.h",
+      "suid/client/setuid_sandbox_host.cc",
+      "suid/client/setuid_sandbox_host.h",
     ]
     defines = [ "SANDBOX_IMPLEMENTATION" ]
 

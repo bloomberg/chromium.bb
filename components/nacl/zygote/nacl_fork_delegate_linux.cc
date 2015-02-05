@@ -35,7 +35,7 @@
 #include "components/nacl/loader/nacl_helper_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 
 namespace {
@@ -146,8 +146,8 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     return;
   }
 
-  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
-      sandbox::SetuidSandboxClient::Create());
+  scoped_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
+      sandbox::SetuidSandboxHost::Create());
 
   // For communications between the NaCl loader process and
   // the SUID sandbox.
@@ -242,12 +242,10 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     if (enable_layer1_sandbox) {
       // NaCl needs to keep tight control of the cmd_line, so prepend the
       // setuid sandbox wrapper manually.
-      base::FilePath sandbox_path =
-          setuid_sandbox_client->GetSandboxBinaryPath();
+      base::FilePath sandbox_path = setuid_sandbox_host->GetSandboxBinaryPath();
       argv_to_launch.insert(argv_to_launch.begin(), sandbox_path.value());
-      setuid_sandbox_client->SetupLaunchOptions(
-          &options, &fds_to_map, &dummy_fd);
-      setuid_sandbox_client->SetupLaunchEnvironment();
+      setuid_sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
+      setuid_sandbox_host->SetupLaunchEnvironment();
     }
 
     options.fds_to_remap = &fds_to_map;

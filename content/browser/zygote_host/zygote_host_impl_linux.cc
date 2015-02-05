@@ -38,7 +38,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -151,11 +151,11 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   base::ScopedFD dummy_fd;
   if (using_suid_sandbox_) {
-    scoped_ptr<sandbox::SetuidSandboxClient>
-        sandbox_client(sandbox::SetuidSandboxClient::Create());
-    sandbox_client->PrependWrapper(&cmd_line);
-    sandbox_client->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
-    sandbox_client->SetupLaunchEnvironment();
+    scoped_ptr<sandbox::SetuidSandboxHost> sandbox_host(
+        sandbox::SetuidSandboxHost::Create());
+    sandbox_host->PrependWrapper(&cmd_line);
+    sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
+    sandbox_host->SetupLaunchEnvironment();
   }
 
   options.fds_to_remap = &fds_to_map;

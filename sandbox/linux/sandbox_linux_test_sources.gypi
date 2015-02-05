@@ -34,6 +34,7 @@
     [ 'compile_suid_client==1', {
       'sources': [
         'suid/client/setuid_sandbox_client_unittest.cc',
+        'suid/client/setuid_sandbox_host_unittest.cc',
       ],
     }],
     [ 'use_seccomp_bpf==1', {
