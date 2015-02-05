@@ -25,6 +25,16 @@ const PaintList& DisplayItemList::paintList()
 void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+
+    if (displayItem->isEnd()) {
+        ASSERT(!m_newPaints.isEmpty());
+        if (m_newPaints.last()->isBegin()) {
+            ASSERT(displayItem->isEndAndPairedWith(*m_newPaints.last()));
+            // Remove empty pairs.
+            m_newPaints.removeLast();
+            return;
+        }
+    }
     m_newPaints.append(displayItem);
 }
 

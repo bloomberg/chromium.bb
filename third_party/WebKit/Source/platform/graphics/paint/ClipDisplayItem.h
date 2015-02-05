@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT ClipDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
@@ -24,7 +24,7 @@ public:
     }
 
     ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
-        : DisplayItem(client, type)
+        : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
         , m_operation(operation)
     {
@@ -45,7 +45,7 @@ private:
     SkRegion::Op m_operation;
 };
 
-class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client, Type type)
@@ -54,13 +54,18 @@ public:
     }
 
     EndClipDisplayItem(DisplayItemClient client, Type type)
-        : DisplayItem(client, type)
+        : PairedEndDisplayItem(client, type)
     {
-        isEndClipType(type);
+        ASSERT(isEndClipType(type));
     }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isClip(); }
+#endif
 };
 
 } // namespace blink

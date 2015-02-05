@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginScrollDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginScrollDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BeginScrollDisplayItem> create(DisplayItemClient client, Type type, const IntSize& currentOffset)
@@ -21,8 +21,11 @@ public:
     }
 
     BeginScrollDisplayItem(DisplayItemClient client, Type type, const IntSize& currentOffset)
-        : DisplayItem(client, type)
-        , m_currentOffset(currentOffset) { }
+        : PairedBeginDisplayItem(client, type)
+        , m_currentOffset(currentOffset)
+    {
+        ASSERT(isScrollType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -31,7 +34,7 @@ private:
     const IntSize m_currentOffset;
 };
 
-class PLATFORM_EXPORT EndScrollDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndScrollDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndScrollDisplayItem> create(DisplayItemClient client, Type type)
@@ -40,10 +43,18 @@ public:
     }
 
     EndScrollDisplayItem(DisplayItemClient client, Type type)
-        : DisplayItem(client, type) { }
+        : PairedEndDisplayItem(client, type)
+    {
+        ASSERT(isEndScrollType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isScroll(); }
+#endif
 };
 
 } // namespace blink

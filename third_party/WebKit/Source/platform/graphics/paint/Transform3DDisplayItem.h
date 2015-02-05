@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginTransform3DDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginTransform3DDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BeginTransform3DDisplayItem> create(DisplayItemClient client, const TransformationMatrix& transform)
@@ -20,7 +20,7 @@ public:
     }
 
     BeginTransform3DDisplayItem(DisplayItemClient client, const TransformationMatrix& transform)
-        : DisplayItem(client, BeginTransform)
+        : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
 
     virtual void replay(GraphicsContext*) override;
@@ -31,7 +31,7 @@ private:
     FloatPoint3D m_transformOrigin;
 };
 
-class PLATFORM_EXPORT EndTransform3DDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndTransform3DDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndTransform3DDisplayItem> create(DisplayItemClient client)
@@ -40,10 +40,16 @@ public:
     }
 
     EndTransform3DDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndTransform) { }
+        : PairedEndDisplayItem(client, EndTransform) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    // FIXME: Distinguish BeginTransformDisplayItem and BeginTransform3DDisplayItem.
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform; }
+#endif
 };
 
 } // namespace blink

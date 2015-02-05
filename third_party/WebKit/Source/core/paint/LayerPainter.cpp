@@ -209,8 +209,8 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     // so they are nested properly.
     ClipPathHelper clipPathHelper(context, m_renderLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
 
-    OwnPtr<CompositingRecorder> compositingRecorder;
     OwnPtr<LayerClipRecorder> clipRecorder;
+    OwnPtr<CompositingRecorder> compositingRecorder;
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to composite if we're painting the root.
     // FIXME: this should be unified further into Layer::paintsWithTransparency().

@@ -6,6 +6,7 @@
 #include "core/paint/LayerClipRecorder.h"
 
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -39,22 +40,46 @@ private:
     RenderView* m_renderView;
 };
 
-void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+void drawEmptyClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
     LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
-TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)
+void drawRectInClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+{
+    IntRect rect(1, 1, 9, 9);
+    ClipRect clipRect(rect);
+    LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    if (!drawingRecorder.canUseCachedDrawing())
+        context->drawRect(rect);
+}
+
+TEST_F(LayerClipRecorderTest, Single)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawClip(&context, renderView(), PaintPhaseForeground, bound);
+    drawRectInClip(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)3, rootDisplayItemList().paintList().size());
+    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isClip());
+    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
+    EXPECT_TRUE(rootDisplayItemList().paintList()[2]->isEndClip());
+}
+
+TEST_F(LayerClipRecorderTest, Empty)
+{
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+    FloatRect bound = renderView()->viewRect();
+    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+
+    drawEmptyClip(&context, renderView(), PaintPhaseForeground, bound);
+    rootDisplayItemList().endNewPaints();
+    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }
 
 }

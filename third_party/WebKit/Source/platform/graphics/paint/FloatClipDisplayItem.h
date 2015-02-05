@@ -14,7 +14,7 @@ namespace blink {
 
 class RoundedRect;
 
-class PLATFORM_EXPORT FloatClipDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT FloatClipDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<FloatClipDisplayItem> create(DisplayItemClient client, Type type, const FloatRect& clipRect)
@@ -23,7 +23,7 @@ public:
     }
 
     FloatClipDisplayItem(DisplayItemClient client, Type type, const FloatRect& clipRect)
-        : DisplayItem(client, type)
+        : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
     {
         ASSERT(isFloatClipType(type));
@@ -40,7 +40,7 @@ private:
     FloatRect m_clipRect;
 };
 
-class PLATFORM_EXPORT EndFloatClipDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndFloatClipDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client, Type type)
@@ -49,13 +49,18 @@ public:
     }
 
     EndFloatClipDisplayItem(DisplayItemClient client, Type type)
-        : DisplayItem(client, type)
+        : PairedEndDisplayItem(client, type)
     {
         ASSERT(isEndFloatClipType(type));
     }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isFloatClip(); }
+#endif
 };
 
 } // namespace blink

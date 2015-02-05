@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginTransformDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform)
@@ -20,7 +20,7 @@ public:
     }
 
     BeginTransformDisplayItem(DisplayItemClient client, const AffineTransform& transform)
-        : DisplayItem(client, BeginTransform)
+        : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
 
     virtual void replay(GraphicsContext*) override;
@@ -30,7 +30,7 @@ private:
     const AffineTransform m_transform;
 };
 
-class PLATFORM_EXPORT EndTransformDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndTransformDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client)
@@ -39,10 +39,15 @@ public:
     }
 
     EndTransformDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndTransform) { }
+        : PairedEndDisplayItem(client, EndTransform) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform; }
+#endif
 };
 
 } // namespace blink

@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginFilterDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginFilterDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
@@ -48,7 +48,7 @@ private:
     const LayoutRect m_bounds;
 };
 
-class PLATFORM_EXPORT EndFilterDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndFilterDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndFilterDisplayItem> create(DisplayItemClient client)
@@ -57,10 +57,15 @@ public:
     }
 
     EndFilterDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndFilter) { }
+        : PairedEndDisplayItem(client, EndFilter) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginFilter; }
+#endif
 };
 
 }

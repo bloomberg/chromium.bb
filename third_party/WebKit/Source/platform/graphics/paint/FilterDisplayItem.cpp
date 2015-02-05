@@ -14,14 +14,14 @@
 namespace blink {
 
 BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
-    : DisplayItem(client, BeginFilter)
+    : PairedBeginDisplayItem(client, BeginFilter)
     , m_imageFilter(imageFilter)
     , m_bounds(bounds)
 {
 }
 
 BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
-    : DisplayItem(client, BeginFilter)
+    : PairedBeginDisplayItem(client, BeginFilter)
     , m_imageFilter(imageFilter)
     , m_bounds(bounds)
 {

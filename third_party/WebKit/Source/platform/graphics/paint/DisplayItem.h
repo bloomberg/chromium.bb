@@ -185,6 +185,13 @@ public:
     DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
 
+    virtual bool isBegin() const { return false; }
+    virtual bool isEnd() const { return false; }
+
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const { return false; }
+#endif
+
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
 
@@ -219,6 +226,26 @@ private:
 #endif
 };
 
-}
+class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
+protected:
+    PairedBeginDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
+
+private:
+    virtual bool isBegin() const override final { return true; }
+};
+
+class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
+protected:
+    PairedEndDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
+
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override = 0;
+#endif
+
+private:
+    virtual bool isEnd() const override final { return true; }
+};
+
+} // namespace blink
 
 #endif // DisplayItem_h

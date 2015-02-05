@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginClipPathDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BeginClipPathDisplayItem> create(DisplayItemClient client, const Path& clipPath, WindRule windRule)
@@ -21,7 +21,7 @@ public:
     }
 
     BeginClipPathDisplayItem(DisplayItemClient client, const Path& clipPath, WindRule windRule)
-        : DisplayItem(client, BeginClipPath)
+        : PairedBeginDisplayItem(client, BeginClipPath)
         , m_clipPath(clipPath)
         , m_windRule(windRule) { }
 
@@ -36,7 +36,7 @@ private:
 #endif
 };
 
-class PLATFORM_EXPORT EndClipPathDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndClipPathDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<EndClipPathDisplayItem> create(DisplayItemClient client)
@@ -45,10 +45,15 @@ public:
     }
 
     EndClipPathDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndClipPath) { }
+        : PairedEndDisplayItem(client, EndClipPath) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+
+private:
+#if ENABLE(ASSERT)
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginClipPath; }
+#endif
 };
 
 } // namespace blink
