@@ -1070,11 +1070,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<WebSettings::V8ScriptStreamingMode>(
           prefs.v8_script_streaming_mode));
 
-  // Needs to happen before setIgnoreVIewportTagScaleLimits below.
-  web_view->setDefaultPageScaleLimits(
-      prefs.default_minimum_page_scale_factor,
-      prefs.default_maximum_page_scale_factor);
-
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(prefs.text_autosizing_enabled);
@@ -1136,6 +1131,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 #if defined(OS_WIN)
   settings->setShowContextMenuOnMouseUp(true);
 #endif
+
+  web_view->setDefaultPageScaleLimits(
+      prefs.default_minimum_page_scale_factor,
+      prefs.default_maximum_page_scale_factor);
 }
 
 /*static*/
