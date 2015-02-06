@@ -764,17 +764,18 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
 {
     ASSERT(gridItemWithSpan.span() > 1);
     const GridCoordinate coordinate = gridItemWithSpan.coordinate();
-    const GridResolvedPosition initialTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedInitialPosition : coordinate.rows.resolvedInitialPosition;
-    const GridResolvedPosition finalTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedFinalPosition : coordinate.rows.resolvedFinalPosition;
+    const GridSpan& itemSpan = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
 
     sizingData.growBeyondGrowthLimitsTracks.shrink(0);
     sizingData.filteredTracks.shrink(0);
-    for (GridResolvedPosition trackPosition = initialTrackPosition; trackPosition <= finalTrackPosition; ++trackPosition) {
+    LayoutUnit spanningTracksSize;
+    for (const auto& trackPosition : itemSpan) {
         GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
+        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackPosition.toInt()] : sizingData.rowTracks[trackPosition.toInt()];
+        spanningTracksSize += (track.*trackGetter)();
         if (!(trackSize.*filterFunction)())
             continue;
 
-        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackPosition.toInt()] : sizingData.rowTracks[trackPosition.toInt()];
         sizingData.filteredTracks.append(&track);
 
         if (!growAboveMaxBreadthFilterFunction || (trackSize.*growAboveMaxBreadthFilterFunction)())
@@ -784,14 +785,9 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
     if (sizingData.filteredTracks.isEmpty())
         return;
 
-    LayoutUnit extraSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks);
-    for (GridResolvedPosition trackIndexForSpace = initialTrackPosition; trackIndexForSpace <= finalTrackPosition; ++trackIndexForSpace) {
-        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndexForSpace.toInt()] : sizingData.rowTracks[trackIndexForSpace.toInt()];
-        extraSpace -= (track.*trackGetter)();
-    }
-
     // Specs mandate to floor extraSpace to 0. Instead we directly avoid the function call in those cases as it will be
     // a noop in terms of track sizing.
+    LayoutUnit extraSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks) - spanningTracksSize;
     if (extraSpace > 0) {
         Vector<GridTrack*>* tracksToGrowBeyondGrowthLimits = sizingData.growBeyondGrowthLimitsTracks.isEmpty() ? &sizingData.filteredTracks : &sizingData.growBeyondGrowthLimitsTracks;
         distributeSpaceToTracks(sizingData.filteredTracks, tracksToGrowBeyondGrowthLimits, trackGetter, trackGrowthFunction, sizingData, extraSpace);
