@@ -75,7 +75,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_CONDITION_VARIABLE_H_
 
 
-#include "native_client/src/shared/platform/win/time.h"
 #include "native_client/src/shared/platform/win/condition_variable_events.h"
 #include "native_client/src/shared/platform/win/lock.h"
 
@@ -93,15 +92,11 @@ class ConditionVariable {
   // Wait() releases the caller's critical section atomically as it starts to
   // sleep, and the re-acquires it when it is signaled.
   // We provide two variants of TimedWait:
-  // the first one takes relative time as an argument.
-  int TimedWaitRel(Lock& user_lock, TimeDelta max_time);
-  // The second TimedWait takes absolute time
-  int TimedWaitAbs(Lock& user_lock, TimeTicks abs_time);
-  void Wait(Lock& user_lock) {
-    // Default to "wait forever" timing, which means have to get a Signal()
-    // or Broadcast() to come out of this wait state.
-    TimedWaitRel(user_lock, TimeDelta::FromMilliseconds(INFINITE));
-  }
+  // the first one takes relative time in microseconds as an argument.
+  int TimedWaitRel(Lock& user_lock, int64_t max_usec);
+  // The second TimedWait takes absolute time in microseconds.
+  int TimedWaitAbs(Lock& user_lock, int64_t abs_usec);
+  void Wait(Lock& user_lock);
 
   // Broadcast() revives all waiting threads.
   void Broadcast();

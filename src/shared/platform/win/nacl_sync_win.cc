@@ -29,6 +29,12 @@
 #include "native_client/src/shared/platform/win/lock.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
+static const int64_t kMillisecondsPerSecond = 1000;
+static const int64_t kNanosecondsPerMicrosecond = 1000;
+static const int64_t kMicrosecondsPerMillisecond = 1000;
+static const int64_t kMicrosecondsPerSecond =
+    kMicrosecondsPerMillisecond * kMillisecondsPerSecond;
+
 /* Mutex */
 int NaClMutexCtor(struct NaClMutex *mp) {
   mp->lock = new NaCl::Lock();
@@ -129,17 +135,13 @@ NaClSyncStatus NaClCondVarTimedWaitRelative(
     struct NaClCondVar             *cvp,
     struct NaClMutex               *mp,
     struct nacl_abi_timespec const *reltime) {
-  NaCl::TimeDelta relative_wait(
-      NaCl::TimeDelta::FromMicroseconds(
-          reltime->tv_sec
-          * NaCl::Time::kMicrosecondsPerSecond
-          + reltime->tv_nsec
-          / NaCl::Time::kNanosecondsPerMicrosecond));
+  int64_t relative_usec = reltime->tv_sec * kMicrosecondsPerSecond +
+                          reltime->tv_nsec / kNanosecondsPerMicrosecond;
   int result;
   mp->held = 0;
   result = (reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->TimedWaitRel(
                 *(reinterpret_cast<NaCl::Lock *>(mp->lock)),
-      relative_wait));
+      relative_usec));
   mp->held = 1;
   if (0 == result) {
     return NACL_SYNC_CONDVAR_TIMEDOUT;
@@ -151,15 +153,13 @@ NaClSyncStatus NaClCondVarTimedWaitAbsolute(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
     struct nacl_abi_timespec const  *abstime) {
-  NaCl::TimeTicks ticks(abstime->tv_sec
-                        * NaCl::Time::kMicrosecondsPerSecond
-                        + abstime->tv_nsec
-                        / NaCl::Time::kNanosecondsPerMicrosecond);
+  int64_t usec = abstime->tv_sec * kMicrosecondsPerSecond +
+                 abstime->tv_nsec / kNanosecondsPerMicrosecond;
   int result;
   mp->held = 0;
   result = reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->TimedWaitAbs(
       *(reinterpret_cast<NaCl::Lock *>(mp->lock)),
-      ticks);
+      usec);
   mp->held = 1;
   if (0 == result) {
     return NACL_SYNC_CONDVAR_TIMEDOUT;

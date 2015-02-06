@@ -73,8 +73,6 @@ static_library("platform") {
         "win/nacl_time.c",
         "win/nacl_timestamp.c",
         "win/port_win.c",
-        "win/time.cc",
-        "win/time_win.cc",
         "win/xlate_system_error.c",
       ]
     }

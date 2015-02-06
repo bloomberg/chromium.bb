@@ -460,9 +460,6 @@ unittest_inputs = [
     'mmap_unittest.cc',
     'unittest_main.cc',
     'sel_memory_unittest.cc',
-    # nacl_sync_unittest.cc was testing the wrong (i.e., too low level) API
-    # re-enable it when it has been converted to the C API.
-    #'nacl_sync_unittest.cc',
     'sel_mem_test.cc',
     'sel_ldr_test.cc',
     'thread_suspension_test.cc',

@@ -9,6 +9,9 @@
  * This is the host-OS-dependent implementation.
  */
 
+/* Make sure that winmm.lib is added to the linker's input. */
+#pragma comment(lib, "winmm.lib")
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <sys/timeb.h>

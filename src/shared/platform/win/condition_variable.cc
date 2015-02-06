@@ -16,11 +16,14 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
-#include "native_client/src/shared/platform/win/time.h"
 #include "native_client/src/shared/platform/win/condition_variable.h"
 #include "native_client/src/shared/platform/win/lock.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
+static const int64_t kMillisecondsPerSecond = 1000;
+static const int64_t kMicrosecondsPerMillisecond = 1000;
+static const int64_t kMicrosecondsPerSecond =
+    kMicrosecondsPerMillisecond * kMillisecondsPerSecond;
 
 NaCl::ConditionVariable::ConditionVariable()
   : run_state_(RUNNING),
@@ -57,7 +60,7 @@ NaCl::ConditionVariable::~ConditionVariable() {
 
 // Wait() atomically releases the caller's lock as it starts to Wait, and then
 // re-acquires it when it is signaled.
-int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
+int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, int64_t max_usec) {
   ConditionVariableEvent* waiting_event;
   HANDLE  handle;
   DWORD   result;
@@ -71,8 +74,8 @@ int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
 
   { /* SCOPE */
     AutoUnlock unlock(user_lock);  // Release caller's lock
-    result = WaitForSingleObject(handle,
-                                 static_cast<DWORD>(max_time.InMilliseconds()));
+    result = WaitForSingleObject(
+        handle, static_cast<DWORD>(max_usec / kMicrosecondsPerMillisecond));
     // Minimize spurious signal creation window by recycling asap.
     AutoLock auto_lock(internal_lock_);
     RecycleEvent(waiting_event);
@@ -83,34 +86,33 @@ int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
   return 0;
 }
 
-static NaCl::TimeTicks NaClWinUnixTimeBaseNow() {
+static int64_t NaClWinUnixTimeBaseNow() {
   struct nacl_abi_timeval unix_time;
-
   (void) NaClGetTimeOfDay(&unix_time);
-  return NaCl::TimeTicks(
-      unix_time.nacl_abi_tv_sec * NaCl::Time::kMicrosecondsPerSecond
-      + unix_time.nacl_abi_tv_usec);
+  return unix_time.nacl_abi_tv_sec * kMicrosecondsPerSecond +
+         unix_time.nacl_abi_tv_usec;
 }
 
-int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, TimeTicks abs_time) {
-#if 0
-  // Test the unit test
-  TimeDelta relative_time = TimeDelta::FromDays(1);
-#else
-  TimeDelta relative_time = abs_time - NaClWinUnixTimeBaseNow();
-#endif
+int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, int64_t abs_usec) {
+  int64_t relative_usec = abs_usec - NaClWinUnixTimeBaseNow();
   NaClLog(4,
           "TimedWaitAbs: req'd abs_time %" NACL_PRId64 " ticks (uS)\n",
-          abs_time.ticks_for_testing());
+          abs_usec);
   NaClLog(4,
-          "TimedWaitAbs: relative_time  %" NACL_PRId64 " ticks (uS)\n",
-          relative_time.InMicroseconds());
-  if (relative_time.InMicroseconds() < 0) {
+          "TimedWaitAbs: relative_usec  %" NACL_PRId64 " ticks (uS)\n",
+          relative_usec);
+  if (relative_usec < 0) {
     NaClLog(4, "TimedWaitAbs: time already passed!\n");
     // we check to see if the object has been signaled anyway
-    relative_time = TimeDelta::FromMicroseconds(0);
+    relative_usec = 0;
   }
-  return TimedWaitRel(user_lock, relative_time);
+  return TimedWaitRel(user_lock, relative_usec);
+}
+
+void NaCl::ConditionVariable::Wait(Lock& user_lock) {
+  // Default to "wait forever" timing, which means have to get a Signal()
+  // or Broadcast() to come out of this wait state.
+  TimedWaitRel(user_lock, INT64_MAX);
 }
 
 // Broadcast() is guaranteed to signal all threads that were waiting (i.e., had
