@@ -4,17 +4,17 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
     RenderSVGContainer {g} at (0,0) size 480x360
-      RenderSVGText {text} at (180,17) size 136x31 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 136x31
+      RenderSVGText {text} at (180,12) size 136x36 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 136x36
           chunk 1 text run 1 at (180.00,40.00) startOffset 0 endOffset 11 width 135.79: "Text stroke"
-      RenderSVGContainer {g} at (48,43) size 425x317
-        RenderSVGText {text} at (60,55) size 217x300 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 217x300
+      RenderSVGContainer {g} at (48,0) size 425x360
+        RenderSVGText {text} at (60,10) size 217x345 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 217x345
             chunk 1 text run 1 at (60.00,280.00) startOffset 0 endOffset 1 width 216.65: "A"
-        RenderSVGText {text} at (260,55) size 201x300 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 201x300
+        RenderSVGText {text} at (260,10) size 201x345 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 201x345
             chunk 1 text run 1 at (260.00,280.00) startOffset 0 endOffset 1 width 200.10: "B"
-      RenderSVGText {text} at (10,310) size 264x40 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 264x40
+      RenderSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 264x46
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.4 $"
       RenderSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

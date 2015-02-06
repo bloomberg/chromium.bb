@@ -2,13 +2,13 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (98,5) size 312x330
+    RenderSVGContainer {g} at (98,1) size 312x334
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGText {text} at (98,5) size 284x27 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 132x27
+      RenderSVGText {text} at (98,1) size 284x31 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 132x31
           chunk 1 (middle anchor) text run 1 at (98.10,25.00) startOffset 0 endOffset 12 width 131.42: "Text Cursor "
-        RenderSVGInline {a} at (0,0) size 153x27
-          RenderSVGInlineText {#text} at (131,0) size 153x27
+        RenderSVGInline {a} at (0,0) size 153x31
+          RenderSVGInlineText {#text} at (131,0) size 153x31
             chunk 1 (middle anchor) text run 1 at (229.52,25.00) startOffset 0 endOffset 14 width 152.38: "Pointer Cursor"
         RenderSVGInlineText {#text} at (0,0) size 0x0
       RenderSVGRect {rect} at (118,38) size 244x240 [stroke={[type=SOLID] [color=#666666] [stroke width=3.00]}] [x=120.00] [y=40.00] [width=240.00] [height=236.00]
@@ -69,7 +69,7 @@ layer at (0,0) size 480x360
         RenderSVGEllipse {circle} at (384,309) size 12x12 [fill={[type=SOLID] [color=#FFFFFF]}] [cx=390.00] [cy=315.00] [r=6.00]
         RenderSVGContainer {a} at (388,313) size 4x4
           RenderSVGEllipse {circle} at (388,313) size 4x4 [fill={[type=SOLID] [color=#000000]}] [cx=390.00] [cy=315.00] [r=2.00]
-    RenderSVGText {text} at (10,310) size 264x40 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 264x40
+    RenderSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 264x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.1 $"
     RenderSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
