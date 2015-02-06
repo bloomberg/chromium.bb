@@ -24,17 +24,17 @@ except ImportError:
     raise
 
 
-class UpdatePackageScanner(object):
-  """Finds packages that need to be updated on a target device.
+class InstallPackageScanner(object):
+  """Finds packages that need to be installed on a target device.
 
   Scans the sysroot bintree, beginning with a user-provided list of packages,
-  to find all packages that need to be updated. If so instructed, transitively
-  scans forward (mandatory) and backward (optional) dependencies as well. A
-  package is marked for update if its sysroot version and build time are
-  different from the target, or it is missing on the target (mandatory packages
-  only). Common usage:
+  to find all packages that need to be installed. If so instructed,
+  transitively scans forward (mandatory) and backward (optional) dependencies
+  as well. A package will be installed if missing on the target (mandatory
+  packages only), or it will be updated if its sysroot version and build time
+  are different from the target. Common usage:
 
-    pkg_scanner = UpdatePackageScanner(board, sysroot)
+    pkg_scanner = InstallPackageScanner(board, sysroot)
     pkgs = pkg_scanner.Run(...)
   """
 
@@ -431,8 +431,8 @@ print(json.dumps(pkg_info))
 
     return matches[idx]
 
-  def _NeedsUpdate(self, cpv, slot, build_time, optional):
-    """Returns whether a package on the target needs to be updated.
+  def _NeedsInstall(self, cpv, slot, build_time, optional):
+    """Returns whether a package needs to be installed on the target.
 
     Args:
       cpv: Fully qualified CPV (string) of the package.
@@ -441,14 +441,15 @@ print(json.dumps(pkg_info))
       optional: Whether package is optional on the target.
 
     Returns:
-      True if package needs to be (re)installed, False otherwise.
+      A tuple (install, update) indicating whether to |install| the package and
+      whether it is an |update| to an existing package.
 
     Raises:
       ValueError: if slot is not provided.
     """
-    # If not checking installed packages, always update.
+    # If not checking installed packages, always install.
     if not self.target_db:
-      return True
+      return True, False
 
     cp = self._GetCP(cpv)
     target_pkg_info = self.target_db.get(cp, dict()).get(slot)
@@ -458,24 +459,24 @@ print(json.dumps(pkg_info))
         target_attrs = portage_util.SplitCPV(target_pkg_info.cpv)
         logging.debug('Updating %s: version (%s) different on target (%s)',
                       cp, attrs.version, target_attrs.version)
-        return True
+        return True, True
 
       if build_time != target_pkg_info.build_time:
         logging.debug('Updating %s: build time (%s) different on target (%s)',
                       cpv, build_time, target_pkg_info.build_time)
-        return True
+        return True, True
 
       logging.debug('Not updating %s: already up-to-date (%s, built %s)',
                     cp, target_pkg_info.cpv, target_pkg_info.build_time)
-      return False
+      return False, False
 
     if optional:
       logging.debug('Not installing %s: missing on target but optional', cp)
-      return False
+      return False, False
 
     logging.debug('Installing %s: missing on target and non-optional (%s)',
                   cp, cpv)
-    return True
+    return True, False
 
   def _ProcessDeps(self, deps, reverse):
     """Enqueues dependencies for processing.
@@ -499,8 +500,8 @@ print(json.dumps(pkg_info))
     if num_already_seen:
       logging.debug('%d dep(s) already seen', num_already_seen)
 
-  def _ComputeUpdates(self, process_rdeps, process_rev_rdeps):
-    """Returns a dictionary of packages that need to be updated on the target.
+  def _ComputeInstalls(self, process_rdeps, process_rev_rdeps):
+    """Returns a dictionary of packages that need to be installed on the target.
 
     Args:
       process_rdeps: Whether to trace forward dependencies.
@@ -508,14 +509,15 @@ print(json.dumps(pkg_info))
 
     Returns:
       A dictionary mapping CP values (string) to tuples containing a CPV
-      (string), a slot (string) and a boolean indicating whether the package
-      was initially listed in the queue.
+      (string), a slot (string), a boolean indicating whether the package
+      was initially listed in the queue, and a boolean indicating whether this
+      is an update to an existing package.
     """
-    updates = {}
+    installs = {}
     while self.queue:
       dep, listed, optional = self._DeqDep()
       cp, required_slot = dep
-      if cp in updates:
+      if cp in installs:
         logging.debug('Already updating %s', cp)
         continue
 
@@ -531,11 +533,12 @@ print(json.dumps(pkg_info))
         num_processed += 1
         logging.debug(' Checking %s...', pkg_info.cpv)
 
-        if not self._NeedsUpdate(pkg_info.cpv, slot, pkg_info.build_time,
-                                 optional):
+        install, update = self._NeedsInstall(pkg_info.cpv, slot,
+                                             pkg_info.build_time, optional)
+        if not install:
           continue
 
-        updates[cp] = (pkg_info.cpv, slot, listed)
+        installs[cp] = (pkg_info.cpv, slot, listed, update)
 
         # Add forward and backward runtime dependencies to queue.
         if process_rdeps:
@@ -548,16 +551,16 @@ print(json.dumps(pkg_info))
       if num_processed == 0:
         logging.warning('No qualified bintree package corresponding to %s', cp)
 
-    return updates
+    return installs
 
-  def _SortUpdates(self, updates):
-    """Returns a sorted list of packages to update.
+  def _SortInstalls(self, installs):
+    """Returns a sorted list of packages to install.
 
     Performs a topological sort based on dependencies found in the binary
     package database.
 
     Args:
-      updates: Dictionary of package updates indexed by CP.
+      installs: Dictionary of packages to install indexed by CP.
 
     Returns:
       A list of package CPVs (string).
@@ -565,13 +568,13 @@ print(json.dumps(pkg_info))
     Raises:
       ValueError: If dependency graph contains a cycle.
     """
-    not_visited = set(updates.keys())
+    not_visited = set(installs.keys())
     curr_path = []
-    sorted_updates = []
+    sorted_installs = []
 
     def SortFrom(cp):
       """Traverses dependencies recursively, emitting nodes in reverse order."""
-      cpv, slot, _ = updates[cp]
+      cpv, slot, _, _ = installs[cp]
       if cpv in curr_path:
         raise ValueError('Dependencies contain a cycle: %s -> %s' %
                          (' -> '.join(curr_path[curr_path.index(cpv):]), cpv))
@@ -581,14 +584,14 @@ print(json.dumps(pkg_info))
           not_visited.remove(rdep_cp)
           SortFrom(rdep_cp)
 
-      sorted_updates.append(cpv)
+      sorted_installs.append(cpv)
       curr_path.pop()
 
     # So long as there's more packages, keep expanding dependency paths.
     while not_visited:
       SortFrom(not_visited.pop())
 
-    return sorted_updates
+    return sorted_installs
 
   def _EnqListedPkg(self, pkg):
     """Finds and enqueues a listed package."""
@@ -608,7 +611,7 @@ print(json.dumps(pkg_info))
 
   def Run(self, device, root, listed_pkgs, update, process_rdeps,
           process_rev_rdeps):
-    """Computes the list of packages that need to be updated on a target.
+    """Computes the list of packages that need to be installed on a target.
 
     Args:
       device: Target handler object.
@@ -619,10 +622,11 @@ print(json.dumps(pkg_info))
       process_rev_rdeps: Whether to trace backward dependencies as well.
 
     Returns:
-      A tuple (sorted, listed) where |sorted| is a list of package CPVs
-      (string) to update on the target in an order that satisfies their
-      inter-dependencies, and |listed| is the subset that was requested by the
-      user.  Note that update order should be reversed for removal.
+      A tuple (sorted, listed, num_updates) where |sorted| is a list of package
+      CPVs (string) to install on the target in an order that satisfies their
+      inter-dependencies, |listed| the subset that was requested by the user,
+      and |num_updates| the number of packages being installed over preexisting
+      versions. Note that installation order should be reversed for removal.
     """
     if process_rev_rdeps and not process_rdeps:
       raise ValueError('Must processing forward deps when processing rev deps')
@@ -647,14 +651,23 @@ print(json.dumps(pkg_info))
       else:
         self._EnqListedPkg(pkg)
 
-    logging.info('Computing set of packages to update...')
-    updates = self._ComputeUpdates(process_rdeps, process_rev_rdeps)
-    logging.info('Processed %d package(s), %d will be updated',
-                 len(self.seen), len(updates))
+    logging.info('Computing set of packages to install...')
+    installs = self._ComputeInstalls(process_rdeps, process_rev_rdeps)
 
-    listed_updates = [cpv for cpv, _, listed in updates.itervalues() if listed]
-    sorted_updates = self._SortUpdates(updates)
-    return sorted_updates, listed_updates
+    num_updates = 0
+    listed_installs = []
+    for cpv, _, listed, update in installs.itervalues():
+      if listed:
+        listed_installs.append(cpv)
+      if update:
+        num_updates += 1
+
+    logging.info('Processed %d package(s), %d will be installed, %d are '
+                 'updating existing packages',
+                 len(self.seen), len(installs), num_updates)
+
+    sorted_installs = self._SortInstalls(installs)
+    return sorted_installs, listed_installs, num_updates
 
 
 @cros.CommandDecorator('deploy')
@@ -688,9 +701,10 @@ For more information of cros build usage:
 
   _MAX_UPDATES_NUM = 10
   _MAX_UPDATES_WARNING = (
-      'You are about to deploy a large number of packages, which might take a '
-      'long time, fail midway, or leave the target in an inconsistent state. '
-      'It is highly recommended that you flash a new image instead.')
+      'You are about to update a large number of installed packages, which '
+      'might take a long time, fail midway, or leave the target in an '
+      'inconsistent state. It is highly recommended that you flash a new image '
+      'instead.')
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -757,10 +771,10 @@ For more information of cros build usage:
         help='Check installed versions on target (emerge only).')
     parser.add_argument(
         '--deep', action='store_true',
-        help='Update dependencies. Implies --update.')
+        help='Install dependencies. Implies --update.')
     parser.add_argument(
         '--deep-rev', action='store_true',
-        help='Update reverse dependencies. Implies --deep.')
+        help='Install reverse dependencies. Implies --deep.')
     parser.add_argument(
         '--dry-run', '-n', action='store_true',
         help='Output deployment plan but do not deploy anything.')
@@ -901,9 +915,9 @@ For more information of cros build usage:
     if self.options.update and not self.emerge:
       cros_build_lib.Die('Cannot use --update with --unmerge')
 
-  def _ConfirmUpdate(self, pkgs):
-    """Returns whether we can proceed with updating all of the given |pkgs|."""
-    if len(pkgs) > self._MAX_UPDATES_NUM:
+  def _ConfirmDeploy(self, num_updates):
+    """Returns whether we can continue deployment."""
+    if num_updates > self._MAX_UPDATES_NUM:
       logging.warning(self._MAX_UPDATES_WARNING)
       return cros_build_lib.BooleanPrompt(default=False)
 
@@ -938,8 +952,8 @@ For more information of cros build usage:
             cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting.')
 
         # Obtain list of packages to upgrade/remove.
-        pkg_scanner = UpdatePackageScanner(self.board, self.sysroot)
-        pkgs, listed = pkg_scanner.Run(
+        pkg_scanner = InstallPackageScanner(self.board, self.sysroot)
+        pkgs, listed, num_updates = pkg_scanner.Run(
             device, self.root, self.options.packages,
             self.options.update,
             self.options.deep, self.options.deep_rev)
@@ -957,7 +971,7 @@ For more information of cros build usage:
         for i, pkg in enumerate(pkgs):
           logging.info('%s %d) %s', '*' if pkg in listed else ' ', i + 1, pkg)
 
-        if self.options.dry_run or not self._ConfirmUpdate(pkgs):
+        if self.options.dry_run or not self._ConfirmDeploy(num_updates):
           return
 
         for pkg in pkgs:

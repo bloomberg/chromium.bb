@@ -62,7 +62,7 @@ class PortageTreeFake(object):
     self.dbapi = dbapi
 
 
-class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
+class TestInstallPackageScanner(cros_test_lib.MockTestCase):
   """Test the update package scanner."""
   _BOARD = 'foo_board'
   _BUILD_ROOT = '/build/%s' % _BOARD
@@ -77,8 +77,8 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
     """Patch imported modules."""
     self.PatchObject(cros_build_lib, 'GetChoice', return_value=0)
     self.device = ChromiumOSDeviceHandlerFake()
-    self.scanner = cros_deploy.UpdatePackageScanner(self._BOARD,
-                                                    self._BUILD_ROOT)
+    self.scanner = cros_deploy.InstallPackageScanner(self._BOARD,
+                                                     self._BUILD_ROOT)
 
   def SetupVartree(self, vartree_pkgs):
     self.device.agent.remote_sh_output = json.dumps(vartree_pkgs)
@@ -104,10 +104,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309336'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
 
   def testRunUpdatedBuildTime(self):
     self.SetupVartree(self._VARTREE)
@@ -116,10 +117,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
 
   def testRunExistingDepUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -129,10 +131,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         (app2, '0', '', '1413309350'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1, app2], constraints=[(app1, app2)])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1, app2], constraints=[(app1, app2)])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 2)
 
   def testRunMissingDepUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -143,10 +146,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
         (app6, '0', '', '1413309350'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1, app6], constraints=[(app1, app6)])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1, app6], constraints=[(app1, app6)])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
 
   def testRunExistingRevDepUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -157,10 +161,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app4, '0', 'foo/app1 foo/app5', '1413309350'),
         ('foo/app5-3.0.7-r3', '0', '', '1413309336'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1, app4], constraints=[(app4, app1)])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1, app4], constraints=[(app4, app1)])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 2)
 
   def testRunMissingRevDepNotUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -170,10 +175,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         (app6, '0', 'foo/app1', '1413309350'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
 
   def testRunTransitiveDepsUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -187,11 +193,12 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app4, '0', 'foo/app1 foo/app5', '1413309350'),
         (app5, '0', '', '1413309350'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1, app2, app4, app5],
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1, app2, app4, app5],
                       constraints=[(app1, app2), (app4, app1), (app4, app5)])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 4)
 
   def testRunDisjunctiveDepsExistingUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -200,10 +207,11 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', '|| ( foo/app6 foo/app2 ) !foo/app3', '1413309350'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
 
   def testRunDisjunctiveDepsDefaultUpdated(self):
     self.SetupVartree(self._VARTREE)
@@ -213,7 +221,8 @@ class TestUpdatePackageScanner(cros_test_lib.MockTestCase):
         (app1, '0', '|| ( foo/app6 foo/app7 ) !foo/app3', '1413309350'),
         (app7, '0', '', '1413309350'),
     ])
-    updates, listed = self.scanner.Run(self.device, '/', ['app1'],
-                                       True, True, True)
-    self.ValidatePkgs(updates, [app1, app7], constraints=[(app1, app7)])
+    installs, listed, num_updates = self.scanner.Run(
+        self.device, '/', ['app1'], True, True, True)
+    self.ValidatePkgs(installs, [app1, app7], constraints=[(app1, app7)])
     self.ValidatePkgs(listed, [app1])
+    self.assertEquals(num_updates, 1)
