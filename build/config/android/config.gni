@@ -129,14 +129,6 @@ if (is_android) {
   android_gdbserver =
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
 
-  # stlport stuff --------------------------------------------------------------
-
-  if (component_mode == "shared_library") {
-    android_stlport_library = "stlport_shared"
-  } else {
-    android_stlport_library = "stlport_static"
-  }
-
   # ABI ------------------------------------------------------------------------
 
   if (cpu_arch == "x86") {

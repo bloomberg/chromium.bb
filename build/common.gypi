@@ -1668,7 +1668,7 @@
           'android_ndk_root%': '<(android_ndk_root)',
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
-          'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
+          'android_libcpp_root': '<(android_ndk_root)/sources/cxx-stl/llvm-libc++',
           'host_os%': '<(host_os)',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
@@ -1745,9 +1745,10 @@
         'android_sdk%': '<(android_sdk)',
         'android_sdk_jar%': '<(android_sdk)/android.jar',
 
-        'android_stlport_root': '<(android_stlport_root)',
-        'android_stlport_include': '<(android_stlport_root)/stlport',
-        'android_stlport_libs_dir': '<(android_stlport_root)/libs/<(android_app_abi)',
+        'android_libcpp_root': '<(android_libcpp_root)',
+        'android_libcpp_include': '<(android_libcpp_root)/libcxx/include',
+        'android_libcpp_libs_dir': '<(android_libcpp_root)/libs/<(android_app_abi)',
+
         'host_os%': '<(host_os)',
 
         # Location of the "objcopy" binary, used by both gyp and scripts.
@@ -4498,9 +4499,9 @@
           # Figure this out early since it needs symbols from libgcc.a, so it
           # has to be before that in the set of libraries.
           ['component=="shared_library"', {
-              'android_stlport_library': 'stlport_shared',
+              'android_libcpp_library': 'c++_shared',
           }, {
-              'android_stlport_library': 'stlport_static',
+              'android_libcpp_library': 'c++_static',
           }],
         ],
 
@@ -4584,8 +4585,6 @@
             'defines': [
               'ANDROID',
               '__GNU_SOURCE=1',  # Necessary for clone()
-              'USE_STLPORT=1',
-              '_STLP_USE_PTR_SPECIALIZATIONS=1',
               'CHROME_BUILD_ID="<(chrome_build_id)"',
             ],
             'ldflags!': [
@@ -4659,12 +4658,13 @@
                   '-nostdlib',
                 ],
                 'libraries': [
-                  '-l<(android_stlport_library)',
+                  '-l<(android_libcpp_library)',
+                  '-latomic',
                   # Manually link the libgcc.a that the cross compiler uses.
                   '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
+                  '-lm',
                   '-lc',
                   '-ldl',
-                  '-lm',
                 ],
               }],
               ['android_webview_build==1', {
@@ -4716,20 +4716,20 @@
                   '-Wl,--icf=safe',
                 ],
               }],
-              # NOTE: The stlport header include paths below are specified in
-              # cflags rather than include_dirs because they need to come
-              # after include_dirs. Think of them like system headers, but
-              # don't use '-isystem' because the arm-linux-androideabi-4.4.3
-              # toolchain (circa Gingerbread) will exhibit strange errors.
-              # The include ordering here is important; change with caution.
               ['android_webview_build==0', {
                 'cflags': [
-                  '-isystem<(android_stlport_include)',
+                  '-isystem<(android_libcpp_include)',
+                  '-isystem<(android_ndk_root)/sources/cxx-stl/llvm-libc++abi/libcxxabi/include',
+                  '-isystem<(android_ndk_root)/sources/android/support/include',
                 ],
                 'ldflags': [
-                  '-L<(android_stlport_libs_dir)',
+                  '-L<(android_libcpp_libs_dir)',
                 ],
               }, { # else: android_webview_build!=0
+                'defines': [
+                  'USE_STLPORT=1',
+                  '_STLP_USE_PTR_SPECIALIZATIONS=1',
+                ],
                 'aosp_build_settings': {
                   # Specify that we want to statically link stlport from the
                   # NDK. This will provide all the include and library paths

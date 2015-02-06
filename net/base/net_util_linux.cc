@@ -18,6 +18,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -68,11 +69,7 @@ bool TryConvertNativeToNetIPAttributes(int native_attributes,
 namespace internal {
 
 inline const unsigned char* GetIPAddressData(const IPAddressNumber& ip) {
-#if defined(OS_ANDROID)
-  return ip.begin();
-#else
-  return ip.data();
-#endif
+  return vector_as_array(&ip);
 }
 
 // Gets the connection type for interface |ifname| by checking for wireless
