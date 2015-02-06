@@ -23,6 +23,7 @@ class RecordCache;
 class GraphPoint {
  public:
   GraphPoint() : traced_(false) {}
+  virtual ~GraphPoint() {}
   void MarkTraced() { traced_ = true; }
   bool IsProperlyTraced() { return traced_ || !NeedsTracing().IsNeeded(); }
   virtual const TracingStatus NeedsTracing() = 0;

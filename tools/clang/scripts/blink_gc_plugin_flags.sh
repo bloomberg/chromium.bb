@@ -13,9 +13,6 @@ if uname -s | grep -q Darwin; then
 else
   LIBSUFFIX=so
 fi
-LIBNAME=\
-$(grep 'set(LIBRARYNAME' "$SRC_DIR"/tools/clang/blink_gc_plugin/CMakeLists.txt \
-    | cut -d ' ' -f 2 | tr -d ')')
 
 FLAGS=""
 PREFIX="-Xclang -plugin-arg-blink-gc-plugin -Xclang"
@@ -31,5 +28,5 @@ for arg in "$@"; do
   fi
 done
 
-echo -Xclang -load -Xclang $CLANG_LIB_PATH/lib$LIBNAME.$LIBSUFFIX \
+echo -Xclang -load -Xclang $CLANG_LIB_PATH/libBlinkGCPlugin.$LIBSUFFIX \
   -Xclang -add-plugin -Xclang blink-gc-plugin $FLAGS

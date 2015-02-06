@@ -29,6 +29,7 @@ do_testcase() {
     flags="$(cat "${3}")"
   fi
   local output="$("${CLANG_PATH}" -c -Wno-c++11-extensions \
+      -Wno-inaccessible-base \
       -Xclang -load -Xclang "${PLUGIN_PATH}" \
       -Xclang -add-plugin -Xclang blink-gc-plugin ${flags} ${1} 2>&1)"
   local json="${input%cpp}graph.json"

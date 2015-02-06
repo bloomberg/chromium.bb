@@ -24,6 +24,7 @@ class Collection;
 // Bare-bones visitor.
 class EdgeVisitor {
  public:
+  virtual ~EdgeVisitor() {}
   virtual void VisitValue(Value*) {}
   virtual void VisitRawPtr(RawPtr*) {}
   virtual void VisitRefPtr(RefPtr*) {}
