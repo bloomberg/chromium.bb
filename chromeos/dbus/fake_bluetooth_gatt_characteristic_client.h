@@ -128,6 +128,12 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   // is a random value within a reasonable range.
   std::vector<uint8> GetHeartRateMeasurementValue();
 
+  // Callback that executes a delayed ReadValue action by updating the
+  // appropriate "Value" property and invoking the ValueCallback.
+  void DelayedReadValueCallback(const dbus::ObjectPath& object_path,
+                                const ValueCallback& callback,
+                                const std::vector<uint8_t>& value);
+
   // If true, characteristics of the Heart Rate Service are visible. Use
   // IsHeartRateVisible() to check the value.
   bool heart_rate_visible_;

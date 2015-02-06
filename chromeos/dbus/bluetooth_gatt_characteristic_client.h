@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_BLUETOOTH_GATT_CHARACTERISTIC_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -29,6 +30,11 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
     // [read-only]
     dbus::Property<dbus::ObjectPath> service;
 
+    // The cached value of the characteristic. This property gets updated only
+    // after a successful read request and when a notification or indication is
+    // received. [read-only]
+    dbus::Property<std::vector<uint8_t>> value;
+
     // Whether or not this characteristic is currently sending ValueUpdated
     // signals. [read-only]
     dbus::Property<bool> notifying;
@@ -36,11 +42,11 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
     // List of flags representing the GATT "Characteristic Properties bit field"
     // and properties read from the GATT "Characteristic Extended Properties"
     // descriptor bit field. [read-only, optional]
-    dbus::Property<std::vector<std::string> > flags;
+    dbus::Property<std::vector<std::string>> flags;
 
     // Array of object paths representing the descriptors of this
     // characteristic. [read-only]
-    dbus::Property<std::vector<dbus::ObjectPath> > descriptors;
+    dbus::Property<std::vector<dbus::ObjectPath>> descriptors;
 
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
@@ -67,13 +73,6 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
     virtual void GattCharacteristicPropertyChanged(
         const dbus::ObjectPath& object_path,
         const std::string& property_name) {}
-
-    // Called when a "ValueUpdated" signal is received from the remote GATT
-    // characteristic with object path |object_path| with characteristic value
-    // |value|.
-    virtual void GattCharacteristicValueUpdated(
-        const dbus::ObjectPath& object_path,
-        const std::vector<uint8>& value) {}
   };
 
   // Callbacks used to report the result of asynchronous methods.

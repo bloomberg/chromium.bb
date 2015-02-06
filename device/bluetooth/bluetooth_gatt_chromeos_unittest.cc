@@ -1090,15 +1090,14 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
           GetHeartRateMeasurementPath().value());
   ASSERT_TRUE(characteristic);
   EXPECT_EQ(1U, characteristic->GetDescriptors().size());
+  EXPECT_FALSE(characteristic->IsNotifying());
 
   BluetoothGattDescriptor* descriptor = characteristic->GetDescriptors()[0];
   EXPECT_FALSE(descriptor->IsLocal());
   EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
 
-  std::vector<uint8> desc_value;
-  desc_value.push_back(1);
-  desc_value.push_back(0);
+  std::vector<uint8_t> desc_value = {0x00, 0x00};
 
   /* The cached value will be empty until the first read request */
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
@@ -1139,13 +1138,39 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(0, observer.gatt_service_changed_count_);
   EXPECT_EQ(1, observer.gatt_descriptor_value_changed_count_);
 
-  // Read new value.
+  // Read value. The value should remain unchanged.
   descriptor->ReadRemoteDescriptor(
       base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
+  EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_EQ(0, observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, observer.gatt_descriptor_value_changed_count_);
+
+  // Start notifications on the descriptor's characteristic. The descriptor
+  // value should change.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(1U, update_sessions_.size());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Read the new descriptor value. We should receive a value updated event.
+  descriptor->ReadRemoteDescriptor(
+      base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(4, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));

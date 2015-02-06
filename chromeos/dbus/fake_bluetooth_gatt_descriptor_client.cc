@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -101,7 +103,25 @@ void FakeBluetoothGattDescriptorClient::ReadValue(
     return;
   }
 
-  callback.Run(iter->second->value);
+  // Assign the value of the descriptor as necessary
+  Properties* properties = iter->second->properties.get();
+  if (properties->uuid.value() == kClientCharacteristicConfigurationUUID) {
+    BluetoothGattCharacteristicClient::Properties* chrc_props =
+        DBusThreadManager::Get()
+            ->GetBluetoothGattCharacteristicClient()
+            ->GetProperties(properties->characteristic.value());
+    DCHECK(chrc_props);
+
+    uint8_t value_byte = chrc_props->notifying.value() ? 0x01 : 0x00;
+    const std::vector<uint8_t>& cur_value = properties->value.value();
+
+    if (!cur_value.size() || cur_value[0] != value_byte) {
+      std::vector<uint8_t> value = {value_byte, 0x00};
+      properties->value.ReplaceValue(value);
+    }
+  }
+
+  callback.Run(iter->second->properties->value.value());
 }
 
 void FakeBluetoothGattDescriptorClient::WriteValue(
@@ -150,9 +170,6 @@ dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
 
   DescriptorData* data = new DescriptorData();
   data->properties.reset(properties);
-
-  data->value.push_back(1);  // Notifications enabled.
-  data->value.push_back(0);
 
   properties_[object_path] = data;
 

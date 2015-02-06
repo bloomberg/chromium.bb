@@ -195,14 +195,6 @@ void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
   adapter_->NotifyGattServiceChanged(this);
 }
 
-void BluetoothRemoteGattServiceChromeOS::NotifyCharacteristicValueChanged(
-    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
-    const std::vector<uint8>& value) {
-  DCHECK(characteristic->GetService() == this);
-  DCHECK(adapter_);
-  adapter_->NotifyGattCharacteristicValueChanged(characteristic, value);
-}
-
 void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
     BluetoothRemoteGattCharacteristicChromeOS* characteristic,
     BluetoothRemoteGattDescriptorChromeOS* descriptor,
@@ -311,7 +303,8 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  if (characteristics_.find(object_path) == characteristics_.end()) {
+  CharacteristicMap::iterator iter = characteristics_.find(object_path);
+  if (iter == characteristics_.end()) {
     VLOG(3) << "Properties of unknown characteristic changed";
     return;
   }
@@ -324,11 +317,15 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
   BluetoothGattCharacteristicClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
           GetProperties(object_path);
-  DCHECK(properties);
-  if (property_name != properties->flags.name())
-    return;
 
-  NotifyServiceChanged();
+  DCHECK(properties);
+  DCHECK(adapter_);
+
+  if (property_name == properties->flags.name())
+    NotifyServiceChanged();
+  else if (property_name == properties->value.name())
+    adapter_->NotifyGattCharacteristicValueChanged(iter->second,
+                                                   properties->value.value());
 }
 
 }  // namespace chromeos

@@ -13,6 +13,13 @@
 
 namespace chromeos {
 
+namespace {
+
+// TODO(armansito): Move this constant to cros_system_api.
+const char kValueProperty[] = "Value";
+
+}  // namespace
+
 // static
 const char BluetoothGattDescriptorClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
@@ -28,6 +35,7 @@ BluetoothGattDescriptorClient::Properties::Properties(
   RegisterProperty(bluetooth_gatt_descriptor::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_descriptor::kCharacteristicProperty,
                    &characteristic);
+  RegisterProperty(kValueProperty, &value);
 }
 
 BluetoothGattDescriptorClient::Properties::~Properties() {

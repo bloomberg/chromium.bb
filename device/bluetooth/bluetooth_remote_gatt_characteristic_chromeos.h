@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
 #include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -35,7 +34,6 @@ class BluetoothRemoteGattServiceChromeOS;
 // platform.
 class BluetoothRemoteGattCharacteristicChromeOS
     : public device::BluetoothGattCharacteristic,
-      public BluetoothGattCharacteristicClient::Observer,
       public BluetoothGattDescriptorClient::Observer {
  public:
   // device::BluetoothGattCharacteristic overrides.
@@ -77,18 +75,11 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path);
   ~BluetoothRemoteGattCharacteristicChromeOS() override;
 
-  // BluetoothGattCharacteristicClient::Observer overrides.
-  void GattCharacteristicValueUpdated(const dbus::ObjectPath& object_path,
-                                      const std::vector<uint8>& value) override;
-
   // BluetoothGattDescriptorClient::Observer overrides.
   void GattDescriptorAdded(const dbus::ObjectPath& object_path) override;
   void GattDescriptorRemoved(const dbus::ObjectPath& object_path) override;
-
-  // Called by dbus:: on successful completion of a request to read
-  // the characteristic value.
-  void OnValueSuccess(const ValueCallback& callback,
-                      const std::vector<uint8>& value);
+  void GattDescriptorPropertyChanged(const dbus::ObjectPath& object_path,
+                                     const std::string& property_name) override;
 
   // Called by dbus:: on unsuccessful completion of a request to read or write
   // the characteristic value.
@@ -124,10 +115,6 @@ class BluetoothRemoteGattCharacteristicChromeOS
 
   // The GATT service this GATT characteristic belongs to.
   BluetoothRemoteGattServiceChromeOS* service_;
-
-  // The cached characteristic value based on the most recent read or
-  // notification.
-  std::vector<uint8> cached_value_;
 
   // The total number of currently active value update sessions.
   size_t num_notify_sessions_;

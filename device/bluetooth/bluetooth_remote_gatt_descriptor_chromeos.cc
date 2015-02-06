@@ -60,7 +60,14 @@ bool BluetoothRemoteGattDescriptorChromeOS::IsLocal() const {
 
 const std::vector<uint8>&
 BluetoothRemoteGattDescriptorChromeOS::GetValue() const {
-  return cached_value_;
+  BluetoothGattDescriptorClient::Properties* properties =
+      DBusThreadManager::Get()
+          ->GetBluetoothGattDescriptorClient()
+          ->GetProperties(object_path_);
+
+  DCHECK(properties);
+
+  return properties->value.value();
 }
 
 device::BluetoothGattCharacteristic*
@@ -83,13 +90,9 @@ void BluetoothRemoteGattDescriptorChromeOS::ReadRemoteDescriptor(
           << GetUUID().canonical_value();
 
   DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
-      object_path_,
-      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+      object_path_, callback,
       base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 error_callback));
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
@@ -108,21 +111,6 @@ void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
       base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
                  error_callback));
-}
-
-void BluetoothRemoteGattDescriptorChromeOS::OnValueSuccess(
-    const ValueCallback& callback,
-    const std::vector<uint8>& value) {
-  VLOG(1) << "Descriptor value read: " << value;
-  cached_value_ = value;
-
-  DCHECK(characteristic_);
-  BluetoothRemoteGattServiceChromeOS* service =
-      static_cast<BluetoothRemoteGattServiceChromeOS*>(
-          characteristic_->GetService());
-  DCHECK(service);
-  service->NotifyDescriptorValueChanged(characteristic_, this, value);
-  callback.Run(value);
 }
 
 void BluetoothRemoteGattDescriptorChromeOS::OnError(

@@ -13,6 +13,13 @@
 
 namespace chromeos {
 
+namespace {
+
+// TODO(armansito): Move this constant to cros_system_api.
+const char kValueProperty[] = "Value";
+
+}  // namespace
+
 // static
 const char BluetoothGattCharacteristicClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
@@ -27,6 +34,7 @@ BluetoothGattCharacteristicClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_characteristic::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_characteristic::kServiceProperty, &service);
+  RegisterProperty(kValueProperty, &value);
   RegisterProperty(bluetooth_gatt_characteristic::kNotifyingProperty,
                    &notifying);
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
@@ -210,21 +218,6 @@ class BluetoothGattCharacteristicClientImpl
     VLOG(2) << "Remote GATT characteristic added: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicAdded(object_path));
-
-    // Connect the "ValueUpdated" signal.
-    dbus::ObjectProxy* object_proxy =
-        object_manager_->GetObjectProxy(object_path);
-    DCHECK(object_proxy);
-
-    object_proxy->ConnectToSignal(
-        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
-        bluetooth_gatt_characteristic::kValueUpdatedSignal,
-        base::Bind(&BluetoothGattCharacteristicClientImpl::ValueUpdatedReceived,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   object_path),
-        base::Bind(
-            &BluetoothGattCharacteristicClientImpl::ValueUpdatedConnected,
-            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // dbus::ObjectManager::Interface override.
@@ -258,35 +251,6 @@ class BluetoothGattCharacteristicClientImpl
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicPropertyChanged(object_path,
                                                         property_name));
-  }
-
-  // Called by dbus:: when a "ValueUpdated" signal is received.
-  void ValueUpdatedReceived(const dbus::ObjectPath& object_path,
-                            dbus::Signal* signal) {
-    DCHECK(signal);
-    const uint8* bytes = NULL;
-    size_t length = 0;
-    dbus::MessageReader reader(signal);
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(WARNING) << "ValueUpdated signal has incorrect parameters: "
-                   << signal->ToString();
-      return;
-    }
-
-    std::vector<uint8> value;
-    if (bytes)
-      value.assign(bytes, bytes + length);
-
-    FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer,
-                      observers_,
-                      GattCharacteristicValueUpdated(object_path, value));
-  }
-
-  // Called by dbus:: when the "ValueUpdated" signal is initially connected.
-  void ValueUpdatedConnected(const std::string& interface_name,
-                             const std::string& signal_name,
-                             bool success) {
-    LOG_IF(WARNING, !success) << "Failed to connect to the ValueUpdated signal";
   }
 
   // Called when a response for successful method call is received.

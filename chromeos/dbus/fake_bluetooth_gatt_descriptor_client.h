@@ -82,7 +82,6 @@ class CHROMEOS_EXPORT FakeBluetoothGattDescriptorClient
     ~DescriptorData();
 
     scoped_ptr<Properties> properties;
-    std::vector<uint8> value;
   };
   typedef std::map<dbus::ObjectPath, DescriptorData*> PropertiesMap;
   PropertiesMap properties_;
