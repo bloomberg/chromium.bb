@@ -3,36 +3,36 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 165x84 [border: (1px solid #000000)]
-        LayoutTableSection {THEAD} at (1,1) size 163x22
-          LayoutTableRow {TR} at (0,2) size 163x18
-            LayoutTableCell (anonymous) at (2,2) size 101x18 [r=0 c=0 rs=1 cs=1]
-              RenderBlock (floating) {TH} at (0,0) size 50.44x18
-                RenderText {#text} at (1,1) size 49x16
+      LayoutTable {TABLE} at (0,0) size 165x92 [border: (1px solid #000000)]
+        LayoutTableSection {THEAD} at (1,1) size 163x24
+          LayoutTableRow {TR} at (0,2) size 163x20
+            LayoutTableCell (anonymous) at (2,2) size 101x20 [r=0 c=0 rs=1 cs=1]
+              RenderBlock (floating) {TH} at (0,0) size 50.44x20
+                RenderText {#text} at (1,1) size 49x18
                   text run at (1,1) width 49: "Head 1"
-              RenderBlock (floating) {TH} at (50.44,0) size 50.44x18
-                RenderText {#text} at (1,1) size 49x16
+              RenderBlock (floating) {TH} at (50.44,0) size 50.44x20
+                RenderText {#text} at (1,1) size 49x18
                   text run at (1,1) width 49: "Head 2"
-        LayoutTableSection {TFOOT} at (1,63) size 163x20
-          LayoutTableRow {TR} at (0,0) size 163x18
-            LayoutTableCell {TD} at (2,0) size 101x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 54x16
+        LayoutTableSection {TFOOT} at (1,69) size 163x22
+          LayoutTableRow {TR} at (0,0) size 163x20
+            LayoutTableCell {TD} at (2,0) size 101x20 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 54x18
                 text run at (1,1) width 54: "Footer 1"
-            LayoutTableCell {TD} at (105,0) size 56x18 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 54x16
+            LayoutTableCell {TD} at (105,0) size 56x20 [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 54x18
                 text run at (1,1) width 54: "Footer 2"
-        LayoutTableSection {TBODY} at (1,23) size 163x40
-          LayoutTableRow {TR} at (0,0) size 163x18
-            LayoutTableCell {TD} at (2,0) size 101x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 39x16
+        LayoutTableSection {TBODY} at (1,25) size 163x44
+          LayoutTableRow {TR} at (0,0) size 163x20
+            LayoutTableCell {TD} at (2,0) size 101x20 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 39x18
                 text run at (1,1) width 39: "Cell 1"
-            LayoutTableCell {TD} at (105,0) size 56x18 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 39x16
+            LayoutTableCell {TD} at (105,0) size 56x20 [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 39x18
                 text run at (1,1) width 39: "Cell 2"
-          LayoutTableRow {TR} at (0,20) size 163x18
-            LayoutTableCell {TD} at (2,20) size 101x18 [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 39x16
+          LayoutTableRow {TR} at (0,22) size 163x20
+            LayoutTableCell {TD} at (2,22) size 101x20 [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 39x18
                 text run at (1,1) width 39: "Cell 3"
-            LayoutTableCell {TD} at (105,20) size 56x18 [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 39x16
+            LayoutTableCell {TD} at (105,22) size 56x20 [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 39x18
                 text run at (1,1) width 39: "Cell 4"
