@@ -13,7 +13,6 @@ from metrics import Metric
 from telemetry.page import page_test
 # All network metrics are Chrome only for now.
 from telemetry.core.backends.chrome_inspector import inspector_network
-from telemetry.timeline import recording_options
 from telemetry.value import scalar
 
 
@@ -138,9 +137,7 @@ class NetworkMetric(Metric):
 
   def Start(self, page, tab):
     self._events = None
-    opts = recording_options.TimelineRecordingOptions()
-    opts.record_network = True
-    tab.StartTimelineRecording(opts)
+    tab.StartTimelineRecording()
 
   def Stop(self, page, tab):
     assert self._events is None
