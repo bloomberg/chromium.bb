@@ -1321,8 +1321,6 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		weston_compositor_idle_inhibit(compositor);
-		keyboard->grab_key = key;
-		keyboard->grab_time = time;
 	} else {
 		weston_compositor_idle_release(compositor);
 	}
@@ -1360,6 +1358,13 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 				      wl_display_get_serial(compositor->wl_display),
 				      key,
 				      state);
+	}
+
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		keyboard->grab_serial =
+			wl_display_get_serial(compositor->wl_display);
+		keyboard->grab_time = time;
+		keyboard->grab_key = key;
 	}
 }
 
