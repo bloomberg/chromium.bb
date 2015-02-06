@@ -31,3 +31,22 @@ cr.ui.reverseButtonStrips = function(opt_root) {
     buttonStrip.setAttribute('reversed', '');
   }
 };
+
+/**
+ * Finds a good place to set initial focus. Generally called when UI is shown.
+ * @param {!Element} root Where to start looking for focusable controls.
+ */
+cr.ui.setInitialFocus = function(root) {
+  // Do not change focus if any element in |root| is already focused.
+  if (root.contains(document.activeElement))
+    return;
+
+  var elements = root.querySelectorAll('input, list, select, textarea, button');
+  for (var i = 0; i < elements.length; i++) {
+    var element = elements[i];
+    element.focus();
+    // .focus() isn't guaranteed to work. Continue until it does.
+    if (document.activeElement == element)
+      return;
+  }
+};

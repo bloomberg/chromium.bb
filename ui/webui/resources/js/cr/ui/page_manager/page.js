@@ -79,19 +79,7 @@ cr.define('cr.ui.pageManager', function() {
      * strategy.
      */
     focus: function() {
-      // Do not change focus if any control on this page is already focused.
-      if (this.pageDiv.contains(document.activeElement))
-        return;
-
-      var elements = this.pageDiv.querySelectorAll(
-          'input, list, select, textarea, button');
-      for (var i = 0; i < elements.length; i++) {
-        var element = elements[i];
-        // Try to focus. If fails, then continue.
-        element.focus();
-        if (document.activeElement == element)
-          return;
-      }
+      cr.ui.setInitialFocus(this.pageDiv);
     },
 
     /**

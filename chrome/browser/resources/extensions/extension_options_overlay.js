@@ -44,7 +44,10 @@ cr.define('extensions', function() {
       this.getExtensionOptions_().focus();
     },
 
-    /** @return {?Element} */
+    /**
+     * @return {?Element}
+     * @private
+     */
     getExtensionOptions_: function() {
       return $('extension-options-overlay-guest').querySelector(
           'extensionoptions');
@@ -74,8 +77,8 @@ cr.define('extensions', function() {
      * @param {string} extensionName The name of the extension, which is used
      *     as the header of the overlay.
      * @param {string} extensionIcon The URL of the extension's icon.
-     * @param {function():void} shownCallback A function called when show
-     *     animation completes.
+     * @param {function():void} shownCallback A function called when
+     *     showing completes.
      * @suppress {checkTypes}
      * TODO(vitalyp): remove the suppression after adding
      * chrome/renderer/resources/extensions/extension_options.js

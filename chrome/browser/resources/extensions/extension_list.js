@@ -133,10 +133,8 @@ cr.define('options', function() {
       if (idToOpenOptions && $(idToOpenOptions))
         this.showEmbeddedExtensionOptions_(idToOpenOptions, true);
 
-      if (this.data_.extensions.length == 0)
-        this.classList.add('empty-extension-list');
-      else
-        this.classList.remove('empty-extension-list');
+      var noExtensions = this.data_.extensions.length == 0;
+      this.classList.toggle('empty-extension-list', noExtensions);
     },
 
     /**
@@ -568,36 +566,31 @@ cr.define('options', function() {
       if (scroll)
         this.scrollToNode_(extensionId);
 
-      document.activeElement.blur();
-
       // Add the options query string. Corner case: the 'options' query string
       // will clobber the 'id' query string if the options link is clicked when
       // 'id' is in the URL, or if both query strings are in the URL.
       uber.replaceState({}, '?options=' + extensionId);
 
+      var overlay = extensions.ExtensionOptionsOverlay.getInstance();
       var shownCallback = function() {
+        // This overlay doesn't get focused automatically as <extensionoptions>
+        // is created after the overlay is shown.
         if (cr.ui.FocusOutlineManager.forDocument(document).visible)
           overlay.setInitialFocus();
       };
-
-      var overlay = extensions.ExtensionOptionsOverlay.getInstance();
       overlay.setExtensionAndShowOverlay(extensionId, extension.name,
                                          extension.icon, shownCallback);
       this.optionsShown_ = true;
 
       var self = this;
       $('overlay').addEventListener('cancelOverlay', function f() {
-        // Restore focus instead of just blurring when this page isn't rebuild
-        // crazy. http://crbug.com/450818
-        document.activeElement.blur();
         self.optionsShown_ = false;
         $('overlay').removeEventListener('cancelOverlay', f);
       });
 
-      // TODO(dbeam): guestview's focus is weird. Only when this is called from
-      // within this event handler *and* after the showing animation completes
-      // does this work.
-      shownCallback();
+      // TODO(dbeam): why do we need to focus <extensionoptions> before and
+      // after its showing animation? Makes very little sense to me.
+      overlay.setInitialFocus();
     },
   };
 

@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 cr.define('extensions', function() {
-  var FocusManager = cr.ui.FocusManager;
-
-  function ExtensionFocusManager() {
-    FocusManager.disableMouseFocusOnButtons();
-  }
+  /**
+   * @constructor
+   * @extends {cr.ui.FocusManager}
+   */
+  function ExtensionFocusManager() {}
 
   cr.addSingletonGetter(ExtensionFocusManager);
 
   ExtensionFocusManager.prototype = {
-    __proto__: FocusManager.prototype,
+    __proto__: cr.ui.FocusManager.prototype,
 
     /** @override */
     getFocusParent: function() {

@@ -374,18 +374,13 @@ cr.define('extensions', function() {
   /**
    * Sets the given overlay to show. This hides whatever overlay is currently
    * showing, if any.
-   * @param {HTMLElement} node The overlay page to show. If falsey, all overlays
+   * @param {HTMLElement} node The overlay page to show. If null, all overlays
    *     are hidden.
    */
   ExtensionSettings.showOverlay = function(node) {
     var pageDiv = $('extension-settings');
-    if (node) {
-      pageDiv.style.width = window.getComputedStyle(pageDiv).width;
-      document.body.classList.add('no-scroll');
-    } else {
-      document.body.classList.remove('no-scroll');
-      pageDiv.style.width = '';
-    }
+    pageDiv.style.width = node ? window.getComputedStyle(pageDiv).width : '';
+    document.body.classList.toggle('no-scroll', node);
 
     var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
     if (currentlyShowingOverlay) {
@@ -394,8 +389,11 @@ cr.define('extensions', function() {
     }
 
     if (node) {
-      if (document.activeElement != document.body)
-        document.activeElement.blur();
+      var lastFocused = document.activeElement;
+      $('overlay').addEventListener('cancelOverlay', function f() {
+        lastFocused.focus();
+        $('overlay').removeEventListener('cancelOverlay', f);
+      });
       node.classList.add('showing');
     }
 
@@ -405,8 +403,25 @@ cr.define('extensions', function() {
     }
 
     $('overlay').hidden = !node;
+
+    if (node)
+      ExtensionSettings.focusOverlay();
+
     uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
                                      'stopInterceptingEvents');
+  };
+
+  ExtensionSettings.focusOverlay = function() {
+    var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
+    assert(currentlyShowingOverlay);
+
+    if (cr.ui.FocusOutlineManager.forDocument(document).visible)
+      cr.ui.setInitialFocus(currentlyShowingOverlay);
+
+    if (!currentlyShowingOverlay.contains(document.activeElement)) {
+      // Make sure focus isn't stuck behind the overlay.
+      document.activeElement.blur();
+    }
   };
 
   /**
