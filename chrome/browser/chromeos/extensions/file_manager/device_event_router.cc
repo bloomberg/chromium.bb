@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -81,13 +80,6 @@ void DeviceEventRouter::OnDiskRemoved(
   const std::string& device_path = disk.system_path_prefix();
   if (!disk.mount_path().empty() &&
       GetDeviceState(device_path) != DEVICE_HARD_UNPLUGGED_AND_REPORTED) {
-    // TODO(hirono): Remove the temporary UMA.  crbug.com/433734
-    if (!last_suspend_done_.is_null()) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "FileBrowser.HardUnpluggedAroundSuspend.TimeSinceResume",
-          base::Time::Now() - last_suspend_done_);
-    }
-    last_hard_unplugged_ = base::Time::Now();
     OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
                   device_path);
     SetDeviceState(device_path, DEVICE_HARD_UNPLUGGED_AND_REPORTED);
@@ -132,18 +124,11 @@ void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
 
 void DeviceEventRouter::SuspendImminent() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(hirono): Remove the temporary UMA.  crbug.com/433734
-  if (!last_hard_unplugged_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "FileBrowser.HardUnpluggedAroundSuspend.TimeUntilSuspend",
-        base::Time::Now() - last_hard_unplugged_);
-  }
   is_resuming_ = true;
 }
 
 void DeviceEventRouter::SuspendDone(const base::TimeDelta& sleep_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  last_suspend_done_ = base::Time::Now();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DeviceEventRouter::SuspendDoneDelayed,
