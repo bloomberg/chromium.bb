@@ -229,6 +229,7 @@ class AudioCodecBridge : public MediaCodecBridge {
   // Start the audio codec bridge.
   bool Start(const AudioCodec& codec, int sample_rate, int channel_count,
              const uint8* extra_data, size_t extra_data_size,
+             int64 codec_delay_ns, int64 seek_preroll_ns,
              bool play_audio, jobject media_crypto) WARN_UNUSED_RESULT;
 
   // Play the output buffer. This call must be called after
@@ -244,7 +245,8 @@ class AudioCodecBridge : public MediaCodecBridge {
 
   // Configure the java MediaFormat object with the extra codec data passed in.
   bool ConfigureMediaFormat(jobject j_format, const AudioCodec& codec,
-                            const uint8* extra_data, size_t extra_data_size);
+                            const uint8* extra_data, size_t extra_data_size,
+                            int64 codec_delay_ns, int64 seek_preroll_ns);
 };
 
 class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {

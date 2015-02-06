@@ -66,6 +66,8 @@ void AudioDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   config_sampling_rate_ = configs.audio_sampling_rate;
   set_is_content_encrypted(configs.is_audio_encrypted);
   audio_extra_data_ = configs.audio_extra_data;
+  audio_codec_delay_ns_ = configs.audio_codec_delay_ns;
+  audio_seek_preroll_ns_ = configs.audio_seek_preroll_ns;
   bytes_per_frame_ = kBytesPerAudioOutputSample * num_channels_;
   if (!media_codec_bridge_)
     output_sampling_rate_ = config_sampling_rate_;
@@ -143,7 +145,8 @@ MediaDecoderJob::MediaDecoderJobStatus
 
   if (!(static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))->Start(
       audio_codec_, config_sampling_rate_, num_channels_, &audio_extra_data_[0],
-      audio_extra_data_.size(), true, GetMediaCrypto().obj())) {
+      audio_extra_data_.size(), audio_codec_delay_ns_, audio_seek_preroll_ns_,
+      true, GetMediaCrypto().obj())) {
     media_codec_bridge_.reset();
     return STATUS_FAILURE;
   }

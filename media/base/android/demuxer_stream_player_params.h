@@ -25,6 +25,8 @@ struct MEDIA_EXPORT DemuxerConfigs {
   int audio_sampling_rate;
   bool is_audio_encrypted;
   std::vector<uint8> audio_extra_data;
+  int64 audio_codec_delay_ns;
+  int64 audio_seek_preroll_ns;
 
   VideoCodec video_codec;
   gfx::Size video_size;

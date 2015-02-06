@@ -656,11 +656,23 @@ class MediaCodecBridge {
 
     @CalledByNative
     private static void setCodecSpecificData(MediaFormat format, int index, byte[] bytes) {
-        String name = null;
-        if (index == 0) {
-            name = "csd-0";
-        } else if (index == 1) {
-            name = "csd-1";
+        // Codec Specific Data is set in the MediaFormat as ByteBuffer entries with keys csd-0,
+        // csd-1, and so on. See: http://developer.android.com/reference/android/media/MediaCodec.html
+        // for details.
+        String name;
+        switch (index) {
+            case 0:
+                name = "csd-0";
+                break;
+            case 1:
+                name = "csd-1";
+                break;
+            case 2:
+                name = "csd-2";
+                break;
+            default:
+                name = null;
+                break;
         }
         if (name != null) {
             format.setByteBuffer(name, ByteBuffer.wrap(bytes));

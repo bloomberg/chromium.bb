@@ -31,12 +31,12 @@ const char kPropMaybe[] = "";
 const char kOggVideoProbably[] = "probably";
 const char kOggVideoMaybe[] = "maybe";
 const char kTheoraProbably[] = "probably";
-const char kOpusProbably[] = "probably";
+const char kOggOpusProbably[] = "probably";
 #else
 const char kOggVideoProbably[] = "";
 const char kOggVideoMaybe[] = "";
 const char kTheoraProbably[] = "";
-const char kOpusProbably[] = "";
+const char kOggOpusProbably[] = "";
 #endif  // !OS_ANDROID
 
 namespace content {
@@ -261,13 +261,18 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
-  // On Android, VP9 is supported only on KitKat and above (API level 19).
+  // On Android, VP9 is supported only on KitKat and above (API level 19) and
+  // Opus is supported only on Lollipop and above (API level 21).
   std::string VP9Probably = "probably";
   std::string VP9AndOpusProbably = "probably";
+  std::string OpusProbably = "probably";
 #if defined(OS_ANDROID)
-  VP9AndOpusProbably = "";
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 19)
     VP9Probably = "";
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 21) {
+    OpusProbably = "";
+    VP9AndOpusProbably = "";
+  }
 #endif
   EXPECT_EQ(kMaybe, CanPlay("'video/webm'"));
 
@@ -275,8 +280,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8, vorbis\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0, vorbis\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'video/webm; codecs=\"vp8, opus\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'video/webm; codecs=\"vp8.0, opus\"'"));
+  EXPECT_EQ(OpusProbably, CanPlay("'video/webm; codecs=\"vp8, opus\"'"));
+  EXPECT_EQ(OpusProbably, CanPlay("'video/webm; codecs=\"vp8.0, opus\"'"));
 
   EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9\"'"));
   EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9.0\"'"));
@@ -293,8 +298,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
 
   EXPECT_EQ(kMaybe, CanPlay("'audio/webm'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/webm; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'audio/webm; codecs=\"opus\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'audio/webm; codecs=\"opus, vorbis\"'"));
+  EXPECT_EQ(OpusProbably, CanPlay("'audio/webm; codecs=\"opus\"'"));
+  EXPECT_EQ(OpusProbably, CanPlay("'audio/webm; codecs=\"opus, vorbis\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/webm; codecs=\"vp8\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/webm; codecs=\"vp8.0\"'"));
@@ -327,8 +332,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
 
   EXPECT_EQ(kMaybe, CanPlay("'audio/ogg'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'audio/ogg; codecs=\"opus\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'audio/ogg; codecs=\"vorbis, opus\"'"));
+  EXPECT_EQ(kOggOpusProbably, CanPlay("'audio/ogg; codecs=\"opus\"'"));
+  EXPECT_EQ(kOggOpusProbably, CanPlay("'audio/ogg; codecs=\"vorbis, opus\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora, opus\"'"));
@@ -339,12 +344,12 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
   EXPECT_EQ(kMaybe, CanPlay("'application/ogg'"));
   EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"vorbis\"'"));
   EXPECT_EQ(kTheoraProbably, CanPlay("'application/ogg; codecs=\"theora\"'"));
-  EXPECT_EQ(kOpusProbably, CanPlay("'application/ogg; codecs=\"opus\"'"));
+  EXPECT_EQ(kOggOpusProbably, CanPlay("'application/ogg; codecs=\"opus\"'"));
   EXPECT_EQ(kTheoraProbably,
             CanPlay("'application/ogg; codecs=\"theora, vorbis\"'"));
   EXPECT_EQ(kTheoraProbably,
             CanPlay("'application/ogg; codecs=\"theora, opus\"'"));
-  EXPECT_EQ(kOpusProbably,
+  EXPECT_EQ(kOggOpusProbably,
             CanPlay("'application/ogg; codecs=\"opus, vorbis\"'"));
 
  TestOGGUnacceptableCombinations("application/ogg");

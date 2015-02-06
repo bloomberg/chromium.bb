@@ -61,6 +61,8 @@ class AudioDecoderJob : public MediaDecoderJob {
   int num_channels_;
   int config_sampling_rate_;
   std::vector<uint8> audio_extra_data_;
+  int64 audio_codec_delay_ns_;
+  int64 audio_seek_preroll_ns_;
   double volume_;
   int bytes_per_frame_;
 
