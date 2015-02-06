@@ -845,8 +845,9 @@ willPositionSheet:(NSWindow*)sheet
       [presentationModeController_ toolbarFraction]];
 
   [layout setHasTabStrip:[self hasTabStrip]];
-  NSButton* fullScreenButton =
-      [[self window] standardWindowButton:NSWindowFullScreenButton];
+  // NSWindowFullScreenButton is 10.7+ and results in log spam on 10.6 if used.
+  NSButton* fullScreenButton = base::mac::IsOSSnowLeopard() ?
+      nil : [[self window] standardWindowButton:NSWindowFullScreenButton];
   [layout setFullscreenButtonFrame:fullScreenButton ? [fullScreenButton frame]
                                                     : NSZeroRect];
   if ([self shouldShowAvatar]) {
