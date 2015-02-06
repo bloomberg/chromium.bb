@@ -343,14 +343,13 @@ std::string SearchSuggestionParser::ExtractJsonData(
 
 // static
 scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
-    std::string json_data) {
+    base::StringPiece json_data) {
   // The JSON response should be an array.
   for (size_t response_start_index = json_data.find("["), i = 0;
-       response_start_index != std::string::npos && i < 5;
+       response_start_index != base::StringPiece::npos && i < 5;
        response_start_index = json_data.find("[", 1), i++) {
     // Remove any XSSI guards to allow for JSON parsing.
-    if (response_start_index > 0)
-      json_data.erase(0, response_start_index);
+    json_data.remove_prefix(response_start_index);
 
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_match_type.h"
 #include "components/omnibox/suggestion_answer.h"
@@ -286,7 +287,8 @@ class SearchSuggestionParser {
   // Parses JSON response received from the provider, stripping XSSI
   // protection if needed. Returns the parsed data if successful, NULL
   // otherwise.
-  static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
+  static scoped_ptr<base::Value> DeserializeJsonData(
+      base::StringPiece json_data);
 
   // Parses results from the suggest server and updates the appropriate suggest
   // and navigation result lists in |results|. |is_keyword_result| indicates
