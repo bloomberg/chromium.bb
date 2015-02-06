@@ -627,6 +627,7 @@
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": true,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,

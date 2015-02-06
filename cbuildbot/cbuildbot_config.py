@@ -1650,6 +1650,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
 
 _chromium_pfq_important_boards = frozenset([
   'arm-generic_freon',
+  'arm-generic',
   'daisy',
   'mipsel-o32-generic',
   'x86-generic',
