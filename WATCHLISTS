@@ -554,6 +554,10 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
+    'polymer': {
+      'filepath': 'third_party/polymer/|'\
+                  'ui/webui/resources/polymer_resources.grdp',
+    },
     'predictors': {
       'filepath': 'predictors',
     },
@@ -972,6 +976,7 @@
                    'binji+watch@chromium.org', 'teravest+watch@chromium.org',
                    'tzik@chromium.org'],
     'plugin': ['jam@chromium.org'],
+    'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
