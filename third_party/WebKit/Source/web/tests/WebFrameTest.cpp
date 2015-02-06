@@ -1282,7 +1282,12 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
+// This fails on multiple android bots crbug.com/456065.
+#if OS(ANDROID)
+TEST_F(WebFrameTest, DISABLED_SetForceZeroLayoutHeightWorksWithWrapContentsMode)
+#else
 TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
+#endif
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
