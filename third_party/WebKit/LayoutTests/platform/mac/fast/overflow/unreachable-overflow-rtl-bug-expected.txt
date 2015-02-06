@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 35x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 35x18
           text run at (0,0) width 35: "LTR:"
-      RenderBlock (anonymous) at (0,122) size 784x16
-        RenderText {#text} at (0,0) size 35x16
+      RenderBlock (anonymous) at (0,124) size 784x18
+        RenderText {#text} at (0,0) size 35x18
           text run at (0,0) width 35: "RTL:"
-layer at (8,24) size 106x106 clip at (11,27) size 85x85 scrollWidth 221 scrollHeight 266
-  RenderBlock (relative positioned) {DIV} at (0,16) size 106x106 [border: (3px solid #000000)]
-layer at (211,277) size 21x16 backgroundClip at (11,27) size 85x85 clip at (11,27) size 85x85 outlineClip at (11,27) size 85x85
-  RenderBlock (positioned) {DIV} at (203,253) size 21.33x16
-    RenderText {#text} at (0,0) size 22x16
+layer at (8,26) size 106x106 clip at (11,29) size 85x85 scrollWidth 221 scrollHeight 268
+  RenderBlock (relative positioned) {DIV} at (0,18) size 106x106 [border: (3px solid #000000)]
+layer at (211,279) size 21x18 backgroundClip at (11,29) size 85x85 clip at (11,29) size 85x85 outlineClip at (11,29) size 85x85
+  RenderBlock (positioned) {DIV} at (203,253) size 21.33x18
+    RenderText {#text} at (0,0) size 22x18
       text run at (0,0) width 22: "foo"
-layer at (8,146) size 106x106 clip at (26,149) size 85x85 scrollX 136.00 scrollWidth 221 scrollHeight 266
-  RenderBlock (relative positioned) {DIV} at (0,138) size 106x106 [border: (3px solid #000000)]
-layer at (-110,399) size 21x16 backgroundClip at (26,149) size 85x85 clip at (26,149) size 85x85 outlineClip at (26,149) size 85x85
-  RenderBlock (positioned) {DIV} at (-118.33,253) size 21.33x16
-    RenderText {#text} at (0,0) size 22x16
+layer at (8,150) size 106x106 clip at (26,153) size 85x85 scrollX 136.00 scrollWidth 221 scrollHeight 268
+  RenderBlock (relative positioned) {DIV} at (0,142) size 106x106 [border: (3px solid #000000)]
+layer at (-110,403) size 21x18 backgroundClip at (26,153) size 85x85 clip at (26,153) size 85x85 outlineClip at (26,153) size 85x85
+  RenderBlock (positioned) {DIV} at (-118.33,253) size 21.33x18
+    RenderText {#text} at (0,0) size 22x18
       text run at (0,0) width 22: "foo"
