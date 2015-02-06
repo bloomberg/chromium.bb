@@ -922,6 +922,14 @@ void ThreadHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 
     json->setInteger("pageCount", info->pageCount - previousPageCount);
 }
+
+void ThreadHeap::incrementMarkedObjectsAge()
+{
+    for (HeapPage* page = m_firstPage; page; page = page->next())
+        page->incrementMarkedObjectsAge();
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
+        largeObject->incrementMarkedObjectsAge();
+}
 #endif
 
 void FreeList::addToFreeList(Address address, size_t size)
@@ -1533,6 +1541,22 @@ void ThreadHeap::snapshotFreeList(TracedValue& json)
         json.pushInteger(bucketStats[i].freeSize);
     json.endArray();
 }
+
+void ThreadHeap::countMarkedObjects(ClassAgeCountsMap& classAgeCounts) const
+{
+    for (HeapPage* page = m_firstPage; page; page = page->next())
+        page->countMarkedObjects(classAgeCounts);
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
+        largeObject->countMarkedObjects(classAgeCounts);
+}
+
+void ThreadHeap::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts) const
+{
+    for (HeapPage* page = m_firstPage; page; page = page->next())
+        page->countObjectsToSweep(classAgeCounts);
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
+        largeObject->countObjectsToSweep(classAgeCounts);
+}
 #endif
 
 void FreeList::clear()
@@ -1802,13 +1826,46 @@ void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
             // Count objects that are live when promoted to the final generation.
             if (age == maxHeapObjectAge - 1)
                 info->generations[tag][maxHeapObjectAge] += 1;
-            header->incrementAge();
         } else {
             info->deadCount[tag] += 1;
             info->deadSize[tag] += header->size();
             // Count objects that are dead before the final generation.
             if (age < maxHeapObjectAge)
                 info->generations[tag][age] += 1;
+        }
+    }
+}
+
+void HeapPage::incrementMarkedObjectsAge()
+{
+    HeapObjectHeader* header = nullptr;
+    for (Address address = payload(); address < payloadEnd(); address += header->size()) {
+        header = reinterpret_cast<HeapObjectHeader*>(address);
+        if (header->isMarked())
+            header->incrementAge();
+    }
+}
+
+void HeapPage::countMarkedObjects(ClassAgeCountsMap& classAgeCounts)
+{
+    HeapObjectHeader* header = nullptr;
+    for (Address address = payload(); address < payloadEnd(); address += header->size()) {
+        header = reinterpret_cast<HeapObjectHeader*>(address);
+        if (header->isMarked()) {
+            String className(classOf(header->payload()));
+            ++(classAgeCounts.add(className, AgeCounts()).storedValue->value.ages[header->age()]);
+        }
+    }
+}
+
+void HeapPage::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts)
+{
+    HeapObjectHeader* header = nullptr;
+    for (Address address = payload(); address < payloadEnd(); address += header->size()) {
+        header = reinterpret_cast<HeapObjectHeader*>(address);
+        if (!header->isFree() && !header->isMarked()) {
+            String className(classOf(header->payload()));
+            ++(classAgeCounts.add(className, AgeCounts()).storedValue->value.ages[header->age()]);
         }
     }
 }
@@ -1840,7 +1897,6 @@ void LargeObject::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
         // Count objects that are live when promoted to the final generation.
         if (age == maxHeapObjectAge - 1)
             info->generations[tag][maxHeapObjectAge] += 1;
-        header->incrementAge();
     } else {
         info->deadCount[tag] += 1;
         info->deadSize[tag] += header->size();
@@ -1853,6 +1909,31 @@ void LargeObject::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
         json->setInteger("class", tag);
         json->setInteger("size", header->size());
         json->setInteger("isMarked", header->isMarked());
+    }
+}
+
+void LargeObject::incrementMarkedObjectsAge()
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (header->isMarked())
+        header->incrementAge();
+}
+
+void LargeObject::countMarkedObjects(ClassAgeCountsMap& classAgeCounts)
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (header->isMarked()) {
+        String className(classOf(header->payload()));
+        ++(classAgeCounts.add(className, AgeCounts()).storedValue->value.ages[header->age()]);
+    }
+}
+
+void LargeObject::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts)
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (!header->isFree() && !header->isMarked()) {
+        String className(classOf(header->payload()));
+        ++(classAgeCounts.add(className, AgeCounts()).storedValue->value.ages[header->age()]);
     }
 }
 #endif

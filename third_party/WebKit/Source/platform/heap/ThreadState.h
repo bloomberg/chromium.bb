@@ -42,6 +42,8 @@
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace v8 {
 class Isolate;
@@ -191,6 +193,12 @@ enum TypedHeaps {
 #if ENABLE(GC_PROFILING)
 const size_t numberOfGenerationsToTrack = 8;
 const size_t maxHeapObjectAge = numberOfGenerationsToTrack - 1;
+
+struct AgeCounts {
+    int ages[numberOfGenerationsToTrack];
+    AgeCounts() { std::fill(ages, ages + numberOfGenerationsToTrack, 0); }
+};
+typedef HashMap<String, AgeCounts> ClassAgeCountsMap;
 #endif
 
 class PLATFORM_EXPORT ThreadState {
@@ -533,8 +541,12 @@ public:
     };
 
     void snapshot();
+    void incrementMarkedObjectsAge();
 
     void snapshotFreeListIfNecessary();
+
+    void collectAndReportMarkSweepStats() const;
+    void reportMarkSweepStats(const char* statsName, const ClassAgeCountsMap&) const;
 #endif
 
     void pushWeakPointerCallback(void*, WeakPointerCallback);

@@ -472,9 +472,10 @@ public:
     }
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
-#endif
-#if ENABLE(GC_PROFILING)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+    void incrementMarkedObjectsAge();
+    void countMarkedObjects(ClassAgeCountsMap&);
+    void countObjectsToSweep(ClassAgeCountsMap&);
 #endif
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for the whole blinkPageSize page that the page is on, even
@@ -544,10 +545,15 @@ public:
         memset(payload(), orphanedZapValue, payloadSize());
         BaseHeapPage::markOrphaned();
     }
+
 #if ENABLE(GC_PROFILING)
     virtual const GCInfo* findGCInfo(Address) override;
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
+    void incrementMarkedObjectsAge();
+    void countMarkedObjects(ClassAgeCountsMap&);
+    void countObjectsToSweep(ClassAgeCountsMap&);
 #endif
+
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
@@ -709,6 +715,8 @@ public:
     struct PerBucketFreeListStats {
         size_t entryCount;
         size_t freeSize;
+
+        PerBucketFreeListStats() : entryCount(0), freeSize(0) { }
     };
 
     void getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalSize) const;
@@ -744,6 +752,7 @@ public:
 #endif
 #if ENABLE(GC_PROFILING)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+    void incrementMarkedObjectsAge();
 #endif
 
     void clearFreeLists();
@@ -783,6 +792,9 @@ public:
 
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList(TracedValue&);
+
+    void countMarkedObjects(ClassAgeCountsMap&) const;
+    void countObjectsToSweep(ClassAgeCountsMap&) const;
 #endif
 
 private:

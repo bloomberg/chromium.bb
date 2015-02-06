@@ -646,6 +646,12 @@ void ThreadState::snapshot()
 
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("blink_gc", "ThreadState", this, json.release());
 }
+
+void ThreadState::incrementMarkedObjectsAge()
+{
+    for (int i = 0; i < NumberOfHeaps; ++i)
+        m_heaps[i]->incrementMarkedObjectsAge();
+}
 #endif
 
 void ThreadState::pushWeakPointerCallback(void* object, WeakPointerCallback callback)
@@ -966,6 +972,25 @@ void ThreadState::preGC()
 void ThreadState::postGC(GCType gcType)
 {
     ASSERT(isInGC());
+
+#if ENABLE(GC_PROFILING)
+    // We snapshot the heap prior to sweeping to get numbers for both resources
+    // that have been allocated since the last GC and for resources that are
+    // going to be freed.
+    bool gcTracingEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
+
+    if (gcTracingEnabled) {
+        bool disabledByDefaultGCTracingEnabled;
+        TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &disabledByDefaultGCTracingEnabled);
+
+        snapshot();
+        if (disabledByDefaultGCTracingEnabled)
+            collectAndReportMarkSweepStats();
+        incrementMarkedObjectsAge();
+    }
+#endif
+
     setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->prepareForSweep();
@@ -1105,16 +1130,6 @@ void ThreadState::postGCProcessing()
         return;
 
     m_didV8GCAfterLastGC = false;
-
-#if ENABLE(GC_PROFILING)
-    // We snapshot the heap prior to sweeping to get numbers for both resources
-    // that have been allocated since the last GC and for resources that are
-    // going to be freed.
-    bool gcTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
-    if (gcTracingEnabled)
-        snapshot();
-#endif
 
     {
         if (isMainThread())
@@ -1275,6 +1290,34 @@ void ThreadState::snapshotFreeList()
 #undef SNAPSHOT_FREE_LIST
 
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "FreeList", this, json.release());
+}
+
+void ThreadState::collectAndReportMarkSweepStats() const
+{
+    if (!isMainThread())
+        return;
+
+    ClassAgeCountsMap markingClassAgeCounts;
+    for (int i = 0; i < NumberOfHeaps; ++i)
+        m_heaps[i]->countMarkedObjects(markingClassAgeCounts);
+    reportMarkSweepStats("MarkingStats", markingClassAgeCounts);
+
+    ClassAgeCountsMap sweepingClassAgeCounts;
+    for (int i = 0; i < NumberOfHeaps; ++i)
+        m_heaps[i]->countObjectsToSweep(sweepingClassAgeCounts);
+    reportMarkSweepStats("SweepingStats", sweepingClassAgeCounts);
+}
+
+void ThreadState::reportMarkSweepStats(const char* statsName, const ClassAgeCountsMap& classAgeCounts) const
+{
+    RefPtr<TracedValue> json = TracedValue::create();
+    for (ClassAgeCountsMap::const_iterator it = classAgeCounts.begin(), end = classAgeCounts.end(); it != end; ++it) {
+        json->beginArray(it->key.ascii().data());
+        for (size_t age = 0; age <= maxHeapObjectAge; ++age)
+            json->pushInteger(it->value.ages[age]);
+        json->endArray();
+    }
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), statsName, this, json.release());
 }
 #endif
 
