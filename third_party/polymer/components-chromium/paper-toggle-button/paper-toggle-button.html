@@ -15,61 +15,64 @@ Example:
 
 Styling toggle button:
 
-To change the ink color for checked state:
+To change the toggle color:
 
-    paper-toggle-button::shadow paper-radio-button::shadow #ink[checked] {
+    paper-toggle-button::shadow .toggle {
+      background-color: #9c27b0;
+    }
+
+To change the ink color:
+    
+    paper-toggle-button::shadow .toggle-ink {
+      color: #009688;
+    }
+
+To change the checked toggle color:
+
+    paper-toggle-button::shadow [checked] .toggle {
+      background-color: #4285f4;
+    }
+
+To change the checked ink color:
+
+    paper-toggle-button::shadow [checked] .toggle-ink {
       color: #4285f4;
     }
-    
-To change the radio checked color:
-    
-    paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
-      background-color: #4285f4;
-    }
-    
-To change the bar color for checked state:
 
-    paper-toggle-button::shadow #toggleBar[checked] {
-      background-color: #4285f4;
-    }
-    
-To change the ink color for unchecked state:
+To change the toggle bar and toggle button colors separately:
 
-    paper-toggle-button::shadow paper-radio-button::shadow #ink {
-      color: #b5b5b5;
-    }
-    
-To change the radio unchecked color:
-    
-    paper-toggle-button::shadow paper-radio-button::shadow #offRadio {
-      border-color: #b5b5b5;
+    paper-toggle-button::shadow .toggle-bar {
+      background-color: #5677fc;
     }
 
-To change the bar color for unchecked state:
-
-    paper-toggle-button::shadow #toggleBar {
-      background-color: red;
+    paper-toggle-button::shadow .toggle-button {
+      background-color: #9c27b0;
     }
 
 @group Paper Elements
 @element paper-toggle-button
 @homepage github.io
 --><html><head><link rel="import" href="../paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../core-a11y-keys/core-a11y-keys.html">
 
 </head><body><polymer-element name="paper-toggle-button" attributes="checked disabled" role="button" aria-pressed="false" tabindex="0" assetpath="">
 <template>
 
   <link rel="stylesheet" href="paper-toggle-button.css">
 
-  <div id="toggleContainer" disabled?="{{disabled}}">
+  <core-a11y-keys target="{{}}" keys="space" on-keys-pressed="{{tap}}"></core-a11y-keys>
+
+  <div id="toggleContainer" checked?="{{checked}}" disabled?="{{disabled}}">
   
-    <div id="toggleBar" checked?="{{checked}}"></div>
-  
-    <paper-radio-button id="toggleRadio" toggles="" checked="{{checked}}" on-change="{{changeAction}}" on-core-change="{{stopPropagation}}" on-trackstart="{{trackStart}}" on-trackx="{{trackx}}" on-trackend="{{trackEnd}}"></paper-radio-button>
-    
+    <div id="toggleBar" class="toggle toggle-bar"></div>
+
+    <div id="toggleButton" class="toggle toggle-button">
+      <paper-ripple id="ink" class="toggle-ink circle"></paper-ripple>
+    </div>
+
   </div>
 
 </template>
 
 </polymer-element>
-<script src="paper-toggle-button-extracted.js"></script></body></html>
+<script charset="utf-8" src="paper-toggle-button-extracted.js"></script></body></html>
