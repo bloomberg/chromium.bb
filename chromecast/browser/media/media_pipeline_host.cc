@@ -153,13 +153,9 @@ void MediaPipelineHost::SetVolume(TrackId track_id, float volume) {
   media_pipeline_->GetAudioPipeline()->SetVolume(volume);
 }
 
-void MediaPipelineHost::SetCdm(
-    int render_process_id, int render_frame_id, int cdm_id) {
+void MediaPipelineHost::SetCdm(::media::BrowserCdm* cdm) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(gunsch): crbug.com/444930. Find a way to get
-  // content::BrowserCdmManager since it is not under content/public/.
-  NOTIMPLEMENTED();
+  media_pipeline_->SetCdm(cdm);
 }
 
 void MediaPipelineHost::NotifyPipeWrite(TrackId track_id) {

@@ -970,6 +970,14 @@ void RenderProcessHostImpl::SendUpdateValueState(unsigned int target,
   }
 }
 
+#if defined(ENABLE_BROWSER_CDMS)
+media::BrowserCdm* RenderProcessHostImpl::GetBrowserCdm(int render_frame_id,
+                                                        int cdm_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return browser_cdm_manager_->GetCdm(render_frame_id, cdm_id);
+}
+#endif
+
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {

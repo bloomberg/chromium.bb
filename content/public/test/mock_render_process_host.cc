@@ -245,6 +245,13 @@ void MockRenderProcessHost::SendUpdateValueState(
     unsigned int target, const gpu::ValueState& state) {
 }
 
+#if defined(ENABLE_BROWSER_CDMS)
+media::BrowserCdm* MockRenderProcessHost::GetBrowserCdm(int render_frame_id,
+                                                        int cdm_id) const {
+  return nullptr;
+}
+#endif
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

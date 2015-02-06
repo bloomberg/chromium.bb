@@ -184,7 +184,8 @@ bool BrowserCdmManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-media::BrowserCdm* BrowserCdmManager::GetCdm(int render_frame_id, int cdm_id) {
+media::BrowserCdm* BrowserCdmManager::GetCdm(int render_frame_id,
+                                             int cdm_id) const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return cdm_map_.get(GetId(render_frame_id, cdm_id));
 }

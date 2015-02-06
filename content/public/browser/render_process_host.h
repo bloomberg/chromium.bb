@@ -30,6 +30,7 @@ union ValueState;
 
 namespace media {
 class AudioOutputController;
+class BrowserCdm;
 }
 
 namespace content {
@@ -268,6 +269,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       GetAudioOutputControllersCallback;
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const = 0;
+
+#if defined(ENABLE_BROWSER_CDMS)
+  // Returns the ::media::BrowserCdm instance associated with |render_frame_id|
+  // and |cdm_id|, or nullptr if not found.
+  virtual media::BrowserCdm* GetBrowserCdm(int render_frame_id,
+                                           int cdm_id) const = 0;
+#endif
 
   // Static management functions -----------------------------------------------
 

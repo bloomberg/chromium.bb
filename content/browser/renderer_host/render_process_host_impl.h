@@ -148,6 +148,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnRemoveSubscription(unsigned int target) override;
   void SendUpdateValueState(
       unsigned int target, const gpu::ValueState& state) override;
+#if defined(ENABLE_BROWSER_CDMS)
+  media::BrowserCdm* GetBrowserCdm(int render_frame_id,
+                                   int cdm_id) const override;
+#endif
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

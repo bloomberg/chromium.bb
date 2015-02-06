@@ -17,6 +17,7 @@
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "media/base/bind_to_current_loop.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -164,7 +165,32 @@ void CmaMessageFilterHost::SetCdm(int media_id,
   if (!media_pipeline)
     return;
 
-  FORWARD_CALL(media_pipeline, SetCdm, process_id_, render_frame_id, cdm_id);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&CmaMessageFilterHost::SetCdmOnUiThread,
+                 this, media_pipeline, render_frame_id, cdm_id));
+}
+
+void CmaMessageFilterHost::SetCdmOnUiThread(
+    MediaPipelineHost* media_pipeline,
+    int render_frame_id,
+    int cdm_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(process_id_);
+  if (!host) {
+    LOG(ERROR) << "RenderProcessHost not alive for ID: " << process_id_;
+    return;
+  }
+
+  ::media::BrowserCdm* cdm = host->GetBrowserCdm(render_frame_id, cdm_id);
+  if (!cdm) {
+    LOG(ERROR) << "Could not find BrowserCdm (" << render_frame_id << ","
+               << cdm_id << ")";
+    return;
+  }
+  FORWARD_CALL(media_pipeline, SetCdm, cdm);
 }
 
 void CmaMessageFilterHost::CreateAvPipe(

@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  media::BrowserCdm* GetCdm(int render_frame_id, int cdm_id);
+  media::BrowserCdm* GetCdm(int render_frame_id, int cdm_id) const;
 
   // Notifies that the render frame has been deleted so that all CDMs belongs
   // to this render frame needs to be destroyed as well. This is needed because

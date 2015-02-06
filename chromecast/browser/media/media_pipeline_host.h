@@ -24,6 +24,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 class AudioDecoderConfig;
+class BrowserCdm;
 class VideoDecoderConfig;
 }
 
@@ -60,7 +61,7 @@ class MediaPipelineHost {
 
   void SetPlaybackRate(float playback_rate);
   void SetVolume(TrackId track_id, float playback_rate);
-  void SetCdm(int render_process_id, int render_frame_id, int cdm_id);
+  void SetCdm(::media::BrowserCdm* cdm);
 
   void NotifyPipeWrite(TrackId track_id);
 
