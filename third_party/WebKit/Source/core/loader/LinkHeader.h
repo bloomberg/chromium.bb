@@ -11,7 +11,8 @@ namespace blink {
 
 class LinkHeader {
 public:
-    LinkHeader(const String& header);
+    template <typename CharType>
+    LinkHeader(CharType*& position, CharType* end);
 
     const String url() const { return m_url; };
     const String rel() const { return m_rel; };
@@ -23,13 +24,27 @@ public:
     };
 
 private:
-    template <typename CharType>
-    bool init(CharType* headerValue, unsigned len);
     void setValue(LinkParameterName, String value);
 
     String m_url;
     String m_rel;
     bool m_isValid;
+};
+
+class LinkHeaderSet {
+public:
+    LinkHeaderSet(const String& header);
+
+    Vector<LinkHeader>::const_iterator begin() const { return m_headerSet.begin(); }
+    Vector<LinkHeader>::const_iterator end() const { return m_headerSet.end(); }
+    LinkHeader& operator[](size_t i) { return m_headerSet[i]; }
+    size_t size() { return m_headerSet.size(); }
+
+private:
+    template <typename CharType>
+    void init(CharType* headerValue, unsigned len);
+
+    Vector<LinkHeader> m_headerSet;
 };
 
 }

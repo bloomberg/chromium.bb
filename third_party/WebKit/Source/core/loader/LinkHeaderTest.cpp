@@ -10,7 +10,17 @@
 
 namespace blink {
 
-TEST(LinkHeaderTest, Basic)
+TEST(LinkHeaderTest, Empty)
+{
+    String nullString;
+    LinkHeaderSet nullHeaderSet(nullString);
+    ASSERT_EQ(nullHeaderSet.size(), unsigned(0));
+    String emptyString("");
+    LinkHeaderSet emptyHeaderSet(emptyString);
+    ASSERT_EQ(emptyHeaderSet.size(), unsigned(0));
+}
+
+TEST(LinkHeaderTest, Single)
 {
     struct TestCase {
         const char* headerValue;
@@ -18,8 +28,6 @@ TEST(LinkHeaderTest, Basic)
         const char* rel;
         bool valid;
     } cases[] = {
-        {0, "", "", false},
-        {"", "", "", false},
         {"</images/cat.jpg>; rel=prefetch", "/images/cat.jpg", "prefetch", true},
         {"</images/cat.jpg>;rel=prefetch", "/images/cat.jpg", "prefetch", true},
         {"</images/cat.jpg>   ;rel=prefetch", "/images/cat.jpg", "prefetch", true},
@@ -47,18 +55,48 @@ TEST(LinkHeaderTest, Basic)
         {"<   http://wut.com/%20%20%3dsdfsdf?sd>; rel=dns-prefetch", "http://wut.com/%20%20%3dsdfsdf?sd", "dns-prefetch", true},
         {"<   http://wut.com/dfsdf?sdf=ghj&wer=rty>; rel=prefetch", "http://wut.com/dfsdf?sdf=ghj&wer=rty", "prefetch", true},
         {"<   http://wut.com/dfsdf?sdf=ghj&wer=rty>;;;;; rel=prefetch", "http://wut.com/dfsdf?sdf=ghj&wer=rty", "", false},
+        {"</images/cat.jpg>; rel=prefetch;", "/images/cat.jpg", "prefetch", true},
+        {"</images/cat.jpg>; rel=prefetch    ;", "/images/cat.jpg", "prefetch", true},
+        {"</images/ca,t.jpg>; rel=prefetch    ;", "/images/ca,t.jpg", "prefetch", true},
     };
 
-    for (size_t i = 0; i < arraysize(cases); ++i) {
-        const char* headerValue = cases[i].headerValue;
-        const char* url = cases[i].url;
-        const char* rel = cases[i].rel;
-        bool valid = cases[i].valid;
 
-        LinkHeader header(headerValue);
-        ASSERT_EQ(valid, header.valid());
-        ASSERT_STREQ(url, header.url().ascii().data());
-        ASSERT_STREQ(rel, header.rel().ascii().data());
+    // Test the cases with a single header
+    for (size_t i = 0; i < arraysize(cases); ++i) {
+        TestCase& testCase = cases[i];
+        LinkHeaderSet headerSet(testCase.headerValue);
+        LinkHeader& header = headerSet[0];
+        ASSERT_STREQ(testCase.url, header.url().ascii().data());
+        ASSERT_STREQ(testCase.rel, header.rel().ascii().data());
+        ASSERT_EQ(testCase.valid, header.valid());
+    }
+}
+
+TEST(LinkHeaderTest, Double)
+{
+    struct DoubleTestCase {
+        const char* headerValue;
+        const char* url;
+        const char* rel;
+        bool valid;
+        const char* url2;
+        const char* rel2;
+        bool valid2;
+    } doubleCases[] = {
+        {"<ybg.css>; rel=stylesheet, <simple.css>; rel=stylesheet", "ybg.css", "stylesheet", true, "simple.css", "stylesheet", true},
+    };
+
+    for (size_t i = 0; i < arraysize(doubleCases); ++i) {
+        DoubleTestCase& testCase = doubleCases[i];
+        LinkHeaderSet headerSet(testCase.headerValue);
+        LinkHeader& header1 = headerSet[0];
+        LinkHeader& header2 = headerSet[1];
+        ASSERT_STREQ(testCase.url, header1.url().ascii().data());
+        ASSERT_STREQ(testCase.rel, header1.rel().ascii().data());
+        ASSERT_EQ(testCase.valid, header1.valid());
+        ASSERT_STREQ(testCase.url2, header2.url().ascii().data());
+        ASSERT_STREQ(testCase.rel2, header2.rel().ascii().data());
+        ASSERT_EQ(testCase.valid2, header2.valid());
     }
 }
 

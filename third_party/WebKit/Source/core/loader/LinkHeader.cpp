@@ -29,9 +29,15 @@ static bool isValidParameterNameChar(CharType chr)
 }
 
 template <typename CharType>
+static bool isValidParameterValueEnd(CharType chr)
+{
+    return chr == ';' || chr == ',';
+}
+
+template <typename CharType>
 static bool isValidParameterValueChar(CharType chr)
 {
-    return !isWhitespace(chr) && chr != ';';
+    return !isWhitespace(chr) && !isValidParameterValueEnd(chr);
 }
 
 // Before:
@@ -64,6 +70,19 @@ static bool parseURL(CharType*& position, CharType* end, String& url)
     return true;
 }
 
+template <typename CharType>
+static bool invalidParameterDelimiter(CharType*& position, CharType* end)
+{
+    return (!skipExactly<CharType>(position, end, ';') && (position < end) && (*position != ','));
+}
+
+template <typename CharType>
+static bool validFieldEnd(CharType*& position, CharType* end)
+{
+    ASSERT(position <= end);
+    return (position == end || *position == ',');
+}
+
 // Before:
 //
 // <cat.jpg>; rel=preload
@@ -76,16 +95,16 @@ static bool parseURL(CharType*& position, CharType* end, String& url)
 //            ^          ^
 //            position  end
 template <typename CharType>
-static bool parseParameterDelimiter(CharType*& position, CharType* end, bool& isValidDelimiter)
+static bool parseParameterDelimiter(CharType*& position, CharType* end, bool& isValid)
 {
-    isValidDelimiter = true;
+    isValid = true;
     skipWhile<CharType, isWhitespace>(position, end);
-    if (!skipExactly<CharType>(position, end, ';') && (position < end)) {
-        isValidDelimiter = false;
+    if (invalidParameterDelimiter(position, end)) {
+        isValid = false;
         return false;
     }
     skipWhile<CharType, isWhitespace>(position, end);
-    if (position == end)
+    if (validFieldEnd(position, end))
         return false;
     return true;
 }
@@ -141,7 +160,7 @@ static bool parseParameterValue(CharType*& position, CharType* end, String& valu
     skipWhile<CharType, isValidParameterValueChar>(position, end);
     CharType* valueEnd = position;
     skipWhile<CharType, isWhitespace>(position, end);
-    if ((valueEnd == valueStart) || (position != end && *position != ';'))
+    if ((valueEnd == valueStart) || (position != end && !isValidParameterValueEnd(*position)))
         return false;
     value = String(valueStart, valueEnd - valueStart);
     return true;
@@ -155,44 +174,64 @@ void LinkHeader::setValue(LinkParameterName name, String value)
 }
 
 template <typename CharType>
-bool LinkHeader::init(CharType* headerValue, unsigned len)
+static void findNextHeader(CharType*& position, CharType* end)
 {
-    CharType* position = headerValue;
-    CharType* end = headerValue + len;
-
-    if (!parseURL(position, end, m_url))
-        return false;
-
-    while (position < end) {
-        bool isValidDelimiter;
-        if (!parseParameterDelimiter(position, end, isValidDelimiter))
-            return isValidDelimiter;
-
-        LinkParameterName parameterName;
-        if (!parseParameterName(position, end, parameterName))
-            return false;
-
-        String parameterValue;
-        if (!parseParameterValue(position, end, parameterValue))
-            return false;
-
-        setValue(parameterName, parameterValue);
-    }
-
-    return true;
+    skipUntil<CharType>(position, end, ',');
+    skipExactly<CharType>(position, end, ',');
 }
 
-LinkHeader::LinkHeader(const String& header)
+template <typename CharType>
+LinkHeader::LinkHeader(CharType*& position, CharType* end)
+    : m_isValid(true)
 {
-    if (header.isNull()) {
+    if (!parseURL(position, end, m_url)) {
         m_isValid = false;
+        findNextHeader(position, end);
         return;
     }
 
+    while (position < end) {
+        if (!parseParameterDelimiter(position, end, m_isValid)) {
+            findNextHeader(position, end);
+            return;
+        }
+
+        LinkParameterName parameterName;
+        if (!parseParameterName(position, end, parameterName)) {
+            findNextHeader(position, end);
+            m_isValid = false;
+            return;
+        }
+
+        String parameterValue;
+        if (!parseParameterValue(position, end, parameterValue)) {
+            findNextHeader(position, end);
+            m_isValid = false;
+            return;
+        }
+
+        setValue(parameterName, parameterValue);
+    }
+}
+
+LinkHeaderSet::LinkHeaderSet(const String& header)
+{
+    if (header.isNull())
+        return;
+
     if (header.is8Bit())
-        m_isValid = init(header.characters8(), header.length());
+        init(header.characters8(), header.length());
     else
-        m_isValid = init(header.characters16(), header.length());
+        init(header.characters16(), header.length());
+}
+
+template <typename CharType>
+void LinkHeaderSet::init(CharType* headerValue, unsigned len)
+{
+    CharType* position = headerValue;
+    CharType* end = headerValue + len;
+    while (position < end)
+        m_headerSet.append(LinkHeader(position, end));
 }
 
 }
