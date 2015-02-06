@@ -32,6 +32,7 @@
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
+#include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
@@ -115,8 +116,7 @@ LinuxSandbox::LinuxSandbox()
       seccomp_bpf_with_tsync_supported_(false),
       yama_is_enforcing_(false),
       initialize_sandbox_ran_(false),
-      setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create())
-{
+      setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
   if (setuid_sandbox_client_ == NULL) {
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
   }
@@ -212,6 +212,12 @@ int LinuxSandbox::GetStatus() {
       if (setuid_sandbox_client_->IsInNewPIDNamespace())
         sandbox_status_flags_ |= kSandboxLinuxPIDNS;
       if (setuid_sandbox_client_->IsInNewNETNamespace())
+        sandbox_status_flags_ |= kSandboxLinuxNetNS;
+    } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
+      sandbox_status_flags_ |= kSandboxLinuxUserNS;
+      if (sandbox::NamespaceSandbox::InNewPidNamespace())
+        sandbox_status_flags_ |= kSandboxLinuxPIDNS;
+      if (sandbox::NamespaceSandbox::InNewNetNamespace())
         sandbox_status_flags_ |= kSandboxLinuxNetNS;
     }
 
