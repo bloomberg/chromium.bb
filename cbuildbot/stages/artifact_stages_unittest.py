@@ -11,11 +11,11 @@ import mock
 import os
 import sys
 
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import prebuilts
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -37,7 +37,8 @@ DEFAULT_CHROME_BRANCH = '27'
 # pylint: disable=too-many-ancestors
 
 
-class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase):
+class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
+                       cbuildbot_unittest.SimpleBuilderTestCase):
   """Exercise ArchiveStage functionality."""
 
   # pylint: disable=protected-access
@@ -53,7 +54,6 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.AutoPatch(to_patch)
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self._PatchDependencies()
 
     self._Prepare()
@@ -113,14 +113,12 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase):
 
 
 class UploadPrebuiltsStageTest(
-    generic_stages_unittest.RunCommandAbstractStageTestCase):
+    generic_stages_unittest.RunCommandAbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the UploadPrebuilts stage."""
 
   cmd = 'upload_prebuilts'
   RELEASE_TAG = ''
-
-  def setUp(self):
-    self.StartPatcher(BuilderRunMock())
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(UploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
@@ -175,15 +173,13 @@ class UploadPrebuiltsStageTest(
 
 
 class MasterUploadPrebuiltsStageTest(
-    generic_stages_unittest.RunCommandAbstractStageTestCase):
+    generic_stages_unittest.RunCommandAbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the MasterUploadPrebuilts stage."""
 
   cmd = 'upload_prebuilts'
   RELEASE_TAG = '1234.5.6'
   VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
-
-  def setUp(self):
-    self.StartPatcher(BuilderRunMock())
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterUploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
@@ -267,7 +263,8 @@ class MasterUploadPrebuiltsStageTest(
 
 
 class UploadDevInstallerPrebuiltsStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the UploadDevInstallerPrebuilts stage."""
 
   RELEASE_TAG = 'RT'
@@ -275,8 +272,6 @@ class UploadDevInstallerPrebuiltsStageTest(
   def setUp(self):
     self.upload_mock = self.PatchObject(
         prebuilts, 'UploadDevInstallerPrebuilts')
-
-    self.StartPatcher(BuilderRunMock())
 
     self._Prepare()
 
@@ -307,11 +302,11 @@ class UploadDevInstallerPrebuiltsStageTest(
         extra_args=mock.ANY)
 
 
-class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase):
+class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase,
+                         cbuildbot_unittest.SimpleBuilderTestCase):
   """Test CPEExportStage"""
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
@@ -333,7 +328,7 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase):
   def _TestPerformStage(self):
     """Run PerformStage for the stage."""
     self._Prepare()
-    self._run.attrs.release_tag = BuilderRunMock.VERSION
+    self._run.attrs.release_tag = self.VERSION
 
     self.stage = self.ConstructStage()
     self.stage.PerformStage()
@@ -343,13 +338,13 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase):
     self._TestPerformStage()
 
 
-class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase):
+class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
+                            cbuildbot_unittest.SimpleBuilderTestCase):
   """Test DebugSymbolsStage"""
 
   # pylint: disable=protected-access
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
@@ -382,7 +377,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase):
       }
 
     self._Prepare(extra_config=extra_config)
-    self._run.attrs.release_tag = BuilderRunMock.VERSION
+    self._run.attrs.release_tag = self.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
     self.stage = self.ConstructStage()
@@ -466,13 +461,13 @@ class UploadTestArtifactsStageMock(
       self.backup['BuildAutotestTarballs'](*args, **kwargs)
 
 
-class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase):
+class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
+                                   cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests UploadTestArtifactsStage."""
 
   def setUp(self):
     self._release_tag = None
 
-    self.StartPatcher(BuilderRunMock())
     osutils.SafeMakedirs(os.path.join(self.build_root, 'chroot', 'tmp'))
     self.StartPatcher(UploadTestArtifactsStageMock())
 
@@ -571,12 +566,12 @@ class ArchivingMock(partial_mock.PartialMock):
 
 
 # TODO: Delete ArchivingStageTest once ArchivingStage is deprecated.
-class ArchivingStageTest(generic_stages_unittest.AbstractStageTestCase):
+class ArchivingStageTest(generic_stages_unittest.AbstractStageTestCase,
+                         cbuildbot_unittest.SimpleBuilderTestCase):
   """Excerise ArchivingStage functionality."""
   RELEASE_TAG = ''
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.StartPatcher(ArchivingMock())
 
     self._Prepare()

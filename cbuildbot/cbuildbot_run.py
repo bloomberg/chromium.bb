@@ -37,7 +37,6 @@ import types
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
 from chromite.lib import portage_util
@@ -150,6 +149,7 @@ class RunAttributes(object):
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
+      'version_info',     # Set by the builder after sync+patch stage.
       'metadata',         # Used by various build stages to record metadata.
   ))
 
@@ -730,30 +730,32 @@ class _BuilderRunBase(object):
     """Return True if this is a production run."""
     return cidb.CIDBConnectionFactory.GetCIDBConnectionType() == 'prod'
 
-  @classmethod
-  def GetVersionInfo(cls, buildroot):
+  def GetVersionInfo(self):
     """Helper for picking apart various version bits.
 
-    This method only exists so that tests can override it.
+    The Builder must set attrs.version_info before calling this.  Further, it
+    should do so only after the sources have been fully synced & patched, else
+    it could return a confusing value.
+
+    Returns:
+      A manifest_version.VersionInfo object.
+
+    Raises:
+      RuntimeError if the version has not yet been set.
     """
-    return manifest_version.VersionInfo.from_repo(buildroot)
+    if not hasattr(self.attrs, 'version_info'):
+      raise RuntimeError('builder must call SetVersionInfo first')
+    return self.attrs.version_info
 
   def GetVersion(self):
     """Calculate full R<chrome_version>-<chromeos_version> version string.
 
-    It is required that the sync stage be run before this method is called.
+    See GetVersionInfo() notes about runtime usage.
 
     Returns:
       The version string for this run.
-
-    Raises:
-      AssertionError if the sync stage has not been run first.
     """
-    # This method should never be called before the sync stage has run, or
-    # it would return a confusing value.
-    assert hasattr(self.attrs, 'release_tag'), 'Sync stage must run first.'
-
-    verinfo = self.GetVersionInfo(self.buildroot)
+    verinfo = self.GetVersionInfo()
     release_tag = self.attrs.release_tag
     if release_tag:
       calc_version = 'R%s-%s' % (verinfo.chrome_branch, release_tag)

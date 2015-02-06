@@ -10,6 +10,7 @@ import mock
 import os
 
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -17,7 +18,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import validation_pool
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -31,7 +31,10 @@ from chromite.lib import osutils
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 
+
 # pylint: disable=protected-access
+# pylint: disable=too-many-ancestors
+
 
 class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildReexecutionFinishedStage behaves as expected."""
@@ -144,7 +147,8 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
 
 
 class AbstractReportStageTestCase(
-    generic_stages_unittest.AbstractStageTestCase):
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
   """Base class for testing the Report stage."""
 
   def setUp(self):
@@ -154,7 +158,6 @@ class AbstractReportStageTestCase(
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     retry_stats.SetupStats()
 
-    self.StartPatcher(BuilderRunMock())
     self.sync_stage = None
 
     # Set up a general purpose cidb mock. Tests with more specific
@@ -194,7 +197,7 @@ class ReportStageTest(AbstractReportStageTestCase):
     self.RunStage()
     filenames = (
         'LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
-        'LATEST-%s' % BuilderRunMock.VERSION,
+        'LATEST-%s' % self.VERSION,
     )
     calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
                        update_list=True, acl=mock.ANY)]

@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import mock
 
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
@@ -25,7 +25,8 @@ from chromite.lib.paygen import paygen_build_lib
 # pylint: disable=protected-access
 
 
-class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase):
+class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
+                      cbuildbot_unittest.SimpleBuilderTestCase):
   """Test the PaygenStageStage."""
 
   BOT_ID = 'x86-mario-release'
@@ -42,7 +43,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase):
   }
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
   def ConstructStage(self):

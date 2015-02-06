@@ -11,7 +11,7 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cidb
@@ -22,7 +22,11 @@ from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 
 
-class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTestCase,
+# pylint: disable=too-many-ancestors
+
+
+class ChromeSDKStageTest(cbuildbot_unittest.SimpleBuilderTestCase,
+                         generic_stages_unittest.AbstractStageTestCase,
                          cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
   BOT_ID = 'link-paladin'
@@ -31,7 +35,6 @@ class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTestCase,
   # pylint: disable=protected-access
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     # Set up a general purpose cidb mock. Tests with more specific

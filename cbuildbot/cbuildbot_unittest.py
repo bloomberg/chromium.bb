@@ -28,9 +28,6 @@ from chromite.lib import partial_mock
 from chromite.scripts import cbuildbot
 
 
-DEFAULT_CHROME_BRANCH = '27'
-
-
 # pylint: disable=protected-access
 
 
@@ -38,16 +35,35 @@ class BuilderRunMock(partial_mock.PartialMock):
   """Partial mock for BuilderRun class."""
 
   TARGET = 'chromite.cbuildbot.cbuildbot_run._BuilderRunBase'
-  ATTRS = ('GetVersionInfo', 'DetermineChromeVersion')
-  VERSION = '3333.1.0'
-  CHROME_VERSION = '35.0.1234.5'
+  ATTRS = ('GetVersionInfo', 'DetermineChromeVersion',)
 
-  def GetVersionInfo(self, _build_root):
-    return manifest_version.VersionInfo(
-        version_string=self.VERSION, chrome_branch=DEFAULT_CHROME_BRANCH)
+  def __init__(self, verinfo):
+    super(BuilderRunMock, self).__init__()
+    self._version_info = verinfo
+
+  def GetVersionInfo(self, _inst):
+    """This way builders don't have to set the version from the overlay"""
+    return self._version_info
 
   def DetermineChromeVersion(self, _inst):
-    return self.CHROME_VERSION
+    """Normaly this runs a portage command to look at the chrome ebuild"""
+    return self._version_info.chrome_branch
+
+
+class SimpleBuilderTestCase(cros_test_lib.MockTestCase):
+  """Common stubs for SimpleBuilder tests."""
+
+  CHROME_BRANCH = '27'
+  VERSION = '1234.5.6'
+
+  def setUp(self):
+    verinfo = manifest_version.VersionInfo(
+        version_string=self.VERSION, chrome_branch=self.CHROME_BRANCH)
+
+    self.StartPatcher(BuilderRunMock(verinfo))
+
+    self.PatchObject(simple_builders.SimpleBuilder, 'GetVersionInfo',
+                     return_value=verinfo)
 
 
 class TestArgsparseError(Exception):
@@ -58,10 +74,9 @@ class TestHaltedException(Exception):
   """Exception used by mocks to halt execution without indicating failure."""
 
 
-class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase,
+                         SimpleBuilderTestCase):
   """Test that cbuildbot runs the appropriate stages for a given config."""
-
-  VERSION = '1234.5.6'
 
   def setUp(self):
     self.buildroot = os.path.join(self.tempdir, 'buildroot')
@@ -94,8 +109,6 @@ class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._manager.__enter__()
     self.run = cbuildbot_run.BuilderRun(self.options, self.build_config,
                                         self._manager)
-
-    self.StartPatcher(BuilderRunMock())
 
     self.rc.AddCmdResult(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],

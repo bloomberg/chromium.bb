@@ -10,11 +10,11 @@ import mock
 import os
 
 from chromite.cbuildbot import cbuildbot_config as config
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -26,7 +26,11 @@ from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
-class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase):
+# pylint: disable=too-many-ancestors
+
+
+class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
+                      cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the VMTest stage."""
 
   BOT_ID = 'x86-generic-full'
@@ -43,7 +47,6 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase):
                      autospec=True, return_value=False)
     self.PatchObject(osutils, 'RmDir', autospec=True)
     self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
-    self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
     # Simulate breakpad symbols being ready.
@@ -138,7 +141,8 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
 
 
-class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase):
+class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
+                      cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the HWTest stage."""
 
   BOT_ID = 'x86-mario-release'
@@ -146,7 +150,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   RELEASE_TAG = ''
 
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.lab_status_mock = self.PatchObject(lab_status, 'CheckLabStatus')
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')
     self.warning_mock = self.PatchObject(
@@ -363,14 +366,15 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase):
 
 
 class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
-                      cros_build_lib_unittest.RunCommandTestCase):
+                      cros_build_lib_unittest.RunCommandTestCase,
+                      cbuildbot_unittest.SimpleBuilderTestCase):
   """Test only custom methods in AUTestStageTest."""
+
   BOT_ID = 'x86-mario-release'
   RELEASE_TAG = '0.0.1'
 
   # pylint: disable=W0201
   def setUp(self):
-    self.StartPatcher(BuilderRunMock())
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
@@ -426,7 +430,8 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 
 class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
-                         cros_build_lib_unittest.RunCommandTestCase):
+                         cros_build_lib_unittest.RunCommandTestCase,
+                         cbuildbot_unittest.SimpleBuilderTestCase):
   """Test image test stage."""
 
   BOT_ID = 'x86-mario-release'
@@ -438,7 +443,6 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                      return_value='/tmp/results_dir')
     self.PatchObject(git, 'ReinterpretPathForChroot',
                      side_effect=lambda x: x)
-    self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
   def _Prepare(self, bot_id=None, **kwargs):

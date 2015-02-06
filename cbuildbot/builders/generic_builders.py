@@ -145,6 +145,17 @@ class Builder(object):
     finally:
       self._SetReleaseTag()
 
+  def SetVersionInfo(self):
+    """Sync the builder's version info with the buildbot runtime."""
+    self._run.attrs.version_info = self.GetVersionInfo()
+
+  def GetVersionInfo(self):
+    """Returns a manifest_version.VersionInfo object for this build.
+
+    Subclasses must override this method.
+    """
+    raise NotImplementedError()
+
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run.
 
@@ -288,6 +299,9 @@ class Builder(object):
         if non_manifest_patches:
           self._RunStage(sync_stages.PatchChangesStage, non_manifest_patches)
 
+      # Now that we have a fully synced & patched tree, we can let the builder
+      # extract version information from the sources for this particular build.
+      self.SetVersionInfo()
       if self._run.ShouldReexecAfterSync():
         print_report = False
         success = self._ReExecuteInBuildroot(sync_instance)

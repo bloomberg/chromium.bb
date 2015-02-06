@@ -213,7 +213,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 
-    verinfo = self._run.GetVersionInfo(build_root)
+    verinfo = self._run.GetVersionInfo()
     platform_tag = getattr(self._run.attrs, 'release_tag')
     if not platform_tag:
       platform_tag = verinfo.VersionString()

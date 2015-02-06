@@ -10,9 +10,9 @@ import contextlib
 import os
 
 from chromite.cbuildbot import cbuildbot_config as config
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
@@ -242,12 +242,12 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase):
               break
 
 
-class BuildPackagesStageTest(AllConfigsTestCase):
+class BuildPackagesStageTest(AllConfigsTestCase,
+                             cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests BuildPackagesStage."""
 
   def setUp(self):
     self._release_tag = None
-    self.StartPatcher(BuilderRunMock())
     self.PatchObject(commands, 'ExtractDependencies', return_value=dict())
 
   def ConstructStage(self):

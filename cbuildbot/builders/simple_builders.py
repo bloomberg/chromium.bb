@@ -11,6 +11,7 @@ import collections
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import afdo_stages
@@ -52,6 +53,10 @@ class SimpleBuilder(generic_builders.Builder):
       sync_stage = self._GetStageInstance(sync_stages.SyncStage)
 
     return sync_stage
+
+  def GetVersionInfo(self):
+    """Returns the CrOS version info from the chromiumos-overlay."""
+    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
 
   def _RunHWTests(self, builder_run, board):
     """Run hwtest-related stages for the specified board.
