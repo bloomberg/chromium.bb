@@ -544,6 +544,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.setInstanceFollowRedirects(false);
         assertEquals(302, connection.getResponseCode());
         assertEquals("Found", connection.getResponseMessage());
+        assertEquals("/success.txt", connection.getHeaderField("Location"));
         assertEquals(NativeTestServer.getFileURL("/redirect.html"),
                 connection.getURL().toString());
         connection.disconnect();
@@ -559,6 +560,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         assertEquals(302, connection.getResponseCode());
         assertEquals("Found", connection.getResponseMessage());
+        assertEquals("/success.txt", connection.getHeaderField("Location"));
         assertEquals(NativeTestServer.getFileURL("/redirect.html"),
                 connection.getURL().toString());
         connection.disconnect();
