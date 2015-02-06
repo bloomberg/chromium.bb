@@ -885,20 +885,20 @@ def _ProcessGccConfig(target, output_dir):
   return srcpath
 
 
-def _ProcessSysrootWrapper(_target, output_dir, srcpath):
-  """Remove chroot-specific things from our sysroot wrapper"""
+def _ProcessSysrootWrappers(_target, output_dir, srcpath):
+  """Remove chroot-specific things from our sysroot wrappers"""
   # Disable ccache since we know it won't work outside of chroot.
-  sysroot_wrapper = glob.glob(os.path.join(
-      output_dir + srcpath, 'sysroot_wrapper*'))[0]
-  contents = osutils.ReadFile(sysroot_wrapper).splitlines()
-  for num in xrange(len(contents)):
-    if '@CCACHE_DEFAULT@' in contents[num]:
-      contents[num] = 'use_ccache = False'
-      break
-  # Can't update the wrapper in place since it's a hardlink to a file in /.
-  os.unlink(sysroot_wrapper)
-  osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
-  os.chmod(sysroot_wrapper, 0o755)
+  for sysroot_wrapper in glob.glob(os.path.join(
+      output_dir + srcpath, 'sysroot_wrapper*')):
+    contents = osutils.ReadFile(sysroot_wrapper).splitlines()
+    for num in xrange(len(contents)):
+      if '@CCACHE_DEFAULT@' in contents[num]:
+        contents[num] = 'use_ccache = False'
+        break
+    # Can't update the wrapper in place since it's a hardlink to a file in /.
+    os.unlink(sysroot_wrapper)
+    osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
+    os.chmod(sysroot_wrapper, 0o755)
 
 
 def _ProcessDistroCleanups(target, output_dir):
@@ -910,7 +910,7 @@ def _ProcessDistroCleanups(target, output_dir):
   """
   _ProcessBinutilsConfig(target, output_dir)
   gcc_path = _ProcessGccConfig(target, output_dir)
-  _ProcessSysrootWrapper(target, output_dir, gcc_path)
+  _ProcessSysrootWrappers(target, output_dir, gcc_path)
 
   osutils.RmDir(os.path.join(output_dir, 'etc'))
 
