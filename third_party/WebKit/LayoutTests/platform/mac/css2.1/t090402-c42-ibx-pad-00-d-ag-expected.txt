@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x184
-  RenderBlock {HTML} at (0,0) size 800x184
-    RenderBody {BODY} at (8,16) size 784x160
-      RenderBlock {P} at (0,0) size 784x16 [color=#000080]
-        RenderText {#text} at (0,0) size 491x16
+layer at (0,0) size 800x186
+  RenderBlock {HTML} at (0,0) size 800x186
+    RenderBody {BODY} at (8,16) size 784x162
+      RenderBlock {P} at (0,0) size 784x18 [color=#000080]
+        RenderText {#text} at (0,0) size 491x18
           text run at (0,0) width 491: "The two diagrams below should be identical to the pixel with no red present."
-      LayoutTable {TABLE} at (0,32) size 434x128
+      LayoutTable {TABLE} at (0,34) size 434x128
         LayoutTableSection {TBODY} at (0,0) size 434x128
           LayoutTableRow {TR} at (0,2) size 434x124
             LayoutTableCell {TD} at (2,2) size 214x124 [border: (2px solid #000000)] [r=0 c=0 rs=1 cs=1]

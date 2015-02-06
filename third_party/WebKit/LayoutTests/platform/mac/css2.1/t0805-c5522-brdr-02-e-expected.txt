@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x76
-  RenderBlock {HTML} at (0,0) size 800x76
-    RenderBody {BODY} at (8,8) size 784x60 [color=#0000FF]
-      LayoutTable {TABLE} at (0,0) size 719x60
-        LayoutTableSection {TBODY} at (0,0) size 719x60
-          LayoutTableRow {TR} at (0,2) size 719x22
-            LayoutTableCell {TD} at (2,2) size 715x22 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
-              RenderText {#text} at (3,3) size 331x16
+layer at (0,0) size 800x80
+  RenderBlock {HTML} at (0,0) size 800x80
+    RenderBody {BODY} at (8,8) size 784x64 [color=#0000FF]
+      LayoutTable {TABLE} at (0,0) size 719x64
+        LayoutTableSection {TBODY} at (0,0) size 719x64
+          LayoutTableRow {TR} at (0,2) size 719x24
+            LayoutTableCell {TD} at (2,2) size 715x24 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
+              RenderText {#text} at (3,3) size 331x18
                 text run at (3,3) width 331: "There should be a blue border around this sentence."
-          LayoutTableRow {TR} at (0,26) size 719x32
-            LayoutTableCell {TD} at (2,31) size 337x22 [border: (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (3,3) size 331x16
+          LayoutTableRow {TR} at (0,28) size 719x34
+            LayoutTableCell {TD} at (2,33) size 337x24 [border: (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (3,3) size 331x18
                 text run at (3,3) width 331: "There should be a blue border around this sentence."
-            LayoutTableCell {TD} at (341,26) size 376x32 [border: (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
-              LayoutTable {TABLE} at (3,3) size 370x26
-                LayoutTableSection {TBODY} at (0,0) size 370x26
-                  LayoutTableRow {TR} at (0,2) size 370x22
-                    LayoutTableCell {TD} at (2,2) size 366x22 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (3,3) size 108x16
+            LayoutTableCell {TD} at (341,28) size 376x34 [border: (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
+              LayoutTable {TABLE} at (3,3) size 370x28
+                LayoutTableSection {TBODY} at (0,0) size 370x28
+                  LayoutTableRow {TR} at (0,2) size 370x24
+                    LayoutTableCell {TD} at (2,2) size 366x24 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
+                      RenderText {#text} at (3,3) size 108x18
                         text run at (3,3) width 108: "There should be "
-                      RenderInline {STRONG} at (0,0) size 114x16
-                        RenderInline {EM} at (0,0) size 24x16
-                          RenderText {#text} at (110,3) size 24x16
+                      RenderInline {STRONG} at (0,0) size 114x18
+                        RenderInline {EM} at (0,0) size 24x18
+                          RenderText {#text} at (110,3) size 24x18
                             text run at (110,3) width 24: "two"
-                        RenderText {#text} at (133,3) size 91x16
+                        RenderText {#text} at (133,3) size 91x18
                           text run at (133,3) width 91: " blue borders"
-                      RenderText {#text} at (223,3) size 140x16
+                      RenderText {#text} at (223,3) size 140x18
                         text run at (223,3) width 140: " around this sentence."
