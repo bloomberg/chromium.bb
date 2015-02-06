@@ -359,6 +359,7 @@ static const char* const proprietary_media_types[] = {
   "audio/mp3",
   "audio/x-mp3",
   "audio/mpeg",
+  "audio/aac",
 
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
   // MPEG-2 TS.

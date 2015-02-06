@@ -231,6 +231,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mpeg"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/aac"));
 
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
   EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
@@ -246,6 +247,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp3"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-mp3"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/mpeg"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/aac"));
 #endif  // USE_PROPRIETARY_CODECS
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp3"));
 
