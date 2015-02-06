@@ -43,7 +43,7 @@ remoting.LoadingWindow.show = function() {
   var kConnectionTimeout = 15 * 60 * 1000;
 
   var transparencyWarning = '';
-  if (navigator.platform.indexOf('Mac') != -1) {
+  if (remoting.platformIsMac()) {
     transparencyWarning =
         chrome.i18n.getMessage(/*i18n-content*/'NO_TRANSPARENCY_WARNING');
   }
