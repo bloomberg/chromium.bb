@@ -64,7 +64,6 @@
 
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
-#include <sanitizer/coverage_interface.h>
 #endif
 
 namespace content {

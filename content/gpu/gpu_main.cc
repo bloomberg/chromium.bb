@@ -60,7 +60,6 @@
 
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
-#include <sanitizer/coverage_interface.h>
 #endif
 
 const int kGpuTimeout = 10000;
