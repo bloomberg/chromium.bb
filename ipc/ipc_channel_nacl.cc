@@ -200,6 +200,7 @@ void ChannelNacl::Close() {
 }
 
 bool ChannelNacl::Send(Message* message) {
+  DCHECK(!message->HasAttachments());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type();
   scoped_ptr<Message> message_ptr(message);

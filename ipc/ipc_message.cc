@@ -155,4 +155,8 @@ bool Message::HasAttachments() const {
   return attachment_set_.get() && !attachment_set_->empty();
 }
 
+bool Message::HasMojoHandles() const {
+  return attachment_set_.get() && 0 < attachment_set_->num_mojo_handles();
+}
+
 }  // namespace IPC

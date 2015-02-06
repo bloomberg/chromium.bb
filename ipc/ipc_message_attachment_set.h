@@ -35,6 +35,9 @@ class IPC_EXPORT MessageAttachmentSet
   unsigned size() const;
   // Return the number of file descriptors
   unsigned num_descriptors() const;
+  // Return the number of mojo handles in the attachment set
+  unsigned num_mojo_handles() const;
+
   // Return true if no unconsumed descriptors remain
   bool empty() const { return 0 == size(); }
 
@@ -47,6 +50,11 @@ class IPC_EXPORT MessageAttachmentSet
   // support close flags.
   //   returns: an attachment, or nullptr on error
   scoped_refptr<MessageAttachment> GetAttachmentAt(unsigned index);
+
+  // This must be called after transmitting the descriptors returned by
+  // PeekDescriptors. It marks all the descriptors as consumed and closes those
+  // which are auto-close.
+  void CommitAll();
 
 #if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this
@@ -66,10 +74,6 @@ class IPC_EXPORT MessageAttachmentSet
   // must be called after these descriptors have been transmitted.
   //   buffer: (output) a buffer of, at least, size() integers.
   void PeekDescriptors(base::PlatformFile* buffer) const;
-  // This must be called after transmitting the descriptors returned by
-  // PeekDescriptors. It marks all the descriptors as consumed and closes those
-  // which are auto-close.
-  void CommitAll();
   // Returns true if any contained file descriptors appear to be handles to a
   // directory.
   bool ContainsDirectoryDescriptor() const;

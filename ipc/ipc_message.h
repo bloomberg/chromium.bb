@@ -175,6 +175,8 @@ class IPC_EXPORT Message : public Pickle {
                       scoped_refptr<MessageAttachment>* attachment) const;
   // Returns true if there are any attachment in this message.
   bool HasAttachments() const;
+  // Returns true if there are any MojoHandleAttachments in this message.
+  bool HasMojoHandles() const;
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Adds the outgoing time from Time::Now() at the end of the message and sets

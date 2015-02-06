@@ -78,6 +78,7 @@ void ChannelWin::Close() {
 }
 
 bool ChannelWin::Send(Message* message) {
+  DCHECK(!message->HasAttachments());
   DCHECK(thread_check_->CalledOnValidThread());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()

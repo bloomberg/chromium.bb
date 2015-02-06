@@ -18,12 +18,15 @@ class IPC_EXPORT MessageAttachment
     : public base::RefCounted<MessageAttachment> {
  public:
   enum Type {
-    TYPE_PLATFORM_FILE,     // The instance is |PlatformFileAttachment|.
-    TYPE_MOJO_MESSAGE_PIPE, // The instance is a mojo-based class.
+    TYPE_PLATFORM_FILE,  // The instance is |PlatformFileAttachment|.
+    TYPE_MOJO_HANDLE,    // The instance is |MojoHandleAttachment|.
   };
 
   virtual Type GetType() const = 0;
+
+#if defined(OS_POSIX)
   virtual base::PlatformFile TakePlatformFile() = 0;
+#endif  // OS_POSIX
 
  protected:
   friend class base::RefCounted<MessageAttachment>;

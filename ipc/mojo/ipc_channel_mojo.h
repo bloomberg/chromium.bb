@@ -92,6 +92,7 @@ class IPC_MOJO_EXPORT ChannelMojo
 #if defined(OS_POSIX) && !defined(OS_NACL)
   int GetClientFileDescriptor() const override;
   base::ScopedFD TakeClientFileDescriptor() override;
+#endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
@@ -101,8 +102,6 @@ class IPC_MOJO_EXPORT ChannelMojo
   static MojoResult ReadFromMessageAttachmentSet(
       Message* message,
       std::vector<MojoHandle>* handles);
-
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // MojoBootstrapDelegate implementation
   void OnBootstrapError() override;

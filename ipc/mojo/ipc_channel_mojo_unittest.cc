@@ -14,6 +14,8 @@
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
 #include "ipc/mojo/ipc_channel_mojo_host.h"
+#include "ipc/mojo/ipc_mojo_handle_attachment.h"
+#include "ipc/mojo/ipc_mojo_message_helper.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -257,6 +259,147 @@ TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
   DestroyChannel();
 }
 
+struct TestingMessagePipe {
+  TestingMessagePipe() {
+    EXPECT_EQ(MOJO_RESULT_OK, mojo::CreateMessagePipe(nullptr, &self, &peer));
+  }
+
+  mojo::ScopedMessagePipeHandle self;
+  mojo::ScopedMessagePipeHandle peer;
+};
+
+class HandleSendingHelper {
+ public:
+  static std::string GetSendingFileContent() { return "Hello"; }
+
+  static void WritePipe(IPC::Message* message, TestingMessagePipe* pipe) {
+    std::string content = HandleSendingHelper::GetSendingFileContent();
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mojo::WriteMessageRaw(pipe->self.get(), &content[0],
+                                    static_cast<uint32_t>(content.size()),
+                                    nullptr, 0, 0));
+    EXPECT_TRUE(
+        IPC::MojoMessageHelper::WriteMessagePipeTo(message, pipe->peer.Pass()));
+  }
+
+  static void WritePipeThenSend(IPC::Sender* sender, TestingMessagePipe* pipe) {
+    IPC::Message* message =
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    WritePipe(message, pipe);
+    ASSERT_TRUE(sender->Send(message));
+  }
+
+  static void ReadReceivedPipe(const IPC::Message& message,
+                               PickleIterator* iter) {
+    mojo::ScopedMessagePipeHandle pipe;
+    EXPECT_TRUE(
+        IPC::MojoMessageHelper::ReadMessagePipeFrom(&message, iter, &pipe));
+    std::string content(GetSendingFileContent().size(), ' ');
+
+    uint32_t num_bytes = static_cast<uint32_t>(content.size());
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mojo::ReadMessageRaw(pipe.get(), &content[0], &num_bytes, nullptr,
+                                   nullptr, 0));
+    EXPECT_EQ(content, GetSendingFileContent());
+  }
+
+#if defined(OS_POSIX)
+  static base::FilePath GetSendingFilePath() {
+    base::FilePath path;
+    bool ok = PathService::Get(base::DIR_CACHE, &path);
+    EXPECT_TRUE(ok);
+    return path.Append("ListenerThatExpectsFile.txt");
+  }
+
+  static void WriteFile(IPC::Message* message, base::File& file) {
+    std::string content = GetSendingFileContent();
+    file.WriteAtCurrentPos(content.data(), content.size());
+    file.Flush();
+    message->WriteAttachment(new IPC::internal::PlatformFileAttachment(
+        base::ScopedFD(file.TakePlatformFile())));
+  }
+
+  static void WriteFileThenSend(IPC::Sender* sender, base::File& file) {
+    IPC::Message* message =
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    WriteFile(message, file);
+    ASSERT_TRUE(sender->Send(message));
+  }
+
+  static void WriteFileAndPipeThenSend(IPC::Sender* sender,
+                                       base::File& file,
+                                       TestingMessagePipe* pipe) {
+    IPC::Message* message =
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    WriteFile(message, file);
+    WritePipe(message, pipe);
+    ASSERT_TRUE(sender->Send(message));
+  }
+
+  static void ReadReceivedFile(const IPC::Message& message,
+                               PickleIterator* iter) {
+    base::ScopedFD fd;
+    scoped_refptr<IPC::MessageAttachment> attachment;
+    EXPECT_TRUE(message.ReadAttachment(iter, &attachment));
+    base::File file(attachment->TakePlatformFile());
+    std::string content(GetSendingFileContent().size(), ' ');
+    file.Read(0, &content[0], content.size());
+    EXPECT_EQ(content, GetSendingFileContent());
+  }
+#endif
+};
+
+class ListenerThatExpectsMessagePipe : public IPC::Listener {
+ public:
+  ListenerThatExpectsMessagePipe() : sender_(NULL) {}
+
+  ~ListenerThatExpectsMessagePipe() override {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    PickleIterator iter(message);
+    HandleSendingHelper::ReadReceivedPipe(message, &iter);
+    base::MessageLoop::current()->Quit();
+    ListenerThatExpectsOK::SendOK(sender_);
+    return true;
+  }
+
+  void OnChannelError() override { NOTREACHED(); }
+
+  void set_sender(IPC::Sender* sender) { sender_ = sender; }
+
+ private:
+  IPC::Sender* sender_;
+};
+
+TEST_F(IPCChannelMojoTest, SendMessagePipe) {
+  Init("IPCChannelMojoTestSendMessagePipeClient");
+
+  ListenerThatExpectsOK listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
+
+  TestingMessagePipe pipe;
+  HandleSendingHelper::WritePipeThenSend(channel(), &pipe);
+
+  base::MessageLoop::current()->Run();
+  this->channel()->Close();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendMessagePipeClient) {
+  ListenerThatExpectsMessagePipe listener;
+  ChannelClient client(&listener, "IPCChannelMojoTestSendPlatformHandleClient");
+  client.Connect();
+  listener.set_sender(client.channel());
+
+  base::MessageLoop::current()->Run();
+
+  return 0;
+}
+
 #if defined(OS_WIN)
 class IPCChannelMojoDeadHandleTest : public IPCTestBase {
  protected:
@@ -327,14 +470,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     PickleIterator iter(message);
-
-    base::ScopedFD fd;
-    scoped_refptr<IPC::MessageAttachment> attachment;
-    EXPECT_TRUE(message.ReadAttachment(&iter, &attachment));
-    base::File file(attachment->TakePlatformFile());
-    std::string content(GetSendingFileContent().size(), ' ');
-    file.Read(0, &content[0], content.size());
-    EXPECT_EQ(content, GetSendingFileContent());
+    HandleSendingHelper::ReadReceivedFile(message, &iter);
     base::MessageLoop::current()->Quit();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
@@ -342,28 +478,6 @@ class ListenerThatExpectsFile : public IPC::Listener {
 
   void OnChannelError() override {
     NOTREACHED();
-  }
-
-  static std::string GetSendingFileContent() {
-    return "Hello";
-  }
-
-  static base::FilePath GetSendingFilePath() {
-    base::FilePath path;
-    bool ok = PathService::Get(base::DIR_CACHE, &path);
-    EXPECT_TRUE(ok);
-    return path.Append("ListenerThatExpectsFile.txt");
-  }
-
-  static void WriteAndSendFile(IPC::Sender* sender, base::File& file) {
-    std::string content = GetSendingFileContent();
-    file.WriteAtCurrentPos(content.data(), content.size());
-    file.Flush();
-    IPC::Message* message = new IPC::Message(
-        0, 2, IPC::Message::PRIORITY_NORMAL);
-    message->WriteAttachment(new IPC::internal::PlatformFileAttachment(
-        base::ScopedFD(file.TakePlatformFile())));
-    ASSERT_TRUE(sender->Send(message));
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -381,10 +495,10 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 
-  base::File file(ListenerThatExpectsFile::GetSendingFilePath(),
+  base::File file(HandleSendingHelper::GetSendingFilePath(),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-                  base::File::FLAG_READ);
-  ListenerThatExpectsFile::WriteAndSendFile(channel(), file);
+                      base::File::FLAG_READ);
+  HandleSendingHelper::WriteFileThenSend(channel(), file);
   base::MessageLoop::current()->Run();
 
   this->channel()->Close();
@@ -404,6 +518,64 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendPlatformHandleClient) {
 
   return 0;
 }
+
+class ListenerThatExpectsFileAndPipe : public IPC::Listener {
+ public:
+  ListenerThatExpectsFileAndPipe() : sender_(NULL) {}
+
+  ~ListenerThatExpectsFileAndPipe() override {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    PickleIterator iter(message);
+    HandleSendingHelper::ReadReceivedFile(message, &iter);
+    HandleSendingHelper::ReadReceivedPipe(message, &iter);
+    base::MessageLoop::current()->Quit();
+    ListenerThatExpectsOK::SendOK(sender_);
+    return true;
+  }
+
+  void OnChannelError() override { NOTREACHED(); }
+
+  void set_sender(IPC::Sender* sender) { sender_ = sender; }
+
+ private:
+  IPC::Sender* sender_;
+};
+
+TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
+  Init("IPCChannelMojoTestSendPlatformHandleAndPipeClient");
+
+  ListenerThatExpectsOK listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
+
+  base::File file(HandleSendingHelper::GetSendingFilePath(),
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+                      base::File::FLAG_READ);
+  TestingMessagePipe pipe;
+  HandleSendingHelper::WriteFileAndPipeThenSend(channel(), file, &pipe);
+
+  base::MessageLoop::current()->Run();
+  this->channel()->Close();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
+    IPCChannelMojoTestSendPlatformHandleAndPipeClient) {
+  ListenerThatExpectsFileAndPipe listener;
+  ChannelClient client(&listener,
+                       "IPCChannelMojoTestSendPlatformHandleAndPipeClient");
+  client.Connect();
+  listener.set_sender(client.channel());
+
+  base::MessageLoop::current()->Run();
+
+  return 0;
+}
+
 #endif
 
 }  // namespace

@@ -556,6 +556,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
 }
 
 bool ChannelPosix::Send(Message* message) {
+  DCHECK(!message->HasMojoHandles());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";

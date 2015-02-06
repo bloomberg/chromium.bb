@@ -45,6 +45,13 @@ unsigned MessageAttachmentSet::num_descriptors() const {
   });
 }
 
+unsigned MessageAttachmentSet::num_mojo_handles() const {
+  return std::count_if(attachments_.begin(), attachments_.end(),
+                       [](scoped_refptr<MessageAttachment> i) {
+    return i->GetType() == MessageAttachment::TYPE_MOJO_HANDLE;
+  });
+}
+
 unsigned MessageAttachmentSet::size() const {
   return static_cast<unsigned>(attachments_.size());
 }
@@ -52,7 +59,7 @@ unsigned MessageAttachmentSet::size() const {
 bool MessageAttachmentSet::AddAttachment(
     scoped_refptr<MessageAttachment> attachment) {
 #if defined(OS_POSIX)
-  if (attachment->GetType() != MessageAttachment::TYPE_PLATFORM_FILE ||
+  if (attachment->GetType() == MessageAttachment::TYPE_PLATFORM_FILE &&
       num_descriptors() == kMaxDescriptorsPerMessage) {
     DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
     return false;
@@ -102,6 +109,11 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
   return attachments_[index];
 }
 
+void MessageAttachmentSet::CommitAll() {
+  attachments_.clear();
+  consumed_descriptor_highwater_ = 0;
+}
+
 #if defined(OS_POSIX)
 
 void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {
@@ -118,11 +130,6 @@ bool MessageAttachmentSet::ContainsDirectoryDescriptor() const {
   }
 
   return false;
-}
-
-void MessageAttachmentSet::CommitAll() {
-  attachments_.clear();
-  consumed_descriptor_highwater_ = 0;
 }
 
 void MessageAttachmentSet::ReleaseFDsToClose(
