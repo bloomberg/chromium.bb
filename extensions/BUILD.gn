@@ -322,6 +322,7 @@ test("extensions_unittests") {
 test("extensions_browsertests") {
   sources = [
     "browser/api/audio/audio_apitest.cc",
+    "browser/api/bluetooth_socket/bluetooth_socket_apitest.cc",
     "browser/api/dns/dns_apitest.cc",
     "browser/api/hid/hid_apitest.cc",
     "browser/api/socket/socket_apitest.cc",
@@ -364,6 +365,7 @@ test("extensions_browsertests") {
     "//base/test:test_support",
     "//components/storage_monitor:test_support",
     "//content/test:test_support",
+    "//device/bluetooth:mocks",
     "//mojo/environment:chromium",
     "//testing/gmock",
     "//testing/gtest",

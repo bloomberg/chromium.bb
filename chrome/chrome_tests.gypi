@@ -33,7 +33,6 @@
       '../extensions/browser/api/bluetooth/bluetooth_apitest.cc',
       '../extensions/browser/api/bluetooth/bluetooth_private_apitest.cc',
       '../extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc',
-      '../extensions/browser/api/bluetooth_socket/bluetooth_socket_apitest.cc',
       '../extensions/browser/api/cast_channel/cast_channel_apitest.cc',
       '../extensions/browser/api/runtime/runtime_apitest.cc',
       '../extensions/browser/api/serial/serial_apitest.cc',

@@ -176,6 +176,7 @@
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
+        '<(DEPTH)/device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
@@ -184,6 +185,7 @@
       ],
       'sources': [
         'browser/api/audio/audio_apitest.cc',
+        'browser/api/bluetooth_socket/bluetooth_socket_apitest.cc',
         'browser/api/dns/dns_apitest.cc',
         'browser/api/hid/hid_apitest.cc',
         'browser/api/printer_provider/printer_provider_apitest.cc',
