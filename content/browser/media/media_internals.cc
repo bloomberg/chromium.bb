@@ -42,6 +42,7 @@ std::string EffectsToString(int effects) {
     { media::AudioParameters::ECHO_CANCELLER, "ECHO_CANCELLER" },
     { media::AudioParameters::DUCKING, "DUCKING" },
     { media::AudioParameters::KEYBOARD_MIC, "KEYBOARD_MIC" },
+    { media::AudioParameters::HOTWORD, "HOTWORD" },
   };
 
   std::string ret;
@@ -61,6 +62,22 @@ std::string EffectsToString(int effects) {
   }
 
   return ret;
+}
+
+std::string FormatToString(media::AudioParameters::Format format) {
+  switch (format) {
+    case media::AudioParameters::AUDIO_PCM_LINEAR:
+      return "pcm_linear";
+    case media::AudioParameters::AUDIO_PCM_LOW_LATENCY:
+      return "pcm_low_latency";
+    case media::AudioParameters::AUDIO_FAKE:
+      return "fake";
+    case media::AudioParameters::AUDIO_LAST_FORMAT:
+      break;
+  }
+
+  NOTREACHED();
+  return "unknown";
 }
 
 const char kAudioLogStatusKey[] = "status";
@@ -117,6 +134,7 @@ void AudioLogImpl::OnCreated(int component_id,
 
   dict.SetString(kAudioLogStatusKey, "created");
   dict.SetString("device_id", device_id);
+  dict.SetString("device_type", FormatToString(params.format()));
   dict.SetInteger("frames_per_buffer", params.frames_per_buffer());
   dict.SetInteger("sample_rate", params.sample_rate());
   dict.SetInteger("channels", params.channels());
