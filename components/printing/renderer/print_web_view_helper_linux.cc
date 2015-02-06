@@ -12,7 +12,6 @@
 #include "printing/page_size_margins.h"
 #include "printing/pdf_metafile_skia.h"
 #include "skia/ext/platform_device.h"
-#include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -162,7 +161,7 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect canvas_area =
       params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-  skia::VectorCanvas* canvas =
+  skia::PlatformCanvas* canvas =
       metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
   if (!canvas)
     return;

@@ -332,9 +332,6 @@ component("skia") {
     "ext/skia_utils_mac.h",
     "ext/skia_utils_win.cc",
     "ext/skia_utils_win.h",
-    "ext/vector_canvas.h",
-    "ext/vector_platform_device_emf_win.cc",
-    "ext/vector_platform_device_emf_win.h",
   ]
 
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
@@ -646,12 +643,7 @@ test("skia_unittests") {
     "ext/refptr_unittest.cc",
     "ext/skia_utils_ios_unittest.mm",
     "ext/skia_utils_mac_unittest.mm",
-    "ext/vector_canvas_unittest.cc",
   ]
-
-  if (!is_win) {
-    sources -= [ "ext/vector_canvas_unittest.cc" ]
-  }
 
   if (!is_win && !is_mac) {
     sources -= [ "ext/platform_canvas_unittest.cc" ]

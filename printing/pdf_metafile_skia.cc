@@ -10,7 +10,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "skia/ext/refptr.h"
-#include "skia/ext/vector_canvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -104,7 +103,7 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   return true;
 }
 
-skia::VectorCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
+skia::PlatformCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const float& scale_factor) {

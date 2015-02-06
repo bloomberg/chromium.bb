@@ -14,7 +14,6 @@
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-#include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace printing {
@@ -178,7 +177,7 @@ void PrintWebViewHelper::PrintPageInternal(
       frame->getPrintPageShrink(params.page_number);
   float scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
-  skia::VectorCanvas* canvas =
+  skia::PlatformCanvas* canvas =
       metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
   if (!canvas)
     return;

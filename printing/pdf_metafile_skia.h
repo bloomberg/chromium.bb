@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "printing/metafile.h"
-#include "skia/ext/vector_canvas.h"
+#include "skia/ext/platform_canvas.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -74,14 +74,14 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   scoped_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
 
   // This method calls StartPage and then returns an appropriate
-  // VectorCanvas implementation bound to the context created by
-  // StartPage or NULL on error.  The skia::VectorCanvas pointer that
+  // PlatformCanvas implementation bound to the context created by
+  // StartPage or NULL on error.  The skia::PlatformCanvas pointer that
   // is returned is owned by this PdfMetafileSkia object and does not
   // need to be ref()ed or unref()ed.  The canvas will remain valid
   // until FinishPage() or FinishDocument() is called.
-  skia::VectorCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
-                                                const gfx::Rect& content_area,
-                                                const float& scale_factor);
+  skia::PlatformCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
+                                                  const gfx::Rect& content_area,
+                                                  const float& scale_factor);
 
  private:
   scoped_ptr<PdfMetafileSkiaData> data_;
