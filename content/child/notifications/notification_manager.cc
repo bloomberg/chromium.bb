@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/notifications/notification_dispatcher.h"
@@ -212,11 +213,9 @@ scoped_refptr<NotificationImageLoader> NotificationManager::CreateImageLoader(
       new NotificationImageLoader(callback));
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&NotificationImageLoader::StartOnMainThread,
-                 pending_notification,
-                 image_url,
-                 CurrentWorkerId()));
+      FROM_HERE, base::Bind(&NotificationImageLoader::StartOnMainThread,
+                            pending_notification, image_url,
+                            base::ThreadTaskRunnerHandle::Get()));
 
   return pending_notification;
 }

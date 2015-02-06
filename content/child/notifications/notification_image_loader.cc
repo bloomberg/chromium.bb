@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/image_decoder.h"
-#include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
@@ -27,12 +26,14 @@ NotificationImageLoader::NotificationImageLoader(
 
 NotificationImageLoader::~NotificationImageLoader() {}
 
-void NotificationImageLoader::StartOnMainThread(const WebURL& image_url,
-                                                int worker_thread_id) {
+void NotificationImageLoader::StartOnMainThread(
+    const WebURL& image_url,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!url_loader_);
+  DCHECK(worker_task_runner);
 
-  worker_thread_id_ = worker_thread_id;
+  worker_task_runner_ = worker_task_runner;
 
   WebURLRequest request(image_url);
   request.setRequestContext(WebURLRequest::RequestContextImage);
@@ -79,14 +80,10 @@ void NotificationImageLoader::didFail(WebURLLoader* loader,
 
 void NotificationImageLoader::RunCallbackOnWorkerThread() {
   scoped_refptr<NotificationImageLoader> loader = make_scoped_refptr(this);
-  if (!worker_thread_id_) {
+  if (worker_task_runner_->BelongsToCurrentThread())
     callback_.Run(loader);
-    return;
-  }
-
-  WorkerTaskRunner::Instance()->PostTask(
-      worker_thread_id_,
-      base::Bind(callback_, loader));
+  else
+    worker_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, loader));
 }
 
 }  // namespace content

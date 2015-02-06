@@ -14,6 +14,10 @@
 
 class SkBitmap;
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 class WebURL;
 struct WebURLError;
@@ -41,9 +45,11 @@ class NotificationImageLoader
       const NotificationImageLoadedCallback& callback);
 
   // Asynchronously starts loading |image_url|.
-  // Must be called on the main thread. |worker_thread_id| identifies the id
-  // of the thread on which the callback should be executed upon completion.
-  void StartOnMainThread(const blink::WebURL& image_url, int worker_thread_id);
+  // Must be called on the main thread. The callback should be executed by
+  // |worker_task_runner|.
+  void StartOnMainThread(
+      const blink::WebURL& image_url,
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner);
 
   // Returns the SkBitmap resulting from decoding the loaded buffer.
   SkBitmap GetDecodedImage() const;
@@ -71,7 +77,7 @@ class NotificationImageLoader
   NotificationImageLoadedCallback callback_;
 
   scoped_ptr<blink::WebURLLoader> url_loader_;
-  int worker_thread_id_;
+  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
   bool completed_;
 
   std::vector<uint8_t> buffer_;
