@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "jni/AppBannerInfoBar_jni.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -37,8 +38,15 @@ AppBannerInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
+
+  // Trim down the app URL to the domain and registry.
+  std::string trimmed_url =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          app_url_,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
   base::android::ScopedJavaLocalRef<jstring> app_url =
-      base::android::ConvertUTF8ToJavaString(env, app_url_.spec());
+      base::android::ConvertUTF8ToJavaString(env, trimmed_url);
 
   infobar.Reset(Java_AppBannerInfoBar_createWebAppInfoBar(
       env,
