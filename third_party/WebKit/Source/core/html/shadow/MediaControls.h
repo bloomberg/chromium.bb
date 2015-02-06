@@ -85,6 +85,7 @@ private:
     void updatePlayState();
 
     enum HideBehaviorFlags {
+        IgnoreNone = 0,
         IgnoreVideoHover = 1 << 0,
         IgnoreFocus = 1 << 1,
         IgnoreControlsHover = 1 << 2
@@ -134,6 +135,7 @@ private:
     RawPtrWillBeMember<MediaControlPanelEnclosureElement> m_enclosure;
 
     Timer<MediaControls> m_hideMediaControlsTimer;
+    unsigned m_hideTimerBehaviorFlags;
     bool m_isMouseOverControls : 1;
     bool m_isPausedForScrubbing : 1;
     bool m_wasLastEventTouch : 1;

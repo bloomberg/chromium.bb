@@ -65,6 +65,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_durationDisplay(nullptr)
     , m_enclosure(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
+    , m_hideTimerBehaviorFlags(IgnoreNone)
     , m_isMouseOverControls(false)
     , m_isPausedForScrubbing(false)
     , m_wasLastEventTouch(false)
@@ -441,6 +442,12 @@ void MediaControls::defaultEventHandler(Event* event)
     m_wasLastEventTouch = event->isTouchEvent() || event->isGestureEvent()
         || (event->isMouseEvent() && toMouseEvent(event)->fromTouch());
 
+    // Add IgnoreControlsHover to m_hideTimerBehaviorFlags when we see a touch event,
+    // to allow the hide-timer to do the right thing when it fires.
+    // FIXME: Preferably we would only do this when we're actually handling the event
+    // here ourselves.
+    m_hideTimerBehaviorFlags |= m_wasLastEventTouch ? IgnoreControlsHover : IgnoreNone;
+
     if (event->type() == EventTypeNames::mouseover) {
         if (!containsRelatedTarget(event)) {
             m_isMouseOverControls = true;
@@ -474,13 +481,12 @@ void MediaControls::defaultEventHandler(Event* event)
 
 void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
 {
+    unsigned behaviorFlags = m_hideTimerBehaviorFlags | IgnoreFocus | IgnoreVideoHover;
+    m_hideTimerBehaviorFlags = IgnoreNone;
+
     if (mediaElement().togglePlayStateWillPlay())
         return;
 
-    unsigned behaviorFlags = IgnoreFocus | IgnoreVideoHover;
-    if (m_wasLastEventTouch) {
-        behaviorFlags |= IgnoreControlsHover;
-    }
     if (!shouldHideMediaControls(behaviorFlags))
         return;
 

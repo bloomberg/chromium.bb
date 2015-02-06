@@ -1,0 +1,10 @@
+Test video control element visibility when play by touch.
+
+This test only runs in DRT!
+
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+
+END OF TEST
+
