@@ -7,22 +7,22 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 53],
+          "position": [8, 57],
           "bounds": [200, 200],
           "drawsContent": true,
           "repaintRects": [
-            [0, 0, 47, 533]
+            [0, 0, 47, 615]
           ],
           "children": [
             {
               "bounds": [185, 185],
               "children": [
                 {
-                  "bounds": [185, 533],
+                  "bounds": [185, 615],
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 0, 47, 533]
+                    [0, 0, 47, 615]
                   ],
                   "children": [
                     {

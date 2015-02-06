@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x108
-  RenderBlock {HTML} at (0,0) size 800x108
-    RenderBody {BODY} at (0,16) size 800x72
-      RenderBlock {P} at (0,0) size 800x32
-        RenderText {#text} at (0,0) size 786x32
+layer at (0,0) size 800x112
+  RenderBlock {HTML} at (0,0) size 800x112
+    RenderBody {BODY} at (0,16) size 800x76
+      RenderBlock {P} at (0,0) size 800x36
+        RenderText {#text} at (0,0) size 786x36
           text run at (0,0) width 786: "When a block element becomes a float we should not strip anonymous blocks wrapping its inline siblings if there are other"
-          text run at (0,16) width 90: "blocks on the "
-          text run at (89,16) width 587: "line. In this test case, the block is wrapped in an anonymous block as part of a continuation."
-layer at (0,68) size 800x20
-  RenderBlock (relative positioned) {DIV} at (0,52) size 800x20 [bgcolor=#CCCCCC]
+          text run at (0,18) width 90: "blocks on the "
+          text run at (89,18) width 587: "line. In this test case, the block is wrapped in an anonymous block as part of a continuation."
+layer at (0,72) size 800x20
+  RenderBlock (relative positioned) {DIV} at (0,56) size 800x20 [bgcolor=#CCCCCC]
     RenderBlock (anonymous) at (0,0) size 800x0
       RenderInline {SPAN} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
