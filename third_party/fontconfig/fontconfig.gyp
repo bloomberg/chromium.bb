@@ -26,6 +26,7 @@
         }],
       ],
       'sources': [
+        'chromium/empty.cc',
         'src/src/fcarch.h',
         'src/src/fcatomic.c',
         'src/src/fcblanks.c',
