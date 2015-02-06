@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_util.h"
@@ -343,10 +344,13 @@ void BackgroundContentsService::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
+      const base::TimeTicks start_time = base::TimeTicks::Now();
       Profile* profile = content::Source<Profile>(source).ptr();
       LoadBackgroundContentsFromManifests(profile);
       LoadBackgroundContentsFromPrefs(profile);
       SendChangeNotification(profile);
+      UMA_HISTOGRAM_TIMES("Extensions.BackgroundContentsServiceStartupTime",
+                          base::TimeTicks::Now() - start_time);
       break;
     }
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:

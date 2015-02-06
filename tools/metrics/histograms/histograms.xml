@@ -7953,6 +7953,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BackgroundContentsServiceStartupTime"
+    units="milliseconds">
+  <owner>yoz@chromium.org</owner>
+  <summary>
+    Time taken to load BackgroundContents for apps at startup when the extension
+    system notifies that it is ready.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BackgroundPageLoadTime" units="milliseconds">
   <owner>kalman@chromium.org</owner>
   <summary>The time for an extension's background page to load.</summary>
@@ -8996,6 +9005,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The permissions present in an extension when installation from the web store
     was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ProcessManagerStartupHostsTime"
+    units="milliseconds">
+  <owner>yoz@chromium.org</owner>
+  <summary>
+    The time taken to start up persistent background pages for extensions in
+    ExtensionProcessManager when the extension system notifies that it is ready.
   </summary>
 </histogram>
 

@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -757,7 +757,10 @@ void ProcessManager::Observe(int type,
     case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
       // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
       // of a notification.
+      const base::TimeTicks start_time = base::TimeTicks::Now();
       MaybeCreateStartupBackgroundHosts();
+      UMA_HISTOGRAM_TIMES("Extensions.ProcessManagerStartupHostsTime",
+                          base::TimeTicks::Now() - start_time);
       break;
     }
 
