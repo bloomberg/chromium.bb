@@ -13,6 +13,14 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
+
+AppBannerInfoBar::AppBannerInfoBar(
+    scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
+    const base::android::ScopedJavaGlobalRef<jobject>& japp_data)
+    : ConfirmInfoBar(delegate.Pass()),
+      japp_data_(japp_data) {
+}
+
 AppBannerInfoBar::AppBannerInfoBar(
     scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
     const GURL& app_url)
@@ -38,22 +46,30 @@ AppBannerInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
+  if (!japp_data_.is_null()) {
+    infobar.Reset(Java_AppBannerInfoBar_createNativeAppInfoBar(
+        env,
+        reinterpret_cast<intptr_t>(this),
+        app_title.obj(),
+        java_bitmap.obj(),
+        japp_data_.obj()));
+  } else {
+    // Trim down the app URL to the domain and registry.
+    std::string trimmed_url =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            app_url_,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-  // Trim down the app URL to the domain and registry.
-  std::string trimmed_url =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          app_url_,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    base::android::ScopedJavaLocalRef<jstring> app_url =
+        base::android::ConvertUTF8ToJavaString(env, trimmed_url);
 
-  base::android::ScopedJavaLocalRef<jstring> app_url =
-      base::android::ConvertUTF8ToJavaString(env, trimmed_url);
-
-  infobar.Reset(Java_AppBannerInfoBar_createWebAppInfoBar(
-      env,
-      reinterpret_cast<intptr_t>(this),
-      app_title.obj(),
-      java_bitmap.obj(),
-      app_url.obj()));
+    infobar.Reset(Java_AppBannerInfoBar_createWebAppInfoBar(
+        env,
+        reinterpret_cast<intptr_t>(this),
+        app_title.obj(),
+        java_bitmap.obj(),
+        app_url.obj()));
+  }
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;

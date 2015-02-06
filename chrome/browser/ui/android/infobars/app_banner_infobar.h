@@ -17,6 +17,11 @@ class AppBannerInfoBarDelegate;
 
 class AppBannerInfoBar : public ConfirmInfoBar {
  public:
+  // Constructs an AppBannerInfoBar promoting a native app.
+  AppBannerInfoBar(
+      scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
+      const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
+
   // Constructs an AppBannerInfoBar promoting a web app.
   AppBannerInfoBar(
       scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
@@ -28,6 +33,9 @@ class AppBannerInfoBar : public ConfirmInfoBar {
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+
+  // Native app: Details about the app.
+  base::android::ScopedJavaGlobalRef<jobject> japp_data_;
 
   // Web app: URL for the app.
   GURL app_url_;

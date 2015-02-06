@@ -85,11 +85,14 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                           jobject obj,
                           jobject jweb_contents);
 
-  // Fetches the icon at the given URL asynchronously.
-  // Returns |false| if this couldn't be kicked off.
-  bool FetchIcon(JNIEnv* env,
-                 jobject obj,
-                 jstring jimage_url);
+  // Called when the Java-side has retrieved information for the app.
+  // Returns |false| if an icon fetch couldn't be kicked off.
+  bool OnAppDetailsRetrieved(JNIEnv* env,
+                             jobject obj,
+                             jobject japp_data,
+                             jstring japp_title,
+                             jstring japp_package,
+                             jstring jicon_url);
 
   // Fetches the icon at the given URL asynchronously.
   // Returns |false| if this couldn't be kicked off.
@@ -154,6 +157,9 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   scoped_ptr<SkBitmap> app_icon_;
 
   content::Manifest web_app_data_;
+
+  base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
+  std::string native_app_package_;
 
   // Weak pointer to the InfoBar that is being managed.
   AppBannerInfoBar* weak_infobar_ptr_;

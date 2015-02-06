@@ -61,6 +61,8 @@ import org.chromium.ui.base.WindowAndroid.IntentCallback;
  * The layout of the banner, which includes its widget sizes, may change when the screen is rotated
  * to account for less screen real estate.  This means that all of the View's widgets and cached
  * dimensions must be rebuilt from scratch.
+ *
+ * TODO(dfalcantara): Nuke this file.
  */
 public class AppBannerView extends SwipableOverlayView
         implements View.OnClickListener, InstallerDelegate.Observer, IntentCallback {
@@ -244,24 +246,13 @@ public class AppBannerView extends SwipableOverlayView
 
         // Configure the controls with the package information.
         mTitleView.setText(mAppData.title());
-        mIconView.setImageDrawable(mAppData.icon());
         mRatingView.initialize(mAppData.rating());
-        setAccessibilityInformation();
 
         // Determine how much the user can drag sideways before their touch is considered a scroll.
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 
         // Set up the install button.
         updateButtonStatus();
-    }
-
-    /**
-     * Creates a succinct description about the app being advertised.
-     */
-    private void setAccessibilityInformation() {
-        String bannerText = getContext().getString(
-                R.string.app_banner_view_accessibility, mAppData.title(), mAppData.rating());
-        setContentDescription(bannerText);
     }
 
     @Override

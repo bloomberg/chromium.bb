@@ -78,7 +78,12 @@ void AppBannerManager::Block() const {
   if (!web_contents())
     return;
 
-  if (!web_app_data_.IsEmpty()) {
+  if (!native_app_data_.is_null()) {
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents(), web_contents()->GetURL(),
+        native_app_package_,
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
+  } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents(), web_contents()->GetURL(),
         web_app_data_.start_url.spec(),
@@ -132,6 +137,8 @@ void AppBannerManager::DidNavigateMainFrame(
   app_title_ = base::string16();
   app_icon_.reset();
   web_app_data_ = content::Manifest();
+  native_app_data_.Reset();
+  native_app_package_ = std::string();
 }
 
 void AppBannerManager::DidFinishLoad(
@@ -247,7 +254,12 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
   InfoBarService* service = InfoBarService::FromWebContents(web_contents());
 
   weak_infobar_ptr_ = nullptr;
-  if (!web_app_data_.IsEmpty()){
+  if (!native_app_data_.is_null()) {
+    weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForNativeApp(
+        service,
+        this,
+        native_app_data_);
+  } else if (!web_app_data_.IsEmpty()){
     weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForWebApp(
         service,
         this,
@@ -285,16 +297,25 @@ void AppBannerManager::OnDidRetrieveMetaTagContent(
       ConvertUTF8ToJavaString(env, expected_url.spec()));
   ScopedJavaLocalRef<jstring> jpackage(
       ConvertUTF8ToJavaString(env, tag_content));
-  Java_AppBannerManager_prepareBanner(env,
-                                      jobj.obj(),
-                                      jurl.obj(),
-                                      jpackage.obj());
+  Java_AppBannerManager_fetchAppDetails(env,
+                                        jobj.obj(),
+                                        jurl.obj(),
+                                        jpackage.obj());
 }
 
-bool AppBannerManager::FetchIcon(JNIEnv* env,
-                                 jobject obj,
-                                 jstring jimage_url) {
-  std::string image_url = ConvertJavaStringToUTF8(env, jimage_url);
+bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
+                                             jobject obj,
+                                             jobject japp_data,
+                                             jstring japp_title,
+                                             jstring japp_package,
+                                             jstring jicon_url) {
+  if (validated_url_ != web_contents()->GetURL())
+    return false;
+
+  std::string image_url = ConvertJavaStringToUTF8(env, jicon_url);
+  app_title_ = ConvertJavaStringToUTF16(env, japp_title);
+  native_app_package_ = ConvertJavaStringToUTF8(env, japp_package);
+  native_app_data_.Reset(env, japp_data);
   return FetchIcon(GURL(image_url));
 }
 

@@ -43,6 +43,13 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
     virtual gfx::Image GetIcon() const = 0;
   };
 
+  // Creates a banner for the current page that promotes a native app.
+  // May return nullptr if the the infobar couldn't be created.
+  static AppBannerInfoBar* CreateForNativeApp(
+      infobars::InfoBarManager* infobar_manager,
+      AppDelegate* delegate,
+      const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
+
   // Creates a banner for the current page that promotes a web app.
   // May return nullptr if the the infobar couldn't be created.
   static AppBannerInfoBar* CreateForWebApp(

@@ -15,6 +15,18 @@
 namespace banners {
 
 // static
+AppBannerInfoBar* AppBannerInfoBarDelegate::CreateForNativeApp(
+    infobars::InfoBarManager* infobar_manager,
+    AppDelegate* app_delegate,
+    const base::android::ScopedJavaGlobalRef<jobject>& japp_data) {
+  scoped_ptr<AppBannerInfoBarDelegate> delegate(new AppBannerInfoBarDelegate(
+      app_delegate));
+  AppBannerInfoBar* infobar = new AppBannerInfoBar(delegate.Pass(), japp_data);
+  return infobar_manager->AddInfoBar(make_scoped_ptr(infobar))
+      ? infobar : nullptr;
+}
+
+// static
 AppBannerInfoBar* AppBannerInfoBarDelegate::CreateForWebApp(
     infobars::InfoBarManager* infobar_manager,
     AppDelegate* app_delegate,
