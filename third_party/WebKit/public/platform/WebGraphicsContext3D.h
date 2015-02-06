@@ -483,8 +483,8 @@ public:
 
     // OpenGL ES 3.0 functions not represented by pre-existing extensions
     virtual void beginTransformFeedback(WGC3Denum primitiveMode) { }
-    virtual void bindBufferBase(WGC3Denum target, WGC3Duint index, WGC3Duint buffer) { }
-    virtual void bindBufferRange(WGC3Denum target, WGC3Duint index, WGC3Duint buffer, WGC3Dintptr offset, WGC3Dsizeiptr size) { }
+    virtual void bindBufferBase(WGC3Denum target, WGC3Duint index, WebGLId buffer) { }
+    virtual void bindBufferRange(WGC3Denum target, WGC3Duint index, WebGLId buffer, WGC3Dintptr offset, WGC3Dsizeiptr size) { }
     virtual void bindSampler(WGC3Duint unit, WebGLId sampler) { }
     virtual void bindTransformFeedback(WGC3Denum target, WebGLId transformfeedback) { }
     virtual void clearBufferfi(WGC3Denum buffer, WGC3Dint drawbuffer, WGC3Dfloat depth, WGC3Dint stencil) { }
@@ -504,36 +504,36 @@ public:
     virtual void endTransformFeedback(void) { }
     virtual WebGLId fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return 0; }
     virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment, WGC3Duint texture, WGC3Dint level, WGC3Dint layer) { }
-    virtual void getActiveUniformBlockName(WGC3Duint program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
-    virtual void getActiveUniformBlockiv(WGC3Duint program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getActiveUniformsiv(WGC3Duint program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
-    virtual WGC3Dint getFragDataLocation(WGC3Duint program, const WGC3Dchar *name) { return -1; }
+    virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
+    virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
+    virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
+    virtual WGC3Dint getFragDataLocation(WebGLId program, const WGC3Dchar *name) { return -1; }
     virtual void getInternalformativ(WGC3Denum target, WGC3Denum internalformat, WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dint *params) { }
-    virtual void getSamplerParameterfv(WGC3Duint sampler, WGC3Denum pname, WGC3Dfloat *params) { }
-    virtual void getSamplerParameteriv(WGC3Duint sampler, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getTransformFeedbackVarying(WGC3Duint program, WGC3Duint index, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dsizei *size, WGC3Denum *type, WGC3Dchar *name) { }
-    virtual WGC3Duint getUniformBlockIndex(WGC3Duint program, const WGC3Dchar *uniformBlockName) { return 0xFFFFFFFFu; /* GL_INVALID_INDEX */ }
-    virtual void getUniformIndices(WGC3Duint program, WGC3Dsizei uniformCount, const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices) { }
-    virtual void getUniformuiv(WGC3Duint program, WGC3Dint location, WGC3Duint *params) { }
+    virtual void getSamplerParameterfv(WebGLId sampler, WGC3Denum pname, WGC3Dfloat *params) { }
+    virtual void getSamplerParameteriv(WebGLId sampler, WGC3Denum pname, WGC3Dint *params) { }
+    virtual void getTransformFeedbackVarying(WebGLId program, WGC3Duint index, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dsizei *size, WGC3Denum *type, WGC3Dchar *name) { }
+    virtual WGC3Duint getUniformBlockIndex(WebGLId program, const WGC3Dchar *uniformBlockName) { return 0xFFFFFFFFu; /* GL_INVALID_INDEX */ }
+    virtual void getUniformIndices(WebGLId program, WGC3Dsizei uniformCount, const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices) { }
+    virtual void getUniformuiv(WebGLId program, WGC3Dint location, WGC3Duint *params) { }
     virtual void getVertexAttribIiv(WGC3Duint index, WGC3Denum pname, WGC3Dint *params) { }
     virtual void getVertexAttribIuiv(WGC3Duint index, WGC3Denum pname, WGC3Duint *params) { }
     virtual void invalidateFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments) { }
     virtual void invalidateSubFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
     virtual WGC3Dboolean isSampler(WebGLId sampler) { return false; }
     virtual WGC3Dboolean isSync(WebGLId sync) { return false; }
-    virtual WGC3Dboolean isTransformFeedback(WGC3Duint id) { return false; }
+    virtual WGC3Dboolean isTransformFeedback(WebGLId transformfeedback) { return false; }
     virtual void pauseTransformFeedback(void) { }
-    virtual void programParameteri(WGC3Duint program, WGC3Denum pname, WGC3Dint value) { }
+    virtual void programParameteri(WebGLId program, WGC3Denum pname, WGC3Dint value) { }
     virtual void readBuffer(WGC3Denum src) { }
     virtual void resumeTransformFeedback(void) { }
-    virtual void samplerParameterf(WGC3Duint sampler, WGC3Denum pname, WGC3Dfloat param) { }
-    virtual void samplerParameterfv(WGC3Duint sampler, WGC3Denum pname, const WGC3Dfloat *param) { }
-    virtual void samplerParameteri(WGC3Duint sampler, WGC3Denum pname, WGC3Dint param) { }
-    virtual void samplerParameteriv(WGC3Duint sampler, WGC3Denum pname, const WGC3Dint *param) { }
+    virtual void samplerParameterf(WebGLId sampler, WGC3Denum pname, WGC3Dfloat param) { }
+    virtual void samplerParameterfv(WebGLId sampler, WGC3Denum pname, const WGC3Dfloat *param) { }
+    virtual void samplerParameteri(WebGLId sampler, WGC3Denum pname, WGC3Dint param) { }
+    virtual void samplerParameteriv(WebGLId sampler, WGC3Denum pname, const WGC3Dint *param) { }
     virtual void texImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void *pixels) { }
     virtual void texStorage3D(WGC3Denum target, WGC3Dsizei levels, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth) { }
     virtual void texSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format, WGC3Denum type, const void *pixels) { }
-    virtual void transformFeedbackVaryings(WGC3Duint program, WGC3Dsizei count, const WGC3Dchar *const*varyings, WGC3Denum bufferMode) { }
+    virtual void transformFeedbackVaryings(WebGLId program, WGC3Dsizei count, const WGC3Dchar *const*varyings, WGC3Denum bufferMode) { }
     virtual void uniform1ui(WGC3Dint location, WGC3Duint x) { }
     virtual void uniform1uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
     virtual void uniform2ui(WGC3Dint location, WGC3Duint x, WGC3Duint y) { }
@@ -542,7 +542,7 @@ public:
     virtual void uniform3uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
     virtual void uniform4ui(WGC3Dint location, WGC3Duint x, WGC3Duint y, WGC3Duint z, WGC3Duint w) { }
     virtual void uniform4uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
-    virtual void uniformBlockBinding(WGC3Duint program, WGC3Duint uniformBlockIndex, WGC3Duint uniformBlockBinding) { }
+    virtual void uniformBlockBinding(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Duint uniformBlockBinding) { }
     virtual void uniformMatrix2x3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
     virtual void uniformMatrix2x4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
     virtual void uniformMatrix3x2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }

@@ -857,7 +857,7 @@ protected:
     bool validateStencilOrDepthFunc(const char* functionName, GLenum);
 
     // Helper function for texParameterf and texParameteri.
-    void texParameter(GLenum target, GLenum pname, GLfloat parami, GLint paramf, bool isFloat);
+    void texParameter(GLenum target, GLenum pname, GLfloat paramf, GLint parami, bool isFloat);
 
     // Helper function to print GL errors to console.
     void printGLErrorToConsole(const String&);

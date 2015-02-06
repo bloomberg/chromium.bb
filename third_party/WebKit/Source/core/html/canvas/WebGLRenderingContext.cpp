@@ -27,6 +27,7 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
 #include "core/html/canvas/CHROMIUMSubscribeUniform.h"
 #include "core/html/canvas/ContextAttributeHelpers.h"
@@ -54,7 +55,6 @@
 #include "core/html/canvas/WebGLLoseContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/CheckedInt.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
