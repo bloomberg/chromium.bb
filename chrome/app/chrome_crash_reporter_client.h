@@ -58,7 +58,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #endif
 
 #if defined(OS_ANDROID)
-  virtual int GetAndroidMinidumpDescriptor() override;
+  int GetAndroidMinidumpDescriptor() override;
 #endif
 
 #if defined(OS_MACOSX)

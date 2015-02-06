@@ -19,13 +19,13 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
 
  protected:
   ChromeMainDelegateAndroid();
-  virtual ~ChromeMainDelegateAndroid();
+  ~ChromeMainDelegateAndroid() override;
 
-  virtual bool BasicStartupComplete(int* exit_code) override;
+  bool BasicStartupComplete(int* exit_code) override;
 
-  virtual void SandboxInitialized(const std::string& process_type) override;
+  void SandboxInitialized(const std::string& process_type) override;
 
-  virtual int RunProcess(
+  int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
 

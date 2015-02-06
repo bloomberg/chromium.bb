@@ -16,7 +16,7 @@ class BookmarkImageServiceFactory : public BrowserContextKeyedServiceFactory {
   static BookmarkImageService* GetForBrowserContext(
       content::BrowserContext* context);
 
-  virtual ~BookmarkImageServiceFactory();
+  ~BookmarkImageServiceFactory() override;
 
  private:
   friend struct DefaultSingletonTraits<BookmarkImageServiceFactory>;

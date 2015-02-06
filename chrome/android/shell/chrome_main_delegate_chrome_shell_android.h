@@ -10,9 +10,9 @@
 class ChromeMainDelegateChromeShellAndroid : public ChromeMainDelegateAndroid {
  public:
   ChromeMainDelegateChromeShellAndroid();
-  virtual ~ChromeMainDelegateChromeShellAndroid();
+  ~ChromeMainDelegateChromeShellAndroid() override;
 
-  virtual bool BasicStartupComplete(int* exit_code) override;
+  bool BasicStartupComplete(int* exit_code) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateChromeShellAndroid);
