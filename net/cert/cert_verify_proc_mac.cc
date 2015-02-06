@@ -490,8 +490,8 @@ int CertVerifyProcMac::VerifyInternal(
   // array of certificates, the first of which is the certificate we're
   // verifying, and the subsequent (optional) certificates are used for
   // chain building.
-  ScopedCFTypeRef<CFMutableArrayRef> cert_array(CFArrayCreateMutableCopy(
-      kCFAllocatorDefault, 0, cert->CreateOSCertChainForCert()));
+  ScopedCFTypeRef<CFMutableArrayRef> cert_array(
+      cert->CreateOSCertChainForCert());
 
   // Serialize all calls that may use the Keychain, to work around various
   // issues in OS X 10.6+ with multi-threaded access to Security.framework.

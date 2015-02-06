@@ -251,12 +251,12 @@ class NET_EXPORT X509Certificate
   // Does this certificate's usage allow SSL client authentication?
   bool SupportsSSLClientAuth() const;
 
-  // Returns a new CFArrayRef containing this certificate and its intermediate
-  // certificates in the form expected by Security.framework and Keychain
-  // Services, or NULL on failure.
+  // Returns a new CFMutableArrayRef containing this certificate and its
+  // intermediate certificates in the form expected by Security.framework
+  // and Keychain Services, or NULL on failure.
   // The first item in the array will be this certificate, followed by its
   // intermediates, if any.
-  CFArrayRef CreateOSCertChainForCert() const;
+  CFMutableArrayRef CreateOSCertChainForCert() const;
 #endif
 
   // Do any of the given issuer names appear in this cert's chain of trust?

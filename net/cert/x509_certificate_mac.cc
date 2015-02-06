@@ -449,7 +449,7 @@ bool X509Certificate::SupportsSSLClientAuth() const {
   return true;
 }
 
-CFArrayRef X509Certificate::CreateOSCertChainForCert() const {
+CFMutableArrayRef X509Certificate::CreateOSCertChainForCert() const {
   CFMutableArrayRef cert_list =
       CFArrayCreateMutable(kCFAllocatorDefault, 0,
                            &kCFTypeArrayCallBacks);
