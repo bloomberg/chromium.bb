@@ -3146,7 +3146,8 @@ CanvasRenderingContext2DResource.PathMethods = [
     "bezierCurveTo",
     "arcTo",
     "arc",
-    "rect"
+    "rect",
+    "ellipse"
 ];
 
 /**
@@ -3158,7 +3159,8 @@ CanvasRenderingContext2DResource.TransformationMatrixMethods = [
     "rotate",
     "translate",
     "transform",
-    "setTransform"
+    "setTransform",
+    "resetTransform"
 ];
 
 /**
@@ -3296,7 +3298,7 @@ CanvasRenderingContext2DResource.prototype = {
     /**
      * @param {!Call} call
      */
-    pushCall_setTransform: function(call)
+    pushCall_setOrResetTransform: function(call)
     {
         var saveCallIndex = this._lastIndexOfMatchingSaveCall();
         var index = this._lastIndexOfAnyCall(CanvasRenderingContext2DResource.PathMethods);
@@ -3408,14 +3410,14 @@ CanvasRenderingContext2DResource.prototype = {
             lastIndexOfBeginPath = this._lastIndexOfAnyCall(["beginPath"], index - 1);
         }
 
-        // Remove all TRASFORMATION MATRIX methods before restore() or setTransform() but after any PATH or corresponding save() method.
-        var lastRestore = this._lastIndexOfAnyCall(["restore", "setTransform"]);
+        // Remove all TRASFORMATION MATRIX methods before restore(), setTransform() or resetTransform() but after any PATH or corresponding save() method.
+        var lastRestore = this._lastIndexOfAnyCall(["restore", "setTransform", "resetTransform"]);
         while (lastRestore !== -1) {
             var saveCallIndex = this._lastIndexOfMatchingSaveCall(lastRestore - 1);
             var index = this._lastIndexOfAnyCall(CanvasRenderingContext2DResource.PathMethods, lastRestore - 1);
             index = Math.max(index, saveCallIndex);
             this._removeCallsFromLog(CanvasRenderingContext2DResource.TransformationMatrixMethods, index + 1, lastRestore);
-            lastRestore = this._lastIndexOfAnyCall(["restore", "setTransform"], index - 1);
+            lastRestore = this._lastIndexOfAnyCall(["restore", "setTransform", "resetTransform"], index - 1);
         }
 
         // Remove all save-restore consecutive pairs.
@@ -3481,7 +3483,7 @@ CanvasRenderingContext2DResource.prototype = {
             wrapFunctions["createPattern"] = Resource.WrapFunction.resourceFactoryMethod(LogEverythingResource, "CanvasPattern");
 
             for (var i = 0, methodName; methodName = CanvasRenderingContext2DResource.TransformationMatrixMethods[i]; ++i)
-                stateModifyingWrapFunction(methodName, methodName === "setTransform" ? this.pushCall_setTransform : undefined);
+                stateModifyingWrapFunction(methodName, (methodName === "setTransform" || methodName === "resetTransform") ? this.pushCall_setOrResetTransform : undefined);
             for (var i = 0, methodName; methodName = CanvasRenderingContext2DResource.PathMethods[i]; ++i)
                 stateModifyingWrapFunction(methodName, methodName === "beginPath" ? this.pushCall_beginPath : undefined);
 

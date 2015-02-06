@@ -5,11 +5,8 @@ Test to catch Canvas 2D API changes. If this test should ever fail, we should re
 [page] clearHitRegions
 [page] currentTransform
 [page] direction
-[page] drawFocusIfNeeded
-[page] ellipse
 [page] isContextLost
 [page] removeHitRegion
-[page] resetTransform
 [page] scrollPathIntoView
 [page] webkitImageSmoothingEnabled
 [page] New properties and functions of CanvasGradient object that should be manually examined (should be empty to pass the test):
