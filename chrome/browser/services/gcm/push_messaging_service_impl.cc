@@ -109,7 +109,7 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
       static_cast<PushMessagingServiceImpl*>(
           gcm_service->push_messaging_service());
 
-  push_service->IncreasePushRegistrationCount(count);
+  push_service->IncreasePushRegistrationCount(count, false /* is_pending */);
 }
 
 PushMessagingServiceImpl::PushMessagingServiceImpl(
@@ -118,6 +118,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(
     : gcm_profile_service_(gcm_profile_service),
       profile_(profile),
       push_registration_count_(0),
+      pending_push_registration_count_(0),
       weak_factory_(this) {
 }
 
@@ -126,24 +127,35 @@ PushMessagingServiceImpl::~PushMessagingServiceImpl() {
   // then we should call RemoveAppHandler.
 }
 
-void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add) {
+void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add,
+                                                             bool is_pending) {
   DCHECK(add > 0);
-  if (push_registration_count_ == 0) {
+  if (push_registration_count_ + pending_push_registration_count_ == 0) {
     gcm_profile_service_->driver()->AddAppHandler(
         kPushMessagingApplicationIdPrefix, this);
   }
-  push_registration_count_ += add;
-  profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                   push_registration_count_);
+  if (is_pending) {
+    pending_push_registration_count_ += add;
+  } else {
+    push_registration_count_ += add;
+    profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
+                                     push_registration_count_);
+  }
 }
 
-void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract) {
+void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract,
+                                                             bool was_pending) {
   DCHECK(subtract > 0);
-  push_registration_count_ -= subtract;
-  DCHECK(push_registration_count_ >= 0);
-  profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                   push_registration_count_);
-  if (push_registration_count_ == 0) {
+  if (was_pending) {
+    pending_push_registration_count_ -= subtract;
+    DCHECK(pending_push_registration_count_ >= 0);
+  } else {
+    push_registration_count_ -= subtract;
+    DCHECK(push_registration_count_ >= 0);
+    profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
+                                     push_registration_count_);
+  }
+  if (push_registration_count_ + pending_push_registration_count_ == 0) {
     gcm_profile_service_->driver()->RemoveAppHandler(
         kPushMessagingApplicationIdPrefix);
   }
@@ -423,7 +435,8 @@ void PushMessagingServiceImpl::RegisterFromDocument(
       requesting_origin, service_worker_registration_id);
   DCHECK(application_id.IsValid());
 
-  if (push_registration_count_ >= kMaxRegistrations) {
+  if (push_registration_count_ + pending_push_registration_count_
+      >= kMaxRegistrations) {
     RegisterEnd(callback,
                 std::string(),
                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
@@ -500,6 +513,7 @@ void PushMessagingServiceImpl::RegisterFromWorker(
     return;
   }
 
+  IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
   gcm_profile_service_->driver()->Register(
       application_id.ToString(), sender_ids,
@@ -521,8 +535,6 @@ void PushMessagingServiceImpl::RegisterEnd(
     const std::string& registration_id,
     content::PushRegistrationStatus status) {
   callback.Run(registration_id, status);
-  if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE)
-    IncreasePushRegistrationCount(1);
 }
 
 void PushMessagingServiceImpl::DidRegister(
@@ -530,10 +542,13 @@ void PushMessagingServiceImpl::DidRegister(
     const std::string& registration_id,
     GCMClient::Result result) {
   content::PushRegistrationStatus status =
-      result == GCMClient::SUCCESS
-          ? content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE
-          : content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
+      content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
+  if (result == GCMClient::SUCCESS) {
+    status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
+    IncreasePushRegistrationCount(1, false /* is_pending */);
+  }
   RegisterEnd(callback, registration_id, status);
+  DecreasePushRegistrationCount(1, true /* was_pending */);
 }
 
 void PushMessagingServiceImpl::DidRequestPermission(
@@ -552,8 +567,8 @@ void PushMessagingServiceImpl::DidRequestPermission(
   if (!gcm_profile_service_->driver())
     return;
 
+  IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
-
   gcm_profile_service_->driver()->Register(
       application_id.ToString(),
       sender_ids,
@@ -614,7 +629,7 @@ void PushMessagingServiceImpl::DidUnregister(
   }
 
   if (result == GCMClient::SUCCESS)
-    DecreasePushRegistrationCount(1);
+    DecreasePushRegistrationCount(1, false /* was_pending */);
 }
 
 bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {

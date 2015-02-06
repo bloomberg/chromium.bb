@@ -75,8 +75,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SetProfileForTesting(Profile* profile);
 
  private:
-  void IncreasePushRegistrationCount(int add);
-  void DecreasePushRegistrationCount(int subtract);
+  // A registration is pending until it has succeeded or failed.
+  void IncreasePushRegistrationCount(int add, bool is_pending);
+  void DecreasePushRegistrationCount(int subtract, bool was_pending);
 
   void DeliverMessageCallback(const PushMessagingApplicationId& application_id,
                               const GCMClient::IncomingMessage& message,
@@ -120,15 +121,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Helper method that checks if a given origin is allowed to use Push.
   bool HasPermission(const GURL& origin);
 
-  // Adds this service as an app handler to the GCMDriver if it has not been
-  // added yet.
-  void AddAppHandlerIfNecessary();
-
   GCMProfileService* gcm_profile_service_;  // It owns us.
 
   Profile* profile_;  // It owns our owner.
 
   int push_registration_count_;
+  int pending_push_registration_count_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 
