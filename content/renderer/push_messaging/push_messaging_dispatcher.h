@@ -10,8 +10,8 @@
 #include "base/id_map.h"
 #include "content/public/common/push_messaging_status.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/WebPushClient.h"
-#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushClient.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 class GURL;
 

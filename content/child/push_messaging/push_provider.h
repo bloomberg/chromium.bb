@@ -12,8 +12,8 @@
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/push_messaging_status.h"
-#include "third_party/WebKit/public/platform/WebPushError.h"
-#include "third_party/WebKit/public/platform/WebPushProvider.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushProvider.h"
 
 class GURL;
 

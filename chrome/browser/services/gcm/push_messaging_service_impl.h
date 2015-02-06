@@ -11,7 +11,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_messaging_status.h"
-#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 class Profile;
 

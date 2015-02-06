@@ -13,8 +13,8 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/push_messaging_messages.h"
-#include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushRegistration.h"
 
 namespace content {
 namespace {

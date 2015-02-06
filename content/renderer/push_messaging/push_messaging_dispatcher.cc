@@ -10,10 +10,10 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/public/platform/WebPushError.h"
-#include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushRegistration.h"
 #include "url/gurl.h"
 
 using blink::WebString;

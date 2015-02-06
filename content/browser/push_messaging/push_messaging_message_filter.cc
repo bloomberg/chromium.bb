@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/child_process_host.h"
-#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace content {
 namespace {

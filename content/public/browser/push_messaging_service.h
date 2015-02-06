@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/common/push_messaging_status.h"
-#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -7,8 +7,8 @@
 
 #include "content/public/common/push_messaging_status.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebPushError.h"
-#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START PushMessagingMsgStart
