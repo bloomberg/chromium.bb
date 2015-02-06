@@ -19,10 +19,10 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (30,53) size 50x40 [r=2 c=1 rs=1 cs=1]
               RenderImage {IMG} at (0,0) size 25x40
               RenderImage {IMG} at (25,0) size 25x40
-      RenderBlock (anonymous) at (0,93) size 784x16
-        RenderText {#text} at (0,0) size 324x16
+      RenderBlock (anonymous) at (0,93) size 784x18
+        RenderText {#text} at (0,0) size 324x18
           text run at (0,0) width 324: "Here's the same table without the off-by-one error."
-      LayoutTable {TABLE} at (0,109) size 80x93
+      LayoutTable {TABLE} at (0,111) size 80x93
         LayoutTableSection {TBODY} at (0,0) size 80x93
           LayoutTableRow {TR} at (0,0) size 80x28
             LayoutTableCell {TD} at (0,0) size 30x93 [r=0 c=0 rs=3 cs=1]

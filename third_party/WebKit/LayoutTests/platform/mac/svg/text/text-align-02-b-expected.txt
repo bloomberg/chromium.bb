@@ -37,8 +37,8 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (220.09,140.00) startOffset 0 endOffset 2 width 25.02: "te"
           RenderSVGInlineText {#text} at (245,16) size 24x34
             chunk 1 text run 1 at (245.11,140.00) startOffset 0 endOffset 2 width 23.33: "xt"
-    RenderSVGText {text} at (10,310) size 264x41 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 264x41
+    RenderSVGText {text} at (10,304) size 264x47 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 264x47
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.5 $"
     RenderSVGRect {rect} at (0,0) size 800x600 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
 selection start: position 0 of child 0 {#text} of child 1 {text} of child 13 {g} of child 27 {svg} of document

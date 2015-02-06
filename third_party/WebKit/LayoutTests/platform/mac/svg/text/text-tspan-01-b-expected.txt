@@ -76,8 +76,8 @@ layer at (0,0) size 800x600
         RenderSVGText {text} at (25,278) size 261x19 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 261x18
             chunk 1 text run 1 at (25.25,292.50) startOffset 0 endOffset 39 width 260.17: "'tspan' char-by-char \"fuzzy\", below it."
-    RenderSVGText {text} at (10,310) size 264x41 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 264x41
+    RenderSVGText {text} at (10,304) size 264x47 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 264x47
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.7 $"
     RenderSVGRect {rect} at (0,0) size 800x600 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
 selection start: position 0 of child 0 {#text} of child 1 {text} of child 13 {g} of child 35 {svg} of document

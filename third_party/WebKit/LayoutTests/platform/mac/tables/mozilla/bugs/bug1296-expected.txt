@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,0) size 648x63
         LayoutTableSection {TBODY} at (0,0) size 648x63
           LayoutTableRow {TR} at (0,2) size 648x59
-            LayoutTableCell {TD} at (2,22) size 188x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 186x16
+            LayoutTableCell {TD} at (2,21) size 188x20 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 186x18
                 text run at (1,1) width 186: "Let's put some space in here!"
             LayoutTableCell {TD} at (192,2) size 454x59 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 452x57
