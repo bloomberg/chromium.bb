@@ -237,6 +237,12 @@ SPECIAL_CASES = {
         "License": "Khronos",
         "License File": "NOT_SHIPPED",
     },
+    os.path.join('tools', 'telemetry', 'third_party', 'gsutil'): {
+        "Name": "gsutil",
+        "URL": "https://cloud.google.com/storage/docs/gsutil",
+        "License": "Apache 2.0",
+        "License File": "NOT_SHIPPED",
+    },
 }
 
 # Special value for 'License File' field used to indicate that the license file
