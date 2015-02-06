@@ -24,14 +24,19 @@ def _CreatePageClassWithSmoothInteractions(page_cls):
 
 class KeyMobileSitesSmoothPage(page_module.Page):
 
-  def __init__(self, url, page_set, name='', labels=None):
+  def __init__(self, url, page_set, name='', labels=None,
+               action_on_load_complete=False):
     super(KeyMobileSitesSmoothPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json', labels=labels)
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites.json'
+    self.action_on_load_complete = action_on_load_complete
 
   def RunPageInteractions(self, action_runner):
+    if self.action_on_load_complete:
+        action_runner.WaitForJavaScriptCondition(
+            'document.readyState == "complete"', 30)
     _IssueMarkerAndScroll(action_runner)
 
 
@@ -166,12 +171,18 @@ class KeyMobileSitesSmoothPageSet(page_set_module.PageSet):
       page_set=self,
       name='Wordpress'))
 
-   # Why: #6 (Alexa) most visited worldwide, picked an interesting page
+    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
     self.AddUserStory(KeyMobileSitesSmoothPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)'))
 
+    # Why: Wikipedia page with a delayed scroll start
+    self.AddUserStory(KeyMobileSitesSmoothPage(
+      url='http://en.wikipedia.org/wiki/Wikipedia',
+      page_set=self,
+      name='Wikipedia (1 tab) - delayed scroll start',
+      action_on_load_complete=True))
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
