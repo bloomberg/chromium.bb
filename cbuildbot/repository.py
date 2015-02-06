@@ -133,20 +133,7 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
 
 
 class RepoRepository(object):
-  """A Class that encapsulates a repo repository.
-
-  Args:
-    manifest_repo_url: URL to fetch repo manifest from.
-    directory: local path where to checkout the repository.
-    branch: Branch to check out the manifest at.
-    referenced_repo: Repository to reference for git objects, if possible.
-    manifest: Which manifest.xml within the branch to use.  Effectively
-      default.xml if not given.
-    depth: Mutually exclusive option to referenced_repo; this limits the
-      checkout to a max commit history of the given integer.
-    repo_url: URL to fetch repo tool from.
-    repo_branch: Branch to check out the repo tool at.
-  """
+  """A Class that encapsulates a repo repository."""
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init']
 
@@ -155,12 +142,29 @@ class RepoRepository(object):
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
-               depth=None, repo_url=constants.REPO_URL, repo_branch=None):
+               depth=None, repo_url=constants.REPO_URL, repo_branch=None,
+               groups=None):
+    """Initialize.
+
+    Args:
+      manifest_repo_url: URL to fetch repo manifest from.
+      directory: local path where to checkout the repository.
+      branch: Branch to check out the manifest at.
+      referenced_repo: Repository to reference for git objects, if possible.
+      manifest: Which manifest.xml within the branch to use.  Effectively
+        default.xml if not given.
+      depth: Mutually exclusive option to referenced_repo; this limits the
+        checkout to a max commit history of the given integer.
+      repo_url: URL to fetch repo tool from.
+      repo_branch: Branch to check out the repo tool at.
+      groups: Only sync projects that match this filter.
+    """
     self.manifest_repo_url = manifest_repo_url
     self.repo_url = repo_url
     self.repo_branch = repo_branch
     self.directory = directory
     self.branch = branch
+    self.groups = groups
 
     # It's perfectly acceptable to pass in a reference pathway that isn't
     # usable.  Detect it, and suppress the setting so that any depth
@@ -250,6 +254,8 @@ class RepoRepository(object):
       init_cmd.extend(['--manifest-branch', self.branch])
     if self.repo_branch:
       init_cmd.extend(['--repo-branch', self.repo_branch])
+    if self.groups:
+      init_cmd.extend(['--groups', self.groups])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
     if local_manifest and local_manifest != self._manifest:
