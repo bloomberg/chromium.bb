@@ -87,6 +87,7 @@
           './launch_param.js',
           './metadata/content_metadata_provider.js',
           './metadata/external_metadata_provider.js',
+          './metadata/file_system_metadata_model.js',
           './metadata/file_system_metadata_provider.js',
           './metadata/metadata_cache.js',
           './metadata/metadata_cache_item.js',
