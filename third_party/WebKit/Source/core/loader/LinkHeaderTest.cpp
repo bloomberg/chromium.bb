@@ -37,6 +37,8 @@ TEST(LinkHeaderTest, Single)
         {"</images/cat.jpg wutwut>   ;   rel=prefetch", "/images/cat.jpg", "prefetch", true},
         {"</images/cat.jpg wutwut  \t >   ;   rel=prefetch", "/images/cat.jpg", "prefetch", true},
         {"</images/cat.jpg>; rel=prefetch   ", "/images/cat.jpg", "prefetch", true},
+        {"</images/cat.jpg>; Rel=prefetch   ", "/images/cat.jpg", "prefetch", true},
+        {"</images/cat.jpg>; Rel=PReFetCh   ", "/images/cat.jpg", "prefetch", true},
         {"  </images/cat.jpg>; rel=prefetch   ", "/images/cat.jpg", "prefetch", true},
         {"\t  </images/cat.jpg>; rel=prefetch   ", "/images/cat.jpg", "prefetch", true},
         {"</images/cat.jpg>\t\t ; \trel=prefetch \t  ", "/images/cat.jpg", "prefetch", true},

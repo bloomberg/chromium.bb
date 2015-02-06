@@ -112,7 +112,7 @@ static bool parseParameterDelimiter(CharType*& position, CharType* end, bool& is
 static LinkHeader::LinkParameterName paramterNameFromString(String name)
 {
     // FIXME: Add support for more header parameters as neccessary.
-    if (name == "rel")
+    if (equalIgnoringCase(name, "rel"))
         return LinkHeader::LinkParameterRel;
     return LinkHeader::LinkParameterUnknown;
 }
@@ -170,7 +170,7 @@ void LinkHeader::setValue(LinkParameterName name, String value)
 {
     // FIXME: Add support for more header parameters as neccessary.
     if (name == LinkParameterRel)
-        m_rel = value;
+        m_rel = value.lower();
 }
 
 template <typename CharType>
