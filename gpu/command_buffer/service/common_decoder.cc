@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/common_decoder.h"
+
+#include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 
 namespace gpu {
@@ -66,6 +68,53 @@ bool CommonDecoder::Bucket::GetAsString(std::string* str) {
     return false;
   }
   str->assign(GetDataAs<const char*>(0, size_ - 1), size_ - 1);
+  return true;
+}
+
+bool CommonDecoder::Bucket::GetAsStrings(
+    GLsizei* _count, std::vector<char*>* _string, std::vector<GLint>* _length) {
+  const size_t kMinBucketSize = sizeof(GLint);
+  // Each string has at least |length| in the header and a NUL character.
+  const size_t kMinStringSize = sizeof(GLint) + 1;
+  const size_t bucket_size = this->size();
+  if (bucket_size < kMinBucketSize) {
+    return false;
+  }
+  char* bucket_data = this->GetDataAs<char*>(0, bucket_size);
+  GLint* header = reinterpret_cast<GLint*>(bucket_data);
+  GLsizei count = static_cast<GLsizei>(header[0]);
+  if (count < 0) {
+    return false;
+  }
+  const size_t max_count = (bucket_size - kMinBucketSize) / kMinStringSize;
+  if (max_count < static_cast<size_t>(count)) {
+    return false;
+  }
+  GLint* length = header + 1;
+  std::vector<char*> strs(count);
+  base::CheckedNumeric<size_t> total_size = sizeof(GLint);
+  total_size *= count + 1;  // Header size.
+  if (!total_size.IsValid())
+    return false;
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    strs[ii] = bucket_data + total_size.ValueOrDefault(0);
+    total_size += length[ii];
+    total_size += 1;  // NUL char at the end of each char array.
+    if (!total_size.IsValid() || total_size.ValueOrDefault(0) > bucket_size ||
+        strs[ii][length[ii]] != 0) {
+      return false;
+    }
+  }
+  if (total_size.ValueOrDefault(0) != bucket_size) {
+    return false;
+  }
+  DCHECK(_count && _string && _length);
+  *_count = count;
+  *_string = strs;
+  _length->resize(count);
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    (*_length)[ii] = length[ii];
+  }
   return true;
 }
 

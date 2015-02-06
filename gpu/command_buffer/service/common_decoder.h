@@ -14,6 +14,10 @@
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/gpu_export.h"
 
+// Forwardly declare a few GL types to avoid including GL header files.
+typedef int GLsizei;
+typedef int GLint;
+
 namespace gpu {
 
 class CommandBufferEngine;
@@ -81,6 +85,13 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     // distrinquish between empty string and no string. Returns False if there
     // is no string.
     bool GetAsString(std::string* str);
+
+    // Gets the bucket data as strings.
+    // On success, the number of strings are in |_count|, the string data are
+    // in |_string|, and string sizes are in |_length|..
+    bool GetAsStrings(GLsizei* _count,
+                      std::vector<char*>* _string,
+                      std::vector<GLint>* _length);
 
    private:
     bool OffsetSizeValid(size_t offset, size_t size) const {

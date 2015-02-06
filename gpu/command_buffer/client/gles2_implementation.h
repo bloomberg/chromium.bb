@@ -625,6 +625,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLuint buffer_id,
       const char* function_name, GLuint offset, GLsizei size);
 
+  // Pack 2D arrays of char into a bucket.
+  // Helper function for ShaderSource(), TransformFeedbackVaryings(), etc.
+  bool PackStringsToBucket(GLsizei count,
+                           const char* const* str,
+                           const GLint* length,
+                           const char* func_name);
+
   const std::string& GetLogPrefix() const;
 
 #if defined(GL_CLIENT_FAIL_GL_ERRORS)

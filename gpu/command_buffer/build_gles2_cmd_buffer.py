@@ -6480,90 +6480,7 @@ class PUTSTRHandler(ArrayArgTypeHandler):
       })
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
-    size_code_block = """  // Compute the total size.
-  base::CheckedNumeric<size_t> total_size = count;
-  total_size += 1;
-  total_size *= sizeof(GLint);
-  if (!total_size.IsValid()) {
-    SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
-    return;
-  }
-  size_t header_size = total_size.ValueOrDefault(0);
-  std::vector<GLint> header(count + 1);
-  header[0] = static_cast<GLint>(count);
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    GLint len = 0;
-    if (%(data)s[ii]) {"""
-    if length_arg == None:
-      size_code_block += """
-      len = static_cast<GLint>(strlen(%(data)s[ii]));"""
-    else:
-      size_code_block += """
-      len = (%(length)s && %(length)s[ii] >= 0) ?
-          %(length)s[ii] : base::checked_cast<GLint>(strlen(%(data)s[ii]));"""
-    size_code_block += """
-    }
-    total_size += len;
-    total_size += 1;  // NULL at the end of each char array.
-    if (!total_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
-      return;
-    }
-    header[ii + 1] = len;
-}
-"""
-    file.Write(size_code_block % {
-        'data': data_arg.name,
-        'length': length_arg.name if not length_arg == None else '',
-        'func_name': func.name,
-      })
-    data_code_block = """  // Pack data into a bucket on the service.
-  helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
-  size_t offset = 0;
-  for (GLsizei ii = 0; ii <= count; ++ii) {
-    const char* src = (ii == 0) ? reinterpret_cast<const char*>(&header[0]) :
-        %(data)s[ii - 1];
-    base::CheckedNumeric<size_t> checked_size = (ii == 0) ? header_size :
-        static_cast<size_t>(header[ii]);
-    if (ii > 0) {
-      checked_size += 1;  // NULL in the end.
-    }
-    if (!checked_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
-      return;
-    }
-    size_t size = checked_size.ValueOrDefault(0);
-    while (size) {
-      ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
-      if (!buffer.valid() || buffer.size() == 0) {
-        SetGLError(GL_OUT_OF_MEMORY, "gl%(func_name)s", "too large");
-        return;
-      }
-      size_t copy_size = buffer.size();
-      if (ii > 0 && buffer.size() == size)
-        --copy_size;
-      if (copy_size)
-        memcpy(buffer.address(), src, copy_size);
-      if (copy_size < buffer.size()) {
-        // Append NULL in the end.
-        DCHECK(copy_size + 1 == buffer.size());
-        char* str = reinterpret_cast<char*>(buffer.address());
-        str[copy_size] = 0;
-      }
-      helper_->SetBucketData(kResultBucketId, offset, buffer.size(),
-                             buffer.shm_id(), buffer.offset());
-      offset += buffer.size();
-      src += buffer.size();
-      size -= buffer.size();
-    }
-  }
-  DCHECK_EQ(total_size.ValueOrDefault(0), offset);
-"""
-    file.Write(data_code_block % {
-        'data': data_arg.name,
-        'length': length_arg.name if not length_arg == None else '',
-        'func_name': func.name,
-      })
+
     bucket_args = []
     for arg in func.GetOriginalArgs():
       if arg.name == 'count' or arg == self.__GetLengthArg(func):
@@ -6572,12 +6489,22 @@ class PUTSTRHandler(ArrayArgTypeHandler):
         bucket_args.append('kResultBucketId')
       else:
         bucket_args.append(arg.name)
-    file.Write("  helper_->%sBucket(%s);\n" %
-               (func.name, ", ".join(bucket_args)))
-    file.Write("  helper_->SetBucketSize(kResultBucketId, 0);");
-    file.Write("  CheckGLError();\n")
-    file.Write("}\n")
-    file.Write("\n")
+    code_block = """
+  if (!PackStringsToBucket(count, %(data)s, %(length)s, "gl%(func_name)s")) {
+    return;
+  }
+  helper_->%(func_name)sBucket(%(bucket_args)s);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
+}
+
+"""
+    file.Write(code_block % {
+        'data': data_arg.name,
+        'length': length_arg.name if not length_arg == None else 'NULL',
+        'func_name': func.name,
+        'bucket_args': ', '.join(bucket_args),
+      })
 
   def WriteGLES2ImplementationUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -8009,48 +7936,21 @@ class InputStringArrayBucketArgument(Argument):
   def WriteGetCode(self, file):
     """Overridden from Argument."""
     code = """
-  const size_t kMinBucketSize = sizeof(GLint);
-  // Each string has at least |length| in the header and a NUL character.
-  const size_t kMinStringSize = sizeof(GLint) + 1;
   Bucket* bucket = GetBucket(c.%(name)s);
   if (!bucket) {
     return error::kInvalidArguments;
   }
-  const size_t bucket_size = bucket->size();
-  if (bucket_size < kMinBucketSize) {
+  GLsizei count = 0;
+  std::vector<char*> strs;
+  std::vector<GLint> len;
+  if (!bucket->GetAsStrings(&count, &strs, &len)) {
     return error::kInvalidArguments;
   }
-  const char* bucket_data = bucket->GetDataAs<const char*>(0, bucket_size);
-  const GLint* header = reinterpret_cast<const GLint*>(bucket_data);
-  GLsizei count = static_cast<GLsizei>(header[0]);
-  if (count < 0) {
-    return error::kInvalidArguments;
-  }
-  const size_t max_count = (bucket_size - kMinBucketSize) / kMinStringSize;
-  if (max_count < static_cast<size_t>(count)) {
-    return error::kInvalidArguments;
-  }
-  const GLint* length = header + 1;
-  scoped_ptr<const char*[]> strs;
-  if (count > 0)
-    strs.reset(new const char*[count]);
-  const char** %(original_name)s = strs.get();
-  base::CheckedNumeric<size_t> total_size = sizeof(GLint);
-  total_size *= count + 1;  // Header size.
-  if (!total_size.IsValid())
-    return error::kInvalidArguments;
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    %(original_name)s[ii] = bucket_data + total_size.ValueOrDefault(0);
-    total_size += length[ii];
-    total_size += 1;  // NUL char at the end of each char array.
-    if (!total_size.IsValid() || total_size.ValueOrDefault(0) > bucket_size ||
-        %(original_name)s[ii][length[ii]] != 0) {
-      return error::kInvalidArguments;
-    }
-  }
-  if (total_size.ValueOrDefault(0) != bucket_size) {
-    return error::kInvalidArguments;
-  }
+  const char** %(original_name)s =
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+  const GLint* length =
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+  (void)length;
 """
     file.Write(code % {
         'name': self.name,
