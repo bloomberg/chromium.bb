@@ -700,13 +700,6 @@ EasyUnlockPrivateGetConnectionInfoFunction::
 
 bool EasyUnlockPrivateGetConnectionInfoFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        proximity_auth::switches::kEnableProximityDetection)) {
-    SetError("Turn on 'enable-easy-unlock-proximity-detection' flag.");
-    SendResponse(false);
-    return true;
-  }
-
   scoped_ptr<easy_unlock_private::GetConnectionInfo::Params> params =
       easy_unlock_private::GetConnectionInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
