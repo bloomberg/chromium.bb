@@ -20,7 +20,6 @@ struct EVENTS_DEVICES_EXPORT TouchscreenDevice : public InputDevice {
 
   TouchscreenDevice(unsigned int id,
                     InputDeviceType type,
-                    const std::string& name,
                     const gfx::Size& size,
                     int touch_points);
 

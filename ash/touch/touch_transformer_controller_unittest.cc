@@ -33,7 +33,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
 ui::TouchscreenDevice CreateTouchscreenDevice(unsigned int id,
                                               const gfx::Size& size) {
   return ui::TouchscreenDevice(id, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
-                               std::string(), size, 0);
+                               size, 0);
 }
 
 }  //  namespace

@@ -24,7 +24,7 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
   // Creates an invalid input device.
   InputDevice();
 
-  InputDevice(unsigned int id, InputDeviceType type, const std::string& name);
+  InputDevice(unsigned int id, InputDeviceType type);
   virtual ~InputDevice();
 
   // ID of the device. This ID is unique between all input devices.
@@ -32,9 +32,6 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
 
   // The type of the input device.
   InputDeviceType type;
-
-  // Name of the device.
-  std::string name;
 };
 
 }  // namespace ui

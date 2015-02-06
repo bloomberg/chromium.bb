@@ -15,10 +15,8 @@ InputDevice::InputDevice()
     : id(kInvalidId), type(InputDeviceType::INPUT_DEVICE_UNKNOWN) {
 }
 
-InputDevice::InputDevice(unsigned int id,
-                         InputDeviceType type,
-                         const std::string& name)
-    : id(id), type(type), name(name) {
+InputDevice::InputDevice(unsigned int id, InputDeviceType type)
+    : id(id), type(type) {
 }
 
 InputDevice::~InputDevice() {

@@ -84,8 +84,8 @@ class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
   MockEventBlocker() {}
   ~MockEventBlocker() override {
     std::vector<ui::KeyboardDevice> keyboards;
-    keyboards.push_back(ui::KeyboardDevice(
-        1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
+    keyboards.push_back(
+        ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL));
     ui::DeviceHotplugEventObserver* manager =
         ui::DeviceDataManager::GetInstance();
     manager->OnKeyboardDevicesUpdated(keyboards);
@@ -157,13 +157,12 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
 // present.
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen", gfx::Size(1024, 768), 0));
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
-      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL));
   UpdateKeyboardDevices(keyboards);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   // Remove the internal keyboard. Virtual keyboard should now show.
@@ -177,9 +176,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
   std::vector<ui::TouchscreenDevice> devices;
   // Add a touchscreen. Keyboard should deploy.
-  devices.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
-                            "Touchscreen", gfx::Size(800, 600), 0));
+  devices.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(800, 600), 0));
   UpdateTouchscreenDevices(devices);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
   // Remove touchscreen. Keyboard should hide.
@@ -189,13 +187,12 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
 
 TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen", gfx::Size(1024, 768), 0));
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
-      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
   UpdateKeyboardDevices(keyboards);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
@@ -228,12 +225,12 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
 // Tests handling multiple keyboards. Catches crbug.com/430252
 TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
   std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
-      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
-  keyboards.push_back(ui::KeyboardDevice(
-      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
-  keyboards.push_back(ui::KeyboardDevice(
-      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL));
+  keyboards.push_back(
+      ui::KeyboardDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
+  keyboards.push_back(
+      ui::KeyboardDevice(3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
   UpdateKeyboardDevices(keyboards);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
@@ -259,13 +256,12 @@ class VirtualKeyboardControllerAlwaysEnabledTest
 // keyboard always enabled flag is active.
 TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen", gfx::Size(1024, 768), 0));
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
-      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
   UpdateKeyboardDevices(keyboards);
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 }

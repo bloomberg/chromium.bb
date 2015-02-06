@@ -225,8 +225,7 @@ void HandleKeyboardDevicesInWorker(
     if (IsKnownInvalidKeyboardDevice(device_name))
       continue;  // Skip invalid devices.
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(
-        KeyboardDevice(device_info.id, type, device_name));
+    devices.push_back(KeyboardDevice(device_info.id, type));
   }
 
   reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
@@ -278,10 +277,9 @@ void HandleTouchscreenDevicesInWorker(
       InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
-      devices.push_back(
-          TouchscreenDevice(device_info.id, type, device_info.name,
-                            gfx::Size(max_x + 1, max_y + 1),
-                            device_info.touch_class_info.num_touches));
+      devices.push_back(TouchscreenDevice(
+          device_info.id, type, gfx::Size(max_x + 1, max_y + 1),
+          device_info.touch_class_info.num_touches));
     }
   }
 

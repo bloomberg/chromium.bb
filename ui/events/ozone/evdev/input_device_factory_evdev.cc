@@ -440,9 +440,9 @@ void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
       // TODO(spang): Extract the number of touch-points supported by the
       // device.
       const int touch_points = 11;
-      touchscreens.push_back(TouchscreenDevice(
-          it->second->id(), it->second->type(), std::string() /* Device name */,
-          it->second->GetTouchscreenSize(), touch_points));
+      touchscreens.push_back(
+          TouchscreenDevice(it->second->id(), it->second->type(),
+                            it->second->GetTouchscreenSize(), touch_points));
     }
   }
 
@@ -453,8 +453,7 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
   std::vector<KeyboardDevice> keyboards;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasKeyboard()) {
-      keyboards.push_back(KeyboardDevice(it->second->id(), it->second->type(),
-                                         std::string() /* Device name */));
+      keyboards.push_back(KeyboardDevice(it->second->id(), it->second->type()));
     }
   }
 
@@ -464,10 +463,8 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
 void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
   std::vector<InputDevice> mice;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasMouse()) {
-      mice.push_back(InputDevice(it->second->id(), it->second->type(),
-                                 std::string() /* Device name */));
-    }
+    if (it->second->HasMouse())
+      mice.push_back(InputDevice(it->second->id(), it->second->type()));
   }
 
   dispatcher_->DispatchMouseDevicesUpdated(mice);
@@ -476,10 +473,8 @@ void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
 void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
   std::vector<InputDevice> touchpads;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasTouchpad()) {
-      touchpads.push_back(InputDevice(it->second->id(), it->second->type(),
-                                      std::string() /* Device name */));
-    }
+    if (it->second->HasTouchpad())
+      touchpads.push_back(InputDevice(it->second->id(), it->second->type()));
   }
 
   dispatcher_->DispatchTouchpadDevicesUpdated(touchpads);

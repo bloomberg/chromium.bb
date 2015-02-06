@@ -10,10 +10,8 @@
 
 namespace ui {
 
-KeyboardDevice::KeyboardDevice(int id,
-                               InputDeviceType type,
-                               const std::string& name)
-    : InputDevice(id, type, name) {
+KeyboardDevice::KeyboardDevice(int id, InputDeviceType type)
+    : InputDevice(id, type) {
 }
 
 }  // namespace ui
