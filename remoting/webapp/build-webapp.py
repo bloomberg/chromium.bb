@@ -365,14 +365,14 @@ def main():
            '--app_description <description> '
            '--app_capabilities <capabilities...> '
            '[--appid <appid>] '
-           '[--locales <locales...>] '
+           '[--locales_listfile <locales-listfile-name>] '
            '[--jinja_paths <paths...>] '
            '[--service_environment <service_environment>]')
     return 1
 
   arg_type = ''
   files = []
-  locales = []
+  locales_listfile = ''
   jinja_paths = []
   app_id = None
   app_name = None
@@ -381,7 +381,7 @@ def main():
   service_environment = ''
 
   for arg in sys.argv[7:]:
-    if arg in ['--locales',
+    if arg in ['--locales_listfile',
                '--jinja_paths',
                '--appid',
                '--app_name',
@@ -389,8 +389,9 @@ def main():
                '--app_capabilities',
                '--service_environment']:
       arg_type = arg
-    elif arg_type == '--locales':
-      locales.append(arg)
+    elif arg_type == '--locales_listfile':
+      locales_listfile = arg
+      arg_type = ''
     elif arg_type == '--jinja_paths':
       jinja_paths.append(arg)
     elif arg_type == '--appid':
@@ -409,6 +410,14 @@ def main():
       arg_type = ''
     else:
       files.append(arg)
+
+  # Load the locales files from the locales_listfile.
+  if not locales_listfile:
+    raise Exception('You must specify a locales_listfile')
+  locales = []
+  with open(locales_listfile) as input:
+    for s in input:
+      locales.append(s.rstrip())
 
   return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
                      sys.argv[5], sys.argv[6], app_id, app_name,

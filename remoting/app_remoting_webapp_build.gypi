@@ -71,6 +71,8 @@
       'remoting_app_name': '>(_app_name)',
       'remoting_app_description': '>(_app_description)',
 
+      'ar_webapp_locales_listfile': '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)_locales.txt',
+
       'conditions': [
         ['ar_internal != 1', {
           'ar_app_name': 'sample_app',
@@ -88,6 +90,23 @@
 
     'actions': [
       {
+        'action_name': 'Build ">(ar_app_name)" locales listfile',
+        'inputs': [
+          '<(remoting_localize_path)',
+        ],
+        'outputs': [
+          '<(ar_webapp_locales_listfile)',
+        ],
+        'action': [
+          'python', '<(remoting_localize_path)',
+          '--locale_output',
+          '"<(webapp_locale_dir)/@{json_suffix}/messages.json"',
+          '--locales_listfile',
+          '<(ar_webapp_locales_listfile)',
+          '<@(remoting_locales)',
+        ],
+      },
+      {
         'action_name': 'Build ">(ar_app_name)" application stub',
         'inputs': [
           '<(DEPTH)/remoting/webapp/build-webapp.py',
@@ -98,6 +117,7 @@
           '<@(ar_generated_html_files)',
           '<(ar_app_manifest_app)',
           '<(DEPTH)/remoting/<(ar_app_manifest_common)',
+          '<(ar_webapp_locales_listfile)',
         ],
         'outputs': [
           '<(output_dir)',
@@ -113,8 +133,8 @@
           'app_remoting',  # Web app type
           '<@(ar_webapp_files)',
           '<@(ar_generated_html_files)',
-          '--locales',
-          '<@(remoting_webapp_locale_files)',
+          '--locales_listfile',
+          '<(ar_webapp_locales_listfile)',
           '--jinja_paths',
           '<(DEPTH)/remoting/webapp/app_remoting',
           '<@(remoting_app_id)',

@@ -720,7 +720,7 @@ def Localize(source, locales, options):
 
       template_file_name = target.safe_substitute(context)
       outputs.append(template_file_name)
-      if not options.print_only:
+      if not options.print_only and not options.locales_listfile:
         WriteIfChanged(template_file_name, template.render(context),
                        options.encoding)
   else:
@@ -732,6 +732,11 @@ def Localize(source, locales, options):
     # Quote each element so filename spaces don't mess up gyp's attempt to parse
     # it into a list.
     return " ".join(['"%s"' % x for x in outputs])
+
+  if options.locales_listfile:
+    # Strip off the quotes from each filename when writing into a listfile.
+    content = u'\n'.join([x.strip('"') for x in outputs])
+    WriteIfChanged(options.locales_listfile, content, options.encoding)
 
   return
 
@@ -761,6 +766,9 @@ def DoMain(argv):
       '--print_only', dest='print_only', action='store_true',
       default=False, help='print the output file names only.')
   parser.add_option(
+      '--locales_listfile', dest='locales_listfile', type='string',
+      help='print the output file names into the specified file.')
+  parser.add_option(
       '-t', '--template', dest='template', type='string',
       help="specify the template file name.")
   parser.add_option(
@@ -773,11 +781,12 @@ def DoMain(argv):
   if bool(options.output) == bool(options.locale_output):
     parser.error(
         'Either --output or --locale_output must be specified but not both')
-  if not options.template and not options.print_only:
-    parser.error('The template name is required unless --print_only is used')
+  if (not options.template and
+      not options.print_only and not options.locales_listfile):
+    parser.error('The template name is required unless either --print_only '
+                 'or --locales_listfile is used')
 
   return Localize(options.template, locales, options)
 
 if __name__ == '__main__':
   sys.exit(DoMain(sys.argv[1:]))
-

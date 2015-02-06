@@ -13,6 +13,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
       '<(SHARED_INTERMEDIATE_DIR)/background.html',
     ],
+    'dr_webapp_locales_listfile': '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)_locales.txt',
   },
   'dependencies': [
     'remoting_resources',
@@ -47,12 +48,30 @@
   ],
   'actions': [
     {
+      'action_name': 'Build Remoting locales listfile',
+      'inputs': [
+        '<(remoting_localize_path)',
+      ],
+      'outputs': [
+        '<(dr_webapp_locales_listfile)',
+      ],
+      'action': [
+        'python', '<(remoting_localize_path)',
+        '--locale_output',
+        '"<(webapp_locale_dir)/@{json_suffix}/messages.json"',
+        '--locales_listfile',
+        '<(dr_webapp_locales_listfile)',
+        '<@(remoting_locales)',
+      ],
+    },
+    {
       'action_name': 'Build Remoting WebApp',
       'inputs': [
         'webapp/build-webapp.py',
         'webapp/crd/manifest.json.jinja2',
         '<(chrome_version_path)',
         '<(remoting_version_path)',
+        '<(dr_webapp_locales_listfile)',
         '<@(generated_html_files)',
         '<@(remoting_webapp_crd_files)',
         '<@(remoting_webapp_locale_files)',
@@ -73,7 +92,8 @@
         '<@(generated_html_files)',
         '<@(remoting_webapp_crd_files)',
         '<@(extra_files)',
-        '--locales', '<@(remoting_webapp_locale_files)',
+        '--locales_listfile',
+        '<(dr_webapp_locales_listfile)',
       ],
     },
   ],
