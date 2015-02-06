@@ -287,11 +287,6 @@
                   'net/base/host_cache|' \
                   'net/dns/'
     },
-    'domui_options': {
-      'filepath': 'chrome/browser/resources/options/|'\
-                  'chrome/browser/resources/options.html|'\
-                  'chrome/browser/ui/webui/options/',
-    },
     'download': {
       'filepath': 'chrome/browser/download/|'\
                   'content/browser/download/',
@@ -963,7 +958,8 @@
     'ntp': ['estade+watch@chromium.org', 'dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
-    'options': ['dbeam+watch-options@chromium.org'],
+    'options': ['dbeam+watch-options@chromium.org',
+                'michaelpg+watch-options@chromium.org'],
     'overview_mode': ['tdanderson+overview@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
