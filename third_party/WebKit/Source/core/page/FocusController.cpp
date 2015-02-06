@@ -147,8 +147,29 @@ FocusNavigationScope FocusNavigationScope::ownedByShadowInsertionPoint(HTMLShado
     return FocusNavigationScope(shadowInsertionPoint.olderShadowRoot());
 }
 
+static inline void dispatchBlurEvent(const Document& document, Element& focusedElement)
+{
+    focusedElement.dispatchBlurEvent(nullptr);
+    if (focusedElement == document.focusedElement()) {
+        focusedElement.dispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
+        if (focusedElement == document.focusedElement())
+            focusedElement.dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, nullptr);
+    }
+}
+
+static inline void dispatchFocusEvent(const Document& document, Element& focusedElement)
+{
+    focusedElement.dispatchFocusEvent(0, WebFocusTypePage);
+    if (focusedElement == document.focusedElement()) {
+        focusedElement.dispatchFocusInEvent(EventTypeNames::focusin, nullptr, WebFocusTypePage);
+        if (focusedElement == document.focusedElement())
+            focusedElement.dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, WebFocusTypePage);
+    }
+}
+
 static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool focused)
 {
+    ASSERT(document);
     // If we have a focused node we should dispatch blur on it before we blur the window.
     // If we have a focused node we should dispatch focus on it after we focus the window.
     // https://bugs.webkit.org/show_bug.cgi?id=27105
@@ -165,12 +186,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
     if (!focused && document->focusedElement()) {
         RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());
         focusedElement->setFocus(false);
-        focusedElement->dispatchBlurEvent(nullptr);
-        if (focusedElement == document->focusedElement()) {
-            focusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
-            if (focusedElement == document->focusedElement())
-                focusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, nullptr);
-        }
+        dispatchBlurEvent(*document, *focusedElement);
     }
 
     if (LocalDOMWindow* window = document->domWindow())
@@ -178,12 +194,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
     if (focused && document->focusedElement()) {
         RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());
         focusedElement->setFocus(true);
-        focusedElement->dispatchFocusEvent(0, WebFocusTypePage);
-        if (focusedElement == document->focusedElement()) {
-            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, WebFocusTypePage);
-            if (focusedElement == document->focusedElement())
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, WebFocusTypePage);
-        }
+        dispatchFocusEvent(*document, *focusedElement);
     }
 }
 
@@ -285,28 +296,16 @@ void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
     if (focusedFrame && focusedFrame->view()) {
         RefPtrWillBeRawPtr<Document> document = focusedFrame->document();
         Element* focusedElement = document ? document->focusedElement() : nullptr;
-        if (focusedElement) {
-            focusedElement->dispatchBlurEvent(nullptr);
-            if (focusedElement == document->focusedElement()) {
-                focusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
-                if (focusedElement == document->focusedElement())
-                    focusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, nullptr);
-            }
-        }
+        if (focusedElement)
+            dispatchBlurEvent(*document, *focusedElement);
     }
 
     RefPtrWillBeRawPtr<LocalFrame> newFocusedFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : nullptr;
     if (newFocusedFrame && newFocusedFrame->view()) {
         RefPtrWillBeRawPtr<Document> document = newFocusedFrame->document();
         Element* focusedElement = document ? document->focusedElement() : nullptr;
-        if (focusedElement) {
-            focusedElement->dispatchFocusEvent(0, WebFocusTypePage);
-            if (focusedElement == document->focusedElement()) {
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, WebFocusTypePage);
-                if (focusedElement == document->focusedElement())
-                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, WebFocusTypePage);
-            }
-        }
+        if (focusedElement)
+            dispatchFocusEvent(*document, *focusedElement);
     }
 
     setFocusedFrame(frame);
