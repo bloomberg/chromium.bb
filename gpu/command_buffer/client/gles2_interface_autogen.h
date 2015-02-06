@@ -186,6 +186,10 @@ virtual void GetActiveUniform(GLuint program,
                               GLint* size,
                               GLenum* type,
                               char* name) = 0;
+virtual void GetActiveUniformBlockiv(GLuint program,
+                                     GLuint index,
+                                     GLenum pname,
+                                     GLint* params) = 0;
 virtual void GetActiveUniformBlockName(GLuint program,
                                        GLuint index,
                                        GLsizei bufsize,

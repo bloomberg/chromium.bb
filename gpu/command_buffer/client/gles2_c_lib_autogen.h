@@ -338,6 +338,12 @@ void GLES2GetActiveUniform(GLuint program,
   gles2::GetGLContext()->GetActiveUniform(program, index, bufsize, length, size,
                                           type, name);
 }
+void GLES2GetActiveUniformBlockiv(GLuint program,
+                                  GLuint index,
+                                  GLenum pname,
+                                  GLint* params) {
+  gles2::GetGLContext()->GetActiveUniformBlockiv(program, index, pname, params);
+}
 void GLES2GetActiveUniformBlockName(GLuint program,
                                     GLuint index,
                                     GLsizei bufsize,
@@ -1557,6 +1563,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetActiveUniform",
      reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniform),
+    },
+    {
+     "glGetActiveUniformBlockiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniformBlockiv),
     },
     {
      "glGetActiveUniformBlockName",

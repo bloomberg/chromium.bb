@@ -3374,6 +3374,68 @@ static_assert(offsetof(GetActiveUniform::Result, type) == 8,
               "offset of GetActiveUniform Result type should be "
               "8");
 
+struct GetActiveUniformBlockiv {
+  typedef GetActiveUniformBlockiv ValueType;
+  static const CommandId kCmdId = kGetActiveUniformBlockiv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    program = _program;
+    index = _index;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _index, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t index;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+static_assert(sizeof(GetActiveUniformBlockiv) == 24,
+              "size of GetActiveUniformBlockiv should be 24");
+static_assert(offsetof(GetActiveUniformBlockiv, header) == 0,
+              "offset of GetActiveUniformBlockiv header should be 0");
+static_assert(offsetof(GetActiveUniformBlockiv, program) == 4,
+              "offset of GetActiveUniformBlockiv program should be 4");
+static_assert(offsetof(GetActiveUniformBlockiv, index) == 8,
+              "offset of GetActiveUniformBlockiv index should be 8");
+static_assert(offsetof(GetActiveUniformBlockiv, pname) == 12,
+              "offset of GetActiveUniformBlockiv pname should be 12");
+static_assert(offsetof(GetActiveUniformBlockiv, params_shm_id) == 16,
+              "offset of GetActiveUniformBlockiv params_shm_id should be 16");
+static_assert(
+    offsetof(GetActiveUniformBlockiv, params_shm_offset) == 20,
+    "offset of GetActiveUniformBlockiv params_shm_offset should be 20");
+
 struct GetActiveUniformBlockName {
   typedef GetActiveUniformBlockName ValueType;
   static const CommandId kCmdId = kGetActiveUniformBlockName;

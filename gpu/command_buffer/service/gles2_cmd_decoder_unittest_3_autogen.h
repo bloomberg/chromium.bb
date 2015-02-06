@@ -12,6 +12,18 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest3, VertexAttribI4iValidArgs) {
+  EXPECT_CALL(*gl_, VertexAttribI4i(1, 2, 3, 4, 5));
+  SpecializedSetup<cmds::VertexAttribI4i, 0>(true);
+  cmds::VertexAttribI4i cmd;
+  cmd.Init(1, 2, 3, 4, 5);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest3, VertexAttribI4ivImmediateValidArgs) {
   cmds::VertexAttribI4ivImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttribI4ivImmediate>();

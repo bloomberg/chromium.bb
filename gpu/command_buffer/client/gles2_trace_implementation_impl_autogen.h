@@ -500,6 +500,14 @@ void GLES2TraceImplementation::GetActiveUniform(GLuint program,
   gl_->GetActiveUniform(program, index, bufsize, length, size, type, name);
 }
 
+void GLES2TraceImplementation::GetActiveUniformBlockiv(GLuint program,
+                                                       GLuint index,
+                                                       GLenum pname,
+                                                       GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetActiveUniformBlockiv");
+  gl_->GetActiveUniformBlockiv(program, index, pname, params);
+}
+
 void GLES2TraceImplementation::GetActiveUniformBlockName(GLuint program,
                                                          GLuint index,
                                                          GLsizei bufsize,

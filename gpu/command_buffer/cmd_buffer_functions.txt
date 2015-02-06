@@ -77,6 +77,7 @@ GL_APICALL void         GL_APIENTRY glGenTextures (GLsizeiNotNegative n, GLuint*
 GL_APICALL void         GL_APIENTRY glGenTransformFeedbacks (GLsizeiNotNegative n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
 GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
+GL_APICALL void         GL_APIENTRY glGetActiveUniformBlockiv (GLidProgram program, GLuint index, GLenumUniformBlockParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetActiveUniformBlockName (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* name);
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizeiNotNegative maxcount, GLsizeiOptional* count, GLuint* shaders);
 GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLidProgram program, const char* name);

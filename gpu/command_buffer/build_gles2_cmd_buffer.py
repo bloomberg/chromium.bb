@@ -1313,6 +1313,21 @@ _NAMED_TYPE_INFO = {
       'GL_MOUSE_POSITION_CHROMIUM',
     ],
   },
+  'UniformBlockParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_UNIFORM_BLOCK_BINDING',
+      'GL_UNIFORM_BLOCK_DATA_SIZE',
+      'GL_UNIFORM_BLOCK_NAME_LENGTH',
+      'GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS',
+      'GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES',
+      'GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER',
+      'GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER',
+    ],
+    'invalid': [
+      'GL_NEAREST',
+    ],
+  },
   'VertexAttribType': {
     'type': 'GLenum',
     'valid': [
@@ -2033,6 +2048,12 @@ _FUNCTION_INFO = {
       'int32_t size',
       'uint32_t type',
     ],
+  },
+  'GetActiveUniformBlockiv': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'result': ['SizedResult<GLint>'],
+    'unsafe': True,
   },
   'GetActiveUniformBlockName': {
     'type': 'Custom',

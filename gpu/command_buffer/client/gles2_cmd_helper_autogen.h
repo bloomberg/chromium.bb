@@ -702,6 +702,18 @@ void GetActiveUniform(GLuint program,
   }
 }
 
+void GetActiveUniformBlockiv(GLuint program,
+                             GLuint index,
+                             GLenum pname,
+                             uint32_t params_shm_id,
+                             uint32_t params_shm_offset) {
+  gles2::cmds::GetActiveUniformBlockiv* c =
+      GetCmdSpace<gles2::cmds::GetActiveUniformBlockiv>();
+  if (c) {
+    c->Init(program, index, pname, params_shm_id, params_shm_offset);
+  }
+}
+
 void GetActiveUniformBlockName(GLuint program,
                                GLuint index,
                                uint32_t name_bucket_id,

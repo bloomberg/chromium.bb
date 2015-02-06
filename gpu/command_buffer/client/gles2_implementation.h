@@ -226,6 +226,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetActiveUniformBlockNameHelper(
       GLuint program, GLuint index, GLsizei bufsize,
       GLsizei* length, char* name);
+  bool GetActiveUniformBlockivHelper(
+      GLuint program, GLuint index, GLenum pname, GLint* params);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

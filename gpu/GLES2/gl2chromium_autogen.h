@@ -86,6 +86,7 @@
 #define glGenTransformFeedbacks GLES2_GET_FUN(GenTransformFeedbacks)
 #define glGetActiveAttrib GLES2_GET_FUN(GetActiveAttrib)
 #define glGetActiveUniform GLES2_GET_FUN(GetActiveUniform)
+#define glGetActiveUniformBlockiv GLES2_GET_FUN(GetActiveUniformBlockiv)
 #define glGetActiveUniformBlockName GLES2_GET_FUN(GetActiveUniformBlockName)
 #define glGetAttachedShaders GLES2_GET_FUN(GetAttachedShaders)
 #define glGetAttribLocation GLES2_GET_FUN(GetAttribLocation)

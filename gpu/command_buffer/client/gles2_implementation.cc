@@ -2363,7 +2363,7 @@ void GLES2Implementation::GetActiveUniformBlockName(
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetActiveUniformBlockName("
       << program << ", " << index << ", " << bufsize << ", "
       << static_cast<const void*>(length) << ", "
-      << static_cast<const void*>(name) << ", ");
+      << static_cast<const void*>(name) << ")");
   if (bufsize < 0) {
     SetGLError(GL_INVALID_VALUE, "glGetActiveUniformBlockName", "bufsize < 0");
     return;
@@ -2375,6 +2375,52 @@ void GLES2Implementation::GetActiveUniformBlockName(
   if (success) {
     if (name) {
       GPU_CLIENT_LOG("  name: " << name);
+    }
+  }
+  CheckGLError();
+}
+
+bool GLES2Implementation::GetActiveUniformBlockivHelper(
+    GLuint program, GLuint index, GLenum pname, GLint* params) {
+  typedef cmds::GetActiveUniformBlockiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return false;
+  }
+  result->SetNumResults(0);
+  helper_->GetActiveUniformBlockiv(
+      program, index, pname, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  if (result->GetNumResults() > 0) {
+    if (params) {
+      result->CopyResult(params);
+    }
+    GPU_CLIENT_LOG_CODE_BLOCK({
+      for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+        GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
+void GLES2Implementation::GetActiveUniformBlockiv(
+    GLuint program, GLuint index, GLenum pname, GLint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetActiveUniformBlockiv("
+      << program << ", " << index << ", "
+      << GLES2Util::GetStringProgramParameter(pname) << ", "
+      << static_cast<const void*>(params) << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetActiveUniformBlockiv");
+  bool success =
+      share_group_->program_info_manager()->GetActiveUniformBlockiv(
+          this, program, index, pname, params);
+  if (success) {
+    if (params) {
+      // TODO(zmo): For GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, there will
+      // be more than one value returned in params.
+      GPU_CLIENT_LOG("  params: " << params[0]);
     }
   }
   CheckGLError();

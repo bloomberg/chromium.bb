@@ -1095,6 +1095,24 @@ TEST_F(GLES2FormatTest, GetActiveUniform) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetActiveUniformBlockiv) {
+  cmds::GetActiveUniformBlockiv& cmd =
+      *GetBufferAs<cmds::GetActiveUniformBlockiv>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLenum>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetActiveUniformBlockiv::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.pname);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetActiveUniformBlockName) {
   cmds::GetActiveUniformBlockName& cmd =
       *GetBufferAs<cmds::GetActiveUniformBlockName>();

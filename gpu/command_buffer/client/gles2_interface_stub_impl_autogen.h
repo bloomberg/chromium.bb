@@ -286,6 +286,11 @@ void GLES2InterfaceStub::GetActiveUniform(GLuint /* program */,
                                           GLenum* /* type */,
                                           char* /* name */) {
 }
+void GLES2InterfaceStub::GetActiveUniformBlockiv(GLuint /* program */,
+                                                 GLuint /* index */,
+                                                 GLenum /* pname */,
+                                                 GLint* /* params */) {
+}
 void GLES2InterfaceStub::GetActiveUniformBlockName(GLuint /* program */,
                                                    GLuint /* index */,
                                                    GLsizei /* bufsize */,

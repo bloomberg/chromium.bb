@@ -635,9 +635,7 @@ bool ProgramInfoManager::GetActiveUniformBlockiv(
       }
     }
   }
-  return false;
-  // TODO(zmo): return gl->GetActiveUniformBlockivHelper(
-  //                program, index, pname, params);
+  return gl->GetActiveUniformBlockivHelper(program, index, pname, params);
 }
 
 }  // namespace gles2

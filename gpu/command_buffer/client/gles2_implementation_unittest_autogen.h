@@ -751,6 +751,7 @@ TEST_F(GLES2ImplementationTest, GenTransformFeedbacks) {
 }
 // TODO(zmo): Implement unit test for GetActiveAttrib
 // TODO(zmo): Implement unit test for GetActiveUniform
+// TODO(zmo): Implement unit test for GetActiveUniformBlockiv
 // TODO(zmo): Implement unit test for GetActiveUniformBlockName
 // TODO(zmo): Implement unit test for GetAttachedShaders
 // TODO(zmo): Implement unit test for GetAttribLocation

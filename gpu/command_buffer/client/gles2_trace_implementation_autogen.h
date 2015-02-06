@@ -185,6 +185,10 @@ void GetActiveUniform(GLuint program,
                       GLint* size,
                       GLenum* type,
                       char* name) override;
+void GetActiveUniformBlockiv(GLuint program,
+                             GLuint index,
+                             GLenum pname,
+                             GLint* params) override;
 void GetActiveUniformBlockName(GLuint program,
                                GLuint index,
                                GLsizei bufsize,

@@ -78,6 +78,7 @@ ValueValidator<GLenum> texture_usage;
 ValueValidator<GLenum> texture_wrap_mode;
 ValueValidator<GLenum> transform_feedback_bind_target;
 ValueValidator<GLenum> transform_feedback_primitive_mode;
+ValueValidator<GLenum> uniform_block_parameter;
 ValueValidator<GLenum> value_buffer_target;
 ValueValidator<GLint> vertex_attrib_size;
 ValueValidator<GLenum> vertex_attrib_type;

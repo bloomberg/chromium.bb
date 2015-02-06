@@ -5260,6 +5260,23 @@ std::string GLES2Util::GetStringTransformFeedbackPrimitiveMode(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringUniformBlockParameter(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_UNIFORM_BLOCK_BINDING, "GL_UNIFORM_BLOCK_BINDING"},
+      {GL_UNIFORM_BLOCK_DATA_SIZE, "GL_UNIFORM_BLOCK_DATA_SIZE"},
+      {GL_UNIFORM_BLOCK_NAME_LENGTH, "GL_UNIFORM_BLOCK_NAME_LENGTH"},
+      {GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS"},
+      {GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+       "GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES"},
+      {GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
+       "GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER"},
+      {GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
+       "GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringValueBufferTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
