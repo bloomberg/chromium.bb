@@ -182,7 +182,6 @@
         '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../net/net_nacl.gyp:net_nacl',
-        '../ppapi/native_client/native_client.gyp:nacl_irt',
         '../ppapi/native_client/native_client.gyp:ppapi_lib',
         '../ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
         '../third_party/expat/expat_nacl.gyp:expat_nacl',
