@@ -1246,8 +1246,15 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
     const int kSmallImageSide = 32;
 
+    // Use the low-res, small default avatars in the fast user switcher, like
+    // we do in the menu bar.
+    gfx::Image item_icon;
+    bool is_rectangle;
+    AvatarMenu::GetImageForMenuButton(
+        item.profile_path, &item_icon, &is_rectangle);
+
     gfx::Image image = profiles::GetSizedAvatarIcon(
-        item.icon, true, kSmallImageSide, kSmallImageSide);
+        item_icon, true, kSmallImageSide, kSmallImageSide);
 
     views::LabelButton* button = new BackgroundColorHoverButton(
         this,

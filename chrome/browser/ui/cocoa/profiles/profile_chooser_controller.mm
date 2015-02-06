@@ -1781,8 +1781,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       imageTitleSpacing:kImageTitleSpacing
         backgroundColor:GetDialogBackgroundColor()]);
   [profileButton setTitle:base::SysUTF16ToNSString(item.name)];
+
+  // Use the low-res, small default avatars in the fast user switcher, like
+  // we do in the menu bar.
+  gfx::Image itemIcon;
+  bool isRectangle;
+  AvatarMenu::GetImageForMenuButton(item.profile_path, &itemIcon, &isRectangle);
+
   [profileButton setDefaultImage:CreateProfileImage(
-      item.icon, kSmallImageSide).ToNSImage()];
+      itemIcon, kSmallImageSide).ToNSImage()];
   [profileButton setImagePosition:NSImageLeft];
   [profileButton setAlignment:NSLeftTextAlignment];
   [profileButton setBordered:NO];
