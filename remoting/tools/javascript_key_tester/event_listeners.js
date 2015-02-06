@@ -34,6 +34,7 @@ var EventListeners = function(jsLog, pnaclLog, textLog,
 
   this.onKeyDownHandler_ = this.onKeyDown_.bind(this);
   this.onKeyUpHandler_ = this.onKeyUp_.bind(this);
+  this.onKeyPressHandler_ = this.onKeyPress_.bind(this);
   this.onMessageHandler_ = this.onMessage_.bind(this);
   this.onBlurHandler_ = this.onBlur_.bind(this);
 
@@ -49,6 +50,7 @@ var EventListeners = function(jsLog, pnaclLog, textLog,
 EventListeners.prototype.activate = function() {
   document.body.addEventListener('keydown', this.onKeyDownHandler_, false);
   document.body.addEventListener('keyup', this.onKeyUpHandler_, false);
+  document.body.addEventListener('keypress', this.onKeyPressHandler_, false);
   this.pnaclListener_.addEventListener('message', this.onMessageHandler_, true);
   this.pnaclPlugin_.addEventListener('blur', this.onBlurHandler_, false);
   this.onBlur_();
@@ -60,6 +62,7 @@ EventListeners.prototype.activate = function() {
 EventListeners.prototype.deactivate = function() {
   document.body.removeEventListener('keydown', this.onKeyDownHandler_, false);
   document.body.removeEventListener('keyup', this.onKeyUpHandler_, false);
+  document.body.removeEventListener('keypress', this.onKeyPressHandler_, false);
   this.pnaclListener_.removeEventListener(
       'message', this.onMessageHandler_, true);
   this.pnaclPlugin_.removeEventListener('blur', this.onBlurHandler_, false);
@@ -83,6 +86,17 @@ EventListeners.prototype.onKeyUp_ = function(event) {
   this.appendToTextLog_(this.jsonifyJavascriptKeyEvent_(event, 'keyup'));
   this.jsChordTracker_.addKeyUpEvent(
       event.keyCode, this.jsonifyJavascriptKeyEvent_(event, 'keyup', 2));
+}
+
+/**
+ * @param {Event} event
+ * @return {void}
+ */
+EventListeners.prototype.onKeyPress_ = function(event) {
+  this.appendToTextLog_(this.jsonifyJavascriptKeyEvent_(event, 'keypress'));
+  this.jsChordTracker_.addCharEvent(
+      String.fromCharCode(event.keyCode),
+      this.jsonifyJavascriptKeyEvent_(event, 'keypress', 2));
 }
 
 /**
