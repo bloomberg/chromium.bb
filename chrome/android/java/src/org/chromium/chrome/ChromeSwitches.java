@@ -131,6 +131,12 @@ public abstract class ChromeSwitches {
      */
     public static final String USE_SANDBOX_WALLET_ENVIRONMENT = "wallet-service-use-sandbox";
 
+    /**
+     * Change Google base URL.
+     * Native switch - switches::kGoogleBaseURL.
+     */
+    public static final String GOOGLE_BASE_URL = "google-base-url";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
