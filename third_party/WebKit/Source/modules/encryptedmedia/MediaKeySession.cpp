@@ -42,7 +42,6 @@
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebContentDecryptionModuleException.h"
@@ -76,29 +75,6 @@ enum {
 
 namespace blink {
 
-static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const String& initDataType)
-{
-    ASSERT(!keySystem.isEmpty());
-
-    // FIXME: Replace the isSupportedEncryptedMediaMIMEType() call with an
-    // explicit initDataType check. For now, we must convert an explicit set of
-    // initDataTypes to the correct MIME type. http://crbug.com/385874.
-    String contentType;
-    if (initDataType == "webm") {
-        contentType = "video/webm";
-    } else if (initDataType == "cenc") {
-        contentType = "video/mp4";
-    } else if (initDataType == "keyids") {
-        contentType = initDataType; // This will fail.
-    } else {
-        // Until the call below correctly handles initDataTypes, we must reject
-        // everything else, including the MIME types it accepts.
-        return false;
-    }
-
-    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, contentType, "");
-}
-
 // Checks that |sessionId| looks correct and returns whether all checks pass.
 static bool isValidSessionId(const String& sessionId)
 {
@@ -115,6 +91,13 @@ static bool isValidSessionId(const String& sessionId)
     }
 
     return true;
+}
+
+// Checks that |initDataType| is a registered Initialization Data Type.
+static bool isRegisteredInitDataType(const String& initDataType)
+{
+    // List from https://w3c.github.io/encrypted-media/initdata-format-registry.html
+    return initDataType == "cenc" || initDataType == "keyids" || initDataType == "webm";
 }
 
 static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::KeyStatus status)
@@ -456,9 +439,12 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
     //    Initialization Data Type, return a promise rejected with a new
     //    DOMException whose name is NotSupportedError. String comparison
     //    is case-sensitive.
-    if (!isKeySystemSupportedWithInitDataType(m_keySystem, initDataType)) {
+    //    (blink side doesn't know what the CDM supports, so the proper check
+    //     will be done on the Chromium side. However, we can verify that
+    //     |initDataType| is one of the registered values.)
+    if (!isRegisteredInitDataType(initDataType)) {
         return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataType + "' is not supported by the key system."));
+            scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataType + "' is not a registered Initialization Data Type."));
     }
 
     // 6. Let init data be a copy of the contents of the initData parameter.
