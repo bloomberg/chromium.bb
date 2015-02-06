@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x210
-  RenderBlock {HTML} at (0,0) size 800x210
-    RenderBody {BODY} at (8,16) size 784x186
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 472x16
+layer at (0,0) size 800x212
+  RenderBlock {HTML} at (0,0) size 800x212
+    RenderBody {BODY} at (8,16) size 784x188
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 472x18
           text run at (0,0) width 414: "All the following should look the same (and all should look like "
           text run at (413,0) width 59: "the first)."
-      LayoutTable {TABLE} at (0,32) size 450x154
+      LayoutTable {TABLE} at (0,34) size 450x154
         LayoutTableSection {TBODY} at (0,0) size 450x154
           LayoutTableRow {TR} at (0,2) size 450x150
             LayoutTableCell {TD} at (2,2) size 54x150 [bgcolor=#FF0000] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]

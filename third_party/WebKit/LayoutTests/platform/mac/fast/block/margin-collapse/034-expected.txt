@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x212
-  RenderBlock {HTML} at (0,0) size 800x212
-    RenderBody {BODY} at (8,16) size 784x188
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 456x16
+layer at (0,0) size 800x214
+  RenderBlock {HTML} at (0,0) size 800x214
+    RenderBody {BODY} at (8,16) size 784x190
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 456x18
           text run at (0,0) width 456: "The following three rectangles should be identical, with no red present."
-      LayoutTable {TABLE} at (0,32) size 316x156
+      LayoutTable {TABLE} at (0,34) size 316x156
         LayoutTableSection {TBODY} at (0,0) size 316x156
           LayoutTableRow {TR} at (0,16) size 316x54
             LayoutTableCell {TD} at (16,16) size 134x54 [bgcolor=#FF0000] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]

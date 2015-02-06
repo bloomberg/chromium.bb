@@ -1,17 +1,17 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x268
-  RenderBlock {HTML} at (0,0) size 800x268
-    RenderBody {BODY} at (8,8) size 784x244
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 653x16
+layer at (0,0) size 800x272
+  RenderBlock {HTML} at (0,0) size 800x272
+    RenderBody {BODY} at (8,8) size 784x248
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 653x18
           text run at (0,0) width 264: "You should see a green rectangle below. "
           text run at (263,0) width 390: "If you see any red other than anti-aliasing, the test has failed."
-      RenderBlock {P} at (0,226) size 784x18 [border: (1px solid #000000)]
-        RenderText {#text} at (1,1) size 189x16
+      RenderBlock {P} at (0,228) size 784x20 [border: (1px solid #000000)]
+        RenderText {#text} at (1,1) size 189x18
           text run at (1,1) width 189: "This line should look normal."
-layer at (8,24) size 384x194
-  RenderBlock {DIV} at (0,16) size 384x194 [bgcolor=#FF0000]
+layer at (8,26) size 384x194
+  RenderBlock {DIV} at (0,18) size 384x194 [bgcolor=#FF0000]
     RenderInline {SPAN} at (0,0) size 320x65 [color=#008000] [border: (1px solid #008000) none]
       RenderText {#text} at (0,1) size 320x64
         text run at (0,1) width 320: "xxxxx"
