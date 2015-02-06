@@ -27,21 +27,23 @@ ContentsAnimator::~ContentsAnimator() {
 }
 
 gfx::Rect ContentsAnimator::GetOnscreenPageBounds(int page_index) const {
-  return contents_view_->IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)
+  return contents_view_->GetPageIndexForState(
+             AppListModel::STATE_CUSTOM_LAUNCHER_PAGE) == page_index
              ? contents_view_->GetContentsBounds()
              : contents_view_->GetDefaultContentsBounds();
 }
 
 gfx::Rect ContentsAnimator::GetOffscreenPageBounds(int page_index) const {
-  gfx::Rect bounds(contents_view_->GetContentsBounds());
+  gfx::Rect bounds(GetOnscreenPageBounds(page_index));
   // The start page and search page origins are above; all other pages' origins
   // are below.
-  int page_height = bounds.height();
   bool origin_above = contents_view_->GetPageIndexForState(
                           AppListModel::STATE_START) == page_index ||
                       contents_view_->GetPageIndexForState(
                           AppListModel::STATE_SEARCH_RESULTS) == page_index;
-  bounds.set_y(origin_above ? -page_height : page_height);
+  bounds.set_y(origin_above
+                   ? -bounds.height()
+                   : contents_view_->GetContentsBounds().height() + bounds.y());
   return bounds;
 }
 
