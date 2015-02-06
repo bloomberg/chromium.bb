@@ -203,10 +203,16 @@
     "dependencies": ["permission:networking.config"],
     "contexts": ["blessed_extension"]
   },
-  "networkingPrivate": {
+  "networkingPrivate": [{
     "dependencies": ["permission:networkingPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://network/*"
+    ]
+  }],
   "power": {
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]

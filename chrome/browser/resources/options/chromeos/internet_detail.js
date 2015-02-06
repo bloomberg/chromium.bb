@@ -7,8 +7,7 @@
 // NOTE(stevenjb): This code is in the process of being converted to be
 // compatible with the networkingPrivate extension API:
 // * The network property dictionaries are being converted to use ONC values.
-// * chrome.send calls will be replaced with an API object that simulates the
-//   networkingPrivate API. See network_config.js.
+// * chrome.send calls will be replaced with chrome.networkingPrivate calls.
 // See crbug.com/279351 for more info.
 
 cr.define('options.internet', function() {

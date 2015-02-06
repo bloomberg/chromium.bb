@@ -36,7 +36,32 @@ var NetworkUI = (function() {
   ];
 
   /**
-   * Create a cell with a button for expanding a network state table row.
+   * Returns the property associated with a key (which may reference a
+   * sub-object).
+   *
+   * @param {Object} properties The object containing the network properties.
+   * @param {string} key The ONC key for the property. May refer to a nested
+   *     propety, e.g. 'WiFi.Security'.
+   * @return {*} The value associated with the property.
+   */
+  var getValueFromProperties = function(properties, key) {
+    if (!key) {
+      console.error('Empty key');
+      return undefined;
+    }
+    var dot = key.indexOf('.');
+    if (dot > 0) {
+      var key1 = key.substring(0, dot);
+      var key2 = key.substring(dot + 1);
+      var subobject = properties[key1];
+      if (subobject)
+        return getValueFromProperties(subobject, key2);
+    }
+    return properties[key];
+  };
+
+  /**
+   * Creates a cell with a button for expanding a network state table row.
    *
    * @param {string} guid The GUID identifying the network.
    * @return {DOMElement} The created td element that displays the given value.
@@ -55,7 +80,7 @@ var NetworkUI = (function() {
   };
 
   /**
-   * Create a cell in network state table.
+   * Creates a cell in network state table.
    *
    * @param {string} value Content in the cell.
    * @return {DOMElement} The created td element that displays the given value.
@@ -67,7 +92,7 @@ var NetworkUI = (function() {
   };
 
   /**
-   * Create a row in the network state table.
+   * Creates a row in the network state table.
    *
    * @param {Array} stateFields The state fields to use for the row.
    * @param {Object} state Property values for the network or favorite.
@@ -83,10 +108,10 @@ var NetworkUI = (function() {
       var field = stateFields[i];
       var value = '';
       if (typeof field == 'string') {
-        value = networkConfig.getValueFromProperties(state, field);
+        value = getValueFromProperties(state, field);
       } else {
         for (var j = 0; j < field.length; ++j) {
-          value = networkConfig.getValueFromProperties(state, field[j]);
+          value = getValueFromProperties(state, field[j]);
           if (value)
             break;
         }
@@ -99,7 +124,7 @@ var NetworkUI = (function() {
   };
 
   /**
-   * Create table for networks or favorites.
+   * Creates a table for networks or favorites.
    *
    * @param {string} tablename The name of the table to be created.
    * @param {Array} stateFields The list of fields for the table.
@@ -136,7 +161,7 @@ var NetworkUI = (function() {
   };
 
   /**
-   * Toggle the button state and add or remove a row displaying the complete
+   * Toggles the button state and add or remove a row displaying the complete
    * state information for a row.
    *
    * @param {DOMElement} btn The button that was clicked.
@@ -169,36 +194,65 @@ var NetworkUI = (function() {
     emptyCell.style.border = 'none';
     expandedRow.appendChild(emptyCell);
     var detailCell = document.createElement('td');
+    detailCell.id = guid;
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
     expandedRow.appendChild(detailCell);
-    var showDetail = function(state) {
-      if (networkConfig.lastError)
-        detailCell.textContent = networkConfig.lastError;
+    var showDetail = function(state, error) {
+      if (error && error.message)
+        detailCell.textContent = error.message;
       else
         detailCell.textContent = JSON.stringify(state, null, '\t');
     };
     var selected = $('get-property-format').selectedIndex;
     var selectedId = $('get-property-format').options[selected].value;
-    if (selectedId == 'shill')
-      networkConfig.getShillProperties(guid, showDetail);
-    else if (selectedId == 'managed')
-      networkConfig.getManagedProperties(guid, showDetail);
-    else
-      networkConfig.getProperties(guid, showDetail);
+    if (selectedId == 'shill') {
+      chrome.send('getShillProperties', [guid]);
+    } else if (selectedId == 'managed') {
+      chrome.networkingPrivate.getManagedProperties(guid, function(properties) {
+        showDetail(properties, chrome.runtime.lastError); });
+    } else {
+      chrome.networkingPrivate.getProperties(guid, function(properties) {
+        showDetail(properties, chrome.runtime.lastError); });
+    }
     return expandedRow;
+  };
+
+  /**
+   * Callback invoked by Chrome after a getShillProperties call.
+   *
+   * @param {Object} properties The requested Shill properties. Will contain
+   *     just the 'GUID' and 'ShillError' properties if the call failed.
+   */
+  var getShillPropertiesResult = function(args) {
+    var properties = args.shift();
+    var guid = properties['GUID'];
+    if (!guid) {
+      console.error('No GUID in getShillPropertiesResult');
+      return;
+    }
+
+    var detailCell = document.querySelector('td#' + guid);
+    if (!detailCell) {
+      console.error('No cell for GUID: ' + guid);
+      return;
+    }
+
+    if (properties['ShillError'])
+      detailCell.textContent = properties['ShillError'];
+    else
+      detailCell.textContent = JSON.stringify(properties, null, '\t');
+
   };
 
   /**
    * Requests an update of all network info.
    */
   var requestNetworks = function() {
-    networkConfig.getNetworks(
-        { 'type': 'All', 'visible': true },
-        onVisibleNetworksReceived);
-    networkConfig.getNetworks(
-        { 'type': 'All', 'configured': true },
-        onFavoriteNetworksReceived);
+    chrome.networkingPrivate.getNetworks(
+        {'networkType': 'All', 'visible': true}, onVisibleNetworksReceived);
+    chrome.networkingPrivate.getNetworks(
+        {'networkType': 'All', 'configured': true}, onFavoriteNetworksReceived);
   };
 
   /**
@@ -211,7 +265,7 @@ var NetworkUI = (function() {
   };
 
   /**
-   * Get network information from WebUI.
+   * Gets network information from WebUI.
    */
   document.addEventListener('DOMContentLoaded', function() {
     $('refresh').onclick = requestNetworks;
@@ -219,5 +273,7 @@ var NetworkUI = (function() {
     requestNetworks();
   });
 
-  return {};
+  return {
+    getShillPropertiesResult: getShillPropertiesResult
+  };
 })();
