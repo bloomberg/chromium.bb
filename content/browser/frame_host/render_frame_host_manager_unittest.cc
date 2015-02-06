@@ -973,7 +973,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   // used yet. UpdateStateForNavigate() took the short cut path.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
-    EXPECT_FALSE(manager->speculative_web_ui_for_testing());
+    EXPECT_FALSE(manager->speculative_web_ui());
   } else {
     EXPECT_FALSE(manager->pending_web_ui());
   }
@@ -1033,6 +1033,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // RenderWidgetHost::Init when opening a new tab from a link.
   manager2->current_host()->CreateRenderView(
       base::string16(), -1, MSG_ROUTING_NONE, -1, false);
+  EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
   const GURL kUrl2("chrome://foo/bar");
   NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
@@ -1044,6 +1045,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // No cross-process transition happens because we are already in the right
   // SiteInstance.  We should grant bindings immediately.
   EXPECT_EQ(host2, manager2->current_frame_host());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    EXPECT_TRUE(manager2->speculative_web_ui());
+  } else {
+    EXPECT_TRUE(manager2->pending_web_ui());
+  }
   EXPECT_TRUE(
       host2->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 

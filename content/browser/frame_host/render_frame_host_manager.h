@@ -237,7 +237,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // PlzNavigate
   // Returns the speculative WebUI for the navigation (a newly created one or
   // the current one if it should be reused). If none is set returns nullptr.
-  WebUIImpl* speculative_web_ui_for_testing() const {
+  WebUIImpl* speculative_web_ui() const {
     return should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
   }
 

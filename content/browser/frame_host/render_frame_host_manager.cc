@@ -715,6 +715,22 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // --site-per-process is enabled.
     CleanUpNavigation();
     navigation_rfh = render_frame_host_.get();
+
+    // As SiteInstances are the same, check if the WebUI should be reused.
+    const NavigationEntry* current_navigation_entry =
+        delegate_->GetLastCommittedNavigationEntryForRenderManager();
+    bool should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry,
+                                                 request.common_params().url);
+    if (!should_reuse_web_ui_) {
+      speculative_web_ui_ = CreateWebUI(request.common_params().url,
+                                        request.bindings());
+      // Make sure the current RenderViewHost has the right bindings.
+      if (speculative_web_ui() &&
+          !render_frame_host_->GetProcess()->IsIsolatedGuest()) {
+        render_frame_host_->render_view_host()->AllowBindings(
+            speculative_web_ui()->GetBindings());
+      }
+    }
   } else {
     // If the SiteInstance for the final URL doesn't match the one from the
     // speculatively created RenderFrameHost, create a new RenderFrameHost using
@@ -763,6 +779,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
 // PlzNavigate
 void RenderFrameHostManager::CleanUpNavigation() {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  speculative_web_ui_.reset();
+  should_reuse_web_ui_ = false;
   if (speculative_render_frame_host_)
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
 }
@@ -772,8 +792,6 @@ scoped_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  speculative_web_ui_.reset();
-  should_reuse_web_ui_ = false;
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
   return speculative_render_frame_host_.Pass();
 }
@@ -1270,15 +1288,12 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     int bindings) {
   CHECK(new_instance);
   CHECK_NE(old_instance, new_instance);
+  CHECK(!should_reuse_web_ui_);
 
-  const NavigationEntry* current_navigation_entry =
-      delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  // Note: |should_reuse_web_ui_| and |speculative_web_ui_| must be initialized
-  // before trying to create the |speculative_render_frame_host_|. Otherwise the
-  // WebUI won't be properly initialized.
-  bool should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry, url);
-  if (!should_reuse_web_ui_)
-    speculative_web_ui_ = CreateWebUI(url, bindings);
+  // Note: |speculative_web_ui_| must be initialized before starting the
+  // |speculative_render_frame_host_| creation steps otherwise the WebUI
+  // won't be properly initialized.
+  speculative_web_ui_ = CreateWebUI(url, bindings);
 
   int create_render_frame_flags = 0;
   int opener_route_id =
@@ -1294,7 +1309,6 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
                         opener_route_id, create_render_frame_flags, nullptr);
 
   if (!speculative_render_frame_host_) {
-    should_reuse_web_ui_ = false;
     speculative_web_ui_.reset();
     return false;
   }
@@ -1727,6 +1741,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   const NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
 
+  DCHECK(!cross_navigation_pending_);
+
   if (new_instance.get() != current_instance) {
     TRACE_EVENT_INSTANT2(
         "navigation",
@@ -1736,7 +1752,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
         "new_instance id", new_instance->GetId());
 
     // New SiteInstance: create a pending RFH to navigate.
-    DCHECK(!cross_navigation_pending_);
 
     // This will possibly create (set to nullptr) a Web UI object for the
     // pending page. We'll use this later to give the page special access. This
@@ -1805,7 +1820,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   }
 
   // Otherwise the same SiteInstance can be used.  Navigate render_frame_host_.
-  DCHECK(!cross_navigation_pending_);
 
   // It's possible to swap out the current RFH and then decide to navigate in it
   // anyway (e.g., a cross-process navigation that redirects back to the
