@@ -42,7 +42,7 @@ function FileSystemMetadata(
 
 /**
  * Obtains metadata for entries.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Promise<!Array<!ExternalMetadataProperties>>}
  */
@@ -83,7 +83,7 @@ FileSystemMetadata.prototype.get = function(entries, names) {
 
 /**
  * Obtains metadata cache for entries.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Array<!ExternalMetadataProperties>}
  */
@@ -93,7 +93,7 @@ FileSystemMetadata.prototype.getCache = function(entries, names) {
 
 /**
  * Clears old metadata for newly created entries.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  */
 FileSystemMetadata.prototype.notifyEntryCreated = function(entries) {
   this.cache_.clear(entries);

@@ -19,7 +19,7 @@ function MetadataCacheSet(items) {
 
 /**
  * Creates list of MetadataRequest based on the cache state.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
  * @return {!Array<!MetadataRequest>}
  */
@@ -56,7 +56,7 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
  * Stores results from NewMetadataProvider with the request Id.
  * @param {number} requestId Request ID. If a newer operation has already been
  *     done, the results must be ingored.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  * @param {!Array<!Object>} results
  * @return {boolean} Whether at least one result is stored or not.
  */
@@ -75,7 +75,7 @@ MetadataCacheSet.prototype.storeProperties = function(
 /**
  * Obtains cached properties for entries and names.
  * Note that it returns invalidated properties also.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Property names.
  */
 MetadataCacheSet.prototype.get = function(entries, names) {
@@ -92,7 +92,7 @@ MetadataCacheSet.prototype.get = function(entries, names) {
  * time of startRequests.
  * @param {number} requestId Request ID of the invalidation request. This must
  *     be larger than other requets ID passed to the set before.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  */
 MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
   for (var i = 0; i < entries.length; i++) {
@@ -104,7 +104,7 @@ MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
 
 /**
  * Clears the caches of entries.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  */
 MetadataCacheSet.prototype.clear = function(entries) {
   for (var i = 0; i < entries.length; i++) {
@@ -114,7 +114,7 @@ MetadataCacheSet.prototype.clear = function(entries) {
 
 /**
  * Creates snapshot of the cache for entries.
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  */
 MetadataCacheSet.prototype.createSnapshot = function(entries) {
   var items = {};
@@ -129,7 +129,7 @@ MetadataCacheSet.prototype.createSnapshot = function(entries) {
 
 /**
  * Returns whether all the given properties are fulfilled.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Property names.
  * @return {boolean}
  */
@@ -260,14 +260,14 @@ MetadataCacheSetStorageForLRUCache.prototype.remove = function(url) {
 };
 
 /**
- * @param {!FileEntry} entry Entry
+ * @param {!Entry} entry Entry
  * @param {!Array<string>} names Property name list to be requested.
  * @constructor
  * @struct
  */
 function MetadataRequest(entry, names) {
   /**
-   * @public {!FileEntry}
+   * @public {!Entry}
    * @const
    */
   this.entry = entry;

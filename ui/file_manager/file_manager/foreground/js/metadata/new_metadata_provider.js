@@ -45,7 +45,7 @@ NewMetadataProvider.prototype.getImpl;
 
 /**
  * Obtains metadata for entries.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Promise<!Array<!T>>}
  */
@@ -116,7 +116,7 @@ NewMetadataProvider.prototype.get = function(entries, names) {
 
 /**
  * Obtains metadata cache for entries.
- * @param {!Array<!FileEntry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Array<!T>}
  */
@@ -125,7 +125,7 @@ NewMetadataProvider.prototype.getCache = function(entries, names) {
 };
 
 /**
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
  * @param {!MetadataCacheSet} cache
  * @param {function(!T):undefined} fulfill
@@ -137,7 +137,7 @@ NewMetadataProvider.prototype.getCache = function(entries, names) {
 function MetadataProviderCallbackRequest(
     entries, names, cache, fulfill, reject) {
   /**
-   * @private {!Array<!FileEntry>}
+   * @private {!Array<!Entry>}
    * @const
    */
   this.entries_ = entries;
@@ -171,7 +171,7 @@ function MetadataProviderCallbackRequest(
  * Stores properties to snapshot cache of the callback request.
  * If all the requested property are served, it invokes the callback.
  * @param {number} requestId
- * @param {!Array<!FileEntry>} entries
+ * @param {!Array<!Entry>} entries
  * @param {!Array<!Object>} objects
  * @return {boolean} Whether the callback is invoked or not.
  */
