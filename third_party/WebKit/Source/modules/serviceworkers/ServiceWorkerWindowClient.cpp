@@ -51,20 +51,15 @@ String ServiceWorkerWindowClient::visibilityState() const
 
 String ServiceWorkerWindowClient::frameType() const
 {
-    DEFINE_STATIC_LOCAL(const String, auxiliary, ("auxiliary"));
-    DEFINE_STATIC_LOCAL(const String, nested, ("nested"));
-    DEFINE_STATIC_LOCAL(const String, none, ("none"));
-    DEFINE_STATIC_LOCAL(const String, topLevel, ("top-level"));
-
     switch (m_frameType) {
     case WebURLRequest::FrameTypeAuxiliary:
-        return auxiliary;
+        return "auxiliary";
     case WebURLRequest::FrameTypeNested:
-        return nested;
+        return "nested";
     case WebURLRequest::FrameTypeNone:
-        return none;
+        return "none";
     case WebURLRequest::FrameTypeTopLevel:
-        return topLevel;
+        return "top-level";
     }
 
     ASSERT_NOT_REACHED();
