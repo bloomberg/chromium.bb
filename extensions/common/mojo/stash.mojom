@@ -17,6 +17,10 @@ struct StashedObject {
 
   // The handles contained within the serialization struct.
   array<handle> stashed_handles;
+
+  // Whether to monitor |stashed_handles| and relaunch the client when a handle
+  // becomes readable.
+  bool monitor_handles = false;
 };
 
 interface StashService {

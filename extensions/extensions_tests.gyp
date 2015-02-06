@@ -27,6 +27,7 @@
         '../third_party/mojo/mojo_edk.gyp:mojo_js_lib',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
         'common/api/api.gyp:cast_channel_proto',
         'extensions.gyp:extensions_common',
         'extensions.gyp:extensions_renderer',

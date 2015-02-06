@@ -292,6 +292,7 @@ if (false) {
       "//third_party/mojo/src/mojo/edk/js",
       "//third_party/mojo/src/mojo/edk/system",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//third_party/mojo/src/mojo/public/interfaces/application",
     ]
 
     if (is_win) {

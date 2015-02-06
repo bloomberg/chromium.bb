@@ -5,9 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
 #define EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
 
-#include <vector>
-
-#include "base/memory/linked_ptr.h"
+#include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/mojo/stash.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -17,7 +16,7 @@ namespace extensions {
 // A backend that provides access to StashService for a single extension.
 class StashBackend {
  public:
-  StashBackend();
+  explicit StashBackend(const base::Closure& on_handle_readable);
   ~StashBackend();
 
   // Creates a StashService that forwards calls to this StashBackend and bind it
@@ -32,8 +31,19 @@ class StashBackend {
   mojo::Array<StashedObjectPtr> RetrieveStash();
 
  private:
+  class StashEntry;
+
+  // Invoked when a handle is readable.
+  void OnHandleReady();
+
   // The objects that have been stashed.
-  mojo::Array<StashedObjectPtr> stashed_objects_;
+  ScopedVector<StashEntry> stashed_objects_;
+
+  // The callback to call when a handle is readable.
+  const base::Closure on_handle_readable_;
+
+  // Whether a handle has become readable since the last RetrieveStash() call.
+  bool has_notified_;
 
   base::WeakPtrFactory<StashBackend> weak_factory_;
 

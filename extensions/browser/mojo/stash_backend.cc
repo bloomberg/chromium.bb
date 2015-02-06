@@ -4,51 +4,36 @@
 
 #include "extensions/browser/mojo/stash_backend.h"
 
+#include "base/bind.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h"
+
 namespace extensions {
+namespace {
 
 // An implementation of StashService that forwards calls to a StashBackend.
-class StashServiceImpl : public mojo::InterfaceImpl<StashService> {
+class StashServiceImpl : public StashService {
  public:
-  explicit StashServiceImpl(base::WeakPtr<StashBackend> backend);
+  StashServiceImpl(mojo::InterfaceRequest<StashService> request,
+                   base::WeakPtr<StashBackend> backend);
   ~StashServiceImpl() override;
 
-  // mojo::InterfaceImpl<StashService> overrides.
+  // StashService overrides.
   void AddToStash(mojo::Array<StashedObjectPtr> stash) override;
   void RetrieveStash(
       const mojo::Callback<void(mojo::Array<StashedObjectPtr> stash)>& callback)
       override;
 
  private:
+  mojo::StrongBinding<StashService> binding_;
   base::WeakPtr<StashBackend> backend_;
 
   DISALLOW_COPY_AND_ASSIGN(StashServiceImpl);
 };
 
-StashBackend::StashBackend() : weak_factory_(this) {
-}
-
-StashBackend::~StashBackend() {
-}
-
-void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
-  for (size_t i = 0; i < stashed_objects.size(); i++) {
-    stashed_objects_.push_back(stashed_objects[i].Pass());
-  }
-}
-
-mojo::Array<StashedObjectPtr> StashBackend::RetrieveStash() {
-  if (stashed_objects_.is_null())
-    stashed_objects_.resize(0);
-  return stashed_objects_.Pass();
-}
-
-void StashBackend::BindToRequest(mojo::InterfaceRequest<StashService> request) {
-  mojo::BindToRequest(new StashServiceImpl(weak_factory_.GetWeakPtr()),
-                      &request);
-}
-
-StashServiceImpl::StashServiceImpl(base::WeakPtr<StashBackend> backend)
-    : backend_(backend) {
+StashServiceImpl::StashServiceImpl(mojo::InterfaceRequest<StashService> request,
+                                   base::WeakPtr<StashBackend> backend)
+    : binding_(this, request.Pass()), backend_(backend) {
 }
 
 StashServiceImpl::~StashServiceImpl() {
@@ -68,6 +53,115 @@ void StashServiceImpl::RetrieveStash(
     return;
   }
   callback.Run(backend_->RetrieveStash());
+}
+
+}  // namespace
+
+// A stash entry for a stashed object. This handles notifications if a handle
+// within the stashed object is readable.
+class StashBackend::StashEntry {
+ public:
+  // Construct a StashEntry for |stashed_object|. If |on_handle_readable| is
+  // non-null, it will be invoked when any handle on |stashed_object| is
+  // readable.
+  StashEntry(StashedObjectPtr stashed_object,
+             const base::Closure& on_handle_readable);
+  ~StashEntry();
+
+  // Returns the stashed object.
+  StashedObjectPtr Release();
+
+  // Cancels notifications for handles becoming readable.
+  void CancelHandleNotifications();
+
+ private:
+  // Invoked when a handle within |stashed_object_| is readable.
+  void OnHandleReady(MojoResult result);
+
+  // The waiters that are waiting for handles to be readable.
+  ScopedVector<mojo::AsyncWaiter> waiters_;
+
+  StashedObjectPtr stashed_object_;
+
+  // If non-null, a callback to call when a handle contained within
+  // |stashed_object_| is readable.
+  const base::Closure on_handle_readable_;
+};
+
+StashBackend::StashBackend(const base::Closure& on_handle_readable)
+    : on_handle_readable_(on_handle_readable),
+      has_notified_(false),
+      weak_factory_(this) {
+}
+
+StashBackend::~StashBackend() {
+}
+
+void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
+  for (size_t i = 0; i < stashed_objects.size(); i++) {
+    stashed_objects_.push_back(
+        new StashEntry(stashed_objects[i].Pass(),
+                       has_notified_ ? base::Closure()
+                                     : base::Bind(&StashBackend::OnHandleReady,
+                                                  weak_factory_.GetWeakPtr())));
+  }
+}
+
+mojo::Array<StashedObjectPtr> StashBackend::RetrieveStash() {
+  has_notified_ = false;
+  mojo::Array<StashedObjectPtr> result(0);
+  for (auto& entry : stashed_objects_) {
+    result.push_back(entry->Release());
+  }
+  stashed_objects_.clear();
+  return result.Pass();
+}
+
+void StashBackend::BindToRequest(mojo::InterfaceRequest<StashService> request) {
+  new StashServiceImpl(request.Pass(), weak_factory_.GetWeakPtr());
+}
+
+void StashBackend::OnHandleReady() {
+  DCHECK(!has_notified_);
+  has_notified_ = true;
+  for (auto& entry : stashed_objects_) {
+    entry->CancelHandleNotifications();
+  }
+  if (!on_handle_readable_.is_null())
+    on_handle_readable_.Run();
+}
+
+StashBackend::StashEntry::StashEntry(StashedObjectPtr stashed_object,
+                                     const base::Closure& on_handle_readable)
+    : stashed_object_(stashed_object.Pass()),
+      on_handle_readable_(on_handle_readable) {
+  if (on_handle_readable_.is_null() || !stashed_object_->monitor_handles)
+    return;
+
+  for (size_t i = 0; i < stashed_object_->stashed_handles.size(); i++) {
+    waiters_.push_back(new mojo::AsyncWaiter(
+        stashed_object_->stashed_handles[i].get(), MOJO_HANDLE_SIGNAL_READABLE,
+        base::Bind(&StashBackend::StashEntry::OnHandleReady,
+                   base::Unretained(this))));
+  }
+}
+
+StashBackend::StashEntry::~StashEntry() {
+}
+
+StashedObjectPtr StashBackend::StashEntry::Release() {
+  waiters_.clear();
+  return stashed_object_.Pass();
+}
+
+void StashBackend::StashEntry::CancelHandleNotifications() {
+  waiters_.clear();
+}
+
+void StashBackend::StashEntry::OnHandleReady(MojoResult result) {
+  if (result != MOJO_RESULT_OK)
+    return;
+  on_handle_readable_.Run();
 }
 
 }  // namespace extensions
