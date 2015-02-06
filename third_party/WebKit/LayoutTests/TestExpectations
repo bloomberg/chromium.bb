@@ -1,6 +1,9 @@
 
 crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
+crbug.com/452967 [ Mac ] svg/batik/text/textPosition2.svg [ NeedsRebaseline ]
+crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ NeedsRebaseline ]
+
 # These need a manual rebaseline for Mac after crbug.com/452967
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
