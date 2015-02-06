@@ -4405,10 +4405,8 @@
                   # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
                   # Only apply this to the target linker, since the host
                   # linker might not be gold, but isn't used much anyway.
-                  # TODO(raymes): Disable threading because gold is frequently
-                  # crashing on the bots: crbug.com/161942.
-                  # '-Wl,--threads',
-                  # '-Wl,--thread-count=4',
+                  '-Wl,--threads',
+                  '-Wl,--thread-count=4',
                 ],
               }],
             ],
