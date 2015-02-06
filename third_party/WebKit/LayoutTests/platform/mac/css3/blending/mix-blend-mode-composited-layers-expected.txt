@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "children": [
         {
-          "bounds": [800, 67],
+          "bounds": [800, 69],
           "isolate": true,
           "drawsContent": true,
           "children": [
