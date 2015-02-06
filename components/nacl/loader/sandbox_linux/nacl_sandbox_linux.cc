@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -22,6 +23,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
+#include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
@@ -48,6 +50,21 @@ base::ScopedFD GetProcSelfTask(int proc_fd) {
       openat(proc_fd, "self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
   PCHECK(proc_self_task.is_valid());
   return proc_self_task.Pass();
+}
+
+bool MaybeSetProcessNonDumpable() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
+    return true;
+  }
+
+  if (prctl(PR_SET_DUMPABLE, 0, 0, 0, 0) != 0) {
+    PLOG(ERROR) << "Failed to set non-dumpable flag";
+    return false;
+  }
+
+  return prctl(PR_GET_DUMPABLE) == 0;
 }
 
 }  // namespace
@@ -91,6 +108,7 @@ void NaClSandbox::InitializeLayerOneSandbox() {
 
     // Get sandboxed.
     CHECK(setuid_sandbox_client_->ChrootMe());
+    CHECK(MaybeSetProcessNonDumpable());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
   }

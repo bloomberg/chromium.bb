@@ -19,7 +19,7 @@ CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowInsecureWebSocketFromHttpsOrigin[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
-extern const char kAllowSandboxDebugging[];
+CONTENT_EXPORT extern const char kAllowSandboxDebugging[];
 extern const char kAuditAllHandles[];
 extern const char kAuditHandles[];
 CONTENT_EXPORT extern const char kBlinkPlatformLogChannels[];
