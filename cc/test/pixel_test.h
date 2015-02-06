@@ -89,9 +89,6 @@ class RendererPixelTest : public PixelTest {
     return static_cast<RendererType*>(renderer_.get());
   }
 
-  bool UseSkiaGPUBackend() const;
-  bool ExpandedViewport() const;
-
  protected:
   void SetUp() override;
 };
@@ -145,32 +142,10 @@ inline void RendererPixelTest<GLRenderer>::SetUp() {
 }
 
 template<>
-inline bool RendererPixelTest<GLRenderer>::UseSkiaGPUBackend() const {
-  return false;
-}
-
-template<>
-inline bool RendererPixelTest<GLRenderer>::ExpandedViewport() const {
-  return false;
-}
-
-template<>
 inline void RendererPixelTest<GLRendererWithExpandedViewport>::SetUp() {
   SetUpGLRenderer(false, false);
   ForceExpandedViewport(gfx::Size(50, 50));
   ForceViewportOffset(gfx::Vector2d(10, 20));
-}
-
-template <>
-inline bool
-RendererPixelTest<GLRendererWithExpandedViewport>::UseSkiaGPUBackend() const {
-  return false;
-}
-
-template <>
-inline bool
-RendererPixelTest<GLRendererWithExpandedViewport>::ExpandedViewport() const {
-  return true;
 }
 
 template <>
@@ -179,30 +154,8 @@ inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
 }
 
 template <>
-inline bool RendererPixelTest<GLRendererWithFlippedSurface>::UseSkiaGPUBackend()
-    const {
-  return false;
-}
-
-template <>
-inline bool RendererPixelTest<GLRendererWithFlippedSurface>::ExpandedViewport()
-    const {
-  return true;
-}
-
-template <>
 inline void RendererPixelTest<SoftwareRenderer>::SetUp() {
   SetUpSoftwareRenderer();
-}
-
-template<>
-inline bool RendererPixelTest<SoftwareRenderer>::UseSkiaGPUBackend() const {
-  return false;
-}
-
-template <>
-inline bool RendererPixelTest<SoftwareRenderer>::ExpandedViewport() const {
-  return false;
 }
 
 template<>
@@ -210,18 +163,6 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
   SetUpSoftwareRenderer();
   ForceExpandedViewport(gfx::Size(50, 50));
   ForceViewportOffset(gfx::Vector2d(10, 20));
-}
-
-template <>
-inline bool RendererPixelTest<
-    SoftwareRendererWithExpandedViewport>::UseSkiaGPUBackend() const {
-  return false;
-}
-
-template <>
-inline bool RendererPixelTest<
-    SoftwareRendererWithExpandedViewport>::ExpandedViewport() const {
-  return true;
 }
 
 typedef RendererPixelTest<GLRenderer> GLRendererPixelTest;
