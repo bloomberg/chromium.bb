@@ -7,7 +7,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
@@ -133,6 +135,9 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                                    const std::string& tag_content,
                                    const GURL& expected_url);
 
+  // Called when the result of the CheckHasServiceWorker query has completed.
+  void OnDidCheckHasServiceWorker(bool has_service_worker);
+
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;
   GURL validated_url_;
@@ -148,6 +153,11 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;
+
+  // A weak pointer is used as the lifetime of the ServiceWorkerContext is
+  // longer than the lifetime of this banner manager. The banner manager
+  // might be gone when calls sent to the ServiceWorkerContext are completed.
+  base::WeakPtrFactory<AppBannerManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManager);
 };  // class AppBannerManager

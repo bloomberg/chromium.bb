@@ -24,8 +24,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/manifest.h"
@@ -46,7 +50,8 @@ const char kBannerTag[] = "google-play-id";
 namespace banners {
 
 AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj)
-    : weak_java_banner_view_manager_(env, obj) {}
+    : weak_java_banner_view_manager_(env, obj), weak_factory_(this) {
+}
 
 AppBannerManager::~AppBannerManager() {
 }
@@ -148,21 +153,38 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
     return;
   }
 
-  // TODO(benwells): Check triggering parameters here and if there is a meta
-  // tag.
-
-  // Create an infobar to promote the manifest's app.
   web_app_data_ = manifest;
   app_title_ = web_app_data_.name.string();
-  GURL icon_url =
-      ManifestIconSelector::FindBestMatchingIcon(
-          manifest.icons,
-          GetPreferredIconSize(),
-          gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
-  if (icon_url.is_empty())
-    return;
 
-  FetchIcon(icon_url);
+  // Check to see if there is a single service worker controlling this page
+  // and the manifest's start url.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartition(
+          profile, web_contents()->GetSiteInstance());
+  DCHECK(storage_partition);
+
+  storage_partition->GetServiceWorkerContext()->CheckHasServiceWorker(
+      validated_url_, manifest.start_url,
+      base::Bind(&AppBannerManager::OnDidCheckHasServiceWorker,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void AppBannerManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
+  if (has_service_worker) {
+    // TODO(benwells): Check triggering parameters.
+    // Create an infobar to promote the manifest's app.
+    GURL icon_url =
+        ManifestIconSelector::FindBestMatchingIcon(
+            web_app_data_.icons,
+            GetPreferredIconSize(),
+            gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
+    if (icon_url.is_empty())
+      return;
+
+    FetchIcon(icon_url);
+  }
 }
 
 bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {

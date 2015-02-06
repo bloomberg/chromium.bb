@@ -32,6 +32,9 @@ class ServiceWorkerContext {
   typedef base::Callback<void(const std::vector<ServiceWorkerUsageInfo>&
                                   usage_info)> GetUsageInfoCallback;
 
+  typedef base::Callback<void(bool has_service_worker)>
+      CheckHasServiceWorkerCallback;
+
   // Registers the header name which should not be passed to the ServiceWorker.
   // Must be called from the IO thread.
   CONTENT_EXPORT static void AddExcludedHeadersForFetchEvent(
@@ -73,7 +76,7 @@ class ServiceWorkerContext {
 
   // TODO(jyasskin): Provide a way to SendMessage to a Scope.
 
-  // Determines if a request for 'url' can be satisfied while offline.
+  // Determines if a request for |url| can be satisfied while offline.
   // This method always completes asynchronously.
   virtual void CanHandleMainResourceOffline(const GURL& url,
                                             const GURL& first_party,
@@ -83,6 +86,17 @@ class ServiceWorkerContext {
   // Methods used in response to browsing data and quota manager requests.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;
+
+  // Returns true if an active Service Worker registration exists that matches
+  // |url|, and if |other_url| falls inside the scope of the same registration.
+  // Note this still returns true even if there is a Service Worker registration
+  // which has a longer match for |other_url|.
+  // This function can be called from any thread, but the callback will always
+  // be called on the UI thread.
+  virtual void CheckHasServiceWorker(
+      const GURL& url,
+      const GURL& other_url,
+      const CheckHasServiceWorkerCallback& callback) = 0;
 
  protected:
   ServiceWorkerContext() {}

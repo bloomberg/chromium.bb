@@ -85,6 +85,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const net::CompletionCallback& callback) override;
   void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
   void DeleteForOrigin(const GURL& origin_url) override;
+  void CheckHasServiceWorker(
+      const GURL& url,
+      const GURL& other_url,
+      const CheckHasServiceWorkerCallback& callback) override;
 
   // DeleteForOrigin with completion callback.  Does not exit early, and returns
   // false if one or more of the deletions fail.
@@ -128,6 +132,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidGetAllRegistrationsForGetAllOrigins(
       const GetUsageInfoCallback& callback,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+
+  void DidFindRegistrationForCheckHasServiceWorker(
+      const GURL& other_url,
+      const CheckHasServiceWorkerCallback& callback,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
