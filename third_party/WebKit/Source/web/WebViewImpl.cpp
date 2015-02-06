@@ -2151,11 +2151,6 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (pinchVirtualViewportEnabled()
             && page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
             return true;
-
-        // TODO(ccameron): Always return that the event was handled. Once the pinch-zoom content scale
-        // handlers have been removed from content, this function may return false if the page scale does
-        // not change.
-        return true;
     }
 
     return false;
