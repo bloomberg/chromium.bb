@@ -87,10 +87,7 @@ class Environment:
     try:
       shutil.rmtree(profile_path)
     except Exception, e:
-      # The tests execution can continue, but this make them less stable.
-      logging.error("Error: Could not wipe the chrome profile directory (%s). \
-          This affects the stability of the tests. Continuing to run tests."
-          % e)
+      pass
     # If |chrome_path| is not defined, this means that we are in the dashboard
     # website, and we just need to get the list of all websites. In this case,
     # we don't need to initilize the webdriver.
