@@ -6,24 +6,24 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x164 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x48
-          RenderText {#text} at (0,0) size 68x24
+      RenderBlock {DIV} at (0,0) size 784x184 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x56
+          RenderText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
           RenderBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,24) size 537x24
-            text run at (0,24) width 537: "Cntl-y at caret selection when nothing is in the kill ring."
-        RenderBlock {DIV} at (14,78) size 756x72
-          RenderText {#text} at (0,0) size 190x24
+          RenderText {#text} at (0,28) size 537x28
+            text run at (0,28) width 537: "Cntl-y at caret selection when nothing is in the kill ring."
+        RenderBlock {DIV} at (14,86) size 756x84
+          RenderText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,18) size 1x0
-          RenderText {#text} at (0,24) size 286x24
-            text run at (0,24) width 286: "Deletes a character, yielding: "
-          RenderBR {BR} at (285,42) size 1x0
-          RenderText {#text} at (0,48) size 165x24
-            text run at (0,48) width 165: "one tw three four"
-      RenderBlock {DIV} at (0,188) size 784x28
-        RenderBlock {DIV} at (0,0) size 784x28 [border: (2px solid #FF0000)]
-          RenderText {#text} at (2,2) size 177x24
+          RenderBR {BR} at (189,22) size 1x0
+          RenderText {#text} at (0,28) size 286x28
+            text run at (0,28) width 286: "Deletes a character, yielding: "
+          RenderBR {BR} at (285,50) size 1x0
+          RenderText {#text} at (0,56) size 165x28
+            text run at (0,56) width 165: "one tw three four"
+      RenderBlock {DIV} at (0,208) size 784x32
+        RenderBlock {DIV} at (0,0) size 784x32 [border: (2px solid #FF0000)]
+          RenderText {#text} at (2,2) size 177x28
             text run at (2,2) width 177: "one two three four"
 caret: position 7 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body
