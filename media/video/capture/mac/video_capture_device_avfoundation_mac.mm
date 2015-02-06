@@ -279,7 +279,7 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   // AVFoundation calls from a number of threads, depending on, at least, if
   // Chrome is on foreground or background. Sample the actual thread here.
   callback_thread_checker_.DetachFromThread();
-  callback_thread_checker_.CalledOnValidThread();
+  CHECK(callback_thread_checker_.CalledOnValidThread());
 
   const CoreMediaGlue::CMFormatDescriptionRef formatDescription =
       CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer);

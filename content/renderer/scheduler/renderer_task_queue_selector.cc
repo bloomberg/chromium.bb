@@ -18,7 +18,7 @@ RendererTaskQueueSelector::~RendererTaskQueueSelector() {
 
 void RendererTaskQueueSelector::RegisterWorkQueues(
     const std::vector<const base::TaskQueue*>& work_queues) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   work_queues_ = work_queues;
   for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
        priority < QUEUE_PRIORITY_COUNT;
@@ -33,7 +33,7 @@ void RendererTaskQueueSelector::RegisterWorkQueues(
 
 void RendererTaskQueueSelector::SetQueuePriority(size_t queue_index,
                                                  QueuePriority priority) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   DCHECK_LT(priority, QUEUE_PRIORITY_COUNT);
   DisableQueue(queue_index);
@@ -46,7 +46,7 @@ void RendererTaskQueueSelector::EnableQueue(size_t queue_index,
 }
 
 void RendererTaskQueueSelector::DisableQueue(size_t queue_index) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
        priority < QUEUE_PRIORITY_COUNT;
@@ -93,7 +93,7 @@ bool RendererTaskQueueSelector::ChooseOldestWithPriority(
 
 bool RendererTaskQueueSelector::SelectWorkQueueToService(
     size_t* out_queue_index) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(work_queues_.size());
   // Always service the control queue if it has any work.
   if (ChooseOldestWithPriority(CONTROL_PRIORITY, out_queue_index)) {
@@ -154,7 +154,7 @@ const char* RendererTaskQueueSelector::PriorityToString(
 
 void RendererTaskQueueSelector::AsValueInto(
     base::debug::TracedValue* state) const {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   state->BeginDictionary("priorities");
   for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
        priority < QUEUE_PRIORITY_COUNT; priority = NextPriority(priority)) {

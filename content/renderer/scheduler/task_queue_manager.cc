@@ -317,13 +317,13 @@ bool TaskQueueManager::IsQueueEmpty(size_t queue_index) const {
 }
 
 void TaskQueueManager::SetAutoPump(size_t queue_index, bool auto_pump) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   queue->SetAutoPump(auto_pump);
 }
 
 void TaskQueueManager::PumpQueue(size_t queue_index) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   queue->PumpQueue();
 }
@@ -333,7 +333,7 @@ bool TaskQueueManager::UpdateWorkQueues(
   // TODO(skyostil): This is not efficient when the number of queues grows very
   // large due to the number of locks taken. Consider optimizing when we get
   // there.
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   bool has_work = false;
   for (auto& queue : queues_) {
     has_work |= queue->UpdateWorkQueue(next_pending_delayed_task);
@@ -367,7 +367,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     pending_dowork_count_--;
     DCHECK_GE(pending_dowork_count_, 0);
   }
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   base::TimeTicks next_pending_delayed_task(
       base::TimeTicks::FromInternalValue(kMaxTimeTicks));
@@ -404,7 +404,7 @@ void TaskQueueManager::DidQueueTask(base::PendingTask* pending_task) {
 }
 
 void TaskQueueManager::ProcessTaskFromWorkQueue(size_t queue_index) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
   if (!pending_task.nestable) {
@@ -431,20 +431,20 @@ bool TaskQueueManager::PostDelayedTask(
 }
 
 void TaskQueueManager::SetQueueName(size_t queue_index, const char* name) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   queue->set_name(name);
 }
 
 void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(work_batch_size, 1);
   work_batch_size_ = work_batch_size;
 }
 
 void TaskQueueManager::SetTimeSourceForTesting(
     scoped_refptr<cc::TestNowSource> time_source) {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   time_source_ = time_source;
 }
 
@@ -455,7 +455,7 @@ base::TimeTicks TaskQueueManager::Now() const {
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(bool should_run,
                                             size_t selected_queue) const {
-  main_thread_checker_.CalledOnValidThread();
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
   state->BeginArray("queues");

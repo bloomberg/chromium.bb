@@ -30,7 +30,7 @@ namespace base {
 // right version for your build configuration.
 class ThreadCheckerDoNothing {
  public:
-  bool CalledOnValidThread() const {
+  bool CalledOnValidThread() const WARN_UNUSED_RESULT {
     return true;
   }
 

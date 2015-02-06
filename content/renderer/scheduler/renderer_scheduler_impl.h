@@ -85,7 +85,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
    private:
     base::subtle::Atomic32 flag_;
     base::Lock* write_lock_;  // Not owned.
-    base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };

@@ -12,6 +12,10 @@
 #include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class RendererScheduler;
@@ -36,6 +40,7 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
 
   RendererScheduler* renderer_scheduler_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 };
 
 }  // namespace content

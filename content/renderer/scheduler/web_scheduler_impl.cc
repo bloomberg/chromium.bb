@@ -5,6 +5,7 @@
 #include "content/renderer/scheduler/web_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
@@ -12,7 +13,8 @@ namespace content {
 
 WebSchedulerImpl::WebSchedulerImpl(RendererScheduler* renderer_scheduler)
     : renderer_scheduler_(renderer_scheduler),
-      idle_task_runner_(renderer_scheduler_->IdleTaskRunner()) {
+      idle_task_runner_(renderer_scheduler_->IdleTaskRunner()),
+      loading_task_runner_(renderer_scheduler_->LoadingTaskRunner()) {
 }
 
 WebSchedulerImpl::~WebSchedulerImpl() {
@@ -34,6 +36,7 @@ void WebSchedulerImpl::runTask(scoped_ptr<blink::WebThread::Task> task) {
 
 void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
                                     blink::WebScheduler::IdleTask* task) {
+  DCHECK(idle_task_runner_);
   scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
@@ -44,15 +47,18 @@ void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
 
 void WebSchedulerImpl::postLoadingTask(
     const blink::WebTraceLocation& web_location, blink::WebThread::Task* task) {
+  DCHECK(loading_task_runner_);
   scoped_ptr<blink::WebThread::Task> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  renderer_scheduler_->LoadingTaskRunner()->PostTask(
+  loading_task_runner_->PostTask(
       location,
       base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)));
 }
 
 void WebSchedulerImpl::shutdown() {
+  idle_task_runner_ = nullptr;
+  loading_task_runner_ = nullptr;
   return renderer_scheduler_->Shutdown();
 }
 
