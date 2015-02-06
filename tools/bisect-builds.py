@@ -32,6 +32,9 @@ OFFICIAL_BASE_URL = 'http://%s/%s' % (GOOGLE_APIS_URL, GS_BUCKET_NAME)
 # URL template for viewing changelogs between revisions.
 CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/src/+log/%s..%s')
 
+# GS bucket name for tip of tree android builds.
+ANDROID_TOT_BUCKET_NAME = ('chrome-android-tot/bisect')
+
 # GS bucket name for android unsigned official builds.
 ANDROID_BUCKET_NAME = 'chrome-unsigned/android-C4MPAR1'
 
@@ -142,8 +145,6 @@ class PathContext(object):
     # the build.
     self.githash_svn_dict = {}
     self.pdf_path = pdf_path
-    # android_apk defaults to Chrome.apk
-    self.android_apk = android_apk if android_apk else 'Chrome.apk'
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
 
@@ -161,8 +162,14 @@ class PathContext(object):
     else:
       self.local_src_path = None
 
+    # Whether the build should be downloaded using gsutil.
+    self.download_with_gsutil = False
+
     # If the script is being used for android builds.
-    self.android = self.platform.startswith('android')
+    self.is_android = self.platform.startswith('android')
+    # android_apk defaults to Chrome.apk
+    if self.is_android:
+      self.android_apk = android_apk if android_apk else 'Chrome.apk'
 
     # Set some internal members:
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
@@ -177,7 +184,7 @@ class PathContext(object):
       self.archive_name = 'chrome-win32.zip'
       self._archive_extract_dir = 'chrome-win32'
       self._binary_name = 'chrome.exe'
-    elif self.android:
+    elif self.is_android:
       pass
     else:
       raise Exception('Invalid platform: %s' % self.platform)
@@ -234,6 +241,11 @@ class PathContext(object):
         self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
       elif self.platform == 'win':
         self._listing_platform_dir = 'Win/'
+      elif self.platform == 'android-arm':
+        self.archive_name = 'bisect_android.zip'
+        # Need to download builds using gsutil instead of visiting url for
+        # authentication reasons.
+        self.download_with_gsutil = True
 
   def GetASANPlatformDir(self):
     """ASAN builds are in directories like "linux-release", or have filenames
@@ -263,7 +275,7 @@ class PathContext(object):
           ASAN_BASE_URL, self.GetASANPlatformDir(), self.build_type,
           self.GetASANBaseName(), revision)
     if self.is_official:
-      if self.android:
+      if self.is_android:
         official_base_url = ANDROID_OFFICIAL_BASE_URL
       else:
         official_base_url = OFFICIAL_BASE_URL
@@ -271,10 +283,15 @@ class PathContext(object):
           official_base_url, revision, self._listing_platform_dir,
           self.archive_name)
     else:
-      if str(revision) in self.githash_svn_dict:
-        revision = self.githash_svn_dict[str(revision)]
-      return '%s/%s%s/%s' % (self.base_url, self._listing_platform_dir,
-                             revision, self.archive_name)
+      if self.is_android:
+        # These files need to be downloaded through gsutil.
+        return ('gs://%s/%s/%s' % (ANDROID_TOT_BUCKET_NAME, revision,
+                                       self.archive_name))
+      else:
+        if str(revision) in self.githash_svn_dict:
+          revision = self.githash_svn_dict[str(revision)]
+        return '%s/%s%s/%s' % (self.base_url, self._listing_platform_dir,
+                               revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
@@ -544,52 +561,51 @@ class PathContext(object):
                                                    self.bad_revision)
     return revlist
 
+  def _GetHashToNumberDict(self):
+    """Gets the mapping of git hashes to git numbers from Google Storage."""
+    gs_file = 'gs://%s/gitnumbers_dict.json' % ANDROID_TOT_BUCKET_NAME
+    local_file = 'gitnumbers_dict.json'
+    GsutilDownload(gs_file, local_file)
+    json_data = open(local_file).read()
+    os.remove(local_file)
+    return json.loads(json_data)
+
+  def GetAndroidToTRevisions(self):
+    """Gets the ordered list of revisions between self.good_revision and
+    self.bad_revision from the Android tip of tree GS bucket.
+    """
+    # Dictionary that maps git hashes to git numbers. The git numbers
+    # let us order the revisions.
+    hash_to_num = self._GetHashToNumberDict()
+    try:
+      good_rev_num = hash_to_num[self.good_revision]
+      bad_rev_num = hash_to_num[self.bad_revision]
+    except KeyError:
+      exit('Error. Make sure the good and bad revisions are valid git hashes.')
+
+    # List of all builds by their git hashes in the storage bucket.
+    hash_list = GsutilList(ANDROID_TOT_BUCKET_NAME)
+
+    # Get list of builds that we want to bisect over.
+    final_list = []
+    minnum = min(good_rev_num, bad_rev_num)
+    maxnum = max(good_rev_num, bad_rev_num)
+    for githash in hash_list:
+      if len(githash) != 40:
+        continue
+      gitnumber = hash_to_num[githash]
+      if minnum < gitnumber < maxnum:
+        final_list.append(githash)
+    return sorted(final_list, key=lambda h: hash_to_num[h])
+
   def GetOfficialBuildsList(self):
     """Gets the list of official build numbers between self.good_revision and
     self.bad_revision."""
 
-    def CheckDepotToolsInPath():
-      delimiter = ';' if sys.platform.startswith('win') else ':'
-      path_list = os.environ['PATH'].split(delimiter)
-      for path in path_list:
-        if path.rstrip(os.path.sep).endswith('depot_tools'):
-          return path
-      return None
-
-    def RunGsutilCommand(args):
-      gsutil_path = CheckDepotToolsInPath()
-      if gsutil_path is None:
-        print ('Follow the instructions in this document '
-               'http://dev.chromium.org/developers/how-tos/install-depot-tools'
-               ' to install depot_tools and then try again.')
-        sys.exit(1)
-      gsutil_path = os.path.join(gsutil_path, 'third_party', 'gsutil', 'gsutil')
-      gsutil = subprocess.Popen([sys.executable, gsutil_path] + args,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                env=None)
-      stdout, stderr = gsutil.communicate()
-      if gsutil.returncode:
-        if (re.findall(r'status[ |=]40[1|3]', stderr) or
-            stderr.startswith(CREDENTIAL_ERROR_MESSAGE)):
-          print ('Follow these steps to configure your credentials and try'
-                 ' running the bisect-builds.py again.:\n'
-                 '  1. Run "python %s config" and follow its instructions.\n'
-                 '  2. If you have a @google.com account, use that account.\n'
-                 '  3. For the project-id, just enter 0.' % gsutil_path)
-          sys.exit(1)
-        else:
-          raise Exception('Error running the gsutil command: %s' % stderr)
-      return stdout
-
-    def GsutilList(bucket):
-      query = 'gs://%s/' % bucket
-      stdout = RunGsutilCommand(['ls', query])
-      return [url[len(query):].strip('/') for url in stdout.splitlines()]
-
     # Download the revlist and filter for just the range between good and bad.
     minrev = min(self.good_revision, self.bad_revision)
     maxrev = max(self.good_revision, self.bad_revision)
-    if self.android:
+    if self.is_android:
       gs_bucket_name = ANDROID_BUCKET_NAME
     else:
       gs_bucket_name = GS_BUCKET_NAME
@@ -614,6 +630,52 @@ class PathContext(object):
     connection.close()
     return final_list
 
+
+def CheckDepotToolsInPath():
+  delimiter = ';' if sys.platform.startswith('win') else ':'
+  path_list = os.environ['PATH'].split(delimiter)
+  for path in path_list:
+    if path.rstrip(os.path.sep).endswith('depot_tools'):
+      return path
+  return None
+
+
+def RunGsutilCommand(args):
+  gsutil_path = CheckDepotToolsInPath()
+  if gsutil_path is None:
+    print ('Follow the instructions in this document '
+           'http://dev.chromium.org/developers/how-tos/install-depot-tools'
+           ' to install depot_tools and then try again.')
+    sys.exit(1)
+  gsutil_path = os.path.join(gsutil_path, 'third_party', 'gsutil', 'gsutil')
+  gsutil = subprocess.Popen([sys.executable, gsutil_path] + args,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            env=None)
+  stdout, stderr = gsutil.communicate()
+  if gsutil.returncode:
+    if (re.findall(r'status[ |=]40[1|3]', stderr) or
+        stderr.startswith(CREDENTIAL_ERROR_MESSAGE)):
+      print ('Follow these steps to configure your credentials and try'
+             ' running the bisect-builds.py again.:\n'
+             '  1. Run "python %s config" and follow its instructions.\n'
+             '  2. If you have a @google.com account, use that account.\n'
+             '  3. For the project-id, just enter 0.' % gsutil_path)
+      sys.exit(1)
+    else:
+      raise Exception('Error running the gsutil command: %s' % stderr)
+  return stdout
+
+
+def GsutilList(bucket):
+  query = 'gs://%s/' % bucket
+  stdout = RunGsutilCommand(['ls', query])
+  return [url[len(query):].strip('/') for url in stdout.splitlines()]
+
+
+def GsutilDownload(gs_download_url, filename):
+  RunGsutilCommand(['cp', gs_download_url, filename])
+
+
 def UnzipFilenameToDir(filename, directory):
   """Unzip |filename| to |directory|."""
   cwd = os.getcwd()
@@ -632,7 +694,7 @@ def UnzipFilenameToDir(filename, directory):
         os.makedirs(name)
     else:  # file
       directory = os.path.dirname(name)
-      if not os.path.isdir(directory):
+      if directory and not os.path.isdir(directory):
         os.makedirs(directory)
       out = open(name, 'wb')
       out.write(zf.read(name))
@@ -667,20 +729,32 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
       # Send a \r to let all progress messages use just one line of output.
       sys.stdout.write('\r' + progress)
       sys.stdout.flush()
-
   download_url = context.GetDownloadURL(rev)
   try:
-    urllib.urlretrieve(download_url, filename, ReportHook)
+    if context.download_with_gsutil:
+      GsutilDownload(download_url, filename)
+    else:
+      urllib.urlretrieve(download_url, filename, ReportHook)
     if progress_event and progress_event.isSet():
       print
+
   except RuntimeError:
     pass
+
+
+def RunADBCommand(args):
+  cmd = ['adb'] + args
+  adb = subprocess.Popen(['adb'] + args,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        env=None)
+  stdout, stderr = adb.communicate()
+  return stdout
 
 
 def IsADBInstalled():
   """Checks if ADB is in the environment path."""
   try:
-    adb_output = subprocess.check_output(['adb', 'version'])
+    adb_output = RunADBCommand(['version'])
     return ('Android Debug Bridge' in adb_output)
   except OSError:
     return False
@@ -688,7 +762,7 @@ def IsADBInstalled():
 
 def GetAndroidDeviceList():
   """Returns the list of Android devices attached to the host machine."""
-  lines = subprocess.check_output(['adb', 'devices']).split('\n')[1:]
+  lines = RunADBCommand(['devices']).split('\n')[1:]
   devices = []
   for line in lines:
     m = re.match('^(.*?)\s+device$', line)
@@ -698,31 +772,38 @@ def GetAndroidDeviceList():
   return devices
 
 
-def RunAndroidRevision(context, revision, apk_file):
+def RunAndroidRevision(context, revision, zip_file):
   """Given a Chrome apk, install it on a local device, and launch Chrome."""
   devices = GetAndroidDeviceList()
   if len(devices) is not 1:
     sys.exit('Please have 1 Android device plugged in. %d devices found'
         % len(devices))
 
-  devnull = open(os.devnull, 'w')
-  package_name = ANDROID_CHROME_PACKAGE_NAME[context.android_apk]
+  if context.is_official:
+    # Downloaded file is just the .apk in this case.
+    apk_file = zip_file
+  else:
+    cwd = os.getcwd()
+    tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
+    UnzipFilenameToDir(zip_file, tempdir)
+    os.chdir(tempdir)
+    apk_file = context.android_apk
 
-  print 'Installing new Chrome version...'
-  subprocess.call(['adb', 'install', '-r', '-d', apk_file],
-       stdout=devnull, stderr=devnull)
+  package_name = ANDROID_CHROME_PACKAGE_NAME[context.android_apk]
+  print 'Installing...'
+  RunADBCommand(['install', '-r', '-d', apk_file])
 
   print 'Launching Chrome...\n'
-  subprocess.call(['adb', 'shell', 'am', 'start', '-a',
+  RunADBCommand(['shell', 'am', 'start', '-a',
       'android.intent.action.VIEW', '-n', package_name +
-      '/com.google.android.apps.chrome.Main'], stdout=devnull, stderr=devnull)
+      '/com.google.android.apps.chrome.Main'])
 
 
 def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
   """Given a zipped revision, unzip it and run the test."""
   print 'Trying revision %s...' % str(revision)
 
-  if context.android:
+  if context.is_android:
     RunAndroidRevision(context, revision, zip_file)
     # TODO(mikecase): Support running command to auto-bisect Android.
     return (None, None, None)
@@ -779,7 +860,6 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
                                stderr=subprocess.PIPE)
     (stdout, stderr) = subproc.communicate()
     results.append((subproc.returncode, stdout, stderr))
-
   os.chdir(cwd)
   try:
     shutil.rmtree(tempdir, True)
@@ -917,6 +997,8 @@ def Bisect(context,
       '%s-%s' % (str(rev), context.archive_name))
   if context.is_official:
     revlist = context.GetOfficialBuildsList()
+  elif context.is_android: # Android non-official
+    revlist = context.GetAndroidToTRevisions()
   else:
     revlist = context.GetRevList()
 
@@ -1299,12 +1381,14 @@ def main():
                         opts.official_builds, opts.asan, opts.use_local_cache,
                         opts.flash_path, opts.pdf_path, opts.apk)
 
-  # TODO(mikecase): Add support to bisect on nonofficial builds for Android.
-  if context.android and not opts.official_builds:
-    sys.exit('Can only bisect on official builds for Android.')
+  if context.is_android and not opts.official_builds:
+    if (context.platform != 'android-arm' or
+        context.android_apk != 'Chrome.apk'):
+      sys.exit('For non-official builds, can only bisect'
+        ' Chrome.apk arm builds.')
 
   # If bisecting Android, we make sure we have ADB setup.
-  if context.android:
+  if context.is_android:
     if opts.adb_path:
       os.environ['PATH'] = '%s:%s' % (os.path.dirname(opts.adb_path),
           os.environ['PATH'])
@@ -1333,6 +1417,9 @@ def main():
   if opts.official_builds:
     context.good_revision = LooseVersion(context.good_revision)
     context.bad_revision = LooseVersion(context.bad_revision)
+  elif context.is_android:
+    # Revisions are git hashes and should be left as strings.
+    pass
   else:
     context.good_revision = int(context.good_revision)
     context.bad_revision = int(context.bad_revision)
