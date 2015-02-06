@@ -616,6 +616,14 @@
               {
                 "title": "OAuth",
                 "href": "/extensions/tut_oauth"
+              },
+              {
+                "title": "Options",
+                "href": "/extensions/options"
+              },
+              { 
+                "title": "Options Version 2",
+                "href": "/extensions/optionsV2"
               }
             ]
           },
