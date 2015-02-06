@@ -69,7 +69,6 @@ void RequestDrawGLTracker::ResetPending() {
 void RequestDrawGLTracker::SetQueuedFunctorOnUi(SharedRendererState* state) {
   base::AutoLock lock(lock_);
   DCHECK(state);
-  DCHECK(pending_ui_ == state || pending_non_ui_ == state);
   pending_ui_ = state;
   pending_non_ui_ = NULL;
 }
