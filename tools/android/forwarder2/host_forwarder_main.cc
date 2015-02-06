@@ -314,7 +314,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
   }
 
   // Daemon::ServerDelegate:
-  virtual void Init() override {
+  void Init() override {
     LOG(INFO) << "Starting host process daemon (pid=" << getpid() << ")";
     DCHECK(!g_notifier);
     g_notifier = new PipeNotifier();
@@ -322,7 +322,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     signal(SIGINT, KillHandler);
   }
 
-  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) override {
+  void OnClientConnected(scoped_ptr<Socket> client_socket) override {
     char buf[kBufSize];
     const int bytes_read = client_socket->Read(buf, sizeof(buf));
     if (bytes_read <= 0) {
@@ -366,7 +366,7 @@ class ClientDelegate : public Daemon::ClientDelegate {
   bool has_failed() const { return has_failed_; }
 
   // Daemon::ClientDelegate:
-  virtual void OnDaemonReady(Socket* daemon_socket) override {
+  void OnDaemonReady(Socket* daemon_socket) override {
     // Send the forward command to the daemon.
     CHECK_EQ(static_cast<long>(command_pickle_.size()),
              daemon_socket->WriteNumBytes(command_pickle_.data(),
