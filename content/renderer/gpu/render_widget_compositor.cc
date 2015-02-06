@@ -41,6 +41,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/hud_font.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 
@@ -432,6 +433,8 @@ void RenderWidgetCompositor::Initialize() {
     external_begin_frame_source =
         compositor_deps_->CreateExternalBeginFrameSource(widget_->routing_id());
   }
+
+  settings.hud_typeface = ui::GetHudTypeface();
 
   if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(

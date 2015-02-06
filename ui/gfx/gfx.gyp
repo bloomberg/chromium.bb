@@ -182,6 +182,8 @@
         'gfx_paths.h',
         'gpu_memory_buffer.cc',
         'gpu_memory_buffer.h',
+        'hud_font.cc',
+        'hud_font.h',
         'image/canvas_image_source.cc',
         'image/canvas_image_source.h',
         'image/image.cc',
