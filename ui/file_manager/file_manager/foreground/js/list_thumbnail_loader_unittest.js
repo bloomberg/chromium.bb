@@ -242,3 +242,30 @@ function testErrorHandling(callback) {
     return !!getOneCallbacks[entry3.toURL()];
   }), callback);
 }
+
+/**
+ * Test case for handling sorted event in data model.
+ */
+function testSortedEvent(callback) {
+  listThumbnailLoader.setHighPriorityRange(0, 2);
+  fileListModel.push(directory1, entry1, entry2, entry3, entry4, entry5);
+
+  resolveGetOneCallback(entry1.toURL());
+  resolveGetOneCallback(entry2.toURL());
+  assertEquals(0, Object.keys(getOneCallbacks).length);
+
+  // In order to assert that following task enqueues are fired by sorted event,
+  // wait until all thumbnail loads are completed.
+  reportPromise(waitUntil(function() {
+    return thumbnailLoadedEvents.length === 2;
+  }).then(function() {
+    // After the sort, list should be
+    // directory1, entry5, entry4, entry3, entry2, entry1.
+    fileListModel.sort('name', 'desc');
+
+    return waitUntil(function() {
+      return !!getOneCallbacks[entry5.toURL()] &&
+          !!getOneCallbacks[entry4.toURL()]
+    });
+  }), callback);
+}

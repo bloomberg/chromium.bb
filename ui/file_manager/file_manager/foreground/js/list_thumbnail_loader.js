@@ -10,16 +10,6 @@
  * is responsible to return dataUrls of valid thumbnails and fetch them with
  * proper priority.
  *
- * TODOs
- * The following list is a todo list for this class. This list will be deleted
- * after all of them are implemented.
- * * Done: Fetch thumbnails with range based priority control.
- * * Done: Implement cache size limitation.
- * * Done: Modest queueing for low priority thumbnail fetches.
- * * Handle other event types of FileListModel, e.g. sort.
- * * Done: Change ThumbnailLoader to directly return dataUrl.
- * * Handle file types for which generic images are used.
- *
  * @param {!FileListModel} dataModel A file list model.
  * @param {!MetadataCache} metadataCache Metadata cache.
  * @param {!Document} document Document.
@@ -89,8 +79,10 @@ function ListThumbnailLoader(
    */
   this.cursor_ = 0;
 
-  // TODO(yawano): Handle other event types of FileListModel, e.g. sort.
+  // TODO(yawano): Change FileListModel to dispatch change event for file
+  // change, and change this class to handle it.
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
+  this.dataModel_.addEventListener('sorted', this.onSorted_.bind(this));
 }
 
 ListThumbnailLoader.prototype.__proto__ = cr.EventTarget.prototype;
@@ -121,6 +113,17 @@ ListThumbnailLoader.CACHE_SIZE = 100;
  * @param {!Event} event Event
  */
 ListThumbnailLoader.prototype.onSplice_ = function(event) {
+  this.cursor_ = this.beginIndex_;
+  this.continue_();
+}
+
+/**
+ * An event handler for sorted event of data model. When list is sorted, start
+ * to rescan items.
+ *
+ * @param {!Event} event Event
+ */
+ListThumbnailLoader.prototype.onSorted_ = function(event) {
   this.cursor_ = this.beginIndex_;
   this.continue_();
 }
