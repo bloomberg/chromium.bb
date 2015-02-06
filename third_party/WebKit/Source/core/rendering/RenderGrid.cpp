@@ -1072,6 +1072,13 @@ GridTrackSizingDirection RenderGrid::autoPlacementMinorAxisDirection() const
 
 void RenderGrid::dirtyGrid()
 {
+    // Even if this could be redundant, it could be seen as a defensive strategy against
+    // style changes events happening during the layout phase or even while the painting process
+    // is still ongoing.
+    // Forcing a new layout for the Grid render would cancel any ongoing painting and ensure
+    // the grid and its children are correctly laid out according to the new style rules.
+    setNeedsLayout();
+
     m_grid.resize(0);
     m_gridItemCoordinate.clear();
     m_gridIsDirty = true;

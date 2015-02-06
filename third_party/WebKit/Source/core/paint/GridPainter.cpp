@@ -40,6 +40,7 @@ public:
 
 void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    ASSERT(!m_renderGrid.needsLayout());
     ASSERT_WITH_SECURITY_IMPLICATION(!m_renderGrid.gridIsDirty());
 
     LayoutRect localPaintInvalidationRect = paintInfo.rect;
