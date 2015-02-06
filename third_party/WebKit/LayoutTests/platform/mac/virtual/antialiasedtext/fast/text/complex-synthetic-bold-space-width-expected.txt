@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 259x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 259x18
           text run at (0,0) width 259: "These lines should have the same width:"
-      RenderBlock {DIV} at (0,16) size 784x42
+      RenderBlock {DIV} at (0,18) size 784x42
         RenderText {#text} at (0,0) size 91x20
           text run at (0,0) width 91: ". . . . . . . . a"
         RenderBR {BR} at (90,16) size 1x0

@@ -1,0 +1,15 @@
+CONSOLE WARNING: WebSocket connection to 'ws://127.0.0.1:8880/echo' failed: WebSocket is closed before the connection is established.
+Test CloseEvent code and reason property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+ws.onclose() was called.
+PASS closeEvent.wasClean is false
+PASS closeEvent.code is codeAbnormalClosure
+PASS closeEvent.reason is emptyString
+FAIL WebSocketTest.ontimeout() was called. (testId = 0)
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
