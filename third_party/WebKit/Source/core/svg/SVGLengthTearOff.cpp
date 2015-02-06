@@ -46,6 +46,11 @@ inline SVGLengthType toSVGLengthType(unsigned short type)
     return static_cast<SVGLengthType>(type);
 }
 
+inline bool canResolveRelativeUnits(const SVGElement* contextElement)
+{
+    return contextElement && contextElement->inDocument();
+}
+
 } // namespace
 
 SVGLengthType SVGLengthTearOff::unitType()
@@ -58,21 +63,31 @@ SVGLengthMode SVGLengthTearOff::unitMode()
     return target()->unitMode();
 }
 
-float SVGLengthTearOff::value(ExceptionState& es)
+float SVGLengthTearOff::value(ExceptionState& exceptionState)
 {
+    if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
+        exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
+        return 0;
+    }
+
     SVGLengthContext lengthContext(contextElement());
-    return target()->value(lengthContext, es);
+    return target()->value(lengthContext);
 }
 
-void SVGLengthTearOff::setValue(float value, ExceptionState& es)
+void SVGLengthTearOff::setValue(float value, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        es.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
+
+    if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
+        exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
         return;
     }
 
     SVGLengthContext lengthContext(contextElement());
-    target()->setValue(value, lengthContext, es);
+    target()->setValue(value, lengthContext);
     commitChange();
 }
 
@@ -135,8 +150,14 @@ void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType, Exceptio
         return;
     }
 
+    if ((target()->isRelative() || SVGLength::isRelativeUnit(toSVGLengthType(unitType)))
+        && !canResolveRelativeUnits(contextElement())) {
+        exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
+        return;
+    }
+
     SVGLengthContext lengthContext(contextElement());
-    target()->convertToSpecifiedUnits(toSVGLengthType(unitType), lengthContext, exceptionState);
+    target()->convertToSpecifiedUnits(toSVGLengthType(unitType), lengthContext);
     commitChange();
 }
 

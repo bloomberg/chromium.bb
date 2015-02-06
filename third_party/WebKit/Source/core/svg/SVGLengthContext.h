@@ -25,7 +25,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class SVGElement;
 class SVGLength;
 
@@ -57,29 +56,28 @@ public:
     template<typename T>
     static FloatRect resolveRectangle(const T* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport)
     {
-        return SVGLengthContext::resolveRectangle(context, type, viewport, context->x()->currentValue(), context->y()->currentValue(), context->width()->currentValue(), context->height()->currentValue());
+        return resolveRectangle(context, type, viewport, context->x()->currentValue(), context->y()->currentValue(), context->width()->currentValue(), context->height()->currentValue());
     }
 
     static FloatRect resolveRectangle(const SVGElement*, SVGUnitTypes::SVGUnitType, const FloatRect& viewport, PassRefPtrWillBeRawPtr<SVGLength> x, PassRefPtrWillBeRawPtr<SVGLength> y, PassRefPtrWillBeRawPtr<SVGLength> width, PassRefPtrWillBeRawPtr<SVGLength> height);
     static FloatPoint resolvePoint(const SVGElement*, SVGUnitTypes::SVGUnitType, PassRefPtrWillBeRawPtr<SVGLength> x, PassRefPtrWillBeRawPtr<SVGLength> y);
     static float resolveLength(const SVGElement*, SVGUnitTypes::SVGUnitType, PassRefPtrWillBeRawPtr<SVGLength>);
 
-    float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit, ExceptionState&) const;
-    float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit, ExceptionState&) const;
+    float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
+    float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
 
     bool determineViewport(FloatSize&) const;
 
 private:
-    float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, ExceptionState&) const;
-    float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, ExceptionState&) const;
-    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize& viewportSize);
+    static float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, const FloatSize&);
+    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize&);
     static float convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize);
 
-    float convertValueFromUserUnitsToEMS(float value, ExceptionState&) const;
-    float convertValueFromEMSToUserUnits(float value, ExceptionState&) const;
+    float convertValueFromUserUnitsToEMS(float value) const;
+    float convertValueFromEMSToUserUnits(float value) const;
 
-    float convertValueFromUserUnitsToEXS(float value, ExceptionState&) const;
-    float convertValueFromEXSToUserUnits(float value, ExceptionState&) const;
+    float convertValueFromUserUnitsToEXS(float value) const;
+    float convertValueFromEXSToUserUnits(float value) const;
 
     RawPtrWillBeMember<const SVGElement> m_context;
 };

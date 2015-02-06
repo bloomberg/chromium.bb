@@ -159,22 +159,18 @@ bool SVGLength::operator==(const SVGLength& other) const
         && m_valueInSpecifiedUnits == other.m_valueInSpecifiedUnits;
 }
 
-float SVGLength::value(const SVGLengthContext& context, ExceptionState& es) const
+float SVGLength::value(const SVGLengthContext& context) const
 {
-    return context.convertValueToUserUnits(m_valueInSpecifiedUnits, unitMode(), unitType(), es);
+    return context.convertValueToUserUnits(m_valueInSpecifiedUnits, unitMode(), unitType());
 }
 
-void SVGLength::setValue(float value, const SVGLengthContext& context, ExceptionState& es)
+void SVGLength::setValue(float value, const SVGLengthContext& context)
 {
     // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
     if (m_unitType == LengthTypePercentage)
         value = value / 100;
 
-    float convertedValue = context.convertValueFromUserUnits(value, unitMode(), unitType(), es);
-    if (es.hadException())
-        return;
-
-    m_valueInSpecifiedUnits = convertedValue;
+    m_valueInSpecifiedUnits = context.convertValueFromUserUnits(value, unitMode(), unitType());
 }
 
 void SVGLength::setUnitType(SVGLengthType type)
@@ -265,22 +261,13 @@ void SVGLength::newValueSpecifiedUnits(SVGLengthType type, float value)
     m_valueInSpecifiedUnits = value;
 }
 
-void SVGLength::convertToSpecifiedUnits(SVGLengthType type, const SVGLengthContext& context, ExceptionState& exceptionState)
+void SVGLength::convertToSpecifiedUnits(SVGLengthType type, const SVGLengthContext& context)
 {
     ASSERT(type != LengthTypeUnknown && type <= LengthTypePC);
 
-    float valueInUserUnits = value(context, exceptionState);
-    if (exceptionState.hadException())
-        return;
-
-    SVGLengthType originalType = unitType();
+    float valueInUserUnits = value(context);
     m_unitType = type;
-    setValue(valueInUserUnits, context, exceptionState);
-    if (!exceptionState.hadException())
-        return;
-
-    // Eventually restore old unit and type
-    m_unitType = originalType;
+    setValue(valueInUserUnits, context);
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
@@ -443,15 +430,9 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLen
     ASSERT(!isRelative());
     ASSERT(!from->isRelative());
 
-    TrackExceptionState es;
     SVGLengthContext nonRelativeLengthContext(0);
-    float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from->valueInSpecifiedUnits(), from->unitMode(), fromType, es);
-    if (es.hadException())
-        return create();
-
-    float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, es);
-    if (es.hadException())
-        return create();
+    float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from->valueInSpecifiedUnits(), from->unitMode(), fromType);
+    float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType);
 
     float toValue = valueInSpecifiedUnits();
     length->newValueSpecifiedUnits(toType, blink::blend(fromValue, toValue, progress));
@@ -461,8 +442,7 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLen
 void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
-
-    setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
+    setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext);
 }
 
 void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
@@ -472,12 +452,12 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     RefPtrWillBeRawPtr<SVGLength> toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
 
     SVGLengthContext lengthContext(contextElement);
-    float animatedNumber = value(lengthContext, IGNORE_EXCEPTION);
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromLength->value(lengthContext, IGNORE_EXCEPTION), toLength->value(lengthContext, IGNORE_EXCEPTION), toAtEndOfDurationLength->value(lengthContext, IGNORE_EXCEPTION), animatedNumber);
+    float animatedNumber = value(lengthContext);
+    animationElement->animateAdditiveNumber(percentage, repeatCount, fromLength->value(lengthContext), toLength->value(lengthContext), toAtEndOfDurationLength->value(lengthContext), animatedNumber);
 
     ASSERT(unitMode() == lengthModeForAnimatedLengthAttribute(animationElement->attributeName()));
     m_unitType = percentage < 0.5 ? fromLength->unitType() : toLength->unitType();
-    setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
+    setValue(animatedNumber, lengthContext);
 }
 
 float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
@@ -485,7 +465,7 @@ float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toVal
     SVGLengthContext lengthContext(contextElement);
     RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
 
-    return fabsf(toLength->value(lengthContext, IGNORE_EXCEPTION) - value(lengthContext, IGNORE_EXCEPTION));
+    return fabsf(toLength->value(lengthContext) - value(lengthContext));
 }
 
 }

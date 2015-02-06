@@ -126,7 +126,7 @@ void SVGLengthList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElemen
 
     SVGLengthContext lengthContext(contextElement);
     for (size_t i = 0; i < length(); ++i)
-        at(i)->setValue(at(i)->value(lengthContext) + otherList->at(i)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
+        at(i)->setValue(at(i)->value(lengthContext) + otherList->at(i)->value(lengthContext), lengthContext);
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> SVGLengthList::createPaddingItem() const
@@ -164,7 +164,7 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
 
         animationElement->animateAdditiveNumber(percentage, repeatCount, effectiveFrom, effectiveTo, effectiveToAtEnd, animatedNumber);
         at(i)->setUnitType(unitType);
-        at(i)->setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
+        at(i)->setValue(animatedNumber, lengthContext);
     }
 }
 

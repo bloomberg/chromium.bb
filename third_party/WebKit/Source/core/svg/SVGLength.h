@@ -21,8 +21,6 @@
 #ifndef SVGLength_h
 #define SVGLength_h
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
@@ -59,12 +57,8 @@ public:
     bool operator==(const SVGLength&) const;
     bool operator!=(const SVGLength& other) const { return !operator==(other); }
 
-    float value(const SVGLengthContext& context) const
-    {
-        return value(context, IGNORE_EXCEPTION);
-    }
-    float value(const SVGLengthContext&, ExceptionState&) const;
-    void setValue(float, const SVGLengthContext&, ExceptionState&);
+    float value(const SVGLengthContext&) const;
+    void setValue(float, const SVGLengthContext&);
 
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
     void setValueInSpecifiedUnits(float value) { m_valueInSpecifiedUnits = value; }
@@ -82,15 +76,16 @@ public:
     void setValueAsString(const String&, ExceptionState&);
 
     void newValueSpecifiedUnits(SVGLengthType, float valueInSpecifiedUnits);
-    void convertToSpecifiedUnits(SVGLengthType, const SVGLengthContext&, ExceptionState&);
+    void convertToSpecifiedUnits(SVGLengthType, const SVGLengthContext&);
 
     // Helper functions
-    inline bool isRelative() const
+    static inline bool isRelativeUnit(SVGLengthType unitType)
     {
-        return m_unitType == LengthTypePercentage
-            || m_unitType == LengthTypeEMS
-            || m_unitType == LengthTypeEXS;
+        return unitType == LengthTypePercentage
+            || unitType == LengthTypeEMS
+            || unitType == LengthTypeEXS;
     }
+    inline bool isRelative() const { return isRelativeUnit(unitType()); }
 
     bool isZero() const
     {
