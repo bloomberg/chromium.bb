@@ -46,6 +46,12 @@ enum run_mode {
 	RUN_MODE_PRESENT,
 };
 
+static const char * const run_mode_name[] = {
+	[RUN_MODE_FEEDBACK] = "feedback",
+	[RUN_MODE_FEEDBACK_IDLE] = "feedback-idle",
+	[RUN_MODE_PRESENT] = "low-lat present",
+};
+
 struct output {
 	struct wl_output *output;
 	uint32_t name;
@@ -198,7 +204,11 @@ create_window(struct display *display, int width, int height,
 	      enum run_mode mode)
 {
 	struct window *window;
+	char title[128];
 	int ret;
+
+	snprintf(title, sizeof(title),
+		 "presentation-shm: %s", run_mode_name[mode]);
 
 	window = calloc(1, sizeof *window);
 	if (!window)
@@ -218,7 +228,7 @@ create_window(struct display *display, int width, int height,
 		wl_shell_surface_add_listener(window->shell_surface,
 					      &shell_surface_listener, window);
 
-	wl_shell_surface_set_title(window->shell_surface, "presentation-shm");
+	wl_shell_surface_set_title(window->shell_surface, title);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
 
