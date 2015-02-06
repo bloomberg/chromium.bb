@@ -37,16 +37,20 @@ const int kDialogMaxWidthInPixel = 400;
 }  // namespace
 
 // static
-void PlatformVerificationDialog::ShowDialog(
+views::Widget* PlatformVerificationDialog::ShowDialog(
     content::WebContents* web_contents,
+    const GURL& requesting_origin,
     const PlatformVerificationFlow::Delegate::ConsentCallback& callback) {
-  GURL url = web_contents->GetLastCommittedURL();
   // In the case of an extension or hosted app, the origin of the request is
   // best described by the extension / app name.
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())->
-          enabled_extensions().GetExtensionOrAppByURL(url);
-  std::string origin = extension ? extension->name() : url.GetOrigin().spec();
+      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())
+          ->enabled_extensions()
+          .GetExtensionOrAppByURL(web_contents->GetLastCommittedURL());
+
+  // TODO(xhwang): We should only show the name if the request if from the
+  // extension's true frame. See http://crbug.com/455821
+  std::string origin = extension ? extension->name() : requesting_origin.spec();
 
   PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
       web_contents,
@@ -60,6 +64,8 @@ void PlatformVerificationDialog::ShowDialog(
   views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
       dialog, NULL, popup_manager->GetHostView());
   popup_manager->ShowModalDialog(widget->GetNativeView(), web_contents);
+
+  return widget;
 }
 
 PlatformVerificationDialog::~PlatformVerificationDialog() {

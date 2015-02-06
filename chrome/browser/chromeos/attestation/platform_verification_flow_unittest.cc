@@ -75,6 +75,7 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
 
   void ShowConsentPrompt(
       content::WebContents* web_contents,
+      const GURL& requesting_origin,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
       override {
     num_consent_calls_++;

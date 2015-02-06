@@ -92,9 +92,10 @@ class PlatformVerificationFlow
 
     // Invokes consent UI within the context of |web_contents| and calls
     // |callback| when the user responds.
-    // Precondition: The last committed URL for |web_contents| has a valid
-    //               origin.
+    // |requesting_origin| or the extension/app name will be shown on the prompt
+    // if the request comes from a web page or an extension/app, respectively.
     virtual void ShowConsentPrompt(content::WebContents* web_contents,
+                                   const GURL& requesting_origin,
                                    const ConsentCallback& callback) = 0;
 
     // Gets prefs associated with the given |web_contents|.  If no prefs are

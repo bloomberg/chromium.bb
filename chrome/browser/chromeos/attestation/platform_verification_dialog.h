@@ -25,9 +25,13 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
                                    public views::StyledLabelListener,
                                    public content::WebContentsObserver {
  public:
-  // Initializes a tab-modal dialog for |web_contents| and shows it.
-  static void ShowDialog(
+  // Initializes a tab-modal dialog for |web_contents| and |requesting_origin|
+  // and shows it. Returns a non-owning pointer to the widget so that caller can
+  // close the dialog and cancel the request. The returned widget is only
+  // guaranteed to be valid before |callback| is called.
+  static views::Widget* ShowDialog(
       content::WebContents* web_contents,
+      const GURL& requesting_origin,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback);
 
  protected:

@@ -79,9 +79,11 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
 
   void ShowConsentPrompt(
       content::WebContents* web_contents,
+      const GURL& requesting_origin,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
       override {
-    PlatformVerificationDialog::ShowDialog(web_contents, callback);
+    PlatformVerificationDialog::ShowDialog(web_contents, requesting_origin,
+                                           callback);
   }
 
   PrefService* GetPrefs(content::WebContents* web_contents) override {
@@ -235,10 +237,16 @@ void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
       this,
       context,
       consent_required);
-  if (consent_required)
-    delegate_->ShowConsentPrompt(context.web_contents, consent_callback);
-  else
+  if (consent_required) {
+    // TODO(xhwang): Using delegate_->GetURL() here is not right. The consent
+    // may be requested by a frame from a different origin. This will be solved
+    // when http://crbug.com/454847 is fixed.
+    delegate_->ShowConsentPrompt(
+        context.web_contents,
+        delegate_->GetURL(context.web_contents).GetOrigin(), consent_callback);
+  } else {
     consent_callback.Run(CONSENT_RESPONSE_NONE);
+  }
 }
 
 void PlatformVerificationFlow::RegisterProfilePrefs(
