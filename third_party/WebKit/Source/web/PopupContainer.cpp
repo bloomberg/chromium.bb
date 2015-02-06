@@ -32,6 +32,7 @@
 #include "web/PopupContainer.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/forms/PopupMenuClient.h"
@@ -418,6 +419,10 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     m_controlPosition.setP2(v->contentsToWindow(IntPoint(controlPosition.p2().x(), controlPosition.p2().y())));
     m_controlPosition.setP3(v->contentsToWindow(IntPoint(controlPosition.p3().x(), controlPosition.p3().y())));
     m_controlPosition.setP4(v->contentsToWindow(IntPoint(controlPosition.p4().x(), controlPosition.p4().y())));
+
+    FloatRect controlBounds = m_controlPosition.boundingBox();
+    controlBounds.moveBy(-v->page()->frameHost().pinchViewport().location());
+    m_controlPosition = controlBounds;
 
     m_controlSize = controlSize;
 
