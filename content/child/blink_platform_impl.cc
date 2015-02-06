@@ -59,6 +59,7 @@
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "ui/base/layout.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 using blink::WebData;
 using blink::WebFallbackThemeEngine;
@@ -1284,6 +1285,16 @@ void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
   WebThreadImplForMessageLoop* impl =
       static_cast<WebThreadImplForMessageLoop*>(thread);
   delete impl;
+}
+
+WebString BlinkPlatformImpl::domCodeStringFromEnum(int dom_code) {
+  return WebString::fromUTF8(ui::KeycodeConverter::DomCodeToCodeString(
+      static_cast<ui::DomCode>(dom_code)));
+}
+
+int BlinkPlatformImpl::domEnumFromCodeString(const WebString& code) {
+  return static_cast<int>(ui::KeycodeConverter::CodeStringToDomCode(
+      code.utf8().data()));
 }
 
 }  // namespace content

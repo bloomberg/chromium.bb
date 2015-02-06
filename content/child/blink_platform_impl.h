@@ -189,6 +189,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   WebBluetoothImpl* BluetoothImplForTesting() { return bluetooth_.get(); }
 
+  virtual blink::WebString domCodeStringFromEnum(int dom_code);
+  virtual int domEnumFromCodeString(const blink::WebString& codeString);
+
  private:
   static void DestroyCurrentThread(void*);
 

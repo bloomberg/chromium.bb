@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/page_zoom.h"
 #include "content/shell/renderer/test_runner/mock_spell_check.h"
@@ -22,6 +23,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
 
@@ -1269,52 +1271,75 @@ void EventSender::KeyDown(const std::string& code_str,
   int code = 0;
   int text = 0;
   bool needs_shift_key_modifier = false;
+  std::string domString;
 
   if ("\n" == code_str) {
     generate_char = true;
     text = code = ui::VKEY_RETURN;
+    domString.assign("Enter");
   } else if ("rightArrow" == code_str) {
     code = ui::VKEY_RIGHT;
+    domString.assign("ArrowRight");
   } else if ("downArrow" == code_str) {
     code = ui::VKEY_DOWN;
+    domString.assign("ArrowDown");
   } else if ("leftArrow" == code_str) {
     code = ui::VKEY_LEFT;
+    domString.assign("ArrowLeft");
   } else if ("upArrow" == code_str) {
     code = ui::VKEY_UP;
+    domString.assign("ArrowUp");
   } else if ("insert" == code_str) {
     code = ui::VKEY_INSERT;
+    domString.assign("Insert");
   } else if ("delete" == code_str) {
     code = ui::VKEY_DELETE;
+    domString.assign("Delete");
   } else if ("pageUp" == code_str) {
     code = ui::VKEY_PRIOR;
+    domString.assign("PageUp");
   } else if ("pageDown" == code_str) {
     code = ui::VKEY_NEXT;
+    domString.assign("PageDown");
   } else if ("home" == code_str) {
     code = ui::VKEY_HOME;
+    domString.assign("Home");
   } else if ("end" == code_str) {
     code = ui::VKEY_END;
+    domString.assign("End");
   } else if ("printScreen" == code_str) {
     code = ui::VKEY_SNAPSHOT;
+    domString.assign("PrintScreen");
   } else if ("menu" == code_str) {
     code = ui::VKEY_APPS;
+    domString.assign("ContextMenu");
   } else if ("leftControl" == code_str) {
     code = ui::VKEY_LCONTROL;
+    domString.assign("ControlLeft");
   } else if ("rightControl" == code_str) {
     code = ui::VKEY_RCONTROL;
+    domString.assign("ControlRight");
   } else if ("leftShift" == code_str) {
     code = ui::VKEY_LSHIFT;
+    domString.assign("ShiftLeft");
   } else if ("rightShift" == code_str) {
     code = ui::VKEY_RSHIFT;
+    domString.assign("ShiftRight");
   } else if ("leftAlt" == code_str) {
     code = ui::VKEY_LMENU;
+    domString.assign("AltLeft");
   } else if ("rightAlt" == code_str) {
     code = ui::VKEY_RMENU;
+    domString.assign("AltRight");
   } else if ("numLock" == code_str) {
     code = ui::VKEY_NUMLOCK;
+    domString.assign("NumLock");
   } else if ("backspace" == code_str) {
     code = ui::VKEY_BACK;
+    domString.assign("Backspace");
   } else if ("escape" == code_str) {
     code = ui::VKEY_ESCAPE;
+    domString.assign("Escape");
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -1323,6 +1348,7 @@ void EventSender::KeyDown(const std::string& code_str,
       std::string function_key_name = base::StringPrintf("F%d", i);
       if (function_key_name == code_str) {
         code = ui::VKEY_F1 + (i - 1);
+        domString = function_key_name;
         break;
       }
     }
@@ -1334,6 +1360,17 @@ void EventSender::KeyDown(const std::string& code_str,
       needs_shift_key_modifier = NeedsShiftModifier(code);
       if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
         code -= 'a' - 'A';
+      if ((code >= 'A' && code <= 'Z') || (code >= 'a' && code <= 'z')) {
+        domString.assign("Key");
+        domString.push_back(base::ToUpperASCII(code));
+      } else if (code >= '0' && code <= '9') {
+        domString.assign("Digit");
+        domString.push_back(code);
+      } else if (code == ' ') {
+        domString.assign("Space");
+      } else if (code == 9) {
+        domString.assign("Tab");
+      }
       generate_char = true;
     }
 
@@ -1352,6 +1389,8 @@ void EventSender::KeyDown(const std::string& code_str,
   event_down.type = WebInputEvent::RawKeyDown;
   event_down.modifiers = modifiers;
   event_down.windowsKeyCode = code;
+  event_down.domCode = static_cast<int>(
+      ui::KeycodeConverter::CodeStringToDomCode(domString.c_str()));
 
   if (generate_char) {
     event_down.text[0] = text;
