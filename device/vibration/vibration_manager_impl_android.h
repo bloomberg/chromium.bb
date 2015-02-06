@@ -23,7 +23,7 @@ class VibrationManagerImplAndroid
 
  private:
   VibrationManagerImplAndroid();
-  virtual ~VibrationManagerImplAndroid();
+  ~VibrationManagerImplAndroid() override;
 
   base::android::ScopedJavaGlobalRef<jobject> j_vibration_provider_;
 };
