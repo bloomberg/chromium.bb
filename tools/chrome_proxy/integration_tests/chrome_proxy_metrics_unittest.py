@@ -46,19 +46,6 @@ EVENT_HTML_PROXY_VIA_HTTP_FALLBACK = (
     body=network_unittest.HTML_BODY,
     remote_port=80))
 
-# An HTML via proxy with the deprecated Via header.
-EVENT_HTML_PROXY_DEPRECATED_VIA = (
-    network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
-    url='http://test.html2',
-    response_headers={
-        'Content-Type': 'text/html',
-        'Content-Encoding': 'gzip',
-        'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
-        'Via': (metrics.CHROME_PROXY_VIA_HEADER_DEPRECATED +
-                ',other-via'),
-        },
-    body=network_unittest.HTML_BODY))
-
 # An image via proxy with Via header.
 EVENT_IMAGE_PROXY_VIA = (
     network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
@@ -123,7 +110,7 @@ EVENT_MALWARE_PROXY = (
         },
     status=307))
 
-# An HTML via proxy with the deprecated Via header.
+# An HTML via proxy with the Via header.
 EVENT_IMAGE_BYPASS = (
     network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
     url='http://test.image',
@@ -191,7 +178,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric = metrics.ChromeProxyMetric()
     events = [
         EVENT_HTML_DIRECT,
-        EVENT_HTML_PROXY_DEPRECATED_VIA,
+        EVENT_HTML_PROXY_VIA,
         EVENT_IMAGE_PROXY_CACHED,
         EVENT_IMAGE_DIRECT]
     metric.SetEvents(events)
@@ -208,7 +195,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([
         EVENT_HTML_DIRECT,
-        EVENT_HTML_PROXY_DEPRECATED_VIA,
+        EVENT_HTML_PROXY_VIA,
         EVENT_IMAGE_PROXY_CACHED,
         EVENT_IMAGE_DIRECT])
 
@@ -224,7 +211,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
 
     # Two events with valid Via headers.
     metric.SetEvents([
-        EVENT_HTML_PROXY_DEPRECATED_VIA,
+        EVENT_HTML_PROXY_VIA,
         EVENT_IMAGE_PROXY_CACHED])
     metric.AddResultsForHeaderValidation(None, results)
     results.AssertHasPageSpecificScalarValue('checked_via_header', 'count', 2)
@@ -233,7 +220,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([
         EVENT_HTML_DIRECT,
-        EVENT_HTML_PROXY_DEPRECATED_VIA,
+        EVENT_HTML_PROXY_VIA,
         EVENT_IMAGE_PROXY_CACHED,
         EVENT_IMAGE_DIRECT])
     results = test_page_test_results.TestPageTestResults(self)
@@ -253,7 +240,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
 
   def testChromeProxyMetricForCorsBypass(self):
     metric = metrics.ChromeProxyMetric()
-    metric.SetEvents([EVENT_HTML_PROXY_DEPRECATED_VIA,
+    metric.SetEvents([EVENT_HTML_PROXY_VIA,
                       EVENT_IMAGE_BYPASS,
                       EVENT_IMAGE_DIRECT])
     results = test_page_test_results.TestPageTestResults(self)
@@ -279,19 +266,21 @@ class ChromeProxyMetricTest(unittest.TestCase):
     # The second response was over direct, but was expected via proxy.
     self.assertTrue(exception_occurred)
 
-  def testChromeProxyMetricForSafebrowsing(self):
+  def testChromeProxyMetricForSafebrowsingOn(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([EVENT_MALWARE_PROXY])
     results = test_page_test_results.TestPageTestResults(self)
 
-    metric.AddResultsForSafebrowsing(None, results)
-    results.AssertHasPageSpecificScalarValue('safebrowsing', 'boolean', True)
+    metric.AddResultsForSafebrowsingOn(None, results)
+    results.AssertHasPageSpecificScalarValue(
+        'safebrowsing', 'timeout responses', 1)
 
     # Clear results and metrics to test no response for safebrowsing
     results = test_page_test_results.TestPageTestResults(self)
     metric.SetEvents([])
-    metric.AddResultsForSafebrowsing(None, results)
-    results.AssertHasPageSpecificScalarValue('safebrowsing', 'boolean', True)
+    metric.AddResultsForSafebrowsingOn(None, results)
+    results.AssertHasPageSpecificScalarValue(
+        'safebrowsing', 'timeout responses', 1)
 
   def testChromeProxyMetricForHTTPFallback(self):
     metric = metrics.ChromeProxyMetric()
@@ -318,7 +307,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
                       EVENT_HTML_DIRECT,
                       EVENT_IMAGE_DIRECT])
     results = test_page_test_results.TestPageTestResults(self)
-    metric.AddResultsForHTTPToDirectFallback(None, results)
+    metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
     results.AssertHasPageSpecificScalarValue('via_fallback', 'count', 1)
     results.AssertHasPageSpecificScalarValue('bypass', 'count', 2)
 
@@ -326,7 +315,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
                        EVENT_HTML_DIRECT])
     exception_occurred = False
     try:
-      metric.AddResultsForHTTPToDirectFallback(None, results)
+      metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
     except metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The first response was expected through the HTTP fallback proxy.
@@ -337,7 +326,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
                        EVENT_IMAGE_PROXY_VIA_HTTP_FALLBACK])
     exception_occurred = False
     try:
-      metric.AddResultsForHTTPToDirectFallback(None, results)
+      metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
     except metrics.ChromeProxyMetricException:
       exception_occurred = True
     # All but the first response were expected to be over direct.
@@ -348,7 +337,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
                        EVENT_IMAGE_DIRECT])
     exception_occurred = False
     try:
-      metric.AddResultsForHTTPToDirectFallback(None, results)
+      metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
     except metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The first response was expected through the HTTP fallback proxy.

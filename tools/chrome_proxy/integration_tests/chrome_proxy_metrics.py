@@ -15,7 +15,6 @@ class ChromeProxyMetricException(page_test.MeasurementFailure):
 
 
 CHROME_PROXY_VIA_HEADER = 'Chrome-Compression-Proxy'
-CHROME_PROXY_VIA_HEADER_DEPRECATED = '1.1 Chrome Compression Proxy'
 
 
 class ChromeProxyResponse(network_metrics.HTTPResponse):
@@ -44,11 +43,9 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     if not via_header:
       return False
     vias = [v.strip(' ') for v in via_header.split(',')]
-    # The Via header is valid if it is the old format or the new format
-    # with 4-character version prefix, for example,
-    # "1.1 Chrome-Compression-Proxy".
-    return (CHROME_PROXY_VIA_HEADER_DEPRECATED in vias or
-            any(v[4:] == CHROME_PROXY_VIA_HEADER for v in vias))
+    # The Via header is valid if it has a 4-character version prefix followed by
+    # the proxy name, for example, "1.1 Chrome-Compression-Proxy".
+    return any(v[4:] == CHROME_PROXY_VIA_HEADER for v in vias)
 
   def IsValidByViaHeader(self):
     return (not self.ShouldHaveChromeProxyViaHeader() or
@@ -323,7 +320,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
           raise ChromeProxyMetricException, (
               'Response for %s should have come through the fallback proxy.\n'
               'Response: remote_port=%s status=(%d, %s)\nHeaders:\n %s' % (
-                r.url, str(fallback_resp.remote_port), r.status, r.status_text,
+                r.url, str(resp.remote_port), r.status, r.status_text,
                 r.headers))
         else:
           via_fallback_count += 1
