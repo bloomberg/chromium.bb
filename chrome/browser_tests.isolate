@@ -208,6 +208,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/browser_tests.dSYM/',
+        ],
+      },
+    }],
     ['OS=="win" and libpeer_target_type=="loadable_module"', {
       'variables': {
         'files': [

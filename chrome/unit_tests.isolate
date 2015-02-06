@@ -80,6 +80,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/unit_tests.dSYM/',
+        ],
+      },
+    }],
     ['OS=="linux" or OS=="mac"', {
       'variables': {
         'read_only': 1,

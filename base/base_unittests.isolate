@@ -58,6 +58,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/base_unittests.dSYM/',
+        ],
+      },
+    }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
         'files': [

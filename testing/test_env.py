@@ -124,12 +124,14 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan):
   return extra_env
 
 
-def get_sanitizer_symbolize_command(json_path=None):
+def get_sanitizer_symbolize_command(json_path=None, executable_path=None):
   """Construct the command to invoke offline symbolization script."""
   script_path = '../tools/valgrind/asan/asan_symbolize.py'
   cmd = [sys.executable, script_path]
   if json_path is not None:
     cmd.append('--test-summary-json-file=%s' % json_path)
+  if executable_path is not None:
+    cmd.append('--executable-path=%s' % executable_path)
   return cmd
 
 
@@ -149,7 +151,8 @@ def symbolize_snippets_in_json(cmd, env):
     return
 
   try:
-    symbolize_command = get_sanitizer_symbolize_command(json_path=json_path)
+    symbolize_command = get_sanitizer_symbolize_command(
+        json_path=json_path, executable_path=cmd[0])
     p = subprocess.Popen(symbolize_command, stderr=subprocess.PIPE, env=env)
     (_, stderr) = p.communicate()
   except OSError as e:
@@ -207,8 +210,9 @@ def run_executable(cmd, env):
       # Need to pipe to the symbolizer script.
       p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
                             stderr=sys.stdout)
-      p2 = subprocess.Popen(get_sanitizer_symbolize_command(),
-                            env=env, stdin=p1.stdout)
+      p2 = subprocess.Popen(
+          get_sanitizer_symbolize_command(executable_path=cmd[0]),
+          env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
       p1.wait()
       p2.wait()

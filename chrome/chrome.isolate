@@ -77,6 +77,17 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework.dSYM/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Helper.app.dSYM/',
+          '<(PRODUCT_DIR)/<(mac_product_name).app.dSYM/',
+          '<(PRODUCT_DIR)/exif.so.dSYM/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
+        ],
+      },
+    }],
     ['OS=="win"', {
       'variables': {
         'files': [

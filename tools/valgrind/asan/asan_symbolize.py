@@ -10,6 +10,8 @@ import argparse
 import base64
 import json
 import os
+import re
+import subprocess
 import sys
 
 class LineBuffered(object):
@@ -48,6 +50,73 @@ def set_symbolizer_path():
     os.environ['LLVM_SYMBOLIZER_PATH'] = os.path.abspath(symbolizer_path)
 
 
+def is_hash_name(name):
+  match = re.match('[0-9a-f]+$', name)
+  return bool(match)
+
+
+def split_path(path):
+  ret = []
+  while True:
+    head, tail = os.path.split(path)
+    if head == path:
+      return [head] + ret
+    ret, path = [tail] + ret, head
+
+
+def chrome_product_dir_path(exe_path):
+  if exe_path is None:
+    return None
+  path_parts = split_path(exe_path)
+  # Make sure the product dir path isn't empty if |exe_path| consists of
+  # a single component.
+  if len(path_parts) == 1:
+    path_parts = ['.'] + path_parts
+  for index, part in enumerate(path_parts):
+    if part.endswith('.app'):
+      return os.path.join(*path_parts[:index])
+  # If the executable isn't an .app bundle, it's a commandline binary that
+  # resides right in the product dir.
+  return os.path.join(*path_parts[:-1])
+
+
+inode_path_cache = {}
+
+
+def find_inode_at_path(inode, path):
+  if inode in inode_path_cache:
+    return inode_path_cache[inode]
+  cmd = ['find', path, '-inum', str(inode)]
+  find_line = subprocess.check_output(cmd).rstrip()
+  lines = find_line.split('\n')
+  ret = None
+  if lines:
+    # `find` may give us several paths (e.g. 'Chromium Framework' in the
+    # product dir and 'Chromium Framework' inside 'Chromium.app',
+    # chrome_dsym_hints() will produce correct .dSYM path for any of them.
+    ret = lines[0]
+  inode_path_cache[inode] = ret
+  return ret
+
+
+# Create a binary name filter that works around https://crbug.com/444835.
+# When running tests on OSX swarming servers, ASan sometimes prints paths to
+# files in cache (ending with SHA1 filenames) instead of paths to hardlinks to
+# those files in the product dir.
+# For a given |binary_path| chrome_osx_binary_name_filter() returns one of the
+# hardlinks to the same inode in |product_dir_path|.
+def make_chrome_osx_binary_name_filter(product_dir_path=''):
+  def chrome_osx_binary_name_filter(binary_path):
+    basename = os.path.basename(binary_path)
+    if is_hash_name(basename) and product_dir_path:
+      inode = os.stat(binary_path).st_ino
+      new_binary_path = find_inode_at_path(inode, product_dir_path)
+      if new_binary_path:
+        return new_binary_path
+    return binary_path
+  return chrome_osx_binary_name_filter
+
+
 # Construct a path to the .dSYM bundle for the given binary.
 # There are three possible cases for binary location in Chromium:
 # 1. The binary is a standalone executable or dynamic library in the product
@@ -63,7 +132,7 @@ def set_symbolizer_path():
 # path. Only one of these bundles may be a framework and frameworks cannot
 # contain other bundles.
 def chrome_dsym_hints(binary):
-  path_parts = binary.split(os.path.sep)
+  path_parts = split_path(binary)
   app_positions = []
   framework_positions = []
   for index, part in enumerate(path_parts):
@@ -89,7 +158,7 @@ def chrome_dsym_hints(binary):
   # In case 2 this is the same as |outermost_bundle|.
   innermost_bundle = bundle_positions[-1]
   dsym_path = product_dir + [path_parts[innermost_bundle]]
-  result = '%s.dSYM' % os.path.sep.join(dsym_path)
+  result = '%s.dSYM' % os.path.join(*dsym_path)
   return [result]
 
 
@@ -169,13 +238,22 @@ def main():
   parser.add_argument('strip_path_prefix', nargs='*',
       help='When printing source file names, the longest prefix ending in one '
            'of these substrings will be stripped. E.g.: "Release/../../".')
+  parser.add_argument('--executable-path',
+      help='Path to program executable. Used on OSX swarming bots to locate '
+           'dSYM bundles for associated frameworks and bundles.')
   args = parser.parse_args()
 
   disable_buffering()
   set_symbolizer_path()
   asan_symbolize.demangle = True
   asan_symbolize.fix_filename_patterns = args.strip_path_prefix
-  loop = asan_symbolize.SymbolizationLoop(dsym_hint_producer=chrome_dsym_hints)
+  binary_name_filter = None
+  if os.uname()[0] == 'Darwin':
+    binary_name_filter = make_chrome_osx_binary_name_filter(
+        chrome_product_dir_path(args.executable_path))
+  loop = asan_symbolize.SymbolizationLoop(
+      binary_name_filter=binary_name_filter,
+      dsym_hint_producer=chrome_dsym_hints)
 
   if args.test_summary_json_file:
     symbolize_snippets_in_json(args.test_summary_json_file, loop)

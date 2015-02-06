@@ -70,6 +70,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/interactive_ui_tests.dSYM/',
+        ],
+      },
+    }],
     ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
