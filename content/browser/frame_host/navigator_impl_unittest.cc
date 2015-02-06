@@ -133,10 +133,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
 
   // Add a subframe.
   FrameTreeNode* root_node = contents()->GetFrameTree()->root();
-  TestRenderFrameHost* subframe_rfh =
-      static_cast<TestRenderFrameHost*>(contents()->GetFrameTree()->AddFrame(
-          root_node, root_node->current_frame_host()->GetProcess()->GetID(), 14,
-          "Child"));
+  TestRenderFrameHost* subframe_rfh = main_test_rfh()->AppendChild("Child");
   ASSERT_TRUE(subframe_rfh);
 
   FrameTreeNode* subframe_node = subframe_rfh->frame_tree_node();
