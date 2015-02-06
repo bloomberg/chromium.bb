@@ -466,6 +466,11 @@ bool ScrollAnimatorNone::hasRunningAnimation() const
     return m_animationActive;
 }
 
+void ScrollAnimatorNone::updateAfterLayout()
+{
+    updateVisibleLengths();
+}
+
 void ScrollAnimatorNone::willEndLiveResize()
 {
     updateVisibleLengths();

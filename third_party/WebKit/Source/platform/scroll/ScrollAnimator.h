@@ -82,6 +82,7 @@ public:
     virtual void mouseEnteredScrollbar(Scrollbar*) const { }
     virtual void mouseExitedScrollbar(Scrollbar*) const { }
     virtual void willStartLiveResize() { }
+    virtual void updateAfterLayout() { }
     virtual void contentsResized() const { }
     virtual void willEndLiveResize() { }
     virtual void contentAreaDidShow() const { }

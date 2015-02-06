@@ -257,6 +257,13 @@ void Layer::updateLayerPositionRecursive()
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
+    // FIXME(400589): We would like to do this in RenderLayerScrollableArea::updateAfterLayout,
+    // but it depends on the size computed by updateLayerPosition.
+    if (m_scrollableArea) {
+        if (ScrollAnimator* scrollAnimator = m_scrollableArea->existingScrollAnimator())
+            scrollAnimator->updateAfterLayout();
+    }
+
     // FIXME: We should be able to remove this call because we don't care about
     // any descendant-dependent flags, but code somewhere else is reading these
     // flags and depending on us to update them.
