@@ -774,11 +774,11 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     return result;
 }
 
-static inline LayoutUnit calculateMinimumPageHeight(RenderStyle* renderStyle, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
+static inline LayoutUnit calculateMinimumPageHeight(const RenderStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     // We may require a certain minimum number of lines per page in order to satisfy
     // orphans and widows, and that may affect the minimum page height.
-    unsigned lineCount = std::max<unsigned>(renderStyle->hasAutoOrphans() ? 1 : renderStyle->orphans(), renderStyle->widows());
+    unsigned lineCount = std::max<unsigned>(style.hasAutoOrphans() ? 1 : style.orphans(), style.widows());
     if (lineCount > 1) {
         RootInlineBox* line = lastLine;
         for (unsigned i = 1; i < lineCount && line->prevRootBox(); i++)
@@ -817,7 +817,7 @@ void RenderBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     LayoutUnit logicalOffset = std::min(lineBox.lineTopWithLeading(), logicalVisualOverflow.y());
     LayoutUnit logicalBottom = std::max(lineBox.lineBottomWithLeading(), logicalVisualOverflow.maxY());
     LayoutUnit lineHeight = logicalBottom - logicalOffset;
-    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(style(), &lineBox, logicalOffset, logicalBottom));
+    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(styleRef(), &lineBox, logicalOffset, logicalBottom));
     logicalOffset += delta;
     lineBox.setPaginationStrut(0);
     lineBox.setIsFirstAfterPageBreak(false);
@@ -1088,18 +1088,18 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
     , m_determinedMarginBeforeQuirk(false)
     , m_discardMargin(false)
 {
-    RenderStyle* blockStyle = blockFlow->style();
+    const RenderStyle& blockStyle = blockFlow->styleRef();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
     m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
 
-    m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle->marginBeforeCollapse() != MSEPARATE;
+    m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle.marginBeforeCollapse() != MSEPARATE;
 
     // If any height other than auto is specified in CSS, then we don't collapse our bottom
     // margins with our children's margins. To do otherwise would be to risk odd visual
     // effects when the children overflow out of the parent block and yet still collapse
     // with it. We also don't collapse if we have any bottom border/padding.
     m_canCollapseMarginAfterWithChildren = m_canCollapseWithChildren && !afterBorderPadding
-        && (blockStyle->logicalHeight().isAuto() && !blockStyle->logicalHeight().value()) && blockStyle->marginAfterCollapse() != MSEPARATE;
+        && (blockStyle.logicalHeight().isAuto() && !blockStyle.logicalHeight().value()) && blockStyle.marginAfterCollapse() != MSEPARATE;
 
     m_quirkContainer = blockFlow->isTableCell() || blockFlow->isBody();
 
@@ -1700,11 +1700,11 @@ void RenderBlockFlow::setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg)
 bool RenderBlockFlow::mustSeparateMarginBeforeForChild(const RenderBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const RenderStyle* childStyle = child.style();
+    const RenderStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
-        return childStyle->marginBeforeCollapse() == MSEPARATE;
+        return childStyle.marginBeforeCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
-        return childStyle->marginAfterCollapse() == MSEPARATE;
+        return childStyle.marginAfterCollapse() == MSEPARATE;
 
     // FIXME: See |mustDiscardMarginBeforeForChild| above.
     return false;
@@ -1713,11 +1713,11 @@ bool RenderBlockFlow::mustSeparateMarginBeforeForChild(const RenderBox& child) c
 bool RenderBlockFlow::mustSeparateMarginAfterForChild(const RenderBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const RenderStyle* childStyle = child.style();
+    const RenderStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
-        return childStyle->marginAfterCollapse() == MSEPARATE;
+        return childStyle.marginAfterCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
-        return childStyle->marginBeforeCollapse() == MSEPARATE;
+        return childStyle.marginBeforeCollapse() == MSEPARATE;
 
     // FIXME: See |mustDiscardMarginBeforeForChild| above.
     return false;
@@ -1932,7 +1932,7 @@ void RenderBlockFlow::createFloatingObjects()
 
 void RenderBlockFlow::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
-    RenderStyle* oldStyle = style();
+    const RenderStyle* oldStyle = style();
     s_canPropagateFloatIntoSibling = oldStyle ? !isFloatingOrOutOfFlowPositioned() && !avoidsFloats() : false;
     if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()
         && containsFloats() && !isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
@@ -3046,16 +3046,16 @@ RootInlineBox* RenderBlockFlow::createRootInlineBox()
     return new RootInlineBox(*this);
 }
 
-bool RenderBlockFlow::isPagedOverflow(const RenderStyle* style)
+bool RenderBlockFlow::isPagedOverflow(const RenderStyle& style)
 {
-    return style->isOverflowPaged() && node() != document().viewportDefiningElement();
+    return style.isOverflowPaged() && node() != document().viewportDefiningElement();
 }
 
-RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const RenderStyle* style)
+RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const RenderStyle& style)
 {
     if (isPagedOverflow(style))
         return PagedFlowThread;
-    if (style->specifiesColumns())
+    if (style.specifiesColumns())
         return MultiColumnFlowThread;
     return NoFlowThread;
 }
@@ -3083,11 +3083,11 @@ void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderS
     // both paged overflow and multicol on the same element, but then we need two flow
     // threads. Anyway, this is nothing to worry about until we can actually nest multicol properly
     // inside other fragmentation contexts.
-    FlowThreadType type = flowThreadType(style());
+    FlowThreadType type = flowThreadType(styleRef());
 
     if (multiColumnFlowThread()) {
         ASSERT(oldStyle);
-        if (type != flowThreadType(oldStyle)) {
+        if (type != flowThreadType(*oldStyle)) {
             // If we're no longer to be multicol/paged, destroy the flow thread. Also destroy it
             // when switching between multicol and paged, since that affects the column set
             // structure (multicol containers may have spanners, paged containers may not).

@@ -246,7 +246,7 @@ void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell)
         return;
 
     // Cells only generates visual overflow.
-    LayoutRect cellVisualOverflowRect = cell->visualOverflowRectForPropagation(style());
+    LayoutRect cellVisualOverflowRect = cell->visualOverflowRectForPropagation(styleRef());
 
     // The cell and the row share the section's coordinate system. However
     // the visual overflow should be determined in the coordinate system of

@@ -113,20 +113,19 @@ void RenderBoxModelObject::willBeDestroyed()
 
 bool RenderBoxModelObject::calculateHasBoxDecorations() const
 {
-    RenderStyle* styleToUse = style();
-    ASSERT(styleToUse);
-    return hasBackground() || styleToUse->hasBorder() || styleToUse->hasAppearance() || styleToUse->boxShadow();
+    const RenderStyle& styleToUse = styleRef();
+    return hasBackground() || styleToUse.hasBorder() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
 void RenderBoxModelObject::updateFromStyle()
 {
     LayoutLayerModelObject::updateFromStyle();
 
-    RenderStyle* styleToUse = style();
+    const RenderStyle& styleToUse = styleRef();
     setHasBoxDecorationBackground(calculateHasBoxDecorations());
-    setInline(styleToUse->isDisplayInlineType());
-    setPositionState(styleToUse->position());
-    setHorizontalWritingMode(styleToUse->isHorizontalWritingMode());
+    setInline(styleToUse.isDisplayInlineType());
+    setPositionState(styleToUse.position());
+    setHorizontalWritingMode(styleToUse.isHorizontalWritingMode());
 }
 
 static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
@@ -500,13 +499,13 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     // However, as soon as some content is entered, the line boxes will be
     // constructed and this kludge is not called any more. So only the caret size
     // of an empty :first-line'd block is wrong. I think we can live with that.
-    RenderStyle* currentStyle = firstLineStyle();
+    const RenderStyle& currentStyle = firstLineStyleRef();
 
     enum CaretAlignment { alignLeft, alignRight, alignCenter };
 
     CaretAlignment alignment = alignLeft;
 
-    switch (currentStyle->textAlign()) {
+    switch (currentStyle.textAlign()) {
     case LEFT:
     case WEBKIT_LEFT:
         break;
@@ -520,11 +519,11 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
         break;
     case JUSTIFY:
     case TASTART:
-        if (!currentStyle->isLeftToRightDirection())
+        if (!currentStyle.isLeftToRightDirection())
             alignment = alignRight;
         break;
     case TAEND:
-        if (currentStyle->isLeftToRightDirection())
+        if (currentStyle.isLeftToRightDirection())
             alignment = alignRight;
         break;
     }
@@ -534,28 +533,28 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
 
     switch (alignment) {
     case alignLeft:
-        if (currentStyle->isLeftToRightDirection())
+        if (currentStyle.isLeftToRightDirection())
             x += textIndentOffset;
         break;
     case alignCenter:
         x = (x + maxX) / 2;
-        if (currentStyle->isLeftToRightDirection())
+        if (currentStyle.isLeftToRightDirection())
             x += textIndentOffset / 2;
         else
             x -= textIndentOffset / 2;
         break;
     case alignRight:
         x = maxX - caretWidth;
-        if (!currentStyle->isLeftToRightDirection())
+        if (!currentStyle.isLeftToRightDirection())
             x -= textIndentOffset;
         break;
     }
     x = std::min(x, std::max<LayoutUnit>(maxX - caretWidth, 0));
 
     LayoutUnit height = style()->fontMetrics().height();
-    LayoutUnit verticalSpace = lineHeight(true, currentStyle->isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;
+    LayoutUnit verticalSpace = lineHeight(true, currentStyle.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;
     LayoutUnit y = paddingTop() + borderTop() + (verticalSpace / 2);
-    return currentStyle->isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth, height) : LayoutRect(y, x, height, caretWidth);
+    return currentStyle.isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth, height) : LayoutRect(y, x, height, caretWidth);
 }
 
 void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const

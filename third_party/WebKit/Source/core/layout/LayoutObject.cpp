@@ -1849,7 +1849,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (child->isRelPositioned() && toRenderBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
-        updateAnonymousChildStyle(child, newStyle.get());
+        updateAnonymousChildStyle(*child, *newStyle);
 
         child->setStyle(newStyle.release());
     }

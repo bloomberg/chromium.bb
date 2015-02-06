@@ -787,7 +787,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     InlineBidiResolver& resolver, const InlineIterator& cleanLineStart,
     const BidiStatus& cleanLineBidiStatus)
 {
-    RenderStyle* styleToUse = style();
+    const RenderStyle& styleToUse = styleRef();
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
     LineMidpointState& lineMidpointState = resolver.midpointState();
     InlineIterator endOfLine = resolver.position();
@@ -839,10 +839,10 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             if (lastRootBox())
                 lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
         } else {
-            VisualDirectionOverride override = (styleToUse->rtlOrdering() == VisualOrder ? (styleToUse->direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
-            if (isNewUBAParagraph && styleToUse->unicodeBidi() == Plaintext && !resolver.context()->parent()) {
+            VisualDirectionOverride override = (styleToUse.rtlOrdering() == VisualOrder ? (styleToUse.direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
+            if (isNewUBAParagraph && styleToUse.unicodeBidi() == Plaintext && !resolver.context()->parent()) {
                 TextDirection direction = determinePlaintextDirectionality(resolver.position().root(), resolver.position().object(), resolver.position().offset());
-                resolver.setStatus(BidiStatus(direction, isOverride(styleToUse->unicodeBidi())));
+                resolver.setStatus(BidiStatus(direction, isOverride(styleToUse.unicodeBidi())));
             }
             // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
             BidiRunList<BidiRun>& bidiRuns = resolver.runs();
@@ -1153,17 +1153,17 @@ static LayoutUnit getBPMWidth(LayoutUnit childValue, Length cssUnit)
     return LayoutUnit();
 }
 
-static LayoutUnit getBorderPaddingMargin(RenderBoxModelObject* child, bool endOfInline)
+static LayoutUnit getBorderPaddingMargin(const RenderBoxModelObject& child, bool endOfInline)
 {
-    RenderStyle* childStyle = child->style();
+    const RenderStyle& childStyle = child.styleRef();
     if (endOfInline) {
-        return getBPMWidth(child->marginEnd(), childStyle->marginEnd()) +
-            getBPMWidth(child->paddingEnd(), childStyle->paddingEnd()) +
-            child->borderEnd();
+        return getBPMWidth(child.marginEnd(), childStyle.marginEnd()) +
+            getBPMWidth(child.paddingEnd(), childStyle.paddingEnd()) +
+            child.borderEnd();
     }
-    return getBPMWidth(child->marginStart(), childStyle->marginStart()) +
-        getBPMWidth(child->paddingStart(), childStyle->paddingStart()) +
-        child->borderStart();
+    return getBPMWidth(child.marginStart(), childStyle.marginStart()) +
+        getBPMWidth(child.paddingStart(), childStyle.paddingStart()) +
+        child.borderStart();
 }
 
 static inline void stripTrailingSpace(FloatWillBeLayoutUnit& inlineMax, FloatWillBeLayoutUnit& inlineMin,
@@ -1213,7 +1213,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     FloatWillBeLayoutUnit inlineMax;
     FloatWillBeLayoutUnit inlineMin;
 
-    RenderStyle* styleToUse = style();
+    const RenderStyle& styleToUse = styleRef();
     RenderBlock* containingBlock = this->containingBlock();
     LayoutUnit cw = containingBlock ? containingBlock->contentLogicalWidth() : LayoutUnit();
 
@@ -1225,10 +1225,10 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     // Firefox and Opera will allow a table cell to grow to fit an image inside it under
     // very specific cirucumstances (in order to match common WinIE renderings).
     // Not supporting the quirk has caused us to mis-render some real sites. (See Bugzilla 10517.)
-    bool allowImagesToBreak = !document().inQuirksMode() || !isTableCell() || !styleToUse->logicalWidth().isIntrinsicOrAuto();
+    bool allowImagesToBreak = !document().inQuirksMode() || !isTableCell() || !styleToUse.logicalWidth().isIntrinsicOrAuto();
 
     bool autoWrap, oldAutoWrap;
-    autoWrap = oldAutoWrap = styleToUse->autoWrap();
+    autoWrap = oldAutoWrap = styleToUse.autoWrap();
 
     InlineMinMaxIterator childIterator(this);
 
@@ -1237,7 +1237,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     // Signals the text indent was more negative than the min preferred width
     bool hasRemainingNegativeTextIndent = false;
 
-    LayoutUnit textIndent = minimumValueForLength(styleToUse->textIndent(), cw);
+    LayoutUnit textIndent = minimumValueForLength(styleToUse.textIndent(), cw);
     LayoutObject* prevFloat = 0;
     bool isPrevChildInlineFlow = false;
     bool shouldBreakLineAfterText = false;
@@ -1281,7 +1281,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             // values (if any of them are larger than our current min/max). We then look at
             // the width of the last non-breakable run and use that to start a new line
             // (unless we end in whitespace).
-            RenderStyle* childStyle = child->style();
+            const RenderStyle& childStyle = child->styleRef();
             FloatWillBeLayoutUnit childMin;
             FloatWillBeLayoutUnit childMax;
 
@@ -1290,7 +1290,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 if (child->isRenderInline()) {
                     // Add in padding/border/margin from the appropriate side of
                     // the element.
-                    FloatWillBeLayoutUnit bpm = getBorderPaddingMargin(toRenderInline(child), childIterator.endOfInline);
+                    FloatWillBeLayoutUnit bpm = getBorderPaddingMargin(toRenderInline(*child), childIterator.endOfInline);
                     childMin += bpm;
                     childMax += bpm;
 
@@ -1301,8 +1301,8 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 } else {
                     // Inline replaced elts add in their margins to their min/max values.
                     LayoutUnit margins;
-                    Length startMargin = childStyle->marginStart();
-                    Length endMargin = childStyle->marginEnd();
+                    Length startMargin = childStyle.marginStart();
+                    Length endMargin = childStyle.marginEnd();
                     if (startMargin.isFixed())
                         margins += adjustFloatForSubPixelLayout(startMargin.value());
                     if (endMargin.isFixed())
@@ -1332,8 +1332,8 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 bool clearPreviousFloat;
                 if (child->isFloating()) {
                     clearPreviousFloat = (prevFloat
-                        && ((prevFloat->style()->floating() == LeftFloat && (childStyle->clear() & CLEFT))
-                            || (prevFloat->style()->floating() == RightFloat && (childStyle->clear() & CRIGHT))));
+                        && ((prevFloat->styleRef().floating() == LeftFloat && (childStyle.clear() & CLEFT))
+                            || (prevFloat->styleRef().floating() == RightFloat && (childStyle.clear() & CRIGHT))));
                     prevFloat = child;
                 } else {
                     clearPreviousFloat = false;
@@ -1411,7 +1411,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 t->trimmedPrefWidths(inlineMax,
                     firstLineMinWidth, hasBreakableStart, lastLineMinWidth, hasBreakableEnd,
                     hasBreakableChar, hasBreak, firstLineMaxWidth, lastLineMaxWidth,
-                    childMin, childMax, stripFrontSpaces, styleToUse->direction());
+                    childMin, childMax, stripFrontSpaces, styleToUse.direction());
 
                 // This text object will not be rendered, but it may still provide a breaking opportunity.
                 if (!hasBreak && !childMax) {
@@ -1507,7 +1507,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
         oldAutoWrap = autoWrap;
     }
 
-    if (styleToUse->collapseWhiteSpace())
+    if (styleToUse.collapseWhiteSpace())
         stripTrailingSpace(inlineMax, inlineMin, trailingSpaceChild);
 
     minLogicalWidth = std::max(minLogicalWidth, inlineMin.toLayoutUnit());

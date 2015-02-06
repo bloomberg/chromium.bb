@@ -191,7 +191,7 @@ static void appendLayers(Vector<ImageResource*>& images, const FillLayer& styleL
         appendImageIfNotNull(images, layer->image());
 }
 
-static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& blockStyle)
+static void appendImagesFromStyle(Vector<ImageResource*>& images, const RenderStyle& blockStyle)
 {
     appendLayers(images, blockStyle.backgroundLayers());
     appendLayers(images, blockStyle.maskLayers());
@@ -308,18 +308,18 @@ void RenderBlock::styleWillChange(StyleDifference diff, const RenderStyle& newSt
     RenderBox::styleWillChange(diff, newStyle);
 }
 
-static bool borderOrPaddingLogicalWidthChanged(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+static bool borderOrPaddingLogicalWidthChanged(const RenderStyle& oldStyle, const RenderStyle& newStyle)
 {
-    if (newStyle->isHorizontalWritingMode())
-        return oldStyle->borderLeftWidth() != newStyle->borderLeftWidth()
-            || oldStyle->borderRightWidth() != newStyle->borderRightWidth()
-            || oldStyle->paddingLeft() != newStyle->paddingLeft()
-            || oldStyle->paddingRight() != newStyle->paddingRight();
+    if (newStyle.isHorizontalWritingMode())
+        return oldStyle.borderLeftWidth() != newStyle.borderLeftWidth()
+            || oldStyle.borderRightWidth() != newStyle.borderRightWidth()
+            || oldStyle.paddingLeft() != newStyle.paddingLeft()
+            || oldStyle.paddingRight() != newStyle.paddingRight();
 
-    return oldStyle->borderTopWidth() != newStyle->borderTopWidth()
-        || oldStyle->borderBottomWidth() != newStyle->borderBottomWidth()
-        || oldStyle->paddingTop() != newStyle->paddingTop()
-        || oldStyle->paddingBottom() != newStyle->paddingBottom();
+    return oldStyle.borderTopWidth() != newStyle.borderTopWidth()
+        || oldStyle.borderBottomWidth() != newStyle.borderBottomWidth()
+        || oldStyle.paddingTop() != newStyle.paddingTop()
+        || oldStyle.paddingBottom() != newStyle.paddingBottom();
 }
 
 void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -329,14 +329,14 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isRenderBlockFlow())
         toRenderBlock(parent())->removeAnonymousWrappersIfRequired();
 
-    RenderStyle* newStyle = style();
+    const RenderStyle& newStyle = styleRef();
 
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.
         for (RenderBlock* currCont = blockElementContinuation(); currCont; currCont = currCont->blockElementContinuation()) {
             RenderBoxModelObject* nextCont = currCont->continuation();
             currCont->setContinuation(0);
-            currCont->setStyle(newStyle);
+            currCont->setStyle(style());
             currCont->setContinuation(nextCont);
         }
     }
@@ -348,12 +348,12 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 
     // It's possible for our border/padding to change, but for the overall logical width of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
-    m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(oldStyle, newStyle);
+    m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(*oldStyle, newStyle);
 
     // If the style has unloaded images, want to notify the ResourceLoadPriorityOptimizer so that
     // network priorities can be set.
     Vector<ImageResource*> images;
-    appendImagesFromStyle(images, *newStyle);
+    appendImagesFromStyle(images, newStyle);
     if (images.isEmpty())
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
     else
@@ -1390,7 +1390,7 @@ void RenderBlock::layout()
 bool RenderBlock::updateImageLoadingPriorities()
 {
     Vector<ImageResource*> images;
-    appendImagesFromStyle(images, *style());
+    appendImagesFromStyle(images, styleRef());
 
     if (images.isEmpty())
         return false;
@@ -2980,21 +2980,21 @@ void RenderBlock::computePreferredLogicalWidths()
 
     // FIXME: The isFixed() calls here should probably be checking for isSpecified since you
     // should be able to use percentage, calc or viewport relative values for width.
-    RenderStyle* styleToUse = style();
-    if (!isTableCell() && styleToUse->logicalWidth().isFixed() && styleToUse->logicalWidth().value() >= 0
-        && !(isDeprecatedFlexItem() && !styleToUse->logicalWidth().intValue()))
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalWidth().value());
+    const RenderStyle& styleToUse = styleRef();
+    if (!isTableCell() && styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0
+        && !(isDeprecatedFlexItem() && !styleToUse.logicalWidth().intValue()))
+        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalWidth().value());
     else
         computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
 
-    if (styleToUse->logicalMinWidth().isFixed() && styleToUse->logicalMinWidth().value() > 0) {
-        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
-        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
+    if (styleToUse.logicalMinWidth().isFixed() && styleToUse.logicalMinWidth().value() > 0) {
+        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));
+        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));
     }
 
-    if (styleToUse->logicalMaxWidth().isFixed()) {
-        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
-        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
+    if (styleToUse.logicalMaxWidth().isFixed()) {
+        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMaxWidth().value()));
+        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMaxWidth().value()));
     }
 
     // Table layout uses integers, ceil the preferred widths to ensure that they can contain the contents.
@@ -3037,8 +3037,8 @@ void RenderBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalW
 
 void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    RenderStyle* styleToUse = style();
-    bool nowrap = styleToUse->whiteSpace() == NOWRAP;
+    const RenderStyle& styleToUse = styleRef();
+    bool nowrap = styleToUse.whiteSpace() == NOWRAP;
 
     LayoutObject* child = firstChild();
     RenderBlock* containingBlock = this->containingBlock();
@@ -3067,8 +3067,8 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         // A margin basically has three types: fixed, percentage, and auto (variable).
         // Auto and percentage margins simply become 0 when computing min/max width.
         // Fixed margins can be added in as is.
-        Length startMarginLength = childStyle->marginStartUsing(styleToUse);
-        Length endMarginLength = childStyle->marginEndUsing(styleToUse);
+        Length startMarginLength = childStyle->marginStartUsing(&styleToUse);
+        Length endMarginLength = childStyle->marginEndUsing(&styleToUse);
         LayoutUnit margin = 0;
         LayoutUnit marginStart = 0;
         LayoutUnit marginEnd = 0;
@@ -3103,7 +3103,7 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
                 // Determine a left and right max value based off whether or not the floats can fit in the
                 // margins of the object.  For negative margins, we will attempt to overlap the float if the negative margin
                 // is smaller than the float width.
-                bool ltr = containingBlock ? containingBlock->style()->isLeftToRightDirection() : styleToUse->isLeftToRightDirection();
+                bool ltr = containingBlock ? containingBlock->style()->isLeftToRightDirection() : styleToUse.isLeftToRightDirection();
                 LayoutUnit marginLogicalLeft = ltr ? marginStart : marginEnd;
                 LayoutUnit marginLogicalRight = ltr ? marginEnd : marginStart;
                 LayoutUnit maxLeft = marginLogicalLeft > 0 ? std::max(floatLeftWidth, marginLogicalLeft) : floatLeftWidth + marginLogicalLeft;
@@ -3158,8 +3158,8 @@ LayoutUnit RenderBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     if (isReplaced() && linePositionMode == PositionOnContainingLine)
         return RenderBox::lineHeight(firstLine, direction, linePositionMode);
 
-    RenderStyle* s = style(firstLine && document().styleEngine()->usesFirstLineRules());
-    return s->computedLineHeight();
+    const RenderStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
+    return style.computedLineHeight();
 }
 
 int RenderBlock::beforeMarginInLineDirection(LineDirectionMode direction) const
@@ -3778,7 +3778,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Layo
     }
 
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);
-    parent->updateAnonymousChildStyle(newBox, newStyle.get());
+    parent->updateAnonymousChildStyle(*newBox, *newStyle);
     newBox->setStyle(newStyle.release());
     return newBox;
 }
@@ -3789,7 +3789,7 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const Lay
     newStyle->inheritColumnPropertiesFrom(parent->style());
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
-    parent->updateAnonymousChildStyle(newBox, newStyle.get());
+    parent->updateAnonymousChildStyle(*newBox, *newStyle);
     newBox->setStyle(newStyle.release());
     return newBox;
 }
@@ -3800,7 +3800,7 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const 
     newStyle->setColumnSpan(ColumnSpanAll);
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
-    parent->updateAnonymousChildStyle(newBox, newStyle.get());
+    parent->updateAnonymousChildStyle(*newBox, *newStyle);
     newBox->setStyle(newStyle.release());
     return newBox;
 }

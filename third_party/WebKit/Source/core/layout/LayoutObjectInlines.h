@@ -20,6 +20,13 @@ inline RenderStyle* LayoutObject::firstLineStyle() const
     return document().styleEngine()->usesFirstLineRules() ? cachedFirstLineStyle() : style();
 }
 
+inline const RenderStyle& LayoutObject::firstLineStyleRef() const
+{
+    const RenderStyle* style =  firstLineStyle();
+    ASSERT(style);
+    return *style;
+}
+
 inline RenderStyle* LayoutObject::style(bool firstLine) const
 {
     return firstLine ? firstLineStyle() : style();

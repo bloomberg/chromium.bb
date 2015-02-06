@@ -808,6 +808,7 @@ public:
 
     /* The following methods are inlined in LayoutObjectInlines.h */
     RenderStyle* firstLineStyle() const;
+    const RenderStyle& firstLineStyleRef() const;
     RenderStyle* style(bool firstLine) const;
     const RenderStyle& styleRef(bool firstLine) const;
 
@@ -1147,7 +1148,7 @@ protected:
     // time this function is called.
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
-    virtual void updateAnonymousChildStyle(const LayoutObject* child, RenderStyle* style) const { }
+    virtual void updateAnonymousChildStyle(const LayoutObject& child, RenderStyle& style) const { }
 
 protected:
     void setSelfMayNeedPaintInvalidation();

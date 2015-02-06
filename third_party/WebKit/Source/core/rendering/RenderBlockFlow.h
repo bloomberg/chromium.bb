@@ -315,7 +315,7 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
-    bool isPagedOverflow(const RenderStyle*);
+    bool isPagedOverflow(const RenderStyle&);
 
     enum FlowThreadType {
         NoFlowThread,
@@ -323,7 +323,7 @@ private:
         PagedFlowThread
     };
 
-    FlowThreadType flowThreadType(const RenderStyle*);
+    FlowThreadType flowThreadType(const RenderStyle&);
 
     RenderMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
     void createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderStyle* oldStyle);
