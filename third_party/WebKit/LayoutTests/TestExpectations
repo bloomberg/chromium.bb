@@ -1594,6 +1594,8 @@ crbug.com/433727 [ XP ] http/tests/serviceworker/cache-put.html [ Pass Timeout ]
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
 crbug.com/429128 [ Linux ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass ImageOnlyFailure ]
+crbug.com/450699 [ Win ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass Timeout ]
+crbug.com/450706 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass ImageOnlyFailure Timeout ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
