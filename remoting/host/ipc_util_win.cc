@@ -39,8 +39,10 @@ bool CreateConnectedIpcChannel(
   // between CreateNamedPipe() and CreateFile() calls before it will be passed
   // to the network process. It gives full access to the account that
   // the calling code is running under and  denies access by anyone else.
-  std::string security_descriptor = base::StringPrintf(
-      "O:%1$sG:%1$sD:(A;;GA;;;%1$s)", base::WideToUTF8(user_sid).c_str());
+  std::string user_sid_utf8 = base::WideToUTF8(user_sid);
+  std::string security_descriptor =
+      base::StringPrintf("O:%sG:%sD:(A;;GA;;;%s)", user_sid_utf8.c_str(),
+                         user_sid_utf8.c_str(), user_sid_utf8.c_str());
 
   // Generate a unique name for the channel.
   std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();

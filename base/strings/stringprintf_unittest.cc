@@ -163,19 +163,6 @@ TEST(StringPrintfTest, Invalid) {
 }
 #endif
 
-// Test that the positional parameters work.
-TEST(StringPrintfTest, PositionalParameters) {
-  std::string out;
-  SStringPrintf(&out, "%1$s %1$s", "test");
-  EXPECT_STREQ("test test", out.c_str());
-
-#if defined(OS_WIN)
-  std::wstring wout;
-  SStringPrintf(&wout, L"%1$ls %1$ls", L"test");
-  EXPECT_STREQ(L"test test", wout.c_str());
-#endif
-}
-
 // Test that StringPrintf and StringAppendV do not change errno.
 TEST(StringPrintfTest, StringPrintfErrno) {
   errno = 1;

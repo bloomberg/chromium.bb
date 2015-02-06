@@ -267,18 +267,18 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id.c_str()));
+      extension_id.c_str(), extension_id.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printerNoDesc\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
-      extension_id.c_str()));
+      extension_id.c_str(), extension_id.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
 }
@@ -305,11 +305,11 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id.c_str()));
+      extension_id.c_str(), extension_id.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
 }
@@ -343,33 +343,33 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id_1.c_str()));
+      extension_id_1.c_str(), extension_id_1.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printerNoDesc\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
-      extension_id_1.c_str()));
+      extension_id_1.c_str(), extension_id_1.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printerNoDesc\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
 }
@@ -404,18 +404,18 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printerNoDesc\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
 }
@@ -450,18 +450,18 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"description\":\"Test printer\","
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printer1\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
   expected_printers.push_back(base::StringPrintf(
       "{"
-      "\"extensionId\":\"%1$s\","
-      "\"id\":\"%1$s:printerNoDesc\","
+      "\"extensionId\":\"%s\","
+      "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
-      extension_id_2.c_str()));
+      extension_id_2.c_str(), extension_id_2.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
 }

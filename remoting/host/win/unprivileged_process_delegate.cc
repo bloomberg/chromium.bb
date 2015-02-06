@@ -58,7 +58,7 @@ const char kLowIntegrityMandatoryLabel[] = "S:(ML;CIOI;NW;;;LW)";
 // containers and objects inherit ACE giving SYSTEM and the logon SID full
 // access to them as well.
 const char kWindowStationSdFormat[] = "O:SYG:SYD:(A;CIOIIO;GA;;;SY)"
-    "(A;CIOIIO;GA;;;%1$s)(A;NP;0xf037f;;;SY)(A;NP;0xf037f;;;%1$s)";
+    "(A;CIOIIO;GA;;;%s)(A;NP;0xf037f;;;SY)(A;NP;0xf037f;;;%s)";
 
 // Security descriptor of the worker process. It gives access SYSTEM full access
 // to the process. It gives READ_CONTROL, SYNCHRONIZE, PROCESS_QUERY_INFORMATION
@@ -123,7 +123,8 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
   std::string desktop_sddl =
       base::StringPrintf(kDesktopSdFormat, logon_sid_string.c_str());
   std::string window_station_sddl =
-      base::StringPrintf(kWindowStationSdFormat, logon_sid_string.c_str());
+      base::StringPrintf(kWindowStationSdFormat, logon_sid_string.c_str(),
+                         logon_sid_string.c_str());
 
   // The worker runs at low integrity level. Make sure it will be able to attach
   // to the window station and desktop.

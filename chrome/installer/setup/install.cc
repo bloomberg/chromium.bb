@@ -285,20 +285,20 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
             << installer::kVisualElementsManifest << " to " << src_path.value();
     return true;
   } else {
-    // A printf_p-style format string for generating the visual elements
+    // A printf-style format string for generating the visual elements
     // manifest. Required arguments, in order, are:
     //   - Localized display name for the product.
-    //   - Relative path to the VisualElements directory.
+    //   - Relative path to the VisualElements directory, three times.
     static const char kManifestTemplate[] =
         "<Application>\r\n"
         "  <VisualElements\r\n"
-        "      DisplayName='%1$ls'\r\n"
-        "      Logo='%2$ls\\Logo.png'\r\n"
-        "      SmallLogo='%2$ls\\SmallLogo.png'\r\n"
+        "      DisplayName='%ls'\r\n"
+        "      Logo='%ls\\Logo.png'\r\n"
+        "      SmallLogo='%ls\\SmallLogo.png'\r\n"
         "      ForegroundText='light'\r\n"
         "      BackgroundColor='#323232'>\r\n"
         "    <DefaultTile ShowName='allLogos'/>\r\n"
-        "    <SplashScreen Image='%2$ls\\splash-620x300.png'/>\r\n"
+        "    <SplashScreen Image='%ls\\splash-620x300.png'/>\r\n"
         "  </VisualElements>\r\n"
         "</Application>";
 
@@ -314,7 +314,8 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 
     // Fill the manifest with the desired values.
     base::string16 manifest16(base::StringPrintf(
-        manifest_template.c_str(), display_name.c_str(), elements_dir.c_str()));
+        manifest_template.c_str(), display_name.c_str(), elements_dir.c_str(),
+        elements_dir.c_str(), elements_dir.c_str()));
 
     // Write the manifest to |src_path|.
     const std::string manifest(base::UTF16ToUTF8(manifest16));
