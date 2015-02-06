@@ -629,8 +629,9 @@ void HostProcess::CreateAuthenticatorFactory() {
         scoped_ptr<PairingRegistry::Delegate> delegate =
             CreatePairingRegistryDelegate();
 
-        pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
-                                                delegate.Pass());
+        if (delegate)
+          pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
+                                                  delegate.Pass());
       }
 #endif  // defined(OS_WIN)
 
