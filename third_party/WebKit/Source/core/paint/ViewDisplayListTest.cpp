@@ -6,9 +6,11 @@
 
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/page/FocusController.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/SubtreeRecorder.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
@@ -19,7 +21,6 @@
 #include <gtest/gtest.h>
 
 namespace blink {
-namespace {
 
 class ViewDisplayListTest : public RenderingTest {
 public:
@@ -28,6 +29,7 @@ public:
 protected:
     RenderView* renderView() { return m_renderView; }
     DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
 
 private:
     virtual void SetUp() override
@@ -60,18 +62,18 @@ public:
 };
 
 #ifndef NDEBUG
-#define TRACE_DISPLAY_ITEMS(expected, actual) \
-    String trace = "Expected: " + (expected).asDebugString() + " Actual: " + (actual).asDebugString(); \
+#define TRACE_DISPLAY_ITEMS(i, expected, actual) \
+    String trace = String::format("%d: ", (int)i) + "Expected: " + (expected).asDebugString() + " Actual: " + (actual).asDebugString(); \
     SCOPED_TRACE(trace.utf8().data());
 #else
-#define TRACE_DISPLAY_ITEMS(expected, actual)
+#define TRACE_DISPLAY_ITEMS(i, expected, actual)
 #endif
 
 #define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) { \
     EXPECT_EQ((size_t)expectedSize, actual.size()); \
     const TestDisplayItem expected[] = { __VA_ARGS__ }; \
     for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-        TRACE_DISPLAY_ITEMS(expected[index], *actual[index]); \
+        TRACE_DISPLAY_ITEMS(index, expected[index], *actual[index]); \
         EXPECT_EQ(expected[index].client(), actual[index]->client()); \
         EXPECT_EQ(expected[index].type(), actual[index]->type()); \
     } \
@@ -94,7 +96,7 @@ void drawClippedRect(GraphicsContext* context, LayoutLayerModelObject* renderer,
     drawRect(context, renderer, phase, bound);
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
+TEST_F(ViewDisplayListTest, NestedRecorders)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
@@ -108,7 +110,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
         TestDisplayItem(renderView(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
+TEST_F(ViewDisplayListTest, UpdateBasic)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -135,7 +137,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
+TEST_F(ViewDisplayListTest, UpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='unaffected'></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -165,7 +167,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
         TestDisplayItem(unaffected, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
+TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
 {
     setBodyInnerHTML("<div id='first'><div id='second'><div id='third'></div></div></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -193,7 +195,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
+TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='third'></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -245,23 +247,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
         TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-
-    // The following is only applicable when we support incremental paint.
-#if 0
-    rootDisplayItemList().invalidate(second->displayItemClient());
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 6,
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
-        TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-#endif
 }
 
-// This test is only applicable when we support incremental paint.
-TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap)
+TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -270,38 +258,7 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-
-    rootDisplayItemList().invalidate(first->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-
-    rootDisplayItemList().invalidate(first->displayItemClient());
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-}
-
-// This test is only applicable when we support incremental paint.
-TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
-{
-    setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr, &rootDisplayItemList());
-
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
@@ -313,6 +270,7 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
@@ -323,46 +281,14 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
     rootDisplayItemList().invalidate(first->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
-// This test is only applicable when we support incremental paint.
-TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastNoOverlap)
-{
-    setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr, &rootDisplayItemList());
-
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-
-    rootDisplayItemList().invalidate(second->displayItemClient());
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
-}
-
-// This test is only applicable when we support incremental paint.
-TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
+TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     LayoutObject* first = document().body()->firstChild()->renderer();
@@ -371,6 +297,7 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
@@ -382,6 +309,7 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
@@ -393,13 +321,14 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
+TEST_F(ViewDisplayListTest, UpdateClip)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     LayoutLayerModelObject* firstRenderer = toLayoutLayerModelObject(document().body()->firstChild()->renderer());
@@ -491,7 +420,9 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
 
 TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 {
-    setBodyInnerHTML("<div id='div' contentEditable='true'>XYZ</div>");
+    setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
+    document().page()->focusController().setActive(true);
+    document().page()->focusController().setFocused(true);
     RenderView* renderView = document().renderView();
     Layer* rootLayer = renderView->layer();
     LayoutObject* htmlRenderer = document().documentElement()->renderer();
@@ -520,5 +451,220 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
         TestDisplayItem(divRenderer, DisplayItem::Caret));
 }
 
-} // anonymous namespace
+TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
+
+    setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
+    document().page()->focusController().setActive(true);
+    document().page()->focusController().setFocused(true);
+    RenderView* renderView = document().renderView();
+    Layer* rootLayer = renderView->layer();
+    LayoutObject* htmlRenderer = document().documentElement()->renderer();
+    LayoutObject* bodyRenderer = document().body()->renderer();
+    Element* div = toElement(document().body()->firstChild());
+    LayoutObject* divRenderer = document().body()->firstChild()->renderer();
+    InlineTextBox* textInlineBox = toRenderText(div->firstChild()->renderer())->firstTextBox();
+
+    SkCanvas canvas(800, 600);
+    GraphicsContext context(&canvas, &rootDisplayItemList());
+    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 10,
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+
+    div->focus();
+    document().view()->updateLayoutAndStyleForPainting();
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyRenderer->displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox->displayItemClient()));
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divRenderer, DisplayItem::Caret), // New!
+        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+}
+
+TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
+{
+    setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
+        "<div id='container2'><div id='content2'></div></div>");
+    LayoutObject* container1 = document().body()->firstChild()->renderer();
+    LayoutObject* content1 = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->renderer();
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+
+    drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+    drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+    drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 8,
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+
+    // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
+    rootDisplayItemList().invalidate(container1->displayItemClient());
+    drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+    drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+    drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+    drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 8,
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+}
+
+TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
+
+    setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
+        "<div id='container2'><div id='content2'></div></div>");
+    LayoutObject* container1 = document().body()->firstChild()->renderer();
+    LayoutObject* content1 = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->renderer();
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+
+    {
+        SubtreeRecorder r(&context, *container1, PaintPhaseBlockBackground);
+        r.begin();
+        drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+        drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    }
+    {
+        SubtreeRecorder r(&context, *container1, PaintPhaseForeground);
+        r.begin();
+        drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+        drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    }
+    {
+        SubtreeRecorder r(&context, *container2, PaintPhaseBlockBackground);
+        r.begin();
+        drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+        drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+    }
+    {
+        SubtreeRecorder r(&context, *container2, PaintPhaseForeground);
+        r.begin();
+        drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+        drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+    }
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 16,
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(content2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+
+    // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2,
+    // and at the same time container2 is scrolled out of viewport and content2 is invalidated.
+    rootDisplayItemList().invalidate(content2->displayItemClient());
+    {
+        SubtreeRecorder r(&context, *container2, PaintPhaseBlockBackground);
+    }
+    EXPECT_EQ((size_t)1, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
+    {
+        SubtreeRecorder r(&context, *container2, PaintPhaseForeground);
+    }
+    EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
+    {
+        SubtreeRecorder r(&context, *container1, PaintPhaseBlockBackground);
+        r.begin();
+        drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+        drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    }
+    {
+        SubtreeRecorder r(&context, *container1, PaintPhaseForeground);
+        r.begin();
+        drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+        drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    }
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 14,
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+}
+
 } // namespace blink

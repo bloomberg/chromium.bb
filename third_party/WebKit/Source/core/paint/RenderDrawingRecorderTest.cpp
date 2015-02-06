@@ -14,7 +14,6 @@
 #include <gtest/gtest.h>
 
 namespace blink {
-namespace {
 
 class RenderDrawingRecorderTest : public RenderingTest {
 public:
@@ -23,6 +22,7 @@ public:
 protected:
     RenderView* renderView() { return m_renderView; }
     DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
 
 private:
     virtual void SetUp() override
@@ -34,6 +34,12 @@ private:
 
         m_renderView = document().view()->renderView();
         ASSERT_TRUE(m_renderView);
+    }
+
+    virtual void TearDown() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
     }
 
     RenderView* m_renderView;
@@ -54,7 +60,7 @@ void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 }
 
 
-TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Nothing)
+TEST_F(RenderDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
@@ -62,10 +68,10 @@ TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Nothing)
 
     drawNothing(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }
 
-TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Rect)
+TEST_F(RenderDrawingRecorderTest, Rect)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
@@ -75,22 +81,26 @@ TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Rect)
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 }
 
-TEST_F(RenderDrawingRecorderTest, RenderDrawingRecorderTest_Cached)
+TEST_F(RenderDrawingRecorderTest, Cached)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
+
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
     drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
+    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
+    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 
     drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
     drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());
     rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
+    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
+    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 }
 
-}
 }

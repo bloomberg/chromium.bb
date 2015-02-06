@@ -19,7 +19,6 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient dis
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
-    , m_bounds(bounds)
     , m_canUseCachedDrawing(false)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -60,9 +59,8 @@ DrawingRecorder::~DrawingRecorder()
     } else {
         RefPtr<const SkPicture> picture = m_context->endRecording();
         if (!picture || !picture->approximateOpCount())
-            displayItem = DisplayItem::create(m_displayItemClient, m_displayItemType);
-        else
-            displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
+            return;
+        displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
     }
 
 #ifndef NDEBUG

@@ -1704,6 +1704,8 @@
             'paint/ScrollbarPainter.h',
             'paint/ScrollRecorder.cpp',
             'paint/ScrollRecorder.h',
+            'paint/SubtreeRecorder.cpp',
+            'paint/SubtreeRecorder.h',
             'paint/TableCellPainter.cpp',
             'paint/TableCellPainter.h',
             'paint/TablePainter.cpp',

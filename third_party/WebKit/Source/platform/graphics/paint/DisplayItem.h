@@ -121,11 +121,22 @@ public:
         EndTransform,
         BeginClipPath,
         EndClipPath,
-    };
 
-    // Create a dummy display item which just holds the id but has no display operation.
-    // It helps a CachedDisplayItem to match the corresponding original empty display item.
-    static PassOwnPtr<DisplayItem> create(DisplayItemClient client, Type type) { return adoptPtr(new DisplayItem(client, type)); }
+        SubtreeCachedFirst,
+        SubtreeCachedPaintPhaseFirst = SubtreeCachedFirst,
+        SubtreeCachedPaintPhaseLast = SubtreeCachedPaintPhaseFirst + PaintPhaseMax,
+        SubtreeCachedLast = SubtreeCachedPaintPhaseLast,
+
+        BeginSubtreeFirst,
+        BeginSubtreePaintPhaseFirst = BeginSubtreeFirst,
+        BeginSubtreePaintPhaseLast = BeginSubtreePaintPhaseFirst + PaintPhaseMax,
+        BeginSubtreeLast = BeginSubtreePaintPhaseLast,
+
+        EndSubtreeFirst,
+        EndSubtreePaintPhaseFirst = EndSubtreeFirst,
+        EndSubtreePaintPhaseLast = EndSubtreePaintPhaseFirst + PaintPhaseMax,
+        EndSubtreeLast = EndSubtreePaintPhaseLast,
+    };
 
     virtual ~DisplayItem() { }
 
@@ -184,6 +195,16 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
+
+    DEFINE_CATEGORY_METHODS(SubtreeCached)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(SubtreeCached)
+    DEFINE_CATEGORY_METHODS(BeginSubtree)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(BeginSubtree)
+    DEFINE_CATEGORY_METHODS(EndSubtree)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(EndSubtree)
+    DEFINE_CONVERSION_METHODS(SubtreeCached, subtreeCached, BeginSubtree, beginSubtree)
+    DEFINE_CONVERSION_METHODS(SubtreeCached, subtreeCached, EndSubtree, endSubtree)
+    DEFINE_CONVERSION_METHODS(BeginSubtree, beginSubtree, EndSubtree, endSubtree)
 
     virtual bool isBegin() const { return false; }
     virtual bool isEnd() const { return false; }

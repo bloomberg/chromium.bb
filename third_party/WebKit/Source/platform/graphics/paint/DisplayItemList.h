@@ -7,7 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/HashSet.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -43,16 +43,24 @@ protected:
     DisplayItemList() { };
 
 private:
-    PaintList::iterator findNextMatchingCachedItem(PaintList::iterator, const DisplayItem&);
-    bool wasInvalidated(const DisplayItem&) const;
+    friend class RenderDrawingRecorderTest;
+    friend class ViewDisplayListTest;
+
     void updatePaintList();
 
 #ifndef NDEBUG
     WTF::String paintListAsDebugString(const PaintList&) const;
 #endif
 
+    // Indices into PaintList of all DrawingDisplayItems and BeginSubtreeDisplayItems of each client.
+    typedef HashMap<DisplayItemClient, Vector<size_t>> DisplayItemIndicesByClientMap;
+
+    size_t findMatchingCachedItem(const DisplayItem&);
+    static void appendDisplayItem(PaintList&, DisplayItemIndicesByClientMap&, WTF::PassOwnPtr<DisplayItem>);
+    void copyCachedItems(const DisplayItem&, PaintList&, DisplayItemIndicesByClientMap&);
+
     PaintList m_paintList;
-    HashSet<DisplayItemClient> m_cachedClients;
+    DisplayItemIndicesByClientMap m_cachedDisplayItemIndicesByClient;
     PaintList m_newPaints;
 };
 

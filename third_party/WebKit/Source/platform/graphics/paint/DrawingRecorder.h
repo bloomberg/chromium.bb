@@ -34,7 +34,6 @@ private:
     GraphicsContext* m_context;
     DisplayItemClient m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
-    const FloatRect m_bounds;
     bool m_canUseCachedDrawing;
 #ifndef NDEBUG
     WTF::String m_clientDebugString;

@@ -106,6 +106,10 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndScrollType(type))
         return "End" + typeAsDebugString(endScrollTypeToScrollType(type));
 
+    PAINT_PHASE_BASED_DEBUG_STRINGS(SubtreeCached);
+    PAINT_PHASE_BASED_DEBUG_STRINGS(BeginSubtree);
+    PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
+
     switch (type) {
     case BeginFilter: return "BeginFilter";
     case EndFilter: return "EndFilter";
