@@ -21,6 +21,7 @@
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
@@ -366,6 +367,16 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerNetworkProviderImpl();
+}
+
+blink::WebServiceWorkerProvider*
+EmbeddedWorkerContextClient::createServiceWorkerProvider() {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(provider_context_);
+
+  // Blink is responsible for deleting the returned object.
+  return new WebServiceWorkerProviderImpl(
+      thread_safe_sender(), provider_context_.get());
 }
 
 void EmbeddedWorkerContextClient::postMessageToClient(

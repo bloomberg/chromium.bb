@@ -583,6 +583,10 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
       GetContext()->GetLiveRegistration(version->registration_id());
   DCHECK(registration);
 
+  // Set the document URL to the script url in order to allow
+  // register/unregister/getRegistration on ServiceWorkerGlobalScope.
+  provider_host->SetDocumentUrl(version->script_url());
+
   ServiceWorkerRegistrationObjectInfo info;
   ServiceWorkerVersionAttributes attrs;
   GetRegistrationObjectInfoAndVersionAttributes(

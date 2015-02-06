@@ -20,6 +20,7 @@ class TaskRunner;
 
 namespace blink {
 class WebDataSource;
+class WebServiceWorkerProvider;
 }
 
 namespace content {
@@ -29,9 +30,7 @@ class ServiceWorkerScriptContext;
 class ThreadSafeSender;
 
 // This class provides access to/from an embedded worker's WorkerGlobalScope.
-// All methods other than the constructor (it's created on the main thread)
-// and createServiceWorkerNetworkProvider (also called on the main thread)
-// are called on the worker thread.
+// Unless otherwise noted, all methods are called on the worker thread.
 //
 // TODO(kinuko): Currently EW/SW separation is made a little hazily.
 // This should implement WebEmbeddedWorkerContextClient
@@ -46,6 +45,7 @@ class EmbeddedWorkerContextClient
   // new instance.
   static EmbeddedWorkerContextClient* ThreadSpecificInstance();
 
+  // Called on the main thread.
   EmbeddedWorkerContextClient(int embedded_worker_id,
                               int64 service_worker_version_id,
                               const GURL& service_worker_scope,
@@ -67,7 +67,10 @@ class EmbeddedWorkerContextClient
   virtual void openWindow(const blink::WebURL&,
                           blink::WebServiceWorkerClientCallbacks*);
   virtual void workerReadyForInspection();
+
+  // Called on the main thread.
   virtual void workerContextFailedToStart();
+
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void didEvaluateWorkerScript(bool success);
   virtual void willDestroyWorkerContext();
@@ -100,8 +103,12 @@ class EmbeddedWorkerContextClient
   virtual void didHandleSyncEvent(int request_id);
   virtual void didHandleCrossOriginConnectEvent(int request_id,
                                                 bool accept_connection);
+
+  // Called on the main thread.
   virtual blink::WebServiceWorkerNetworkProvider*
       createServiceWorkerNetworkProvider(blink::WebDataSource* data_source);
+  virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider();
+
   virtual void postMessageToClient(
       int client_id,
       const blink::WebString& message,
