@@ -2145,7 +2145,7 @@
         'conditions': [
           # TODO(dcheng): https://crbug.com/417463 -- work to enable this flag
           # on all platforms is currently underway.
-          ['OS=="linux" or OS=="mac" or OS=="ios"', {
+          ['OS=="android" or OS=="linux" or OS=="mac" or OS=="ios"', {
             'clang_chrome_plugins_flags': [
               '-Xclang',
               '-plugin-arg-find-bad-constructs',
