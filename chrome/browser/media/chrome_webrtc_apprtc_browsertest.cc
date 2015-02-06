@@ -232,7 +232,14 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   base::Process collider_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+#if defined(OS_WIN)
+// Disabled due to https://github.com/webrtc/apprtc/issues/48.
+#define MAYBE_MANUAL_WorksOnApprtc DISABLED_MANUAL_WorksOnApprtc
+#else
+#define MAYBE_MANUAL_WorksOnApprtc MANUAL_WorksOnApprtc
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MAYBE_MANUAL_WorksOnApprtc) {
   // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
   if (OnWinXp())
     return;
