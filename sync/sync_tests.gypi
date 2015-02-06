@@ -475,7 +475,11 @@
           'dependencies': [
             'sync_fake_server_jni_headers',
             'test_support_sync_fake_server',
+            '../testing/gtest.gyp:gtest',
             '../base/base.gyp:base',
+          ],
+          'export_dependent_settings': [
+            '../testing/gtest.gyp:gtest',
           ],
           'sources': [
             'test/fake_server/android/fake_server_helper_android.cc',

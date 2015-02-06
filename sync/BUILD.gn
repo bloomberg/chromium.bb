@@ -804,6 +804,7 @@ if (is_android) {
       ":fake_server_jni",
       ":test_support_sync_fake_server",
       "//base",
+      "//testing/gtest",
     ]
   }
 }
