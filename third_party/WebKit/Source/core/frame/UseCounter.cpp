@@ -841,6 +841,18 @@ String UseCounter::deprecationMessage(Feature feature)
     case AudioBufferSourceBufferOnce:
         return "Setting AudioBufferSourceNode.buffer more than once is deprecated and will no longer work in Chrome 43.";
 
+    case SVGSVGElementForceRedraw:
+        return "'SVGSVGElement.forceRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__forceRedraw).";
+
+    case SVGSVGElementSuspendRedraw:
+        return "'SVGSVGElement.suspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__suspendRedraw).";
+
+    case SVGSVGElementUnsuspendRedraw:
+        return "'SVGSVGElement.unsuspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedraw).";
+
+    case SVGSVGElementUnsuspendRedrawAll:
+        return "'SVGSVGElement.unsuspendRedrawAll()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedrawAll).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
