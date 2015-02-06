@@ -40,33 +40,13 @@
   }
 }
 
-- (void)viewWillMoveToWindow:(NSWindow*)window {
-  if ([self window]) {
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:NSWindowDidBecomeMainNotification
-                object:[self window]];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:NSWindowDidResignMainNotification
-                object:[self window]];
-  }
-  if (window) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidBecomeMainNotification
-             object:window];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidResignMainNotification
-             object:window];
-  }
+// ThemedWindowDrawing implementation.
+
+- (void)windowDidChangeTheme {
+  [self setNeedsDisplay:YES];
 }
 
-- (void)windowFocusDidChange:(NSNotification*)notification {
-  // The theme image may depend on the window's active state.
+- (void)windowDidChangeActive {
   [self setNeedsDisplay:YES];
 }
 
