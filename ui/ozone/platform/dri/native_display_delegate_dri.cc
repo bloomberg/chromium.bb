@@ -200,6 +200,11 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
       return false;
     }
   } else {
+    if (dri_output.dpms_property()) {
+      dri_->SetProperty(dri_output.connector(),
+                        dri_output.dpms_property()->prop_id, DRM_MODE_DPMS_OFF);
+    }
+
     if (!screen_manager_->DisableDisplayController(dri_output.crtc())) {
       VLOG(1) << "Failed to disable crtc=" << dri_output.crtc();
       return false;
