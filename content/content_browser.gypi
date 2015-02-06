@@ -22,6 +22,7 @@
     '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+    '../ui/events/events.gyp:events',
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:gesture_detection',
     '../ui/gfx/gfx.gyp:gfx',
@@ -1630,11 +1631,6 @@
     '<@(private_browser_sources)',
   ],
   'conditions': [
-    ['toolkit_views==1', {
-      'dependencies': [
-        '../ui/events/events.gyp:events',
-      ],
-    }],
     ['OS == "win"', {
       'dependencies': [
         '../third_party/power_gadget/power_gadget.gyp:power_gadget',
