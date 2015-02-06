@@ -12,6 +12,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,7 +31,8 @@ import java.util.Locale;
 /**
  * Provides the Java-ui for editing a Credit Card autofill entry.
  */
-public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
+public class AutofillCreditCardEditor extends Fragment implements OnItemSelectedListener,
+        TextWatcher {
     // GUID of the profile we are editing.
     // May be the empty string if creating a new profile.
     private String mGUID;
@@ -88,6 +91,17 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
     }
 
     @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if ((parent == mExpirationYear && position != mInitialExpirationYearPos)
+                || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)) {
+            enableSaveButton();
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {}
+
+    @Override
     public void afterTextChanged(Editable s) {}
 
     @Override
@@ -95,7 +109,7 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        updateSaveButtonState();
+        enableSaveButton();
     }
 
     void addSpinnerAdapters() {
@@ -229,13 +243,13 @@ public class AutofillCreditCardEditor extends Fragment implements TextWatcher {
         // Listen for changes to inputs. Enable the save button after something has changed.
         mNameText.addTextChangedListener(this);
         mNumberText.addTextChangedListener(this);
+        mExpirationMonth.setOnItemSelectedListener(this);
+        mExpirationYear.setOnItemSelectedListener(this);
     }
 
-    private void updateSaveButtonState() {
+    private void enableSaveButton() {
         Button button = (Button) getView().findViewById(R.id.autofill_credit_card_save);
-        boolean enabled = mNameText.getEditableText().toString().trim().length() > 0
-                || mNumberText.getEditableText().toString().trim().length() > 0;
-        button.setEnabled(enabled);
+        button.setEnabled(true);
     }
 
     /**
