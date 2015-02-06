@@ -53,7 +53,7 @@ public:
     static PassRefPtrWillBeRawPtr<FilterEffect> build(Filter*, LayoutObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation*);
 
 private:
-    static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* documentResourceReferences;
+    static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* documentResourceReferences;
 };
 
 }

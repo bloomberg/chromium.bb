@@ -24,7 +24,7 @@
 
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/SVGZoomAndPan.h"

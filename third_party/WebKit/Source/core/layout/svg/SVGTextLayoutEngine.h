@@ -20,10 +20,10 @@
 #ifndef SVGTextLayoutEngine_h
 #define SVGTextLayoutEngine_h
 
-#include "core/rendering/svg/SVGTextChunkBuilder.h"
-#include "core/rendering/svg/SVGTextFragment.h"
-#include "core/rendering/svg/SVGTextLayoutAttributes.h"
-#include "core/rendering/svg/SVGTextMetrics.h"
+#include "core/layout/svg/SVGTextChunkBuilder.h"
+#include "core/layout/svg/SVGTextFragment.h"
+#include "core/layout/svg/SVGTextLayoutAttributes.h"
+#include "core/layout/svg/SVGTextMetrics.h"
 #include "platform/graphics/Path.h"
 #include "wtf/Vector.h"
 

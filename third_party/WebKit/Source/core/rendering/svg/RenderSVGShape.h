@@ -26,8 +26,8 @@
 #ifndef RenderSVGShape_h
 #define RenderSVGShape_h
 
+#include "core/layout/svg/SVGMarkerData.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
-#include "core/rendering/svg/SVGMarkerData.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/OwnPtr.h"

@@ -26,11 +26,11 @@
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -322,7 +322,7 @@ void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()
 bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundingBox, const FloatPoint& nodeAtPoint)
 {
     FloatPoint point = nodeAtPoint;
-    if (!SVGRenderSupport::pointInClippingArea(this, point))
+    if (!SVGLayoutSupport::pointInClippingArea(this, point))
         return false;
 
     if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {

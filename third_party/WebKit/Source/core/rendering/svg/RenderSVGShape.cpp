@@ -29,12 +29,12 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/layout/HitTestRequest.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGPathData.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGShapePainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
-#include "core/rendering/svg/SVGPathData.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
@@ -76,7 +76,7 @@ bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
 {
     ASSERT(m_path);
     StrokeData strokeData;
-    SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
+    SVGLayoutSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
 
     if (hasNonScalingStroke()) {
         AffineTransform nonScalingTransform = nonScalingStrokeTransform();
@@ -193,7 +193,7 @@ bool RenderSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
         return false;
 
     FloatPoint localPoint;
-    if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
         return false;
 
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, style()->pointerEvents());
@@ -233,7 +233,7 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
 
     if (style()->svgStyle().hasStroke()) {
         StrokeData strokeData;
-        SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
         if (hasNonScalingStroke()) {
             AffineTransform nonScalingTransform = nonScalingStrokeTransform();
             if (nonScalingTransform.isInvertible()) {
@@ -255,7 +255,7 @@ void RenderSVGShape::updatePaintInvalidationBoundingBox()
     m_paintInvalidationBoundingBox = strokeBoundingBox();
     if (strokeWidth() < 1.0f && !m_paintInvalidationBoundingBox.isEmpty())
         m_paintInvalidationBoundingBox.inflate(1);
-    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
+    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 float RenderSVGShape::strokeWidth() const

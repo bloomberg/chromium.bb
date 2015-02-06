@@ -19,12 +19,12 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextMetricsBuilder.h"
+#include "core/layout/svg/SVGTextMetricsBuilder.h"
 
+#include "core/layout/svg/SVGTextMetrics.h"
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGTextMetrics.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/text/BidiCharacterRun.h"

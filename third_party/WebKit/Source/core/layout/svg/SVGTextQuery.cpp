@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGTextQuery.h"
+#include "core/layout/svg/SVGTextQuery.h"
 
 #include "core/layout/line/InlineFlowBox.h"
+#include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGTextMetrics.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
@@ -381,9 +381,9 @@ bool SVGTextQuery::rotationOfCharacterCallback(Data* queryData, const SVGTextFra
 
     AffineTransform fragmentTransform;
     fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
-    if (fragmentTransform.isIdentity())
+    if (fragmentTransform.isIdentity()) {
         data->rotation = 0;
-    else {
+    } else {
         fragmentTransform.scale(1 / fragmentTransform.xScale(), 1 / fragmentTransform.yScale());
         data->rotation = narrowPrecisionToFloat(rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
     }

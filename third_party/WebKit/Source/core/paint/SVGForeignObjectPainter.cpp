@@ -5,13 +5,13 @@
 #include "config.h"
 #include "core/paint/SVGForeignObjectPainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
@@ -28,10 +28,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
     m_renderSVGForeignObject.updatePaintInfoRect(paintInfoBeforeFiltering.rect);
 
     OwnPtr<FloatClipRecorder> clipRecorder;
-    if (SVGRenderSupport::isOverflowHidden(&m_renderSVGForeignObject))
+    if (SVGLayoutSupport::isOverflowHidden(&m_renderSVGForeignObject))
         clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGForeignObject.displayItemClient(), paintInfoBeforeFiltering.phase, m_renderSVGForeignObject.viewportRect()));
 
-    SVGRenderingContext renderingContext(m_renderSVGForeignObject, paintInfoBeforeFiltering);
+    SVGLayoutContext renderingContext(m_renderSVGForeignObject, paintInfoBeforeFiltering);
     bool continueRendering = true;
     if (renderingContext.paintInfo().phase == PaintPhaseForeground)
         continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();

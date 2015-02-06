@@ -5,6 +5,11 @@
 #include "config.h"
 #include "core/paint/SVGShapePainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGMarkerData.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -14,11 +19,6 @@
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGShape.h"
-#include "core/rendering/svg/SVGMarkerData.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -57,7 +57,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
 
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGShape.displayItemClient(), m_renderSVGShape.localTransform());
     {
-        SVGRenderingContext renderingContext(m_renderSVGShape, paintInfoBeforeFiltering);
+        SVGLayoutContext renderingContext(m_renderSVGShape, paintInfoBeforeFiltering);
         if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
             RenderDrawingRecorder recorder(renderingContext.paintInfo().context, m_renderSVGShape, renderingContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
@@ -69,7 +69,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
                     switch (svgStyle.paintOrderType(i)) {
                     case PT_FILL: {
                         GraphicsContextStateSaver stateSaver(*renderingContext.paintInfo().context, false);
-                        if (!SVGRenderSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToFillMode))
+                        if (!SVGLayoutSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToFillMode))
                             break;
                         fillShape(renderingContext.paintInfo().context);
                         break;
@@ -89,7 +89,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
                                 additionalPaintServerTransform = &nonScalingTransform;
                             }
 
-                            if (!SVGRenderSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
+                            if (!SVGLayoutSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
                                 break;
                             strokeShape(renderingContext.paintInfo().context);
                         }
@@ -189,7 +189,7 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, RenderSVGResourceM
     {
         TransformRecorder transformRecorder(*markerPaintInfo.context, marker.displayItemClient(), marker.markerTransformation(position.origin, position.angle, strokeWidth));
         OwnPtr<FloatClipRecorder> clipRecorder;
-        if (SVGRenderSupport::isOverflowHidden(&marker))
+        if (SVGLayoutSupport::isOverflowHidden(&marker))
             clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, marker.displayItemClient(), markerPaintInfo.phase, marker.viewport()));
 
         SVGContainerPainter(marker).paint(markerPaintInfo);

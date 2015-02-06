@@ -67,7 +67,7 @@ static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBeha
 static void writeLayers(TextStream&, const Layer* rootLayer, Layer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 };
 
-// Helper function shared with SVGRenderTreeAsText
+// Helper function shared with SVGLayoutTreeAsText
 String quoteAndEscapeNonPrintables(const String&);
 
 String counterValueForElement(Element*);

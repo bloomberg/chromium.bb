@@ -32,7 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/svg/SVGTextQuery.h"
+#include "core/layout/svg/SVGTextQuery.h"
 
 namespace blink {
 

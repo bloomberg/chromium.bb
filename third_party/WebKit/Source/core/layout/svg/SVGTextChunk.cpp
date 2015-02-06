@@ -19,10 +19,10 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextChunk.h"
+#include "core/layout/svg/SVGTextChunk.h"
 
+#include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/rendering/svg/SVGTextFragment.h"
 
 namespace blink {
 
@@ -61,9 +61,9 @@ void SVGTextChunk::calculateLength(float& length, unsigned& characters) const
 
             // Resepect gap between chunks.
             if (m_chunkStyle & VerticalText)
-                 length += fragment.y - (lastFragment->y + lastFragment->height);
+                length += fragment.y - (lastFragment->y + lastFragment->height);
             else
-                 length += fragment.x - (lastFragment->x + lastFragment->width);
+                length += fragment.x - (lastFragment->x + lastFragment->width);
 
             lastFragment = &fragment;
         }

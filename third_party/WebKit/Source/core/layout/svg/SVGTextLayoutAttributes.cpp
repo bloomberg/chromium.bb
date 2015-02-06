@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Research In Motion Limited 2010-2012. All rights reserved.
+ * Copyright (C) Research In Motion Limited 2010-11. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,23 +17,30 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGTextMetricsBuilder_h
-#define SVGTextMetricsBuilder_h
+#include "config.h"
+#include "core/layout/svg/SVGTextLayoutAttributes.h"
 
-#include "core/rendering/svg/SVGTextLayoutAttributes.h"
+#include "wtf/text/CString.h"
+
+#include <stdio.h>
 
 namespace blink {
 
-class RenderSVGInlineText;
-class RenderSVGText;
+SVGTextLayoutAttributes::SVGTextLayoutAttributes(RenderSVGInlineText* context)
+    : m_context(context)
+{
+}
 
-namespace SVGTextMetricsBuilder {
+void SVGTextLayoutAttributes::clear()
+{
+    m_characterDataMap.clear();
+    m_textMetricsValues.clear();
+}
 
-void measureTextRenderer(RenderSVGInlineText*);
-void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
+float SVGTextLayoutAttributes::emptyValue()
+{
+    static float s_emptyValue = std::numeric_limits<float>::max() - 1;
+    return s_emptyValue;
+}
 
-} // namespace SVGTextMetricsBuilder
-
-} // namespace blink
-
-#endif
+}

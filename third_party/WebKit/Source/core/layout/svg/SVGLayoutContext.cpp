@@ -23,22 +23,22 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/layout/svg/SVGLayoutContext.h"
 
 #include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
 
 namespace blink {
 
-SVGRenderingContext::~SVGRenderingContext()
+SVGLayoutContext::~SVGLayoutContext()
 {
     if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
@@ -68,7 +68,7 @@ SVGRenderingContext::~SVGRenderingContext()
     }
 }
 
-bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
+bool SVGLayoutContext::applyClipMaskAndFilterIfNecessary()
 {
 #if ENABLE(ASSERT)
     ASSERT(!m_applyClipMaskAndFilterIfNecessaryCalled);
@@ -96,13 +96,13 @@ bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
     if (!applyFilterIfNecessary(resources))
         return false;
 
-    if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(m_object))
+    if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(m_object))
         m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), m_paintInfo.context->compositeOperationDeprecated(), WebBlendModeNormal, 1, m_paintInfo.context->compositeOperationDeprecated()));
 
     return true;
 }
 
-void SVGRenderingContext::applyCompositingIfNecessary()
+void SVGLayoutContext::applyCompositingIfNecessary()
 {
     ASSERT(!m_paintInfo.isRenderingClipPathAsMaskImage());
 
@@ -122,7 +122,7 @@ void SVGRenderingContext::applyCompositingIfNecessary()
     }
 }
 
-bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
+bool SVGLayoutContext::applyClipIfNecessary(SVGResources* resources)
 {
     // resources->clipper() corresponds to the non-prefixed 'clip-path' whereas
     // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
@@ -143,7 +143,7 @@ bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGRenderingContext::applyMaskIfNecessary(SVGResources* resources)
+bool SVGLayoutContext::applyMaskIfNecessary(SVGResources* resources)
 {
     if (RenderSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
         if (!masker->prepareEffect(m_object, m_paintInfo.context))
@@ -153,7 +153,7 @@ bool SVGRenderingContext::applyMaskIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
+bool SVGLayoutContext::applyFilterIfNecessary(SVGResources* resources)
 {
     if (!resources) {
         if (m_object->style()->svgStyle().hasFilter())
@@ -176,7 +176,7 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGRenderingContext::isIsolationInstalled() const
+bool SVGLayoutContext::isIsolationInstalled() const
 {
     if (m_compositingRecorder)
         return true;
@@ -205,7 +205,7 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope()
     currentContentTransformation() = m_savedContentTransformation;
 }
 
-float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
+float SVGLayoutContext::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
 {
     // FIXME: trying to compute a device space transform at record time is wrong. All clients
     // should be updated to avoid relying on this information, and the method should be removed.
@@ -247,7 +247,7 @@ float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const LayoutObje
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
-void SVGRenderingContext::renderSubtree(GraphicsContext* context, LayoutObject* item)
+void SVGLayoutContext::renderSubtree(GraphicsContext* context, LayoutObject* item)
 {
     ASSERT(context);
     ASSERT(item);

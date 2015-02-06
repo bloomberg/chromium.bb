@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
@@ -12,7 +13,6 @@
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    SVGRenderingContext renderingContext(m_svgRootInlineBox.renderer(), paintInfoBeforeFiltering);
+    SVGLayoutContext renderingContext(m_svgRootInlineBox.renderer(), paintInfoBeforeFiltering);
     if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
             child->paint(renderingContext.paintInfo(), paintOffset, 0, 0);

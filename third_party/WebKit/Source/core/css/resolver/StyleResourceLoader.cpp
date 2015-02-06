@@ -29,6 +29,7 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -36,7 +37,6 @@
 #include "core/rendering/style/StyleFetchedImageSet.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
-#include "core/rendering/svg/ReferenceFilterBuilder.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGRenderTreeAsText.h"
+#include "core/layout/svg/SVGLayoutTreeAsText.h"
 
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -125,16 +125,17 @@ static void writeIfNotDefault(TextStream& ts, const char* name, ValueType value,
 
 TextStream& operator<<(TextStream& ts, const AffineTransform& transform)
 {
-    if (transform.isIdentity())
+    if (transform.isIdentity()) {
         ts << "identity";
-    else
+    } else  {
         ts << "{m=(("
-           << transform.a() << "," << transform.b()
-           << ")("
-           << transform.c() << "," << transform.d()
-           << ")) t=("
-           << transform.e() << "," << transform.f()
-           << ")}";
+            << transform.a() << "," << transform.b()
+            << ")("
+            << transform.c() << "," << transform.d()
+            << ")) t=("
+            << transform.e() << "," << transform.f()
+            << ")}";
+    }
 
     return ts;
 }
@@ -372,8 +373,9 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
         // FIXME: We should switch to UnalteredParsing here - this will affect the path dumping output of dozens of tests.
         buildStringFromByteStream(*toSVGPathElement(*svgElement).pathByteStream(), pathString, NormalizedParsing);
         writeNameAndQuotedValue(ts, "data", pathString);
-    } else
+    } else {
         ASSERT_NOT_REACHED();
+    }
     return ts;
 }
 
@@ -430,8 +432,9 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
             if (isVerticalText)
                 ts << ", vertical";
             ts << ") ";
-        } else if (isVerticalText)
+        } else if (isVerticalText) {
             ts << "(vertical) ";
+        }
         startOffset -= textBox->start();
         endOffset -= textBox->start();
         // </hack>
@@ -570,8 +573,9 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
         float focalRadius = gradient->focalRadius(attributes);
 
         ts << " [center=" << centerPoint << "] [focal=" << focalPoint << "] [radius=" << radius << "] [focalRadius=" << focalRadius << "]\n";
-    } else
+    } else {
         ts << "\n";
+    }
     writeChildren(ts, object, indent);
 }
 

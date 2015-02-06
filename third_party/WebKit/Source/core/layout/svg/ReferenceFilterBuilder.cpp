@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/ReferenceFilterBuilder.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -43,7 +43,7 @@
 
 namespace blink {
 
-HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* ReferenceFilterBuilder::documentResourceReferences = 0;
+HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* ReferenceFilterBuilder::documentResourceReferences = 0;
 
 DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(const FilterOperation* filterOperation)
 {
@@ -56,7 +56,7 @@ DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(con
 void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, PassOwnPtr<DocumentResourceReference> documentResourceReference)
 {
     if (!documentResourceReferences)
-        documentResourceReferences = new HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >;
+        documentResourceReferences = new HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>;
     documentResourceReferences->add(filterOperation, documentResourceReference);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Research In Motion Limited 2010-11. All rights reserved.
+ * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,30 +17,31 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-#include "core/rendering/svg/SVGTextLayoutAttributes.h"
+#ifndef SVGTextLayoutEngineSpacing_h
+#define SVGTextLayoutEngineSpacing_h
 
-#include <stdio.h>
-
-#include "wtf/text/CString.h"
+#include "core/layout/svg/SVGTextMetrics.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 
-SVGTextLayoutAttributes::SVGTextLayoutAttributes(RenderSVGInlineText* context)
-    : m_context(context)
-{
-}
+class Font;
 
-void SVGTextLayoutAttributes::clear()
-{
-    m_characterDataMap.clear();
-    m_textMetricsValues.clear();
-}
+// Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and 'word-spacing'.
+class SVGTextLayoutEngineSpacing {
+    WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);
+public:
+    SVGTextLayoutEngineSpacing(const Font&, float effectiveZoom);
 
-float SVGTextLayoutAttributes::emptyValue()
-{
-    static float s_emptyValue = std::numeric_limits<float>::max() - 1;
-    return s_emptyValue;
-}
+    float calculateCSSSpacing(UChar currentCharacter);
 
-}
+private:
+    const Font& m_font;
+    UChar m_lastCharacter;
+    float m_effectiveZoom;
+};
+
+} // namespace blink
+
+#endif

@@ -20,7 +20,7 @@
 #ifndef SVGTextChunkBuilder_h
 #define SVGTextChunkBuilder_h
 
-#include "core/rendering/svg/SVGTextChunk.h"
+#include "core/layout/svg/SVGTextChunk.h"
 #include "wtf/Vector.h"
 
 namespace blink {

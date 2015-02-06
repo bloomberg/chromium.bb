@@ -19,13 +19,13 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextLayoutEngine.h"
+#include "core/layout/svg/SVGTextLayoutEngine.h"
 
+#include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
+#include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
-#include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
-#include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 
@@ -279,8 +279,8 @@ static inline void dumpTextBoxes(Vector<SVGInlineTextBox*>& boxes)
         for (unsigned i = 0; i < fragmentCount; ++i) {
             SVGTextFragment& fragment = fragments.at(i);
             String fragmentString = characters.substring(fragment.characterOffset, fragment.length);
-            fprintf(stderr, "    -> Fragment %i, x=%lf, y=%lf, width=%lf, height=%lf, characterOffset=%i, length=%i, characters='%s'\n"
-                          , i, fragment.x, fragment.y, fragment.width, fragment.height, fragment.characterOffset, fragment.length, fragmentString.utf8().data());
+            fprintf(stderr, "    -> Fragment %i, x=%lf, y=%lf, width=%lf, height=%lf, characterOffset=%i, length=%i, characters='%s'\n",
+                i, fragment.x, fragment.y, fragment.width, fragment.height, fragment.characterOffset, fragment.length, fragmentString.utf8().data());
         }
     }
 }
@@ -613,9 +613,9 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
         }
 
         // Update current text position, after processing of the current character finished.
-        if (m_inPathLayout)
+        if (m_inPathLayout) {
             updateCurrentTextPosition(x, y, glyphAdvance);
-        else {
+        } else {
             // Apply CSS 'kerning', 'letter-spacing' and 'word-spacing' to next character, if needed.
             if (spacing)
                 applySpacingToNextCharacter = true;

@@ -22,8 +22,8 @@
 #ifndef RenderSVGText_h
 #define RenderSVGText_h
 
+#include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
-#include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {

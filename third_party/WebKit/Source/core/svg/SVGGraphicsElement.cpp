@@ -25,8 +25,8 @@
 
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/layout/svg/SVGPathData.h"
 #include "core/rendering/svg/RenderSVGPath.h"
-#include "core/rendering/svg/SVGPathData.h"
 #include "core/svg/SVGElementRareData.h"
 #include "platform/transforms/AffineTransform.h"
 

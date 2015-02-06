@@ -28,11 +28,11 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGRootPainter.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -169,12 +169,12 @@ void RenderSVGRoot::layout()
     updateLogicalHeight();
     buildLocalToBorderBoxTransform();
 
-    SVGRenderSupport::layoutResourcesIfNeeded(this);
+    SVGLayoutSupport::layoutResourcesIfNeeded(this);
 
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
     m_isLayoutSizeChanged = needsLayout || (svg->hasRelativeLengths() && oldSize != size());
-    SVGRenderSupport::layoutChildren(this, needsLayout || SVGRenderSupport::filtersForceContainerLayout(this));
+    SVGLayoutSupport::layoutChildren(this, needsLayout || SVGLayoutSupport::filtersForceContainerLayout(this));
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();
@@ -262,7 +262,7 @@ void RenderSVGRoot::removeChild(LayoutObject* child)
 bool RenderSVGRoot::hasNonIsolatedBlendingDescendants() const
 {
     if (m_hasNonIsolatedBlendingDescendantsDirty) {
-        m_hasNonIsolatedBlendingDescendants = SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(this);
+        m_hasNonIsolatedBlendingDescendants = SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(this);
         m_hasNonIsolatedBlendingDescendantsDirty = false;
     }
     return m_hasNonIsolatedBlendingDescendants;
@@ -322,7 +322,7 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
 
 LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForPaintInvalidation,
+    // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
     // RenderSVGRoot::mapRectToPaintInvalidationBacking and RenderReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
@@ -386,8 +386,8 @@ const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModel
 
 void RenderSVGRoot::updateCachedBoundaries()
 {
-    SVGRenderSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
-    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
+    SVGLayoutSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
+    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)

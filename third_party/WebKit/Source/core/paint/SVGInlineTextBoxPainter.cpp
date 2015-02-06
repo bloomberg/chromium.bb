@@ -10,6 +10,8 @@
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
@@ -18,8 +20,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace blink {
 
@@ -267,7 +267,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
         case PT_FILL:
             if (svgDecorationStyle.hasFill()) {
                 GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-                if (!SVGRenderSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToFillMode))
+                if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToFillMode))
                     break;
                 paintInfo.context->fillPath(path);
             }
@@ -276,7 +276,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
             if (svgDecorationStyle.hasVisibleStroke()) {
                 // FIXME: Non-scaling stroke is not applied here.
                 GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-                if (!SVGRenderSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToStrokeMode))
+                if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToStrokeMode))
                     break;
                 paintInfo.context->strokePath(path);
             }
@@ -323,7 +323,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
 
     // FIXME: Non-scaling stroke is not applied here.
 
-    if (!SVGRenderSupport::updateGraphicsContext(paintInfo, stateSaver, style, m_svgInlineTextBox.parent()->renderer(), resourceMode, additionalPaintServerTransform))
+    if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, style, m_svgInlineTextBox.parent()->renderer(), resourceMode, additionalPaintServerTransform))
         return;
 
     if (hasShadow) {

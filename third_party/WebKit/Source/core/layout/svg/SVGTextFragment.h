@@ -61,7 +61,7 @@ struct SVGTextFragment {
     unsigned characterOffset;
     unsigned metricsListOffset;
     unsigned length : 31;
-    bool isTextOnPath : 1;
+    unsigned isTextOnPath : 1;
 
     float x;
     float y;

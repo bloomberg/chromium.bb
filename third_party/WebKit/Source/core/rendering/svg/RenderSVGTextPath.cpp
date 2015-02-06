@@ -21,8 +21,8 @@
 
 #include "core/rendering/svg/RenderSVGTextPath.h"
 
-#include "core/rendering/svg/SVGPathData.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGPathData.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 
@@ -36,7 +36,7 @@ RenderSVGTextPath::RenderSVGTextPath(Element* element)
 bool RenderSVGTextPath::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     if (child->isText())
-        return SVGRenderSupport::isRenderableTextNode(child);
+        return SVGLayoutSupport::isRenderableTextNode(child);
 
     return child->isSVGInline() && !child->isSVGTextPath();
 }

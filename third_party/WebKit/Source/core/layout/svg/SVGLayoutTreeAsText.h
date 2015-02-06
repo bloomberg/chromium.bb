@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGRenderTreeAsText_h
-#define SVGRenderTreeAsText_h
+#ifndef SVGLayoutTreeAsText_h
+#define SVGLayoutTreeAsText_h
 
 #include "platform/text/TextStream.h"
 
@@ -51,4 +51,4 @@ void writeResources(TextStream&, const LayoutObject&, int indent);
 
 } // namespace blink
 
-#endif // SVGRenderTreeAsText_h
+#endif // SVGLayoutTreeAsText_h

@@ -29,10 +29,10 @@
 
 #include "core/rendering/svg/RenderSVGPath.h"
 
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
+#include "core/layout/svg/SVGSubpathData.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/rendering/svg/SVGSubpathData.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {

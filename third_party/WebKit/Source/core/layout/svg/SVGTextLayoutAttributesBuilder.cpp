@@ -19,12 +19,12 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
+#include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 
+#include "core/layout/svg/SVGTextMetricsBuilder.h"
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGTextMetricsBuilder.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace blink {

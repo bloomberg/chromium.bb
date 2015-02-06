@@ -5,6 +5,8 @@
 #include "config.h"
 #include "core/paint/SVGImagePainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -13,8 +15,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -35,7 +35,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
     {
-        SVGRenderingContext renderingContext(m_renderSVGImage, paintInfoBeforeFiltering);
+        SVGLayoutContext renderingContext(m_renderSVGImage, paintInfoBeforeFiltering);
         if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
             RenderDrawingRecorder recorder(renderingContext.paintInfo().context, m_renderSVGImage, renderingContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {

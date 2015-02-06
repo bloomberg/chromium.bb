@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGResources.h"
+#include "core/layout/svg/SVGResources.h"
 
 #include "core/SVGNames.h"
 #include "core/rendering/style/SVGRenderStyle.h"

@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
@@ -30,7 +30,7 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    SVGRenderingContext renderingContext(m_svgInlineFlowBox.renderer(), paintInfo);
+    SVGLayoutContext renderingContext(m_svgInlineFlowBox.renderer(), paintInfo);
     if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
             child->paint(renderingContext.paintInfo(), paintOffset, 0, 0);

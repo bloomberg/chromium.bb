@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
+
+#include "core/layout/svg/SVGLayoutSupport.h"
 
 namespace blink {
 
@@ -32,7 +32,7 @@ RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
 void RenderSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
-    SVGRenderSupport::layoutChildren(this, selfNeedsLayout());
+    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout());
     updateCachedBoundaries();
     clearNeedsLayout();
 }

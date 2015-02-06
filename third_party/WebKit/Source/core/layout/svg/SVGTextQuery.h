@@ -20,7 +20,7 @@
 #ifndef SVGTextQuery_h
 #define SVGTextQuery_h
 
-#include "core/rendering/svg/SVGTextFragment.h"
+#include "core/layout/svg/SVGTextFragment.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/Vector.h"

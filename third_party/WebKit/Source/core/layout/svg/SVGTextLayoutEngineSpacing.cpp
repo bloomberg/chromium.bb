@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
+#include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 
 #include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Character.h"

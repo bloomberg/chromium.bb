@@ -22,13 +22,13 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleFilterData.h"
 #include "core/rendering/style/StyleTransformData.h"
-#include "core/rendering/svg/ReferenceFilterBuilder.h"
 
 namespace blink {
 

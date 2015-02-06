@@ -18,12 +18,12 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 
 #include "core/HTMLNames.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCycleSolver.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCycleSolver.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {

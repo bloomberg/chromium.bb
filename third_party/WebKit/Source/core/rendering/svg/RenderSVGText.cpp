@@ -31,6 +31,8 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/SVGTextPainter.h"
 #include "core/rendering/PaintInfo.h"
@@ -39,8 +41,6 @@
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGTextElement.h"
 #include "core/svg/SVGTransformList.h"
@@ -69,7 +69,7 @@ RenderSVGText::~RenderSVGText()
 
 bool RenderSVGText::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
-    return child->isSVGInline() || (child->isText() && SVGRenderSupport::isRenderableTextNode(child));
+    return child->isSVGInline() || (child->isText() && SVGLayoutSupport::isRenderableTextNode(child));
 }
 
 RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(LayoutObject* start)
@@ -347,7 +347,7 @@ void RenderSVGText::layout()
         m_needsReordering = true;
         m_needsPositioningValuesUpdate = false;
         updateCachedBoundariesInParents = true;
-    } else if (m_needsTextMetricsUpdate || SVGRenderSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
+    } else if (m_needsTextMetricsUpdate || SVGLayoutSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
         // If the root layout size changed (eg. window size changes) or the transform to the root
         // context has changed then recompute the on-screen font size.
         updateFontInAllDescendants(this, &m_layoutAttributesBuilder);
@@ -421,7 +421,7 @@ bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
             || (hitRules.canHitStroke && (style()->svgStyle().hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             FloatPoint localPoint;
-            if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+            if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
                 return false;
 
             if (hitRules.canHitBoundingBox && !objectBoundingBox().contains(localPoint))
@@ -478,7 +478,7 @@ FloatRect RenderSVGText::strokeBoundingBox() const
 FloatRect RenderSVGText::paintInvalidationRectInLocalCoordinates() const
 {
     FloatRect paintInvalidationRect = strokeBoundingBox();
-    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, paintInvalidationRect);
+    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, paintInvalidationRect);
 
     if (const ShadowList* textShadow = style()->textShadow())
         textShadow->adjustRectForShadow(paintInvalidationRect);

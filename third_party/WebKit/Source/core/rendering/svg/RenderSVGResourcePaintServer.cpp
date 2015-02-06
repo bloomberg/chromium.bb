@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 

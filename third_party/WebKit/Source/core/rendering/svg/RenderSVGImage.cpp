@@ -27,14 +27,14 @@
 
 #include "core/rendering/svg/RenderSVGImage.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGImagePainter.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/LengthFunctions.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -126,7 +126,7 @@ void RenderSVGImage::layout()
         m_bufferedForeground.clear();
 
         m_paintInvalidationBoundingBox = m_objectBoundingBox;
-        SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
+        SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 
         m_needsBoundariesUpdate = false;
     }
@@ -157,7 +157,7 @@ bool RenderSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
         FloatPoint localPoint;
-        if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+        if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
             return false;
 
         if (hitRules.canHitFill || hitRules.canHitBoundingBox) {

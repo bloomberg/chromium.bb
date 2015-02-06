@@ -23,7 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
-#include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUseElement.h"
@@ -96,7 +96,7 @@ bool RenderSVGTransformableContainer::calculateLocalTransform()
         m_lastTranslation = translation;
     }
 
-    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGRenderSupport::transformToRootChanged(parent());
+    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
     if (!m_needsTransformUpdate)
         return false;
 

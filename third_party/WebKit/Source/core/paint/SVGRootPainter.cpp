@@ -5,13 +5,13 @@
 #include "config.h"
 #include "core/paint/SVGRootPainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
@@ -56,7 +56,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
     paintInfoBeforeFiltering.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
 
-    SVGRenderingContext renderingContext(m_renderSVGRoot, paintInfoBeforeFiltering);
+    SVGLayoutContext renderingContext(m_renderSVGRoot, paintInfoBeforeFiltering);
     if (renderingContext.paintInfo().phase == PaintPhaseForeground && !renderingContext.applyClipMaskAndFilterIfNecessary())
         return;
 

@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutAttributesBuilder_h
 #define SVGTextLayoutAttributesBuilder_h
 
-#include "core/rendering/svg/SVGTextLayoutAttributes.h"
+#include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "wtf/Vector.h"
 
 namespace blink {

@@ -24,7 +24,7 @@
 
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/svg/SVGTextLayoutEngine.h"
+#include "core/layout/svg/SVGTextLayoutEngine.h"
 
 namespace blink {
 

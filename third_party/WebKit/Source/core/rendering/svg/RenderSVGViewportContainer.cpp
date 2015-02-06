@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -69,7 +69,7 @@ void RenderSVGViewportContainer::calcViewport()
 
 bool RenderSVGViewportContainer::calculateLocalTransform()
 {
-    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGRenderSupport::transformToRootChanged(parent());
+    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
     if (!m_needsTransformUpdate)
         return false;
 
@@ -92,7 +92,7 @@ AffineTransform RenderSVGViewportContainer::viewportTransform() const
 bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& pointInParent)
 {
     // Respect the viewport clip (which is in parent coords)
-    if (!SVGRenderSupport::isOverflowHidden(this))
+    if (!SVGLayoutSupport::isOverflowHidden(this))
         return true;
 
     return m_viewport.contains(pointInParent);

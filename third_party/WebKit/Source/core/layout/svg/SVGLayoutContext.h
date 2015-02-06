@@ -22,8 +22,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGRenderingContext_h
-#define SVGRenderingContext_h
+#ifndef SVGLayoutContext_h
+#define SVGLayoutContext_h
 
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
@@ -48,10 +48,10 @@ private:
     AffineTransform m_savedContentTransformation;
 };
 
-class SVGRenderingContext {
+class SVGLayoutContext {
     STACK_ALLOCATED();
 public:
-    SVGRenderingContext(LayoutObject& object, const PaintInfo& paintInfo)
+    SVGLayoutContext(LayoutObject& object, const PaintInfo& paintInfo)
         : m_object(&object)
         , m_paintInfo(paintInfo)
         , m_originalPaintInfo(&paintInfo)
@@ -64,7 +64,7 @@ public:
 #endif
     { }
 
-    ~SVGRenderingContext();
+    ~SVGLayoutContext();
 
     PaintInfo& paintInfo() { return m_paintInfo; }
 
@@ -106,4 +106,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGRenderingContext_h
+#endif // SVGLayoutContext_h

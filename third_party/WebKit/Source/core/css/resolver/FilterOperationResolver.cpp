@@ -33,7 +33,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"
-#include "core/rendering/svg/ReferenceFilterBuilder.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace blink {

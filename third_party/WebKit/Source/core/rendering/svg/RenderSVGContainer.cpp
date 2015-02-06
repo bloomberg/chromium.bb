@@ -24,10 +24,10 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGContainerPainter.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ void RenderSVGContainer::layout()
     // RenderSVGViewportContainer needs to set the 'layout size changed' flag.
     determineIfLayoutSizeChanged();
 
-    SVGRenderSupport::layoutChildren(this, selfNeedsLayout() || SVGRenderSupport::filtersForceContainerLayout(this));
+    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout() || SVGLayoutSupport::filtersForceContainerLayout(this));
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && needsLayout())
@@ -104,20 +104,20 @@ void RenderSVGContainer::styleDidChange(StyleDifference diff, const RenderStyle*
 {
     RenderSVGModelObject::styleDidChange(diff, oldStyle);
 
-    bool hadIsolation = oldStyle && !isSVGHiddenContainer() && SVGRenderSupport::willIsolateBlendingDescendantsForStyle(oldStyle);
-    bool isolationChanged = hadIsolation == !SVGRenderSupport::willIsolateBlendingDescendantsForObject(this);
+    bool hadIsolation = oldStyle && !isSVGHiddenContainer() && SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(oldStyle);
+    bool isolationChanged = hadIsolation == !SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this);
 
     if (!parent() || !isolationChanged)
         return;
 
     if (hasNonIsolatedBlendingDescendants())
-        parent()->descendantIsolationRequirementsChanged(SVGRenderSupport::willIsolateBlendingDescendantsForObject(this) ? DescendantIsolationNeedsUpdate : DescendantIsolationRequired);
+        parent()->descendantIsolationRequirementsChanged(SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this) ? DescendantIsolationNeedsUpdate : DescendantIsolationRequired);
 }
 
 bool RenderSVGContainer::hasNonIsolatedBlendingDescendants() const
 {
     if (m_hasNonIsolatedBlendingDescendantsDirty) {
-        m_hasNonIsolatedBlendingDescendants = SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(this);
+        m_hasNonIsolatedBlendingDescendants = SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(this);
         m_hasNonIsolatedBlendingDescendantsDirty = false;
     }
     return m_hasNonIsolatedBlendingDescendants;
@@ -136,7 +136,7 @@ void RenderSVGContainer::descendantIsolationRequirementsChanged(DescendantIsolat
         m_hasNonIsolatedBlendingDescendantsDirty = true;
         break;
     }
-    if (SVGRenderSupport::willIsolateBlendingDescendantsForObject(this))
+    if (SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this))
         return;
     if (parent())
         parent()->descendantIsolationRequirementsChanged(state);
@@ -156,8 +156,8 @@ void RenderSVGContainer::addFocusRingRects(Vector<LayoutRect>& rects, const Layo
 
 void RenderSVGContainer::updateCachedBoundaries()
 {
-    SVGRenderSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
-    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
+    SVGLayoutSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
+    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 bool RenderSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
@@ -167,7 +167,7 @@ bool RenderSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTest
         return false;
 
     FloatPoint localPoint;
-    if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
         return false;
 
     for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {

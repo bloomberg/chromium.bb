@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutAttributes_h
 #define SVGTextLayoutAttributes_h
 
-#include "core/rendering/svg/SVGTextMetrics.h"
+#include "core/layout/svg/SVGTextMetrics.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"

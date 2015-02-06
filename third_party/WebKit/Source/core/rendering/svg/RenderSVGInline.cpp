@@ -23,10 +23,10 @@
 
 #include "core/rendering/svg/RenderSVGInline.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGAElement.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 bool RenderSVGInline::isChildAllowed(LayoutObject* child, const RenderStyle& style) const
 {
     if (child->isText())
-        return SVGRenderSupport::isRenderableTextNode(child);
+        return SVGLayoutSupport::isRenderableTextNode(child);
 
     if (isSVGAElement(*node())) {
         // Disallow direct descendant 'a'.
@@ -87,17 +87,17 @@ FloatRect RenderSVGInline::paintInvalidationRectInLocalCoordinates() const
 
 LayoutRect RenderSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return SVGRenderSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
 void RenderSVGInline::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
+    SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* RenderSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
-    return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
+    return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
 void RenderSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const

@@ -5,6 +5,8 @@
 #include "config.h"
 #include "core/paint/SVGContainerPainter.h"
 
+#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
@@ -12,8 +14,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGSVGElement.h"
 
 namespace blink {
@@ -35,12 +35,12 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
-        if (m_renderSVGContainer.isSVGViewportContainer() && SVGRenderSupport::isOverflowHidden(&m_renderSVGContainer)) {
+        if (m_renderSVGContainer.isSVGViewportContainer() && SVGLayoutSupport::isOverflowHidden(&m_renderSVGContainer)) {
             FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toRenderSVGViewportContainer(m_renderSVGContainer).viewport());
             clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), paintInfoBeforeFiltering.phase, viewport));
         }
 
-        SVGRenderingContext renderingContext(m_renderSVGContainer, paintInfoBeforeFiltering);
+        SVGLayoutContext renderingContext(m_renderSVGContainer, paintInfoBeforeFiltering);
         bool continueRendering = true;
         if (renderingContext.paintInfo().phase == PaintPhaseForeground)
             continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();

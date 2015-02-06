@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {

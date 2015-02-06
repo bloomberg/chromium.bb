@@ -22,11 +22,11 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
 
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
@@ -94,24 +94,24 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* old
 
 void RenderSVGBlock::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
+    SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* RenderSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
-    return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
+    return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
 LayoutRect RenderSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return SVGRenderSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
 void RenderSVGBlock::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect paintInvalidationRect = rect;
     paintInvalidationRect.inflate(style()->outlineWidth());
-    const RenderSVGRoot& svgRoot = SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(this, paintInvalidationRect, rect);
+    const RenderSVGRoot& svgRoot = SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(this, paintInvalidationRect, rect);
     svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 

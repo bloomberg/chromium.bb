@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextMetrics.h"
+#include "core/layout/svg/SVGTextMetrics.h"
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
@@ -68,12 +68,12 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
     ASSERT(style);
 
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
-                , 0 // length, will be set below if non-zero.
-                , 0 // xPos, only relevant with allowTabs=true
-                , 0 // padding, only relevant for justified text, not relevant for SVG
-                , TextRun::AllowTrailingExpansion
-                , textDirection
-                , isOverride(style->unicodeBidi()) /* directionalOverride */);
+        , 0 // length, will be set below if non-zero.
+        , 0 // xPos, only relevant with allowTabs=true
+        , 0 // padding, only relevant for justified text, not relevant for SVG
+        , TextRun::AllowTrailingExpansion
+        , textDirection
+        , isOverride(style->unicodeBidi()) /* directionalOverride */);
 
     if (length) {
         if (text->is8Bit())

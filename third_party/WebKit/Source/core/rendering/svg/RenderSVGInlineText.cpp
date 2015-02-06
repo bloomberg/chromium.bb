@@ -29,9 +29,9 @@
 #include "core/css/FontSize.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
@@ -214,7 +214,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, c
     ASSERT(renderer);
 
     // Alter font-size to the right on-screen value to avoid scaling the glyphs themselves, except when GeometricPrecision is specified.
-    scalingFactor = SVGRenderingContext::calculateScreenFontSizeScalingFactor(renderer);
+    scalingFactor = SVGLayoutContext::calculateScreenFontSizeScalingFactor(renderer);
     if (style->effectiveZoom() == 1 && (scalingFactor == 1 || !scalingFactor)) {
         scalingFactor = 1;
         scaledFont = style->font();

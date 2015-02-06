@@ -21,8 +21,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGRenderSupport_h
-#define SVGRenderSupport_h
+#ifndef SVGLayoutSupport_h
+#define SVGLayoutSupport_h
 
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
@@ -44,7 +44,7 @@ class RenderSVGRoot;
 class StrokeData;
 class TransformState;
 
-class SVGRenderSupport {
+class SVGLayoutSupport {
 public:
     // Shares child layouting code between RenderSVGRoot/RenderSVG(Hidden)Container
     static void layoutChildren(LayoutObject*, bool selfNeedsLayout);
@@ -109,7 +109,7 @@ private:
 };
 
 template <typename LayoutObjectType>
-bool SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(const LayoutObjectType* object)
+bool SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(const LayoutObjectType* object)
 {
     for (LayoutObject* child = object->firstChild(); child; child = child->nextSibling()) {
         if (child->isBlendingAllowed() && child->style()->hasBlendMode())
@@ -122,4 +122,4 @@ bool SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(const LayoutObje
 
 } // namespace blink
 
-#endif // SVGRenderSupport_h
+#endif // SVGLayoutSupport_h

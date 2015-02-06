@@ -25,7 +25,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/svg/SVGPathData.h"
+#include "core/layout/svg/SVGPathData.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathElement.h"

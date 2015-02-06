@@ -24,10 +24,10 @@
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGForeignObjectPainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGForeignObjectElement.h"
 
 namespace blink {
@@ -131,7 +131,7 @@ bool RenderSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, Hit
     FloatPoint localPoint = localTransform.inverse().mapPoint(pointInParent);
 
     // Early exit if local point is not contained in clipped viewport area
-    if (SVGRenderSupport::isOverflowHidden(this) && !m_viewport.contains(localPoint))
+    if (SVGLayoutSupport::isOverflowHidden(this) && !m_viewport.contains(localPoint))
         return false;
 
     // FOs establish a stacking context, so we need to hit-test all layers.

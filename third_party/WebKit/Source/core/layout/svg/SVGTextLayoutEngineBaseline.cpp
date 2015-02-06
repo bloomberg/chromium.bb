@@ -19,11 +19,11 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
+#include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/svg/SVGTextMetrics.h"
 #include "core/rendering/style/SVGRenderStyle.h"
-#include "core/rendering/svg/SVGTextMetrics.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/UnicodeRange.h"
@@ -198,9 +198,9 @@ float SVGTextLayoutEngineBaseline::calculateGlyphAdvanceAndOrientation(bool isVe
         if (!angle) {
             xOrientationShift = (ascentMinusDescent - metrics.width()) / 2;
             yOrientationShift = fontMetrics.floatAscent();
-        } else if (angle == 180)
+        } else if (angle == 180) {
             xOrientationShift = (ascentMinusDescent + metrics.width()) / 2;
-        else if (angle == 270) {
+        } else if (angle == 270) {
             yOrientationShift = metrics.width();
             xOrientationShift = ascentMinusDescent;
         }
@@ -213,13 +213,14 @@ float SVGTextLayoutEngineBaseline::calculateGlyphAdvanceAndOrientation(bool isVe
     }
 
     // Horizontal orientation handling.
-    if (angle == 90)
+    if (angle == 90) {
         yOrientationShift = -metrics.width();
-    else if (angle == 180) {
+    } else if (angle == 180) {
         xOrientationShift = metrics.width();
         yOrientationShift = -fontMetrics.floatAscent();
-    } else if (angle == 270)
+    } else if (angle == 270) {
         xOrientationShift = metrics.width();
+    }
 
     // Horizontal advance calculation.
     if (angle && !orientationIsMultiplyOf180Degrees)

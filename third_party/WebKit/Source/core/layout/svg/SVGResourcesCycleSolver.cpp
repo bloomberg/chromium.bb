@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/SVGResourcesCycleSolver.h"
+#include "core/layout/svg/SVGResourcesCycleSolver.h"
 
 // Set to a value > 0, to debug the resource cache.
 #define DEBUG_CYCLE_DETECTION 0
 
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
-#include "core/rendering/svg/SVGResources.h"
-#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace blink {
 
