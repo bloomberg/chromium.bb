@@ -7028,7 +7028,7 @@
       'example_value': 'ssl3',
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
-      'desc': '''Warning: SSLv3 support will be entirely removed from Chrome after version 43 (around July 2015) after which the setting "ssl3" will be ignored and the default of "tls1" used instead.
+      'desc': '''Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 43 (around July 2015) and this policy will be removed at the same time.
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 39 and TLS 1.0 in later versions.
 
@@ -7083,7 +7083,7 @@
       'example_value': 'tls1',
       'id': 280,
       'caption': '''Minimum SSL version to fallback to''',
-      'desc': '''Warning: SSLv3 support will be entirely removed from Chrome after version 43 (around July 2015) after which the setting "ssl3" will be ignored and the default of "tls1" used instead.
+      'desc': '''Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 43 (around July 2015) and this policy will be removed at the same time.
 
       When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
 
