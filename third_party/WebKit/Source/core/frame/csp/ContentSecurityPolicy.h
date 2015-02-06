@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/SecurityContext.h"
 #include "core/frame/ConsoleTypes.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
@@ -91,6 +92,9 @@ public:
     // Mixed Content Directive
     // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
     static const char BlockAllMixedContent[];
+
+    // https://w3c.github.io/webappsec/specs/upgrade/
+    static const char UpgradeInsecureRequests[];
 
     enum ReportingStatus {
         SendReport,
@@ -193,6 +197,9 @@ public:
     void enforceStrictMixedContentChecking();
     String evalDisabledErrorMessage() const;
 
+    void setInsecureContentPolicy(SecurityContext::InsecureContentPolicy);
+    SecurityContext::InsecureContentPolicy insecureContentPolicy() const { return m_insecureContentPolicy; };
+
     bool urlMatchesSelf(const KURL&) const;
     bool protocolMatchesSelf(const KURL&) const;
 
@@ -235,6 +242,7 @@ private:
     bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
     String m_disableEvalErrorMessage;
+    SecurityContext::InsecureContentPolicy m_insecureContentPolicy;
 
     OwnPtr<CSPSource> m_selfSource;
     String m_selfProtocol;

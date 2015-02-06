@@ -171,6 +171,8 @@ public:
     String getCacheIdentifier() const;
 
 private:
+    friend class ResourceFetcherTest;
+
     explicit ResourceFetcher(DocumentLoader*);
 
     bool shouldLoadNewResource(Resource::Type) const;
@@ -188,6 +190,7 @@ private:
     void determineRequestContext(ResourceRequest&, Resource::Type);
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
+    void maybeUpgradeInsecureRequestURL(FetchRequest&);
 
     bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const;
 

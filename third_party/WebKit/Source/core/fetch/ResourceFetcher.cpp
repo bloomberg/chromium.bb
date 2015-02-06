@@ -66,6 +66,7 @@
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -715,6 +716,8 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     TRACE_EVENT0("blink", "ResourceFetcher::requestResource");
 
+    maybeUpgradeInsecureRequestURL(request);
+
     KURL url = request.resourceRequest().url();
 
     WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(type));
@@ -893,6 +896,20 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
         request.setOriginatesFromReservedIPRange(frame()->document()->isHostedInReservedIPRange());
 
     context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
+}
+
+void ResourceFetcher::maybeUpgradeInsecureRequestURL(FetchRequest& request)
+{
+    if (!m_document)
+        return;
+
+    KURL url = request.resourceRequest().url();
+    if (m_document->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocol() == "http") {
+        url.setProtocol("https");
+        if (url.port() == 80)
+            url.setPort(443);
+        request.mutableResourceRequest().setURL(url);
+    }
 }
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const FetchRequest& request, Resource* resource)

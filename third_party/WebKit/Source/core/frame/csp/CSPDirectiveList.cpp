@@ -6,6 +6,7 @@
 #include "core/frame/csp/CSPDirectiveList.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/SecurityContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
@@ -47,6 +48,7 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_strictMixedContentCheckingEnforced(false)
+    , m_upgradeInsecureRequests(false)
 {
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
@@ -577,6 +579,20 @@ void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, con
         m_policy->reportValueForEmptyDirective(name, value);
 }
 
+void CSPDirectiveList::enableInsecureContentUpgrade(const String& name, const String& value)
+{
+    if (m_upgradeInsecureRequests) {
+        m_policy->reportDuplicateDirective(name);
+        return;
+    }
+    m_upgradeInsecureRequests = true;
+    // FIXME: Monitoring insecure content currently has no effect. We'll eventually wire it up
+    // to the CSP reporting mechanism if we go this route. https://crbug.com/455674
+    m_policy->setInsecureContentPolicy(m_reportOnly ? SecurityContext::InsecureContentMonitor : SecurityContext::InsecureContentUpgrade);
+    if (!value.isEmpty())
+        m_policy->reportValueForEmptyDirective(name, value);
+}
+
 void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value)
 {
     if (m_reflectedXSSDisposition != ReflectedXSSUnset) {
@@ -727,6 +743,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
             setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
         else if (equalIgnoringCase(name, ContentSecurityPolicy::BlockAllMixedContent))
             enforceStrictMixedContentChecking(name, value);
+        else if (equalIgnoringCase(name, ContentSecurityPolicy::UpgradeInsecureRequests))
+            enableInsecureContentUpgrade(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
     } else {

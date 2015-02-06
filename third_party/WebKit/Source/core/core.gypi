@@ -3731,6 +3731,7 @@
             'fileapi/FileTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'frame/SubresourceIntegrityTest.cpp',
+            'frame/csp/ContentSecurityPolicyTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/HTMLFormControlElementTest.cpp',
             'html/HTMLInputElementTest.cpp',

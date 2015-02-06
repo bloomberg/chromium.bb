@@ -36,6 +36,7 @@ SecurityContext::SecurityContext()
     : m_haveInitializedSecurityOrigin(false)
     , m_sandboxFlags(SandboxNone)
     , m_hostedInReservedIPRange(false)
+    , m_insecureContentPolicy(InsecureContentDoNotUpgrade)
 {
 }
 

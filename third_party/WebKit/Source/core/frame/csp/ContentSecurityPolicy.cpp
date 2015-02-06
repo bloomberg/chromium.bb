@@ -93,6 +93,9 @@ const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
 // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
 const char ContentSecurityPolicy::BlockAllMixedContent[] = "block-all-mixed-content";
 
+// https://w3c.github.io/webappsec/specs/upgrade/
+const char ContentSecurityPolicy::UpgradeInsecureRequests[] = "upgrade-insecure-requests";
+
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, ConnectSrc)
@@ -114,7 +117,8 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, ReflectedXSS)
         || equalIgnoringCase(name, Referrer)
         || equalIgnoringCase(name, ManifestSrc)
-        || equalIgnoringCase(name, BlockAllMixedContent));
+        || equalIgnoringCase(name, BlockAllMixedContent)
+        || equalIgnoringCase(name, UpgradeInsecureRequests));
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
@@ -144,6 +148,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_sandboxMask(0)
     , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
+    , m_insecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade)
 {
 }
 
@@ -171,6 +176,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
+        if (m_insecureContentPolicy > document->insecureContentPolicy())
+            document->setInsecureContentPolicy(m_insecureContentPolicy);
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);
@@ -624,6 +631,12 @@ void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask)
 void ContentSecurityPolicy::enforceStrictMixedContentChecking()
 {
     m_enforceStrictMixedContentChecking = true;
+}
+
+void ContentSecurityPolicy::setInsecureContentPolicy(SecurityContext::InsecureContentPolicy policy)
+{
+    if (policy > m_insecureContentPolicy)
+        m_insecureContentPolicy = policy;
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)

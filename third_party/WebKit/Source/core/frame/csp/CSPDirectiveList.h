@@ -75,6 +75,7 @@ private:
     void addDirective(const String& name, const String& value);
     void applySandboxPolicy(const String& name, const String& sandboxPolicy);
     void enforceStrictMixedContentChecking(const String& name, const String& value);
+    void enableInsecureContentUpgrade(const String& name, const String& value);
 
     template <class CSPDirectiveType>
     void setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>&);
@@ -119,6 +120,8 @@ private:
     ReferrerPolicy m_referrerPolicy;
 
     bool m_strictMixedContentCheckingEnforced;
+
+    bool m_upgradeInsecureRequests;
 
     OwnPtr<MediaListDirective> m_pluginTypes;
     OwnPtr<SourceListDirective> m_baseURI;

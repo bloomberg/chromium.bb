@@ -125,6 +125,12 @@ bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
     return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
 }
 
+SecurityContext::InsecureContentPolicy DocumentInit::insecureContentPolicy() const
+{
+    ASSERT(frameForSecurityContext());
+    return frameForSecurityContext()->loader().insecureContentPolicy();
+}
+
 bool DocumentInit::isHostedInReservedIPRange() const
 {
     if (LocalFrame* frame = frameForSecurityContext()) {

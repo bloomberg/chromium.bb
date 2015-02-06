@@ -40,6 +40,13 @@ class KURL;
 
 class SecurityContext {
 public:
+    // The ordering here is important: 'Upgrade' overrides 'Monitor', which overrides 'DoNotUpgrade'.
+    enum InsecureContentPolicy {
+        InsecureContentDoNotUpgrade = 0,
+        InsecureContentMonitor,
+        InsecureContentUpgrade
+    };
+
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
     ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
 
@@ -58,6 +65,9 @@ public:
     void setHostedInReservedIPRange() { m_hostedInReservedIPRange = true; }
     bool isHostedInReservedIPRange() const { return m_hostedInReservedIPRange; }
 
+    void setInsecureContentPolicy(InsecureContentPolicy policy) { m_insecureContentPolicy = policy; }
+    InsecureContentPolicy insecureContentPolicy() const { return m_insecureContentPolicy; }
+
 protected:
     SecurityContext();
     virtual ~SecurityContext();
@@ -75,6 +85,7 @@ private:
     SandboxFlags m_sandboxFlags;
 
     bool m_hostedInReservedIPRange;
+    InsecureContentPolicy m_insecureContentPolicy;
 };
 
 } // namespace blink

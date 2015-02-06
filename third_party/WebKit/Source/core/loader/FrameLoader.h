@@ -144,6 +144,8 @@ public:
 
     bool shouldEnforceStrictMixedContentChecking() const;
 
+    SecurityContext::InsecureContentPolicy insecureContentPolicy() const;
+
     Frame* opener();
     void setOpener(LocalFrame*);
 

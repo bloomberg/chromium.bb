@@ -40,30 +40,120 @@
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
-using namespace blink;
+namespace blink {
 
-namespace {
+class ResourceFetcherTest : public ::testing::Test {
+public:
+    ResourceFetcherTest()
+        : secureURL(ParsedURLString, "https://example.test/image.png")
+        , secureOrigin(SecurityOrigin::create(secureURL))
+    {
+    }
 
-TEST(ResourceFetcherTest, StartLoadAfterFrameDetach)
+protected:
+    virtual void SetUp()
+    {
+        // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a LocalFrame.
+        // Technically, we're concerned about what happens after a LocalFrame is detached (rather than before
+        // any attach occurs), but ResourceFetcher can't tell the difference.
+        documentLoader = DocumentLoader::create(0, ResourceRequest(secureURL), SubstituteData());
+        document = Document::create();
+        fetcher = documentLoader->fetcher();
+        fetcher->setDocument(document.get());
+    }
+
+    void expectUpgrade(const char* input, const char* expected)
+    {
+        KURL inputURL(ParsedURLString, input);
+        KURL expectedURL(ParsedURLString, expected);
+
+        FetchRequest fetchRequest = FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+        fetcher->maybeUpgradeInsecureRequestURL(fetchRequest);
+        EXPECT_STREQ(expectedURL.string().utf8().data(), fetchRequest.resourceRequest().url().string().utf8().data());
+        EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
+        EXPECT_EQ(expectedURL.host(), fetchRequest.resourceRequest().url().host());
+        EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
+        EXPECT_EQ(expectedURL.hasPort(), fetchRequest.resourceRequest().url().hasPort());
+        EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
+    }
+
+    KURL secureURL;
+    RefPtr<SecurityOrigin> secureOrigin;
+
+    // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
+    // as the ResourceFetcher and Document live due to indirect usage.
+    RefPtr<DocumentLoader> documentLoader;
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher;
+    RefPtrWillBePersistent<Document> document;
+};
+
+TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
 {
-    KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.jpg");
-
-    // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a LocalFrame.
-    // Technically, we're concerned about what happens after a LocalFrame is detached (rather than before
-    // any attach occurs), but ResourceFetcher can't tell the difference.
-    RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(0, ResourceRequest(testURL), SubstituteData());
-    RefPtrWillBeRawPtr<HTMLDocument> document = HTMLDocument::create();
-    RefPtrWillBeRawPtr<ResourceFetcher> fetcher(documentLoader->fetcher());
-    fetcher->setDocument(document.get());
     EXPECT_EQ(fetcher->frame(), static_cast<LocalFrame*>(0));
 
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.
-    FetchRequest fetchRequest = FetchRequest(ResourceRequest(testURL), FetchInitiatorInfo());
+    FetchRequest fetchRequest = FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
     ResourcePtr<ImageResource> image = fetcher->fetchImage(fetchRequest);
     EXPECT_EQ(image.get(), static_cast<ImageResource*>(0));
-    EXPECT_EQ(memoryCache()->resourceForURL(testURL), static_cast<Resource*>(0));
+    EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(0));
+}
+
+TEST_F(ResourceFetcherTest, UpgradeInsecureResourceRequests)
+{
+    document->setSecurityOrigin(secureOrigin);
+    document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+
+    expectUpgrade("http://example.test/image.png", "https://example.test/image.png");
+    expectUpgrade("http://example.test:80/image.png", "https://example.test:443/image.png");
+    expectUpgrade("http://example.test:1212/image.png", "https://example.test:1212/image.png");
+
+    expectUpgrade("https://example.test/image.png", "https://example.test/image.png");
+    expectUpgrade("https://example.test:80/image.png", "https://example.test:80/image.png");
+    expectUpgrade("https://example.test:1212/image.png", "https://example.test:1212/image.png");
+
+    expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
+    expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
+    expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
+}
+
+TEST_F(ResourceFetcherTest, DoNotUpgradeInsecureResourceRequests)
+{
+    document->setSecurityOrigin(secureOrigin);
+    document->setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
+
+    expectUpgrade("http://example.test/image.png", "http://example.test/image.png");
+    expectUpgrade("http://example.test:80/image.png", "http://example.test:80/image.png");
+    expectUpgrade("http://example.test:1212/image.png", "http://example.test:1212/image.png");
+
+    expectUpgrade("https://example.test/image.png", "https://example.test/image.png");
+    expectUpgrade("https://example.test:80/image.png", "https://example.test:80/image.png");
+    expectUpgrade("https://example.test:1212/image.png", "https://example.test:1212/image.png");
+
+    expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
+    expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
+    expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
+}
+
+TEST_F(ResourceFetcherTest, MonitorInsecureResourceRequests)
+{
+    document->setSecurityOrigin(secureOrigin);
+    document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
+
+    expectUpgrade("http://example.test/image.png", "http://example.test/image.png");
+    expectUpgrade("http://example.test:80/image.png", "http://example.test:80/image.png");
+    expectUpgrade("http://example.test:1212/image.png", "http://example.test:1212/image.png");
+
+    expectUpgrade("https://example.test/image.png", "https://example.test/image.png");
+    expectUpgrade("https://example.test:80/image.png", "https://example.test:80/image.png");
+    expectUpgrade("https://example.test:1212/image.png", "https://example.test:1212/image.png");
+
+    expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
+    expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
+    expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
 }
 
 } // namespace

@@ -63,6 +63,7 @@ public:
     SandboxFlags sandboxFlags() const;
     bool shouldEnforceStrictMixedContentChecking() const;
     bool isHostedInReservedIPRange() const;
+    SecurityContext::InsecureContentPolicy insecureContentPolicy() const;
 
     Document* parent() const { return m_parent.get(); }
     Document* owner() const { return m_owner.get(); }

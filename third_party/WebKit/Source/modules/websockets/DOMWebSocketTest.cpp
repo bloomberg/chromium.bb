@@ -10,6 +10,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/SecurityContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
@@ -185,6 +186,51 @@ TEST_F(DOMWebSocketTest, invalidSubprotocols)
     EXPECT_EQ(SyntaxError, m_exceptionState.code());
     EXPECT_EQ("The subprotocol '@subprotocol-|'\"x\\u0001\\u0002\\u0003x' is invalid.", m_exceptionState.message());
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
+}
+
+TEST_F(DOMWebSocketTest, insecureContentUpgrade)
+{
+    {
+        InSequence s;
+        EXPECT_CALL(channel(), connect(KURL(KURL(), "wss://example.com/endpoint"), String())).WillOnce(Return(true));
+    }
+
+    m_pageHolder->document().setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
+
+    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_EQ(KURL(KURL(), "wss://example.com/endpoint"), m_websocket->url());
+}
+
+TEST_F(DOMWebSocketTest, insecureContentDoNotUpgrade)
+{
+    {
+        InSequence s;
+        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
+    }
+
+    m_pageHolder->document().setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
+    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
+
+    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), m_websocket->url());
+}
+
+TEST_F(DOMWebSocketTest, insecureContentMonitor)
+{
+    {
+        InSequence s;
+        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
+    }
+
+    m_pageHolder->document().setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
+    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
+
+    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
+    EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), m_websocket->url());
 }
 
 TEST_F(DOMWebSocketTest, channelConnectSuccess)

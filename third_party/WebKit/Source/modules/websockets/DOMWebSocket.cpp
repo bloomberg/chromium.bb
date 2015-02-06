@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/SecurityContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
@@ -271,8 +272,15 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url,
 
 void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
 {
+
     WTF_LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());
     m_url = KURL(KURL(), url);
+
+    if (executionContext()->securityContext().insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && m_url.protocol() == "ws") {
+        m_url.setProtocol("wss");
+        if (m_url.port() == 80)
+            m_url.setPort(443);
+    }
 
     if (!m_url.isValid()) {
         m_state = CLOSED;
