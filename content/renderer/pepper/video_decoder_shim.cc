@@ -523,15 +523,21 @@ void VideoDecoderShim::SendPictures() {
     gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
     gles2->ActiveTexture(GL_TEXTURE0);
     gles2->BindTexture(GL_TEXTURE_2D, local_texture_id);
+#if !defined(OS_ANDROID)
+    // BGRA is the native texture format, except on Android, where textures
+    // would be uploaded as GL_RGBA.
     gles2->TexImage2D(GL_TEXTURE_2D,
                       0,
-                      GL_RGBA,
+                      GL_BGRA_EXT,
                       texture_size_.width(),
                       texture_size_.height(),
                       0,
-                      GL_RGBA,
+                      GL_BGRA_EXT,
                       GL_UNSIGNED_BYTE,
                       &frame->argb_pixels.front());
+#else
+#error Not implemented.
+#endif
 
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
                                        frame->visible_rect, false));
