@@ -11,7 +11,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -133,15 +132,11 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image.get(), image.get(), LayoutSize(alignedRect.size()));
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_renderImage));
-    // FIXME: crbug.com/361045 remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::willPaintImage(&m_renderImage);
 
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
     context->drawImage(image.get(), alignedRect, SkXfermode::kSrcOver_Mode, m_renderImage.shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
-
-    InspectorInstrumentation::didPaintImage(&m_renderImage);
 }
 
 } // namespace blink

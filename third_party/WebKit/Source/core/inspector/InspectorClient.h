@@ -52,9 +52,6 @@ public:
     virtual void enableTracing(const String& categoryFilter) { }
     virtual void disableTracing() { }
 
-    virtual void startGPUEventsRecording() { }
-    virtual void stopGPUEventsRecording() { }
-
     virtual void setDeviceMetricsOverride(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*mobile*/, bool /*fitWindow*/, float /* scale */, float /* offsetX */, float /* offsetY */) { }
     virtual void clearDeviceMetricsOverride() { }
     virtual void setTouchEventEmulationEnabled(bool) { }

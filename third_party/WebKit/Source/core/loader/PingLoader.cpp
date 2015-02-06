@@ -139,7 +139,6 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     frame->loader().client()->didDispatchPingLoader(request.url());
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
     m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
@@ -219,7 +218,6 @@ void PingLoader::didFailLoading(Page* page)
 {
     LocalFrame* frame = page->deprecatedLocalMainFrame();
     InspectorInstrumentation::didFailLoading(frame, m_identifier, ResourceError::cancelledError(m_url));
-    // Notification to FrameConsole should come AFTER Resource Agent notification, front-end relies on this.
     frame->console().didFailLoading(m_identifier, ResourceError::cancelledError(m_url));
 }
 

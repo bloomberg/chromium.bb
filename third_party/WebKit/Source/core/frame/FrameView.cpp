@@ -921,8 +921,6 @@ void FrameView::layout(bool allowSubtree)
     RELEASE_ASSERT(!isPainting());
 
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "beginData", InspectorLayoutEvent::beginData(this));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willLayout(m_frame.get());
 
     if (!allowSubtree && isSubtreeLayout()) {
         m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
@@ -1052,8 +1050,7 @@ void FrameView::layout(bool allowSubtree)
     scheduleOrPerformPostLayoutTasks();
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::didLayout(cookie, rootForThisLayout);
+    InspectorInstrumentation::didLayout(m_frame.get(), rootForThisLayout);
 
     m_nestedLayoutCount--;
     if (m_nestedLayoutCount)
@@ -1828,8 +1825,6 @@ void FrameView::scheduleRelayout()
     if (!m_frame->document()->shouldScheduleLayout())
         return;
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 
     if (m_hasPendingLayout)
         return;
@@ -1891,8 +1886,6 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
         lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 }
 
 bool FrameView::layoutPending() const
@@ -2587,8 +2580,6 @@ void FrameView::updateLayoutAndStyleForPainting()
     RenderView* view = renderView();
     if (view) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::willUpdateLayerTree(m_frame.get());
 
         view->compositor()->updateIfNeededRecursive();
 
@@ -2596,8 +2587,6 @@ void FrameView::updateLayoutAndStyleForPainting()
             scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
         updateCompositedSelectionBoundsIfNeeded();
-
-        InspectorInstrumentation::didUpdateLayerTree(m_frame.get());
 
         scrollContentsIfNeededRecursive();
 

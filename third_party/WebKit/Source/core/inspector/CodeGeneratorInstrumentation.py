@@ -104,14 +104,6 @@ template_agent_call = string.Template("""
     if (${agent_class}* agent = ${agent_fetch})
         ${maybe_return}agent->${name}(${params_agent});""")
 
-template_agent_call_timeline_returns_cookie = string.Template("""
-    int timelineAgentId = 0;
-    if (InspectorTimelineAgent* agent = agents->inspectorTimelineAgent()) {
-        if (agent->${name}(${params_agent}))
-            timelineAgentId = agent->id();
-    }""")
-
-
 template_instrumenting_agents_h = string.Template("""// Code generated from InspectorInstrumentation.idl
 
 #ifndef InstrumentingAgentsInl_h
@@ -328,11 +320,7 @@ class Method:
         body_lines += map(self.generate_agent_call, self.agents)
 
         if self.returns_cookie:
-            if "Timeline" in self.agents:
-                timeline_agent_id = "timelineAgentId"
-            else:
-                timeline_agent_id = "0"
-            body_lines.append("\n    return InspectorInstrumentationCookie(agents, %s);" % timeline_agent_id)
+            body_lines.append("\n    return InspectorInstrumentationCookie(agents);")
         elif self.returns_value:
             body_lines.append("\n    return %s;" % self.default_return_value)
 
@@ -351,15 +339,10 @@ class Method:
         leading_param_name = self.params_impl[0].name
         if not self.accepts_cookie:
             agent_fetch = "%s->%s()" % (leading_param_name, agent_getter)
-        elif agent == "Timeline":
-            agent_fetch = "retrieveTimelineAgent(%s)" % leading_param_name
         else:
             agent_fetch = "%s.instrumentingAgents()->%s()" % (leading_param_name, agent_getter)
 
-        if agent == "Timeline" and self.returns_cookie:
-            template = template_agent_call_timeline_returns_cookie
-        else:
-            template = template_agent_call
+        template = template_agent_call
 
         if not self.returns_value or self.returns_cookie:
             maybe_return = ""

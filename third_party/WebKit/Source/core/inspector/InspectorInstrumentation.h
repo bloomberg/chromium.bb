@@ -54,7 +54,6 @@ namespace blink {
 class Document;
 class EventTarget;
 class ExecutionContext;
-class InspectorTimelineAgent;
 class InstrumentingAgents;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
@@ -66,18 +65,16 @@ class InspectorInstrumentationCookie {
     STACK_ALLOCATED();
 public:
     InspectorInstrumentationCookie();
-    InspectorInstrumentationCookie(InstrumentingAgents*, int);
+    explicit InspectorInstrumentationCookie(InstrumentingAgents*);
     InspectorInstrumentationCookie(const InspectorInstrumentationCookie&);
     InspectorInstrumentationCookie& operator=(const InspectorInstrumentationCookie&);
     ~InspectorInstrumentationCookie();
 
     InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
     bool isValid() const { return !!m_instrumentingAgents; }
-    bool hasMatchingTimelineAgentId(int id) const { return m_timelineAgentId == id; }
 
 private:
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    int m_timelineAgentId;
 };
 
 namespace InspectorInstrumentation {
@@ -96,8 +93,6 @@ inline bool hasFrontends() { return FrontendCounter::s_frontendCounter; }
 
 void registerInstrumentingAgents(InstrumentingAgents*);
 void unregisterInstrumentingAgents(InstrumentingAgents*);
-
-InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
 
 // Called from generated instrumentation code.
 InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);

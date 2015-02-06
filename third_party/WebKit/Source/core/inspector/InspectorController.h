@@ -56,7 +56,6 @@ class InspectorFrontendChannel;
 class InspectorLayerTreeAgent;
 class InspectorPageAgent;
 class InspectorResourceAgent;
-class InspectorTimelineAgent;
 class InspectorTracingAgent;
 class InspectorOverlay;
 class InstrumentingAgents;
@@ -114,11 +113,6 @@ public:
 
     void didCommitLoadForMainFrame();
     void didBeginFrame(int frameId);
-    void didCancelFrame();
-    void willComposite();
-    void didComposite();
-
-    void processGPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes, uint64_t limitGPUMemoryBytes);
 
     void scriptsEnabled(bool);
 
@@ -140,7 +134,6 @@ private:
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;

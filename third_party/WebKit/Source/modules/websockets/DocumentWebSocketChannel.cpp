@@ -166,7 +166,6 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
     flowControlIfNecessary();
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketCreate", "data", InspectorWebSocketCreateEvent::data(document(), m_identifier, url, protocol));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);
     }
     return true;
@@ -259,7 +258,6 @@ void DocumentWebSocketChannel::disconnect()
     WTF_LOG(Network, "DocumentWebSocketChannel %p disconnect()", this);
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(document(), m_identifier));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
     }
     abortAsyncOperations();
@@ -433,7 +431,6 @@ void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle,
 
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketSendHandshakeRequest", "data", InspectorWebSocketEvent::data(document(), m_identifier));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, &request.toCoreRequest());
         m_handshakeRequest = WebSocketHandshakeRequest::create(request.toCoreRequest());
     }
@@ -448,7 +445,6 @@ void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle
 
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketReceiveHandshakeResponse", "data", InspectorWebSocketEvent::data(document(), m_identifier));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, m_handshakeRequest.get(), &response.toCoreResponse());
     }
     m_handshakeRequest.clear();
@@ -532,7 +528,6 @@ void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, 
 
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(document(), m_identifier));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
         m_identifier = 0;
     }

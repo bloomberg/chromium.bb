@@ -273,22 +273,16 @@ void WebDevToolsAgentImpl::didBeginFrame(int frameId)
 
 void WebDevToolsAgentImpl::didCancelFrame()
 {
-    if (InspectorController* ic = inspectorController())
-        ic->didCancelFrame();
 }
 
 void WebDevToolsAgentImpl::willComposite()
 {
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers", "layerTreeId", m_layerTreeId);
-    if (InspectorController* ic = inspectorController())
-        ic->willComposite();
 }
 
 void WebDevToolsAgentImpl::didComposite()
 {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers");
-    if (InspectorController* ic = inspectorController())
-        ic->didComposite();
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
@@ -438,20 +432,8 @@ void WebDevToolsAgentImpl::disableTracing()
     m_client->disableTracing();
 }
 
-void WebDevToolsAgentImpl::startGPUEventsRecording()
-{
-    m_client->startGPUEventsRecording();
-}
-
-void WebDevToolsAgentImpl::stopGPUEventsRecording()
-{
-    m_client->stopGPUEventsRecording();
-}
-
 void WebDevToolsAgentImpl::processGPUEvent(const GPUEvent& event)
 {
-    if (InspectorController* ic = inspectorController())
-        ic->processGPUEvent(event.timestamp, event.phase, event.foreign, event.usedGPUMemoryBytes, event.limitGPUMemoryBytes);
 }
 
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)

@@ -133,7 +133,6 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
     ASSERT(!isEmpty());
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", InspectorFunctionCallEvent::data(executionContext, 0, name(), 1));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, DevToolsFunctionInfo(0, name(), 1));
 
     ScriptState* scriptState = m_injectedScriptObject.scriptState();

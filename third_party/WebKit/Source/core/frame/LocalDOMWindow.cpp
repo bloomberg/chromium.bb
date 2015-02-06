@@ -1579,7 +1579,6 @@ void LocalDOMWindow::dispatchLoadEvent()
         owner->dispatchLoad();
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkLoad", "data", InspectorMarkLoadEvent::data(frame()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::loadEventFired(frame());
 }
 
@@ -1595,14 +1594,7 @@ bool LocalDOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassR
     event->setEventPhase(Event::AT_TARGET);
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "data", InspectorEventDispatchEvent::data(*event));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEventOnWindow(frame(), *event, this);
-
-    bool result = fireEventListeners(event.get());
-
-    InspectorInstrumentation::didDispatchEventOnWindow(cookie);
-
-    return result;
+    return fireEventListeners(event.get());
 }
 
 void LocalDOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mode)

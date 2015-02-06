@@ -31,43 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/ScriptGCEventListener.h"
-
-#include "wtf/CurrentTime.h"
+#include <v8.h>
 
 namespace blink {
-
-static GCEventData* isolateGCEventData()
-{
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(v8::Isolate::GetCurrent());
-    ASSERT(isolateData);
-    return isolateData->gcEventData();
-}
-
-void ScriptGCEvent::addEventListener(ScriptGCEventListener* eventListener)
-{
-    GCEventData::GCEventListeners& listeners = isolateGCEventData()->listeners();
-    if (listeners.isEmpty()) {
-        v8::V8::AddGCPrologueCallback(ScriptGCEvent::gcPrologueCallback);
-        v8::V8::AddGCEpilogueCallback(ScriptGCEvent::gcEpilogueCallback);
-    }
-    listeners.append(eventListener);
-}
-
-void ScriptGCEvent::removeEventListener(ScriptGCEventListener* eventListener)
-{
-    ASSERT(eventListener);
-    GCEventData::GCEventListeners& listeners = isolateGCEventData()->listeners();
-    ASSERT(!listeners.isEmpty());
-    size_t i = listeners.find(eventListener);
-    ASSERT(i != kNotFound);
-    listeners.remove(i);
-    if (listeners.isEmpty()) {
-        v8::V8::RemoveGCPrologueCallback(ScriptGCEvent::gcPrologueCallback);
-        v8::V8::RemoveGCEpilogueCallback(ScriptGCEvent::gcEpilogueCallback);
-    }
-}
 
 void ScriptGCEvent::getHeapSize(HeapInfo& info)
 {
@@ -76,34 +42,6 @@ void ScriptGCEvent::getHeapSize(HeapInfo& info)
     info.usedJSHeapSize = heapStatistics.used_heap_size();
     info.totalJSHeapSize = heapStatistics.total_physical_size();
     info.jsHeapSizeLimit = heapStatistics.heap_size_limit();
-}
-
-size_t ScriptGCEvent::getUsedHeapSize()
-{
-    v8::HeapStatistics heapStatistics;
-    v8::Isolate::GetCurrent()->GetHeapStatistics(&heapStatistics);
-    return heapStatistics.used_heap_size();
-}
-
-void ScriptGCEvent::gcPrologueCallback(v8::GCType type, v8::GCCallbackFlags flags)
-{
-    GCEventData* gcEventData = isolateGCEventData();
-    gcEventData->setStartTime(WTF::monotonicallyIncreasingTime());
-    gcEventData->setUsedHeapSize(getUsedHeapSize());
-}
-
-void ScriptGCEvent::gcEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags)
-{
-    GCEventData* gcEventData = isolateGCEventData();
-    if (!gcEventData->usedHeapSize())
-        return;
-    double endTime = WTF::monotonicallyIncreasingTime();
-    size_t usedHeapSize = getUsedHeapSize();
-    size_t collectedBytes = usedHeapSize > gcEventData->usedHeapSize() ? 0 : gcEventData->usedHeapSize() - usedHeapSize;
-    GCEventData::GCEventListeners& listeners = gcEventData->listeners();
-    for (GCEventData::GCEventListeners::iterator i = listeners.begin(); i != listeners.end(); ++i)
-        (*i)->didGC(gcEventData->startTime(), endTime, collectedBytes);
-    gcEventData->clear();
 }
 
 } // namespace blink

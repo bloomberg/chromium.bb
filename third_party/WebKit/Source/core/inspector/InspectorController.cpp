@@ -103,10 +103,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_layerTreeAgent,
-        overlay, InspectorTimelineAgent::PageInspector, inspectorClient));
-    m_timelineAgent = timelineAgentPtr.get();
-    m_agents.append(timelineAgentPtr.release());
+    m_agents.append(InspectorTimelineAgent::create());
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
@@ -140,7 +137,6 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_domAgent);
     visitor->trace(m_animationAgent);
     visitor->trace(m_pageAgent);
-    visitor->trace(m_timelineAgent);
     visitor->trace(m_cssAgent);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
@@ -305,7 +301,6 @@ void InspectorController::setProcessId(long processId)
 
 void InspectorController::setLayerTreeId(int id)
 {
-    m_timelineAgent->setLayerTreeId(id);
     m_tracingAgent->setLayerTreeId(id);
 }
 
@@ -411,16 +406,12 @@ bool InspectorController::screencastEnabled()
 
 void InspectorController::willProcessTask()
 {
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->willProcessTask();
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->willProcessTask();
 }
 
 void InspectorController::didProcessTask()
 {
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didProcessTask();
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->didProcessTask();
 }
@@ -437,34 +428,8 @@ void InspectorController::didCommitLoadForMainFrame()
 
 void InspectorController::didBeginFrame(int frameId)
 {
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didBeginFrame(frameId);
     if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
         canvasAgent->didBeginFrame();
-}
-
-void InspectorController::didCancelFrame()
-{
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didCancelFrame();
-}
-
-void InspectorController::willComposite()
-{
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->willComposite();
-}
-
-void InspectorController::didComposite()
-{
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didComposite();
-}
-
-void InspectorController::processGPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes, uint64_t limitGPUMemoryBytes)
-{
-    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->processGPUEvent(InspectorTimelineAgent::GPUEvent(timestamp, phase, foreign, usedGPUMemoryBytes, limitGPUMemoryBytes));
 }
 
 void InspectorController::scriptsEnabled(bool  enabled)

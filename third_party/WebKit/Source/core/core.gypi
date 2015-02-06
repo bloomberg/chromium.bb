@@ -1350,8 +1350,6 @@
             'inspector/ScriptGCEventListener.h',
             'inspector/ScriptProfile.cpp',
             'inspector/ScriptProfile.h',
-            'inspector/TimelineRecordFactory.cpp',
-            'inspector/TimelineRecordFactory.h',
             'inspector/TraceEventDispatcher.cpp',
             'inspector/TraceEventDispatcher.h',
             'inspector/V8AsyncCallTracker.cpp',

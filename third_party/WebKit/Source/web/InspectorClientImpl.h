@@ -79,9 +79,6 @@ public:
     virtual void enableTracing(const String& categoryFilter) override;
     virtual void disableTracing() override;
 
-    virtual void startGPUEventsRecording() override;
-    virtual void stopGPUEventsRecording() override;
-
     virtual void resumeStartup() override;
 
 private:

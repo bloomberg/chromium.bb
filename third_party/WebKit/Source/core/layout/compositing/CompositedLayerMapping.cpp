@@ -2161,8 +2161,6 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         page->setIsPainting(true);
 #endif
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(m_owningLayer.renderer(), clip, graphicsLayer));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::willPaint(m_owningLayer.renderer(), graphicsLayer);
 
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)

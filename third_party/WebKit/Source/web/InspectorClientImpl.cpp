@@ -197,18 +197,6 @@ void InspectorClientImpl::resetTraceEventCallback()
         agent->resetTraceEventCallback();
 }
 
-void InspectorClientImpl::startGPUEventsRecording()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->startGPUEventsRecording();
-}
-
-void InspectorClientImpl::stopGPUEventsRecording()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->stopGPUEventsRecording();
-}
-
 void InspectorClientImpl::resumeStartup()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

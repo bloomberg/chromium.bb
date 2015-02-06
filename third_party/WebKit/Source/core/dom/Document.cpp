@@ -1573,7 +1573,6 @@ void Document::scheduleRenderTreeUpdate()
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", "data", InspectorRecalculateStylesEvent::data(frame()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
 
@@ -1755,7 +1754,6 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // FIXME: Remove m_styleRecalcElementCounter, we should just use the accessCount() on the resolver.
     m_styleRecalcElementCounter = 0;
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "beginData", InspectorRecalculateStylesEvent::data(frame()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     DocumentAnimations::updateAnimationTimingIfNeeded(*this);
@@ -1789,7 +1787,6 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
     TRACE_EVENT_END1("blink", "Document::updateRenderTree", "elementCount", m_styleRecalcElementCounter);
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
 }
 
@@ -4568,7 +4565,6 @@ void Document::finishedParsing()
         frame->loader().finishedParsing();
 
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkDOMContent", "data", InspectorMarkLoadEvent::data(frame.get()));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::domContentLoadedEventFired(frame.get());
     }
 

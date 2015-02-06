@@ -41,7 +41,6 @@
 #include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
-#include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -61,28 +60,23 @@ int FrontendCounter::s_frontendCounter = 0;
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie()
     : m_instrumentingAgents(nullptr)
-    , m_timelineAgentId(0)
 {
 }
 
-InspectorInstrumentationCookie::InspectorInstrumentationCookie(InstrumentingAgents* agents, int timelineAgentId)
+InspectorInstrumentationCookie::InspectorInstrumentationCookie(InstrumentingAgents* agents)
     : m_instrumentingAgents(agents)
-    , m_timelineAgentId(timelineAgentId)
 {
 }
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie(const InspectorInstrumentationCookie& other)
     : m_instrumentingAgents(other.m_instrumentingAgents)
-    , m_timelineAgentId(other.m_timelineAgentId)
 {
 }
 
 InspectorInstrumentationCookie& InspectorInstrumentationCookie::operator=(const InspectorInstrumentationCookie& other)
 {
-    if (this != &other) {
+    if (this != &other)
         m_instrumentingAgents = other.m_instrumentingAgents;
-        m_timelineAgentId = other.m_timelineAgentId;
-    }
     return *this;
 }
 
@@ -183,16 +177,6 @@ void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
         delete instrumentingAgentsSet;
         instrumentingAgentsSet = 0;
     }
-}
-
-InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie& cookie)
-{
-    if (!cookie.instrumentingAgents())
-        return 0;
-    InspectorTimelineAgent* timelineAgent = cookie.instrumentingAgents()->inspectorTimelineAgent();
-    if (timelineAgent && cookie.hasMatchingTimelineAgentId(timelineAgent->id()))
-        return timelineAgent;
-    return 0;
 }
 
 InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)

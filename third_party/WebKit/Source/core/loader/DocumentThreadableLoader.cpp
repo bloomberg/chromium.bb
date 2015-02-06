@@ -405,7 +405,6 @@ void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
     LocalFrame* frame = m_document.frame();
     InspectorInstrumentation::didReceiveResourceResponse(frame, identifier, loader, response, resource() ? resource()->loader() : 0);
-    // It is essential that inspector gets resource response BEFORE console.
     frame->console().reportResourceResponseReceived(loader, identifier, response);
 }
 

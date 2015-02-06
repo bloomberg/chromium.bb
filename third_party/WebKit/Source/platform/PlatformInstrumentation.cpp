@@ -46,15 +46,4 @@ const char PlatformInstrumentation::LazyPixelRef[] = "LazyPixelRef";
 const char PlatformInstrumentation::ImageTypeArgument[] = "imageType";
 const char PlatformInstrumentation::CachedArgument[] = "cached";
 
-PlatformInstrumentationClient* PlatformInstrumentation::m_client;
-
-PlatformInstrumentationClient::~PlatformInstrumentationClient()
-{
-}
-
-void PlatformInstrumentation::setClient(PlatformInstrumentationClient* client)
-{
-    m_client = client;
-}
-
 }

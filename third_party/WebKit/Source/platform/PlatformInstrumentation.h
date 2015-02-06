@@ -38,16 +38,6 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PlatformInstrumentationClient {
-public:
-    virtual ~PlatformInstrumentationClient();
-
-    virtual void willDecodeImage(const String& imageType) = 0;
-    virtual void didDecodeImage() = 0;
-    virtual void willResizeImage(bool shouldCache) = 0;
-    virtual void didResizeImage() = 0;
-};
-
 class PLATFORM_EXPORT PlatformInstrumentation {
 public:
     class LazyPixelRefTracker: TraceEvent::TraceScopedTrackableObject<void*> {
@@ -68,9 +58,6 @@ public:
 
     static const char LazyPixelRef[];
 
-    static void setClient(PlatformInstrumentationClient*);
-    static bool hasClient() { return m_client; }
-
     static void willDecodeImage(const String& imageType);
     static void didDecodeImage();
     static void willResizeImage(bool shouldCache);
@@ -81,38 +68,26 @@ public:
 
 private:
     static const char CategoryName[];
-
-    static PlatformInstrumentationClient* m_client;
 };
-
-#define FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD() if (!m_client || !isMainThread()) return;
 
 inline void PlatformInstrumentation::willDecodeImage(const String& imageType)
 {
     TRACE_EVENT_BEGIN1(CategoryName, ImageDecodeEvent, ImageTypeArgument, imageType.ascii());
-    FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
-    m_client->willDecodeImage(imageType);
 }
 
 inline void PlatformInstrumentation::didDecodeImage()
 {
     TRACE_EVENT_END0(CategoryName, ImageDecodeEvent);
-    FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
-    m_client->didDecodeImage();
 }
 
 inline void PlatformInstrumentation::willResizeImage(bool shouldCache)
 {
     TRACE_EVENT_BEGIN1(CategoryName, ImageResizeEvent, CachedArgument, shouldCache);
-    FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
-    m_client->willResizeImage(shouldCache);
 }
 
 inline void PlatformInstrumentation::didResizeImage()
 {
     TRACE_EVENT_END0(CategoryName, ImageResizeEvent);
-    FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
-    m_client->didResizeImage();
 }
 
 inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)

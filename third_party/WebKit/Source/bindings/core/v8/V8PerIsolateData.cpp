@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/PageScriptDebugServer.h"
-#include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptProfiler.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -78,7 +77,6 @@ V8PerIsolateData::V8PerIsolateData()
 #if ENABLE(ASSERT)
     , m_internalScriptRecursionLevel(0)
 #endif
-    , m_gcEventData(adoptPtr(new GCEventData()))
     , m_performingMicrotaskCheckpoint(false)
 {
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.

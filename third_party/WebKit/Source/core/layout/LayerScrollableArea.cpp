@@ -53,7 +53,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -375,8 +374,6 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
     RefPtrWillBeRawPtr<FrameView> frameView = box().frameView();
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::willScrollLayer(&box());
 
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
@@ -426,8 +423,6 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
 
     if (AXObjectCache* cache = box().document().existingAXObjectCache())
         cache->handleScrollPositionChanged(&box());
-
-    InspectorInstrumentation::didScrollLayer(&box());
 }
 
 IntPoint LayerScrollableArea::scrollPosition() const

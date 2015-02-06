@@ -102,9 +102,6 @@ public:
     virtual void enableTracing(const WTF::String& categoryFilter) override;
     virtual void disableTracing() override;
 
-    virtual void startGPUEventsRecording() override;
-    virtual void stopGPUEventsRecording() override;
-
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
 

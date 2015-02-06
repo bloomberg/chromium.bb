@@ -69,7 +69,6 @@ int DOMTimer::install(ExecutionContext* context, PassOwnPtrWillBeRawPtr<Schedule
 {
     int timeoutID = context->timers()->installNewTimeout(context, action, timeout, singleShot);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerInstall", "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
     return timeoutID;
 }
@@ -78,7 +77,6 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
     context->timers()->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerRemove", "data", InspectorTimerRemoveEvent::data(context, timeoutID));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
 }
 
@@ -122,7 +120,6 @@ void DOMTimer::fired()
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerFire", "data", InspectorTimerFireEvent::data(context, m_timeoutID));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireTimer(context, m_timeoutID);
 
     // Simple case for non-one-shot timers.

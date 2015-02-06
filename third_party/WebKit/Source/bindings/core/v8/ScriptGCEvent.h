@@ -31,9 +31,6 @@
 #ifndef ScriptGCEvent_h
 #define ScriptGCEvent_h
 
-#include "wtf/Vector.h"
-#include <v8.h>
-
 namespace blink {
 
 struct HeapInfo {
@@ -49,48 +46,9 @@ struct HeapInfo {
     size_t jsHeapSizeLimit;
 };
 
-class ScriptGCEventListener;
-
-class GCEventData {
-public:
-    typedef Vector<ScriptGCEventListener*> GCEventListeners;
-
-    GCEventData()
-        : m_startTime(0.0)
-        , m_usedHeapSize(0)
-    { }
-
-    void clear()
-    {
-        m_startTime = 0.0;
-        m_usedHeapSize = 0;
-    }
-
-    GCEventListeners& listeners() { return m_listeners; }
-
-    double startTime() { return m_startTime; }
-    void setStartTime(double startTime) { m_startTime = startTime; }
-    size_t usedHeapSize() { return m_usedHeapSize; }
-    void setUsedHeapSize(size_t usedHeapSize) { m_usedHeapSize = usedHeapSize; }
-
-private:
-    double m_startTime;
-    size_t m_usedHeapSize;
-    GCEventListeners m_listeners;
-};
-
-
-// FIXME(361045): remove ScriptGCEvent once DevTools Timeline migrates to tracing.
 class ScriptGCEvent {
 public:
-    static void addEventListener(ScriptGCEventListener*);
-    static void removeEventListener(ScriptGCEventListener*);
     static void getHeapSize(HeapInfo&);
-
-private:
-    static void gcEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags);
-    static void gcPrologueCallback(v8::GCType type, v8::GCCallbackFlags flags);
-    static size_t getUsedHeapSize();
 };
 
 

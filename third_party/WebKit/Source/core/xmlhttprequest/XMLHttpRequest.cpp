@@ -622,8 +622,6 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
     if (!executionContext())
         return;
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRReadyStateChangeEvent(executionContext(), this);
-
     if (m_async || (m_state <= OPENED || m_state == DONE)) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(executionContext(), this));
         XMLHttpRequestProgressEventThrottle::DeferredEventAction action = XMLHttpRequestProgressEventThrottle::Ignore;
@@ -637,13 +635,9 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }
 
-    InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
     if (m_state == DONE && !m_error) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRLoad", "data", InspectorXhrLoadEvent::data(executionContext(), this));
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(executionContext(), this);
         dispatchProgressEventFromSnapshot(EventTypeNames::load);
-        InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
-
         dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }

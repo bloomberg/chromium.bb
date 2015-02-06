@@ -104,8 +104,6 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(renderView, rect, 0));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::willPaint(renderView, 0);
 
     bool isTopLevelPainter = !s_inPaintContents;
     s_inPaintContents = true;
