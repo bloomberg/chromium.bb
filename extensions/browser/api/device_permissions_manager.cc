@@ -398,7 +398,7 @@ class DevicePermissionsManager::FileThreadHelper : public UsbService::Observer {
   }
 
  private:
-  void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
+  void OnDeviceRemovedCleanup(scoped_refptr<UsbDevice> device) override {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

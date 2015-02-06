@@ -1,0 +1,13 @@
+{
+  "name": "chrome.usb.getUserSelectedDevices",
+  "version": "0.1",
+  "description": "browser test for chrome.usb.getUserSelectedDevices",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "usb"
+  ]
+}

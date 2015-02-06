@@ -6,7 +6,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "device/usb/usb_service.h"
+#include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/usb/usb_api.h"
+#include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
@@ -41,6 +43,38 @@ void RequestUsbAccess(int interface_id,
                       const base::Callback<void(bool success)>& callback) {
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
+
+class TestDevicePermissionsPrompt
+    : public DevicePermissionsPrompt,
+      public DevicePermissionsPrompt::Prompt::Observer {
+ public:
+  TestDevicePermissionsPrompt(content::WebContents* web_contents)
+      : DevicePermissionsPrompt(web_contents) {}
+
+  void ShowDialog() override { prompt()->SetObserver(this); }
+
+  void OnDevicesChanged() override {
+    std::vector<scoped_refptr<UsbDevice>> devices;
+    for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
+      prompt()->GrantDevicePermission(i);
+      devices.push_back(prompt()->GetDevice(i));
+      if (!prompt()->multiple()) {
+        break;
+      }
+    }
+    delegate()->OnUsbDevicesChosen(devices);
+  }
+};
+
+class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
+ public:
+  TestExtensionsAPIClient() : ShellExtensionsAPIClient() {}
+
+  scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
+      content::WebContents* web_contents) const override {
+    return make_scoped_ptr(new TestDevicePermissionsPrompt(web_contents));
+  }
+};
 
 class MockUsbDeviceHandle : public UsbDeviceHandle {
  public:
@@ -157,6 +191,10 @@ class UsbApiTest : public ShellApiTest {
     ShellApiTest::SetUpOnMainThread();
 
     mock_device_ = new MockUsbDevice(0, 0, 0);
+    EXPECT_CALL(*mock_device_.get(), GetManufacturer(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_device_.get(), GetProduct(_))
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_device_.get(), GetSerialNumber(_))
         .WillRepeatedly(Return(false));
 
@@ -298,7 +336,6 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
   run_loop.Run();
 
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  ASSERT_EQ("success", result_listener.message());
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceRemoved) {
@@ -318,7 +355,28 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceRemoved) {
   run_loop.Run();
 
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  ASSERT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(UsbApiTest, GetUserSelectedDevices) {
+  ExtensionTestMessageListener ready_listener("opened_device", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
+
+  TestExtensionsAPIClient test_api_client;
+  ASSERT_TRUE(LoadApp("api_test/usb/get_user_selected_devices"));
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MockUsbService::NotifyDeviceRemoved,
+                 base::Unretained(mock_service_), mock_device_),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
 
 }  // namespace extensions

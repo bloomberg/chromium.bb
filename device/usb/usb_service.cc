@@ -44,6 +44,10 @@ void UsbService::Observer::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
 void UsbService::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
 }
 
+void UsbService::Observer::OnDeviceRemovedCleanup(
+    scoped_refptr<UsbDevice> device) {
+}
+
 // static
 UsbService* UsbService::GetInstance(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
@@ -85,6 +89,7 @@ void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
 void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemovedCleanup(device));
 }
 
 }  // namespace device
