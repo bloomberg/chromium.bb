@@ -68,6 +68,12 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
 HTMLFormControlElement::~HTMLFormControlElement()
 {
 #if !ENABLE(OILPAN)
+#if ENABLE(ASSERT)
+    // valid() doesn't return a correct result because vtbl of a subclass was
+    // gone. Recalculate m_isValid to avoid an assertion failure in
+    // isValidElement().
+    setNeedsValidityCheck();
+#endif
     setForm(0);
 #endif
 }
