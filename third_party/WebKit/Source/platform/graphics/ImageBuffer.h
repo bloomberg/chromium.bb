@@ -102,7 +102,8 @@ public:
 
     void willDrawVideo() { m_surface->willDrawVideo(); }
 
-    GraphicsContext* context() const;
+    GraphicsContext* context() const; // Deprecated: use canvas()
+    SkCanvas* canvas() const;
 
     // Called at the end of a task that rendered a whole frame
     void finalizeFrame(const FloatRect &dirtyRect);

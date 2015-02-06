@@ -1520,7 +1520,7 @@ void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion
         return;
 
     if (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op)
-        mutableState()->setHasComplexClip();
+        setHasComplexClip();
 
     m_canvas->clipRect(rect, op, aa == AntiAliased);
 }
@@ -1532,7 +1532,7 @@ void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion
         return;
 
     if (!path.isRect(0) || (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op))
-        mutableState()->setHasComplexClip();
+        setHasComplexClip();
 
     m_canvas->clipPath(path, op, aa == AntiAliased);
 }
@@ -1544,7 +1544,7 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
         return;
 
     if (!rect.isRect() || (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op))
-        mutableState()->setHasComplexClip();
+        setHasComplexClip();
 
     m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }

@@ -95,9 +95,16 @@ ImageBuffer::~ImageBuffer()
 GraphicsContext* ImageBuffer::context() const
 {
     if (!isSurfaceValid())
-        return 0;
+        return nullptr;
     ASSERT(m_context.get());
     return m_context.get();
+}
+
+SkCanvas* ImageBuffer::canvas() const
+{
+    if (!isSurfaceValid())
+        return nullptr;
+    return m_surface->canvas();
 }
 
 const SkBitmap& ImageBuffer::bitmap() const

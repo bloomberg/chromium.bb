@@ -700,7 +700,7 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
 
 GraphicsContext* HTMLCanvasElement::drawingContext() const
 {
-    return buffer() ? m_imageBuffer->context() : 0;
+    return buffer() ? m_imageBuffer->context() : nullptr;
 }
 
 GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
@@ -709,6 +709,19 @@ GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
         return nullptr;
 
     return drawingContext();
+}
+
+SkCanvas* HTMLCanvasElement::drawingCanvas() const
+{
+    return buffer() ? m_imageBuffer->canvas() : nullptr;
+}
+
+SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const
+{
+    if (!hasImageBuffer())
+        return nullptr;
+
+    return m_imageBuffer->canvas();
 }
 
 ImageBuffer* HTMLCanvasElement::buffer() const

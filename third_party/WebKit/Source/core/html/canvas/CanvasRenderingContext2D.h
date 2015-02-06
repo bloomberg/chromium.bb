@@ -39,7 +39,6 @@
 #include "platform/fonts/Font.h"
 #include "platform/graphics/Color.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/Path.h"
@@ -250,6 +249,7 @@ private:
         String m_unparsedFillColor;
         RefPtrWillBeMember<CanvasStyle> m_strokeStyle;
         RefPtrWillBeMember<CanvasStyle> m_fillStyle;
+
         float m_lineWidth;
         LineCap m_lineCap;
         LineJoin m_lineJoin;
@@ -297,10 +297,11 @@ private:
     bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
     void didDraw(const FloatRect&);
 
-    GraphicsContext* drawingContext() const;
+    GraphicsContext* drawingContext() const; // Deprecated: use drawingCanvas
+    SkCanvas* drawingCanvas() const;
 
     void unwindStateStack();
-    void realizeSaves(GraphicsContext*);
+    void realizeSaves(SkCanvas*);
 
     void applyStrokePattern();
     void applyFillPattern();

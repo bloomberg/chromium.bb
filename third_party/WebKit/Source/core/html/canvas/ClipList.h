@@ -6,12 +6,13 @@
 #define ClipList_h
 
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Path.h"
 #include "wtf/Vector.h"
+
+class SkCanvas;
+class SkPath;
 
 namespace blink {
 
-class GraphicsContext;
 class AffineTransform;
 
 class ClipList {
@@ -20,15 +21,14 @@ public:
     ClipList(const ClipList&);
     ~ClipList() { }
 
-    void clipPath(const Path&, WindRule, AntiAliasingMode, const AffineTransform&);
-    void playback(GraphicsContext*) const;
+    void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
+    void playback(SkCanvas*) const;
 
 private:
 
     struct ClipOp {
-        Path m_path;
+        SkPath m_path;
         AntiAliasingMode m_antiAliasingMode;
-        WindRule m_windRule;
 
         ClipOp();
         ClipOp(const ClipOp&);

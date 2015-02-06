@@ -108,6 +108,7 @@ public:
 
     // Returns true if the clip is anything more than an intersection of rectangles
     bool hasComplexClip() const { return immutableState()->hasComplexClip(); }
+    void setHasComplexClip() { mutableState()->setHasComplexClip(); }
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }

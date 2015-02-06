@@ -117,8 +117,10 @@ public:
 
     void paint(GraphicsContext*, const LayoutRect&);
 
-    GraphicsContext* drawingContext() const;
-    GraphicsContext* existingDrawingContext() const;
+    GraphicsContext* drawingContext() const; // Deprecated: use drawingCanvas
+    GraphicsContext* existingDrawingContext() const; // Deprecated: use existingDrawingCanvas
+    SkCanvas* drawingCanvas() const;
+    SkCanvas* existingDrawingCanvas() const;
 
     CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
