@@ -18527,6 +18527,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.OutOfOrderLargePacketsReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of times the current received packet had a lower sequence number
+    than the previously received packet sequence number, and the size of the
+    current packet is larger than the size of the previous packet.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.OutOfOrderPacketsReceived">
   <owner>rch@chromium.org</owner>
   <summary>

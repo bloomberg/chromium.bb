@@ -118,6 +118,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   QuicPacketSequenceNumber last_received_packet_sequence_number_;
   // The size of the most recently received packet.
   size_t last_received_packet_size_;
+  // The size of the previously received packet.
+  size_t previous_received_packet_size_;
   // The largest packet sequence number received.  In the case where a packet is
   // received late (out of order), this value will not be updated.
   QuicPacketSequenceNumber largest_received_packet_sequence_number_;
@@ -127,6 +129,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Number of times that the current received packet sequence number is
   // smaller than the last received packet sequence number.
   size_t num_out_of_order_received_packets_;
+  // Number of times that the current received packet sequence number is
+  // smaller than the last received packet sequence number and where the
+  // size of the current packet is larger than the size of the previous
+  // packet.
+  size_t num_out_of_order_large_received_packets_;
   // The number of times that OnPacketHeader was called.
   // If the network replicates packets, then this number may be slightly
   // different from the real number of distinct packets received.
