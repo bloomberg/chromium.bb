@@ -843,6 +843,13 @@ void GLES2Implementation::ShallowFlushCHROMIUM() {
   // TODO(piman): Add the FreeEverything() logic here.
 }
 
+void GLES2Implementation::OrderingBarrierCHROMIUM() {
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glOrderingBarrierCHROMIUM");
+  // Flush command buffer at the GPU channel level.  May be implemented as
+  // Flush().
+  helper_->CommandBufferHelper::OrderingBarrier();
+}
+
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   FinishHelper();

@@ -315,6 +315,7 @@ virtual void ShaderSource(GLuint shader,
                           const GLint* length) = 0;
 virtual void ShallowFinishCHROMIUM() = 0;
 virtual void ShallowFlushCHROMIUM() = 0;
+virtual void OrderingBarrierCHROMIUM() = 0;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) = 0;
 virtual void StencilFuncSeparate(GLenum face,
                                  GLenum func,

@@ -526,6 +526,8 @@ void GLES2InterfaceStub::ShallowFinishCHROMIUM() {
 }
 void GLES2InterfaceStub::ShallowFlushCHROMIUM() {
 }
+void GLES2InterfaceStub::OrderingBarrierCHROMIUM() {
+}
 void GLES2InterfaceStub::StencilFunc(GLenum /* func */,
                                      GLint /* ref */,
                                      GLuint /* mask */) {

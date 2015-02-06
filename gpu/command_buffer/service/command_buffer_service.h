@@ -52,6 +52,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   State GetLastState() override;
   int32 GetLastToken() override;
   void Flush(int32 put_offset) override;
+  void OrderingBarrier(int32 put_offset) override;
   void WaitForTokenInRange(int32 start, int32 end) override;
   void WaitForGetOffsetInRange(int32 start, int32 end) override;
   void SetGetBuffer(int32 transfer_buffer_id) override;

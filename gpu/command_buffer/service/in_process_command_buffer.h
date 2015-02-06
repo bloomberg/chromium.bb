@@ -92,6 +92,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State GetLastState() override;
   int32 GetLastToken() override;
   void Flush(int32 put_offset) override;
+  void OrderingBarrier(int32 put_offset) override;
   void WaitForTokenInRange(int32 start, int32 end) override;
   void WaitForGetOffsetInRange(int32 start, int32 end) override;
   void SetGetBuffer(int32 shm_id) override;

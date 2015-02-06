@@ -89,6 +89,7 @@ class CommandBufferProxyImpl
   State GetLastState() override;
   int32 GetLastToken() override;
   void Flush(int32 put_offset) override;
+  void OrderingBarrier(int32 put_offset) override;
   void WaitForTokenInRange(int32 start, int32 end) override;
   void WaitForGetOffsetInRange(int32 start, int32 end) override;
   void SetGetBuffer(int32 shm_id) override;
@@ -190,6 +191,7 @@ class CommandBufferProxyImpl
   int route_id_;
   unsigned int flush_count_;
   int32 last_put_offset_;
+  int32 last_barrier_put_offset_;
 
   base::Closure channel_error_callback_;
 

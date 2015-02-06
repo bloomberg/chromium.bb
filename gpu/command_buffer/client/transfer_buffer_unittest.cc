@@ -82,6 +82,7 @@ void TransferBufferTest::TearDown() {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*command_buffer(), OnFlush()).Times(AtMost(1));
+  EXPECT_CALL(*command_buffer(), Flush(_)).Times(AtMost(1));
   transfer_buffer_.reset();
 }
 

@@ -66,6 +66,11 @@ class GPU_EXPORT CommandBufferHelper {
   // returns, the command buffer service is aware of all pending commands.
   void Flush();
 
+  // Ensures that commands up to the put pointer will be processed in the
+  // command buffer service before any future commands on other command buffers
+  // sharing a channel.
+  void OrderingBarrier();
+
   // Waits until all the commands have been executed. Returns whether it
   // was successful. The function will fail if the command buffer service has
   // disconnected.
@@ -322,6 +327,7 @@ class GPU_EXPORT CommandBufferHelper {
   int32 token_;
   int32 put_;
   int32 last_put_sent_;
+  int32 last_barrier_put_sent_;
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
   int commands_issued_;

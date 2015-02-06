@@ -709,4 +709,64 @@ TEST_F(CommandBufferHelperTest, TestFlushGeneration) {
   EXPECT_EQ(error::kNoError, GetError());
 }
 
+TEST_F(CommandBufferHelperTest, TestOrderingBarrierFlushGeneration) {
+  // Explicit flushing only.
+  helper_->SetAutomaticFlushes(false);
+
+  // Generation should change after OrderingBarrier() but not before.
+  uint32 gen1, gen2, gen3;
+
+  gen1 = GetHelperFlushGeneration();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  gen2 = GetHelperFlushGeneration();
+  helper_->OrderingBarrier();
+  gen3 = GetHelperFlushGeneration();
+  EXPECT_EQ(gen2, gen1);
+  EXPECT_NE(gen3, gen2);
+
+  helper_->Finish();
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Expect Flush() to always call CommandBuffer::Flush().
+TEST_F(CommandBufferHelperTest, TestFlushToCommandBuffer) {
+  // Explicit flushing only.
+  helper_->SetAutomaticFlushes(false);
+
+  int flush_count1, flush_count2, flush_count3;
+
+  flush_count1 = command_buffer_->FlushCount();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  helper_->Flush();
+  flush_count2 = command_buffer_->FlushCount();
+  helper_->Flush();
+  flush_count3 = command_buffer_->FlushCount();
+
+  EXPECT_EQ(flush_count2, flush_count1 + 1);
+  EXPECT_EQ(flush_count3, flush_count2 + 1);
+}
+
+// Expect OrderingBarrier() to always call CommandBuffer::OrderingBarrier().
+TEST_F(CommandBufferHelperTest, TestOrderingBarrierToCommandBuffer) {
+  // Explicit flushing only.
+  helper_->SetAutomaticFlushes(false);
+
+  int flush_count1, flush_count2, flush_count3;
+
+  flush_count1 = command_buffer_->FlushCount();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  helper_->OrderingBarrier();
+  flush_count2 = command_buffer_->FlushCount();
+  helper_->OrderingBarrier();
+  flush_count3 = command_buffer_->FlushCount();
+
+  EXPECT_EQ(flush_count2, flush_count1 + 1);
+  EXPECT_EQ(flush_count3, flush_count2 + 1);
+}
+
 }  // namespace gpu

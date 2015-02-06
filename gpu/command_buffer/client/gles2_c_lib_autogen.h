@@ -589,6 +589,9 @@ void GLES2ShallowFinishCHROMIUM() {
 void GLES2ShallowFlushCHROMIUM() {
   gles2::GetGLContext()->ShallowFlushCHROMIUM();
 }
+void GLES2OrderingBarrierCHROMIUM() {
+  gles2::GetGLContext()->OrderingBarrierCHROMIUM();
+}
 void GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::GetGLContext()->StencilFunc(func, ref, mask);
 }
@@ -1807,6 +1810,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glShallowFlushCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glShallowFlushCHROMIUM),
+    },
+    {
+     "glOrderingBarrierCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glOrderingBarrierCHROMIUM),
     },
     {
      "glStencilFunc",

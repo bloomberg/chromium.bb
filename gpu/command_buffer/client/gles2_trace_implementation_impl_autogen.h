@@ -914,6 +914,11 @@ void GLES2TraceImplementation::ShallowFlushCHROMIUM() {
   gl_->ShallowFlushCHROMIUM();
 }
 
+void GLES2TraceImplementation::OrderingBarrierCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::OrderingBarrierCHROMIUM");
+  gl_->OrderingBarrierCHROMIUM();
+}
+
 void GLES2TraceImplementation::StencilFunc(GLenum func,
                                            GLint ref,
                                            GLuint mask) {

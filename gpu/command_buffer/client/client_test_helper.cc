@@ -130,6 +130,10 @@ void MockClientCommandBuffer::Flush(int32 put_offset) {
   FlushHelper(put_offset);
 }
 
+void MockClientCommandBuffer::OrderingBarrier(int32 put_offset) {
+  FlushHelper(put_offset);
+}
+
 void MockClientCommandBuffer::DelegateToFake() {
   ON_CALL(*this, DestroyTransferBuffer(_))
       .WillByDefault(Invoke(

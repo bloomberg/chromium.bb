@@ -79,6 +79,10 @@ void CommandBufferService::Flush(int32 put_offset) {
     put_offset_change_callback_.Run();
 }
 
+void CommandBufferService::OrderingBarrier(int32 put_offset) {
+  Flush(put_offset);
+}
+
 void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
   DCHECK_EQ(-1, ring_buffer_id_);
   DCHECK_EQ(put_offset_, get_offset_);  // Only if it's empty.

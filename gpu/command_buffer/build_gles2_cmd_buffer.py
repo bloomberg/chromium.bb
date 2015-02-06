@@ -3054,6 +3054,13 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
   },
+  'OrderingBarrierCHROMIUM': {
+    'impl_func': False,
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+  },
   'TraceBeginCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,

@@ -150,10 +150,22 @@ void CommandBufferHelper::Flush() {
   if (put_ == total_entry_count_)
     put_ = 0;
 
-  if (usable() && last_put_sent_ != put_) {
+  if (usable()) {
     last_flush_time_ = base::TimeTicks::Now();
     last_put_sent_ = put_;
     command_buffer_->Flush(put_);
+    ++flush_generation_;
+    CalcImmediateEntries(0);
+  }
+}
+
+void CommandBufferHelper::OrderingBarrier() {
+  // Wrap put_ before setting the barrier.
+  if (put_ == total_entry_count_)
+    put_ = 0;
+
+  if (usable()) {
+    command_buffer_->OrderingBarrier(put_);
     ++flush_generation_;
     CalcImmediateEntries(0);
   }

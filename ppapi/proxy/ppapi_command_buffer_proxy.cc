@@ -60,6 +60,10 @@ void PpapiCommandBufferProxy::Flush(int32 put_offset) {
   Send(message);
 }
 
+void PpapiCommandBufferProxy::OrderingBarrier(int32 put_offset) {
+  Flush(put_offset);
+}
+
 void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
   TryUpdateState();
   if (!InRange(start, end, last_state_.token) &&

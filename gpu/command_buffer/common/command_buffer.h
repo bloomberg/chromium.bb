@@ -90,6 +90,11 @@ class GPU_EXPORT CommandBuffer {
   // subsequent Flushes on the same GpuChannel.
   virtual void Flush(int32 put_offset) = 0;
 
+  // As Flush, ensures that on the service side, commands up to put_offset
+  // are processed but before subsequent commands on the same GpuChannel but
+  // flushing to the service may be deferred.
+  virtual void OrderingBarrier(int32 put_offset) = 0;
+
   // The writer calls this to wait until the current token is within a
   // specific range, inclusive. Can return early if an error is generated.
   virtual void WaitForTokenInRange(int32 start, int32 end) = 0;

@@ -631,6 +631,10 @@ void InProcessCommandBuffer::Flush(int32 put_offset) {
   QueueTask(task);
 }
 
+void InProcessCommandBuffer::OrderingBarrier(int32 put_offset) {
+  Flush(put_offset);
+}
+
 void InProcessCommandBuffer::WaitForTokenInRange(int32 start, int32 end) {
   CheckSequencedThread();
   while (!InRange(start, end, GetLastToken()) &&

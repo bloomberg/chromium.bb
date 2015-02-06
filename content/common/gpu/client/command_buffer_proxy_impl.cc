@@ -25,13 +25,13 @@
 
 namespace content {
 
-CommandBufferProxyImpl::CommandBufferProxyImpl(
-    GpuChannelHost* channel,
-    int route_id)
+CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
+                                               int route_id)
     : channel_(channel),
       route_id_(route_id),
       flush_count_(0),
       last_put_offset_(-1),
+      last_barrier_put_offset_(-1),
       next_signal_id_(0) {
 }
 
@@ -179,16 +179,36 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
                "put_offset",
                put_offset);
 
-  if (last_put_offset_ == put_offset)
+  bool put_offset_changed = last_put_offset_ != put_offset;
+  last_put_offset_ = put_offset;
+  last_barrier_put_offset_ = put_offset;
+
+  if (channel_) {
+    channel_->OrderingBarrier(route_id_, put_offset, ++flush_count_,
+                              latency_info_, put_offset_changed, true);
+  }
+
+  if (put_offset_changed)
+    latency_info_.clear();
+}
+
+void CommandBufferProxyImpl::OrderingBarrier(int32 put_offset) {
+  if (last_state_.error != gpu::error::kNoError)
     return;
 
-  last_put_offset_ = put_offset;
+  TRACE_EVENT1("gpu", "CommandBufferProxyImpl::OrderingBarrier", "put_offset",
+               put_offset);
 
-  Send(new GpuCommandBufferMsg_AsyncFlush(route_id_,
-                                          put_offset,
-                                          ++flush_count_,
-                                          latency_info_));
-  latency_info_.clear();
+  bool put_offset_changed = last_barrier_put_offset_ != put_offset;
+  last_barrier_put_offset_ = put_offset;
+
+  if (channel_) {
+    channel_->OrderingBarrier(route_id_, put_offset, ++flush_count_,
+                              latency_info_, put_offset_changed, false);
+  }
+
+  if (put_offset_changed)
+    latency_info_.clear();
 }
 
 void CommandBufferProxyImpl::SetLatencyInfo(

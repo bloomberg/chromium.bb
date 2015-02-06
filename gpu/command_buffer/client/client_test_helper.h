@@ -70,6 +70,7 @@ class MockClientCommandBuffer : public MockCommandBufferBase {
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
 
   virtual void Flush(int32 put_offset) override;
+  virtual void OrderingBarrier(int32 put_offset) override;
 
   void DelegateToFake();
 };
@@ -80,6 +81,7 @@ class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
   virtual ~MockClientCommandBufferMockFlush();
 
   MOCK_METHOD1(Flush, void(int32 put_offset));
+  MOCK_METHOD1(OrderingBarrier, void(int32 put_offset));
 
   void DelegateToFake();
 };

@@ -439,6 +439,8 @@ void ShallowFinishCHROMIUM() override;
 
 void ShallowFlushCHROMIUM() override;
 
+void OrderingBarrierCHROMIUM() override;
+
 void StencilFunc(GLenum func, GLint ref, GLuint mask) override;
 
 void StencilFuncSeparate(GLenum face,

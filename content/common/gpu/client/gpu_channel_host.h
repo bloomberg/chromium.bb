@@ -23,6 +23,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -61,6 +62,17 @@ struct GpuListenerInfo {
 
   base::WeakPtr<IPC::Listener> listener;
   scoped_refptr<base::MessageLoopProxy> loop;
+};
+
+struct ProxyFlushInfo {
+  ProxyFlushInfo();
+  ~ProxyFlushInfo();
+
+  bool flush_pending;
+  int route_id;
+  int32 put_offset;
+  unsigned int flush_count;
+  std::vector<ui::LatencyInfo> latency_info;
 };
 
 class CONTENT_EXPORT GpuChannelHostFactory {
@@ -102,6 +114,15 @@ class GpuChannelHost : public IPC::Sender,
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
+
+  // Set an ordering barrier.  AsyncFlushes any pending barriers on other
+  // routes. Combines multiple OrderingBarriers into a single AsyncFlush.
+  void OrderingBarrier(int route_id,
+                       int32 put_offset,
+                       unsigned int flush_count,
+                       const std::vector<ui::LatencyInfo>& latency_info,
+                       bool put_offset_changed,
+                       bool do_flush);
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxyImpl* CreateViewCommandBuffer(
@@ -173,6 +194,8 @@ class GpuChannelHost : public IPC::Sender,
   ~GpuChannelHost() override;
   void Connect(const IPC::ChannelHandle& channel_handle,
                base::WaitableEvent* shutdown_event);
+  bool InternalSend(IPC::Message* msg);
+  void InternalFlush();
 
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
@@ -245,6 +268,7 @@ class GpuChannelHost : public IPC::Sender,
   // Used to look up a proxy from its routing id.
   typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
   ProxyMap proxies_;
+  ProxyFlushInfo flush_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

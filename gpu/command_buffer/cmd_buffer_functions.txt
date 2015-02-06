@@ -140,6 +140,7 @@ GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizeiNotNegative n, const 
 GL_APICALL void         GL_APIENTRY glShaderSource (GLidShader shader, GLsizeiNotNegative count, const GLchar* const* str, const GLint* length);
 GL_APICALL void         GL_APIENTRY glShallowFinishCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glShallowFlushCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glOrderingBarrierCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glStencilFunc (GLenumCmpFunction func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenumFaceType face, GLenumCmpFunction func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
