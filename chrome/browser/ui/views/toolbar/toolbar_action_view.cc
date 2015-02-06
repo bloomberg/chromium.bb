@@ -11,14 +11,11 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -44,11 +41,11 @@ const int kBorderInset = 4;
 
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
-    Browser* browser,
+    Profile* profile,
     ToolbarActionView::Delegate* delegate)
     : MenuButton(this, base::string16(), NULL, false),
       view_controller_(view_controller),
-      browser_(browser),
+      profile_(profile),
       delegate_(delegate),
       called_register_command_(false),
       wants_to_run_(false) {
@@ -64,7 +61,7 @@ ToolbarActionView::ToolbarActionView(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
-          ThemeServiceFactory::GetForProfile(browser->profile())));
+          ThemeServiceFactory::GetForProfile(profile_)));
 
   wants_to_run_border_ = CreateDefaultBorder();
   DecorateWantsToRunBorder(wants_to_run_border_.get());
@@ -149,8 +146,7 @@ void ToolbarActionView::UpdateState() {
   gfx::ImageSkia icon(view_controller_->GetIcon(web_contents).AsImageSkia());
 
   if (!icon.isNull()) {
-    ThemeService* theme =
-        ThemeServiceFactory::GetForProfile(browser_->profile());
+    ThemeService* theme = ThemeServiceFactory::GetForProfile(profile_);
 
     gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
     SetImage(views::Button::STATE_NORMAL,
@@ -253,8 +249,7 @@ views::Widget* ToolbarActionView::GetParentForContextMenu() {
   // RunMenuAt expects a nested menu to be parented by the same widget as the
   // already visible menu, in this case the Chrome menu.
   return delegate_->ShownInsideMenu() ?
-      BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar()->app_menu()->GetWidget() :
+      delegate_->GetOverflowReferenceView()->GetWidget() :
       GetWidget();
 }
 

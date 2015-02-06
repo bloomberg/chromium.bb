@@ -227,7 +227,7 @@ void BrowserActionsContainer::AddViewForAction(
 
       view_controller->GetActionName();
   ToolbarActionView* view =
-      new ToolbarActionView(view_controller, browser_, this);
+      new ToolbarActionView(view_controller, browser_->profile(), this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 }

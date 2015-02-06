@@ -233,7 +233,7 @@ bool ChevronMenuButton::MenuController::ShowContextMenu(
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
       new ExtensionContextMenuModel(view_controller->extension(),
-                                    view->browser(),
+                                    view_controller->browser(),
                                     view_controller);
   views::MenuRunner context_menu_runner(context_menu_contents.get(),
                                         views::MenuRunner::HAS_MNEMONICS |

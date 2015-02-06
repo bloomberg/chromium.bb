@@ -13,8 +13,8 @@
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
 
-class Browser;
 class ExtensionAction;
+class Profile;
 
 namespace extensions {
 class Extension;
@@ -63,7 +63,7 @@ class ToolbarActionView : public views::MenuButton,
   };
 
   ToolbarActionView(ToolbarActionViewController* view_controller,
-                    Browser* browser,
+                    Profile* profile,
                     Delegate* delegate);
   ~ToolbarActionView() override;
 
@@ -102,7 +102,6 @@ class ToolbarActionView : public views::MenuButton,
   ToolbarActionViewController* view_controller() {
     return view_controller_;
   }
-  Browser* browser() { return browser_; }
 
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
@@ -137,8 +136,8 @@ class ToolbarActionView : public views::MenuButton,
   // The controller for this toolbar action view.
   ToolbarActionViewController* view_controller_;
 
-  // The associated browser.
-  Browser* browser_;
+  // The associated profile.
+  Profile* profile_;
 
   // Delegate that usually represents a container for ToolbarActionView.
   Delegate* delegate_;

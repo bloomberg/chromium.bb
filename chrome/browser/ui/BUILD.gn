@@ -510,6 +510,8 @@ source_set("test_support") {
     "pdf/pdf_browsertest_base.h",
     "test/test_confirm_bubble_model.cc",
     "test/test_confirm_bubble_model.h",
+    "toolbar/test_toolbar_action_view_controller.cc",
+    "toolbar/test_toolbar_action_view_controller.h",
     "website_settings/mock_permission_bubble_request.cc",
     "website_settings/mock_permission_bubble_request.h",
   ]
