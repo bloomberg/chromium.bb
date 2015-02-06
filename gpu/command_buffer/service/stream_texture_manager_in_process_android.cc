@@ -23,23 +23,23 @@ class GLImageImpl : public gfx::GLImage {
               const base::Closure& release_callback);
 
   // implement gfx::GLImage
-  virtual void Destroy(bool have_context) override;
-  virtual gfx::Size GetSize() override;
-  virtual bool BindTexImage(unsigned target) override;
-  virtual void ReleaseTexImage(unsigned target) override;
-  virtual bool CopyTexImage(unsigned target) override;
-  virtual void WillUseTexImage() override;
-  virtual void DidUseTexImage() override {}
-  virtual void WillModifyTexImage() override {}
-  virtual void DidModifyTexImage() override {}
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int z_order,
-                                    gfx::OverlayTransform transform,
-                                    const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) override;
+  void Destroy(bool have_context) override;
+  gfx::Size GetSize() override;
+  bool BindTexImage(unsigned target) override;
+  void ReleaseTexImage(unsigned target) override;
+  bool CopyTexImage(unsigned target) override;
+  void WillUseTexImage() override;
+  void DidUseTexImage() override {}
+  void WillModifyTexImage() override {}
+  void DidModifyTexImage() override {}
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
 
  private:
-  virtual ~GLImageImpl();
+  ~GLImageImpl() override;
 
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
   base::Closure release_callback_;

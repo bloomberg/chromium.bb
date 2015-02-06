@@ -68,7 +68,7 @@ class GLInProcessContextImpl
   size_t GetMappedMemoryLimit() override;
 
 #if defined(OS_ANDROID)
-  virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) override;
 #endif
 

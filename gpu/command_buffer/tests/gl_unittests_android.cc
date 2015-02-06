@@ -22,13 +22,9 @@ namespace gpu {
 
 class GLSurfaceTextureTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
-    gl_.Initialize(GLManager::Options());
-  }
+  void SetUp() override { gl_.Initialize(GLManager::Options()); }
 
-  virtual void TearDown() override {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
 };
