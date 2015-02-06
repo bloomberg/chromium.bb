@@ -13,8 +13,7 @@
           "backfaceVisibility": "hidden",
           "backgroundColor": "#FF0000",
           "repaintRects": [
-            [0, 100, 100, 100],
-            [0, -300, 100, 100]
+            [0, 100, 100, 100]
           ]
         }
       ]
