@@ -102,6 +102,7 @@
           './spinner_controller.js',
           './share_client.js',
           './task_controller.js',
+          './toolbar_controller.js',
           './thumbnail_loader.js',
           './list_thumbnail_loader.js',
           './ui/banners.js',

@@ -137,6 +137,7 @@
       <script src="foreground/js/share_client.js"></script>
       <script src="foreground/js/spinner_controller.js"></script>
       <script src="foreground/js/task_controller.js"></script>
+      <script src="foreground/js/toolbar_controller.js"></script>
       <script src="foreground/js/thumbnail_loader.js"></script>
       <script src="foreground/js/ui/banners.js"></script>
       <script src="foreground/js/ui/conflict_dialog.js"></script>
@@ -307,6 +308,10 @@
 
     <div class="dialog-header">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
+      <paper-button id="cancel-selection-button">
+        <core-icon icon="arrow-back" style="width:16px; height:16px"></core-icon>
+        <span i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
+      </paper-button>
       <div id="files-selected-label"></div>
       <div class="spacer"></div>
       <button id="tasks" class="combobutton" menu="#tasks-menu"

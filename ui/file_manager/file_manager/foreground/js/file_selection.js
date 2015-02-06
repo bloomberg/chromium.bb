@@ -236,29 +236,6 @@ FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
   if (this.selection !== selection)
     return;
 
-  // Update the label "x files selected." on the header.
-  // TODO(fukino): Make presenter class which listen to the FileSelection's
-  // events and update the UI components accordingly.
-  if (selection.totalCount === 0) {
-    this.fileManager_.ui.filesSelectedLabel.textContent = '';
-    this.fileManager_.ui.filesSelectedLabel.hidden = true;
-  } else {
-    var text;
-    if (selection.directoryCount == 0)
-      text = strf('MANY_FILES_SELECTED', selection.fileCount);
-    else if (selection.fileCount == 0)
-      text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
-    else
-      text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
-    this.fileManager_.ui.filesSelectedLabel.textContent = text;
-    this.fileManager_.ui.filesSelectedLabel.hidden = false;
-  }
-
-  // Hide search box if one or more items are selected.
-  // TODO(fukino): Make presenter class which listen to the FileSelection's
-  // events and update the UI components accordingly.
-  this.fileManager_.ui.searchBox.setHidden(selection.totalCount !== 0);
-
   // Sync the commands availability.
   if (this.fileManager_.commandHandler)
     this.fileManager_.commandHandler.updateAvailability();

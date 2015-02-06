@@ -445,6 +445,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
     Share
   </message>
+  <message name="IDS_FILE_BROWSER_CANCEL_SELECTION_BUTTON_LABEL" desc="Label for button that unselects all selected items.">
+    Cancel selection
+  </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_BUTTON_LABEL" desc="Label for button that initiates media backup to the cloud.">
     Import <ph name="FILE_COUNT">$1<ex>5</ex></ph> files to Google Drive
   </message>

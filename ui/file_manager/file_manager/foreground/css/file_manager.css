@@ -266,13 +266,18 @@ div.splitter {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
-  background: rgb(27, 168, 243);
+  background: rgba(27, 168, 243, 1.0);
   color: white;
   display: flex;
   flex: none;
   flex-direction: row;
   height: 48px;
   margin: 0;
+  transition: background 220ms ease;
+}
+
+body.selecting .dialog-header {
+  background: rgba(27, 168, 243, 0.9);
 }
 
 .dialog-header > .spacer {
@@ -309,7 +314,7 @@ div.splitter {
   display: none !important;
 }
 
-.dialog-header .icon-button > core-icon {
+.dialog-header core-icon {
   height: 16px;
   width: 16px;
 }
@@ -339,16 +344,43 @@ div.splitter {
 }
 
 #files-selected-label {
+  display: none;
   /* TODO(fukino): Move dynamically with the navigation area's separator. */
   left: 252px;
   position: absolute;
   top: 18px;
 }
 
+body.selecting #files-selected-label {
+  display: block;
+}
+
+#cancel-selection-button {
+  text-transform: none;
+  display: none
+}
+
+#cancel-selection-button > core-icon {
+  -webkit-margin-end: 6px;
+}
+
+body.selecting #cancel-selection-button {
+  display: inline-block;
+}
+
+/* Search button */
+body.selecting #search-button {
+  display: none;
+}
+
 /* Search box */
 #search-box {
   display: flex;
   flex: none;
+}
+
+body.selecting #search-box {
+  display: none;
 }
 
 #search-box input {
@@ -488,6 +520,10 @@ div.splitter {
   line-height: 20px;
   overflow: hidden;
   padding-top: 1px;
+}
+
+body.selecting .breadcrumbs {
+  display: none;
 }
 
 .breadcrumbs > [collapsed]::before {
@@ -729,10 +765,7 @@ body[type='full-page'] .detail-name .detail-icon {
   box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.3);
 }
 
-.thumbnail-grid .thumbnail-frame .checkmark {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/thumbnail_checked.png) 1x,
-      url(../images/files/ui/2x/thumbnail_checked.png) 2x);
+.thumbnail-grid .checkmark {
   height: 34px;
   left: 9px;
   opacity: 0;
@@ -742,7 +775,17 @@ body[type='full-page'] .detail-name .detail-icon {
   width: 34px;
 }
 
-.thumbnail-grid .thumbnail-item[selected] .thumbnail-frame .checkmark {
+body.selecting .thumbnail-grid .checkmark {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/thumbnail_unchecked.png) 1x,
+      url(../images/files/ui/2x/thumbnail_unchecked.png) 2x);
+  opacity: 1;
+}
+
+body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/thumbnail_checked.png) 1x,
+      url(../images/files/ui/2x/thumbnail_checked.png) 2x);
   opacity: 1;
 }
 

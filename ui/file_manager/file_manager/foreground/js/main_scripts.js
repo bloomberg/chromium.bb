@@ -116,6 +116,7 @@
 //<include src="share_client.js">
 //<include src="spinner_controller.js">
 //<include src="task_controller.js">
+//<include src="toolbar_controller.js">
 //<include src="thumbnail_loader.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">

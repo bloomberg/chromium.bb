@@ -189,6 +189,10 @@ FileGrid.decorateThumbnail = function(
 
   var checkmark = li.ownerDocument.createElement('div');
   checkmark.className = 'checkmark';
+  checkmark.addEventListener(
+      'mouseup', util.repeatMouseEventWithCtrlKey.bind(null, li));
+  checkmark.addEventListener(
+      'mousedown', util.repeatMouseEventWithCtrlKey.bind(null, li));
   frame.appendChild(checkmark);
 
   var bottom = li.ownerDocument.createElement('div');

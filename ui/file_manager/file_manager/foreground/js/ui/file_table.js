@@ -478,6 +478,10 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
   if (FileType.isImage(entry) || FileType.isVideo(entry))
     icon.appendChild(this.renderThumbnail_(entry));
   icon.appendChild(this.renderCheckmark_());
+  icon.addEventListener(
+      'mouseup', util.repeatMouseEventWithCtrlKey.bind(null, label));
+  icon.addEventListener(
+      'mousedown', util.repeatMouseEventWithCtrlKey.bind(null, label));
   label.appendChild(icon);
 
   label.entry = entry;

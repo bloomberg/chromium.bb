@@ -188,6 +188,13 @@ function FileManager() {
   this.gearMenuController_ = null;
 
   /**
+   * Toolbar controller.
+   * @type {ToolbarController}
+   * @private
+   */
+  this.toolbarController_ = null;
+
+  /**
    * App state controller.
    * @type {AppStateController}
    * @private
@@ -426,6 +433,11 @@ FileManager.prototype = /** @struct */ {
         this.ui_.gearMenu,
         this.directoryModel_,
         this.commandHandler);
+    this.toolbarController_ = new ToolbarController(
+        this.ui_.cancelSelectionButton,
+        this.ui_.filesSelectedLabel,
+        this.selectionHandler_,
+        this.directoryModel_.getFileListSelection());
 
     importer.importEnabled().then(
         function(enabled) {

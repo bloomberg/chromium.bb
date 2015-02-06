@@ -85,7 +85,7 @@ DirectoryModel.prototype.getFileList = function() {
 };
 
 /**
- * @return {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel} Selection
+ * @return {!cr.ui.ListSelectionModel|!cr.ui.ListSingleSelectionModel} Selection
  * in the fileList.
  */
 DirectoryModel.prototype.getFileListSelection = function() {
