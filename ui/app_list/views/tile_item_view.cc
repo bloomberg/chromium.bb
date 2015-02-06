@@ -55,6 +55,7 @@ void TileItemView::SetSelected(bool selected) {
 
   selected_ = selected;
   UpdateBackgroundColor();
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void TileItemView::SetParentBackgroundColor(SkColor color) {
@@ -68,6 +69,7 @@ void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
 
 void TileItemView::SetTitle(const base::string16& title) {
   title_->SetText(title);
+  SetAccessibleName(title);
 }
 
 void TileItemView::StateChanged() {
