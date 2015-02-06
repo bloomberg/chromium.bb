@@ -161,12 +161,16 @@ class FileStream::Context {
                              DWORD bytes_read,
                              DWORD error) override;
 
+  // Invokes the user callback.
+  void InvokeUserCallback();
+
   // The ReadFile call on Windows can execute synchonously at times.
   // http://support.microsoft.com/kb/156932. This ends up blocking the calling
   // thread which is undesirable. To avoid this we execute the ReadFile call
   // on a worker thread.
-  // The |context| parameter is a weak pointer instance passed to the worker
-  // pool.
+  // The |context| parameter is a pointer to the current Context instance. It
+  // is safe to pass this as is to the pool as the Context instance should
+  // remain valid until the pending Read operation completes.
   // The |file| parameter is the handle to the file being read.
   // The |buf| parameter is the buffer where we want the ReadFile to read the
   // data into.
@@ -176,7 +180,7 @@ class FileStream::Context {
   // The |origin_thread_loop| is a MessageLoopProxy instance used to post tasks
   // back to the originating thread.
   static void ReadAsync(
-      const base::WeakPtr<FileStream::Context>& context,
+      FileStream::Context* context,
       HANDLE file,
       scoped_refptr<net::IOBuffer> buf,
       int buf_len,
@@ -185,9 +189,11 @@ class FileStream::Context {
 
   // This callback executes on the main calling thread. It informs the caller
   // about the result of the ReadFile call.
+  // The |bytes_read| contains the number of bytes read from the file, if
+  // ReadFile succeeds.
   // The |os_error| parameter contains the value of the last error returned by
   // the ReadFile API.
-  void ReadAsyncResult(DWORD os_error);
+  void ReadAsyncResult(DWORD bytes_read, DWORD os_error);
 
 #elif defined(OS_POSIX)
   // ReadFileImpl() is a simple wrapper around read() that handles EINTR
@@ -209,8 +215,18 @@ class FileStream::Context {
   base::MessageLoopForIO::IOContext io_context_;
   CompletionCallback callback_;
   scoped_refptr<IOBuffer> in_flight_buf_;
-  // WeakPtrFactory for posting tasks back to |this|.
-  base::WeakPtrFactory<Context> weak_ptr_factory_;
+  // This flag is set to true when we receive a Read request which is queued to
+  // the thread pool.
+  bool async_read_initiated_;
+  // This flag is set to true when we receive a notification ReadAsyncResult()
+  // on the calling thread which indicates that the asynchronous Read
+  // operation is complete.
+  bool async_read_completed_;
+  // This flag is set to true when we receive an IO completion notification for
+  // an asynchonously initiated Read operaton. OnIOComplete().
+  bool io_complete_for_read_received_;
+  // Tracks the result of the IO completion operation. Set in OnIOComplete.
+  int result_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Context);

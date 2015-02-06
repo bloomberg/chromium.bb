@@ -77,12 +77,6 @@ void FileStream::Context::Orphan() {
 
   orphaned_ = true;
 
-#if defined(OS_WIN)
-  // Clean up weak pointers here to ensure that they are destroyed on the
-  // same thread where they were created.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-#endif
-
   if (!async_in_progress_) {
     CloseAndDelete();
   } else if (file_.IsValid()) {
@@ -221,7 +215,10 @@ void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
 }
 
 void FileStream::Context::CloseAndDelete() {
-  DCHECK(!async_in_progress_);
+  // TODO(ananta)
+  // Replace this CHECK with a DCHECK once we figure out the root cause of
+  // http://crbug.com/455066
+  CHECK(!async_in_progress_);
 
   if (file_.IsValid()) {
     bool posted = task_runner_.get()->PostTask(
