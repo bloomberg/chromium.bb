@@ -4,25 +4,41 @@
 
 package org.chromium.net;
 
-import org.chromium.base.JNINamespace;
+import java.lang.reflect.Constructor;
+
 
 /**
- * Controls UMA histograms.
+ * Controls UMA histograms in native library.
  */
-@JNINamespace("cronet")
-public final class HistogramManager {
-    public HistogramManager() {
-        nativeEnsureInitialized();
-    }
+public abstract class HistogramManager {
+    private static final String CRONET_HISTOGRAM_MANAGER =
+            "org.chromium.net.CronetHistogramManager";
 
     /**
      * Get histogram deltas serialized as protobuf.
      */
-    public byte[] getHistogramDeltas() {
-        return nativeGetHistogramDeltas();
+    public abstract byte[] getHistogramDeltas();
+
+    /**
+     * Creates Histogram Manager if native library is loaded, returns null if not.
+     */
+    public static HistogramManager createHistogramManager() {
+        HistogramManager histogramManager = null;
+        try {
+            Class<? extends HistogramManager> histogramManagerClass =
+                    HistogramManager.class.getClassLoader()
+                            .loadClass(CRONET_HISTOGRAM_MANAGER)
+                            .asSubclass(HistogramManager.class);
+            Constructor<? extends HistogramManager> constructor =
+                    histogramManagerClass.getConstructor();
+            histogramManager = constructor.newInstance();
+        } catch (ClassNotFoundException e) {
+            // Leave as null.
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Cannot instantiate: " + CRONET_HISTOGRAM_MANAGER,
+                    e);
+        }
+        return histogramManager;
     }
-
-    private native byte[] nativeGetHistogramDeltas();
-
-    private native void nativeEnsureInitialized();
 }

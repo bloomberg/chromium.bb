@@ -8,9 +8,9 @@
 #include "base/at_exit.h"
 #include "components/cronet/android/chromium_url_request.h"
 #include "components/cronet/android/chromium_url_request_context.h"
+#include "components/cronet/android/cronet_histogram_manager.h"
 #include "components/cronet/android/cronet_url_request.h"
 #include "components/cronet/android/cronet_url_request_context.h"
-#include "components/cronet/android/histogram_manager.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
 #include "url/url_util.h"
@@ -24,11 +24,11 @@ namespace {
 
 const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"BaseAndroid", base::android::RegisterJni},
-    {"ChromiumUrlRequest", cronet::ChromiumUrlRequestRegisterJni},
-    {"ChromiumUrlRequestContext", cronet::ChromiumUrlRequestContextRegisterJni},
-    {"CronetUrlRequest", cronet::CronetUrlRequestRegisterJni},
-    {"CronetUrlRequestContext", cronet::CronetUrlRequestContextRegisterJni},
-    {"HistogramManager", cronet::HistogramManagerRegisterJni},
+    {"ChromiumUrlRequest", ChromiumUrlRequestRegisterJni},
+    {"ChromiumUrlRequestContext", ChromiumUrlRequestContextRegisterJni},
+    {"CronetHistogramManager", CronetHistogramManagerRegisterJni},
+    {"CronetUrlRequest", CronetUrlRequestRegisterJni},
+    {"CronetUrlRequestContext", CronetUrlRequestContextRegisterJni},
     {"NetAndroid", net::android::RegisterJni},
     {"UrlAndroid", url::android::RegisterJni},
 };

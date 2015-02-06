@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/histogram_manager.h"
+#include "components/cronet/android/cronet_histogram_manager.h"
 
 #include <string>
 #include <vector>
@@ -11,12 +11,12 @@
 #include "base/metrics/statistics_recorder.h"
 #include "components/metrics/histogram_manager.h"
 
-#include "jni/HistogramManager_jni.h"
+#include "jni/CronetHistogramManager_jni.h"
 
 namespace cronet {
 
 // Explicitly register static JNI functions.
-bool HistogramManagerRegisterJni(JNIEnv* env) {
+bool CronetHistogramManagerRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

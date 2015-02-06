@@ -74,8 +74,6 @@ public class CronetTestActivity extends Activity {
             return;
         }
 
-        mHistogramManager = new HistogramManager();
-
         String skipInitString = getCommandLineArg(SKIP_FACTORY_INIT_KEY);
         if (skipInitString != null) {
             return;
@@ -120,6 +118,8 @@ public class CronetTestActivity extends Activity {
 
         mUrlRequestContext = UrlRequestContext.createContext(
                 getApplicationContext(), config);
+
+        mHistogramManager = HistogramManager.createHistogramManager();
 
         return HttpUrlRequestFactory.createFactory(getApplicationContext(),
                                                    config);
