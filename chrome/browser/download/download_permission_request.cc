@@ -28,8 +28,11 @@ base::string16 DownloadPermissionRequest::GetMessageTextFragment() const {
 }
 
 bool DownloadPermissionRequest::HasUserGesture() const {
-  // TODO(gbillock): user gesture for multiple downloads is difficult to
-  // propagate, and the normal thing is that it is background.
+  // TODO(felt): Right now, the user gesture is not being used so this value
+  // does not matter. The user gesture-related code either needs to be
+  // deprecated, or clients (like DownloadPermissionRequest) with their own
+  // user intent policies need to be able to disable/control the bubble request
+  // visibility & coalescing logic. See crbug.com/446607.
   return false;
 }
 

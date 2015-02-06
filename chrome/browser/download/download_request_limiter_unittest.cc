@@ -5,10 +5,13 @@
 #include "chrome/browser/download/download_request_limiter.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
+#include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -67,9 +70,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
     PermissionBubbleManager::CreateForWebContents(web_contents());
     view_.reset(new FakePermissionBubbleView(this));
-    PermissionBubbleManager* manager =
-      PermissionBubbleManager::FromWebContents(web_contents());
-    manager->SetView(view_.get());
+    PermissionBubbleManager::FromWebContents(web_contents())->
+        SetView(view_.get());
 
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -181,6 +183,13 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         setting);
   }
 
+  void BubbleManagerDocumentLoadCompleted(bool bubbles_enabled) {
+    if (!bubbles_enabled)
+      return;
+    PermissionBubbleManager::FromWebContents(web_contents())->
+        DocumentOnLoadCompletedInMainFrame();
+  }
+
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
   // The action that FakeCreate() should take.
@@ -219,8 +228,42 @@ void FakePermissionBubbleView::Show(
   }
 }
 
-TEST_F(DownloadRequestLimiterTest,
+class DownloadRequestLimiterParamTests
+    : public DownloadRequestLimiterTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  DownloadRequestLimiterParamTests() {}
+  ~DownloadRequestLimiterParamTests() override {}
+
+  void SetUp() override {
+    DownloadRequestLimiterTest::SetUp();
+#if !defined(OS_ANDROID)
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnablePermissionsBubbles);
+      EXPECT_TRUE(PermissionBubbleManager::Enabled());
+    } else {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisablePermissionsBubbles);
+    }
+#endif
+  }
+
+  void BubbleManagerDocumentLoadCompleted() {
+#if defined(OS_ANDROID)
+    DownloadRequestLimiterTest::BubbleManagerDocumentLoadCompleted(false);
+#else
+    DownloadRequestLimiterTest::BubbleManagerDocumentLoadCompleted(GetParam());
+#endif
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiterParamTests);
+};
+
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_Allow) {
+  BubbleManagerDocumentLoadCompleted();
+
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
@@ -250,9 +293,10 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_ResetOnNavigation) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
+  BubbleManagerDocumentLoadCompleted();
 
   // Do two downloads, allowing the second so that we end up with allow all.
   CanDownload();
@@ -269,6 +313,7 @@ TEST_F(DownloadRequestLimiterTest,
   // Navigate to a new URL with the same host, which shouldn't reset the allow
   // all state.
   NavigateAndCommit(GURL("http://foo.com/bar2"));
+  BubbleManagerDocumentLoadCompleted();
   CanDownload();
   ExpectAndResetCounts(1, 0, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
@@ -282,6 +327,7 @@ TEST_F(DownloadRequestLimiterTest,
 
   // Navigate to a completely different host, which should reset the state.
   NavigateAndCommit(GURL("http://fooey.com"));
+  BubbleManagerDocumentLoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
@@ -300,15 +346,17 @@ TEST_F(DownloadRequestLimiterTest,
   // Navigate to a new URL with the same host, which shouldn't reset the allow
   // all state.
   NavigateAndCommit(GURL("http://fooey.com/bar2"));
+  BubbleManagerDocumentLoadCompleted();
   CanDownload();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_ResetOnUserGesture) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
+  BubbleManagerDocumentLoadCompleted();
 
   // Do one download, which should change to prompt before download.
   CanDownload();
@@ -346,9 +394,10 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_ResetOnReload) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
+  BubbleManagerDocumentLoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
@@ -394,7 +443,7 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_RawWebContents) {
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
 
@@ -433,9 +482,10 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
+TEST_P(DownloadRequestLimiterParamTests,
        DownloadRequestLimiter_SetHostContentSetting) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
+  BubbleManagerDocumentLoadCompleted();
   SetHostContentSetting(web_contents(), CONTENT_SETTING_ALLOW);
 
   CanDownload();
@@ -460,3 +510,7 @@ TEST_F(DownloadRequestLimiterTest,
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
+
+INSTANTIATE_TEST_CASE_P(DownloadRequestLimiterTestsWithAndWithoutBubbles,
+                        DownloadRequestLimiterParamTests,
+                        ::testing::Values(false, true));
