@@ -22,22 +22,17 @@ void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, con
     executor->run();
 }
 
-void SuspendableScriptExecutor::resume()
-{
-    executeAndDestroySelf();
-}
-
 void SuspendableScriptExecutor::contextDestroyed()
 {
     // this method can only be called if the script was not called in run()
     // and context remained suspend (method resume has never called)
-    ActiveDOMObject::contextDestroyed();
+    SuspendableTimer::contextDestroyed();
     m_callback->completed(Vector<v8::Local<v8::Value>>());
     deref();
 }
 
 SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
-    : ActiveDOMObject(frame->document())
+    : SuspendableTimer(frame->document())
     , m_frame(frame)
     , m_worldID(worldID)
     , m_sources(sources)
@@ -51,13 +46,21 @@ SuspendableScriptExecutor::~SuspendableScriptExecutor()
 {
 }
 
+void SuspendableScriptExecutor::fired()
+{
+    executeAndDestroySelf();
+}
+
 void SuspendableScriptExecutor::run()
 {
-    suspendIfNeeded();
     ExecutionContext* context = executionContext();
     ASSERT(context);
-    if (context && !context->activeDOMObjectsAreSuspended())
+    if (!context->activeDOMObjectsAreSuspended()) {
         executeAndDestroySelf();
+        return;
+    }
+    startOneShot(0, FROM_HERE);
+    suspendIfNeeded();
 }
 
 void SuspendableScriptExecutor::executeAndDestroySelf()
@@ -86,7 +89,7 @@ void SuspendableScriptExecutor::trace(Visitor* visitor)
     visitor->trace(m_frame);
     visitor->trace(m_sources);
 #endif
-    ActiveDOMObject::trace(visitor);
+    SuspendableTimer::trace(visitor);
 }
 
 } // namespace blink
