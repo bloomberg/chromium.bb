@@ -40,7 +40,7 @@ void DeleteLocalRef(JNIEnv* env, jobject obj) {
 
 class ScopedJavaRefTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     g_local_refs = 0;
     g_global_refs = 0;
     JNIEnv* env = AttachCurrentThread();
@@ -55,7 +55,7 @@ class ScopedJavaRefTest : public testing::Test {
     hooked_functions.DeleteLocalRef = &DeleteLocalRef;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     JNIEnv* env = AttachCurrentThread();
     env->functions = g_previous_functions;
   }

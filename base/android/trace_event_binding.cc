@@ -57,11 +57,11 @@ class TraceEventDataConverter {
 
 class TraceEnabledObserver : public debug::TraceLog::EnabledStateObserver {
   public:
-    virtual void OnTraceLogEnabled() override {
+   void OnTraceLogEnabled() override {
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::Java_TraceEvent_setEnabled(env, true);
     }
-    virtual void OnTraceLogDisabled() override {
+    void OnTraceLogDisabled() override {
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::Java_TraceEvent_setEnabled(env, false);
     }

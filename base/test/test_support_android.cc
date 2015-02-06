@@ -72,14 +72,14 @@ class Waitable {
 
 // The MessagePumpForUI implementation for test purpose.
 class MessagePumpForUIStub : public base::MessagePumpForUI {
-  virtual ~MessagePumpForUIStub() {}
+  ~MessagePumpForUIStub() override {}
 
-  virtual void Start(base::MessagePump::Delegate* delegate) override {
+  void Start(base::MessagePump::Delegate* delegate) override {
     NOTREACHED() << "The Start() method shouldn't be called in test, using"
         " Run() method should be used.";
   }
 
-  virtual void Run(base::MessagePump::Delegate* delegate) override {
+  void Run(base::MessagePump::Delegate* delegate) override {
     // The following was based on message_pump_glib.cc, except we're using a
     // WaitableEvent since there are no native message loop to use.
     RunState state(delegate, g_state ? g_state->run_depth + 1 : 1);
@@ -119,16 +119,11 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
     g_state = previous_state;
   }
 
-  virtual void Quit() override {
-    Waitable::GetInstance()->Quit();
-  }
+  void Quit() override { Waitable::GetInstance()->Quit(); }
 
-  virtual void ScheduleWork() override {
-    Waitable::GetInstance()->Signal();
-  }
+  void ScheduleWork() override { Waitable::GetInstance()->Signal(); }
 
-  virtual void ScheduleDelayedWork(
-      const base::TimeTicks& delayed_work_time) override {
+  void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override {
     Waitable::GetInstance()->Signal();
   }
 };

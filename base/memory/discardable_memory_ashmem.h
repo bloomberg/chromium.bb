@@ -25,20 +25,20 @@ class DiscardableMemoryAshmem
                                    DiscardableMemoryAshmemAllocator* allocator,
                                    DiscardableMemoryManager* manager);
 
-  virtual ~DiscardableMemoryAshmem();
+  ~DiscardableMemoryAshmem() override;
 
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() override;
-  virtual void Unlock() override;
-  virtual void* Memory() const override;
+  DiscardableMemoryLockStatus Lock() override;
+  void Unlock() override;
+  void* Memory() const override;
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() override;
-  virtual void ReleaseLock() override;
-  virtual void Purge() override;
-  virtual bool IsMemoryResident() const override;
+  bool AllocateAndAcquireLock() override;
+  void ReleaseLock() override;
+  void Purge() override;
+  bool IsMemoryResident() const override;
 
  private:
   const size_t bytes_;
