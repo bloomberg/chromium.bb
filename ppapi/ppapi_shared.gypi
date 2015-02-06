@@ -280,6 +280,8 @@
           'thunk/ppb_video_decoder_thunk.cc',
           'thunk/ppb_video_destination_private_api.h',
           'thunk/ppb_video_destination_private_thunk.cc',
+          'thunk/ppb_video_encoder_api.h',
+          'thunk/ppb_video_encoder_thunk.cc',
           'thunk/ppb_video_frame_api.h',
           'thunk/ppb_video_frame_thunk.cc',
           'thunk/ppb_video_source_private_api.h',

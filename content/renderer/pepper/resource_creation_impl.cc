@@ -338,6 +338,10 @@ PP_Resource ResourceCreationImpl::CreateVideoDestination(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateVideoEncoder(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateVideoSource(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }

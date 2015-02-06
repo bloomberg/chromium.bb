@@ -71,6 +71,7 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_video_decoder.h"
+#include "ppapi/c/ppb_video_encoder.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"

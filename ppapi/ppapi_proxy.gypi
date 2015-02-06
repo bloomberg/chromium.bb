@@ -234,6 +234,8 @@
           'proxy/video_decoder_resource.h',
           'proxy/video_destination_resource.cc',
           'proxy/video_destination_resource.h',
+          'proxy/video_encoder_resource.cc',
+          'proxy/video_encoder_resource.h',
           'proxy/video_frame_resource.cc',
           'proxy/video_frame_resource.h',
           'proxy/video_source_resource.cc',

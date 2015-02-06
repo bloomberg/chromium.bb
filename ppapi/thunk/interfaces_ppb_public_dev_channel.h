@@ -14,6 +14,7 @@ PROXIED_IFACE(PPB_FILEMAPPING_INTERFACE_0_1, PPB_FileMapping_0_1)
 PROXIED_IFACE(PPB_MESSAGING_INTERFACE_1_1_DEPRECATED,
               PPB_Messaging_1_1_Deprecated)
 PROXIED_IFACE(PPB_VIDEODECODER_INTERFACE_0_1, PPB_VideoDecoder_0_1)
+PROXIED_IFACE(PPB_VIDEOENCODER_INTERFACE_0_1, PPB_VideoEncoder_0_1)
 
 // Note, PPB_TraceEvent is special. We don't want to actually make it stable,
 // but we want developers to be able to leverage it when running Chrome Dev or

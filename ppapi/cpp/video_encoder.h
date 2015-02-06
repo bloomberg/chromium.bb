@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/video_frame.h"
@@ -74,7 +73,7 @@ class VideoEncoder : public Resource {
   ///
   /// @param[in] input_format The <code>PP_VideoFrame_Format</code> of the
   /// frames which will be encoded.
-  /// @param[in] input_visible_size A <code>PP_Size</code> specifying the
+  /// @param[in] input_visible_size A <code>Size</code> specifying the
   /// dimensions of the visible part of the input frames.
   /// @param[in] output_profile A <code>PP_VideoProfile</code> specifying the
   /// codec profile of the encoded output stream.
@@ -88,7 +87,7 @@ class VideoEncoder : public Resource {
   /// requested codec profile is not supported.
   /// Returns PP_ERROR_NOMEMORY if frame and bitstream buffers can't be created.
   int32_t Initialize(const PP_VideoFrame_Format& input_format,
-                     const PP_Size& input_visible_size,
+                     const Size& input_visible_size,
                      const PP_VideoProfile& output_profile,
                      const uint32_t initial_bitrate,
                      PP_HardwareAcceleration acceleration,
@@ -108,10 +107,11 @@ class VideoEncoder : public Resource {
   /// have hardware alignment requirements that make this different from
   /// |input_visible_size|, as requested in the call to Initialize().
   ///
-  /// @param[in] coded_size A <code>PP_Size</code> to hold the coded size.
+  /// @param[in] coded_size A <code>Size</code> to hold the coded size.
+  ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
   /// Returns PP_ERROR_FAILED if Initialize() has not successfully completed.
-  int32_t GetFrameCodedSize(PP_Size* coded_size);
+  int32_t GetFrameCodedSize(Size* coded_size);
 
   /// Gets a blank video frame which can be filled with video data and passed
   /// to the encoder.
@@ -132,6 +132,7 @@ class VideoEncoder : public Resource {
   /// by other resources should wait for completion before reusing them.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
+  /// Returns PP_ERROR_FAILED if Initialize() has not successfully completed.
   int32_t Encode(const VideoFrame& video_frame,
                  bool force_keyframe,
                  const CompletionCallback& cc);
@@ -146,6 +147,9 @@ class VideoEncoder : public Resource {
   /// bitstream buffers from the encoder.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
+  /// Returns PP_ERROR_FAILED if Initialize() has not successfully completed.
+  /// Returns PP_ERROR_INPROGRESS if a prior call to GetBitstreamBuffer() has
+  /// not completed.
   int32_t GetBitstreamBuffer(
       const CompletionCallbackWithOutput<PP_BitstreamBuffer>& cc);
 

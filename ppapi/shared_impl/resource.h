@@ -83,6 +83,7 @@
   F(PPB_VideoDecoder_API)               \
   F(PPB_VideoDecoder_Dev_API)           \
   F(PPB_VideoDestination_Private_API)   \
+  F(PPB_VideoEncoder_API)               \
   F(PPB_VideoFrame_API)                 \
   F(PPB_VideoLayer_API)                 \
   F(PPB_VideoSource_Private_API)        \

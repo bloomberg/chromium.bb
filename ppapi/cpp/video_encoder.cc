@@ -45,15 +45,16 @@ int32_t VideoEncoder::GetSupportedProfiles(const CompletionCallbackWithOutput<
 }
 
 int32_t VideoEncoder::Initialize(const PP_VideoFrame_Format& input_format,
-                                 const PP_Size& input_visible_size,
+                                 const Size& input_visible_size,
                                  const PP_VideoProfile& output_profile,
                                  const uint32_t initial_bitrate,
                                  PP_HardwareAcceleration acceleration,
                                  const CompletionCallback& cc) {
   if (has_interface<PPB_VideoEncoder_0_1>()) {
     return get_interface<PPB_VideoEncoder_0_1>()->Initialize(
-        pp_resource(), input_format, &input_visible_size, output_profile,
-        initial_bitrate, acceleration, cc.pp_completion_callback());
+        pp_resource(), input_format, &input_visible_size.pp_size(),
+        output_profile, initial_bitrate, acceleration,
+        cc.pp_completion_callback());
   }
   return cc.MayForce(PP_ERROR_NOINTERFACE);
 }
@@ -66,10 +67,10 @@ int32_t VideoEncoder::GetFramesRequired() {
   return PP_ERROR_NOINTERFACE;
 }
 
-int32_t VideoEncoder::GetFrameCodedSize(PP_Size* coded_size) {
+int32_t VideoEncoder::GetFrameCodedSize(Size* coded_size) {
   if (has_interface<PPB_VideoEncoder_0_1>()) {
     return get_interface<PPB_VideoEncoder_0_1>()->GetFrameCodedSize(
-        pp_resource(), coded_size);
+        pp_resource(), &coded_size->pp_size());
   }
   return PP_ERROR_NOINTERFACE;
 }

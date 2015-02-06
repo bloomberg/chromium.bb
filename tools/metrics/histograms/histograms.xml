@@ -54311,6 +54311,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1681523535" label="PPB_TCPSocket;1.2"/>
   <int value="1703245231" label="PPB_NetworkList;1.0"/>
   <int value="1721408268" label="PPB_URLLoader;1.0"/>
+  <int value="1735606779" label="PPB_VideoEncoder;0.1"/>
   <int value="1753813390" label="PPB_Flash_Clipboard;4.0"/>
   <int value="1773992510" label="PPB_PDF;1"/>
   <int value="1775059283" label="PPB_Flash_FontFile;0.1"/>
