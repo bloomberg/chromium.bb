@@ -367,8 +367,11 @@ class Storage(object):
   def cpu_thread_pool(self):
     """ThreadPool for CPU-bound tasks like zipping."""
     if self._cpu_thread_pool is None:
-      self._cpu_thread_pool = threading_utils.ThreadPool(
-          2, max(threading_utils.num_processors(), 2), 0, 'zip')
+      threads = max(threading_utils.num_processors(), 2)
+      if sys.maxsize <= 2L**32:
+        # On 32 bits userland, do not try to use more than 16 threads.
+        threads = min(threads, 16)
+      self._cpu_thread_pool = threading_utils.ThreadPool(2, threads, 0, 'zip')
     return self._cpu_thread_pool
 
   @property
