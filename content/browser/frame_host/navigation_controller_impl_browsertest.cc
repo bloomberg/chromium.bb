@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -88,6 +89,57 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             controller.GetLastCommittedEntry()->GetURL());
 }
 
+namespace {
+
+int RendererHistoryLength(Shell* shell) {
+  int value = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      shell->web_contents(),
+      "domAutomationController.send(history.length)",
+      &value));
+  return value;
+}
+
+// Similar to the ones from content_browser_test_utils.
+bool NavigateToURLAndReplace(Shell* shell, const GURL& url) {
+  WebContents* web_contents = shell->web_contents();
+  WaitForLoadStop(web_contents);
+  TestNavigationObserver same_tab_observer(web_contents, 1);
+  NavigationController::LoadURLParams params(url);
+  params.should_replace_current_entry = true;
+  web_contents->GetController().LoadURLWithParams(params);
+  web_contents->Focus();
+  same_tab_observer.Wait();
+  if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL))
+    return false;
+  return web_contents->GetLastCommittedURL() == url;
+}
+
+}  // namespace
+
+// When loading a new page to replace an old page in the history list, make sure
+// that the browser and renderer agree, and that both get it right.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CorrectLengthWithCurrentItemReplacement) {
+  NavigationController& controller =
+      shell()->web_contents()->GetController();
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+
+  EXPECT_TRUE(NavigateToURLAndReplace(shell(), GURL("data:text/html,page2")));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+
+  // Note that there's no way to access the renderer's notion of the history
+  // offset via JavaScript. Checking just the history length, though, is enough;
+  // if the replacement failed, there would be a new history entry and thus an
+  // incorrect length.
+}
+
+namespace {
+
 struct FrameNavigateParamsCapturer : public WebContentsObserver {
  public:
   explicit FrameNavigateParamsCapturer(FrameTreeNode* node)
@@ -134,6 +186,8 @@ struct FrameNavigateParamsCapturer : public WebContentsObserver {
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
+
+}  // namespace
 
 // Verify that the distinction between manual and auto subframes is properly set
 // for subframe navigations. TODO(avi): It's rather bogus that the same info is
