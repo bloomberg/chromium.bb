@@ -287,8 +287,11 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     TRACE_EVENT0("blink", "StyleSheetContents::parseAuthorStyleSheet");
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
 
+    bool quirksMode = isQuirksModeBehavior(m_parserContext.mode());
+
+    bool enforceMIMEType = !quirksMode;
     bool hasValidMIMEType = false;
-    String sheetText = cachedStyleSheet->sheetText(&hasValidMIMEType);
+    String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
 
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
     CSSParser::parseSheet(context, this, sheetText, TextPosition::minimumPosition(), 0, true);
