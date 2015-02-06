@@ -156,6 +156,17 @@ ResourceProvider::ResourceId CreateResource(
       mailbox, release_callback.Pass());
 }
 
+SolidColorDrawQuad* CreateSolidColorQuadAt(
+    const SharedQuadState* shared_quad_state,
+    SkColor color,
+    RenderPass* render_pass,
+    const gfx::Rect& rect) {
+  SolidColorDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  quad->SetNew(shared_quad_state, rect, rect, color, false);
+  return quad;
+}
+
 TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                                        const SharedQuadState* shared_quad_state,
                                        RenderPass* render_pass,
@@ -590,6 +601,94 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
   overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(2U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 0.f;
+  CreateSolidColorQuadAt(shared_state, SK_ColorBLACK, pass.get(),
+                         kOverlayBottomRightRect);
+  shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 1.f;
+  CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
+                        kOverlayBottomRightRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  RenderPassList original_pass_list;
+  RenderPass::CopyAll(pass_list, &original_pass_list);
+
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  EXPECT_EQ(1U, pass_list.size());
+  EXPECT_EQ(2U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateSolidColorQuadAt(pass->shared_quad_state_list.back(),
+                         SK_ColorTRANSPARENT, pass.get(),
+                         kOverlayBottomRightRect);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayBottomRightRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  RenderPassList original_pass_list;
+  RenderPass::CopyAll(pass_list, &original_pass_list);
+
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  EXPECT_EQ(1U, pass_list.size());
+  EXPECT_EQ(2U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, RejectOpaqueColorOnTop) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 0.5f;
+  CreateSolidColorQuadAt(shared_state, SK_ColorBLACK, pass.get(),
+                         kOverlayBottomRightRect);
+  shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 1.f;
+  CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
+                        kOverlayBottomRightRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  RenderPassList original_pass_list;
+  RenderPass::CopyAll(pass_list, &original_pass_list);
+
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  EXPECT_EQ(1U, pass_list.size());
+  EXPECT_EQ(0U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, RejectTransparentColorOnTopWithoutBlending) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  CreateSolidColorQuadAt(shared_state, SK_ColorTRANSPARENT, pass.get(),
+                         kOverlayBottomRightRect)->opaque_rect =
+      kOverlayBottomRightRect;
+  CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
+                        kOverlayBottomRightRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  RenderPassList original_pass_list;
+  RenderPass::CopyAll(pass_list, &original_pass_list);
+
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  EXPECT_EQ(1U, pass_list.size());
+  EXPECT_EQ(0U, candidate_list.size());
 }
 
 TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {

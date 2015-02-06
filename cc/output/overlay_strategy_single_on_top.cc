@@ -119,6 +119,20 @@ bool OverlayStrategySingleOnTop::GetCandidateQuadInfo(
   return true;
 }
 
+bool OverlayStrategySingleOnTop::IsInvisibleQuad(const DrawQuad* draw_quad) {
+  if (draw_quad->material == DrawQuad::SOLID_COLOR) {
+    const SolidColorDrawQuad* solid_quad =
+        SolidColorDrawQuad::MaterialCast(draw_quad);
+    SkColor color = solid_quad->color;
+    float opacity = solid_quad->opacity();
+    float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+    // Ignore transparent solid color quads.
+    return solid_quad->ShouldDrawWithBlending() &&
+           alpha < std::numeric_limits<float>::epsilon();
+  }
+  return false;
+}
+
 bool OverlayStrategySingleOnTop::Attempt(
     RenderPassList* render_passes_in_draw_order,
     OverlayCandidateList* candidate_list) {
@@ -143,7 +157,7 @@ bool OverlayStrategySingleOnTop::Attempt(
            ++overlap_iter) {
         gfx::RectF overlap_rect = overlap_iter->rect;
         overlap_iter->quadTransform().TransformRect(&overlap_rect);
-        if (rect.Intersects(overlap_rect)) {
+        if (rect.Intersects(overlap_rect) && !IsInvisibleQuad(*overlap_iter)) {
           intersects = true;
           break;
         }

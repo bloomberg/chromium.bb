@@ -29,6 +29,10 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
   bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
                             OverlayCandidate* quad_info);
 
+  // Returns true if |draw_quad| will not block quads underneath from becoming
+  // an overlay.
+  bool IsInvisibleQuad(const DrawQuad* draw_quad);
+
   bool GetTextureQuadInfo(const TextureDrawQuad& quad,
                           OverlayCandidate* quad_info);
   bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
