@@ -6,6 +6,7 @@
 #define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -15,6 +16,7 @@ class BrowserContext;
 
 namespace wifi_sync {
 
+class WifiConfigDelegate;
 class WifiCredentialSyncableService;
 
 // Singleton that owns all WifiCredentialSyncableServices and
@@ -29,11 +31,14 @@ class WifiCredentialSyncableServiceFactory
   static WifiCredentialSyncableService* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
-  // Returns the singleton instance. As this class has no public
-  // instance methods, this function is not generally useful for
-  // external callers. This function is public only so that the
-  // Singleton template can reference it.
+  // Returns the singleton instance.
   static WifiCredentialSyncableServiceFactory* GetInstance();
+
+#if defined(OS_CHROMEOS)
+  void set_ignore_login_state_for_test(bool new_value) {
+    ignore_login_state_for_test_ = new_value;
+  }
+#endif
 
  private:
   friend struct DefaultSingletonTraits<WifiCredentialSyncableServiceFactory>;
@@ -44,6 +49,22 @@ class WifiCredentialSyncableServiceFactory
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+
+#if defined(OS_CHROMEOS)
+  // Returns a scoped pointer to a WifiConfigDelegate, which can be
+  // used to configure the ChromeOS Wi-Fi settings associated with
+  // |context|.
+  scoped_ptr<WifiConfigDelegate> BuildWifiConfigDelegateChromeOs(
+      content::BrowserContext* context) const;
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Whether or not we should use LoginState to associate a new
+  // SyncableService with a Shill profile. Should be set to true in
+  // sync integration tests, where it is not possible to control
+  // LoginState at the time SyncableServices are constructed.
+  bool ignore_login_state_for_test_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WifiCredentialSyncableServiceFactory);
 };
