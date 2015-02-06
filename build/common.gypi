@@ -187,12 +187,6 @@
     'target_conditions': [
       ['win_target=="x64"', {
         'target_arch': 'x64',
-        'defines!': [
-          'NACL_BUILD_SUBARCH=32',
-        ],
-        'defines': [
-          'NACL_BUILD_SUBARCH=64',
-        ],
         'configurations': {
           'Common_Base': {
             'msvs_target_platform': 'x64',
@@ -201,31 +195,6 @@
       }],
     ],
     'conditions': [
-      # TODO(gregoryd): split target and build subarchs
-      ['target_arch=="ia32"', {
-        'defines': [
-          'NACL_BUILD_SUBARCH=32',
-          'NACL_BUILD_ARCH=x86',
-        ],
-      }],
-      ['target_arch=="x64"', {
-        'defines': [
-          'NACL_BUILD_SUBARCH=64',
-          'NACL_BUILD_ARCH=x86',
-        ],
-      }],
-      ['target_arch=="arm"', {
-        'defines': [
-          'NACL_BUILD_ARCH=arm',
-          'NACL_BUILD_SUBARCH=32',
-        ],
-      }],
-      ['target_arch=="mipsel"', {
-        'defines': [
-          'NACL_BUILD_ARCH=mips',
-          'NACL_BUILD_SUBARCH=32',
-        ],
-      }],
       ['linux2==1', {
         'defines': ['LINUX2=1'],
       }],
