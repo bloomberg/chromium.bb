@@ -48,22 +48,14 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
 
  private:
   typedef std::list<QuicAckNotifier*> AckNotifierList;
-  typedef base::hash_set<QuicAckNotifier*> AckNotifierSet;
   // TODO(ianswett): Further improvement may come from changing this to a deque.
   typedef base::hash_map<QuicPacketSequenceNumber, AckNotifierList>
       AckNotifierMap;
 
-  // On every ACK frame received by the connection, all the ack_notifiers_ will
-  // be told which sequeunce numbers were ACKed.
-  // Once a given QuicAckNotifier has seen all the sequence numbers it is
-  // interested in, it will be deleted, and removed from this set.
-  // Owns the AckNotifiers in this set.
-  AckNotifierSet ack_notifiers_;
-
   // Maps from sequence number to the AckNotifiers which are registered
   // for that sequence number. On receipt of an ACK for a given sequence
   // number, call OnAck for all mapped AckNotifiers.
-  // Does not own the AckNotifiers.
+  // When the last reference is removed from the map, the notifier is deleted.
   AckNotifierMap ack_notifier_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AckNotifierManager);

@@ -22,9 +22,9 @@ class QuicAckNotifierTest : public ::testing::Test {
     delegate_ = new MockAckNotifierDelegate;
     notifier_.reset(new QuicAckNotifier(delegate_));
 
-    notifier_->AddSequenceNumber(26, 100);
-    notifier_->AddSequenceNumber(99, 20);
-    notifier_->AddSequenceNumber(1234, 3);
+    notifier_->OnSerializedPacket();
+    notifier_->OnSerializedPacket();
+    notifier_->OnSerializedPacket();
   }
 
   MockAckNotifierDelegate* delegate_;
@@ -35,17 +35,26 @@ class QuicAckNotifierTest : public ::testing::Test {
 // Should trigger callback when we receive acks for all the registered seqnums.
 TEST_F(QuicAckNotifierTest, TriggerCallback) {
   EXPECT_CALL(*delegate_, OnAckNotification(0, 0, zero_)).Times(1);
-  EXPECT_FALSE(notifier_->OnAck(26, zero_));
-  EXPECT_FALSE(notifier_->OnAck(99, zero_));
-  EXPECT_TRUE(notifier_->OnAck(1234, zero_));
+  EXPECT_FALSE(notifier_->OnAck(zero_));
+  EXPECT_FALSE(notifier_->OnAck(zero_));
+  EXPECT_TRUE(notifier_->OnAck(zero_));
 }
 
 // Should not trigger callback if we never provide all the seqnums.
 TEST_F(QuicAckNotifierTest, DoesNotTrigger) {
   // Should not trigger callback as not all packets have been seen.
   EXPECT_CALL(*delegate_, OnAckNotification(_, _, _)).Times(0);
-  EXPECT_FALSE(notifier_->OnAck(26, zero_));
-  EXPECT_FALSE(notifier_->OnAck(99, zero_));
+  EXPECT_FALSE(notifier_->OnAck(zero_));
+  EXPECT_FALSE(notifier_->OnAck(zero_));
+}
+
+// Should not trigger callback if we abandon all three packets.
+TEST_F(QuicAckNotifierTest, AbandonDoesNotTrigger) {
+  // Should not trigger callback as not all packets have been seen.
+  EXPECT_CALL(*delegate_, OnAckNotification(_, _, _)).Times(0);
+  EXPECT_FALSE(notifier_->OnPacketAbandoned());
+  EXPECT_FALSE(notifier_->OnPacketAbandoned());
+  EXPECT_TRUE(notifier_->OnPacketAbandoned());
 }
 
 // Should trigger even after updating sequence numbers and receiving ACKs for
@@ -56,9 +65,9 @@ TEST_F(QuicAckNotifierTest, UpdateSeqNums) {
   notifier_->OnPacketRetransmitted(3);
 
   EXPECT_CALL(*delegate_, OnAckNotification(2, 20 + 3, _)).Times(1);
-  EXPECT_FALSE(notifier_->OnAck(26, zero_));    // original
-  EXPECT_FALSE(notifier_->OnAck(3000, zero_));  // updated
-  EXPECT_TRUE(notifier_->OnAck(3001, zero_));   // updated
+  EXPECT_FALSE(notifier_->OnAck(zero_));  // original
+  EXPECT_FALSE(notifier_->OnAck(zero_));  // updated
+  EXPECT_TRUE(notifier_->OnAck(zero_));   // updated
 }
 
 // Make sure the delegate is called with the delta time from the last ACK.
@@ -68,9 +77,9 @@ TEST_F(QuicAckNotifierTest, DeltaTime) {
   const QuicTime::Delta third_delta = QuicTime::Delta::FromSeconds(10);
 
   EXPECT_CALL(*delegate_, OnAckNotification(0, 0, third_delta)).Times(1);
-  EXPECT_FALSE(notifier_->OnAck(26, first_delta));
-  EXPECT_FALSE(notifier_->OnAck(99, second_delta));
-  EXPECT_TRUE(notifier_->OnAck(1234, third_delta));
+  EXPECT_FALSE(notifier_->OnAck(first_delta));
+  EXPECT_FALSE(notifier_->OnAck(second_delta));
+  EXPECT_TRUE(notifier_->OnAck(third_delta));
 }
 
 }  // namespace

@@ -20,7 +20,13 @@ namespace net {
 AckNotifierManager::AckNotifierManager() {}
 
 AckNotifierManager::~AckNotifierManager() {
-  STLDeleteElements(&ack_notifiers_);
+  for (const auto& pair : ack_notifier_map_) {
+    for (QuicAckNotifier* notifier : pair.second) {
+      if (notifier->OnPacketAbandoned()) {
+        delete notifier;
+      }
+    }
+  }
 }
 
 void AckNotifierManager::OnPacketAcked(QuicPacketSequenceNumber sequence_number,
@@ -34,14 +40,10 @@ void AckNotifierManager::OnPacketAcked(QuicPacketSequenceNumber sequence_number,
 
   // One or more AckNotifiers are registered as interested in this sequence
   // number. Iterate through them and call OnAck on each.
-  AckNotifierList& ack_notifier_list = map_it->second;
-  for (QuicAckNotifier* ack_notifier : ack_notifier_list) {
-    ack_notifier->OnAck(sequence_number, delta_largest_observed);
-
-    // If this has resulted in an empty AckNotifer, erase it.
-    if (ack_notifier->IsEmpty()) {
+  for (QuicAckNotifier* ack_notifier : map_it->second) {
+    if (ack_notifier->OnAck(delta_largest_observed)) {
+      // If this has resulted in an empty AckNotifer, erase it.
       delete ack_notifier;
-      ack_notifiers_.erase(ack_notifier);
     }
   }
 
@@ -75,21 +77,19 @@ void AckNotifierManager::OnPacketRetransmitted(
 void AckNotifierManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   if (FLAGS_quic_attach_ack_notifiers_to_packets) {
-    // Inform each attached AckNotifier of the packet's sequence number.
+    // Inform each attached AckNotifier of the packet's serialization.
+    AckNotifierList& notifier_list =
+        ack_notifier_map_[serialized_packet.sequence_number];
     for (QuicAckNotifier* notifier : serialized_packet.notifiers) {
       if (notifier == nullptr) {
         LOG(DFATAL) << "AckNotifier should not be nullptr.";
         continue;
       }
-      notifier->AddSequenceNumber(serialized_packet.sequence_number,
-                                  serialized_packet.packet->length());
+      notifier->OnSerializedPacket();
 
       // Update the mapping in the other direction, from sequence number to
       // AckNotifier.
-      ack_notifier_map_[serialized_packet.sequence_number].push_back(notifier);
-
-      // Take ownership of the AckNotifier.
-      ack_notifiers_.insert(notifier);
+      notifier_list.push_back(notifier);
     }
   } else {
     // AckNotifiers can only be attached to retransmittable frames.
@@ -107,15 +107,11 @@ void AckNotifierManager::OnSerializedPacket(
       }
 
       QuicAckNotifier* notifier = quic_frame.stream_frame->notifier;
-      notifier->AddSequenceNumber(serialized_packet.sequence_number,
-                                  serialized_packet.packet->length());
+      notifier->OnSerializedPacket();
 
       // Update the mapping in the other direction, from sequence number to
       // AckNotifier.
       ack_notifier_map_[serialized_packet.sequence_number].push_back(notifier);
-
-      // Take ownership of the AckNotifier.
-      ack_notifiers_.insert(notifier);
     }
   }
 }

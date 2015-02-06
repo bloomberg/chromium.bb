@@ -40,22 +40,22 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   explicit QuicAckNotifier(DelegateInterface* delegate);
   virtual ~QuicAckNotifier();
 
-  // Register a sequence number that this AckNotifier should be interested in.
-  void AddSequenceNumber(const QuicPacketSequenceNumber& sequence_number,
-                         int packet_payload_size);
+  // Register a serialized packet the notifier should track.
+  void OnSerializedPacket();
 
-  // Called by the QuicConnection on receipt of new ACK frame, with the sequence
-  // number referenced by the ACK frame.
-  // Deletes the matching sequence number from the stored set of sequence
-  // numbers. If this set is now empty, call the stored delegate's
-  // OnAckNotification method.
+  // Called on receipt of new ACK frame for an unacked packet.
+  // Decrements the number of unacked packets and if there are none left, calls
+  // the stored delegate's OnAckNotification method.
   //
-  // Returns true if the provided sequence_number caused the delegate to be
-  // called, false otherwise.
-  bool OnAck(QuicPacketSequenceNumber sequence_number,
-             QuicTime::Delta delta_largest_observed);
+  // Returns true if the delegate was called, false otherwise.
+  bool OnAck(QuicTime::Delta delta_largest_observed);
 
-  bool IsEmpty() { return unacked_packets_ == 0; }
+  // Called when we've given up waiting for a sequence number, typically when
+  // the connection is torn down.
+  // Returns true if there are no more unacked packets being tracked.
+  bool OnPacketAbandoned();
+
+  bool HasUnackedPackets() const { return unacked_packets_ > 0; }
 
   // If a packet is retransmitted by the connection, it will be sent with a
   // different sequence number.

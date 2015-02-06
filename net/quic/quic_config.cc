@@ -594,9 +594,8 @@ bool QuicConfig::negotiated() const {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
   // ProcessServerHello.
-  return congestion_feedback_.negotiated() &&
-      idle_connection_state_lifetime_seconds_.negotiated() &&
-      max_streams_per_connection_.negotiated();
+  return idle_connection_state_lifetime_seconds_.negotiated() &&
+         max_streams_per_connection_.negotiated();
 }
 
 void QuicConfig::SetDefaults() {
@@ -646,10 +645,6 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   DCHECK(error_details != nullptr);
 
   QuicErrorCode error = QUIC_NO_ERROR;
-  if (error == QUIC_NO_ERROR) {
-    error = congestion_feedback_.ProcessPeerHello(
-        peer_hello,  hello_type, error_details);
-  }
   if (error == QUIC_NO_ERROR) {
     error = idle_connection_state_lifetime_seconds_.ProcessPeerHello(
         peer_hello, hello_type, error_details);

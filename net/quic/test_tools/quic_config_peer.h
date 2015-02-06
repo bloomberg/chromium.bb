@@ -30,8 +30,6 @@ class QuicConfigPeer {
 
   static void SetReceivedBytesForConnectionId(QuicConfig* config, uint32 bytes);
 
-  static QuicTag CongestionFeedback(QuicConfig* config);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };
