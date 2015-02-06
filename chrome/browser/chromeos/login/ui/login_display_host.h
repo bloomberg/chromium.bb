@@ -89,9 +89,11 @@ class LoginDisplayHost {
   // Initiates authentication network prewarming.
   virtual void PrewarmAuthentication() = 0;
 
-  // Starts app launch splash screen.
+  // Starts app launch splash screen. If |is_auto_launch| is true, the app is
+  // being auto-launched with no delay.
   virtual void StartAppLaunch(const std::string& app_id,
-                              bool diagnostic_mode) = 0;
+                              bool diagnostic_mode,
+                              bool is_auto_launch) = 0;
 
   // Starts the demo app launch.
   virtual void StartDemoAppLaunch() = 0;

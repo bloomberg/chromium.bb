@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -126,7 +127,7 @@ AppLaunchController::~AppLaunchController() {
   app_launch_splash_screen_actor_->SetDelegate(NULL);
 }
 
-void AppLaunchController::StartAppLaunch() {
+void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   DVLOG(1) << "Starting kiosk mode...";
 
   webui_visible_ = host_->GetWebUILoginView()->webui_visible();
@@ -143,6 +144,20 @@ void AppLaunchController::StartAppLaunch() {
   KioskAppManager::App app;
   CHECK(KioskAppManager::Get());
   CHECK(KioskAppManager::Get()->GetApp(app_id_, &app));
+
+  if (is_auto_launch) {
+    int delay;
+    if (!CrosSettings::Get()->GetInteger(
+            kAccountsPrefDeviceLocalAccountAutoLoginDelay, &delay)) {
+      delay = 0;
+    }
+    DCHECK_EQ(0, delay) << "Kiosks do not support non-zero auto-login delays";
+
+    // If we are launching a kiosk app with zero delay, mark it appropriately.
+    if (delay == 0)
+      KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(app_id_);
+  }
+
   kiosk_profile_loader_.reset(
       new KioskProfileLoader(app.user_id, false, this));
   kiosk_profile_loader_->Start();

@@ -83,7 +83,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void StartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
-  void StartAppLaunch(const std::string& app_id, bool diagnostic_mode) override;
+  void StartAppLaunch(
+      const std::string& app_id,
+      bool diagnostic_mode,
+      bool auto_launch) override;
   void StartDemoAppLaunch() override;
 
   // Creates WizardController instance.

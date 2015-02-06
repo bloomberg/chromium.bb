@@ -926,7 +926,8 @@ void ExistingUserController::LoginAsPublicSession(
 
 void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
                                              bool diagnostic_mode) {
-  host_->StartAppLaunch(app_id, diagnostic_mode);
+  const bool auto_start = false;
+  host_->StartAppLaunch(app_id, diagnostic_mode, auto_start);
 }
 
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {

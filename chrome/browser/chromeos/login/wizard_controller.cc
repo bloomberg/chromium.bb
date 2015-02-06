@@ -1111,7 +1111,9 @@ void WizardController::AutoLaunchKioskApp() {
     return;
   }
 
-  host_->StartAppLaunch(app_id, false /* diagnostic_mode */);
+  const bool diagnostic_mode = false;
+  const bool auto_launch = true;
+  host_->StartAppLaunch(app_id, diagnostic_mode, auto_launch);
 }
 
 // static

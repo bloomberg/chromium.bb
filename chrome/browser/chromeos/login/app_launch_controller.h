@@ -45,7 +45,9 @@ class AppLaunchController
 
   ~AppLaunchController() override;
 
-  void StartAppLaunch();
+  // Starts launching an app - set |auto_launch| to true if the app is being
+  // auto-launched with zero delay.
+  void StartAppLaunch(bool auto_launch);
 
   bool waiting_for_network() { return waiting_for_network_; }
   bool network_wait_timedout() { return network_wait_timedout_; }

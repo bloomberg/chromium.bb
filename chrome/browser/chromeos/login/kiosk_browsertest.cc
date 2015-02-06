@@ -807,6 +807,9 @@ class KioskTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
   WaitForAppLaunchSuccess();
+  KioskAppManager::App app;
+  ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
+  EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
@@ -1082,6 +1085,10 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   EXPECT_TRUE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 
   WaitForAppLaunchSuccess();
+
+  KioskAppManager::App app;
+  ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
+  EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
@@ -1256,10 +1263,10 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
 
   // Trigger the code that handles auto-launch on enterprise devices. This would
   // normally be called from ShowLoginWizard(), which runs so early that it is
-  // not to inject an auto-launch policy before it runs.
+  // not possible to inject an auto-launch policy before it runs.
   LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
   ASSERT_TRUE(login_display_host);
-  login_display_host->StartAppLaunch(test_app_id(), false);
+  login_display_host->StartAppLaunch(test_app_id(), false, true);
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());

@@ -59,7 +59,9 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Struct to hold app info returned from GetApps() call.
   struct App {
-    App(const KioskAppData& data, bool is_extension_pending);
+    App(const KioskAppData& data,
+        bool is_extension_pending,
+        bool was_auto_launched_with_zero_delay);
     App();
     ~App();
 
@@ -68,6 +70,7 @@ class KioskAppManager : public KioskAppDataDelegate,
     std::string name;
     gfx::ImageSkia icon;
     bool is_loading;
+    bool was_auto_launched_with_zero_delay;
   };
   typedef std::vector<App> Apps;
 
@@ -122,6 +125,9 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Returns true if owner/policy enabled auto launch.
   bool IsAutoLaunchEnabled() const;
+
+  // Returns true if current app was auto launched with zero delay.
+  bool IsCurrentAppAutoLaunchedWithZeroDelay() const;
 
   // Enable auto launch setter.
   void SetEnableAutoLaunch(bool value);
@@ -195,6 +201,12 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   bool external_loader_created() const { return external_loader_created_; }
 
+  // Notifies the KioskAppManager that a given app was auto-launched
+  // automatically with no delay on startup. Certain privacy-sensitive
+  // kiosk-mode behavior (such as network reporting) is only enabled for
+  // kiosk apps that are immediately auto-launched on startup.
+  void SetAppWasAutoLaunchedWithZeroDelay(const std::string& app_id);
+
  private:
   friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;
   friend struct base::DefaultDeleter<KioskAppManager>;
@@ -261,6 +273,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   bool ownership_established_;
   ScopedVector<KioskAppData> apps_;
   std::string auto_launch_app_id_;
+  std::string currently_auto_launched_with_zero_delay_app_;
   ObserverList<KioskAppManagerObserver, true> observers_;
 
   scoped_ptr<CrosSettings::ObserverSubscription>

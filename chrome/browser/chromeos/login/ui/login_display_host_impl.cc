@@ -667,7 +667,8 @@ void LoginDisplayHostImpl::StartDemoAppLaunch() {
 }
 
 void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
-                                          bool diagnostic_mode) {
+                                          bool diagnostic_mode,
+                                          bool auto_launch) {
   VLOG(1) << "Login WebUI >> start app launch.";
   SetStatusAreaVisible(false);
 
@@ -678,7 +679,8 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
           &LoginDisplayHostImpl::StartAppLaunch,
           pointer_factory_.GetWeakPtr(),
           app_id,
-          diagnostic_mode));
+          diagnostic_mode,
+          auto_launch));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -708,7 +710,7 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
   app_launch_controller_.reset(new AppLaunchController(
       app_id, diagnostic_mode, this, GetOobeUI()));
 
-  app_launch_controller_->StartAppLaunch();
+  app_launch_controller_->StartAppLaunch(auto_launch);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1189,8 +1191,11 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         KioskAppManager::Get()->GetAutoLaunchApp();
+    const bool diagnostic_mode = false;
+    const bool auto_launch = true;
     display_host->StartAppLaunch(auto_launch_app_id,
-                                 false /* diagnostic_mode */);
+                                 diagnostic_mode,
+                                 auto_launch);
     return;
   }
 

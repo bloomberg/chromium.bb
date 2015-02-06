@@ -361,10 +361,25 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   manager()->SetAutoLaunchApp("fake_app_1");
   EXPECT_EQ("fake_app_1", manager()->GetAutoLaunchApp());
 
+  // Make sure that if an app was auto launched with zero delay, it is reflected
+  // in the app data.
+  KioskAppManager::App app;
+  manager()->GetApp("fake_app_1", &app);
+  EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
+
+  manager()->SetAppWasAutoLaunchedWithZeroDelay("fake_app_1");
+  manager()->GetApp("fake_app_1", &app);
+  EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
+
   // Clear the auto launch app.
   manager()->SetAutoLaunchApp("");
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
+
+  // App should still report it was auto launched with zero delay, even though
+  // it is no longer set to auto launch in the future.
+  manager()->GetApp("fake_app_1", &app);
+  EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
 
   // Set another auto launch app.
   manager()->SetAutoLaunchApp("fake_app_2");
