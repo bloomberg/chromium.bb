@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 759x16
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 759x18
           text run at (0,0) width 667: "This tests that in a standalone media document with audio content, the media element repaints correctly "
           text run at (666,0) width 93: "while playing."
-      RenderBlock (anonymous) at (0,32) size 784x334
+      RenderBlock (anonymous) at (0,34) size 784x334
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,40) size 384x334
+layer at (8,42) size 384x334
   RenderPartObject {IFRAME} at (0,0) size 384x334 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 380x330
       RenderView at (0,0) size 380x330

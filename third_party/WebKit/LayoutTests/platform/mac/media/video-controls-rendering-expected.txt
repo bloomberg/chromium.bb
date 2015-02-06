@@ -1,26 +1,26 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 760
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 762
   RenderView at (0,0) size 800x600
 layer at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x600
     RenderBody {BODY} at (8,8) size 769x584
-      RenderBlock {P} at (0,0) size 769x16
-        RenderText {#text} at (0,0) size 157x16
+      RenderBlock {P} at (0,0) size 769x18
+        RenderText {#text} at (0,0) size 157x18
           text run at (0,0) width 157: "Test controls placement."
-      RenderBlock {DIV} at (0,32) size 769x240
+      RenderBlock {DIV} at (0,34) size 769x240
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,272) size 769x240
+      RenderBlock {DIV} at (0,274) size 769x240
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,512) size 769x0
-layer at (8,40) size 320x240
+      RenderBlock {DIV} at (0,514) size 769x0
+layer at (8,42) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
-layer at (8,280) size 320x240
+layer at (8,282) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
-layer at (8,40) size 320x240
+layer at (8,42) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,40) size 320x205
+layer at (8,42) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,245) size 310x30
+layer at (13,247) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 91.08x8
@@ -37,12 +37,12 @@ layer at (13,245) size 310x30
         RenderBlock {DIV} at (1,-8) size 42.91x24
           RenderBlock {DIV} at (11.91,0) size 24x24
     RenderButton {INPUT} at (271,0) size 30x30
-layer at (8,280) size 320x240
+layer at (8,282) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,280) size 320x205
+layer at (8,282) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,485) size 310x30
+layer at (13,487) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 91.08x8
@@ -59,14 +59,14 @@ layer at (13,485) size 310x30
         RenderBlock {DIV} at (1,-8) size 42.91x24
           RenderBlock {DIV} at (11.91,0) size 24x24
     RenderButton {INPUT} at (271,0) size 30x30
-layer at (8,520) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderVideo {VIDEO} at (8,520) size 320x240
-layer at (8,520) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,522) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+  RenderVideo {VIDEO} at (8,522) size 320x240
+layer at (8,522) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,520) size 320x205 backgroundClip at (8,520) size 320x80 clip at (8,520) size 320x80 outlineClip at (0,0) size 785x600
+layer at (8,522) size 320x205 backgroundClip at (8,522) size 320x78 clip at (8,522) size 320x78 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,725) size 310x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (13,727) size 310x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 91.08x8

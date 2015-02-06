@@ -1,26 +1,26 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 776
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 778
   RenderView at (0,0) size 800x600
-layer at (0,0) size 785x544
-  RenderBlock {HTML} at (0,0) size 785x544
-    RenderBody {BODY} at (8,16) size 769x520
-      RenderBlock {P} at (0,0) size 769x16
-        RenderText {#text} at (0,0) size 259x16
+layer at (0,0) size 785x546
+  RenderBlock {HTML} at (0,0) size 785x546
+    RenderBody {BODY} at (8,16) size 769x522
+      RenderBlock {P} at (0,0) size 769x18
+        RenderText {#text} at (0,0) size 259x18
           text run at (0,0) width 259: "Test controls rendering with cast button."
-      RenderBlock {DIV} at (0,32) size 769x244
+      RenderBlock {DIV} at (0,34) size 769x244
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,276) size 769x244
+      RenderBlock {DIV} at (0,278) size 769x244
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,520) size 769x0
-layer at (8,48) size 320x240
+      RenderBlock {DIV} at (0,522) size 769x0
+layer at (8,50) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
-layer at (8,292) size 320x240
+layer at (8,294) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
-layer at (8,48) size 320x240
+layer at (8,50) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,48) size 320x205
+layer at (8,50) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,253) size 310x30
+layer at (13,255) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 72.98x8
@@ -38,12 +38,12 @@ layer at (13,253) size 310x30
           RenderBlock {DIV} at (-4,0) size 24x24
     RenderButton {INPUT} at (237,0) size 30x30
     RenderButton {INPUT} at (271,0) size 30x30
-layer at (8,292) size 320x240
+layer at (8,294) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,292) size 320x205
+layer at (8,294) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,497) size 310x30
+layer at (13,499) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 72.98x8
@@ -61,14 +61,14 @@ layer at (13,497) size 310x30
           RenderBlock {DIV} at (-4,0) size 24x24
     RenderButton {INPUT} at (237,0) size 30x30
     RenderButton {INPUT} at (271,0) size 30x30
-layer at (8,536) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderVideo {VIDEO} at (8,536) size 320x240
-layer at (8,536) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,538) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+  RenderVideo {VIDEO} at (8,538) size 320x240
+layer at (8,538) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,536) size 320x205 backgroundClip at (8,536) size 320x64 clip at (8,536) size 320x64 outlineClip at (0,0) size 785x600
+layer at (8,538) size 320x205 backgroundClip at (8,538) size 320x62 clip at (8,538) size 320x62 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,741) size 310x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (13,743) size 310x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 72.98x8

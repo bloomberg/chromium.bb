@@ -3,23 +3,23 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 279x16
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 279x18
           text run at (0,0) width 279: "The look of the controls should not change."
-      RenderBlock {DIV} at (0,32) size 784x240 [color=#0000FF]
+      RenderBlock {DIV} at (0,34) size 784x240 [color=#0000FF]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,272) size 784x240
+      RenderBlock (anonymous) at (0,274) size 784x240
         RenderText {#text} at (0,0) size 0x0
-layer at (18,40) size 320x240
+layer at (18,42) size 320x240
   RenderVideo {VIDEO} at (10,0) size 320x240
-layer at (8,280) size 320x240
+layer at (8,282) size 320x240
   RenderVideo {VIDEO} at (0,0) size 320x240
-layer at (18,40) size 320x240
+layer at (18,42) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (18,40) size 320x205
+layer at (18,42) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (23,245) size 310x30
+layer at (23,247) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 91.08x8
@@ -36,12 +36,12 @@ layer at (23,245) size 310x30
         RenderBlock {DIV} at (1,-8) size 42.91x24
           RenderBlock {DIV} at (11.91,0) size 24x24
     RenderButton {INPUT} at (271,0) size 30x30
-layer at (8,280) size 320x240
+layer at (8,282) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
-layer at (8,280) size 320x205
+layer at (8,282) size 320x205
   RenderFlexibleBox {DIV} at (0,0) size 320x205
-layer at (13,485) size 310x30
+layer at (13,487) size 310x30
   RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 91.08x8
