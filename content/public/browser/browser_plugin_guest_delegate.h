@@ -80,6 +80,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual bool Find(int request_id,
                     const base::string16& search_text,
                     const blink::WebFindOptions& options);
+  virtual bool StopFinding(StopFindAction action);
 
   // Provides the delegate with an interface with which to size the guest.
   virtual void SetGuestSizer(GuestSizer* guest_sizer) {}

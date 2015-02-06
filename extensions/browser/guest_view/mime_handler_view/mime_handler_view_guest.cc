@@ -173,6 +173,14 @@ bool MimeHandlerViewGuest::Find(int request_id,
   return false;
 }
 
+bool MimeHandlerViewGuest::StopFinding(content::StopFindAction action) {
+  if (is_full_page_plugin()) {
+    web_contents()->StopFinding(action);
+    return true;
+  }
+  return false;
+}
+
 content::WebContents* MimeHandlerViewGuest::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {

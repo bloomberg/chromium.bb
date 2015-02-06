@@ -219,6 +219,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   bool Find(int request_id,
             const base::string16& search_text,
             const blink::WebFindOptions& options);
+  bool StopFinding(StopFindAction action);
 
  private:
   class EmbedderVisibilityObserver;

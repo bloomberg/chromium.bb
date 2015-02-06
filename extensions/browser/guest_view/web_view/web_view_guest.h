@@ -169,12 +169,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   double zoom() const { return current_zoom_factor_; }
 
   // Begin or continue a find request.
-  void StartFinding(const base::string16& search_text,
-                    const blink::WebFindOptions& options,
-                    scoped_refptr<WebViewInternalFindFunction> find_function);
+  void StartFindInternal(
+      const base::string16& search_text,
+      const blink::WebFindOptions& options,
+      scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.
-  void StopFinding(content::StopFindAction);
+  void StopFindingInternal(content::StopFindAction);
 
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry. Returns true on success.

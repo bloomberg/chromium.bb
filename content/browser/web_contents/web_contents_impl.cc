@@ -2479,6 +2479,11 @@ void WebContentsImpl::Find(int request_id,
 }
 
 void WebContentsImpl::StopFinding(StopFindAction action) {
+  // See if a top level browser plugin handles the stop finding request first.
+  if (browser_plugin_embedder_ &&
+      browser_plugin_embedder_->StopFinding(action)) {
+    return;
+  }
   Send(new ViewMsg_StopFinding(GetRoutingID(), action));
 }
 

@@ -75,6 +75,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   bool Find(int request_id,
             const base::string16& search_text,
             const blink::WebFindOptions& options);
+  bool StopFinding(StopFindAction action);
 
  private:
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
@@ -92,6 +93,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
                           const base::string16& search_text,
                           const blink::WebFindOptions& options,
                           WebContents* guest);
+  static bool StopFindingInGuest(StopFindAction action, WebContents* guest);
+
   // Message handlers.
   void OnAttach(int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);

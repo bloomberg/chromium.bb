@@ -174,6 +174,12 @@ bool BrowserPluginEmbedder::Find(int request_id,
                  options));
 }
 
+bool BrowserPluginEmbedder::StopFinding(StopFindAction action) {
+  return GetBrowserPluginGuestManager()->ForEachGuest(
+      GetWebContents(),
+      base::Bind(&BrowserPluginEmbedder::StopFindingInGuest, action));
+}
+
 // static
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
@@ -193,6 +199,17 @@ bool BrowserPluginEmbedder::FindInGuest(int request_id,
                                         WebContents* guest) {
   if (static_cast<WebContentsImpl*>(guest)->GetBrowserPluginGuest()->Find(
           request_id, search_text, options)) {
+    // There can only ever currently be one browser plugin that handles find so
+    // we can break the iteration at this point.
+    return true;
+  }
+  return false;
+}
+
+bool BrowserPluginEmbedder::StopFindingInGuest(StopFindAction action,
+                                               WebContents* guest) {
+  if (static_cast<WebContentsImpl*>(guest)->GetBrowserPluginGuest()
+          ->StopFinding(action)) {
     // There can only ever currently be one browser plugin that handles find so
     // we can break the iteration at this point.
     return true;

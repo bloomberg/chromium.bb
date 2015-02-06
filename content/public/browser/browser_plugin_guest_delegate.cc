@@ -26,4 +26,8 @@ bool BrowserPluginGuestDelegate::Find(int request_id,
   return false;
 }
 
+bool BrowserPluginGuestDelegate::StopFinding(StopFindAction action) {
+  return false;
+}
+
 }  // namespace content

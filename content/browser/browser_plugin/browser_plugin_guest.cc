@@ -384,6 +384,10 @@ bool BrowserPluginGuest::Find(int request_id,
   return delegate_->Find(request_id, search_text, options);
 }
 
+bool BrowserPluginGuest::StopFinding(StopFindAction action) {
+  return delegate_->StopFinding(action);
+}
+
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
