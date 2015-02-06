@@ -44,6 +44,12 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
         return static_cast<ServiceWorkerContainerClient*>(DocumentSupplement::from(document, supplementName()));
     }
 
+    if (context->isServiceWorkerGlobalScope()) {
+        ServiceWorkerContainerClient* client = static_cast<ServiceWorkerContainerClient*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+        ASSERT(client);
+        return client;
+    }
+
     ASSERT(context->isWorkerGlobalScope());
     return static_cast<ServiceWorkerContainerClient*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }

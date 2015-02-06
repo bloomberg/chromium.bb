@@ -47,14 +47,15 @@ class WebDataSource;
 class WebServiceWorkerCacheStorage;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
+class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
 class WebString;
 
 // This interface is implemented by the client. It is supposed to be created
-// on the main thread and then passed on to the worker thread.
-// by a newly created WorkerGlobalScope. All methods of this class, except
-// for createServiceWorkerNetworkProvider() and workerContextFailedToStart(),
+// on the main thread and then passed on to the worker thread by a newly
+// created WorkerGlobalScope. Unless otherwise noted, all methods of this class
 // are called on the worker thread.
+//
 // FIXME: Split this into EmbeddedWorkerContextClient and
 // ServiceWorkerScriptContextClient when we decide to use EmbeddedWorker
 // framework for other implementation (like SharedWorker).
@@ -63,7 +64,7 @@ public:
     virtual ~WebServiceWorkerContextClient() { }
 
     // ServiceWorker specific method.
-    virtual WebServiceWorkerCacheStorage* cacheStorage() { return 0; }
+    virtual WebServiceWorkerCacheStorage* cacheStorage() { return nullptr; }
 
     // ServiceWorker specific method. Called when script accesses the
     // the |scope| attribute of the ServiceWorkerGlobalScope. Immutable per spec.
@@ -146,7 +147,12 @@ public:
     virtual void didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect) { }
 
     // Ownership of the returned object is transferred to the caller.
-    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return 0; }
+    // This is called on the main thread.
+    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return nullptr; }
+
+    // Ownership of the returned object is transferred to the caller.
+    // This is called on the main thread.
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider() { return nullptr; }
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
