@@ -82,6 +82,8 @@
 //<include src="ui/combobutton.js">
 //<include src="ui/commandbutton.js">
 //<include src="ui/file_manager_dialog_base.js">
+//<include src="metadata/metadata_cache_set.js">
+//<include src="metadata/new_metadata_provider.js">
 //
 //<include src="app_installer.js">
 //<include src="app_state_controller.js">
@@ -100,7 +102,11 @@
 //<include src="gear_menu_controller.js">
 //<include src="import_controller.js">
 //<include src="launch_param.js">
+//<include src="metadata/external_metadata_provider.js">
+//<include src="metadata/file_system_metadata.js">
+//<include src="metadata/file_system_metadata_provider.js">
 //<include src="metadata/metadata_cache.js">
+//<include src="metadata/metadata_cache_item.js">
 //<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">

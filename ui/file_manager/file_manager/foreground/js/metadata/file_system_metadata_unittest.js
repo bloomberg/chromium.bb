@@ -10,9 +10,9 @@ var entryB = {
   toURL: function() { return 'filesystem://B'; }
 };
 
-function testFileSystemMetadataModelBasic(callback) {
+function testFileSystemMetadataBasic(callback) {
   var cache = new MetadataProviderCache();
-  var model = new FileSystemMetadataModel(
+  var model = new FileSystemMetadata(
       cache,
       // Mocking FileSystemMetadataProvider.
       {

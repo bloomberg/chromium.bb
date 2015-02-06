@@ -103,6 +103,16 @@ MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
 };
 
 /**
+ * Clears the caches of entries.
+ * @param {!Array<!FileEntry>} entries
+ */
+MetadataCacheSet.prototype.clear = function(entries) {
+  for (var i = 0; i < entries.length; i++) {
+    this.items_.remove(entries[i].toURL());
+  }
+};
+
+/**
  * Creates snapshot of the cache for entries.
  * @param {!Array<!FileEntry>} entries
  */
@@ -162,6 +172,12 @@ MetadataCacheSetStorage.prototype.peek = function(url) {};
 MetadataCacheSetStorage.prototype.put = function(url, item) {};
 
 /**
+ * Removes an item from the cache.
+ * @param {string} url Entry URL.
+ */
+MetadataCacheSetStorage.prototype.remove = function(url) {};
+
+/**
  * Implementation of MetadataCacheSetStorage by using raw object.
  * @param {Object} items Map of URL and MetadataCacheItem.
  * @constructor
@@ -191,6 +207,13 @@ MetadataCacheSetStorageForObject.prototype.peek = function(url) {
  */
 MetadataCacheSetStorageForObject.prototype.put = function(url, item) {
   this.items_[url] = item;
+};
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForObject.prototype.remove = function(url) {
+  delete this.items_[url];
 };
 
 /**
@@ -227,6 +250,13 @@ MetadataCacheSetStorageForLRUCache.prototype.peek = function(url) {
  */
 MetadataCacheSetStorageForLRUCache.prototype.put = function(url, item) {
   this.cache_.put(url, item);
+};
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForLRUCache.prototype.remove = function(url) {
+  this.cache_.remove(url);
 };
 
 /**

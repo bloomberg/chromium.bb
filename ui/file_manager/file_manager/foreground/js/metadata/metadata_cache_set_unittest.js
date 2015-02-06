@@ -122,3 +122,18 @@ function testMetadataCacheSetHasFreshCache() {
 
   assertTrue(set.hasFreshCache([entryA], ['property']));
 }
+
+function testMetadataCacheSetClear() {
+  var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  set.startRequests(1, set.createRequests([entryA], ['propertyA']));
+  set.storeProperties(1, [entryA], [{propertyA: 'value'}]);
+  assertTrue(set.hasFreshCache([entryA], ['propertyA']));
+
+  set.startRequests(1, set.createRequests([entryA], ['propertyB']));
+  set.clear([entryA]);
+  // PropertyB should not be stored because it is requsted before clear.
+  set.storeProperties(1, [entryA], [{propertyB: 'value'}]);
+
+  assertFalse(set.hasFreshCache([entryA], ['propertyA']));
+  assertFalse(set.hasFreshCache([entryA], ['propertyB']));
+}

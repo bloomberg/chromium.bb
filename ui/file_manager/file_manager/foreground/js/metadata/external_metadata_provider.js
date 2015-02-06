@@ -23,14 +23,14 @@
  *   sharedWithMe: (boolean|undefined)
  * }}
  */
-var ExternalMetadata;
+var ExternalMetadataProperties;
 
 /**
  * Metadata provider for FileEntry#getMetadata.
  *
  * @param {!MetadataProviderCache} cache
  * @constructor
- * @extends {NewMetadataProvider<!ExternalMetadata>}
+ * @extends {NewMetadataProvider<!ExternalMetadataProperties>}
  * @struct
  */
 function ExternalMetadataProvider(cache) {
@@ -80,7 +80,7 @@ ExternalMetadataProvider.prototype.getImpl = function(requests) {
 /**
  * @param {!Array<!MetadataRequest>} requests
  * @param {!Array<!EntryProperties>} propertiesList
- * @return {!Array<!ExternalMetadata>}
+ * @return {!Array<!ExternalMetadataProperties>}
  */
 ExternalMetadataProvider.prototype.convertResults_ =
     function(requests, propertiesList) {

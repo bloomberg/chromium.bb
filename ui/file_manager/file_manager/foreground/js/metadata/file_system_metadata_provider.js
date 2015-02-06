@@ -5,14 +5,14 @@
 /**
  * @typedef {{modificationTime:Date, size:number}}
  */
-var FileSystemMetadata;
+var FileSystemMetadataProperties;
 
 /**
  * Metadata provider for FileEntry#getMetadata.
  *
  * @param {!MetadataProviderCache} cache
  * @constructor
- * @extends {NewMetadataProvider<!FileSystemMetadata>}
+ * @extends {NewMetadataProvider<!FileSystemMetadataProperties>}
  * @struct
  */
 function FileSystemMetadataProvider(cache) {

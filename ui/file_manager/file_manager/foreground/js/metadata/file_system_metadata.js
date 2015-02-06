@@ -10,7 +10,7 @@
  * @constructor
  * @struct
  */
-function FileSystemMetadataModel(
+function FileSystemMetadata(
     cache,
     fileSystemMetadataProvider,
     externalMetadataProvider,
@@ -44,9 +44,9 @@ function FileSystemMetadataModel(
  * Obtains metadata for entries.
  * @param {!Array<!FileEntry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Promise<!Array<!ExternalMetadata>>}
+ * @return {!Promise<!Array<!ExternalMetadataProperties>>}
  */
-FileSystemMetadataModel.prototype.get = function(entries, names) {
+FileSystemMetadata.prototype.get = function(entries, names) {
   var localEntries = [];
   var localEntryIndexes = [];
   var externalEntries = [];
@@ -85,8 +85,16 @@ FileSystemMetadataModel.prototype.get = function(entries, names) {
  * Obtains metadata cache for entries.
  * @param {!Array<!FileEntry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Array<!FileSystemMetadata>}
+ * @return {!Array<!ExternalMetadataProperties>}
  */
-FileSystemMetadataModel.prototype.getCache = function(entries, names) {
+FileSystemMetadata.prototype.getCache = function(entries, names) {
   return this.cache_.get(entries, names);
+};
+
+/**
+ * Clears old metadata for newly created entries.
+ * @param {!Array<!FileEntry>} entries
+ */
+FileSystemMetadata.prototype.notifyEntryCreated = function(entries) {
+  this.cache_.clear(entries);
 };

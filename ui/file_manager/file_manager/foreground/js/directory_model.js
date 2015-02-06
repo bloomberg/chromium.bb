@@ -16,13 +16,16 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileFilter} fileFilter Instance of FileFilter.
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
+ * @param {!FileSystemMetadata} fileSystemMetadata The metadata cache
+ *     service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function DirectoryModel(singleSelection, fileFilter, fileWatcher,
-                        metadataCache, volumeManager, fileOperationManager) {
+function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
+                        fileSystemMetadata, volumeManager,
+                        fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -46,6 +49,7 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
   this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   this.volumeManager_ = volumeManager;
   this.volumeManager_.volumeInfoList.addEventListener(
@@ -821,6 +825,7 @@ DirectoryModel.prototype.createDirectory = function(name,
     return;
   }
 
+  var dirContents = this.currentDirContents_;
   var sequence = this.changeDirectorySequence_;
 
   new Promise(entry.getDirectory.bind(
@@ -829,10 +834,10 @@ DirectoryModel.prototype.createDirectory = function(name,
       then(function(newEntry) {
         // Refresh the cache.
         this.metadataCache_.clear([newEntry], '*');
+        this.fileSystemMetadata_.notifyEntryCreated([newEntry]);
         return new Promise(function(onFulfilled, onRejected) {
-          this.metadataCache_.getOne(newEntry,
-                                     'filesystem',
-                                     onFulfilled.bind(null, newEntry));
+          dirContents.prefetchMetadata(
+              [newEntry], false, onFulfilled.bind(null, newEntry));
         }.bind(this));
       }.bind(this)).
 

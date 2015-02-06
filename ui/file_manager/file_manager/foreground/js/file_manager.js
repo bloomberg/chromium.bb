@@ -61,6 +61,17 @@ function FileManager() {
   this.metadataCache_ = null;
 
   /**
+   * @private {!MetadataProviderCache}
+   * @const
+   */
+  this.metadataProviderCache_ = new MetadataProviderCache();
+
+  /**
+   * @private {FileSystemMetadata}
+   */
+  this.fileSystemMetadata_ = null;
+
+  /**
    * File operation manager.
    * @type {FileOperationManager}
    * @private
@@ -680,7 +691,13 @@ FileManager.prototype = /** @struct */ {
          DialogType.FULL_PAGE]);
 
     // Create the metadata cache.
+    assert(this.volumeManager_);
     this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
+    this.fileSystemMetadata_ = new FileSystemMetadata(
+        this.metadataProviderCache_,
+        new FileSystemMetadataProvider(this.metadataProviderCache_),
+        new ExternalMetadataProvider(this.metadataProviderCache_),
+        this.volumeManager_);
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
@@ -824,11 +841,13 @@ FileManager.prototype = /** @struct */ {
 
     assert(this.volumeManager_);
     assert(this.fileOperationManager_);
+    assert(this.fileSystemMetadata_);
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
         this.fileWatcher_,
         this.metadataCache_,
+        this.fileSystemMetadata_,
         this.volumeManager_,
         this.fileOperationManager_);
 

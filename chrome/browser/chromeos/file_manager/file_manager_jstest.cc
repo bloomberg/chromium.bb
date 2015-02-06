@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
       "foreground/js/metadata/content_metadata_provider_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadataModel) {
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadata) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/file_system_metadata_model_unittest.html")));
+      "foreground/js/metadata/file_system_metadata_unittest.html")));
 }
