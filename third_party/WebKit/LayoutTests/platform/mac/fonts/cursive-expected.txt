@@ -1,12 +1,12 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 7163
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 7165
   RenderView at (0,0) size 800x600
-layer at (0,0) size 785x7163 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x7163
-    RenderBody {BODY} at (8,8) size 769x7139
-      RenderBlock (anonymous) at (0,0) size 769x16
-        RenderText {#text} at (0,0) size 352x16
+layer at (0,0) size 785x7165 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+  RenderBlock {HTML} at (0,0) size 785x7165
+    RenderBody {BODY} at (8,8) size 769x7141
+      RenderBlock (anonymous) at (0,0) size 769x18
+        RenderText {#text} at (0,0) size 352x18
           text run at (0,0) width 352: "This tests font choices and metrics for the cursive font."
-      RenderBlock {P} at (0,32) size 769x2375
+      RenderBlock {P} at (0,34) size 769x2375
         RenderInline {FONT} at (0,0) size 64x2375
           RenderText {#text} at (0,0) size 46x25
             text run at (0,0) width 46: "cursive"
@@ -293,7 +293,7 @@ layer at (0,0) size 785x7163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           RenderText {#text} at (0,2350) size 23x25
             text run at (0,2350) width 23: "}}}}"
           RenderBR {BR} at (22,2368) size 1x0
-      RenderBlock {P} at (0,2423) size 769x2350
+      RenderBlock {P} at (0,2425) size 769x2350
         RenderInline {FONT} at (0,0) size 64x2350
           RenderText {#text} at (0,0) size 0x0
           RenderInline {B} at (0,0) size 64x2350
@@ -580,7 +580,7 @@ layer at (0,0) size 785x7163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (0,2325) width 23: "}}}}"
             RenderBR {BR} at (22,2343) size 1x0
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,4789) size 769x2350
+      RenderBlock {P} at (0,4791) size 769x2350
         RenderInline {FONT} at (0,0) size 64x2350
           RenderText {#text} at (0,0) size 0x0
           RenderInline {I} at (0,0) size 64x2350

@@ -1,16 +1,16 @@
-layer at (0,0) size 800x600 scrollHeight 680
+layer at (0,0) size 800x600 scrollHeight 686
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x680
-    RenderBody {BODY} at (8,8) size 784x664
-      RenderBlock {P} at (0,0) size 784x48
-        RenderText {#text} at (0,0) size 771x48
+layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x686
+    RenderBody {BODY} at (8,8) size 784x670
+      RenderBlock {P} at (0,0) size 784x54
+        RenderText {#text} at (0,0) size 771x54
           text run at (0,0) width 716: "This test exercises the vertical text rendering feature of Blink's shaping code, and checks for errors in font code "
           text run at (715,0) width 29: "path"
-          text run at (0,16) width 687: "selection: Vertical text should always go through the shaper. It exercises glyph orientation difficulties with "
-          text run at (686,16) width 85: "two different"
-          text run at (0,32) width 36: "fonts."
-      RenderBlock {DIV} at (0,64) size 388x600
+          text run at (0,18) width 687: "selection: Vertical text should always go through the shaper. It exercises glyph orientation difficulties with "
+          text run at (686,18) width 85: "two different"
+          text run at (0,36) width 36: "fonts."
+      RenderBlock {DIV} at (0,70) size 388x600
         RenderBlock {DIV} at (0,0) size 194x442 [border: (1px solid #008000)]
           RenderInline {SPAN} at (0,0) size 40x173
             RenderText {#text} at (2,1) size 40x173
