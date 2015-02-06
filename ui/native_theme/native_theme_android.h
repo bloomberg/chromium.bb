@@ -14,11 +14,11 @@ class NativeThemeAndroid : public NativeThemeBase {
  public:
   static NativeThemeAndroid* instance();
 
-  virtual SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id) const override;
 
  private:
   NativeThemeAndroid();
-  virtual ~NativeThemeAndroid();
+  ~NativeThemeAndroid() override;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAndroid);
 };

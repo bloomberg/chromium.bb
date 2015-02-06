@@ -19,7 +19,7 @@ class TestResourceManagerImpl : public ResourceManagerImpl {
   explicit TestResourceManagerImpl(UIResourceProvider* provider)
       : ResourceManagerImpl(provider) {}
 
-  virtual ~TestResourceManagerImpl() {}
+  ~TestResourceManagerImpl() override {}
 
   void SetResourceAsLoaded(AndroidResourceType res_type, int res_id) {
     SkBitmap small_bitmap;
@@ -57,7 +57,7 @@ class MockUIResourceProvider : public ui::UIResourceProvider {
 
   virtual ~MockUIResourceProvider() {}
 
-  virtual cc::UIResourceId CreateUIResource(
+  cc::UIResourceId CreateUIResource(
       ui::UIResourceClientAndroid* client) override {
     if (!has_layer_tree_host_)
       return 0;
@@ -67,12 +67,12 @@ class MockUIResourceProvider : public ui::UIResourceProvider {
     return id;
   }
 
-  virtual void DeleteUIResource(cc::UIResourceId id) override {
+  void DeleteUIResource(cc::UIResourceId id) override {
     CHECK(has_layer_tree_host_);
     ui_resource_client_map_.erase(id);
   }
 
-  virtual bool SupportsETC1NonPowerOfTwo() const override { return true; }
+  bool SupportsETC1NonPowerOfTwo() const override { return true; }
 
   void LayerTreeHostCleared() {
     has_layer_tree_host_ = false;

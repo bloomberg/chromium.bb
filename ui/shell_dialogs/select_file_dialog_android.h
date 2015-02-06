@@ -31,31 +31,30 @@ class SelectFileDialogImpl : public SelectFileDialog {
   void OnFileNotSelected(JNIEnv* env, jobject java_object);
 
   // From SelectFileDialog
-  virtual bool IsRunning(gfx::NativeWindow) const override;
-  virtual void ListenerDestroyed() override;
+  bool IsRunning(gfx::NativeWindow) const override;
+  void ListenerDestroyed() override;
 
   // Called when it is time to display the file picker.
   // params is expected to be a vector<string16> with accept_types first and
   // the capture value as the last element of the vector.
-  virtual void SelectFileImpl(
-      SelectFileDialog::Type type,
-      const base::string16& title,
-      const base::FilePath& default_path,
-      const SelectFileDialog::FileTypeInfo* file_types,
-      int file_type_index,
-      const std::string& default_extension,
-      gfx::NativeWindow owning_window,
-      void* params) override;
+  void SelectFileImpl(SelectFileDialog::Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const SelectFileDialog::FileTypeInfo* file_types,
+                      int file_type_index,
+                      const std::string& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override;
 
   static bool RegisterSelectFileDialog(JNIEnv* env);
 
  protected:
-  virtual ~SelectFileDialogImpl();
+  ~SelectFileDialogImpl() override;
 
  private:
   SelectFileDialogImpl(Listener* listener,  SelectFilePolicy* policy);
 
-  virtual bool HasMultipleFileTypeChoicesImpl() override;
+  bool HasMultipleFileTypeChoicesImpl() override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

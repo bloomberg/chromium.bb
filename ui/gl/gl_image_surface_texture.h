@@ -19,23 +19,23 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
   bool Initialize(SurfaceTexture* surface_texture);
 
   // Overridden from GLImage:
-  virtual void Destroy(bool have_context) override;
-  virtual gfx::Size GetSize() override;
-  virtual bool BindTexImage(unsigned target) override;
-  virtual void ReleaseTexImage(unsigned target) override {}
-  virtual bool CopyTexImage(unsigned target) override;
-  virtual void WillUseTexImage() override {}
-  virtual void DidUseTexImage() override {}
-  virtual void WillModifyTexImage() override {}
-  virtual void DidModifyTexImage() override {}
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int z_order,
-                                    OverlayTransform transform,
-                                    const Rect& bounds_rect,
-                                    const RectF& crop_rect) override;
+  void Destroy(bool have_context) override;
+  gfx::Size GetSize() override;
+  bool BindTexImage(unsigned target) override;
+  void ReleaseTexImage(unsigned target) override {}
+  bool CopyTexImage(unsigned target) override;
+  void WillUseTexImage() override {}
+  void DidUseTexImage() override {}
+  void WillModifyTexImage() override {}
+  void DidModifyTexImage() override {}
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            OverlayTransform transform,
+                            const Rect& bounds_rect,
+                            const RectF& crop_rect) override;
 
  protected:
-  virtual ~GLImageSurfaceTexture();
+  ~GLImageSurfaceTexture() override;
 
  private:
   scoped_refptr<SurfaceTexture> surface_texture_;

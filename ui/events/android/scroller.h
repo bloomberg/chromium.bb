@@ -28,12 +28,12 @@ class EVENTS_BASE_EXPORT Scroller : public GestureCurve {
   };
 
   explicit Scroller(const Config& config);
-  virtual ~Scroller();
+  ~Scroller() override;
 
   // GestureCurve implementation.
-  virtual bool ComputeScrollOffset(base::TimeTicks time,
-                                   gfx::Vector2dF* offset,
-                                   gfx::Vector2dF* velocity) override;
+  bool ComputeScrollOffset(base::TimeTicks time,
+                           gfx::Vector2dF* offset,
+                           gfx::Vector2dF* velocity) override;
 
   // Start scrolling by providing a starting point and the distance to travel.
   // The default value of 250 milliseconds will be used for the duration.
