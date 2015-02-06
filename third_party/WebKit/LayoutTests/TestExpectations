@@ -379,6 +379,29 @@ crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManu
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 
+crbug.com/451577 [ Win ] inspector/console/console-stack-overflow.html [ Slow ]
+crbug.com/451577 [ Win ] inspector/console/set-last-eval-result.html [ Slow ]
+crbug.com/451577 [ Win ] inspector/console/console-format-es6.html [ Slow ]
+crbug.com/451577 [ Win ] inspector/console/console-log-syntax-error.html [ Slow ]
+crbug.com/451577 [ Win ] inspector/console/console-format.html [ Slow ]
+
+crbug.com/450493 [ Win ] inspector/sources/debugger/event-listener-breakpoints-xhr.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/event-listener-breakpoints.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/async-callstack-promises.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/frameworks-jquery.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/debugger-eval-on-call-frame-inside-iframe.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/live-edit.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/debugger-save-to-temp-var.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/debugger-step-into-custom-element-callbacks.html [ Slow ]
+crbug.com/450493 [ Win ] inspector/sources/debugger/debugger-step-into-document-write.html [ Slow ]
+
+crbug.com/451577 [ Win ] inspector-protocol/loading-iframe-document-node.html [ Crash Pass ]
+
+crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-in-files.html [ Failure Pass Crash ]
+crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-many-projects.html [ Failure Pass ]
+crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html [ Slow ]
+
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
