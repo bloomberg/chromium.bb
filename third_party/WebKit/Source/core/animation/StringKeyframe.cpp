@@ -109,6 +109,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
+    case CSSPropertyFlexBasis:
     case CSSPropertyFontSize:
     case CSSPropertyHeight:
     case CSSPropertyMaxHeight:
@@ -123,6 +124,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyPaddingTop:
     case CSSPropertyPerspective:
     case CSSPropertyShapeMargin:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWidth:
         range = RangeNonNegative;
         // Fall through
