@@ -874,34 +874,19 @@ bool LayerCompositor::isTrackingPaintInvalidations() const
     return m_isTrackingPaintInvalidations;
 }
 
-static bool shouldCompositeOverflowControls(FrameView* view)
-{
-    if (Page* page = view->frame().page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
-            if (scrollingCoordinator->coordinatesScrollingForFrameView(view))
-                return true;
-        }
-    }
-
-    return true;
-}
-
 bool LayerCompositor::requiresHorizontalScrollbarLayer() const
 {
-    FrameView* view = m_renderView.frameView();
-    return shouldCompositeOverflowControls(view) && view->horizontalScrollbar();
+    return m_renderView.frameView()->horizontalScrollbar();
 }
 
 bool LayerCompositor::requiresVerticalScrollbarLayer() const
 {
-    FrameView* view = m_renderView.frameView();
-    return shouldCompositeOverflowControls(view) && view->verticalScrollbar();
+    return m_renderView.frameView()->verticalScrollbar();
 }
 
 bool LayerCompositor::requiresScrollCornerLayer() const
 {
-    FrameView* view = m_renderView.frameView();
-    return shouldCompositeOverflowControls(view) && view->isScrollCornerVisible();
+    return m_renderView.frameView()->isScrollCornerVisible();
 }
 
 void LayerCompositor::updateOverflowControlsLayers()
