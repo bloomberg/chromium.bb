@@ -27,7 +27,7 @@
 #include "core/css/CSSSelector.h"
 
 #include "core/HTMLNames.h"
-#include "core/css/CSSOMUtils.h"
+#include "core/css/CSSMarkup.h"
 #include "core/css/CSSSelectorList.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"

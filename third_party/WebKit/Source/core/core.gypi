@@ -751,8 +751,6 @@
             'css/CSSMatrix.h',
             'css/CSSMediaRule.cpp',
             'css/CSSMediaRule.h',
-            'css/CSSOMUtils.cpp',
-            'css/CSSOMUtils.h',
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
             'css/CSSPathValue.cpp',

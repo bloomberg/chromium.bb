@@ -29,6 +29,7 @@
 
 #include "wtf/HexNumber.h"
 #include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -184,6 +185,67 @@ String quoteCSSStringIfNeeded(const String& string)
 String quoteCSSURLIfNeeded(const String& string)
 {
     return isCSSTokenizerURL(string) ? string : quoteCSSString(string);
+}
+
+static void serializeCharacter(UChar32 c, StringBuilder& appendTo)
+{
+    appendTo.append('\\');
+    appendTo.append(c);
+}
+
+static void serializeCharacterAsCodePoint(UChar32 c, StringBuilder& appendTo)
+{
+    appendTo.append('\\');
+    appendUnsignedAsHex(c, appendTo, Lowercase);
+    appendTo.append(' ');
+}
+
+void serializeIdentifier(const String& identifier, StringBuilder& appendTo)
+{
+    bool isFirst = true;
+    bool isSecond = false;
+    bool isFirstCharHyphen = false;
+    unsigned index = 0;
+    while (index < identifier.length()) {
+        UChar32 c = identifier.characterStartingAt(index);
+        index += U16_LENGTH(c);
+
+        if (c <= 0x1f || (0x30 <= c && c <= 0x39 && (isFirst || (isSecond && isFirstCharHyphen))))
+            serializeCharacterAsCodePoint(c, appendTo);
+        else if (c == 0x2d && isSecond && isFirstCharHyphen)
+            serializeCharacter(c, appendTo);
+        else if (0x80 <= c || c == 0x2d || c == 0x5f || (0x30 <= c && c <= 0x39) || (0x41 <= c && c <= 0x5a) || (0x61 <= c && c <= 0x7a))
+            appendTo.append(c);
+        else
+            serializeCharacter(c, appendTo);
+
+        if (isFirst) {
+            isFirst = false;
+            isSecond = true;
+            isFirstCharHyphen = (c == 0x2d);
+        } else if (isSecond) {
+            isSecond = false;
+        }
+    }
+}
+
+void serializeString(const String& string, StringBuilder& appendTo)
+{
+    appendTo.append('\"');
+
+    unsigned index = 0;
+    while (index < string.length()) {
+        UChar32 c = string.characterStartingAt(index);
+        index += U16_LENGTH(c);
+        if (c <= 0x1f)
+            serializeCharacterAsCodePoint(c, appendTo);
+        else if (c == 0x22 || c == 0x5c)
+            serializeCharacter(c, appendTo);
+        else
+            appendTo.append(c);
+    }
+
+    appendTo.append('\"');
 }
 
 } // namespace blink

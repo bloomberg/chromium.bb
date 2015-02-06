@@ -26,14 +26,17 @@
 #include "wtf/text/WTFString.h"
 
 // Helper functions for converting from CSSValues to text.
-// FIXME: This file has a similar purpose to
-// CSSOMUtils.h. Perhaps the two should be combined?
 
 namespace blink {
 
 String quoteCSSString(const String&);
 String quoteCSSStringIfNeeded(const String&);
 String quoteCSSURLIfNeeded(const String&);
+
+// Common serializing methods. See: http://dev.w3.org/csswg/cssom/#common-serializing-idioms
+void serializeIdentifier(const String& identifier, StringBuilder& appendTo);
+void serializeString(const String&, StringBuilder& appendTo);
+
 
 } // namespace blink
 
