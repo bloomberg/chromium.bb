@@ -47,11 +47,11 @@ TestMediaScanner.prototype.removeObserver = function(observer) {
 
 /** @override */
 TestMediaScanner.prototype.scan = function(entries) {
-  var result = new TestScanResult(this.fileEntries);
-  result.totalBytes = this.totalBytes;
-  result.scanDuration = this.scanDuration;
-  this.scans_.push(result);
-  return result;
+  var scan = new TestScanResult(this.fileEntries);
+  scan.totalBytes = this.totalBytes;
+  scan.scanDuration = this.scanDuration;
+  this.scans_.push(scan);
+  return scan;
 };
 
 /**
@@ -59,6 +59,19 @@ TestMediaScanner.prototype.scan = function(entries) {
  */
 TestMediaScanner.prototype.finalizeScans = function() {
   this.scans_.forEach(this.finalize.bind(this));
+};
+
+/**
+ * Notifies observers that the most recently started scan has been updated.
+ * @param {!importer.ScanResult} result
+ */
+TestMediaScanner.prototype.update = function() {
+  assertTrue(this.scans_.length > 0);
+  var scan = this.scans_[this.scans_.length - 1];
+  this.observers.forEach(
+      function(observer) {
+        observer(importer.ScanEvent.UPDATED, scan);
+      });
 };
 
 /**

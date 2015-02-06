@@ -346,16 +346,49 @@
         <core-icon icon="cloud-queue"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="view-button" class="icon-button" tabindex="12">
+      <button id="cloud-import-details-button" class="icon-button" tabindex="12"
+              style='display: none;'>
+        <core-icon icon="arrow-drop-down"></core-icon>
+        <paper-ripple fit></paper-ripple>
+      </button>
+      <button id="view-button" class="icon-button" tabindex="13">
         <core-icon icon="view-module"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="13" menu="#gear-menu"
+      <button id="gear-button" class="icon-button" tabindex="14" menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
         <core-icon icon="more-vert"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
+    </div>
+
+    <div id="cloud-import-details" class="offscreen">
+      <h1>Backup to Drive</h1>
+
+      <div id='#open-destination'>
+        <!!--
+          TODO(smckay): Setting volume-type-icon to "drive" breaks
+          functional tests because selection of the drive volume is
+          done using a query that matches this. Need to fix that.
+          See background/test_util.js:105
+        -->
+        <core-icon class="icon volume-icon" volume-type-icon="na">
+        </core-icon> My Photos
+      </div>
+
+      <div class="detail">
+        New photos: <span class="photo-count">0</span>
+      </div>
+      <div class="detail">
+        Space required: <span class="space-required">0</span>
+      </div>
+
+      <div class="media-strip">
+        <tt>// TODO(smckay)</tt>
+      </div>
+
+      <div class="import">Import!</div>
     </div>
 
     <div class="dialog-container">

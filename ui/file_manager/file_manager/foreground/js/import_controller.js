@@ -56,7 +56,7 @@ importer.ImportController =
   this.commandWidget_ = commandWidget;
 
   /** @type {!importer.ScanManager} */
-  this.scanManager_ = new importer.ScanManager(scanner);
+  this.scanManager_ = new importer.ScanManager(environment, scanner);
 
   /**
    * The active import task, if any.
@@ -82,24 +82,77 @@ importer.ImportController =
   this.environment_.addSelectionChangedListener(
       this.onSelectionChanged_.bind(this));
 
-  this.commandWidget_.addExecuteListener(
+  this.commandWidget_.addImportClickedListener(
       this.execute.bind(this));
 };
 
 /**
  * @param {!importer.ScanEvent} event Command event.
- * @param {importer.ScanResult} result
+ * @param {importer.ScanResult} scan
  *
  * @private
  */
-importer.ImportController.prototype.onScanEvent_ = function(event, result) {
-  if (event === importer.ScanEvent.INVALIDATED) {
-    this.scanManager_.reset();
+importer.ImportController.prototype.onScanEvent_ = function(event, scan) {
+  if (!this.scanManager_.isActiveScan(scan)) {
+    return;
   }
-  if (event === importer.ScanEvent.FINALIZED ||
-      event === importer.ScanEvent.INVALIDATED) {
-    this.pushUpdate_();
+
+  switch (event) {
+    case importer.ScanEvent.INVALIDATED:
+      this.scanManager_.reset();
+    case importer.ScanEvent.FINALIZED:
+    case importer.ScanEvent.UPDATED:
+      this.checkState_(scan);
+      break;
   }
+};
+
+/**
+ * @param {string} volumeId
+ * @private
+ */
+importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
+  this.scanManager_.reset();
+  this.checkState_();
+};
+
+/** @private */
+importer.ImportController.prototype.onDirectoryChanged_ = function() {
+  this.scanManager_.clearSelectionScan();
+  if (this.isCurrentDirectoryScannable_()) {
+    this.checkState_(
+        this.scanManager_.getCurrentDirectoryScan());
+  } else {
+    this.checkState_();
+  }
+};
+
+/** @private */
+importer.ImportController.prototype.onSelectionChanged_ = function() {
+  // NOTE: We clear the scan here, but don't immediately initiate
+  // a new scan. checkState will attempt to initialize the scan
+  // during normal processing.
+  // Also, in the case the selection is transitioning to empty,
+  // we want to reinstate the underlying directory scan (if
+  // in fact, one is possible).
+  this.scanManager_.clearSelectionScan();
+  if (this.environment_.getSelection().length === 0 &&
+      this.isCurrentDirectoryScannable_()) {
+    this.checkState_(
+        this.scanManager_.getCurrentDirectoryScan());
+  } else {
+    this.checkState_();
+  }
+};
+
+/**
+ * @param {!importer.MediaImportHandler.ImportTask} task
+ * @private
+ */
+importer.ImportController.prototype.onImportFinished_ = function(task) {
+  this.activeImportTask_ = null;
+  this.scanManager_.reset();
+  this.checkState_();
 };
 
 /**
@@ -111,8 +164,10 @@ importer.ImportController.prototype.execute = function() {
   console.assert(!this.activeImportTask_,
       'Cannot execute while an import task is already active.');
   metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
-  var scan = this.getScan_();
+
+  var scan = this.scanManager_.getActiveScan();
   assert(scan != null);
+
   var importTask = this.importRunner_.importFromScanResult(
       scan,
       importer.Destination.GOOGLE_DRIVE);
@@ -120,136 +175,155 @@ importer.ImportController.prototype.execute = function() {
   this.activeImportTask_ = importTask;
   var taskFinished = this.onImportFinished_.bind(this, importTask);
   importTask.whenFinished.then(taskFinished).catch(taskFinished);
-  this.pushUpdate_();
+  this.checkState_();
 };
 
 /**
- * @param {!importer.MediaImportHandler.ImportTask} task
+ * Checks the environment and updates UI as needed.
+ * @param {importer.ScanResult=} opt_scan If supplied,
  * @private
  */
-importer.ImportController.prototype.onImportFinished_ = function(task) {
-  this.activeImportTask_ = null;
-  this.scanManager_.reset();
-  this.pushUpdate_();
-};
+importer.ImportController.prototype.checkState_ = function(opt_scan) {
+  // If there is no Google Drive mount, Drive may be disabled
+  // or the machine may be running in guest mode.
+  if (!this.environment_.isGoogleDriveMounted()) {
+    this.updateUi_(importer.ResponseId.HIDDEN);
+    return;
+  }
 
-/**
- * Push an update to the command widget.
- * @private
- */
-importer.ImportController.prototype.pushUpdate_ = function() {
-  this.getCommandUpdate().then(
-      this.commandWidget_.update.bind(this.commandWidget_));
-};
+  if (!!this.activeImportTask_) {
+    this.updateUi_(importer.ResponseId.ACTIVE_IMPORT);
+    return;
+  }
 
-/**
- * Returns an update describing the state of the CommandWidget.
- *
- * @return {!Promise.<!importer.CommandUpdate>} response
- */
-importer.ImportController.prototype.getCommandUpdate = function() {
-  return Promise.resolve().then(
-      function() {
-        if (!!this.activeImportTask_) {
-          return importer.ImportController.createUpdate_(
-              importer.ResponseId.ACTIVE_IMPORT);
-        }
+  // If we don't have an existing scan, we'll try to create
+  // one. When we do end up creating one (not getting
+  // one from the cache) it'll be empty...even if there is
+  // a current selection. This is because scans are
+  // resolved asynchronously. And we like it that way.
+  // We'll get notification when the scan is updated. When
+  // that happens, we'll be called back with opt_scan
+  // set to that scan....and subsequently skip over this
+  // block to update the UI.
+  if (!opt_scan) {
+    // NOTE, that tryScan_ lazily initializes scans...so if
+    // no scan is returned, no scan is possible for the
+    // current context.
+    var scan = this.tryScan_();
+    // If no scan is created, then no scan is possible in
+    // the current context...so hide the UI.
+    if (!scan) {
+      this.updateUi_(importer.ResponseId.HIDDEN);
+    }
+    return;
+  }
 
-        // If there is no Google Drive mount, Drive may be disabled
-        // or the machine may be running in guest mode.
-        if (!this.environment_.isGoogleDriveMounted()) {
-          return importer.ImportController.createUpdate_(
-              importer.ResponseId.HIDDEN);
-        }
+  // At this point we have an existing scan, and a relatively
+  // validate environment for an import...so we'll proceed
+  // with making updates to the UI.
+  if (!opt_scan.isFinal()) {
+    this.updateUi_(importer.ResponseId.SCANNING, opt_scan);
+    return;
+  }
 
-        var scan = this.getScan_();
-        if (!scan) {
-          return importer.ImportController.createUpdate_(
-              importer.ResponseId.HIDDEN);
-        }
+  if (opt_scan.getFileEntries().length === 0) {
+    this.updateUi_(importer.ResponseId.NO_MEDIA);
+    return;
+  }
 
-        if (!scan.isFinal()) {
-          return importer.ImportController.createUpdate_(
-              importer.ResponseId.SCANNING);
-        }
+  // We have a final scan that is either too big, or juuuussttt right.
+  this.fitsInAvailableSpace_(opt_scan).then(
+      /** @param {boolean} fits */
+      function(fits) {
+          if (!fits) {
+            this.updateUi_(
+                importer.ResponseId.INSUFFICIENT_SPACE,
+                opt_scan);
+            return;
+          }
 
-        if (scan.getFileEntries().length === 0) {
-          return importer.ImportController.createUpdate_(
-              importer.ResponseId.NO_MEDIA);
-        }
-
-        return this.fitsInAvailableSpace_(scan).then(
-            /** @param {boolean} fits */
-            function(fits) {
-              return fits ?
-                importer.ImportController.createUpdate_(
-                    importer.ResponseId.EXECUTABLE,
-                    scan.getFileEntries().length) :
-                importer.ImportController.createUpdate_(
-                    importer.ResponseId.INSUFFICIENT_SPACE,
-                    scan.getTotalBytes());
-            });
+        this.updateUi_(
+            importer.ResponseId.EXECUTABLE,
+            opt_scan);
       }.bind(this));
 };
 
 /**
  * @param {importer.ResponseId} responseId
- * @param {number=} opt_value Numeric value passed to string, if any.
+ * @param {importer.ScanResult=} opt_scan
  *
  * @return {!importer.CommandUpdate}
  * @private
  */
-importer.ImportController.createUpdate_ =
-    function(responseId, opt_value) {
+importer.ImportController.prototype.updateUi_ =
+    function(responseId, opt_scan) {
   switch(responseId) {
     case importer.ResponseId.EXECUTABLE:
-      return {
+      this.commandWidget_.update({
         id: responseId,
-        label: strf('CLOUD_IMPORT_BUTTON_LABEL', opt_value),
+        label: strf(
+            'CLOUD_IMPORT_BUTTON_LABEL',
+            opt_scan.getFileEntries().length),
         visible: true,
         executable: true,
         coreIcon: 'cloud-upload'
-      };
+      });
+      this.commandWidget_.updateDetails(opt_scan);
+      break;
     case importer.ResponseId.HIDDEN:
-      return {
+      this.commandWidget_.update({
         id: responseId,
         visible: false,
         executable: false,
         label: '** SHOULD NOT BE VISIBLE **',
         coreIcon: 'cloud-off'
-      };
+      });
+      this.commandWidget_.setDetailsVisible(false);
+      break;
     case importer.ResponseId.ACTIVE_IMPORT:
-      return {
+      this.commandWidget_.update({
         id: responseId,
         visible: true,
         executable: false,
         label: str('CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL'),
-        coreIcon: 'trending-up'
-      };
+        coreIcon: 'swap-vert'
+      });
+      this.commandWidget_.setDetailsVisible(false);
+      break;
     case importer.ResponseId.INSUFFICIENT_SPACE:
-      return {
+      this.commandWidget_.update({
         id: responseId,
         visible: true,
         executable: false,
-        label: strf('CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL', opt_value),
+        label: strf(
+            'CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL',
+            opt_scan.getTotalBytes()),
         coreIcon: 'report-problem'
-      };
+      });
+      this.commandWidget_.updateDetails(opt_scan);
+      break;
     case importer.ResponseId.NO_MEDIA:
-      return {
+      this.commandWidget_.update({
         id: responseId,
         visible: true,
         executable: false,
         label: str('CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL'),
         coreIcon: 'cloud-done'
-      };
+      });
+      this.commandWidget_.updateDetails(
+          /** @type {!importer.ScanResult} */ (opt_scan));
+      break;
     case importer.ResponseId.SCANNING:
-      return {
+      this.commandWidget_.update({
         id: responseId,
         visible: true,
         executable: false,
         label: str('CLOUD_IMPORT_SCANNING_BUTTON_LABEL'),
         coreIcon: 'autorenew'
-      };
+      });
+      this.commandWidget_.updateDetails(
+          /** @type {!importer.ScanResult} */ (opt_scan));
+      break;
     default:
       assertNotReached('Unrecognized response id: ' + responseId);
   }
@@ -286,14 +360,13 @@ importer.ImportController.prototype.fitsInAvailableSpace_ =
 };
 
 /**
- * Get or create scan for the current directory or file selection.
+ * Attempts to scan the current context.
  *
- * @return {importer.ScanResult} A scan result object that may be
- *     actively scanning. Null if scan is not possible in current
- *     context.
+ * @return {importer.ScanResult} A scan object,
+ *     or null if scan is not possible in current context.
  * @private
  */
-importer.ImportController.prototype.getScan_ = function() {
+importer.ImportController.prototype.tryScan_ = function() {
   var entries = this.environment_.getSelection();
 
   if (entries.length) {
@@ -302,33 +375,10 @@ importer.ImportController.prototype.getScan_ = function() {
       return this.scanManager_.getSelectionScan(entries);
     }
   } else if (this.isCurrentDirectoryScannable_()) {
-    var directory = this.environment_.getCurrentDirectory();
-    var volumeId = this.environment_.getVolumeInfo(directory).volumeId;
-
-    return this.scanManager_.getDirectoryScan(volumeId, directory);
+    return this.scanManager_.getCurrentDirectoryScan();
   }
 
   return null;
-};
-
-/**
- * @param {string} volumeId
- * @private
- */
-importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
-  this.scanManager_.reset();
-  this.pushUpdate_();
-};
-
-/** @private */
-importer.ImportController.prototype.onDirectoryChanged_ = function() {
-  this.pushUpdate_();
-};
-
-/** @private */
-importer.ImportController.prototype.onSelectionChanged_ = function() {
-  this.scanManager_.clearSelectionScan();
-  this.pushUpdate_();
 };
 
 /**
@@ -514,12 +564,16 @@ importer.CommandWidget = function() {};
  *
  * @param {function()} listener
  */
-importer.CommandWidget.prototype.addExecuteListener;
+importer.CommandWidget.prototype.addImportClickedListener;
 
-/**
- * @param {!importer.CommandUpdate} update
- */
+/** @param {!importer.CommandUpdate} update */
 importer.CommandWidget.prototype.update;
+
+/** @param {!importer.ScanResult} scan */
+importer.CommandWidget.prototype.updateDetails;
+
+/** Resets details to default. */
+importer.CommandWidget.prototype.resetDetails;
 
 /**
  * Runtime implementation of CommandWidget.
@@ -529,39 +583,89 @@ importer.CommandWidget.prototype.update;
  * @struct
  */
 importer.RuntimeCommandWidget = function() {
-  /** @private {Element} */
-  this.buttonElement_ = document.querySelector('#cloud-import-button');
-
-  this.buttonElement_.onclick = this.notifyExecuteListener_.bind(this);
 
   /** @private {Element} */
-  this.iconElement_ = document.querySelector('#cloud-import-button core-icon');
+  this.importButton_ = document.getElementById('cloud-import-button');
+  this.importButton_.onclick = this.onImportClicked_.bind(this);
+
+  /** @private {Element} */
+  this.detailsButton_ = document.getElementById('cloud-import-details-button');
+  this.detailsButton_.onclick = this.toggleDetails_.bind(this);
+
+  /** @private {Element} */
+  this.detailsImportButton_ =
+      document.querySelector('#cloud-import-details .import');
+  this.detailsImportButton_.onclick = this.onImportClicked_.bind(this);
+
+  /** @private {Element} */
+  this.detailsPanel_ = document.getElementById('cloud-import-details');
+
+  /** @private {Element} */
+  this.photoCount_ =
+      document.querySelector('#cloud-import-details .photo-count');
+
+  /** @private {Element} */
+  this.spaceRequired_ =
+      document.querySelector('#cloud-import-details .space-required');
+
+  /** @private {Element} */
+  this.icon_ = document.querySelector('#cloud-import-button core-icon');
 
   /** @private {function()} */
-  this.listener_;
+  this.importListener_;
 };
 
 /** @override */
-importer.RuntimeCommandWidget.prototype.addExecuteListener =
+importer.RuntimeCommandWidget.prototype.addImportClickedListener =
     function(listener) {
-  console.assert(!this.listener_);
-  this.listener_ = listener;
+  console.assert(!this.importListener_);
+  this.importListener_ = listener;
 };
 
 /** @private */
-importer.RuntimeCommandWidget.prototype.notifyExecuteListener_ = function() {
-  console.assert(!!this.listener_);
-  this.listener_();
+importer.RuntimeCommandWidget.prototype.onImportClicked_ = function() {
+  console.assert(!!this.importListener_);
+  this.importListener_();
+};
+
+/** @private */
+importer.RuntimeCommandWidget.prototype.toggleDetails_ = function() {
+  this.setDetailsVisible(this.detailsPanel_.className === 'offscreen');
+};
+
+importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
+  if (visible) {
+    this.detailsPanel_.className = '';
+  } else {
+    this.detailsPanel_.className = 'offscreen';
+  }
 };
 
 /** @override */
 importer.RuntimeCommandWidget.prototype.update = function(update) {
-    this.buttonElement_.setAttribute('title', update.label);
-    this.buttonElement_.disabled = !update.executable;
-    this.buttonElement_.style.display  = update.visible ? 'block' : 'none';
-    this.iconElement_.setAttribute('icon', update.coreIcon);
+    this.importButton_.setAttribute('title', update.label);
+    this.importButton_.disabled = !update.executable;
+    this.importButton_.style.display =
+        update.visible ? 'block' : 'none';
+
+    this.icon_.setAttribute('icon', update.coreIcon);
+
+    this.detailsButton_.disabled = !update.executable;
+    this.detailsButton_.style.display =
+        update.visible ? 'block' : 'none';
 };
 
+/** @override */
+importer.RuntimeCommandWidget.prototype.updateDetails = function(scan) {
+  this.photoCount_.textContent = scan.getFileEntries().length;
+  this.spaceRequired_.textContent = scan.getTotalBytes();
+};
+
+/** @override */
+importer.RuntimeCommandWidget.prototype.resetDetails = function() {
+  this.photoCount_.textContent = 0;
+  this.spaceRequired_.textContent = 0;
+};
 
 /**
  * A cache for ScanResults.
@@ -569,24 +673,30 @@ importer.RuntimeCommandWidget.prototype.update = function(update) {
  * @constructor
  * @struct
  *
+ * @param {!importer.ControllerEnvironment} environment
  * @param {!importer.MediaScanner} scanner
  */
-importer.ScanManager = function(scanner) {
+importer.ScanManager = function(environment, scanner) {
+
+  /** @private {!importer.ControllerEnvironment} */
+  this.environment_ = environment;
+
   /** @private {!importer.MediaScanner} */
   this.scanner_ = scanner;
 
   /**
-   * The most recent scan based on user selected files (instead of directories).
+   * A cache of selection scans by directory (url).
+   *
    * @private {importer.ScanResult}
    */
-  this.lastSelectionScan_ = null;
+  this.selectionScan_ = null;
 
   /**
-   * A cache of scans by volumeId, directory URL.
-   * Currently only scans of directories are cached.
-   * @private {!Object.<string, !Object.<string, !importer.ScanResult>>}
+   * A cache of scans by directory (url).
+   *
+   * @private {!Object.<string, !importer.ScanResult>}
    */
-  this.cachedScans_ = {};
+  this.directoryScans_ = {};
 };
 
 /**
@@ -598,54 +708,68 @@ importer.ScanManager.prototype.reset = function() {
 };
 
 /**
- * Forgets the selection scans.
+ * Forgets the selection scans for the current directory.
  */
 importer.ScanManager.prototype.clearSelectionScan = function() {
-  this.lastSelectionScan_ = null;
+  this.selectionScan_ = null;
 };
 
 /**
  * Forgets directory scans.
  */
 importer.ScanManager.prototype.clearDirectoryScans = function() {
-  this.cachedScans_ = {};
+  this.directoryScans_ = {};
 };
 
 /**
- * Returns a scan for the directory.
+ * @return {importer.ScanResult} Current active scan, or null
+ * if none.
+ */
+importer.ScanManager.prototype.getActiveScan = function() {
+  return this.selectionScan_ ||
+      this.directoryScans_[this.environment_.getCurrentDirectory().toURL()] ||
+      null;
+};
+
+/**
+ * @param {importer.ScanResult} scan
+ * @return {boolean} True if scan is the active scan...meaning the current
+ *     selection scan or the scan for the current directory.
+ */
+importer.ScanManager.prototype.isActiveScan = function(scan) {
+  return scan === this.selectionScan_ ||
+      scan === this.directoryScans_[
+          this.environment_.getCurrentDirectory().toURL()];
+};
+
+/**
+ * Returns the existing selection scan or a new one for the supplied
+ * selection.
  *
  * @param {!Array.<!FileEntry>} entries
  *
  * @return {!importer.ScanResult}
  */
-importer.ScanManager.prototype.getSelectionScan =
-    function(entries) {
-  if (!this.lastSelectionScan_) {
-    this.lastSelectionScan_ = this.scanner_.scan(entries);
-  }
-  return this.lastSelectionScan_;
+importer.ScanManager.prototype.getSelectionScan = function(entries) {
+  console.assert(!this.selectionScan_,
+      'Cannot create new selection scan with another in the cache.');
+  this.selectionScan_ = this.scanner_.scan(entries);
+  return this.selectionScan_;
 };
 
 /**
  * Returns a scan for the directory.
  *
- * @param {string} volumeId
- * @param {!DirectoryEntry} directory
- *
  * @return {!importer.ScanResult}
  */
-importer.ScanManager.prototype.getDirectoryScan =
-    function(volumeId, directory) {
-  // Lazily initialize the cache for volumeId.
-  if (!(volumeId in this.cachedScans_)) {
-    this.cachedScans_[volumeId] = {};
-  }
-
+importer.ScanManager.prototype.getCurrentDirectoryScan = function() {
+  var directory = this.environment_.getCurrentDirectory();
   var url = directory.toURL();
-  var scan = this.cachedScans_[volumeId][url];
+  var scan = this.directoryScans_[url];
   if (!scan) {
     scan = this.scanner_.scan([directory]);
-    this.cachedScans_[volumeId][url] = scan;
+    this.directoryScans_[url] = scan;
   }
+
   return scan;
 };
