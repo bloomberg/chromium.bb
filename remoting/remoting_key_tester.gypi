@@ -35,6 +35,7 @@
                 'tools/javascript_key_tester/main.css',
                 'tools/javascript_key_tester/main.html',
                 'tools/javascript_key_tester/manifest.json',
+                'tools/javascript_key_tester/icon_128.png',
                 'tools/javascript_key_tester/pnacl/remoting_key_tester.nmf',
                 '<(PRODUCT_DIR)/remoting_key_tester_newlib.pexe',
               ],

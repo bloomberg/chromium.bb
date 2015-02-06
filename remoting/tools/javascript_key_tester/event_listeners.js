@@ -36,7 +36,8 @@ var EventListeners = function(jsLog, pnaclLog, textLog,
   this.onKeyUpHandler_ = this.onKeyUp_.bind(this);
   this.onKeyPressHandler_ = this.onKeyPress_.bind(this);
   this.onMessageHandler_ = this.onMessage_.bind(this);
-  this.onBlurHandler_ = this.onBlur_.bind(this);
+  this.onPluginBlurHandler_ = this.onPluginBlur_.bind(this);
+  this.onWindowBlurHandler_ = this.onWindowBlur_.bind(this);
 
   this.jsChordTracker_ = new ChordTracker(jsLog);
   this.pnaclChordTracker_ = new ChordTracker(pnaclLog);
@@ -48,24 +49,27 @@ var EventListeners = function(jsLog, pnaclLog, textLog,
  * Start listening for keyboard events.
  */
 EventListeners.prototype.activate = function() {
+  window.addEventListener('blur', this.onWindowBlurHandler_, false);
   document.body.addEventListener('keydown', this.onKeyDownHandler_, false);
   document.body.addEventListener('keyup', this.onKeyUpHandler_, false);
   document.body.addEventListener('keypress', this.onKeyPressHandler_, false);
   this.pnaclListener_.addEventListener('message', this.onMessageHandler_, true);
-  this.pnaclPlugin_.addEventListener('blur', this.onBlurHandler_, false);
-  this.onBlur_();
+  this.pnaclPlugin_.addEventListener('blur', this.onPluginBlurHandler_, false);
+  this.onPluginBlur_();
 };
 
 /**
  * Stop listening for keyboard events.
  */
 EventListeners.prototype.deactivate = function() {
+  window.removeEventListener('blur', this.onWindowBlurHandler_, false);
   document.body.removeEventListener('keydown', this.onKeyDownHandler_, false);
   document.body.removeEventListener('keyup', this.onKeyUpHandler_, false);
   document.body.removeEventListener('keypress', this.onKeyPressHandler_, false);
   this.pnaclListener_.removeEventListener(
       'message', this.onMessageHandler_, true);
-  this.pnaclPlugin_.removeEventListener('blur', this.onBlurHandler_, false);
+  this.pnaclPlugin_.removeEventListener(
+      'blur', this.onPluginBlurHandler_, false);
 };
 
 /**
@@ -122,8 +126,16 @@ EventListeners.prototype.onMessage_ = function (event) {
 /**
  * @return {void}
  */
-EventListeners.prototype.onBlur_ = function() {
+EventListeners.prototype.onPluginBlur_ = function() {
   this.pnaclPlugin_.focus();
+};
+
+/**
+ * @return {void}
+ */
+EventListeners.prototype.onWindowBlur_ = function() {
+  this.jsChordTracker_.releaseAllKeys();
+  this.pnaclChordTracker_.releaseAllKeys();
 };
 
 /**
