@@ -86,7 +86,6 @@ function PDFViewer(streamDetails) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
-  this.toolbarHeight_ = this.isMaterial_ ? $('pdf-toolbar').clientHeight : 0;
   this.bookmarksPane = $('bookmarks-pane');
 
   // Create the viewport.
@@ -95,8 +94,7 @@ function PDFViewer(streamDetails) {
                                 this.viewportChanged_.bind(this),
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
-                                getScrollbarWidth(),
-                                this.toolbarHeight_);
+                                getScrollbarWidth());
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
   // positioning, acting as a viewport. The plugin renders into this viewport

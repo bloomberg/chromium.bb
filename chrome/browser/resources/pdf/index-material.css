@@ -52,8 +52,9 @@ paper-progress::shadow #progressContainer {
 }
 
 #plugin {
+  height: 100%;
   position: fixed;
-  top: 56px;
+  width: 100%;
   z-index: 1;
 }
 
