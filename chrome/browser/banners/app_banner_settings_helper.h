@@ -17,36 +17,61 @@ class WebContents;
 
 class GURL;
 
-// Utility class for reading and updating ContentSettings for app banners.
+// Utility class to record banner events for the given package or start url.
+//
+// These events are used to decide when banners should be shown, using a
+// heuristic based on how many different days in a recent period of time (for
+// example the past two weeks) the banner could have been shown, when it was
+// last shown, when it was last blocked, and when it was last installed (for
+// ServiceWorker style apps - native apps can query whether the app was
+// installed directly).
+//
+// The desired effect is to have banners appear once a user has demonstrated
+// an ongoing relationship with the app, and not to pester the user too much.
+//
+// For most events only the last event is recorded. The exception are the
+// could show events. For these a list of the events is maintained. At most
+// one event is stored per day, and events outside the window the heuristic
+// uses are discarded. Local times are used to enforce these rules, to ensure
+// what we count as a day matches what the user perceives to be days.
 class AppBannerSettingsHelper {
  public:
-  // TODO(benwells): Use this method to implement smarter triggering logic.
-  // See http://crbug.com/452825.
-  // Records that a banner could have been shown for the given package or start
-  // url.
-  //
-  // These events are used to decide when banners should be shown, using a
-  // heuristic based on how many different days in a recent period of time (for
-  // example the past two weeks) the banner could have been shown. The desired
-  // effect is to have banners appear once a user has demonstrated an ongoing
-  // relationship with the app.
-  //
-  // At most one event is stored per day, and events outside the window the
-  // heuristic uses are discarded. Local times are used to enforce these rules,
-  // to ensure what we count as a day matches what the user perceives to be
-  // days.
-  static void RecordCouldShowBannerEvent(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& package_name_or_start_url,
-      base::Time time);
+  enum AppBannerEvent {
+    APP_BANNER_EVENT_COULD_SHOW,
+    APP_BANNER_EVENT_DID_SHOW,
+    APP_BANNER_EVENT_DID_BLOCK,
+    APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+    APP_BANNER_EVENT_NUM_EVENTS,
+  };
+
+  static void RecordBannerEvent(content::WebContents* web_contents,
+                                const GURL& origin_url,
+                                const std::string& package_name_or_start_url,
+                                AppBannerEvent event,
+                                base::Time time);
+
+  // Determine if the banner should be shown, given the recorded events for the
+  // supplied app.
+  static bool ShouldShowBanner(content::WebContents* web_contents,
+                               const GURL& origin_url,
+                               const std::string& package_name_or_start_url,
+                               base::Time time);
 
   // Gets the could have been shown events that are stored for the given package
-  // or start url. This is only used for testing.
+  // or start url. This is only exposed for testing.
   static std::vector<base::Time> GetCouldShowBannerEvents(
       content::WebContents* web_contents,
       const GURL& origin_url,
       const std::string& package_name_or_start_url);
+
+  // Get the recorded event for an event type that only records the last event.
+  // Should not be used with APP_BANNER_EVENT_COULD_SHOW. This is only exposed
+  // for testing.
+  static base::Time GetSingleBannerEvent(
+      content::WebContents* web_contents,
+      const GURL& origin_url,
+      const std::string& package_name_or_start_url,
+      AppBannerEvent event);
 
   // Checks if a URL is allowed to show a banner for the given package or start
   // url.

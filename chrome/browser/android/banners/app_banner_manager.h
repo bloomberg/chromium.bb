@@ -138,6 +138,13 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Called when the result of the CheckHasServiceWorker query has completed.
   void OnDidCheckHasServiceWorker(bool has_service_worker);
 
+  // Record that the banner could be shown at this point, if the triggering
+  // heuristic allowed.
+  void RecordCouldShowBanner(const std::string& package_or_start_url);
+
+  // Check if the banner should be shown.
+  bool CheckIfShouldShow(const std::string& package_or_start_url);
+
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;
   GURL validated_url_;

@@ -69,7 +69,9 @@ void AppBannerManager::BlockBanner(JNIEnv* env,
 
   GURL url(ConvertJavaStringToUTF8(env, jurl));
   std::string package_name = ConvertJavaStringToUTF8(env, jpackage);
-  AppBannerSettingsHelper::Block(web_contents(), url, package_name);
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, package_name,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
 }
 
 void AppBannerManager::Block() const {
@@ -77,9 +79,10 @@ void AppBannerManager::Block() const {
     return;
 
   if (!web_app_data_.IsEmpty()) {
-    AppBannerSettingsHelper::Block(web_contents(),
-                                   web_contents()->GetURL(),
-                                   web_app_data_.start_url.spec());
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents(), web_contents()->GetURL(),
+        web_app_data_.start_url.spec(),
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
   }
 }
 
@@ -92,6 +95,12 @@ bool AppBannerManager::OnButtonClicked() const {
     return true;
 
   if (!web_app_data_.IsEmpty()) {
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents(), web_contents()->GetURL(),
+        web_app_data_.start_url.spec(),
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+        base::Time::Now());
+
     InstallManifestApp(web_app_data_, *app_icon_.get());
     return true;
   }
@@ -183,8 +192,33 @@ void AppBannerManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
     if (icon_url.is_empty())
       return;
 
+    RecordCouldShowBanner(web_app_data_.start_url.spec());
+    if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
+      return;
+
     FetchIcon(icon_url);
   }
+}
+
+void AppBannerManager::RecordCouldShowBanner(
+    const std::string& package_or_start_url) {
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), validated_url_, package_or_start_url,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW, base::Time::Now());
+}
+
+bool AppBannerManager::CheckIfShouldShow(
+    const std::string& package_or_start_url) {
+  if (!AppBannerSettingsHelper::ShouldShowBanner(web_contents(), validated_url_,
+                                                 package_or_start_url,
+                                                 base::Time::Now())) {
+    return false;
+  }
+
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), validated_url_, package_or_start_url,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, base::Time::Now());
+  return true;
 }
 
 bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
@@ -237,11 +271,9 @@ void AppBannerManager::OnDidRetrieveMetaTagContent(
 
   banners::TrackDisplayEvent(DISPLAY_BANNER_REQUESTED);
 
-  if (!AppBannerSettingsHelper::IsAllowed(web_contents(),
-                                          expected_url,
-                                          tag_content)) {
+  RecordCouldShowBanner(tag_content);
+  if (!CheckIfShouldShow(tag_content))
     return;
-  }
 
   // Send the info to the Java side to get info about the app.
   JNIEnv* env = base::android::AttachCurrentThread();

@@ -23,20 +23,27 @@ const size_t kMaxAppsPerSite = 3;
 // Oldest could show banner event we care about, in days.
 const unsigned int kOldestCouldShowBannerEventInDays = 14;
 
-// Dictionary key to use for the 'could show banner' events.
-const char kCouldShowBannerEventsKey[] = "couldShowBannerEvents";
+// Number of times that the banner could have been shown before the banner will
+// actually be triggered.
+const unsigned int kCouldShowEventsToTrigger = 2;
+
+// Number of days that showing the banner will prevent it being seen again for.
+const unsigned int kMinimumDaysBetweenBannerShows = 60;
+
+// Number of days that the banner being blocked will prevent it being seen again
+// for.
+const unsigned int kMinimumBannerBlockedToBannerShown = 90;
+
+// Dictionary keys to use for the events.
+const char* kBannerEventKeys[] = {
+    "couldShowBannerEvents",
+    "didShowBannerEvent",
+    "didBlockBannerEvent",
+    "didAddToHomescreenEvent",
+};
 
 // Dictionary key to use whether the banner has been blocked.
 const char kHasBlockedKey[] = "hasBlocked";
-
-base::Time DateFromTime(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  return base::Time::FromLocalExploded(exploded);
-}
 
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
@@ -72,10 +79,11 @@ base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
 
 }  // namespace
 
-void AppBannerSettingsHelper::RecordCouldShowBannerEvent(
+void AppBannerSettingsHelper::RecordBannerEvent(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
+    AppBannerEvent event,
     base::Time time) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -99,48 +107,90 @@ void AppBannerSettingsHelper::RecordCouldShowBannerEvent(
   if (!app_dict)
     return;
 
-  base::ListValue* could_show_list = nullptr;
-  if (!app_dict->GetList(kCouldShowBannerEventsKey, &could_show_list)) {
-    could_show_list = new base::ListValue();
-    app_dict->Set(kCouldShowBannerEventsKey, make_scoped_ptr(could_show_list));
-  }
+  std::string event_key(kBannerEventKeys[event]);
 
-  // Trim any items that are older than we should care about. For comparisons
-  // the times are converted to local dates.
-  base::Time date = DateFromTime(time);
-  base::ValueVector::iterator it = could_show_list->begin();
-  while (it != could_show_list->end()) {
-    if ((*it)->IsType(base::Value::TYPE_DOUBLE)) {
-      double internal_date;
-      (*it)->GetAsDouble(&internal_date);
-      base::Time other_date =
-          DateFromTime(base::Time::FromInternalValue(internal_date));
-      // This date has already been added. Don't add the date again, and don't
-      // bother trimming values as it will have been done the first time the
-      // date was added (unless the local date has changed, which we can live
-      // with).
-      if (other_date == date)
-        return;
-
-      base::TimeDelta delta = date - other_date;
-      if (delta <
-          base::TimeDelta::FromDays(kOldestCouldShowBannerEventInDays)) {
-        ++it;
-        continue;
-      }
+  if (event == APP_BANNER_EVENT_COULD_SHOW) {
+    base::ListValue* could_show_list = nullptr;
+    if (!app_dict->GetList(event_key, &could_show_list)) {
+      could_show_list = new base::ListValue();
+      app_dict->Set(event_key, make_scoped_ptr(could_show_list));
     }
 
-    // Either this date is older than we care about, or it isn't a date, so
-    // remove it;
-    it = could_show_list->Erase(it, nullptr);
-  }
+    // Trim any items that are older than we should care about. For comparisons
+    // the times are converted to local dates.
+    base::Time date = time.LocalMidnight();
+    base::ValueVector::iterator it = could_show_list->begin();
+    while (it != could_show_list->end()) {
+      if ((*it)->IsType(base::Value::TYPE_DOUBLE)) {
+        double internal_date;
+        (*it)->GetAsDouble(&internal_date);
+        base::Time other_date =
+            base::Time::FromInternalValue(internal_date).LocalMidnight();
+        // This date has already been added. Don't add the date again, and don't
+        // bother trimming values as it will have been done the first time the
+        // date was added (unless the local date has changed, which we can live
+        // with).
+        if (other_date == date)
+          return;
 
-  // Dates are stored in their raw form (i.e. not local dates) to be resilient
-  // to time zone changes.
-  could_show_list->AppendDouble(time.ToInternalValue());
+        base::TimeDelta delta = date - other_date;
+        if (delta <
+            base::TimeDelta::FromDays(kOldestCouldShowBannerEventInDays)) {
+          ++it;
+          continue;
+        }
+      }
+
+      // Either this date is older than we care about, or it isn't a date, so
+      // remove it;
+      it = could_show_list->Erase(it, nullptr);
+    }
+
+    // Dates are stored in their raw form (i.e. not local dates) to be resilient
+    // to time zone changes.
+    could_show_list->AppendDouble(time.ToInternalValue());
+  } else {
+    app_dict->SetDouble(event_key, time.ToInternalValue());
+  }
   settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
                               origin_dict.release());
+}
+
+bool AppBannerSettingsHelper::ShouldShowBanner(
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& package_name_or_start_url,
+    base::Time time) {
+  // Don't show if it has been added to the homescreen.
+  base::Time added_time =
+      GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
+                           APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
+  if (!added_time.is_null())
+    return false;
+
+  base::Time blocked_time =
+      GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
+                           APP_BANNER_EVENT_DID_BLOCK);
+
+  // Null times are in the distant past, so the delta between real times and
+  // null events will always be greater than the limits.
+  if (time - blocked_time <
+      base::TimeDelta::FromDays(kMinimumBannerBlockedToBannerShown)) {
+    return false;
+  }
+
+  base::Time shown_time =
+      GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
+                           APP_BANNER_EVENT_DID_SHOW);
+  if (time - shown_time <
+      base::TimeDelta::FromDays(kMinimumDaysBetweenBannerShows)) {
+    return false;
+  }
+
+  std::vector<base::Time> could_show_events = GetCouldShowBannerEvents(
+      web_contents, origin_url, package_name_or_start_url);
+  return could_show_events.size() >= kCouldShowEventsToTrigger;
 }
 
 std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(
@@ -165,8 +215,9 @@ std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(
   if (!app_dict)
     return result;
 
+  std::string event_key(kBannerEventKeys[APP_BANNER_EVENT_COULD_SHOW]);
   base::ListValue* could_show_list = nullptr;
-  if (!app_dict->GetList(kCouldShowBannerEventsKey, &could_show_list))
+  if (!app_dict->GetList(event_key, &could_show_list))
     return result;
 
   for (auto value : *could_show_list) {
@@ -179,6 +230,39 @@ std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(
   }
 
   return result;
+}
+
+base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& package_name_or_start_url,
+    AppBannerEvent event) {
+  DCHECK(event != APP_BANNER_EVENT_COULD_SHOW);
+  DCHECK(event < APP_BANNER_EVENT_NUM_EVENTS);
+
+  if (package_name_or_start_url.empty())
+    return base::Time();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  scoped_ptr<base::DictionaryValue> origin_dict =
+      GetOriginDict(settings, origin_url);
+
+  if (!origin_dict)
+    return base::Time();
+
+  base::DictionaryValue* app_dict =
+      GetAppDict(origin_dict.get(), package_name_or_start_url);
+  if (!app_dict)
+    return base::Time();
+
+  std::string event_key(kBannerEventKeys[event]);
+  double internal_time;
+  if (!app_dict->GetDouble(event_key, &internal_time))
+    return base::Time();
+
+  return base::Time::FromInternalValue(internal_time);
 }
 
 bool AppBannerSettingsHelper::IsAllowed(
