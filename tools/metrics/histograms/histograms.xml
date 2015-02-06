@@ -5461,11 +5461,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="DomDistiller.PageDistillable" enum="BooleanDistillable">
-  <owner>yfriedman@chromium.org</owner>
+<histogram name="DomDistiller.PageDistillable" enum="DistillableType">
+  <owner>cjhopman@chromium.org</owner>
   <summary>
-    Records the number of times a page was loaded for which using DomDistiller
-    is possible.
+    Records the &quot;Distillable Type&quot; (not distillable, mobile-friendly
+    distillable, non-mobile-friendly distillable, etc) for each analyzed page.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.PageDistilledType" enum="DistillableType">
+  <owner>cjhopman@chromium.org</owner>
+  <summary>
+    Records the &quot;Distillable Type&quot; (not distillable, mobile-friendly
+    distillable, non-mobile-friendly distillable, etc) for each distilled page.
   </summary>
 </histogram>
 
@@ -43568,11 +43576,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Did fall back"/>
 </enum>
 
-<enum name="BooleanDistillable" type="int">
-  <int value="0" label="Not distillable"/>
-  <int value="1" label="Distillable"/>
-</enum>
-
 <enum name="BooleanDuplicate" type="int">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>
@@ -44909,6 +44912,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="(obsolete) Primary Accounts different"/>
   <int value="2" label="No GAIA account in cookie jar"/>
   <int value="3" label="Primary accounts present but different"/>
+</enum>
+
+<enum name="DistillableType" type="int">
+  <int value="0" label="Not distillable"/>
+  <int value="1" label="Non-mobile-friendly Distillable"/>
+  <int value="2" label="Mobile-friendly distillable"/>
 </enum>
 
 <enum name="DllHash" type="int">

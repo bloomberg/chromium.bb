@@ -2557,7 +2557,7 @@ should be able to be added at any place in this file.
 <action name="DomDistiller_DistilledPageOpened">
   <owner>smaslo@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
-  <description>User opens a distilled page.</description>
+  <description>User opens reader mode on a page.</description>
 </action>
 
 <action name="DomDistiller_DistilledPagePrefsOpened">
