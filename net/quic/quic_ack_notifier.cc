@@ -29,18 +29,21 @@ QuicAckNotifier::QuicAckNotifier(DelegateInterface* delegate)
 QuicAckNotifier::~QuicAckNotifier() {
 }
 
-void QuicAckNotifier::OnSerializedPacket() {
+void QuicAckNotifier::AddSequenceNumber(
+    const QuicPacketSequenceNumber& sequence_number,
+    int packet_payload_size) {
   ++unacked_packets_;
+  DVLOG(1) << "AckNotifier waiting for packet: " << sequence_number;
 }
 
-bool QuicAckNotifier::OnAck(QuicTime::Delta delta_largest_observed) {
+bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
+                            QuicTime::Delta delta_largest_observed) {
   if (unacked_packets_ <= 0) {
-    LOG(DFATAL) << "Acked more packets than were tracked."
-                << " unacked_packets:" << unacked_packets_;
+    LOG(DFATAL) << "Acked more packets than were tracked.";
     return true;
   }
   --unacked_packets_;
-  if (!HasUnackedPackets()) {
+  if (IsEmpty()) {
     // We have seen all the sequence numbers we were waiting for, trigger
     // callback notification.
     delegate_->OnAckNotification(retransmitted_packet_count_,
@@ -49,16 +52,6 @@ bool QuicAckNotifier::OnAck(QuicTime::Delta delta_largest_observed) {
     return true;
   }
   return false;
-}
-
-bool QuicAckNotifier::OnPacketAbandoned() {
-  if (unacked_packets_ <= 0) {
-    LOG(DFATAL) << "Abandoned more packets than were tracked."
-                << " unacked_packets:" << unacked_packets_;
-    return true;
-  }
-  --unacked_packets_;
-  return unacked_packets_ == 0;
 }
 
 void QuicAckNotifier::OnPacketRetransmitted(int packet_payload_size) {

@@ -22,6 +22,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_pacing;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_silent_close;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_std_cbrt;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_multiple_address_in_source_tokens;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_initial_rtt_for_stats;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_rto_uses_last_sent;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_attach_ack_notifiers_to_packets;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_ack_notifier_informed_on_serialized;

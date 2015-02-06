@@ -45,5 +45,10 @@ void QuicConfigPeer::SetReceivedBytesForConnectionId(QuicConfig* config,
   config->bytes_for_connection_id_.SetReceivedValue(bytes);
 }
 
+// static
+QuicTag QuicConfigPeer::CongestionFeedback(QuicConfig* config) {
+  return config->congestion_feedback_.GetTag();
+}
+
 }  // namespace test
 }  // namespace net

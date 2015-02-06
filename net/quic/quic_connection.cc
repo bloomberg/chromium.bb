@@ -1123,22 +1123,29 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
 }
 
 const QuicConnectionStats& QuicConnection::GetStats() {
-  const RttStats* rtt_stats = sent_packet_manager_.GetRttStats();
+  if (!FLAGS_quic_use_initial_rtt_for_stats) {
+    stats_.min_rtt_us =
+        sent_packet_manager_.GetRttStats()->min_rtt().ToMicroseconds();
+    stats_.srtt_us =
+        sent_packet_manager_.GetRttStats()->smoothed_rtt().ToMicroseconds();
+  } else {
+    const RttStats* rtt_stats = sent_packet_manager_.GetRttStats();
 
-  // Update rtt and estimated bandwidth.
-  QuicTime::Delta min_rtt = rtt_stats->min_rtt();
-  if (min_rtt.IsZero()) {
-    // If min RTT has not been set, use initial RTT instead.
-    min_rtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
-  }
-  stats_.min_rtt_us = min_rtt.ToMicroseconds();
+    // Update rtt and estimated bandwidth.
+    QuicTime::Delta min_rtt = rtt_stats->min_rtt();
+    if (min_rtt.IsZero()) {
+      // If min RTT has not been set, use initial RTT instead.
+      min_rtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+    }
+    stats_.min_rtt_us = min_rtt.ToMicroseconds();
 
-  QuicTime::Delta srtt = rtt_stats->smoothed_rtt();
-  if (srtt.IsZero()) {
-    // If SRTT has not been set, use initial RTT instead.
-    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+    QuicTime::Delta srtt = rtt_stats->smoothed_rtt();
+    if (srtt.IsZero()) {
+      // If SRTT has not been set, use initial RTT instead.
+      srtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+    }
+    stats_.srtt_us = srtt.ToMicroseconds();
   }
-  stats_.srtt_us = srtt.ToMicroseconds();
 
   stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
   stats_.max_packet_size = packet_generator_.max_packet_length();
@@ -1396,8 +1403,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     return true;
   }
   // Connection close packets are encrypted and saved, so don't exit early.
-  const bool is_connection_close = IsConnectionClose(*packet);
-  if (writer_->IsWriteBlocked() && !is_connection_close) {
+  if (writer_->IsWriteBlocked() && !IsConnectionClose(*packet)) {
     return false;
   }
 
@@ -1421,7 +1427,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   // Connection close packets are eventually owned by TimeWaitListManager.
   // Others are deleted at the end of this call.
   scoped_ptr<QuicEncryptedPacket> encrypted_deleter;
-  if (is_connection_close) {
+  if (IsConnectionClose(*packet)) {
     DCHECK(connection_close_packet_.get() == nullptr);
     connection_close_packet_.reset(encrypted);
     // This assures we won't try to write *forced* packets when blocked.
@@ -1536,10 +1542,6 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
-    DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted->length()
-                << "bytes "
-                << " from host " << self_address().ToStringWithoutPort()
-                << " to address " << peer_address().ToString();
     return false;
   }
 
@@ -2102,14 +2104,15 @@ HasRetransmittableData QuicConnection::IsRetransmittable(
   }
 }
 
-bool QuicConnection::IsConnectionClose(const QueuedPacket& packet) {
-  const RetransmittableFrames* retransmittable_frames =
+bool QuicConnection::IsConnectionClose(
+    QueuedPacket packet) {
+  RetransmittableFrames* retransmittable_frames =
       packet.serialized_packet.retransmittable_frames;
-  if (retransmittable_frames == nullptr) {
+  if (!retransmittable_frames) {
     return false;
   }
-  for (const QuicFrame& frame : retransmittable_frames->frames()) {
-    if (frame.type == CONNECTION_CLOSE_FRAME) {
+  for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
+    if (retransmittable_frames->frames()[i].type == CONNECTION_CLOSE_FRAME) {
       return true;
     }
   }

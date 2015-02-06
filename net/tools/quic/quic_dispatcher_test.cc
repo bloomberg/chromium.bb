@@ -97,29 +97,12 @@ QuicSession* CreateSession(QuicDispatcher* dispatcher,
   return *session;
 }
 
-class MockTimeWaitListManager : public QuicTimeWaitListManager {
- public:
-  MockTimeWaitListManager(QuicPacketWriter* writer,
-                          QuicServerSessionVisitor* visitor,
-                          EpollServer* eps)
-      : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
-  }
-
-  MOCK_METHOD5(ProcessPacket,
-               void(const IPEndPoint& server_address,
-                    const IPEndPoint& client_address,
-                    QuicConnectionId connection_id,
-                    QuicPacketSequenceNumber sequence_number,
-                    const QuicEncryptedPacket& packet));
-};
-
 class QuicDispatcherTest : public ::testing::Test {
  public:
   QuicDispatcherTest()
       : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         dispatcher_(config_, crypto_config_, &eps_),
-        time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr) {
     dispatcher_.Initialize(1);
@@ -150,20 +133,11 @@ class QuicDispatcherTest : public ::testing::Test {
     EXPECT_EQ(data_, packet.AsStringPiece());
   }
 
-  void CreateTimeWaitListManager() {
-    time_wait_list_manager_ = new MockTimeWaitListManager(
-        QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &eps_);
-    // dispatcher takes the ownership of time_wait_list_manager.
-    QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
-                                               time_wait_list_manager_);
-  }
-
   EpollServer eps_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   IPEndPoint server_address_;
   TestDispatcher dispatcher_;
-  MockTimeWaitListManager* time_wait_list_manager_;
   MockSession* session1_;
   MockSession* session2_;
   string data_;
@@ -210,9 +184,28 @@ TEST_F(QuicDispatcherTest, Shutdown) {
   dispatcher_.Shutdown();
 }
 
-TEST_F(QuicDispatcherTest, TimeWaitListManager) {
-  CreateTimeWaitListManager();
+class MockTimeWaitListManager : public QuicTimeWaitListManager {
+ public:
+  MockTimeWaitListManager(QuicPacketWriter* writer,
+                          QuicServerSessionVisitor* visitor,
+                          EpollServer* eps)
+      : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
+  }
 
+  MOCK_METHOD5(ProcessPacket, void(const IPEndPoint& server_address,
+                                   const IPEndPoint& client_address,
+                                   QuicConnectionId connection_id,
+                                   QuicPacketSequenceNumber sequence_number,
+                                   const QuicEncryptedPacket& packet));
+};
+
+TEST_F(QuicDispatcherTest, TimeWaitListManager) {
+  MockTimeWaitListManager* time_wait_list_manager =
+      new MockTimeWaitListManager(
+          QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &eps_);
+  // dispatcher takes the ownership of time_wait_list_manager.
+  QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
+                                             time_wait_list_manager);
   // Create a new session.
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
@@ -240,42 +233,32 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
           reinterpret_cast<MockConnection*>(session1_->connection()),
           &MockConnection::ReallyProcessUdpPacket));
   dispatcher_.ProcessPacket(IPEndPoint(), client_address, *encrypted);
-  EXPECT_TRUE(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
+  EXPECT_TRUE(time_wait_list_manager->IsConnectionIdInTimeWait(connection_id));
 
   // Dispatcher forwards subsequent packets for this connection_id to the time
   // wait list manager.
-  EXPECT_CALL(*time_wait_list_manager_,
+  EXPECT_CALL(*time_wait_list_manager,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
   ProcessPacket(client_address, connection_id, true, "foo");
 }
 
 TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
-  CreateTimeWaitListManager();
+  MockTimeWaitListManager* time_wait_list_manager =
+      new MockTimeWaitListManager(
+          QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &eps_);
+  // dispatcher takes the ownership of time_wait_list_manager.
+  QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
+                                             time_wait_list_manager);
 
   IPEndPoint client_address(net::test::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
   // Dispatcher forwards all packets for this connection_id to the time wait
   // list manager.
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
+  EXPECT_CALL(*time_wait_list_manager,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
   string data = "foo";
   ProcessPacket(client_address, connection_id, false, "foo");
-}
-
-TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
-  CreateTimeWaitListManager();
-
-  IPEndPoint client_address(net::test::Loopback4(), 0);
-  IPAddressNumber any4;
-  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
-  server_address_ = IPEndPoint(any4, 5);
-
-  EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  ProcessPacket(client_address, 1, true, "foo");
-  EXPECT_EQ(client_address, dispatcher_.current_client_address());
-  EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 }
 
 class BlockingWriter : public QuicPacketWriterWrapper {
