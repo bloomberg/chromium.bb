@@ -1110,6 +1110,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     ASSERT(end.isNotNull());
     ASSERT(start.inDocument());
     ASSERT(end.inDocument());
+    ASSERT(Position::commonAncestorTreeScope(start, end));
     ASSERT(comparePositions(start, end) <= 0);
     // FIXME: We should assert that start/end are not in the middle of a text node.
 
@@ -1138,6 +1139,11 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     // use pushDownStart or pushDownEnd instead, which pushDownInlineStyleAroundNode won't prune.
     Position s = start.isNull() || start.isOrphan() ? pushDownStart : start;
     Position e = end.isNull() || end.isOrphan() ? pushDownEnd : end;
+
+    // Current ending selection resetting algorithm assumes |start| and |end|
+    // are in a same DOM tree even if they are not in document.
+    if (!Position::commonAncestorTreeScope(start, end))
+        return;
 
     RefPtrWillBeRawPtr<Node> node = start.deprecatedNode();
     while (node) {
