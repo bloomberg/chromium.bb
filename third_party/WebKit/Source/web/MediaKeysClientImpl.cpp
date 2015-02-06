@@ -17,14 +17,6 @@ MediaKeysClientImpl::MediaKeysClientImpl()
 {
 }
 
-PassOwnPtr<WebContentDecryptionModule> MediaKeysClientImpl::createContentDecryptionModule(ExecutionContext* executionContext, const String& keySystem)
-{
-    Document* document = toDocument(executionContext);
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-    WebSecurityOrigin securityOrigin(executionContext->securityOrigin());
-    return adoptPtr(webFrame->client()->createContentDecryptionModule(webFrame, securityOrigin, keySystem));
-}
-
 WebEncryptedMediaClient* MediaKeysClientImpl::encryptedMediaClient(ExecutionContext* executionContext)
 {
     Document* document = toDocument(executionContext);

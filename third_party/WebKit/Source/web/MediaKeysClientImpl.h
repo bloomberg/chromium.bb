@@ -18,7 +18,6 @@ public:
     MediaKeysClientImpl();
 
     // MediaKeysClient implementation.
-    virtual PassOwnPtr<WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem) override;
     virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) override;
 };
 

@@ -16,9 +16,6 @@ class WebEncryptedMediaClient;
 
 class MediaKeysClient {
 public:
-    // FIXME: remove once encryptedMediaClient() is used.
-    virtual PassOwnPtr<WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem) = 0;
-
     virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) = 0;
 
 protected:
