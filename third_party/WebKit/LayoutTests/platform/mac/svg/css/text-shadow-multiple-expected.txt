@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x404
-  RenderBlock {html} at (0,0) size 800x404
-    RenderBody {body} at (0,16) size 800x388
-      RenderBlock {p} at (0,0) size 800x16
-        RenderText {#text} at (0,0) size 456x16
+layer at (0,0) size 800x408
+  RenderBlock {html} at (0,0) size 800x408
+    RenderBody {body} at (0,16) size 800x392
+      RenderBlock {p} at (0,0) size 800x18
+        RenderText {#text} at (0,0) size 456x18
           text run at (0,0) width 456: "The first two texts should look identical, as there is no shadow applied."
-      RenderBlock (anonymous) at (0,32) size 800x154
-        RenderSVGRoot {svg} at (20,119) size 717x56
+      RenderBlock (anonymous) at (0,34) size 800x154
+        RenderSVGRoot {svg} at (20,121) size 717x56
           RenderSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)
             RenderSVGTSpan {tspan} at (0,0) size 95x56
               RenderSVGInlineText {#text} at (0,0) size 95x56
@@ -26,11 +26,11 @@ layer at (0,0) size 800x404
               chunk 1 text run 1 at (525.71,66.00) startOffset 0 endOffset 1 width 13.89: " "
               chunk 1 text run 1 at (539.60,66.00) startOffset 0 endOffset 7 width 197.34: "shadows"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {p} at (0,202) size 800x16
-        RenderText {#text} at (0,0) size 568x16
+      RenderBlock {p} at (0,204) size 800x18
+        RenderText {#text} at (0,0) size 568x18
           text run at (0,0) width 568: "The next two texts have subtle differences, as the stroke/fill is painted seperated in SVG."
-      RenderBlock (anonymous) at (0,234) size 800x154
-        RenderSVGRoot {svg} at (0,304) size 744x89
+      RenderBlock (anonymous) at (0,238) size 800x154
+        RenderSVGRoot {svg} at (0,308) size 744x89
           RenderSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)
             RenderSVGTSpan {tspan} at (0,0) size 95x56
               RenderSVGInlineText {#text} at (0,0) size 95x56
@@ -49,8 +49,8 @@ layer at (0,0) size 800x404
               chunk 1 text run 1 at (525.71,66.00) startOffset 0 endOffset 1 width 13.89: " "
               chunk 1 text run 1 at (539.60,66.00) startOffset 0 endOffset 7 width 197.34: "shadows"
         RenderText {#text} at (0,0) size 0x0
-layer at (20,48) size 717x58
-  RenderBlock (positioned) {div} at (20,48) size 716.94x58
+layer at (20,50) size 717x58
+  RenderBlock (positioned) {div} at (20,50) size 716.94x58
     RenderInline {span} at (0,0) size 95x56 [textStrokeWidth=1.00]
       RenderText {#text} at (0,1) size 95x56
         text run at (0,1) width 95: "This"
@@ -67,8 +67,8 @@ layer at (20,48) size 717x58
     RenderText {#text} at (505,1) size 212x56
       text run at (505,1) width 15: " "
       text run at (519,1) width 198: "shadows"
-layer at (20,250) size 717x58
-  RenderBlock (positioned) {div} at (20,250) size 716.94x58
+layer at (20,254) size 717x58
+  RenderBlock (positioned) {div} at (20,254) size 716.94x58
     RenderInline {span} at (0,0) size 95x56 [textStrokeWidth=1.00]
       RenderText {#text} at (0,1) size 95x56
         text run at (0,1) width 95: "This"

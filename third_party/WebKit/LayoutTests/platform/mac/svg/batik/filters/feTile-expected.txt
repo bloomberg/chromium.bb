@@ -86,9 +86,9 @@ layer at (0,0) size 450x500
         RenderSVGText {text} at (2,-25) size 71x18 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 70x17
             chunk 1 (middle anchor) text run 1 at (2.82,-10.25) startOffset 0 endOffset 8 width 69.37: "skewed Y"
-    RenderSVGContainer {a} at (20,463) size 164x16
-      RenderSVGText {text} at (20,463) size 164x16 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 164x16
+    RenderSVGContainer {a} at (20,461) size 164x18
+      RenderSVGText {text} at (20,461) size 164x18 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 164x18
           chunk 1 text run 1 at (20.00,475.00) startOffset 0 endOffset 26 width 163.11: "How it should look like..."
     RenderSVGContainer {use} at (0,0) size 448x498
       RenderSVGContainer {g} at (0,0) size 448x498

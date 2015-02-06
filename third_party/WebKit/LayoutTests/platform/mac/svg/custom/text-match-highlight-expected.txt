@@ -1,53 +1,53 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x400
-  RenderBlock {HTML} at (0,0) size 800x400
-    RenderBody {BODY} at (8,8) size 784x384
-      RenderText {#text} at (0,0) size 458x16
+layer at (0,0) size 800x410
+  RenderBlock {HTML} at (0,0) size 800x410
+    RenderBody {BODY} at (8,8) size 784x394
+      RenderText {#text} at (0,0) size 458x18
         text run at (0,0) width 458: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
-      RenderInline {SPAN} at (0,0) size 46x16
-        RenderText {#text} at (457,0) size 46x16
+      RenderInline {SPAN} at (0,0) size 46x18
+        RenderText {#text} at (457,0) size 46x18
           text run at (457,0) width 46: "findme"
-      RenderText {#text} at (502,0) size 758x32
+      RenderText {#text} at (502,0) size 758x36
         text run at (502,0) width 138: "\". The 6th higlighted "
         text run at (639,0) width 119: "instance should be"
-        text run at (0,16) width 43: "active."
-      RenderBR {BR} at (42,16) size 1x16
-      RenderBR {BR} at (0,32) size 0x16
-      RenderText {#text} at (0,48) size 91x16
-        text run at (0,48) width 91: "Lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 46x16
-        RenderText {#text} at (90,48) size 46x16
-          text run at (90,48) width 46: "findme"
-      RenderText {#text} at (135,48) size 91x16
-        text run at (135,48) width 91: " lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 46x16
-        RenderText {#text} at (225,48) size 46x16
-          text run at (225,48) width 46: "findme"
-      RenderInline {SPAN} at (0,0) size 46x16
-        RenderText {#text} at (270,48) size 46x16
-          text run at (270,48) width 46: "findme"
-      RenderText {#text} at (315,48) size 48x16
-        text run at (315,48) width 48: " lorum."
-      RenderBR {BR} at (362,48) size 1x16
-      RenderText {#text} at (0,64) size 53x16
-        text run at (0,64) width 53: "longtext"
-      RenderInline {SPAN} at (0,0) size 46x16
-        RenderText {#text} at (52,64) size 46x16
-          text run at (52,64) width 46: "findme"
-      RenderText {#text} at (97,64) size 45x16
-        text run at (97,64) width 45: "noyou."
-      RenderBR {BR} at (141,64) size 1x16
-      RenderSVGRoot {svg} at (18,126) size 228x158
+        text run at (0,18) width 43: "active."
+      RenderBR {BR} at (42,18) size 1x18
+      RenderBR {BR} at (0,36) size 0x18
+      RenderText {#text} at (0,54) size 91x18
+        text run at (0,54) width 91: "Lorum ipsum "
+      RenderInline {SPAN} at (0,0) size 46x18
+        RenderText {#text} at (90,54) size 46x18
+          text run at (90,54) width 46: "findme"
+      RenderText {#text} at (135,54) size 91x18
+        text run at (135,54) width 91: " lorum ipsum "
+      RenderInline {SPAN} at (0,0) size 46x18
+        RenderText {#text} at (225,54) size 46x18
+          text run at (225,54) width 46: "findme"
+      RenderInline {SPAN} at (0,0) size 46x18
+        RenderText {#text} at (270,54) size 46x18
+          text run at (270,54) width 46: "findme"
+      RenderText {#text} at (315,54) size 48x18
+        text run at (315,54) width 48: " lorum."
+      RenderBR {BR} at (362,54) size 1x18
+      RenderText {#text} at (0,72) size 53x18
+        text run at (0,72) width 53: "longtext"
+      RenderInline {SPAN} at (0,0) size 46x18
+        RenderText {#text} at (52,72) size 46x18
+          text run at (52,72) width 46: "findme"
+      RenderText {#text} at (97,72) size 45x18
+        text run at (97,72) width 45: "noyou."
+      RenderBR {BR} at (141,72) size 1x18
+      RenderSVGRoot {svg} at (18,134) size 228x160
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGPath {path} at (108,88) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-        RenderSVGText {text} at (10,38) size 228x16 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 228x16
+          RenderSVGPath {path} at (108,98) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+        RenderSVGText {text} at (10,36) size 228x18 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 228x18
             chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 227.52: "Can you findme in this boring text?"
-        RenderSVGText {text} at (10,92) size 139x10 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 139x10
+        RenderSVGText {text} at (10,90) size 139x12 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 139x12
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.02: "Findme in a typewriter!"
-        RenderSVGContainer {g} at (28,212) size 200x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
+        RenderSVGContainer {g} at (28,222) size 200x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
           RenderSVGText {text} at (69,14) size 663x238 contains 1 chunk(s)
             RenderSVGTextPath {textPath} at (0,0) size 662x238
               RenderSVGInlineText {#text} at (0,0) size 662x238
