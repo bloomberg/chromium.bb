@@ -45,6 +45,7 @@ namespace {
 
 const uint32 kFilteredMessageClasses[] = {
   ChromeMsgStart,
+  DnsPrefetchMsgStart,
 };
 
 }  // namespace

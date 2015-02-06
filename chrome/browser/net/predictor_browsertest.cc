@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver_proc.h"
@@ -19,6 +20,8 @@ using content::BrowserThread;
 using testing::HasSubstr;
 
 namespace {
+
+const char kChromiumHostname[] = "chromium.org";
 
 // Records a history of all hostnames for which resolving has been requested,
 // and immediately fails the resolution requests themselves.
@@ -187,6 +190,14 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCycle) {
   PrepareFrameSubresources(referring_url_);
   WaitUntilHostHasBeenRequested(startup_url_.host());
   WaitUntilHostHasBeenRequested(target_url_.host());
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(test_server()->GetURL("files/predictor/dns_prefetch.html")));
+  WaitUntilHostHasBeenRequested(kChromiumHostname);
 }
 
 }  // namespace chrome_browser_net
