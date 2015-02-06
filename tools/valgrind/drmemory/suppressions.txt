@@ -750,3 +750,24 @@ drmemorylib.dll!replace_operator_delete
 *!content::ContentMainRunnerImpl::Run
 *!content::ContentMain
 *!content::LaunchTests
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/456131
+...
+*!content::NavigateToURL
+*!content::BrowserSideNavigationBrowserTest_BrowserInitiatedNavigations_Test::RunTestOnMainThread
+*!content::ContentBrowserTest::RunTestOnMainThreadLoop
+*!content::BrowserTestBase::ProxyRunTestOnMainThreadLoop
+*!content::ShellBrowserMainParts::PreMainMessageLoopRun
+*!content::BrowserMainLoop::PreMainMessageLoopRun
+*!base::internal::Invoker<>::Run
+*!content::StartupTaskRunner::RunAllTasksNow
+*!content::BrowserMainLoop::CreateStartupTasks
+*!content::BrowserMainRunnerImpl::Initialize
+*!ShellBrowserMain
+*!content::ShellMainDelegate::RunProcess
+*!content::RunNamedProcessTypeMain
+*!content::ContentMainRunnerImpl::Run
+*!content::ContentMain
+*!content::BrowserTestBase::SetUp
+*!content::ContentBrowserTest::SetUp
