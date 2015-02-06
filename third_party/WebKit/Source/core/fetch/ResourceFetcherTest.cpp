@@ -86,7 +86,7 @@ protected:
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtr<DocumentLoader> documentLoader;
-    RefPtrWillBeRawPtr<ResourceFetcher> fetcher;
+    RefPtrWillBePersistent<ResourceFetcher> fetcher;
     RefPtrWillBePersistent<Document> document;
 };
 
