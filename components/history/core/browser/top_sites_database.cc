@@ -18,6 +18,8 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
+namespace history {
+
 // Description of database table:
 //
 // thumbnails
@@ -79,7 +81,7 @@ bool InitTables(sql::Connection* db) {
 }
 
 // Encodes redirects into a string.
-std::string GetRedirects(const history::MostVisitedURL& url) {
+std::string GetRedirects(const MostVisitedURL& url) {
   std::vector<std::string> redirects;
   for (size_t i = 0; i < url.redirects.size(); i++)
     redirects.push_back(url.redirects[i].spec());
@@ -87,7 +89,7 @@ std::string GetRedirects(const history::MostVisitedURL& url) {
 }
 
 // Decodes redirects from a string and sets them for the url.
-void SetRedirects(const std::string& redirects, history::MostVisitedURL* url) {
+void SetRedirects(const std::string& redirects, MostVisitedURL* url) {
   std::vector<std::string> redirects_vector;
   base::SplitStringAlongWhitespace(redirects, &redirects_vector);
   for (size_t i = 0; i < redirects_vector.size(); ++i) {
@@ -345,8 +347,6 @@ void DatabaseErrorCallback(sql::Connection* db,
 }
 
 }  // namespace
-
-namespace history {
 
 // static
 const int TopSitesDatabase::kRankOfForcedURL = -1;

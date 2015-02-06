@@ -58,9 +58,9 @@ std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
   return (gurl.ReplaceComponents(replacements)).spec();
 }
 
-// Convenience to fill a history::URLRow. Must be in sync with the fields in
+// Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
-void URLDatabase::FillURLRow(sql::Statement& s, history::URLRow* i) {
+void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
   DCHECK(i);
   i->id_ = s.ColumnInt64(0);
   i->url_ = GURL(s.ColumnString(1));
@@ -99,7 +99,7 @@ bool URLDatabase::GetAllTypedUrls(URLRows* urls) {
   return true;
 }
 
-URLID URLDatabase::GetRowForURL(const GURL& url, history::URLRow* info) {
+URLID URLDatabase::GetRowForURL(const GURL& url, URLRow* info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE url=?"));
   std::string url_string = GURLToDatabaseURL(url);
@@ -113,8 +113,7 @@ URLID URLDatabase::GetRowForURL(const GURL& url, history::URLRow* info) {
   return statement.ColumnInt64(0);
 }
 
-bool URLDatabase::UpdateURLRow(URLID url_id,
-                               const history::URLRow& info) {
+bool URLDatabase::UpdateURLRow(URLID url_id, const URLRow& info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE urls SET title=?,visit_count=?,typed_count=?,last_visit_time=?,"
         "hidden=?"
@@ -129,8 +128,7 @@ bool URLDatabase::UpdateURLRow(URLID url_id,
   return statement.Run() && GetDB().GetLastChangeCount() > 0;
 }
 
-URLID URLDatabase::AddURLInternal(const history::URLRow& info,
-                                  bool is_temporary) {
+URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
   // This function is used to insert into two different tables, so we have to
   // do some shuffling. Unfortinately, we can't use the macro
   // HISTORY_URL_ROW_FIELDS because that specifies the table name which is
@@ -167,7 +165,7 @@ URLID URLDatabase::AddURLInternal(const history::URLRow& info,
   return GetDB().GetLastInsertRowId();
 }
 
-bool URLDatabase::InsertOrUpdateURLRowByID(const history::URLRow& info) {
+bool URLDatabase::InsertOrUpdateURLRowByID(const URLRow& info) {
   // SQLite does not support INSERT OR UPDATE, however, it does have INSERT OR
   // REPLACE, which is feasible to use, because of the following.
   //  * Before INSERTing, REPLACE will delete all pre-existing rows that cause
@@ -297,7 +295,7 @@ bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
   statement.BindInt(2, static_cast<int>(max_results));
 
   while (statement.Step()) {
-    history::URLRow info;
+    URLRow info;
     FillURLRow(statement, &info);
     if (info.url().is_valid())
       results->push_back(info);
@@ -327,7 +325,7 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
                                           int min_visits,
                                           int min_typed,
                                           bool allow_base,
-                                          history::URLRow* info) {
+                                          URLRow* info) {
   // Select URLs that start with |base| and are prefixes of |url|.  All parts
   // of this query except the substr() call can be done using the index.  We
   // could do this query with a couple of LIKE or GLOB statements as well, but
@@ -382,7 +380,7 @@ bool URLDatabase::GetTextMatches(const base::string16& query,
     query_parser_.ExtractQueryWords(title, &query_words);
 
     if (query_parser_.DoesQueryMatch(query_words, query_nodes.get())) {
-      history::URLResult info;
+      URLResult info;
       FillURLRow(statement, &info);
       if (info.url().is_valid())
         results->push_back(info);

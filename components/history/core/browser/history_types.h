@@ -25,12 +25,11 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-class PageUsageData;
-
 namespace history {
 
 // Forward declaration for friend statements.
 class HistoryBackend;
+class PageUsageData;
 class URLDatabase;
 
 // Container for a list of URLs.
@@ -363,7 +362,7 @@ struct HistoryAddPageArgs {
   //
   //   HistoryAddPageArgs(
   //       GURL(), base::Time(), NULL, 0, GURL(),
-  //       history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+  //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       SOURCE_BROWSED, false)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
@@ -371,7 +370,7 @@ struct HistoryAddPageArgs {
                      ContextID context_id,
                      int nav_entry_id,
                      const GURL& referrer,
-                     const history::RedirectList& redirects,
+                     const RedirectList& redirects,
                      ui::PageTransition transition,
                      VisitSource source,
                      bool did_replace_entry);
@@ -382,7 +381,7 @@ struct HistoryAddPageArgs {
   ContextID context_id;
   int nav_entry_id;
   GURL referrer;
-  history::RedirectList redirects;
+  RedirectList redirects;
   ui::PageTransition transition;
   VisitSource visit_source;
   bool did_replace_entry;

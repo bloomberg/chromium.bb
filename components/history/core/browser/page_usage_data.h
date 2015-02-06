@@ -11,6 +11,8 @@
 
 class SkBitmap;
 
+namespace history {
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // PageUsageData
@@ -18,19 +20,17 @@ class SkBitmap;
 // A per domain usage data structure to compute and manage most visited
 // pages.
 //
-// See History::QueryPageUsageSince()
+// See QueryPageUsageSince()
 //
 /////////////////////////////////////////////////////////////////////////////
 class PageUsageData {
  public:
-  explicit PageUsageData(history::SegmentID id);
+  explicit PageUsageData(SegmentID id);
 
   virtual ~PageUsageData();
 
   // Return the url ID
-  history::SegmentID GetID() const {
-    return id_;
-  }
+  SegmentID GetID() const { return id_; }
 
   void SetURL(const GURL& url) {
     url_ = url;
@@ -60,11 +60,13 @@ class PageUsageData {
   static bool Predicate(const PageUsageData* dud1, const PageUsageData* dud2);
 
  private:
-  history::SegmentID id_;
+  SegmentID id_;
   GURL url_;
   base::string16 title_;
 
   double score_;
 };
+
+}  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_PAGE_USAGE_DATA_H__

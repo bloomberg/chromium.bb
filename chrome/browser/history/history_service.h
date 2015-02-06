@@ -39,7 +39,6 @@ class AndroidHistoryProviderService;
 #endif
 
 class GURL;
-class PageUsageData;
 class PageUsageRequest;
 class Profile;
 struct ImportedFaviconUsage;
@@ -56,22 +55,23 @@ class VisitedLinkMaster;
 
 namespace history {
 
+struct DownloadRow;
+struct HistoryAddPageArgs;
 class HistoryBackend;
 class HistoryClient;
+class HistoryDBTask;
 class HistoryDatabase;
 struct HistoryDatabaseParams;
-class HistoryDBTask;
 class HistoryQueryTest;
 class HistoryServiceObserver;
 class HistoryTest;
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
 class InMemoryURLIndexTest;
+struct KeywordSearchTermVisit;
+class PageUsageData;
 class URLDatabase;
 class VisitFilter;
-struct DownloadRow;
-struct HistoryAddPageArgs;
-struct KeywordSearchTermVisit;
 
 }  // namespace history
 
@@ -85,7 +85,7 @@ class HistoryService : public syncer::SyncableService,
                        public visitedlink::VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
-  typedef std::vector<PageUsageData*> PageUsageDataList;
+  typedef std::vector<history::PageUsageData*> PageUsageDataList;
 
   // Must call Init after construction. The |history::HistoryClient| object
   // must be valid for the whole lifetime of |HistoryService|.

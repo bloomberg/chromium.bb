@@ -245,31 +245,30 @@ HistoryAddPageArgs::HistoryAddPageArgs()
                          nullptr,
                          0,
                          GURL(),
-                         history::RedirectList(),
+                         RedirectList(),
                          ui::PAGE_TRANSITION_LINK,
                          SOURCE_BROWSED,
                          false) {
 }
 
-HistoryAddPageArgs::HistoryAddPageArgs(
-    const GURL& url,
-    base::Time time,
-    ContextID context_id,
-    int nav_entry_id,
-    const GURL& referrer,
-    const history::RedirectList& redirects,
-    ui::PageTransition transition,
-    VisitSource source,
-    bool did_replace_entry)
-      : url(url),
-        time(time),
-        context_id(context_id),
-        nav_entry_id(nav_entry_id),
-        referrer(referrer),
-        redirects(redirects),
-        transition(transition),
-        visit_source(source),
-        did_replace_entry(did_replace_entry) {
+HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
+                                       base::Time time,
+                                       ContextID context_id,
+                                       int nav_entry_id,
+                                       const GURL& referrer,
+                                       const RedirectList& redirects,
+                                       ui::PageTransition transition,
+                                       VisitSource source,
+                                       bool did_replace_entry)
+    : url(url),
+      time(time),
+      context_id(context_id),
+      nav_entry_id(nav_entry_id),
+      referrer(referrer),
+      redirects(redirects),
+      transition(transition),
+      visit_source(source),
+      did_replace_entry(did_replace_entry) {
 }
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}

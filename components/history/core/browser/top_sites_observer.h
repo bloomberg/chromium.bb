@@ -8,6 +8,7 @@
 #include "base/macros.h"
 
 namespace history {
+
 class TopSites;
 
 // Interface for observing notifications from TopSites.
@@ -17,11 +18,11 @@ class TopSitesObserver {
   virtual ~TopSitesObserver() {}
 
   // Is called when TopSites finishes loading.
-  virtual void TopSitesLoaded(history::TopSites* top_sites) = 0;
+  virtual void TopSitesLoaded(TopSites* top_sites) = 0;
 
   // Is called when either one of the most visited urls
   // changed, or one of the images changes.
-  virtual void TopSitesChanged(history::TopSites* top_sites) = 0;
+  virtual void TopSitesChanged(TopSites* top_sites) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TopSitesObserver);

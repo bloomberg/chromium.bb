@@ -7,9 +7,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using history::ContextID;
-using history::VisitTracker;
-
+namespace history {
 namespace {
 
 struct VisitToTest {
@@ -19,13 +17,13 @@ struct VisitToTest {
 
   // Used when adding this to the tracker
   const char* url;
-  const history::VisitID visit_id;
+  const VisitID visit_id;
 
   // Used when finding the referrer
   const char* referrer;
 
   // the correct referring visit ID to compare to the computed one
-  history::VisitID referring_visit_id;
+  VisitID referring_visit_id;
 };
 
 void RunTest(VisitTracker* tracker, VisitToTest* test, int test_count) {
@@ -35,8 +33,8 @@ void RunTest(VisitTracker* tracker, VisitToTest* test, int test_count) {
     ContextID context_id = reinterpret_cast<ContextID>(test[i].context_id_int);
 
     // Check the referrer for this visit.
-    history::VisitID ref_visit = tracker->GetLastVisit(
-        context_id, test[i].nav_entry_id, GURL(test[i].referrer));
+    VisitID ref_visit = tracker->GetLastVisit(context_id, test[i].nav_entry_id,
+                                              GURL(test[i].referrer));
     EXPECT_EQ(test[i].referring_visit_id, ref_visit);
 
     // Now add this visit.
@@ -128,3 +126,5 @@ TEST(VisitTracker, ProcessRemove) {
   };
   RunTest(&tracker, part2, arraysize(part2));
 }
+
+}  // namespace history

@@ -21,7 +21,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sessions/session_id.h"
 
-class PageUsageData;
 class Profile;
 class TabRestoreService;
 @class HistoryMenuCocoaController;

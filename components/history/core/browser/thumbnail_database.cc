@@ -29,6 +29,8 @@
 #include "base/mac/mac_util.h"
 #endif
 
+namespace history {
+
 // Description of database tables:
 //
 // icon_mapping
@@ -567,8 +569,6 @@ void DatabaseErrorCallback(sql::Connection* db,
 }
 
 }  // namespace
-
-namespace history {
 
 ThumbnailDatabase::IconMappingEnumerator::IconMappingEnumerator() {
 }

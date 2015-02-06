@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-PageUsageData::PageUsageData(history::SegmentID id)
-    : id_(id),
-      score_(0.0) {
+namespace history {
+
+PageUsageData::PageUsageData(SegmentID id) : id_(id), score_(0.0) {
 }
 
 PageUsageData::~PageUsageData() {
@@ -19,3 +19,5 @@ bool PageUsageData::Predicate(const PageUsageData* lhs,
                               const PageUsageData* rhs) {
   return lhs->GetScore() > rhs->GetScore();
 }
+
+}  // namespace history

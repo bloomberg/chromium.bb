@@ -100,7 +100,7 @@ bool VisitDatabase::FillVisitVector(sql::Statement& statement,
     return false;
 
   while (statement.Step()) {
-    history::VisitRow visit;
+    VisitRow visit;
     FillVisitRow(statement, &visit);
     visits->push_back(visit);
   }

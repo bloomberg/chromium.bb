@@ -33,7 +33,6 @@ namespace content {
 class NotificationRegistrar;
 }
 
-class PageUsageData;
 class PrefChangeRegistrar;
 class Profile;
 
@@ -42,7 +41,6 @@ class Profile;
 // JumpList:
 // * Retrieving "Most Visited" pages from HistoryService;
 // * Retrieving strings from the application resource;
-// * Creating COM objects used by JumpList from PageUsageData objects;
 // * Adding COM objects to JumpList, etc.
 //
 // This class observes the tabs and policies of the given Profile and updates

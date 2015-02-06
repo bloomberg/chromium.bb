@@ -8,13 +8,13 @@
 #include "base/basictypes.h"
 #include "components/history/core/browser/history_types.h"
 
-class PageUsageData;
-
 namespace sql {
 class Connection;
 }
 
 namespace history {
+
+class PageUsageData;
 
 // Tracks pages used for the most visited view.
 class VisitSegmentDatabase {

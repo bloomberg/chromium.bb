@@ -138,7 +138,7 @@ class URLDatabase {
     URLEnumerator();
 
     // Retreives the next url. Returns false if no more urls are available
-    bool GetNextURL(history::URLRow* r);
+    bool GetNextURL(URLRow* r);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(URLEnumerator);
@@ -181,7 +181,7 @@ class URLDatabase {
                                int min_visits,
                                int min_typed,
                                bool allow_base,
-                               history::URLRow* info);
+                               URLRow* info);
 
   // History search ------------------------------------------------------------
 
@@ -276,7 +276,7 @@ class URLDatabase {
   // be used in between CreateTemporaryURLTable() and CommitTemporaryURLTable().
   URLID AddURLInternal(const URLRow& info, bool is_temporary);
 
-  // Convenience to fill a history::URLRow. Must be in sync with the fields in
+  // Convenience to fill a URLRow. Must be in sync with the fields in
   // kHistoryURLRowFields.
   static void FillURLRow(sql::Statement& s, URLRow* i);
 

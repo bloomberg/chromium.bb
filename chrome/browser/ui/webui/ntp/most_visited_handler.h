@@ -15,7 +15,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
-class PageUsageData;
 
 namespace base {
 class ListValue;
