@@ -288,20 +288,18 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           &onc::kNetworkConfigurationSignature,
           *user_settings_copy,
           &validation_result);
-
-  // Fill in HexSSID field from contents of SSID field if not set already.
-  if (user_settings_copy) {
-    onc::FillInHexSSIDFieldsInOncObject(
-        onc::kNetworkConfigurationSignature, validated_user_settings.get());
-  }
-
-
   if (validation_result == onc::Validator::INVALID) {
     InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
     return;
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
     LOG(WARNING) << "Validation of ONC user settings produced warnings.";
+
+  // Fill in HexSSID field from contents of SSID field if not set already.
+  if (user_settings_copy) {
+    onc::FillInHexSSIDFieldsInOncObject(onc::kNetworkConfigurationSignature,
+                                        validated_user_settings.get());
+  }
 
   const base::DictionaryValue* network_policy =
       GetByGUID(policies->per_network_config, guid);
