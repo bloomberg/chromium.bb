@@ -4,12 +4,10 @@
       "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
-      "base_unittests",
       {
-        "test": "browser_tests",
+        "test": "base_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 3
+          "can_use_on_swarming_builders": true
         }
       },
       "cacheinvalidation_unittests",
@@ -78,12 +76,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
-      {
-        "test": "base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "base_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
