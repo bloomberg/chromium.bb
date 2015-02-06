@@ -190,9 +190,21 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
    *     by policy.
    */
   function onGetConsent(supported, allowed, set_by_policy) {
-    that.usageStats_.hidden = !supported;
+    // Hide the usage stats check box if it is not supported or the policy
+    // doesn't allow usage stats collection.
+    var checkBoxLabel = that.usageStats_.querySelector('.checkbox-label');
+    that.usageStats_.hidden = !supported || (set_by_policy && !allowed);
     that.usageStatsCheckbox_.checked = allowed;
+
     that.usageStatsCheckbox_.disabled = set_by_policy;
+    checkBoxLabel.classList.toggle('disabled', set_by_policy);
+
+    if (set_by_policy) {
+      that.usageStats_.title = l10n.getTranslationOrError(
+          /*i18n-content*/ 'SETTING_MANAGED_BY_POLICY');
+    } else {
+      that.usageStats_.title = '';
+    }
   }
 
   /** @param {remoting.Error} error */
@@ -200,7 +212,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
     console.error('Error getting consent status: ' + error);
   }
 
-  this.usageStats_.hidden = false;
+  this.usageStats_.hidden = true;
   this.usageStatsCheckbox_.checked = false;
 
   // Prevent user from ticking the box until the current consent status is
