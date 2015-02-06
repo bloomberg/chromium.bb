@@ -5,6 +5,7 @@
 #include "ui/app_list/views/search_result_page_view.h"
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
@@ -45,9 +46,13 @@ class SearchCardView : public views::View {
 }  // namespace
 
 SearchResultPageView::SearchResultPageView() : selected_index_(0) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        kExperimentalWindowPadding, kTopPadding,
-                                        kGroupSpacing));
+  if (switches::IsExperimentalAppListEnabled()) {
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
+                                          kExperimentalWindowPadding,
+                                          kTopPadding, kGroupSpacing));
+  } else {
+    SetLayoutManager(new views::FillLayout);
+  }
 }
 
 SearchResultPageView::~SearchResultPageView() {
@@ -56,7 +61,11 @@ SearchResultPageView::~SearchResultPageView() {
 void SearchResultPageView::AddSearchResultContainerView(
     AppListModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
-  AddChildView(new SearchCardView(result_container));
+  views::View* view_to_add = result_container;
+  if (switches::IsExperimentalAppListEnabled())
+    view_to_add = new SearchCardView(result_container);
+
+  AddChildView(view_to_add);
   result_container_views_.push_back(result_container);
   result_container->SetResults(results_model);
 }

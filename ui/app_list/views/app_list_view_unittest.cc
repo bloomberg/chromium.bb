@@ -25,7 +25,6 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
-#include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/start_page_view.h"
@@ -606,13 +605,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
       contents_view->GetDefaultContentsBounds();
   EXPECT_EQ(AppListModel::STATE_SEARCH_RESULTS,
             delegate_->GetTestModel()->state());
-  if (test_type_ == EXPERIMENTAL) {
-    EXPECT_EQ(default_contents_bounds,
-              contents_view->search_results_page_view()->bounds());
-  } else {
-    EXPECT_EQ(default_contents_bounds,
-              contents_view->search_results_list_view()->bounds());
-  }
+  EXPECT_EQ(default_contents_bounds,
+            contents_view->search_results_page_view()->bounds());
 
   // Hide the search results.
   contents_view->ShowSearchResults(false);

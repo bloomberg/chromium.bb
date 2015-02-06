@@ -34,7 +34,6 @@ class AppsContainerView;
 class ContentsAnimator;
 class PaginationModel;
 class SearchBoxView;
-class SearchResultListView;
 class SearchResultPageView;
 class StartPageView;
 
@@ -100,9 +99,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   }
   StartPageView* start_page_view() const { return start_page_view_; }
   views::View* custom_page_view() const { return custom_page_view_; }
-  SearchResultListView* search_results_list_view() const {
-    return search_results_list_view_;
-  }
   SearchResultPageView* search_results_page_view() {
     return search_results_page_view_;
   }
@@ -216,11 +212,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Special sub views of the ContentsView. All owned by the views hierarchy.
   AppsContainerView* apps_container_view_;
 
-  // Only used in the normal app list.
-  SearchResultListView* search_results_list_view_;
+  SearchResultPageView* search_results_page_view_;
 
   // Only used in the experimental app list.
-  SearchResultPageView* search_results_page_view_;
   StartPageView* start_page_view_;
   views::View* custom_page_view_;
 

@@ -31,7 +31,6 @@ namespace app_list {
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view)
     : apps_container_view_(nullptr),
-      search_results_list_view_(nullptr),
       search_results_page_view_(nullptr),
       start_page_view_(nullptr),
       custom_page_view_(nullptr),
@@ -73,26 +72,22 @@ void ContentsView::Init(AppListModel* model) {
     // Start page.
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
     AddLauncherPage(start_page_view_, AppListModel::STATE_START);
+  }
 
-    // Search results UI.
-    search_results_page_view_ = new SearchResultPageView();
+  // Search results UI.
+  search_results_page_view_ = new SearchResultPageView();
 
-    AppListModel::SearchResults* results = view_delegate->GetModel()->results();
-    search_results_page_view_->AddSearchResultContainerView(
-        results, new SearchResultListView(app_list_main_view_, view_delegate));
+  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
+  search_results_page_view_->AddSearchResultContainerView(
+      results, new SearchResultListView(app_list_main_view_, view_delegate));
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
     search_results_page_view_->AddSearchResultContainerView(
         results,
         new SearchResultTileItemListView(GetSearchBoxView()->search_box()));
-
-    AddLauncherPage(search_results_page_view_,
-                    AppListModel::STATE_SEARCH_RESULTS);
-  } else {
-    search_results_list_view_ =
-        new SearchResultListView(app_list_main_view_, view_delegate);
-    AddLauncherPage(search_results_list_view_,
-                    AppListModel::STATE_SEARCH_RESULTS);
-    search_results_list_view_->SetResults(model->results());
   }
+  AddLauncherPage(search_results_page_view_,
+                  AppListModel::STATE_SEARCH_RESULTS);
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
@@ -223,15 +218,6 @@ void ContentsView::ActivePageChanged() {
     // been reset.
     app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
   }
-
-  // TODO(xiyuan): Highlight default match instead of the first.
-  if (state == AppListModel::STATE_SEARCH_RESULTS &&
-      search_results_list_view_ && search_results_list_view_->visible()) {
-    search_results_list_view_->OnContainerSelected(false);
-  }
-
-  if (search_results_list_view_)
-    search_results_list_view_->UpdateAutoLaunchState();
 
   if (custom_page_view_) {
     custom_page_view_->SetFocusable(state ==
@@ -442,15 +428,7 @@ bool ContentsView::Back() {
 }
 
 gfx::Size ContentsView::GetDefaultContentsSize() const {
-  const gfx::Size container_size =
-      apps_container_view_->apps_grid_view()->GetPreferredSize();
-  const gfx::Size results_size =
-      search_results_list_view_ ? search_results_list_view_->GetPreferredSize()
-                                : gfx::Size();
-
-  int width = std::max(container_size.width(), results_size.width());
-  int height = std::max(container_size.height(), results_size.height());
-  return gfx::Size(width, height);
+  return apps_container_view_->apps_grid_view()->GetPreferredSize();
 }
 
 gfx::Size ContentsView::GetPreferredSize() const {
