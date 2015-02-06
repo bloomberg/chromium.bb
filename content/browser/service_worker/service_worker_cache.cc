@@ -12,6 +12,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_cache.pb.h"
+#include "content/browser/service_worker/service_worker_cache_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
 #include "net/base/io_buffer.h"
@@ -462,89 +463,77 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
             put_context->response->blob_uuid);
   }
 
-  pending_operations_.push_back(base::Bind(&ServiceWorkerCache::PutImpl,
+  if (backend_state_ == BACKEND_UNINITIALIZED)
+    InitBackend();
+
+  scheduler_->ScheduleOperation(base::Bind(&ServiceWorkerCache::PutImpl,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            base::Passed(put_context.Pass())));
-
-  if (backend_state_ == BACKEND_UNINITIALIZED) {
-    InitBackend();
-    return;
-  }
-
-  RunOperationIfIdle();
 }
 
 void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                                const ResponseCallback& callback) {
-  ResponseCallback pending_callback =
-      base::Bind(&ServiceWorkerCache::PendingResponseCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-  pending_operations_.push_back(
-      base::Bind(&ServiceWorkerCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(request.Pass()), pending_callback));
-
   switch (backend_state_) {
     case BACKEND_UNINITIALIZED:
       InitBackend();
-      return;
+      break;
     case BACKEND_CLOSED:
-      pending_callback.Run(ErrorTypeStorage,
-                           scoped_ptr<ServiceWorkerResponse>(),
-                           scoped_ptr<storage::BlobDataHandle>());
+      callback.Run(ErrorTypeStorage, scoped_ptr<ServiceWorkerResponse>(),
+                   scoped_ptr<storage::BlobDataHandle>());
       return;
     case BACKEND_OPEN:
       DCHECK(backend_);
-      RunOperationIfIdle();
-      return;
+      break;
   }
-  NOTREACHED();
+
+  ResponseCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingResponseCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(request.Pass()), pending_callback));
 }
 
 void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
                                 const ErrorCallback& callback) {
+  switch (backend_state_) {
+    case BACKEND_UNINITIALIZED:
+      InitBackend();
+      break;
+    case BACKEND_CLOSED:
+      callback.Run(ErrorTypeStorage);
+      return;
+    case BACKEND_OPEN:
+      DCHECK(backend_);
+      break;
+  }
   ErrorCallback pending_callback =
       base::Bind(&ServiceWorkerCache::PendingErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);
-  pending_operations_.push_back(base::Bind(
+  scheduler_->ScheduleOperation(base::Bind(
       &ServiceWorkerCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
       base::Passed(request.Pass()), pending_callback));
-
-  switch (backend_state_) {
-    case BACKEND_UNINITIALIZED:
-      InitBackend();
-      return;
-    case BACKEND_CLOSED:
-      pending_callback.Run(ErrorTypeStorage);
-      return;
-    case BACKEND_OPEN:
-      DCHECK(backend_);
-      RunOperationIfIdle();
-      return;
-  }
-  NOTREACHED();
 }
 
 void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
-  RequestsCallback pending_callback =
-      base::Bind(&ServiceWorkerCache::PendingRequestsCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-  pending_operations_.push_back(base::Bind(&ServiceWorkerCache::KeysImpl,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           pending_callback));
-
   switch (backend_state_) {
     case BACKEND_UNINITIALIZED:
       InitBackend();
-      return;
+      break;
     case BACKEND_CLOSED:
-      pending_callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
+      callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
       return;
     case BACKEND_OPEN:
       DCHECK(backend_);
-      RunOperationIfIdle();
-      return;
+      break;
   }
-  NOTREACHED();
+
+  RequestsCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingRequestsCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(base::Bind(&ServiceWorkerCache::KeysImpl,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           pending_callback));
 }
 
 void ServiceWorkerCache::Close(const base::Closure& callback) {
@@ -555,10 +544,9 @@ void ServiceWorkerCache::Close(const base::Closure& callback) {
       base::Bind(&ServiceWorkerCache::PendingClosure,
                  weak_ptr_factory_.GetWeakPtr(), callback);
 
-  pending_operations_.push_back(base::Bind(&ServiceWorkerCache::CloseImpl,
+  scheduler_->ScheduleOperation(base::Bind(&ServiceWorkerCache::CloseImpl,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            pending_callback));
-  RunOperationIfIdle();
 }
 
 int64 ServiceWorkerCache::MemoryBackedSize() const {
@@ -601,7 +589,7 @@ ServiceWorkerCache::ServiceWorkerCache(
       quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
       backend_state_(BACKEND_UNINITIALIZED),
-      operation_running_(false),
+      scheduler_(new ServiceWorkerCacheScheduler()),
       initializing_(false),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
@@ -1205,19 +1193,16 @@ void ServiceWorkerCache::CreateBackendDidCreate(
 void ServiceWorkerCache::InitBackend() {
   DCHECK(backend_state_ == BACKEND_UNINITIALIZED);
 
-  if (initializing_) {
-    DCHECK(operation_running_);
+  if (initializing_)
     return;
-  }
 
-  DCHECK(!operation_running_);  // All ops should wait for backend init.
+  DCHECK(scheduler_->Empty());
   initializing_ = true;
-  // Note that this operation pushes to the front of the queue.
-  pending_operations_.push_front(base::Bind(
+
+  scheduler_->ScheduleOperation(base::Bind(
       &ServiceWorkerCache::CreateBackend, weak_ptr_factory_.GetWeakPtr(),
       base::Bind(&ServiceWorkerCache::InitDone,
                  weak_ptr_factory_.GetWeakPtr())));
-  RunOperationIfIdle();
 }
 
 void ServiceWorkerCache::InitDone(ErrorType error) {
@@ -1226,37 +1211,24 @@ void ServiceWorkerCache::InitDone(ErrorType error) {
                     backend_state_ == BACKEND_UNINITIALIZED)
                        ? BACKEND_OPEN
                        : BACKEND_CLOSED;
-  CompleteOperationAndRunNext();
-}
-
-void ServiceWorkerCache::CompleteOperationAndRunNext() {
-  DCHECK(!pending_operations_.empty());
-  operation_running_ = false;
-  pending_operations_.pop_front();
-  RunOperationIfIdle();
-}
-
-void ServiceWorkerCache::RunOperationIfIdle() {
-  DCHECK(!operation_running_ || !pending_operations_.empty());
-
-  if (!operation_running_ && !pending_operations_.empty()) {
-    operation_running_ = true;
-    // TODO(jkarlin): Run multiple operations in parallel where allowed (e.g.,
-    // if they're for different keys then they won't interfere). See
-    // https://crbug.com/451174.
-    pending_operations_.front().Run();
-  }
+  scheduler_->CompleteOperationAndRunNext();
 }
 
 void ServiceWorkerCache::PendingClosure(const base::Closure& callback) {
+  base::WeakPtr<ServiceWorkerCache> cache = weak_ptr_factory_.GetWeakPtr();
+
   callback.Run();
-  CompleteOperationAndRunNext();
+  if (cache)
+    scheduler_->CompleteOperationAndRunNext();
 }
 
 void ServiceWorkerCache::PendingErrorCallback(const ErrorCallback& callback,
                                               ErrorType error) {
+  base::WeakPtr<ServiceWorkerCache> cache = weak_ptr_factory_.GetWeakPtr();
+
   callback.Run(error);
-  CompleteOperationAndRunNext();
+  if (cache)
+    scheduler_->CompleteOperationAndRunNext();
 }
 
 void ServiceWorkerCache::PendingResponseCallback(
@@ -1264,16 +1236,22 @@ void ServiceWorkerCache::PendingResponseCallback(
     ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  base::WeakPtr<ServiceWorkerCache> cache = weak_ptr_factory_.GetWeakPtr();
+
   callback.Run(error, response.Pass(), blob_data_handle.Pass());
-  CompleteOperationAndRunNext();
+  if (cache)
+    scheduler_->CompleteOperationAndRunNext();
 }
 
 void ServiceWorkerCache::PendingRequestsCallback(
     const RequestsCallback& callback,
     ErrorType error,
     scoped_ptr<Requests> requests) {
+  base::WeakPtr<ServiceWorkerCache> cache = weak_ptr_factory_.GetWeakPtr();
+
   callback.Run(error, requests.Pass());
-  CompleteOperationAndRunNext();
+  if (cache)
+    scheduler_->CompleteOperationAndRunNext();
 }
 
 }  // namespace content

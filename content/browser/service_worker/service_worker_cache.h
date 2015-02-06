@@ -30,6 +30,7 @@ class QuotaManagerProxy;
 namespace content {
 class ChromeBlobStorageContext;
 class ServiceWorkerCacheMetadata;
+class ServiceWorkerCacheScheduler;
 class TestServiceWorkerCache;
 
 // Represents a ServiceWorker Cache as seen in
@@ -182,8 +183,6 @@ class CONTENT_EXPORT ServiceWorkerCache
   void InitBackend();
   void InitDone(ErrorType error);
 
-  void CompleteOperationAndRunNext();
-  void RunOperationIfIdle();
   void PendingClosure(const base::Closure& callback);
   void PendingErrorCallback(const ErrorCallback& callback, ErrorType error);
   void PendingResponseCallback(
@@ -204,8 +203,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_;
-  std::list<base::Closure> pending_operations_;
-  bool operation_running_;
+  scoped_ptr<ServiceWorkerCacheScheduler> scheduler_;
   bool initializing_;
 
   // Whether or not to store data in disk or memory.

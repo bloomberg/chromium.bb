@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache.pb.h"
+#include "content/browser/service_worker/service_worker_cache_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
@@ -377,6 +378,8 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     const GURL& origin)
     : initialized_(false),
+      initializing_(false),
+      scheduler_(new ServiceWorkerCacheScheduler()),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       memory_only_(memory_only),
@@ -404,43 +407,30 @@ void ServiceWorkerCacheStorage::OpenCache(
     const CacheAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::OpenCache,
-                        weak_factory_.GetWeakPtr(),
-                        cache_name,
-                        callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
-  if (cache.get()) {
-    callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
-    return;
-  }
-
-  cache_loader_->CreateCache(
-      cache_name,
-      base::Bind(&ServiceWorkerCacheStorage::CreateCacheDidCreateCache,
-                 weak_factory_.GetWeakPtr(),
-                 cache_name,
-                 callback));
+  CacheAndErrorCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingCacheAndErrorCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::OpenCacheImpl,
+                 weak_factory_.GetWeakPtr(), cache_name, pending_callback));
 }
 
 void ServiceWorkerCacheStorage::HasCache(const std::string& cache_name,
                                          const BoolAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::HasCache,
-                        weak_factory_.GetWeakPtr(),
-                        cache_name,
-                        callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  bool has_cache = cache_map_.find(cache_name) != cache_map_.end();
-
-  callback.Run(has_cache, CACHE_STORAGE_ERROR_NO_ERROR);
+  BoolAndErrorCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingBoolAndErrorCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::HasCacheImpl,
+                 weak_factory_.GetWeakPtr(), cache_name, pending_callback));
 }
 
 void ServiceWorkerCacheStorage::DeleteCache(
@@ -448,54 +438,30 @@ void ServiceWorkerCacheStorage::DeleteCache(
     const BoolAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::DeleteCache,
-                        weak_factory_.GetWeakPtr(),
-                        cache_name,
-                        callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  CacheMap::iterator it = cache_map_.find(cache_name);
-  if (it == cache_map_.end()) {
-    callback.Run(false, CACHE_STORAGE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  base::WeakPtr<ServiceWorkerCache> cache = it->second;
-  cache_map_.erase(it);
-
-  // Delete the name from ordered_cache_names_.
-  StringVector::iterator iter = std::find(
-      ordered_cache_names_.begin(), ordered_cache_names_.end(), cache_name);
-  DCHECK(iter != ordered_cache_names_.end());
-  ordered_cache_names_.erase(iter);
-
-  base::Closure closure =
-      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidClose,
-                 weak_factory_.GetWeakPtr(), cache_name, callback,
-                 ordered_cache_names_, make_scoped_refptr(cache.get()));
-
-  if (cache) {
-    cache->Close(closure);
-    return;
-  }
-
-  closure.Run();
+  BoolAndErrorCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingBoolAndErrorCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheImpl,
+                 weak_factory_.GetWeakPtr(), cache_name, pending_callback));
 }
 
 void ServiceWorkerCacheStorage::EnumerateCaches(
     const StringsAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::EnumerateCaches,
-                        weak_factory_.GetWeakPtr(),
-                        callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
+  StringsAndErrorCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingStringsAndErrorCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::EnumerateCachesImpl,
+                 weak_factory_.GetWeakPtr(), pending_callback));
 }
 
 void ServiceWorkerCacheStorage::MatchCache(
@@ -504,27 +470,15 @@ void ServiceWorkerCacheStorage::MatchCache(
     const ServiceWorkerCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::MatchCache,
-                        weak_factory_.GetWeakPtr(), cache_name,
-                        base::Passed(request.Pass()), callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
-
-  if (!cache.get()) {
-    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
-    return;
-  }
-
-  // Pass the cache along to the callback to keep the cache open until match is
-  // done.
-  cache->Match(request.Pass(),
-               base::Bind(&ServiceWorkerCacheStorage::MatchCacheDidMatch,
-                          weak_factory_.GetWeakPtr(), cache, callback));
+  ServiceWorkerCache::ResponseCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingResponseCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(base::Bind(
+      &ServiceWorkerCacheStorage::MatchCacheImpl, weak_factory_.GetWeakPtr(),
+      cache_name, base::Passed(request.Pass()), pending_callback));
 }
 
 void ServiceWorkerCacheStorage::MatchAllCaches(
@@ -532,32 +486,16 @@ void ServiceWorkerCacheStorage::MatchAllCaches(
     const ServiceWorkerCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::MatchAllCaches,
-                        weak_factory_.GetWeakPtr(),
-                        base::Passed(request.Pass()), callback));
-    return;
-  }
+  if (!initialized_)
+    LazyInit();
 
-  scoped_ptr<ServiceWorkerCache::ResponseCallback> callback_copy(
-      new ServiceWorkerCache::ResponseCallback(callback));
-
-  ServiceWorkerCache::ResponseCallback* callback_ptr = callback_copy.get();
-  base::Closure barrier_closure = base::BarrierClosure(
-      ordered_cache_names_.size(),
-      base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatchAll,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(callback_copy.Pass())));
-
-  for (const std::string& cache_name : ordered_cache_names_) {
-    scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
-    DCHECK(cache.get());
-
-    cache->Match(make_scoped_ptr(new ServiceWorkerFetchRequest(*request)),
-                 base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatch,
-                            weak_factory_.GetWeakPtr(), cache, barrier_closure,
-                            callback_ptr));
-  }
+  ServiceWorkerCache::ResponseCallback pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingResponseCallback,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesImpl,
+                 weak_factory_.GetWeakPtr(), base::Passed(request.Pass()),
+                 pending_callback));
 }
 
 void ServiceWorkerCacheStorage::CloseAllCaches(const base::Closure& callback) {
@@ -568,31 +506,12 @@ void ServiceWorkerCacheStorage::CloseAllCaches(const base::Closure& callback) {
     return;
   }
 
-  int live_cache_count = 0;
-  for (const auto& key_value : cache_map_) {
-    if (key_value.second)
-      live_cache_count += 1;
-  }
-
-  if (live_cache_count == 0) {
-    callback.Run();
-    return;
-  }
-
-  // The closure might modify this object so delay calling it until after
-  // iterating through cache_map_ by adding one to the barrier.
-  base::Closure barrier_closure =
-      base::BarrierClosure(live_cache_count + 1, base::Bind(callback));
-
-  for (auto& key_value : cache_map_) {
-    if (key_value.second) {
-      key_value.second->Close(base::Bind(
-          CloseAllCachesDidCloseCache,
-          make_scoped_refptr(key_value.second.get()), barrier_closure));
-    }
-  }
-
-  barrier_closure.Run();
+  base::Closure pending_callback =
+      base::Bind(&ServiceWorkerCacheStorage::PendingClosure,
+                 weak_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&ServiceWorkerCacheStorage::CloseAllCachesImpl,
+                 weak_factory_.GetWeakPtr(), pending_callback));
 }
 
 int64 ServiceWorkerCacheStorage::MemoryBackedSize() const {
@@ -609,17 +528,33 @@ int64 ServiceWorkerCacheStorage::MemoryBackedSize() const {
   return sum;
 }
 
+void ServiceWorkerCacheStorage::StartAsyncOperationForTesting() {
+  scheduler_->ScheduleOperation(base::Bind(&base::DoNothing));
+}
+
+void ServiceWorkerCacheStorage::CompleteAsyncOperationForTesting() {
+  scheduler_->CompleteOperationAndRunNext();
+}
+
 // Init is run lazily so that it is called on the proper MessageLoop.
-void ServiceWorkerCacheStorage::LazyInit(const base::Closure& callback) {
+void ServiceWorkerCacheStorage::LazyInit() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!initialized_);
 
-  init_callbacks_.push_back(callback);
-
-  // If this isn't the first call to LazyInit then return as the initialization
-  // has already started.
-  if (init_callbacks_.size() > 1u)
+  if (initializing_)
     return;
+
+  DCHECK(scheduler_->Empty());
+
+  initializing_ = true;
+  scheduler_->ScheduleOperation(base::Bind(
+      &ServiceWorkerCacheStorage::LazyInitImpl, weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerCacheStorage::LazyInitImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!initialized_);
+  DCHECK(initializing_);
 
   // 1. Get the list of cache names (async call)
   // 2. For each cache name, load the cache (async call)
@@ -632,12 +567,10 @@ void ServiceWorkerCacheStorage::LazyInit(const base::Closure& callback) {
   cache_loader_->LoadIndex(
       indexed_cache_names.Pass(),
       base::Bind(&ServiceWorkerCacheStorage::LazyInitDidLoadIndex,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerCacheStorage::LazyInitDidLoadIndex(
-    const base::Closure& callback,
     scoped_ptr<std::vector<std::string> > indexed_cache_names) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -647,13 +580,25 @@ void ServiceWorkerCacheStorage::LazyInitDidLoadIndex(
     ordered_cache_names_.push_back(indexed_cache_names->at(i));
   }
 
+  initializing_ = false;
   initialized_ = true;
-  for (std::vector<base::Closure>::iterator it = init_callbacks_.begin();
-       it != init_callbacks_.end();
-       ++it) {
-    it->Run();
+
+  scheduler_->CompleteOperationAndRunNext();
+}
+
+void ServiceWorkerCacheStorage::OpenCacheImpl(
+    const std::string& cache_name,
+    const CacheAndErrorCallback& callback) {
+  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
+  if (cache.get()) {
+    callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
+    return;
   }
-  init_callbacks_.clear();
+
+  cache_loader_->CreateCache(
+      cache_name,
+      base::Bind(&ServiceWorkerCacheStorage::CreateCacheDidCreateCache,
+                 weak_factory_.GetWeakPtr(), cache_name, callback));
 }
 
 void ServiceWorkerCacheStorage::CreateCacheDidCreateCache(
@@ -689,6 +634,45 @@ void ServiceWorkerCacheStorage::CreateCacheDidWriteIndex(
   callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
+void ServiceWorkerCacheStorage::HasCacheImpl(
+    const std::string& cache_name,
+    const BoolAndErrorCallback& callback) {
+  bool has_cache = cache_map_.find(cache_name) != cache_map_.end();
+
+  callback.Run(has_cache, CACHE_STORAGE_ERROR_NO_ERROR);
+}
+
+void ServiceWorkerCacheStorage::DeleteCacheImpl(
+    const std::string& cache_name,
+    const BoolAndErrorCallback& callback) {
+  CacheMap::iterator it = cache_map_.find(cache_name);
+  if (it == cache_map_.end()) {
+    callback.Run(false, CACHE_STORAGE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  base::WeakPtr<ServiceWorkerCache> cache = it->second;
+  cache_map_.erase(it);
+
+  // Delete the name from ordered_cache_names_.
+  StringVector::iterator iter = std::find(
+      ordered_cache_names_.begin(), ordered_cache_names_.end(), cache_name);
+  DCHECK(iter != ordered_cache_names_.end());
+  ordered_cache_names_.erase(iter);
+
+  base::Closure closure =
+      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidClose,
+                 weak_factory_.GetWeakPtr(), cache_name, callback,
+                 ordered_cache_names_, make_scoped_refptr(cache.get()));
+
+  if (cache) {
+    cache->Close(closure);
+    return;
+  }
+
+  closure.Run();
+}
+
 void ServiceWorkerCacheStorage::DeleteCacheDidClose(
     const std::string& cache_name,
     const BoolAndErrorCallback& callback,
@@ -721,6 +705,31 @@ void ServiceWorkerCacheStorage::DeleteCacheDidCleanUp(
   callback.Run(true, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
+void ServiceWorkerCacheStorage::EnumerateCachesImpl(
+    const StringsAndErrorCallback& callback) {
+  callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
+}
+
+void ServiceWorkerCacheStorage::MatchCacheImpl(
+    const std::string& cache_name,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
+
+  if (!cache.get()) {
+    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+                 scoped_ptr<ServiceWorkerResponse>(),
+                 scoped_ptr<storage::BlobDataHandle>());
+    return;
+  }
+
+  // Pass the cache along to the callback to keep the cache open until match is
+  // done.
+  cache->Match(request.Pass(),
+               base::Bind(&ServiceWorkerCacheStorage::MatchCacheDidMatch,
+                          weak_factory_.GetWeakPtr(), cache, callback));
+}
+
 void ServiceWorkerCacheStorage::MatchCacheDidMatch(
     const scoped_refptr<ServiceWorkerCache>& cache,
     const ServiceWorkerCache::ResponseCallback& callback,
@@ -728,6 +737,30 @@ void ServiceWorkerCacheStorage::MatchCacheDidMatch(
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> handle) {
   callback.Run(error, response.Pass(), handle.Pass());
+}
+
+void ServiceWorkerCacheStorage::MatchAllCachesImpl(
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  scoped_ptr<ServiceWorkerCache::ResponseCallback> callback_copy(
+      new ServiceWorkerCache::ResponseCallback(callback));
+
+  ServiceWorkerCache::ResponseCallback* callback_ptr = callback_copy.get();
+  base::Closure barrier_closure = base::BarrierClosure(
+      ordered_cache_names_.size(),
+      base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatchAll,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(callback_copy.Pass())));
+
+  for (const std::string& cache_name : ordered_cache_names_) {
+    scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
+    DCHECK(cache.get());
+
+    cache->Match(make_scoped_ptr(new ServiceWorkerFetchRequest(*request)),
+                 base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatch,
+                            weak_factory_.GetWeakPtr(), cache, barrier_closure,
+                            callback_ptr));
+  }
 }
 
 void ServiceWorkerCacheStorage::MatchAllCachesDidMatch(
@@ -775,6 +808,93 @@ scoped_refptr<ServiceWorkerCache> ServiceWorkerCacheStorage::GetLoadedCache(
   }
 
   return make_scoped_refptr(cache.get());
+}
+
+void ServiceWorkerCacheStorage::CloseAllCachesImpl(
+    const base::Closure& callback) {
+  int live_cache_count = 0;
+  for (const auto& key_value : cache_map_) {
+    if (key_value.second)
+      live_cache_count += 1;
+  }
+
+  if (live_cache_count == 0) {
+    callback.Run();
+    return;
+  }
+
+  // The closure might modify this object so delay calling it until after
+  // iterating through cache_map_ by adding one to the barrier.
+  base::Closure barrier_closure =
+      base::BarrierClosure(live_cache_count + 1, base::Bind(callback));
+
+  for (auto& key_value : cache_map_) {
+    if (key_value.second) {
+      key_value.second->Close(base::Bind(
+          CloseAllCachesDidCloseCache,
+          make_scoped_refptr(key_value.second.get()), barrier_closure));
+    }
+  }
+
+  barrier_closure.Run();
+}
+
+void ServiceWorkerCacheStorage::PendingClosure(const base::Closure& callback) {
+  base::WeakPtr<ServiceWorkerCacheStorage> cache_storage =
+      weak_factory_.GetWeakPtr();
+
+  callback.Run();
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void ServiceWorkerCacheStorage::PendingBoolAndErrorCallback(
+    const BoolAndErrorCallback& callback,
+    bool found,
+    CacheStorageError error) {
+  base::WeakPtr<ServiceWorkerCacheStorage> cache_storage =
+      weak_factory_.GetWeakPtr();
+
+  callback.Run(found, error);
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void ServiceWorkerCacheStorage::PendingCacheAndErrorCallback(
+    const CacheAndErrorCallback& callback,
+    const scoped_refptr<ServiceWorkerCache>& cache,
+    CacheStorageError error) {
+  base::WeakPtr<ServiceWorkerCacheStorage> cache_storage =
+      weak_factory_.GetWeakPtr();
+
+  callback.Run(cache, error);
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void ServiceWorkerCacheStorage::PendingStringsAndErrorCallback(
+    const StringsAndErrorCallback& callback,
+    const StringVector& strings,
+    CacheStorageError error) {
+  base::WeakPtr<ServiceWorkerCacheStorage> cache_storage =
+      weak_factory_.GetWeakPtr();
+
+  callback.Run(strings, error);
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void ServiceWorkerCacheStorage::PendingResponseCallback(
+    const ServiceWorkerCache::ResponseCallback& callback,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  base::WeakPtr<ServiceWorkerCacheStorage> cache_storage =
+      weak_factory_.GetWeakPtr();
+
+  callback.Run(error, response.Pass(), blob_data_handle.Pass());
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
 }
 
 }  // namespace content

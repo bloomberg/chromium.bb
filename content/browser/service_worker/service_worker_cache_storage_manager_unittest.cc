@@ -22,7 +22,7 @@
 namespace content {
 
 class ServiceWorkerCacheStorageManagerTest : public testing::Test {
- protected:
+ public:
   ServiceWorkerCacheStorageManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         callback_bool_(false),
@@ -424,13 +424,13 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchInOneOfMany) {
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
-  EXPECT_TRUE(Open(origin1_, "������"));
+  EXPECT_TRUE(Open(origin1_, "你好"));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(Open(origin1_, "������"));
+  EXPECT_TRUE(Open(origin1_, "你好"));
   EXPECT_EQ(callback_cache_.get(), cache.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
-  EXPECT_STREQ("������", callback_strings_[0].c_str());
+  EXPECT_STREQ("你好", callback_strings_[0].c_str());
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
@@ -520,6 +520,25 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_TRUE(callback_cache_->AsWeakPtr());
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenRunsSerially) {
+  EXPECT_FALSE(Delete(origin1_, "tmp"));  // Init storage.
+  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  cache_storage->StartAsyncOperationForTesting();
+
+  scoped_ptr<base::RunLoop> open_loop(new base::RunLoop());
+  cache_manager_->OpenCache(
+      origin1_, "foo",
+      base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
+                 base::Unretained(this), base::Unretained(open_loop.get())));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback_cache_);
+
+  cache_storage->CompleteAsyncOperationForTesting();
+  open_loop->Run();
+  EXPECT_TRUE(callback_cache_);
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
