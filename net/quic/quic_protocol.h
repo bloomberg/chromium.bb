@@ -513,6 +513,8 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS = 68,
   // The connection has too many outstanding received packets.
   QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS = 69,
+  // The quic connection job to load server config is cancelled.
+  QUIC_CONNECTION_CANCELLED = 70,
 
   // Crypto errors.
 
@@ -570,7 +572,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 70,
+  QUIC_LAST_ERROR = 71,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

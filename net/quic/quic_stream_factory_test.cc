@@ -34,6 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using std::ostream;
 using std::string;
 using std::vector;
 
@@ -43,6 +44,34 @@ namespace test {
 namespace {
 const char kDefaultServerHostName[] = "www.google.com";
 const int kDefaultServerPort = 443;
+
+// Run all tests with all the combinations of versions and
+// enable_connection_racing.
+struct TestParams {
+  TestParams(const QuicVersion version, bool enable_connection_racing)
+      : version(version), enable_connection_racing(enable_connection_racing) {}
+
+  friend ostream& operator<<(ostream& os, const TestParams& p) {
+    os << "{ version: " << QuicVersionToString(p.version);
+    os << " enable_connection_racing: " << p.enable_connection_racing << " }";
+    return os;
+  }
+
+  QuicVersion version;
+  bool enable_connection_racing;
+};
+
+// Constructs various test permutations.
+vector<TestParams> GetTestParams() {
+  vector<TestParams> params;
+  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  for (const QuicVersion version : all_supported_versions) {
+    params.push_back(TestParams(version, false));
+    params.push_back(TestParams(version, true));
+  }
+  return params;
+}
+
 }  // namespace anonymous
 
 class QuicStreamFactoryPeer {
@@ -100,6 +129,16 @@ class QuicStreamFactoryPeer {
                                        size_t load_server_info_timeout) {
     factory->load_server_info_timeout_ms_ = load_server_info_timeout;
   }
+
+  static void SetEnableConnectionRacing(QuicStreamFactory* factory,
+                                        bool enable_connection_racing) {
+    factory->enable_connection_racing_ = enable_connection_racing;
+  }
+
+  static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
+                                      const QuicServerId& server_id) {
+    return (factory->active_jobs_[server_id]).size();
+  }
 };
 
 class MockQuicServerInfo : public QuicServerInfo {
@@ -135,14 +174,13 @@ class MockQuicServerInfoFactory : public QuicServerInfoFactory {
   }
 };
 
-
-class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
  protected:
   QuicStreamFactoryTest()
       : random_generator_(0),
         clock_(new MockClock()),
         runner_(new TestTaskRunner(clock_)),
-        maker_(GetParam(), 0, clock_),
+        maker_(GetParam().version, 0, clock_),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
@@ -158,7 +196,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  clock_,
                  kDefaultMaxPacketSize,
                  std::string(),
-                 SupportedVersions(GetParam()),
+                 SupportedVersions(GetParam().version),
                  /*enable_port_selection=*/true,
                  /*always_require_handshake_confirmation=*/false,
                  /*disable_connection_pooling=*/false,
@@ -171,6 +209,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         privacy_mode_(PRIVACY_MODE_DISABLED) {
     factory_.set_require_confirmation(false);
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+    QuicStreamFactoryPeer::SetEnableConnectionRacing(
+        &factory_, GetParam().enable_connection_racing);
   }
 
   scoped_ptr<QuicHttpStream> CreateIfSessionExists(
@@ -244,7 +284,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     QuicStreamId stream_id = kClientDataStreamId1;
     return maker_.MakeRstPacket(
         1, true, stream_id,
-        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
+        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam().version));
   }
 
   MockQuicServerInfoFactory quic_server_info_factory_;
@@ -266,8 +306,9 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   TestCompletionCallback callback_;
 };
 
-INSTANTIATE_TEST_CASE_P(Version, QuicStreamFactoryTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicStreamFactoryTest,
+                        ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicStreamFactoryTest, CreateIfSessionExists) {
   EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
@@ -1562,6 +1603,10 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 }
 
 TEST_P(QuicStreamFactoryTest, CancelWaitForDataReady) {
+  // Don't race quic connections when testing cancel reading of server config
+  // from disk cache.
+  if (GetParam().enable_connection_racing)
+    return;
   factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
   const size_t kLoadServerInfoTimeoutMs = 50;
@@ -1602,6 +1647,53 @@ TEST_P(QuicStreamFactoryTest, CancelWaitForDataReady) {
   EXPECT_TRUE(stream.get());
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, RacingConnections) {
+  if (!GetParam().enable_connection_racing)
+    return;
+  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
+  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
+  const size_t kLoadServerInfoTimeoutMs = 50;
+  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(&factory_,
+                                                  kLoadServerInfoTimeoutMs);
+
+  MockRead reads[] = {
+      MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  MockRead reads2[] = {
+      MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  QuicServerId server_id(host_port_pair_, is_https_, privacy_mode_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, is_https_, privacy_mode_, "GET",
+                            net_log_, callback_.callback()));
+  EXPECT_EQ(2u,
+            QuicStreamFactoryPeer::GetNumberOfActiveJobs(&factory_, server_id));
+
+  runner_->RunNextTask();
+
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_EQ(0u,
+            QuicStreamFactoryPeer::GetNumberOfActiveJobs(&factory_, server_id));
 }
 
 }  // namespace test

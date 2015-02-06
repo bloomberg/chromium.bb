@@ -196,7 +196,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         break;
       case STATE_SEND_CHLO:
         DoSendCHLO(in, cached);
-        return;
+        return;  // return waiting to hear from server.
       case STATE_RECV_REJ:
         DoReceiveREJ(in, cached);
         break;
@@ -638,7 +638,7 @@ bool QuicCryptoClientStream::RequiresChannelID(
     return false;
   }
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
-  if (!scfg) {  // scfg may be null when we send an inchoate CHLO.
+  if (!scfg) {  // scfg may be null then we send an inchoate CHLO.
     return false;
   }
   const QuicTag* their_proof_demands;
