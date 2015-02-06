@@ -39,9 +39,10 @@ class AndroidHistoryProviderService;
 #endif
 
 class GURL;
+class HistoryService;
+struct ImportedFaviconUsage;
 class PageUsageRequest;
 class Profile;
-struct ImportedFaviconUsage;
 class SkBitmap;
 
 namespace base {
@@ -72,6 +73,7 @@ struct KeywordSearchTermVisit;
 class PageUsageData;
 class URLDatabase;
 class VisitFilter;
+class WebHistoryService;
 
 }  // namespace history
 
@@ -354,11 +356,13 @@ class HistoryService : public syncer::SyncableService,
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
   // synced visits if appropriate.
-  void ExpireLocalAndRemoteHistoryBetween(const std::set<GURL>& restrict_urls,
-                                          base::Time begin_time,
-                                          base::Time end_time,
-                                          const base::Closure& callback,
-                                          base::CancelableTaskTracker* tracker);
+  void ExpireLocalAndRemoteHistoryBetween(
+      history::WebHistoryService* web_history,
+      const std::set<GURL>& restrict_urls,
+      base::Time begin_time,
+      base::Time end_time,
+      const base::Closure& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Processes the given |delete_directive| and sends it to the
   // SyncChangeProcessor (if it exists).  Returns any error resulting
@@ -815,9 +819,6 @@ class HistoryService : public syncer::SyncableService,
   // The history client, may be null when testing. The object should otherwise
   // outlive |HistoryService|.
   history::HistoryClient* history_client_;
-
-  // The profile, may be null when testing.
-  Profile* profile_;
 
   // Used for propagating link highlighting data across renderers. May be null
   // in tests.

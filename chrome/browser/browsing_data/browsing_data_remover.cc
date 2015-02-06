@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
@@ -308,6 +309,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       waiting_for_clear_history_ = true;
 
       history_service->ExpireLocalAndRemoteHistoryBetween(
+          WebHistoryServiceFactory::GetForProfile(profile_),
           restrict_urls, delete_begin_, delete_end_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      base::Unretained(this)),

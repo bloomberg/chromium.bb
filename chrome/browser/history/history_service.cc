@@ -32,7 +32,6 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/web_history_service.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
@@ -217,7 +216,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 HistoryService::HistoryService()
     : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(NULL),
-      profile_(NULL),
       backend_loaded_(false),
       no_db_(false),
       weak_ptr_factory_(this) {
@@ -227,7 +225,6 @@ HistoryService::HistoryService(
     history::HistoryClient* history_client, Profile* profile)
     : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(history_client),
-      profile_(profile),
       visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
       backend_loaded_(false),
@@ -1154,6 +1151,7 @@ void HistoryService::ExpireHistory(
 }
 
 void HistoryService::ExpireLocalAndRemoteHistoryBetween(
+    history::WebHistoryService* web_history,
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time,
@@ -1161,9 +1159,6 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     base::CancelableTaskTracker* tracker) {
   // TODO(dubroy): This should be factored out into a separate class that
   // dispatches deletions to the proper places.
-
-  history::WebHistoryService* web_history =
-      WebHistoryServiceFactory::GetForProfile(profile_);
   if (web_history) {
     // TODO(dubroy): This API does not yet support deletion of specific URLs.
     DCHECK(restrict_urls.empty());
