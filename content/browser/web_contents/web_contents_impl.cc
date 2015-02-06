@@ -3663,6 +3663,10 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
 void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
                                            base::TerminationStatus status,
                                            int error_code) {
+  // TODO(nasko): This isn't ideal; the termination process should be handled by
+  // RenderFrameDeleted().  See http://crbug.com/455943.
+  ClearPowerSaveBlockers(rvh->GetMainFrame());
+
   if (rvh != GetRenderViewHost()) {
     // The pending page's RenderViewHost is gone.
     return;

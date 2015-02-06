@@ -2977,6 +2977,24 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
       FrameHostMsg_MediaPausedNotification(0, kPlayerRemoteId));
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
+
+  // Start a player with both audio and video.  A video power save blocker
+  // should be created.  If audio stream monitoring is available, an audio power
+  // save blocker should be created too.
+  rfh->OnMessageReceived(FrameHostMsg_MediaPlayingNotification(
+      0, kPlayerAudioVideoId, true, true, false));
+  EXPECT_TRUE(contents()->has_video_power_save_blocker_for_testing());
+  EXPECT_EQ(contents()->has_audio_power_save_blocker_for_testing(),
+            !AudioStreamMonitor::monitoring_available());
+
+  // Crash the renderer.
+  contents()->GetMainFrame()->GetRenderViewHost()->OnMessageReceived(
+      ViewHostMsg_RenderProcessGone(
+          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+
+  // Verify that all the power save blockers have been released.
+  EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
+  EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
 }
 #endif
 
