@@ -74,7 +74,9 @@ void CookieSettings::Factory::RegisterProfilePrefs(
 
 content::BrowserContext* CookieSettings::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  // The incognito profile has its own content settings map. Therefore, it
+  // should get its own CookieSettings.
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 scoped_refptr<RefcountedKeyedService>
