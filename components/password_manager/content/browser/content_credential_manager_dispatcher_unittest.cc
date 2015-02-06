@@ -261,13 +261,32 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerIncognitoSignedIn) {
 }
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedOut) {
+  store_->AddLogin(form_);
+  store_->AddLogin(cross_origin_form_);
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+
   dispatcher()->OnNotifySignedOut(kRequestId);
+  RunAllPendingTasks();
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedOut::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
   process()->sink().ClearMessages();
+
+  passwords = store_->stored_passwords();
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
+  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerDispatcherTest,

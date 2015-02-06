@@ -23,6 +23,8 @@
 
 namespace password_manager {
 
+// CredentialManagerDispatcher::PendingRequestTask -----------------------------
+
 class CredentialManagerDispatcher::PendingRequestTask
     : public PasswordStoreConsumer {
  public:
@@ -102,6 +104,60 @@ class CredentialManagerDispatcher::PendingRequestTask
   DISALLOW_COPY_AND_ASSIGN(PendingRequestTask);
 };
 
+// CredentialManagerDispatcher::PendingSignedOutTask ---------------------------
+
+class CredentialManagerDispatcher::PendingSignedOutTask
+    : public PasswordStoreConsumer {
+ public:
+  PendingSignedOutTask(CredentialManagerDispatcher* const dispatcher,
+                       const GURL& origin);
+
+  void AddOrigin(const GURL& origin);
+
+  // PasswordStoreConsumer implementation.
+  void OnGetPasswordStoreResults(
+      const std::vector<autofill::PasswordForm*>& results) override;
+
+ private:
+  // Backlink to the CredentialManagerDispatcher that owns this object.
+  CredentialManagerDispatcher* const dispatcher_;
+  std::set<std::string> origins_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingSignedOutTask);
+};
+
+CredentialManagerDispatcher::PendingSignedOutTask::PendingSignedOutTask(
+    CredentialManagerDispatcher* const dispatcher,
+    const GURL& origin)
+    : dispatcher_(dispatcher) {
+  origins_.insert(origin.spec());
+}
+
+void CredentialManagerDispatcher::PendingSignedOutTask::AddOrigin(
+    const GURL& origin) {
+  origins_.insert(origin.spec());
+}
+
+void CredentialManagerDispatcher::PendingSignedOutTask::
+    OnGetPasswordStoreResults(
+        const std::vector<autofill::PasswordForm*>& results) {
+  PasswordStore* store = dispatcher_->GetPasswordStore();
+  for (autofill::PasswordForm* form : results) {
+    if (origins_.count(form->origin.spec())) {
+      form->skip_zero_click = true;
+      store->UpdateLogin(*form);
+    }
+    // We own the PasswordForms, so we need to dispose of them. This is safe to
+    // do, as ::UpdateLogin ends up copying the form while posting a task to
+    // update the PasswordStore.
+    delete form;
+  }
+
+  dispatcher_->DoneSigningOut();
+}
+
+// CredentialManagerDispatcher -------------------------------------------------
+
 CredentialManagerDispatcher::CredentialManagerDispatcher(
     content::WebContents* web_contents,
     PasswordManagerClient* client)
@@ -153,6 +209,7 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
 
   scoped_ptr<autofill::PasswordForm> form(CreatePasswordFormFromCredentialInfo(
       credential, web_contents()->GetLastCommittedURL().GetOrigin()));
+  form->skip_zero_click = !IsZeroClickAllowed();
 
   // TODO(mkwst): This is a stub; we should be checking the PasswordStore to
   // determine whether or not the credential exists, and calling UpdateLogin
@@ -168,7 +225,22 @@ void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
 
 void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
   DCHECK(request_id);
-  // TODO(mkwst): This is a stub.
+
+  PasswordStore* store = GetPasswordStore();
+  if (store) {
+    if (!pending_sign_out_) {
+      pending_sign_out_.reset(new PendingSignedOutTask(
+          this, web_contents()->GetLastCommittedURL().GetOrigin()));
+
+      // This will result in a callback to
+      // PendingSignedOutTask::OnGetPasswordStoreResults().
+      store->GetAutofillableLogins(pending_sign_out_.get());
+    } else {
+      pending_sign_out_->AddOrigin(
+          web_contents()->GetLastCommittedURL().GetOrigin());
+    }
+  }
+
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedOut(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
@@ -234,11 +306,19 @@ void CredentialManagerDispatcher::SendCredential(int request_id,
                                                  const CredentialInfo& info) {
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->id(), request_id);
+  // TODO(mkwst): We need to update the underlying PasswordForm if the user
+  // has enabled zeroclick globally, and clicks through a non-zeroclick form
+  // for an origin.
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           pending_request_->id(), info));
   pending_request_.reset();
+}
+
+void CredentialManagerDispatcher::DoneSigningOut() {
+  DCHECK(pending_sign_out_);
+  pending_sign_out_.reset();
 }
 
 }  // namespace password_manager

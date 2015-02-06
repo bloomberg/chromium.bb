@@ -487,6 +487,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
 #endif
     MediaDeviceIDSalt::Reset(profile_->GetPrefs());
+
+    // TODO(mkwst): If we're not removing passwords, then clear the 'zero-click'
+    // flag for all credentials in the password store.
   }
 
   // Channel IDs are not separated for protected and unprotected web

@@ -72,6 +72,7 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
 
  private:
   class PendingRequestTask;
+  class PendingSignedOutTask;
 
   PasswordStore* GetPasswordStore();
 
@@ -83,6 +84,7 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
 
   void SendCredential(int request_id, const CredentialInfo& info);
+  void DoneSigningOut();
 
   PasswordManagerClient* client_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
@@ -95,6 +97,7 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
   // they can properly respond to the request once the PasswordStore gives
   // us data.
   scoped_ptr<PendingRequestTask> pending_request_;
+  scoped_ptr<PendingSignedOutTask> pending_sign_out_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };
