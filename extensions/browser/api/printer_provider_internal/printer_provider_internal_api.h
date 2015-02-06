@@ -46,6 +46,10 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
   friend class PrinterProviderInternalReportPrinterCapabilityFunction;
   friend class PrinterProviderInternalReportPrintResultFunction;
 
+  // BrowserContextKeyedAPI implementation.
+  static const bool kServiceRedirectedInIncognito = true;
+  static const char* service_name() { return "PrinterProviderInternal"; }
+
   // Notifies observers that a printerProvider.onGetPrintersRequested callback
   // has been called. Called from
   // |PrinterProviderInternalReportPrintersFunction|.
@@ -67,9 +71,6 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
   void NotifyPrintResult(const Extension* extension,
                          int request_id,
                          core_api::printer_provider_internal::PrintError error);
-
-  // BrowserContextKeyedAPI implementation.
-  static const char* service_name() { return "PrinterProviderInternal"; }
 
   ObserverList<PrinterProviderInternalAPIObserver> observers_;
 

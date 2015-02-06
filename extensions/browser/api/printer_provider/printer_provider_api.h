@@ -209,6 +209,7 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   };
 
   // BrowserContextKeyedAPI implementation.
+  static const bool kServiceRedirectedInIncognito = true;
   static const char* service_name() { return "PrinterProvider"; }
 
   // PrinterProviderInternalAPIObserver implementation:
