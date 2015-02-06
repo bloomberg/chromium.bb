@@ -48,6 +48,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/ContentType.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -721,6 +722,7 @@ void HTMLImageElement::setUseFallbackContent()
     m_useFallbackContent = true;
     if (document().inStyleRecalc())
         return;
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
     ensureUserAgentShadowRoot();
 }
 }

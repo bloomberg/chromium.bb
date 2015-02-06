@@ -53,6 +53,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -334,6 +335,7 @@ void TextFieldInputType::listAttributeTargetChanged()
     bool willHavePickerIndicator = element().hasValidDataListOptions();
     if (didHavePickerIndicator == willHavePickerIndicator)
         return;
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
     if (willHavePickerIndicator) {
         Document& document = element().document();
         if (Element* container = containerElement()) {
