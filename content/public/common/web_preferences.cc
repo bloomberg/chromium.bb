@@ -59,18 +59,6 @@ STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT_SMALL,
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
                              WebSettings::V8CacheOptionsRecentSmall);
 
-STATIC_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
-                             WebSettings::V8ScriptStreamingModeAll);
-STATIC_ASSERT_MATCHING_ENUMS(
-    V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER,
-    WebSettings::V8ScriptStreamingModeOnlyAsyncAndDefer);
-STATIC_ASSERT_MATCHING_ENUMS(
-    V8_SCRIPT_STREAMING_MODE_ALL_PLUS_BLOCK_PARSER_BLOCKING,
-    WebSettings::V8ScriptStreamingModeAllPlusBlockParsingBlocking);
-STATIC_ASSERT_MATCHING_ENUMS(
-    V8_SCRIPT_STREAMING_MODE_LAST,
-    WebSettings::V8ScriptStreamingModeAllPlusBlockParsingBlocking);
-
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
                              WebSettings::PointerTypeNone);
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
@@ -191,8 +179,6 @@ WebPreferences::WebPreferences()
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
       v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
-      v8_script_streaming_enabled(false),
-      v8_script_streaming_mode(V8_SCRIPT_STREAMING_MODE_ALL),
       slimming_paint_enabled(false),
       cookie_enabled(true),
       pepper_accelerated_video_decode_enabled(false),

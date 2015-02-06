@@ -1065,11 +1065,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setV8CacheOptions(
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
 
-  settings->setV8ScriptStreamingEnabled(prefs.v8_script_streaming_enabled);
-  settings->setV8ScriptStreamingMode(
-      static_cast<WebSettings::V8ScriptStreamingMode>(
-          prefs.v8_script_streaming_mode));
-
   // Needs to happen before setIgnoreVIewportTagScaleLimits below.
   web_view->setDefaultPageScaleLimits(
       prefs.default_minimum_page_scale_factor,

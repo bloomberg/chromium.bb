@@ -44,8 +44,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
 IPC_ENUM_TRAITS_MAX_VALUE(net::RequestPriority, net::MAXIMUM_PRIORITY)
 IPC_ENUM_TRAITS_MAX_VALUE(content::V8CacheOptions,
                           content::V8_CACHE_OPTIONS_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::V8ScriptStreamingMode,
-                          content::V8_SCRIPT_STREAMING_MODE_LAST)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::PointerType,
                               ui::POINTER_TYPE_FIRST,
                               ui::POINTER_TYPE_LAST)
@@ -194,8 +192,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(navigate_on_drag_drop)
   IPC_STRUCT_TRAITS_MEMBER(spatial_navigation_enabled)
   IPC_STRUCT_TRAITS_MEMBER(v8_cache_options)
-  IPC_STRUCT_TRAITS_MEMBER(v8_script_streaming_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(v8_script_streaming_mode)
   IPC_STRUCT_TRAITS_MEMBER(slimming_paint_enabled)
   IPC_STRUCT_TRAITS_MEMBER(pepper_accelerated_video_decode_enabled)
 #if defined(OS_ANDROID)

@@ -133,7 +133,6 @@ CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTracing[];
 CONTENT_EXPORT extern const char kEnableTracingOutput[];
 CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];
-extern const char kEnableV8ScriptStreaming[];
 CONTENT_EXPORT extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kEnableViewportMeta[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];

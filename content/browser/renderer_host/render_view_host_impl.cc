@@ -524,12 +524,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_DEFAULT;
   }
 
-  // TODO(marja): Clean up preferences + command line flag after streaming has
-  // launched in stable.
-  prefs.v8_script_streaming_enabled = true;
-  prefs.v8_script_streaming_mode =
-      V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER;
-
   GetContentClient()->browser()->OverrideWebkitPrefs(this, url, &prefs);
   return prefs;
 }
