@@ -19,11 +19,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -47,7 +44,6 @@
 #include "net/url_request/url_request_interceptor.h"
 
 using content::BrowserThread;
-using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
 
@@ -271,18 +267,14 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
   request_interceptors_.swap(request_interceptors);
 }
 
-data_reduction_proxy::DataReductionProxyAuthRequestHandler*
-AwURLRequestContextGetter::GetDataReductionProxyAuthRequestHandler() const {
-  return data_reduction_proxy_auth_request_handler_.get();
-}
-
 net::NetLog* AwURLRequestContextGetter::GetNetLog() {
   return net_log_.get();
 }
 
 void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
-  DCHECK(data_reduction_proxy_auth_request_handler_);
-  data_reduction_proxy_auth_request_handler_->InitAuthentication(key);
+  DCHECK(AwBrowserContext::GetDefault()->GetDataReductionProxyIOData());
+  AwBrowserContext::GetDefault()->GetDataReductionProxyIOData()->
+      auth_request_handler()->InitAuthentication(key);
 }
 
 }  // namespace android_webview

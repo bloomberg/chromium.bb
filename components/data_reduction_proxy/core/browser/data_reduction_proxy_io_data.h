@@ -85,6 +85,10 @@ class DataReductionProxyIOData {
     return statistics_prefs_.get();
   }
 
+  DataReductionProxyAuthRequestHandler* auth_request_handler() const {
+    return auth_request_handler_.get();
+  }
+
   net::ProxyDelegate* proxy_delegate() const {
     return proxy_delegate_.get();
   }
