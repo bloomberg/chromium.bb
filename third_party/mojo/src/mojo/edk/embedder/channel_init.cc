@@ -15,6 +15,9 @@ ChannelInit::ChannelInit() : channel_info_(nullptr), weak_factory_(this) {
 }
 
 ChannelInit::~ChannelInit() {
+  // TODO(vtl): This is likely leaky in common scenarios (we're on the main
+  // thread, which outlives the I/O thread, and we're destroyed after the I/O
+  // thread is destroyed.
   if (channel_info_)
     DestroyChannel(channel_info_);
 }
@@ -22,14 +25,12 @@ ChannelInit::~ChannelInit() {
 ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  DCHECK(!io_thread_task_runner_);  // Should only init once.
-  io_thread_task_runner_ = io_thread_task_runner;
   ScopedMessagePipeHandle message_pipe =
-      CreateChannel(
-          ScopedPlatformHandle(PlatformHandle(file)), io_thread_task_runner,
-          base::Bind(&ChannelInit::OnCreatedChannel, weak_factory_.GetWeakPtr(),
-                     io_thread_task_runner),
-          base::MessageLoop::current()->message_loop_proxy()).Pass();
+      CreateChannel(ScopedPlatformHandle(PlatformHandle(file)),
+                    io_thread_task_runner,
+                    base::Bind(&ChannelInit::OnCreatedChannel,
+                               weak_factory_.GetWeakPtr()),
+                    base::MessageLoop::current()->task_runner()).Pass();
   return message_pipe.Pass();
 }
 
@@ -40,7 +41,6 @@ void ChannelInit::WillDestroySoon() {
 
 // static
 void ChannelInit::OnCreatedChannel(base::WeakPtr<ChannelInit> self,
-                                   scoped_refptr<base::TaskRunner> io_thread,
                                    ChannelInfo* channel) {
   // If |self| was already destroyed, shut the channel down.
   if (!self) {
@@ -48,6 +48,7 @@ void ChannelInit::OnCreatedChannel(base::WeakPtr<ChannelInit> self,
     return;
   }
 
+  DCHECK(!self->channel_info_);
   self->channel_info_ = channel;
 }
 

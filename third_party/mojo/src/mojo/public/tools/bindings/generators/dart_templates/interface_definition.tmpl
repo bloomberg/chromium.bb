@@ -17,7 +17,7 @@ abstract class {{interface|name}} implements core.Listener {
   {{interface|name}}.unbound() :
       stub = new {{interface|name}}Stub.unbound();
 
-  void close() => stub.close();
+  void close({bool nodefer : false}) => stub.close(nodefer: nodefer);
 
   StreamSubscription<int> listen() => stub.listen();
 
@@ -76,7 +76,7 @@ class {{interface|name}}Proxy extends bindings.Proxy implements {{interface|name
 {%- endif %}
 {%- endfor %}
       default:
-        throw new Exception("Unexpected message name");
+        throw new bindings.MojoCodecError("Unexpected message name");
         break;
     }
   }
@@ -183,7 +183,7 @@ class {{interface|name}}Stub extends bindings.Stub {
         break;
 {%- endfor %}
       default:
-        throw new Exception("Unexpected message name");
+        throw new bindings.MojoCodecError("Unexpected message name");
         break;
     }
     return null;

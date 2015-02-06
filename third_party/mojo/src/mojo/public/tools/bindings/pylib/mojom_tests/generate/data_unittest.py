@@ -32,7 +32,6 @@ class DataTest(unittest.TestCase):
     module = mojom.Module('test_module', 'test_namespace')
     struct_data = {
         'name': 'SomeStruct',
-        'attributes': [],
         'enums': [],
         'constants': [],
         'fields': [
@@ -41,9 +40,6 @@ class DataTest(unittest.TestCase):
             {'name': 'field3', 'kind': 'i32', 'default': 15}]}
 
     struct = data.StructFromData(module, struct_data)
-    del struct_data['attributes']
-    del struct_data['enums']
-    del struct_data['constants']
     struct.fields = map(lambda field:
         data.FieldFromData(module, field, struct), struct.fields_data)
     self.assertEquals(struct_data, data.StructToData(struct))

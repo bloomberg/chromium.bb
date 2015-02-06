@@ -18,8 +18,10 @@ ServiceRegistry::ServiceRegistry(
     InterfaceRequest<ServiceProvider> local_services)
     : application_impl_(application_impl),
       url_(url),
-      local_binding_(this, local_services.Pass()),
+      local_binding_(this),
       remote_service_provider_(remote_services.Pass()) {
+  if (local_services.is_pending())
+    local_binding_.Bind(local_services.Pass());
 }
 
 ServiceRegistry::ServiceRegistry()

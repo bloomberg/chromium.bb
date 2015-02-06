@@ -25,6 +25,7 @@ class StructHelper {
 
 }  // namespace internal
 
+// Smart pointer wrapping a mojom structure with move-only semantics.
 template <typename Struct>
 class StructPtr {
   MOJO_MOVE_ONLY_TYPE(StructPtr)

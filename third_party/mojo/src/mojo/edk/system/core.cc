@@ -78,8 +78,8 @@ namespace system {
 //      held.
 
 // TODO(vtl): This should take a |scoped_ptr<PlatformSupport>| as a parameter.
-Core::Core(scoped_ptr<embedder::PlatformSupport> platform_support)
-    : platform_support_(platform_support.Pass()) {
+Core::Core(embedder::PlatformSupport* platform_support)
+    : platform_support_(platform_support) {
 }
 
 Core::~Core() {
@@ -469,7 +469,7 @@ MojoResult Core::CreateSharedBuffer(
     return result;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::Create(platform_support(), validated_options,
+  result = SharedBufferDispatcher::Create(platform_support_, validated_options,
                                           num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher);

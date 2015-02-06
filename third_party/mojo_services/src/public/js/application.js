@@ -8,20 +8,19 @@ define("mojo/services/public/js/application", [
   "mojo/public/js/connection",
   "mojo/public/js/threading",
   "mojo/public/interfaces/application/application.mojom",
-  "mojo/services/public/js/service_provider",
+  "mojo/services/public/js/service_exchange",
   "mojo/services/public/js/shell",
-], function(bindings, core, connection, threading, applicationMojom, serviceProvider, shell) {
+], function(bindings, core, connection, threading, applicationMojom, serviceExchange, shell) {
 
   const ApplicationInterface = applicationMojom.Application;
   const ProxyBindings = bindings.ProxyBindings;
-  const ServiceProvider = serviceProvider.ServiceProvider;
+  const ServiceExchange = serviceExchange.ServiceExchange;
   const Shell = shell.Shell;
 
   class Application {
     constructor(appRequestHandle, url) {
       this.url = url;
-      this.serviceProviders = [];
-      this.exposedServiceProviders = [];
+      this.serviceExchanges = [];
       this.appRequestHandle_ = appRequestHandle;
       this.appStub_ =
           connection.bindHandleToStub(appRequestHandle, ApplicationInterface);
@@ -37,30 +36,27 @@ define("mojo/services/public/js/application", [
       this.initialize(args);
     }
 
-    initialize(args) {}
-
-    // The mojom signature of this function is:
-    //   AcceptConnection(string requestor_url,
-    //                    ServiceProvider&? services,
-    //                    ServiceProvider? exposed_services);
-    //
-    // We want to bind |services| to our js implementation of ServiceProvider
-    // and store |exposed_services| so we can request services of the connecting
-    // application.
-    doAcceptConnection(requestorUrl, servicesRequest, exposedServicesProxy) {
-      // Construct a new js ServiceProvider that can make outgoing calls on
-      // exposedServicesProxy.
-      var serviceProvider =
-          new ServiceProvider(servicesRequest, exposedServicesProxy);
-      this.serviceProviders.push(serviceProvider);
-      this.acceptConnection(requestorUrl, serviceProvider);
+    initialize(args) {
     }
 
-    acceptConnection(requestorUrl, serviceProvider) {}
+    // Implements AcceptConnection() from Application.mojom. Calls
+    // this.acceptConnection() with a JS ServiceExchange instead of a pair
+    // of Mojo ServiceProviders.
+    doAcceptConnection(requestorUrl, servicesRequest, exposedServicesProxy) {
+      var serviceExchange =
+        new ServiceExchange(servicesRequest, exposedServicesProxy);
+      this.serviceExchanges.push(serviceExchange);
+      this.acceptConnection(requestorUrl, serviceExchange);
+    }
+
+    // Subclasses override this method to request or provide services for
+    // ConnectToApplication() calls from requestorURL.
+    acceptConnection(requestorUrl, serviceExchange) {
+    }
 
     quit() {
-      this.serviceProviders.forEach(function(sp) {
-        sp.close();
+      this.serviceExchanges.forEach(function(exch) {
+        exch.close();
       });
       this.shell.close();
       core.close(this.appRequestHandle_);

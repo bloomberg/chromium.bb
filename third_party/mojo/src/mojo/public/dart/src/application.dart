@@ -33,7 +33,7 @@ class _ApplicationImpl extends application_mojom.Application {
 
   void requestQuit() => _application._requestQuitAndClose();
 
-  void close() => shell.close();
+  void close({bool nodefer: false}) => shell.close();
 }
 
 // TODO(zra): Better documentation and examples.

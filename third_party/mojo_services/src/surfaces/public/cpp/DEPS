@@ -1,4 +1,0 @@
-include_rules = [
-  "+geometry/public/interfaces",
-  "+surfaces/public",
-]

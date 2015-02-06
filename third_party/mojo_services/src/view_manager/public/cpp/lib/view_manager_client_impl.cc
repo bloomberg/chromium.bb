@@ -105,6 +105,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
       capture_view_(nullptr),
       focused_view_(nullptr),
       activated_view_(nullptr),
+      wm_observer_binding_(this),
       binding_(this, handle.Pass()),
       service_(binding_.client()),
       delete_on_error_(delete_on_error) {
@@ -272,10 +273,12 @@ void ViewManagerClientImpl::OnEmbed(
   root_->AddObserver(new RootObserver(root_));
 
   window_manager_.Bind(window_manager_pipe.Pass());
-  window_manager_.set_client(this);
   // base::Unretained() is safe here as |window_manager_| is bound to our
   // lifetime.
+  WindowManagerObserverPtr observer;
+  wm_observer_binding_.Bind(GetProxy(&observer));
   window_manager_->GetFocusedAndActiveViews(
+      observer.Pass(),
       base::Bind(&ViewManagerClientImpl::OnGotFocusedAndActiveViews,
                  base::Unretained(this)));
 
@@ -397,12 +400,11 @@ void ViewManagerClientImpl::OnViewInputEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, WindowManagerClient implementation:
+// ViewManagerClientImpl, WindowManagerObserver implementation:
 
-void ViewManagerClientImpl::OnCaptureChanged(Id old_capture_view_id,
-                                             Id new_capture_view_id) {
-  View* gained_capture = GetViewById(new_capture_view_id);
-  View* lost_capture = GetViewById(old_capture_view_id);
+void ViewManagerClientImpl::OnCaptureChanged(Id capture_view_id) {
+  View* gained_capture = GetViewById(capture_view_id);
+  View* lost_capture = capture_view_;
   if (lost_capture) {
     FOR_EACH_OBSERVER(ViewObserver,
                       *ViewPrivate(lost_capture).observers(),
@@ -416,10 +418,9 @@ void ViewManagerClientImpl::OnCaptureChanged(Id old_capture_view_id,
   }
 }
 
-void ViewManagerClientImpl::OnFocusChanged(Id old_focused_view_id,
-                                           Id new_focused_view_id) {
-  View* focused = GetViewById(new_focused_view_id);
-  View* blurred = GetViewById(old_focused_view_id);
+void ViewManagerClientImpl::OnFocusChanged(Id focused_view_id) {
+  View* focused = GetViewById(focused_view_id);
+  View* blurred = focused_view_;
   if (blurred) {
     FOR_EACH_OBSERVER(ViewObserver,
                       *ViewPrivate(blurred).observers(),
@@ -433,10 +434,9 @@ void ViewManagerClientImpl::OnFocusChanged(Id old_focused_view_id,
   }
 }
 
-void ViewManagerClientImpl::OnActiveWindowChanged(Id old_active_view_id,
-                                                  Id new_active_view_id) {
-  View* activated = GetViewById(new_active_view_id);
-  View* deactivated = GetViewById(old_active_view_id);
+void ViewManagerClientImpl::OnActiveWindowChanged(Id active_view_id) {
+  View* activated = GetViewById(active_view_id);
+  View* deactivated = activated_view_;
   if (deactivated) {
     FOR_EACH_OBSERVER(ViewObserver,
                       *ViewPrivate(deactivated).observers(),
@@ -485,14 +485,16 @@ base::Callback<void(ErrorCode)>
                     base::Unretained(this));
 }
 
-void ViewManagerClientImpl::OnGotFocusedAndActiveViews(uint32 focused_view_id,
-                                                       uint32 active_view_id) {
+void ViewManagerClientImpl::OnGotFocusedAndActiveViews(
+    uint32_t capture_view_id,
+    uint32_t focused_view_id,
+    uint32_t active_view_id) {
+  if (GetViewById(capture_view_id) != capture_view_)
+    OnCaptureChanged(capture_view_id);
   if (GetViewById(focused_view_id) != focused_view_)
-    OnFocusChanged(focused_view_ ? focused_view_->id() : 0, focused_view_id);
-  if (GetViewById(active_view_id) != activated_view_) {
-    OnActiveWindowChanged(activated_view_ ? activated_view_->id() : 0,
-                          active_view_id);
-  }
+    OnFocusChanged(focused_view_id);
+  if (GetViewById(active_view_id) != activated_view_)
+    OnActiveWindowChanged(active_view_id);
 }
 
 }  // namespace mojo

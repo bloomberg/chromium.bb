@@ -47,8 +47,8 @@ abstract class Proxy extends core.MojoEventStreamListener {
     var header = new MessageHeader(name);
     var serviceMessage = message.serializeWithHeader(header);
     endpoint.write(serviceMessage.buffer,
-                    serviceMessage.buffer.lengthInBytes,
-                    serviceMessage.handles);
+                   serviceMessage.buffer.lengthInBytes,
+                   serviceMessage.handles);
     if (!endpoint.status.isOk) {
       throw "message pipe write failed";
     }
@@ -66,8 +66,8 @@ abstract class Proxy extends core.MojoEventStreamListener {
     var header = new MessageHeader.withRequestId(name, flags, id);
     var serviceMessage = message.serializeWithHeader(header);
     endpoint.write(serviceMessage.buffer,
-                    serviceMessage.buffer.lengthInBytes,
-                    serviceMessage.handles);
+                   serviceMessage.buffer.lengthInBytes,
+                   serviceMessage.handles);
     if (!endpoint.status.isOk) {
       throw "message pipe write failed";
     }

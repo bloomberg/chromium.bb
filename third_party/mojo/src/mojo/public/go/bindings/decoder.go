@@ -185,6 +185,7 @@ func (d *Decoder) ReadUint8() (uint8, error) {
 	if err := ensureElementBitSizeAndCapacity(d.state(), 8); err != nil {
 		return 0, err
 	}
+	d.state().alignOffsetToBytes()
 	value := d.buf[d.state().offset]
 	d.state().skipBytes(1)
 	d.state().elementsProcessed++
@@ -202,6 +203,7 @@ func (d *Decoder) ReadUint16() (uint16, error) {
 	if err := ensureElementBitSizeAndCapacity(d.state(), 16); err != nil {
 		return 0, err
 	}
+	d.state().alignOffsetToBytes()
 	d.state().offset = align(d.state().offset, 2)
 	value := binary.LittleEndian.Uint16(d.buf[d.state().offset:])
 	d.state().skipBytes(2)
@@ -220,6 +222,7 @@ func (d *Decoder) ReadUint32() (uint32, error) {
 	if err := ensureElementBitSizeAndCapacity(d.state(), 32); err != nil {
 		return 0, err
 	}
+	d.state().alignOffsetToBytes()
 	d.state().offset = align(d.state().offset, 4)
 	value := binary.LittleEndian.Uint32(d.buf[d.state().offset:])
 	d.state().skipBytes(4)
@@ -238,6 +241,7 @@ func (d *Decoder) ReadUint64() (uint64, error) {
 	if err := ensureElementBitSizeAndCapacity(d.state(), 64); err != nil {
 		return 0, err
 	}
+	d.state().alignOffsetToBytes()
 	d.state().offset = align(d.state().offset, 8)
 	value := binary.LittleEndian.Uint64(d.buf[d.state().offset:])
 	d.state().skipBytes(8)
@@ -300,16 +304,59 @@ func (d *Decoder) ReadPointer() (uint64, error) {
 	if newEnd%8 != 0 {
 		return 0, fmt.Errorf("incorrect pointer data alignment: %d", newEnd)
 	}
-	d.claimData(d.end - int(newEnd))
+	d.claimData(int(newEnd) - d.end)
 	return pointer, nil
 }
 
-// ReadMessagePipeHandle reads a message pipe handle.
-func (d *Decoder) ReadMessagePipeHandle() (system.MessagePipeHandle, error) {
+// ReadUntypedHandle reads an untyped handle.
+func (d *Decoder) ReadUntypedHandle() (system.UntypedHandle, error) {
 	handleIndex, err := d.ReadUint32()
 	if err != nil {
 		return nil, err
 	}
-	untypedHandle, err := d.claimHandle(int(handleIndex))
-	return untypedHandle.ToMessagePipeHandle(), err
+	if handleIndex == ^uint32(0) {
+		return &InvalidHandle{}, nil
+	}
+	return d.claimHandle(int(handleIndex))
+}
+
+// ReadHandle reads a handle.
+func (d *Decoder) ReadHandle() (system.Handle, error) {
+	return d.ReadUntypedHandle()
+}
+
+// ReadMessagePipeHandle reads a message pipe handle.
+func (d *Decoder) ReadMessagePipeHandle() (system.MessagePipeHandle, error) {
+	if handle, err := d.ReadUntypedHandle(); err != nil {
+		return nil, err
+	} else {
+		return handle.ToMessagePipeHandle(), nil
+	}
+}
+
+// ReadConsumerHandle reads a data pipe consumer handle.
+func (d *Decoder) ReadConsumerHandle() (system.ConsumerHandle, error) {
+	if handle, err := d.ReadUntypedHandle(); err != nil {
+		return nil, err
+	} else {
+		return handle.ToConsumerHandle(), nil
+	}
+}
+
+// ReadProducerHandle reads a data pipe producer handle.
+func (d *Decoder) ReadProducerHandle() (system.ProducerHandle, error) {
+	if handle, err := d.ReadUntypedHandle(); err != nil {
+		return nil, err
+	} else {
+		return handle.ToProducerHandle(), nil
+	}
+}
+
+// ReadSharedBufferHandle reads a shared buffer handle.
+func (d *Decoder) ReadSharedBufferHandle() (system.SharedBufferHandle, error) {
+	if handle, err := d.ReadUntypedHandle(); err != nil {
+		return nil, err
+	} else {
+		return handle.ToSharedBufferHandle(), nil
+	}
 }

@@ -1,7 +1,0 @@
-include_rules = [
-  "-mojo",
-  "+mojo/edk",
-  "+mojo/public",
-
-  "+third_party/ashmem",
-]

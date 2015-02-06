@@ -5,11 +5,13 @@
 define('mojo/edk/js/tests/js_to_cpp_tests', [
   'console',
   'mojo/edk/js/tests/js_to_cpp.mojom',
+  'mojo/public/js/bindings',
   'mojo/public/js/connection',
   'mojo/public/js/connector',
   'mojo/public/js/core',
-], function (console, jsToCpp, connection, connector, core) {
-  var retainedConnection;
+], function (console, jsToCpp, bindings, connection, connector, core) {
+  var retainedJsSide;
+  var retainedJsSideStub;
   var sampleData;
   var sampleMessage;
   var BAD_VALUE = 13;
@@ -24,6 +26,11 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
 
   JsSideConnection.prototype =
       Object.create(jsToCpp.JsSide.stubClass.prototype);
+
+  JsSideConnection.prototype.setCppSide = function(cppSide) {
+    this.cppSide_ = cppSide;
+    this.cppSide_.startTest();
+  };
 
   JsSideConnection.prototype.ping = function (arg) {
     this.cppSide_.pingResponse();
@@ -203,13 +210,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     }, null);
   }
 
-  function createCppSideConnection(handle, stubClass, proxyClass) {
-    var c = new connection.Connection(handle, stubClass, proxyClass);
-    c.local.cppSide_ = c.remote;
-    return c;
-  }
-
-  return function(handle) {
+  return function(jsSideRequestHandle) {
     var i;
     sampleData = new Uint8Array(DATA_PIPE_PARAMS.capacityNumBytes);
     for (i = 0; i < sampleData.length; ++i) {
@@ -219,8 +220,9 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     for (i = 0; i < sampleMessage.length; ++i) {
       sampleMessage[i] = 255 - i;
     }
-    retainedConnection = createCppSideConnection(
-        handle, JsSideConnection,jsToCpp.CppSide.proxyClass);
-    retainedConnection.remote.startTest();
+    retainedJsSideStub =
+        connection.bindHandleToStub(jsSideRequestHandle, jsToCpp.JsSide);
+    retainedJsSide = new JsSideConnection;
+    bindings.StubBindings(retainedJsSideStub).delegate = retainedJsSide;
   };
 });

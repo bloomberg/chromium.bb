@@ -20,13 +20,12 @@ namespace embedder {
 struct Configuration;
 class PlatformSupport;
 
-// Must be called first, or just after setting configuration parameters,
-// to initialize the (global, singleton) system.
+// Must be called first, or just after setting configuration parameters, to
+// initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 
-// Returns the global configuration. In general there should be no need to
-// change the configuration, but if you do so this must be done before calling
-// |Init()|.
+// Returns the global configuration. In general, you should not need to change
+// the configuration, but if you do you must do it before calling |Init()|.
 MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
@@ -64,8 +63,6 @@ MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
 //
 // The destruction functions are similarly synchronous and asynchronous,
 // respectively, and take the |ChannelInfo*| produced by the creation functions.
-//
-// TODO(vtl): Figure out channel teardown.
 
 // Creates a channel; must only be called from the I/O thread. |platform_handle|
 // should be a handle to a connected OS "pipe". Eventually (even on failure),
@@ -95,6 +92,9 @@ CreateChannel(ScopedPlatformHandle platform_handle,
 // should be the value provided to the callback to |CreateChannel()| (or
 // returned by |CreateChannelOnIOThread()|). If called from the I/O thread, this
 // will complete synchronously (in particular, it will post no tasks).
+// TODO(vtl): If called from some other thread, it'll post tasks to the I/O
+// thread. This is obviously potentially problematic if you want to shut the I/O
+// thread down.
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(ChannelInfo* channel_info);
 
 // Inform the channel that it will soon be destroyed (doing so is optional).

@@ -169,9 +169,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                                             MojoMapBufferFlags flags);
 
 // Unmaps a buffer pointer that was mapped by |MojoMapBuffer()|. |buffer| must
-// have been the result of |MojoMapBuffer()| (not some pointer strictly inside
+// have been the result of |MojoMapBuffer()| (not some other pointer inside
 // the mapped memory), and the entire mapping will be removed (partial unmapping
-// is not supported). A mapping may only be unmapped exactly once.
+// is not supported). A mapping may only be unmapped once.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.

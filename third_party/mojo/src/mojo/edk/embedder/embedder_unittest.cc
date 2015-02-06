@@ -44,7 +44,7 @@ class ScopedTestChannel {
                     ScopedPlatformHandle platform_handle)
       : io_thread_task_runner_(io_thread_task_runner),
         bootstrap_message_pipe_(MOJO_HANDLE_INVALID),
-        did_create_channel_event_(true, false),
+        did_create_channel_event_(true, false),  // Manual reset.
         channel_info_(nullptr) {
     bootstrap_message_pipe_ =
         CreateChannel(platform_handle.Pass(), io_thread_task_runner_,
@@ -58,7 +58,11 @@ class ScopedTestChannel {
 
   // Destructor: Shuts down the channel. (As noted above, for this to happen,
   // the I/O thread must be alive and pumping messages.)
-  ~ScopedTestChannel() { DestroyChannel(channel_info_); }
+  ~ScopedTestChannel() {
+    // |WaitForChannelCreationCompletion()| must be called before destruction.
+    CHECK(did_create_channel_event_.IsSignaled());
+    DestroyChannel(channel_info_);
+  }
 
   // Waits for channel creation to be completed.
   void WaitForChannelCreationCompletion() { did_create_channel_event_.Wait(); }

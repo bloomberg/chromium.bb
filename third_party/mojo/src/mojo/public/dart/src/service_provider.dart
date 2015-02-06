@@ -30,10 +30,11 @@ class ServiceProvider extends service_provider.ServiceProvider {
     _proxy.connectToService(name, pipe.endpoints[1]);
   }
 
-  close() {
+  close({bool nodefer : false}) {
     if (_proxy != null) {
       _proxy.close();
       _proxy = null;
     }
+    super.close(nodefer: nodefer);
   }
 }

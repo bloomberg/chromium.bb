@@ -49,9 +49,11 @@ class MojoMessagePipeEndpoint {
       return status;
     }
 
+    int dataLengthInBytes = (data == null) ? 0 : data.lengthInBytes;
+
     // If numBytes has the default value, use the full length of the data.
-    int dataNumBytes = (numBytes == -1) ? data.lengthInBytes : numBytes;
-    if (dataNumBytes > data.lengthInBytes) {
+    int dataNumBytes = (numBytes == -1) ? dataLengthInBytes : numBytes;
+    if (dataNumBytes > dataLengthInBytes) {
       status = MojoResult.INVALID_ARGUMENT;
       return status;
     }

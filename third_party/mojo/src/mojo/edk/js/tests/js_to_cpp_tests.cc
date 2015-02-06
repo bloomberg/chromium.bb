@@ -193,11 +193,11 @@ void CheckCorruptedEchoArgsList(const js_to_cpp::EchoArgsListPtr& list) {
 // run_loop().
 class CppSideConnection : public js_to_cpp::CppSide {
  public:
-  CppSideConnection() :
-      run_loop_(NULL),
-      js_side_(NULL),
-      mishandled_messages_(0) {
-  }
+  CppSideConnection()
+      : run_loop_(nullptr),
+        js_side_(nullptr),
+        mishandled_messages_(0),
+        binding_(this) {}
   ~CppSideConnection() override {}
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -205,6 +205,12 @@ class CppSideConnection : public js_to_cpp::CppSide {
 
   void set_js_side(js_to_cpp::JsSide* js_side) { js_side_ = js_side; }
   js_to_cpp::JsSide* js_side() { return js_side_; }
+
+  void Bind(InterfaceRequest<js_to_cpp::CppSide> request) {
+    binding_.Bind(request.Pass());
+    // Keep the pipe open even after validation errors.
+    binding_.internal_router()->EnableTestingMode();
+  }
 
   // js_to_cpp::CppSide:
   void StartTest() override { NOTREACHED(); }
@@ -229,6 +235,7 @@ class CppSideConnection : public js_to_cpp::CppSide {
   base::RunLoop* run_loop_;
   js_to_cpp::JsSide* js_side_;
   int mishandled_messages_;
+  mojo::Binding<js_to_cpp::CppSide> binding_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CppSideConnection);
@@ -363,21 +370,22 @@ class JsToCppTest : public testing::Test {
   void RunTest(const std::string& test, CppSideConnection* cpp_side) {
     cpp_side->set_run_loop(&run_loop_);
 
-    MessagePipe pipe;
-    js_to_cpp::JsSidePtr js_side =
-        MakeProxy<js_to_cpp::JsSide>(pipe.handle0.Pass());
-    js_side.set_client(cpp_side);
-
-    js_side.internal_state()->router_for_testing()->EnableTestingMode();
+    js_to_cpp::JsSidePtr js_side;
+    auto js_side_proxy = GetProxy(&js_side);
 
     cpp_side->set_js_side(js_side.get());
+    js_to_cpp::CppSidePtr cpp_side_ptr;
+    cpp_side->Bind(GetProxy(&cpp_side_ptr));
+
+    js_side->SetCppSide(cpp_side_ptr.Pass());
 
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                    gin::ArrayBufferAllocator::SharedInstance());
     gin::IsolateHolder instance;
     MojoRunnerDelegate delegate;
     gin::ShellRunner runner(&delegate, instance.isolate());
-    delegate.Start(&runner, pipe.handle1.release().value(), test);
+    delegate.Start(&runner, js_side_proxy.PassMessagePipe().release().value(),
+                   test);
 
     run_loop_.Run();
   }
