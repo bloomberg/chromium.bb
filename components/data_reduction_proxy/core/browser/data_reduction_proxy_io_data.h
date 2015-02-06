@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
 namespace net {
 class NetLog;
@@ -125,7 +125,7 @@ class DataReductionProxyIOData {
   scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
 
   // Constructs credentials suitable for authenticating the client.
-  scoped_ptr<DataReductionProxyAuthRequestHandler> auth_request_handler_;
+  scoped_ptr<DataReductionProxyRequestOptions> request_options_;
 
   // A net log.
   net::NetLog* net_log_;

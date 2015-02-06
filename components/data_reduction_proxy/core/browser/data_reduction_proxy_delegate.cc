@@ -14,11 +14,11 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
-    DataReductionProxyAuthRequestHandler* auth_handler,
+    DataReductionProxyRequestOptions* request_options,
     DataReductionProxyParams* params)
-    : auth_handler_(auth_handler),
+    : request_options_(request_options),
       params_(params) {
-  DCHECK(auth_handler);
+  DCHECK(request_options);
   DCHECK(params);
 }
 
@@ -55,7 +55,8 @@ void DataReductionProxyDelegate::OnBeforeSendHeaders(
 void DataReductionProxyDelegate::OnBeforeTunnelRequest(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* extra_headers) {
-  auth_handler_->MaybeAddProxyTunnelRequestHandler(proxy_server, extra_headers);
+  request_options_->MaybeAddProxyTunnelRequestHandler(
+      proxy_server, extra_headers);
 }
 
 void DataReductionProxyDelegate::OnTunnelHeadersReceived(

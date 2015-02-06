@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 
+#include <map>
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -23,6 +26,13 @@ class URLRequest;
 }
 
 namespace data_reduction_proxy {
+
+const char kSessionHeaderOption[] = "ps";
+const char kCredentialsHeaderOption[] = "sid";
+const char kBuildNumberHeaderOption[] = "b";
+const char kPatchNumberHeaderOption[] = "p";
+const char kClientHeaderOption[] = "c";
+const char kLoFiHeaderOption[] = "q";
 
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];
@@ -50,18 +60,18 @@ typedef enum {
 
 class DataReductionProxyParams;
 
-class DataReductionProxyAuthRequestHandler {
+class DataReductionProxyRequestOptions {
  public:
   static bool IsKeySetOnCommandLine();
 
-  // Constructs a DataReductionProxyAuthRequestHandler object with the given
+  // Constructs a DataReductionProxyRequestOptions object with the given
   // client type, params, and network task runner.
-  DataReductionProxyAuthRequestHandler(
+  DataReductionProxyRequestOptions(
       Client client,
       DataReductionProxyParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
-  virtual ~DataReductionProxyAuthRequestHandler();
+  virtual ~DataReductionProxyRequestOptions();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the provided
@@ -91,7 +101,7 @@ class DataReductionProxyAuthRequestHandler {
  protected:
   void Init();
 
-  void AddAuthorizationHeader(net::HttpRequestHeaders* headers);
+  void SetHeader(net::HttpRequestHeaders* headers);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -106,21 +116,25 @@ class DataReductionProxyAuthRequestHandler {
   virtual std::string GetDefaultKey() const;
 
   // Visible for testing.
-  DataReductionProxyAuthRequestHandler(
+  DataReductionProxyRequestOptions(
       Client client,
       const std::string& version,
       DataReductionProxyParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthorizationOnIOThread);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthorizationIgnoresEmptyKey);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthorizationBogusVersion);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthHashForSalt);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
+                           AuthorizationLoFi);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
+                           AuthorizationLoFiOffThenOn);
 
   // Returns the version of Chromium that is being used.
   std::string ChromiumVersion() const;
@@ -131,11 +145,21 @@ class DataReductionProxyAuthRequestHandler {
                                 std::string* build,
                                 std::string* patch) const;
 
+  // Gets the version and client values and updates them in |header_options_|.
+  void UpdateVersion(const Client& client, const std::string& version);
+
+  // Updates the value of LoFi in |header_options_| and regenerates the header
+  // if necessary.
+  void UpdateLoFi();
+
   // Generates a session ID and credentials suitable for authenticating with
   // the data reduction proxy.
   void ComputeCredentials(const base::Time& now,
                           std::string* session,
                           std::string* credentials);
+
+  // Generates and updates the session ID and credentials in |header_options_|.
+  void UpdateCredentials();
 
   // Adds authentication headers only if |expects_ssl| is true and
   // |proxy_server| is a data reduction proxy used for ssl tunneling via
@@ -145,18 +169,16 @@ class DataReductionProxyAuthRequestHandler {
                                  bool expect_ssl,
                                  net::HttpRequestHeaders* request_headers);
 
+  // Regenerates the |header_value_| string which is concatenated to the
+  // Chrome-proxy header.
+  void RegenerateRequestHeaderValue();
+
+  // Map and string of the request options to be added to the header.
+  std::map<std::string, std::string> header_options_;
+  std::string header_value_;
+
   // Authentication state.
   std::string key_;
-
-  // Lives on the IO thread.
-  std::string session_;
-  std::string credentials_;
-
-  // Name of the client and version of the data reduction proxy protocol to use.
-  // Both live on the IO thread.
-  std::string client_;
-  std::string build_number_;
-  std::string patch_number_;
 
   // The last time the session was updated. Used to ensure that a session is
   // never used for more than twenty-four hours.
@@ -166,7 +188,7 @@ class DataReductionProxyAuthRequestHandler {
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyAuthRequestHandler);
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyRequestOptions);
 };
 
 }  // namespace data_reduction_proxy

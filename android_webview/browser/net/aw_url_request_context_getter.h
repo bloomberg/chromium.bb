@@ -24,7 +24,7 @@ class URLRequestJobFactory;
 }
 
 namespace data_reduction_proxy {
-class DataReductionProxyAuthRequestHandler;
+class DataReductionProxyRequestOptions;
 }
 
 namespace android_webview {
@@ -43,8 +43,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
-  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
-      GetDataReductionProxyAuthRequestHandler() const;
+  data_reduction_proxy::DataReductionProxyRequestOptions*
+      GetDataReductionProxyRequestOptions() const;
 
   // NetLog is thread-safe, so clients can call this method from arbitrary
   // threads (UI and IO).
@@ -75,8 +75,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-      data_reduction_proxy_auth_request_handler_;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyRequestOptions>
+      data_reduction_proxy_request_options_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 

@@ -2167,6 +2167,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTimeZoneTrackingOption)
   },
 #endif  // defined(OS_CHROMEOS)
+  {
+    "enable-data-reduction-proxy-lo-fi",
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME,
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                      kEnableDataReductionProxyLoFi)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
@@ -2289,6 +2297,16 @@ bool SkipConditionalExperiment(const Experiment& experiment,
   // enable-data-reduction-proxy-alt is only available for the Dev channel.
   if (!strcmp("enable-data-reduction-proxy-alt", experiment.internal_name) &&
       chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
+    return true;
+  }
+  // enable-data-reduction-proxy-lo-fi is only available for Chromium builds and
+  // the Canary/Dev channel.
+  if (!strcmp("enable-data-reduction-proxy-lo-fi", experiment.internal_name) &&
+      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV &&
+      chrome::VersionInfo::GetChannel() !=
+          chrome::VersionInfo::CHANNEL_CANARY &&
+      chrome::VersionInfo::GetChannel() !=
+          chrome::VersionInfo::CHANNEL_UNKNOWN) {
     return true;
   }
 #endif

@@ -4,8 +4,6 @@
 
 static_library("browser") {
   sources = [
-    "data_reduction_proxy_auth_request_handler.cc",
-    "data_reduction_proxy_auth_request_handler.h",
     "data_reduction_proxy_bypass_protocol.cc",
     "data_reduction_proxy_bypass_protocol.h",
     "data_reduction_proxy_config.cc",
@@ -24,6 +22,8 @@ static_library("browser") {
     "data_reduction_proxy_network_delegate.h",
     "data_reduction_proxy_prefs.cc",
     "data_reduction_proxy_prefs.h",
+    "data_reduction_proxy_request_options.cc",
+    "data_reduction_proxy_request_options.h",
     "data_reduction_proxy_settings.cc",
     "data_reduction_proxy_settings.h",
     "data_reduction_proxy_statistics_prefs.cc",
@@ -77,7 +77,6 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "data_reduction_proxy_auth_request_handler_unittest.cc",
     "data_reduction_proxy_bypass_protocol_unittest.cc",
     "data_reduction_proxy_config_unittest.cc",
     "data_reduction_proxy_configurator_unittest.cc",
@@ -85,6 +84,7 @@ source_set("unit_tests") {
     "data_reduction_proxy_metrics_unittest.cc",
     "data_reduction_proxy_network_delegate_unittest.cc",
     "data_reduction_proxy_prefs_unittest.cc",
+    "data_reduction_proxy_request_options_unittest.cc",
     "data_reduction_proxy_settings_unittest.cc",
     "data_reduction_proxy_usage_stats_unittest.cc",
   ]

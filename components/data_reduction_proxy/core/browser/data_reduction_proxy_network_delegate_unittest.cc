@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -153,8 +153,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   // loop_proxy_ is just the current message loop. This means loop_proxy_
-  // is the network thread used by DataReductionProxyAuthRequestHandler.
-  DataReductionProxyAuthRequestHandler auth_handler(
+  // is the network thread used by DataReductionProxyRequestOptions.
+  DataReductionProxyRequestOptions request_options(
       kClient, params.get(), message_loop_proxy());
 
   scoped_ptr<DataReductionProxyConfigurator> configurator(
@@ -164,7 +164,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           scoped_ptr<net::NetworkDelegate>(new TestNetworkDelegate()),
-          params.get(), &auth_handler,
+          params.get(), &request_options,
           configurator.get()));
 
   set_network_delegate(network_delegate.get());
@@ -217,8 +217,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   // loop_proxy_ is just the current message loop. This means loop_proxy_
-  // is the network thread used by DataReductionProxyAuthRequestHandler.
-  DataReductionProxyAuthRequestHandler auth_handler(
+  // is the network thread used by DataReductionProxyRequestOptions.
+  DataReductionProxyRequestOptions request_options(
       kClient, params.get(), message_loop_proxy());
 
   base::HistogramTester histogram_tester;
@@ -228,7 +228,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           scoped_ptr<net::NetworkDelegate>(
-              new TestNetworkDelegate()), params.get(), &auth_handler,
+              new TestNetworkDelegate()), params.get(), &request_options,
               configurator.get()));
 
   set_network_delegate(network_delegate.get());

@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
@@ -42,14 +41,14 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(io_task_runner_.get());
   DCHECK(ui_task_runner_.get());
   params_ = settings->params()->Clone();
-  auth_request_handler_.reset(new DataReductionProxyAuthRequestHandler(
+  request_options_.reset(new DataReductionProxyRequestOptions(
       client_, params_.get(), io_task_runner_));
   event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
   configurator_.reset(new DataReductionProxyConfigurator(
       io_task_runner, net_log, event_store_.get()));
   proxy_delegate_.reset(
       new data_reduction_proxy::DataReductionProxyDelegate(
-          auth_request_handler_.get(), params_.get()));
+          request_options_.get(), params_.get()));
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
@@ -104,7 +103,7 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           wrapped_network_delegate.Pass(), params_.get(),
-          auth_request_handler_.get(), configurator_.get()));
+          request_options_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics && !usage_stats_) {
     usage_stats_.reset(
         new data_reduction_proxy::DataReductionProxyUsageStats(

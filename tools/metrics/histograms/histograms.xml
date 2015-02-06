@@ -50947,6 +50947,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
+  <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
