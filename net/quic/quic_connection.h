@@ -670,7 +670,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                 const IPEndPoint& peer_address);
 
   HasRetransmittableData IsRetransmittable(const QueuedPacket& packet);
-  bool IsConnectionClose(QueuedPacket packet);
+  bool IsConnectionClose(const QueuedPacket& packet);
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
