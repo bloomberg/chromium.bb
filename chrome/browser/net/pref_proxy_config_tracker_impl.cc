@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -101,6 +102,10 @@ void ChromeProxyConfigService::UpdateProxyConfig(
 void ChromeProxyConfigService::OnProxyConfigChanged(
     const net::ProxyConfig& config,
     ConfigAvailability availability) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 ChromeProxyConfigService::OnProxyConfigChanged"));
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Check whether there is a proxy configuration defined by preferences. In
