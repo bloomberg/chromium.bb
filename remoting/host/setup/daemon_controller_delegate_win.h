@@ -5,11 +5,6 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_WIN_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_WIN_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
-#include "base/win/scoped_comptr.h"
-// chromoting_lib.h contains MIDL-generated declarations.
-#include "remoting/host/chromoting_lib.h"
 #include "remoting/host/setup/daemon_controller.h"
 
 namespace remoting {
@@ -35,33 +30,6 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
   virtual void SetWindow(void* window_handle) override;
   virtual std::string GetVersion() override;
   virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
-
- private:
-  // Activates an unprivileged instance of the daemon controller and caches it.
-  HRESULT ActivateController();
-
-  // Activates an instance of the daemon controller and caches it. If COM
-  // Elevation is supported (Vista+) the activated instance is elevated,
-  // otherwise it is activated under credentials of the caller.
-  HRESULT ActivateElevatedController();
-
-  // Releases the cached instance of the controller.
-  void ReleaseController();
-
-  // |control_| and |control2_| hold references to an instance of the daemon
-  // controller to prevent a UAC prompt on every operation.
-  base::win::ScopedComPtr<IDaemonControl> control_;
-  base::win::ScopedComPtr<IDaemonControl2> control2_;
-
-  // True if |control_| holds a reference to an elevated instance of the daemon
-  // controller.
-  bool control_is_elevated_;
-
-  // This timer is used to release |control_| after a timeout.
-  scoped_ptr<base::OneShotTimer<DaemonControllerDelegateWin> > release_timer_;
-
-  // Handle of the plugin window.
-  HWND window_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateWin);
 };

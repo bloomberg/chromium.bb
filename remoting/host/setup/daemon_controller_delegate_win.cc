@@ -5,60 +5,211 @@
 #include "remoting/host/setup/daemon_controller_delegate_win.h"
 
 #include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
-// chromoting_lib.h contains MIDL-generated declarations.
-#include "remoting/host/chromoting_lib.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/usage_stats_consent.h"
-
-using base::win::ScopedBstr;
-using base::win::ScopedComPtr;
+#include "remoting/host/win/security_descriptor.h"
 
 namespace remoting {
 
 namespace {
 
-// ProgID of the daemon controller.
-const wchar_t kDaemonController[] =
-    L"ChromotingElevatedController.ElevatedController";
+// The maximum size of the configuration file. "1MB ought to be enough" for any
+// reasonable configuration we will ever need. 1MB is low enough to make
+// the probability of out of memory situation fairly low. OOM is still possible
+// and we will crash if it occurs.
+const size_t kMaxConfigFileSize = 1024 * 1024;
 
-// The COM elevation moniker for the Elevated Controller.
-const wchar_t kDaemonControllerElevationMoniker[] =
-    L"Elevation:Administrator!new:"
-    L"ChromotingElevatedController.ElevatedController";
+// The host configuration file name.
+const base::FilePath::CharType kConfigFileName[] =
+    FILE_PATH_LITERAL("host.json");
 
-// The maximum duration of keeping a reference to a privileged instance of
-// the Daemon Controller. This effectively reduces number of UAC prompts a user
-// sees.
-const int kPrivilegedTimeoutSec = 5 * 60;
+// The unprivileged configuration file name.
+const base::FilePath::CharType kUnprivilegedConfigFileName[] =
+    FILE_PATH_LITERAL("host_unprivileged.json");
 
-// The maximum duration of keeping a reference to an unprivileged instance of
-// the Daemon Controller. This interval should not be too long. If upgrade
-// happens while there is a live reference to a Daemon Controller instance
-// the old binary still can be used. So dropping the references often makes sure
-// that the old binary will go away sooner.
-const int kUnprivilegedTimeoutSec = 60;
+// The extension for the temporary file.
+const base::FilePath::CharType kTempFileExtension[] =
+    FILE_PATH_LITERAL("json~");
 
-void ConfigToString(const base::DictionaryValue& config, ScopedBstr* out) {
-  std::string config_str;
-  base::JSONWriter::Write(&config, &config_str);
-  ScopedBstr config_scoped_bstr(base::UTF8ToUTF16(config_str).c_str());
-  out->Swap(config_scoped_bstr);
+// The host configuration file security descriptor that enables full access to
+// Local System and built-in administrators only.
+const char kConfigFileSecurityDescriptor[] =
+    "O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)";
+
+const char kUnprivilegedConfigFileSecurityDescriptor[] =
+    "O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)";
+
+// Configuration keys.
+
+// The configuration keys that cannot be specified in UpdateConfig().
+const char* const kReadonlyKeys[] = {
+  kHostIdConfigPath, kHostOwnerConfigPath, kHostOwnerEmailConfigPath,
+  kXmppLoginConfigPath };
+
+// The configuration keys whose values may be read by GetConfig().
+const char* const kUnprivilegedConfigKeys[] = {
+  kHostIdConfigPath, kXmppLoginConfigPath };
+
+// Reads and parses the configuration file up to |kMaxConfigFileSize| in
+// size.
+bool ReadConfig(const base::FilePath& filename,
+                scoped_ptr<base::DictionaryValue>* config_out) {
+  std::string file_content;
+  if (!base::ReadFileToString(filename, &file_content, kMaxConfigFileSize)) {
+    PLOG(ERROR) << "Failed to read '" << filename.value() << "'.";
+    return false;
+  }
+
+  // Parse the JSON configuration, expecting it to contain a dictionary.
+  scoped_ptr<base::Value> value(
+      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
+
+  base::DictionaryValue* dictionary;
+  if (!value || !value->GetAsDictionary(&dictionary)) {
+    LOG(ERROR) << "Failed to parse '" << filename.value() << "'.";
+    return false;
+  }
+
+  value.release();
+  config_out->reset(dictionary);
+  return true;
+}
+
+base::FilePath GetTempLocationFor(const base::FilePath& filename) {
+  return filename.ReplaceExtension(kTempFileExtension);
+}
+
+// Writes a config file to a temporary location.
+bool WriteConfigFileToTemp(const base::FilePath& filename,
+                           const char* security_descriptor,
+                           const std::string& content) {
+  // Create the security descriptor for the configuration file.
+  ScopedSd sd = ConvertSddlToSd(security_descriptor);
+  if (!sd) {
+    PLOG(ERROR)
+        << "Failed to create a security descriptor for the configuration file";
+    return false;
+  }
+
+  SECURITY_ATTRIBUTES security_attributes = {0};
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = sd.get();
+  security_attributes.bInheritHandle = FALSE;
+
+  // Create a temporary file and write configuration to it.
+  base::FilePath tempname = GetTempLocationFor(filename);
+  base::win::ScopedHandle file(
+      CreateFileW(tempname.value().c_str(),
+                  GENERIC_WRITE,
+                  0,
+                  &security_attributes,
+                  CREATE_ALWAYS,
+                  FILE_FLAG_SEQUENTIAL_SCAN,
+                  nullptr));
+
+  if (!file.IsValid()) {
+    PLOG(ERROR) << "Failed to create '" << filename.value() << "'";
+    return false;
+  }
+
+  DWORD written;
+  if (!::WriteFile(file.Get(), content.c_str(), content.length(),
+                   &written, nullptr)) {
+    PLOG(ERROR) << "Failed to write to '" << filename.value() << "'";
+    return false;
+  }
+
+  return true;
+}
+
+// Moves a config file from its temporary location to its permanent location.
+bool MoveConfigFileFromTemp(const base::FilePath& filename) {
+  // Now that the configuration is stored successfully replace the actual
+  // configuration file.
+  base::FilePath tempname = GetTempLocationFor(filename);
+  if (!MoveFileExW(tempname.value().c_str(),
+                   filename.value().c_str(),
+                   MOVEFILE_REPLACE_EXISTING)) {
+      PLOG(ERROR) << "Failed to rename '" << tempname.value() << "' to '"
+                  << filename.value() << "'";
+      return false;
+  }
+
+  return true;
+}
+
+// Writes the configuration file up to |kMaxConfigFileSize| in size.
+bool WriteConfig(const std::string& content) {
+  if (content.length() > kMaxConfigFileSize) {
+      return false;
+  }
+
+  // Extract the configuration data that the user will verify.
+  scoped_ptr<base::Value> config_value(base::JSONReader::Read(content));
+  if (!config_value.get()) {
+    return false;
+  }
+  base::DictionaryValue* config_dict = nullptr;
+  if (!config_value->GetAsDictionary(&config_dict)) {
+    return false;
+  }
+  std::string email;
+  if (!config_dict->GetString(kHostOwnerEmailConfigPath, &email) &&
+      !config_dict->GetString(kHostOwnerConfigPath, &email) &&
+      !config_dict->GetString(kXmppLoginConfigPath, &email)) {
+    return false;
+  }
+  std::string host_id, host_secret_hash;
+  if (!config_dict->GetString(kHostIdConfigPath, &host_id) ||
+      !config_dict->GetString(kHostSecretHashConfigPath, &host_secret_hash)) {
+    return false;
+  }
+
+  // Extract the unprivileged fields from the configuration.
+  base::DictionaryValue unprivileged_config_dict;
+  for (int i = 0; i < arraysize(kUnprivilegedConfigKeys); ++i) {
+    const char* key = kUnprivilegedConfigKeys[i];
+    base::string16 value;
+    if (config_dict->GetString(key, &value)) {
+      unprivileged_config_dict.SetString(key, value);
+    }
+  }
+  std::string unprivileged_config_str;
+  base::JSONWriter::Write(&unprivileged_config_dict, &unprivileged_config_str);
+
+  // Write the full configuration file to a temporary location.
+  base::FilePath full_config_file_path =
+      remoting::GetConfigDir().Append(kConfigFileName);
+  if (!WriteConfigFileToTemp(full_config_file_path,
+                             kConfigFileSecurityDescriptor,
+                             content)) {
+    return false;
+  }
+
+  // Write the unprivileged configuration file to a temporary location.
+  base::FilePath unprivileged_config_file_path =
+      remoting::GetConfigDir().Append(kUnprivilegedConfigFileName);
+  if (!WriteConfigFileToTemp(unprivileged_config_file_path,
+                             kUnprivilegedConfigFileSecurityDescriptor,
+                             unprivileged_config_str)) {
+    return false;
+  }
+
+  // Move the full and unprivileged configuration files to their permanent
+  // locations.
+  return MoveConfigFileFromTemp(full_config_file_path) &&
+         MoveConfigFileFromTemp(unprivileged_config_file_path);
 }
 
 DaemonController::State ConvertToDaemonState(DWORD service_state) {
@@ -87,76 +238,123 @@ DaemonController::State ConvertToDaemonState(DWORD service_state) {
   }
 }
 
-DWORD OpenService(ScopedScHandle* service_out) {
+ScopedScHandle OpenService(DWORD access) {
   // Open the service and query its current state.
   ScopedScHandle scmanager(
       ::OpenSCManagerW(nullptr, SERVICES_ACTIVE_DATABASE,
                        SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
-    DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to connect to the service control manager";
-    return error;
+    return ScopedScHandle();
   }
 
   ScopedScHandle service(::OpenServiceW(scmanager.Get(), kWindowsServiceName,
-                                        SERVICE_QUERY_STATUS));
+                                        access));
   if (!service.IsValid()) {
-    DWORD error = GetLastError();
-    if (error != ERROR_SERVICE_DOES_NOT_EXIST) {
-      PLOG(ERROR) << "Failed to open to the '" << kWindowsServiceName
-                  << "' service";
-    }
-    return error;
+    PLOG(ERROR) << "Failed to open to the '" << kWindowsServiceName
+                << "' service";
   }
 
-  service_out->Set(service.Take());
-  return ERROR_SUCCESS;
-}
-
-DaemonController::AsyncResult HResultToAsyncResult(
-    HRESULT hr) {
-  if (SUCCEEDED(hr)) {
-    return DaemonController::RESULT_OK;
-  } else if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
-    return DaemonController::RESULT_CANCELLED;
-  } else {
-    // TODO(sergeyu): Report other errors to the webapp once it knows
-    // how to handle them.
-    return DaemonController::RESULT_FAILED;
-  }
+  return service.Pass();
 }
 
 void InvokeCompletionCallback(
-    const DaemonController::CompletionCallback& done, HRESULT hr) {
-  done.Run(HResultToAsyncResult(hr));
+    const DaemonController::CompletionCallback& done, bool success) {
+  DaemonController::AsyncResult async_result =
+      success ? DaemonController::RESULT_OK : DaemonController::RESULT_FAILED;
+  done.Run(async_result);
 }
 
-HWND GetTopLevelWindow(HWND window) {
-  if (window == nullptr) {
-    return nullptr;
+bool SetConfig(const std::string& config) {
+  // Determine the config directory path and create it if necessary.
+  base::FilePath config_dir = remoting::GetConfigDir();
+  if (!base::CreateDirectory(config_dir)) {
+    PLOG(ERROR) << "Failed to create the config directory.";
+    return false;
   }
 
-  for (;;) {
-    LONG style = GetWindowLong(window, GWL_STYLE);
-    if ((style & WS_OVERLAPPEDWINDOW) == WS_OVERLAPPEDWINDOW ||
-        (style & WS_POPUP) == WS_POPUP) {
-      return window;
-    }
+  return WriteConfig(config);
+}
 
-    HWND parent = GetAncestor(window, GA_PARENT);
-    if (parent == nullptr) {
-      return window;
-    }
+bool StartDaemon() {
+  DWORD access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
+                 SERVICE_START | SERVICE_STOP;
+  ScopedScHandle service = OpenService(access);
+  if (!service.IsValid())
+    return false;
 
-    window = parent;
+  // Change the service start type to 'auto'.
+  if (!::ChangeServiceConfigW(service.Get(),
+                              SERVICE_NO_CHANGE,
+                              SERVICE_AUTO_START,
+                              SERVICE_NO_CHANGE,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr)) {
+    PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
+                << "'service start type to 'auto'";
+    return false;
   }
+
+  // Start the service.
+  if (!StartService(service.Get(), 0, nullptr)) {
+    DWORD error = GetLastError();
+    if (error != ERROR_SERVICE_ALREADY_RUNNING) {
+      LOG(ERROR) << "Failed to start the '" << kWindowsServiceName
+                  << "'service: " << error;
+
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool StopDaemon() {
+  DWORD access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
+                 SERVICE_START | SERVICE_STOP;
+  ScopedScHandle service = OpenService(access);
+  if (!service.IsValid())
+    return false;
+
+  // Change the service start type to 'manual'.
+  if (!::ChangeServiceConfigW(service.Get(),
+                              SERVICE_NO_CHANGE,
+                              SERVICE_DEMAND_START,
+                              SERVICE_NO_CHANGE,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr)) {
+    PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
+                << "'service start type to 'manual'";
+    return false;
+  }
+
+  // Stop the service.
+  SERVICE_STATUS status;
+  if (!ControlService(service.Get(), SERVICE_CONTROL_STOP, &status)) {
+    DWORD error = GetLastError();
+    if (error != ERROR_SERVICE_NOT_ACTIVE) {
+      LOG(ERROR) << "Failed to stop the '" << kWindowsServiceName
+                  << "'service: " << error;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace
 
-DaemonControllerDelegateWin::DaemonControllerDelegateWin()
-    : control_is_elevated_(false),
-      window_handle_(nullptr) {
+DaemonControllerDelegateWin::DaemonControllerDelegateWin() {
 }
 
 DaemonControllerDelegateWin::~DaemonControllerDelegateWin() {
@@ -166,111 +364,78 @@ DaemonController::State DaemonControllerDelegateWin::GetState() {
   if (base::win::GetVersion() < base::win::VERSION_XP) {
     return DaemonController::STATE_NOT_IMPLEMENTED;
   }
+
   // TODO(alexeypa): Make the thread alertable, so we can switch to APC
   // notifications rather than polling.
-  ScopedScHandle service;
-  DWORD error = OpenService(&service);
+  ScopedScHandle service = OpenService(SERVICE_QUERY_STATUS);
+  if (!service.IsValid())
+    return DaemonController::STATE_UNKNOWN;
 
-  switch (error) {
-    case ERROR_SUCCESS: {
-      SERVICE_STATUS status;
-      if (::QueryServiceStatus(service.Get(), &status)) {
-        return ConvertToDaemonState(status.dwCurrentState);
-      } else {
-        PLOG(ERROR) << "Failed to query the state of the '"
-                    << kWindowsServiceName << "' service";
-        return DaemonController::STATE_UNKNOWN;
-      }
-      break;
-    }
-    case ERROR_SERVICE_DOES_NOT_EXIST:
-      return DaemonController::STATE_NOT_INSTALLED;
-    default:
-      return DaemonController::STATE_UNKNOWN;
+  SERVICE_STATUS status;
+  if (!::QueryServiceStatus(service.Get(), &status)) {
+    PLOG(ERROR) << "Failed to query the state of the '"
+                << kWindowsServiceName << "' service";
+    return DaemonController::STATE_UNKNOWN;
   }
+
+  return ConvertToDaemonState(status.dwCurrentState);
 }
 
 scoped_ptr<base::DictionaryValue> DaemonControllerDelegateWin::GetConfig() {
-  // Configure and start the Daemon Controller if it is installed already.
-  HRESULT hr = ActivateController();
-  if (FAILED(hr))
+  base::FilePath config_dir = remoting::GetConfigDir();
+
+  // Read the unprivileged part of host configuration.
+  scoped_ptr<base::DictionaryValue> config;
+  if (!ReadConfig(config_dir.Append(kUnprivilegedConfigFileName), &config))
     return nullptr;
 
-  // Get the host configuration.
-  ScopedBstr host_config;
-  hr = control_->GetConfig(host_config.Receive());
-  if (FAILED(hr))
-    return nullptr;
-
-  // Parse the string into a dictionary.
-  base::string16 file_content(
-      static_cast<BSTR>(host_config), host_config.Length());
-  scoped_ptr<base::Value> config(
-      base::JSONReader::Read(base::UTF16ToUTF8(file_content),
-          base::JSON_ALLOW_TRAILING_COMMAS));
-
-  if (!config || !config->IsType(base::Value::TYPE_DICTIONARY))
-    return nullptr;
-
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(config.release()));
+  return config;
 }
 
 void DaemonControllerDelegateWin::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
-  HRESULT hr = ActivateElevatedController();
-  if (FAILED(hr)) {
-    InvokeCompletionCallback(done, hr);
+  // Check for bad keys.
+  for (int i = 0; i < arraysize(kReadonlyKeys); ++i) {
+    if (config->HasKey(kReadonlyKeys[i])) {
+      LOG(ERROR) << "Cannot update config: '" << kReadonlyKeys[i]
+                 << "' is read only.";
+      InvokeCompletionCallback(done, false);
+      return;
+    }
+  }
+  // Get the old config.
+  base::FilePath config_dir = remoting::GetConfigDir();
+  scoped_ptr<base::DictionaryValue> config_old;
+  if (!ReadConfig(config_dir.Append(kConfigFileName), &config_old)) {
+    InvokeCompletionCallback(done, false);
     return;
   }
 
-  // Update the configuration.
-  ScopedBstr config_str(nullptr);
-  ConfigToString(*config, &config_str);
-  if (config_str == nullptr) {
-    InvokeCompletionCallback(done, E_OUTOFMEMORY);
-    return;
-  }
+  // Merge items from the given config into the old config.
+  config_old->MergeDictionary(config.release());
 
-  // Make sure that the PIN confirmation dialog is focused properly.
-  hr = control_->SetOwnerWindow(
-      reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
-  if (FAILED(hr)) {
-    InvokeCompletionCallback(done, hr);
-    return;
-  }
+  // Write the updated config.
+  std::string config_updated_str;
+  base::JSONWriter::Write(config_old.get(), &config_updated_str);
+  bool result = WriteConfig(config_updated_str);
 
-  hr = control_->UpdateConfig(config_str);
-  InvokeCompletionCallback(done, hr);
+  InvokeCompletionCallback(done, result);
 }
 
 void DaemonControllerDelegateWin::Stop(
     const DaemonController::CompletionCallback& done) {
-  HRESULT hr = ActivateElevatedController();
-  if (SUCCEEDED(hr))
-    hr = control_->StopDaemon();
+  bool result = StopDaemon();
 
-  InvokeCompletionCallback(done, hr);
+  InvokeCompletionCallback(done, result);
 }
 
 void DaemonControllerDelegateWin::SetWindow(void* window_handle) {
-  window_handle_ = reinterpret_cast<HWND>(window_handle);
 }
 
 std::string DaemonControllerDelegateWin::GetVersion() {
-  // Configure and start the Daemon Controller if it is installed already.
-  HRESULT hr = ActivateController();
-  if (FAILED(hr))
-    return std::string();
-
-  // Get the version string.
-  ScopedBstr version;
-  hr = control_->GetVersion(version.Receive());
-  if (FAILED(hr))
-    return std::string();
-
-  return base::UTF16ToUTF8(
-      base::string16(static_cast<BSTR>(version), version.Length()));
+  // TODO (weitaosu): Remove this as GetVersion is not used anymore.
+  return std::string();
 }
 
 DaemonController::UsageStatsConsent
@@ -280,154 +445,48 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
   consent.allowed = false;
   consent.set_by_policy = false;
 
-  // Activate the Daemon Controller and see if it supports |IDaemonControl2|.
-  HRESULT hr = ActivateController();
-  if (FAILED(hr)) {
-    // The host is not installed yet. Assume that the user didn't consent to
-    // collecting crash dumps.
-    return consent;
-  }
-
-  if (control2_.get() == nullptr) {
-    // The host is installed and does not support crash dump reporting.
-    return consent;
-  }
-
   // Get the recorded user's consent.
-  BOOL allowed;
-  BOOL set_by_policy;
-  hr = control2_->GetUsageStatsConsent(&allowed, &set_by_policy);
-  if (FAILED(hr)) {
-    // If the user's consent is not recorded yet, assume that the user didn't
-    // consent to collecting crash dumps.
-    return consent;
+  bool allowed;
+  bool set_by_policy;
+  // If the user's consent is not recorded yet, assume that the user didn't
+  // consent to collecting crash dumps.
+  if (remoting::GetUsageStatsConsent(&allowed, &set_by_policy)) {
+    consent.allowed = allowed;
+    consent.set_by_policy = set_by_policy;
   }
 
-  consent.allowed = !!allowed;
-  consent.set_by_policy = !!set_by_policy;
   return consent;
-}
-
-HRESULT DaemonControllerDelegateWin::ActivateController() {
-  if (!control_.get()) {
-    CLSID class_id;
-    HRESULT hr = CLSIDFromProgID(kDaemonController, &class_id);
-    if (FAILED(hr)) {
-      return hr;
-    }
-
-    hr = CoCreateInstance(class_id, nullptr, CLSCTX_LOCAL_SERVER,
-                          IID_IDaemonControl, control_.ReceiveVoid());
-    if (FAILED(hr)) {
-      return hr;
-    }
-
-    // Ignore the error. IID_IDaemonControl2 is optional.
-    control_.QueryInterface(IID_IDaemonControl2, control2_.ReceiveVoid());
-
-    // Release |control_| upon expiration of the timeout.
-    release_timer_.reset(new base::OneShotTimer<DaemonControllerDelegateWin>());
-    release_timer_->Start(FROM_HERE,
-                          base::TimeDelta::FromSeconds(kUnprivilegedTimeoutSec),
-                          this,
-                          &DaemonControllerDelegateWin::ReleaseController);
-  }
-
-  return S_OK;
-}
-
-HRESULT DaemonControllerDelegateWin::ActivateElevatedController() {
-  // The COM elevation is supported on Vista and above.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return ActivateController();
-
-  // Release an unprivileged instance of the daemon controller if any.
-  if (!control_is_elevated_)
-    ReleaseController();
-
-  if (!control_.get()) {
-    BIND_OPTS3 bind_options;
-    memset(&bind_options, 0, sizeof(bind_options));
-    bind_options.cbStruct = sizeof(bind_options);
-    bind_options.hwnd = GetTopLevelWindow(window_handle_);
-    bind_options.dwClassContext  = CLSCTX_LOCAL_SERVER;
-
-    HRESULT hr = ::CoGetObject(
-        kDaemonControllerElevationMoniker,
-        &bind_options,
-        IID_IDaemonControl,
-        control_.ReceiveVoid());
-    if (FAILED(hr)) {
-      return hr;
-    }
-
-    // Ignore the error. IID_IDaemonControl2 is optional.
-    control_.QueryInterface(IID_IDaemonControl2, control2_.ReceiveVoid());
-
-    // Note that we hold a reference to an elevated instance now.
-    control_is_elevated_ = true;
-
-    // Release |control_| upon expiration of the timeout.
-    release_timer_.reset(new base::OneShotTimer<DaemonControllerDelegateWin>());
-    release_timer_->Start(FROM_HERE,
-                          base::TimeDelta::FromSeconds(kPrivilegedTimeoutSec),
-                          this,
-                          &DaemonControllerDelegateWin::ReleaseController);
-  }
-
-  return S_OK;
-}
-
-void DaemonControllerDelegateWin::ReleaseController() {
-  control_.Release();
-  control2_.Release();
-  release_timer_.reset();
-  control_is_elevated_ = false;
 }
 
 void DaemonControllerDelegateWin::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,
     const DaemonController::CompletionCallback& done) {
-  HRESULT hr = ActivateElevatedController();
-  if (FAILED(hr)) {
-    InvokeCompletionCallback(done, hr);
-    return;
-  }
-
   // Record the user's consent.
-  if (control2_.get()) {
-    hr = control2_->SetUsageStatsConsent(consent);
-    if (FAILED(hr)) {
-      InvokeCompletionCallback(done, hr);
-      return;
-    }
+  if (!remoting::SetUsageStatsConsent(consent)) {
+    InvokeCompletionCallback(done, false);
+    return;
   }
 
   // Set the configuration.
-  ScopedBstr config_str(nullptr);
-  ConfigToString(*config, &config_str);
-  if (config_str == nullptr) {
-    InvokeCompletionCallback(done, E_OUTOFMEMORY);
+  std::string config_str;
+  base::JSONWriter::Write(config.release(), &config_str);
+
+  // Determine the config directory path and create it if necessary.
+  base::FilePath config_dir = remoting::GetConfigDir();
+  if (!base::CreateDirectory(config_dir)) {
+    PLOG(ERROR) << "Failed to create the config directory.";
+    InvokeCompletionCallback(done, false);
     return;
   }
 
-  hr = control_->SetOwnerWindow(
-      reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
-  if (FAILED(hr)) {
-    InvokeCompletionCallback(done, hr);
-    return;
-  }
-
-  hr = control_->SetConfig(config_str);
-  if (FAILED(hr)) {
-    InvokeCompletionCallback(done, hr);
+  if (!WriteConfig(config_str)) {
+    InvokeCompletionCallback(done, false);
     return;
   }
 
   // Start daemon.
-  hr = control_->StartDaemon();
-  InvokeCompletionCallback(done, hr);
+  InvokeCompletionCallback(done, StartDaemon());
 }
 
 scoped_refptr<DaemonController> DaemonController::Create() {
