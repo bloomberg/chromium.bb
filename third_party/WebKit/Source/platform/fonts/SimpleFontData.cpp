@@ -151,6 +151,22 @@ void SimpleFontData::platformInit()
 #endif
     }
 
+#if OS(MACOSX)
+    // We are preserving this ascent hack to match Safari's ascent adjustment
+    // in their SimpleFontDataMac.mm, for details see crbug.com/445830.
+    // We need to adjust Times, Helvetica, and Courier to closely match the
+    // vertical metrics of their Microsoft counterparts that are the de facto
+    // web standard. The AppKit adjustment of 20% is too big and is
+    // incorrectly added to line spacing, so we use a 15% adjustment instead
+    // and add it to the ascent.
+    DEFINE_STATIC_LOCAL(AtomicString, timesName, ("Times", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, helveticaName, ("Helvetica", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, courierName, ("Courier", AtomicString::ConstructFromLiteral));
+    String familyName = m_platformData.fontFamilyName();
+    if (familyName == timesName || familyName == helveticaName || familyName == courierName)
+        ascent += floorf(((ascent + descent) * 0.15f) + 0.5f);
+#endif
+
     m_fontMetrics.setAscent(ascent);
     m_fontMetrics.setDescent(descent);
 
