@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,0) size 610x206
         LayoutTableSection {TBODY} at (0,0) size 610x206
           LayoutTableRow {TR} at (0,2) size 610x202
-            LayoutTableCell {TD} at (2,94) size 402x18 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 400x16 [bgcolor=#008000]
-                RenderText {#text} at (0,0) size 144x16
+            LayoutTableCell {TD} at (2,93) size 402x20 [r=0 c=0 rs=1 cs=1]
+              RenderBlock {DIV} at (1,1) size 400x18 [bgcolor=#008000]
+                RenderText {#text} at (0,0) size 144x18
                   text run at (0,0) width 144: "This div does not flex."
             LayoutTableCell {TD} at (406,2) size 202x202 [r=0 c=1 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 200x200

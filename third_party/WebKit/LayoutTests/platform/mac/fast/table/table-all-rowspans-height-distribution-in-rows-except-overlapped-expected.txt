@@ -20,7 +20,7 @@ row6 col0
 PASS
 row7 col0	row7 col1 - rowspan=4
 FAIL:
-Expected 57 for height, but got 35. 
+Expected 57 for height, but got 32. 
 
 <tr data-expected-height="57">
 	  <td>row7 col0</td>
@@ -28,7 +28,7 @@ Expected 57 for height, but got 35.
 	</tr>
 row8 col0
 FAIL:
-Expected 57 for height, but got 59. 
+Expected 57 for height, but got 58. 
 
 <tr data-expected-height="57">
       <td>row8 col0</td>
@@ -43,7 +43,7 @@ row12 col0
 PASS
 row13 col0	row13 col1 - rowspan=4
 FAIL:
-Expected 59 for height, but got 62. 
+Expected 59 for height, but got 60. 
 
 <tr data-expected-height="59">
 	  <td>row13 col0</td>
@@ -73,7 +73,7 @@ row5 col0
 PASS
 row6 col0	row6 col1 - rowspan=4
 FAIL:
-Expected 57 for height, but got 35. 
+Expected 57 for height, but got 32. 
 
 <tr data-expected-height="57">
 	  <td>row6 col0</td>
@@ -81,7 +81,7 @@ Expected 57 for height, but got 35.
 	</tr>
 row7 col0
 FAIL:
-Expected 57 for height, but got 59. 
+Expected 57 for height, but got 58. 
 
 <tr data-expected-height="57">
       <td>row7 col0</td>
@@ -102,7 +102,7 @@ row11 col0
 PASS
 row12 col0	row12 col1 - rowspan=4
 FAIL:
-Expected 59 for height, but got 62. 
+Expected 59 for height, but got 60. 
 
 <tr data-expected-height="59">
 	  <td>row12 col0</td>
@@ -130,7 +130,7 @@ row4 col1
 PASS
 row5 col0	row5 col1 - rowspan=4
 FAIL:
-Expected 57 for height, but got 35. 
+Expected 57 for height, but got 32. 
 
 <tr data-expected-height="57">
 	  <td>row5 col0</td>
@@ -138,7 +138,7 @@ Expected 57 for height, but got 35.
 	</tr>
 row6 col0
 FAIL:
-Expected 57 for height, but got 59. 
+Expected 57 for height, but got 58. 
 
 <tr data-expected-height="57">
       <td>row6 col0</td>
@@ -149,7 +149,7 @@ row8 col0
 PASS
 row9 col0	row9 col1 - rowspan=4
 FAIL:
-Expected 59 for height, but got 62. 
+Expected 59 for height, but got 60. 
 
 <tr data-expected-height="59">
 	  <td>row9 col0</td>
@@ -177,7 +177,7 @@ Expected 21 for height, but got 19.
 	</tr>
 row2 col1
 FAIL:
-Expected 199 for height, but got 221. 
+Expected 199 for height, but got 219. 
 
 <tr data-expected-height="199" style="height:20%">
       <td>row2 col1</td>
@@ -186,7 +186,7 @@ row3 col1
 PASS
 row4 col1
 FAIL:
-Expected 74 for height, but got 63. 
+Expected 74 for height, but got 58. 
 
 <tr data-expected-height="74" style="height:30%">
       <td>row4 col1</td>
@@ -197,7 +197,7 @@ row6 col0
 PASS
 row7 col0	row7 col1 - rowspan=4
 FAIL:
-Expected 58 for height, but got 61. 
+Expected 58 for height, but got 59. 
 
 <tr data-expected-height="58">
 	  <td>row7 col0</td>
@@ -221,7 +221,7 @@ row1 col0 - rowspan=4	row1 col1
 PASS
 row2 col1
 FAIL:
-Expected 152 for height, but got 155. 
+Expected 152 for height, but got 153. 
 
 <tr data-expected-height="152" style="height:20%">
       <td>row2 col1</td>
@@ -238,14 +238,14 @@ row7 col0	row7 col1 - rowspan=4
 PASS
 row8 col0
 FAIL:
-Expected 218 for height, but got 156. 
+Expected 218 for height, but got 144. 
 
 <tr data-expected-height="218" style="height:30%">
       <td>row8 col0</td>
     </tr>
 row9 col0
 FAIL:
-Expected 20 for height, but got 22. 
+Expected 20 for height, but got 21. 
 
 <tr data-expected-height="20">
       <td>row9 col0</td>
@@ -276,7 +276,7 @@ row1 col0
 PASS
 row2 col0 - rowspan=4 vertical-align=text-top	row2 col1 vertical-align=sub
 FAIL:
-Expected 77 for height, but got 35. 
+Expected 77 for height, but got 32. 
 
 <tr data-expected-height="77">
       <td rowspan="4" style="vertical-align:text-top; height:300px">row2 col0 - rowspan=4 vertical-align=text-top</td>
@@ -284,7 +284,7 @@ Expected 77 for height, but got 35.
     </tr>
 row3 col1 vertical-align=middle
 FAIL:
-Expected 77 for height, but got 79. 
+Expected 77 for height, but got 78. 
 
 <tr data-expected-height="77">
       <td style="vertical-align:middle">row3 col1 vertical-align=middle</td>
@@ -321,7 +321,7 @@ Expected 21 for height, but got 19.
     </tr>
 row1 col1	row1 col2	row1 col3
 FAIL:
-Expected 87 for height, but got 55. 
+Expected 87 for height, but got 59. 
 
 <tr data-expected-height="87">
         <td rowspan="3" style="height:200px">row1 col1</td>
@@ -330,52 +330,28 @@ Expected 87 for height, but got 55.
     </tr>
 row2 col3
 FAIL:
-Expected 96 for height, but got 84. 
+Expected 96 for height, but got 95. 
 
 <tr data-expected-height="96">
         <td>row2 col3</td>
     </tr>
 row3 col2
-FAIL:
-Expected 40 for height, but got 35. 
-
-<tr data-expected-height="40">
-        <td>row3 col2</td>
-    </tr>
+PASS
 row4 col1	row4 col2	row4 col3
-FAIL:
-Expected 24 for height, but got 38. 
-
-<tr data-expected-height="24">
-        <td>row4 col1</td>
-        <td>row4 col2</td>
-        <td>row4 col3</td>
-    </tr>
+PASS
 row5 col0	row5 col1	row5 col2
-FAIL:
-Expected 19 for height, but got 34. 
-
-<tr data-expected-height="19">
-        <td>row5 col0</td>
-        <td>row5 col1</td>
-        <td>row5 col2</td>
-    </tr>
+PASS
 row6 col0	row6 col1
 PASS
 row7 col1
 FAIL:
-Expected 37 for height, but got 23. 
+Expected 37 for height, but got 38. 
 
 <tr data-expected-height="37">
         <td>row7 col1</td>
     </tr>
 row8 col1
-FAIL:
-Expected 38 for height, but got 39. 
-
-<tr data-expected-height="38">
-        <td>row8 col1</td>
-    </tr>
+PASS
 row9 col1
 PASS
 row10 col1
