@@ -1001,10 +1001,6 @@ void LayerCompositor::ensureRootLayer()
 
         // Create a clipping layer if this is an iframe or settings require to clip.
         m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-        if (Settings* settings = m_renderView.document().settings()) {
-            if (settings->mainFrameClipsContent())
-                containerMasksToBounds = true;
-        }
         m_containerLayer->setMasksToBounds(containerMasksToBounds);
 
         m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);

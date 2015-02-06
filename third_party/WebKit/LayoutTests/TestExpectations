@@ -1857,3 +1857,5 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x-both.html [ Pass Failu
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
+
+crbug.com/454471 compositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]

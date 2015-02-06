@@ -1282,6 +1282,43 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
+TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("0-by-0.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+
+    webViewHelper.initializeAndLoad(m_baseURL + "0-by-0.html", true, 0, &client, configurePinchVirtualViewport);
+    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
+    LayerCompositor* compositor = webViewHelper.webViewImpl()->compositor();
+    EXPECT_EQ(LayoutSize(0, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
+    EXPECT_EQ(FloatSize(0.0, 0.0), compositor->containerLayer()->size());
+
+    webViewHelper.webView()->resize(WebSize(viewportWidth, 0));
+    EXPECT_EQ(LayoutSize(viewportWidth, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
+    EXPECT_EQ(FloatSize(viewportWidth, 0.0), compositor->containerLayer()->size());
+
+    // Two flags PinchVirtualViewportEnabled and ForceZeroLayoutHeight will cause the following
+    // resize of viewport height to be ignored by the outer viewport (the container layer of
+    // LayerCompositor). The height of the pinchViewport, however, is not affected.
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
+    EXPECT_EQ(LayoutSize(viewportWidth, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
+    EXPECT_EQ(FloatSize(viewportWidth, 0.0), compositor->containerLayer()->size());
+
+    LocalFrame* frame = webViewHelper.webViewImpl()->mainFrameImpl()->frame();
+    PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
+    EXPECT_EQ(viewportHeight, pinchViewport.containerLayer()->size().height());
+    EXPECT_TRUE(pinchViewport.containerLayer()->platformLayer()->masksToBounds());
+    EXPECT_FALSE(compositor->containerLayer()->platformLayer()->masksToBounds());
+}
+
 TEST_F(WebFrameTest, SetForceZeroLayoutHeight)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
