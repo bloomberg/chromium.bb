@@ -637,7 +637,7 @@ String CSSTokenizer::consumeName()
 }
 
 // http://dev.w3.org/csswg/css-syntax/#consume-an-escaped-code-point
-UChar CSSTokenizer::consumeEscape()
+UChar32 CSSTokenizer::consumeEscape()
 {
     UChar cc = consume();
     ASSERT(!isNewLine(cc));
@@ -652,8 +652,9 @@ UChar CSSTokenizer::consumeEscape()
         };
         consumeSingleWhitespaceIfNext();
         bool ok = false;
-        UChar codePoint = hexChars.toString().toUIntStrict(&ok, 16);
-        if (!ok)
+        UChar32 codePoint = hexChars.toString().toUIntStrict(&ok, 16);
+        ASSERT(ok);
+        if (codePoint == 0 || (0xD800 <= codePoint && codePoint <= 0xDFFF) || codePoint > 0x10FFFF)
             return WTF::Unicode::replacementCharacter;
         return codePoint;
     }

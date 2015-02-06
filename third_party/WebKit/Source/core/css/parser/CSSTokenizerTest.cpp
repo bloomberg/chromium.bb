@@ -203,17 +203,17 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("\\\r", delim('\\'), whitespace);
     TEST_TOKENS("\\\f", delim('\\'), whitespace);
     TEST_TOKENS("\\\r\n", delim('\\'), whitespace);
-    // FIXME: We don't correctly return replacement characters
-    // String replacement = fromUChar32(0xFFFD);
-    // TEST_TOKENS("null\\0", ident("null" + replacement));
-    // TEST_TOKENS("null\\0000", ident("null" + replacement));
-    // TEST_TOKENS("large\\110000", ident("large" + replacement));
-    // TEST_TOKENS("surrogate\\D800", ident("surrogate" + replacement));
-    // TEST_TOKENS("surrogate\\0DABC", ident("surrogate" + replacement));
-    // TEST_TOKENS("\\00DFFFsurrogate", ident(replacement + "surrogate"));
-    // FIXME: We don't correctly return supplementary plane characters
-    // TEST_TOKENS("\\10fFfF", ident(fromUChar32(0x10ffff) + "0"));
-    // TEST_TOKENS("\\10000000", ident(fromUChar32(0x100000) + "000"));
+    String replacement = fromUChar32(0xFFFD);
+    TEST_TOKENS("null\\0", ident("null" + replacement));
+    TEST_TOKENS("null\\0000", ident("null" + replacement));
+    TEST_TOKENS("large\\110000", ident("large" + replacement));
+    TEST_TOKENS("large\\23456a", ident("large" + replacement));
+    TEST_TOKENS("surrogate\\D800", ident("surrogate" + replacement));
+    TEST_TOKENS("surrogate\\0DABC", ident("surrogate" + replacement));
+    TEST_TOKENS("\\00DFFFsurrogate", ident(replacement + "surrogate"));
+    TEST_TOKENS("\\10fFfF", ident(fromUChar32(0x10ffff)));
+    TEST_TOKENS("\\10fFfF0", ident(fromUChar32(0x10ffff) + "0"));
+    TEST_TOKENS("\\10000000", ident(fromUChar32(0x100000) + "00"));
 }
 
 TEST(CSSTokenizerTest, IdentToken)

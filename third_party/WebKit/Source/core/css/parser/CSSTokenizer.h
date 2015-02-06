@@ -43,7 +43,7 @@ private:
 
     bool consumeIfNext(UChar);
     String consumeName();
-    UChar consumeEscape();
+    UChar32 consumeEscape();
 
     bool nextTwoCharsAreValidEscape();
     bool nextCharsAreNumber(UChar);
