@@ -1389,6 +1389,11 @@ pointer_move_workspace_grab_cancel(struct weston_pointer_grab *grab)
 }
 
 static void
+touch_move_workspace_grab_frame(struct weston_touch_grab *grab)
+{
+}
+
+static void
 touch_move_workspace_grab_cancel(struct weston_touch_grab *grab)
 {
 	struct touch_grab *tg = (struct touch_grab *)grab;
@@ -1408,6 +1413,7 @@ static const struct weston_touch_grab_interface touch_move_grab_workspace_interf
 	touch_nope_grab_down,
 	touch_move_workspace_grab_up,
 	touch_move_grab_motion,
+	touch_move_workspace_grab_frame,
 	touch_move_workspace_grab_cancel
 };
 
