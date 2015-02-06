@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 769x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 769x18
           text run at (0,0) width 769: "The TD tag uses the ALIGN attribute. The contents in the first TD tag (Netscape Communicator) should be aligned left."
-        RenderBR {BR} at (768,12) size 1x0
-      LayoutTable {TABLE} at (0,16) size 298x48 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 296x46
-          LayoutTableRow {TR} at (0,2) size 296x20
-            LayoutTableCell {TD} at (2,2) size 286x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 159x16
+        RenderBR {BR} at (768,14) size 1x0
+      LayoutTable {TABLE} at (0,18) size 298x52 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 296x50
+          LayoutTableRow {TR} at (0,2) size 296x22
+            LayoutTableCell {TD} at (2,2) size 286x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 159x18
                 text run at (2,2) width 159: "Netscape Communicator"
-            LayoutTableCell {TD} at (290,10) size 4x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-          LayoutTableRow {TR} at (0,24) size 296x20
-            LayoutTableCell {TD} at (2,24) size 286x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 282x16
+            LayoutTableCell {TD} at (290,11) size 4x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,26) size 296x22
+            LayoutTableCell {TD} at (2,26) size 286x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 282x18
                 text run at (2,2) width 282: "Available on the Mac/PC/UNIX platforms !"
