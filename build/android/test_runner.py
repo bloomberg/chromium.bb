@@ -529,7 +529,7 @@ def AddUirobotTestOptions(parser):
                      help='APK to run tests on.')
   group.add_argument(
       '--minutes', default=5, type=int,
-      help='Number of minutes to run uirobot test [default: %default].')
+      help='Number of minutes to run uirobot test [default: %(default)s].')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
